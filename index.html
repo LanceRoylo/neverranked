@@ -353,32 +353,48 @@ h1,h2,h3,h4{
 
 .hero-meta{
   border-top:1px solid var(--line);
-  padding-top:28px;
+  padding-top:36px;
   display:grid;
   grid-template-columns:repeat(3,1fr);
-  gap:20px;
+  gap:48px;
 }
-.hero-meta .cell .k{
+@media(max-width:720px){
+  .hero-meta{
+    grid-template-columns:1fr;
+    gap:30px;
+    padding-top:30px;
+  }
+}
+.hero-meta .cell .stmt{
+  font-family:var(--serif);
+  font-size:clamp(18px,1.55vw,22px);
+  line-height:1.35;
+  color:var(--text);
+  letter-spacing:-.005em;
+  margin-bottom:16px;
+  max-width:26ch;
+}
+.hero-meta .cell .stmt em{
+  font-style:italic;
+  color:var(--gold);
+  font-weight:400;
+}
+.hero-meta .cell .tag{
   font-family:var(--label);
   text-transform:uppercase;
-  letter-spacing:.18em;
+  letter-spacing:.24em;
   font-size:10px;
   color:var(--text-mute);
-  margin-bottom:8px;
+  display:flex;
+  align-items:center;
+  gap:10px;
 }
-.hero-meta .cell .v{
-  font-family:var(--serif);
-  font-style:italic;
-  font-size:clamp(22px,2.6vw,32px);
-  color:var(--gold);
-  line-height:1;
-}
-.hero-meta .cell .v small{
-  font-family:var(--mono);
-  font-style:normal;
-  font-size:12px;
-  color:var(--text-mute);
-  margin-left:4px;
+.hero-meta .cell .tag::before{
+  content:"";
+  width:14px;
+  height:1px;
+  background:var(--gold);
+  flex-shrink:0;
 }
 
 /* ---------- marquee ---------- */
@@ -1274,16 +1290,16 @@ h1,h2,h3,h4{
 
       <div class="hero-meta reveal" style="transition-delay:.3s;margin-top:80px">
         <div class="cell">
-          <div class="k">Citations, not rankings</div>
-          <div class="v">01 <small>/ thesis</small></div>
+          <div class="stmt">Citations, <em>not rankings.</em></div>
+          <div class="tag">Thesis</div>
         </div>
         <div class="cell">
-          <div class="k">Async first. No standing meetings.</div>
-          <div class="v">02 <small>/ method</small></div>
+          <div class="stmt">Async first. <em>No standing meetings.</em></div>
+          <div class="tag">Method</div>
         </div>
         <div class="cell">
-          <div class="k">Month-to-month. Cancel anytime.</div>
-          <div class="v">03 <small>/ terms</small></div>
+          <div class="stmt">Month-to-month. <em>Cancel anytime.</em></div>
+          <div class="tag">Terms</div>
         </div>
       </div>
     </div>
