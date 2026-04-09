@@ -1,0 +1,24 @@
+HTTP/2 200 
+accept-ranges: bytes
+access-control-allow-origin: *
+age: 38419
+cache-control: public, max-age=0, must-revalidate
+content-disposition: inline
+content-security-policy: default-src 'self'; script-src 'self' 'unsafe-inline'  https://js.stripe.com https://www.googletagmanager.com https://connect.facebook.net https://us-assets.i.posthog.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://*.supabase.co https://*.facebook.com https://*.facebook.net; font-src 'self'; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://api.anthropic.com https://*.ingest.sentry.io https://www.google-analytics.com https://analytics.google.com https://*.posthog.com https://*.facebook.com https://*.facebook.net; frame-src https://js.stripe.com; object-src 'none'; base-uri 'self'; form-action 'self'
+content-type: text/html; charset=utf-8
+date: Thu, 09 Apr 2026 21:01:10 GMT
+etag: "5eba49d3a11231c8298491a86ff3b6f2"
+permissions-policy: camera=(), microphone=(), geolocation=()
+referrer-policy: strict-origin-when-cross-origin
+server: Vercel
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: rsc, next-router-state-tree, next-router-prefetch, next-router-segment-prefetch
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-matched-path: /
+x-nextjs-prerender: 1
+x-nextjs-stale-time: 300
+x-vercel-cache: HIT
+x-vercel-id: pdx1::8d46l-1775768470031-46fcf9f5dcd1
+content-length: 135041
+

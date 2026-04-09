@@ -1,0 +1,19 @@
+User-Agent: *
+Allow: /
+Allow: /pricing
+Allow: /about
+Allow: /legal/
+Allow: /free-listing-generator
+Allow: /tools/
+Allow: /markets/
+Allow: /compare/
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /settings
+Disallow: /onboarding
+Disallow: /deals
+Disallow: /invite/
+Disallow: /auth/
+
+Sitemap: https://montaic.com/sitemap.xml

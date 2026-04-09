@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgentListingAI - AI-Powered Real Estate Listing Generator</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <meta name="description"
+        content="Generate professional real estate listing descriptions instantly with AI. Free tool for agents to create compelling property copy in seconds.">
+    <link rel="canonical" href="https://agentlistingai.com/">
+    <meta name="theme-color" content="#D4AF37">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://agentlistingai.com/">
+    <meta property="og:title" content="AgentListingAI - AI-Powered Real Estate Listing Generator">
+    <meta property="og:description"
+        content="Generate professional real estate listing descriptions instantly with AI. Free tool for agents to create compelling property copy in seconds.">
+    <meta property="og:image" content="https://agentlistingai.com/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://agentlistingai.com/">
+    <meta name="twitter:title" content="AgentListingAI - AI-Powered Real Estate Listing Generator">
+    <meta name="twitter:description"
+        content="Generate professional real estate listing descriptions instantly with AI. Free tool for agents.">
+    <meta name="twitter:image" content="https://agentlistingai.com/og-image.png">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Lato:wght@300;400;700&family=Playfair+Display:ital@1&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "AgentListingAI",
+        "description": "AI-powered real estate listing description generator for professional agents. Create compelling property copy in seconds.",
+        "url": "https://agentlistingai.com",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "author": {
+            "@type": "Organization",
+            "name": "AgentListingAI",
+            "url": "https://agentlistingai.com"
+        },
+        "featureList": [
+            "AI-powered listing generation",
+            "Multiple tone options (Professional, Conversational, Luxury)",
+            "Adjustable listing length",
+            "Save & history feature",
+            "Social media sharing",
+            "Copy to clipboard"
+        ]
+    }
+    </script>
+</head>
+
+<body>
+
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <header>
+        <div class="container header-content">
+            <a href="/" class="no-underline">
+                <div class="logo">
+                    <span class="logo-icon">A</span>
+                    <h1>AGENT <span class="gold">LISTING</span> AI</h1>
+                </div>
+            </a>
+
+            <!-- Desktop Navigation -->
+            <nav class="header-nav desktop-nav">
+                <a href="/">Home</a>
+                <a href="/blog/">Blog</a>
+                <a href='/about'>About</a>
+                <a href='/contact'>Contact</a>
+            </nav>
+
+            <!-- Mobile Hamburger Button -->
+            <button class="hamburger" id="hamburgerBtn" aria-label="Open navigation menu" aria-expanded="false">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Navigation Overlay -->
+    <div class="mobile-nav-overlay hidden" id="mobileNavOverlay"></div>
+
+    <!-- Mobile Navigation Drawer -->
+    <nav class="mobile-nav" id="mobileNav" aria-label="Mobile navigation">
+        <div class="mobile-nav-header">
+            <a href="/" class="no-underline">
+                <div class="logo">
+                    <span class="logo-icon">A</span>
+                    <span class="logo-text">AGENT <span class="gold">LISTING</span> AI</span>
+                </div>
+            </a>
+            <button class="mobile-nav-close" id="mobileNavClose" aria-label="Close navigation menu">✕</button>
+        </div>
+
+        <!-- Primary Navigation Links -->
+        <div class="mobile-nav-links">
+            <a href="/">Home</a>
+            <a href="/blog/">Blog</a>
+            <a href='/about'>About</a>
+            <a href='/contact'>Contact</a>
+        </div>
+
+        <!-- Legal Links (de-emphasized) -->
+        <div class="mobile-nav-legal">
+            <span class="legal-label">Legal</span>
+            <a href='/privacy'>Privacy</a>
+            <a href='/terms'>Terms</a>
+        </div>
+    </nav>
+
+    <!-- Hero Tagline -->
+    <div class="hero-tagline">
+        <p>Turn Rambling Notes into Luxury Listings.</p>
+        <p class="hero-subheadline">Free AI tool for real estate professionals.</p>
+    </div>
+
+    <main id="main-content" class="container">
+
+        <!-- INPUT SECTION (Moved above How It Works for mobile UX) -->
+        <section class="card input-section">
+            <div class="card-header">
+                <h2>Create Listing</h2>
+                <p>Enter property details below.</p>
+            </div>
+
+            <form id="listingForm">
+
+                <!-- Address -->
+                <div class="form-group">
+                    <label for="address">Property Address</label>
+                    <input type="text" id="address" name="address" placeholder="e.g. 123 Ocean Drive, Malibu, CA 90265"
+                        required autofocus>
+                </div>
+
+                <!-- Beds & Baths -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="bedrooms">Beds</label>
+                        <input type="number" id="bedrooms" name="bedrooms" placeholder="3" min="0" step="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="bathrooms">Baths</label>
+                        <input type="number" id="bathrooms" name="bathrooms" placeholder="2.5" min="0" step="0.5">
+                    </div>
+                </div>
+
+                <!-- Dropdowns -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="type">Property Type</label>
+                        <div class="select-wrapper">
+                            <select id="type" name="type">
+                                <option value="Single-Family">Single-Family</option>
+                                <option value="Condo">Condo</option>
+                                <option value="Townhouse">Townhouse</option>
+                                <option value="Mid-Century Modern">Mid-Century Modern</option>
+                                <option value="Farmhouse">Farmhouse</option>
+                                <option value="Penthouse">Penthouse</option>
+                                <option value="Loft">Loft</option>
+                                <option value="Bungalow">Bungalow</option>
+                                <option value="Multi-Family">Multi-Family</option>
+                                <option value="Historic">Historic</option>
+                                <option value="Tiny Home">Tiny Home</option>
+                                <option value="Land / Raw Acreage">Land / Raw Acreage</option>
+                                <option value="Commercial / Mixed-Use">Commercial / Mixed-Use</option>
+                                <option value="Vacation Rental (AirBnB)">Vacation Rental (AirBnB)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="vibe">Vibe</label>
+                        <div class="select-wrapper">
+                            <select id="vibe" name="vibe">
+                                <option value="Luxury & High-End" selected>Luxury & High-End</option>
+                                <option value="Standard">Standard</option>
+                                <option value="Opulent">Opulent</option>
+                                <option value="Minimalist">Minimalist</option>
+                                <option value="Cozy">Cozy</option>
+                                <option value="Light &amp; Airy">Light &amp; Airy</option>
+                                <option value="Urban Chic">Urban Chic</option>
+                                <option value="Secluded">Secluded</option>
+                                <option value="Turnkey">Turnkey</option>
+                                <option value="Fixer-Upper">Fixer-Upper</option>
+                                <option value="Boho">Boho</option>
+                                <option value="Traditional">Traditional</option>
+                                <option value="Coastal">Coastal</option>
+                                <option value="Rustic">Rustic</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tone and Length Dropdowns -->
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label for="tone">Tone</label>
+                        <div class="select-wrapper">
+                            <select id="tone" name="tone">
+                                <option value="Professional">Professional</option>
+                                <option value="Conversational">Conversational</option>
+                                <option value="Luxury" selected>Luxury</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="length">Length</label>
+                        <div class="select-wrapper">
+                            <select id="length" name="length">
+                                <option value="Short (MLS)">Short (MLS)</option>
+                                <option value="Medium" selected>Medium</option>
+                                <option value="Long (Brochure)">Long (Brochure)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Feature Buttons -->
+                <div class="form-group">
+                    <label for="featuresContainer">Key Features (click to select)</label>
+                    <div class="features-grid" id="featuresContainer">
+                        <button type="button" class="feature-btn" data-value="Pool">Pool</button>
+                        <button type="button" class="feature-btn" data-value="Chef's Kitchen">Chef's Kitchen</button>
+                        <button type="button" class="feature-btn" data-value="Panoramic View">Panoramic View</button>
+                        <button type="button" class="feature-btn" data-value="Spa">Spa / Sauna</button>
+                        <button type="button" class="feature-btn" data-value="Home Office">Home Office</button>
+                        <button type="button" class="feature-btn" data-value="Smart Home">Smart Home</button>
+                    </div>
+                    <!-- Hidden input to store collected features -->
+                    <input type="hidden" name="features" id="featuresInput">
+                </div>
+
+                <div class="form-group">
+                    <label for="story">Property Story (Tap Mic on Keyboard to Dictate)</label>
+                    <textarea id="story" name="story" rows="5"
+                        placeholder="🎤 Tap your keyboard's mic and describe what you see: 'Light, layout, open concept kitchen, white oak floors, huge backyard.' Remember to mention the neighborhood! (e.g., 'Walkable to elementary school,' 'Quiet cul-de-sac,' 'Near downtown nightlife')."></textarea>
+                </div>
+
+                <!-- Trust Bar -->
+                <p class="trust-bar">FREE • RESULTS IN &lt;10S • OPTIMIZED FOR MLS</p>
+                <div class="form-buttons">
+                    <button type="submit" id="generateBtn" class="main-btn">
+                        GENERATE LISTING
+                    </button>
+                    <button type="button" id="resetBtn" class="secondary-btn">
+                        Clear Form
+                    </button>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- HOW IT WORKS (Moved below form for mobile-first UX) -->
+        <section class="how-it-works">
+            <div class="steps">
+                <div class="step">
+                    <span class="step-number">1</span>
+                    <span class="step-text">Enter property details</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <span class="step-number">2</span>
+                    <span class="step-text">Choose tone & length</span>
+                </div>
+                <div class="step-arrow">→</div>
+                <div class="step">
+                    <span class="step-number">3</span>
+                    <span class="step-text">Get instant listing</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- OUTPUT SECTION -->
+        <section class="card output-section hidden" id="outputCard">
+            <div class="card-header">
+                <h2>Your Social Media Bundle</h2>
+                <div id="complianceBadge" class="compliance-badge badge-hidden">
+                    <span class="badge-icon">🛡️</span>
+                    <span class="badge-text">...</span>
+                </div>
+            </div>
+
+            <!-- Main Listing -->
+            <div class="result-section">
+                <h3 class="result-section-header">📝 Listing Description</h3>
+                <div class="result-box">
+                    <p id="resultText"></p>
+                </div>
+                <div class="result-section-actions">
+                    <div class="word-count" id="wordCount"></div>
+                    <button id="copyListingBtn" class="copy-section-btn">📋 Copy Listing</button>
+                </div>
+            </div>
+
+            <!-- Social Media Caption -->
+            <div class="result-section">
+                <h3 class="result-section-header">📱 Social Media Caption</h3>
+                <div class="result-box result-box--compact">
+                    <p id="socialCaptionText"></p>
+                </div>
+                <div class="result-section-actions">
+                    <button id="copySocialBtn" class="copy-section-btn">📋 Copy Caption</button>
+                </div>
+            </div>
+
+            <!-- Email Subject Line -->
+            <div class="result-section">
+                <h3 class="result-section-header">✉️ Email Subject Line</h3>
+                <div class="result-box result-box--compact">
+                    <p id="emailSubjectText"></p>
+                </div>
+                <div class="result-section-actions">
+                    <button id="copyEmailBtn" class="copy-section-btn">📋 Copy Subject</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex-row" style="margin-top: 20px;">
+                <button id="copyBtn" class="secondary-btn">📋 Copy All</button>
+                <button id="saveBtn" class="secondary-btn secondary-btn--gold">💾 Save to History</button>
+                <button id="regenerateBtn" class="secondary-btn">🔄 Regenerate</button>
+            </div>
+
+            <!-- Share to Social -->
+            <div class="share-section">
+                <span class="share-label">Share Your Listing</span>
+                <div class="share-buttons">
+                    <button class="share-btn facebook" onclick="shareToFacebook()">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+                        </svg>
+                        Facebook
+                    </button>
+                    <button class="share-btn linkedin" onclick="shareToLinkedIn()">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+                        </svg>
+                        LinkedIn
+                    </button>
+                    <button class="share-btn instagram" onclick="shareToInstagram()">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M12 0C8.74 0 8.333.015 7.053.072 5.775.132 4.905.333 4.14.63c-.789.306-1.459.717-2.126 1.384S.935 3.35.63 4.14C.333 4.905.131 5.775.072 7.053.012 8.333 0 8.74 0 12s.015 3.667.072 4.947c.06 1.277.261 2.148.558 2.913.306.788.717 1.459 1.384 2.126.667.666 1.336 1.079 2.126 1.384.766.296 1.636.499 2.913.558C8.333 23.988 8.74 24 12 24s3.667-.015 4.947-.072c1.277-.06 2.148-.262 2.913-.558.788-.306 1.459-.718 2.126-1.384.666-.667 1.079-1.335 1.384-2.126.296-.765.499-1.636.558-2.913.06-1.28.072-1.687.072-4.947s-.015-3.667-.072-4.947c-.06-1.277-.262-2.149-.558-2.913-.306-.789-.718-1.459-1.384-2.126C21.319 1.347 20.651.935 19.86.63c-.765-.297-1.636-.499-2.913-.558C15.667.012 15.26 0 12 0zm0 2.16c3.203 0 3.585.016 4.85.071 1.17.055 1.805.249 2.227.415.562.217.96.477 1.382.896.419.42.679.819.896 1.381.164.422.36 1.057.413 2.227.057 1.266.07 1.646.07 4.85s-.015 3.585-.074 4.85c-.061 1.17-.256 1.805-.421 2.227-.224.562-.479.96-.899 1.382-.419.419-.824.679-1.38.896-.42.164-1.065.36-2.235.413-1.274.057-1.649.07-4.859.07-3.211 0-3.586-.015-4.859-.074-1.171-.061-1.816-.256-2.236-.421-.569-.224-.96-.479-1.379-.899-.421-.419-.69-.824-.9-1.38-.165-.42-.359-1.065-.42-2.235-.045-1.26-.061-1.649-.061-4.844 0-3.196.016-3.586.061-4.861.061-1.17.255-1.814.42-2.234.21-.57.479-.96.9-1.381.419-.419.81-.689 1.379-.898.42-.166 1.051-.361 2.221-.421 1.275-.045 1.65-.06 4.859-.06l.045.03zm0 3.678c-3.405 0-6.162 2.76-6.162 6.162 0 3.405 2.76 6.162 6.162 6.162 3.405 0 6.162-2.76 6.162-6.162 0-3.405-2.757-6.162-6.162-6.162zM12 16c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4zm7.846-10.405c0 .795-.646 1.44-1.44 1.44-.795 0-1.44-.646-1.44-1.44 0-.794.646-1.439 1.44-1.439.793-.001 1.44.645 1.44 1.439z" />
+                        </svg>
+                        Instagram
+                    </button>
+                    <button class="share-btn twitter" onclick="shareToTwitter()">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                        </svg>
+                        X
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORY SECTION -->
+        <section class="card history-section" id="historySection">
+            <div class="card-header">
+                <h2>📜 Saved Listings</h2>
+                <p>Your previously generated listings</p>
+            </div>
+            <div id="historyList" class="history-list">
+                <!-- History items will be rendered here -->
+            </div>
+        </section>
+
+        <!-- VALUE CONTENT SECTION -->
+        <section class="card value-section">
+            <div class="card-header">
+                <h2>Write Listings That <span class="gold">Sell</span></h2>
+            </div>
+
+            <div class="value-content">
+                <p>Great real estate listings do more than describe a property—they tell a story that helps buyers
+                    imagine their future home. Here's how to get the most from AgentListingAI:</p>
+
+                <div class="value-tips">
+                    <div class="value-tip">
+                        <h3>🎯 Be Specific in Your Notes</h3>
+                        <p>Instead of "nice kitchen," try "white quartz counters with waterfall edge, Wolf range, pot
+                            filler." Specific details create vivid mental images that generic descriptions can't match.
+                        </p>
+                    </div>
+
+                    <div class="value-tip">
+                        <h3>🎤 Use Voice Dictation</h3>
+                        <p>Walk through the property and describe what you see out loud. Your phone's speech-to-text
+                            captures natural, authentic observations that read better than typed notes.</p>
+                    </div>
+
+                    <div class="value-tip">
+                        <h3>✨ Match Tone to Price Point</h3>
+                        <p>Luxury homes deserve elevated language. Starter homes benefit from warmth and
+                            approachability. Use the Tone selector to match your market segment.</p>
+                    </div>
+                </div>
+
+                <p class="value-cta">Ready to create your next listing? <a href="#main-content">Start generating
+                        above</a> — it's free, instant, and no login required.</p>
+            </div>
+        </section>
+
+        <!-- PRO TIPS SIDEBAR (Displayed as a section on mobile/desktop for now) -->
+        <section class="card pro-tips-section">
+            <div class="card-header">
+                <h2>Pro <span class="gold">Tips</span></h2>
+                <p>Level up your real estate marketing</p>
+            </div>
+            <div class="pro-tips-grid">
+                <a class='pro-tip-card' href='/blog/fixer-upper-copy'>
+                    <span class="pro-tip-icon">🔨</span>
+                    <div class="pro-tip-content">
+                        <h3>Writing for Fixer-Uppers</h3>
+                        <p>Turn "needs work" into "blank canvas"</p>
+                    </div>
+                </a>
+                <a class='pro-tip-card' href='/blog/power-words'>
+                    <span class="pro-tip-icon">✨</span>
+                    <div class="pro-tip-content">
+                        <h3>50 luxury Power Words</h3>
+                        <p>Elevate your listing vocabulary</p>
+                    </div>
+                </a>
+                <a class='pro-tip-card' href='/blog/fair-housing'>
+                    <span class="pro-tip-icon">⚖️</span>
+                    <div class="pro-tip-content">
+                        <h3>Fair Housing Guide</h3>
+                        <p>Stay compliant while selling</p>
+                    </div>
+                </a>
+                <a class='pro-tip-card' href='/blog/writing-guide'>
+                    <span class="pro-tip-icon">📝</span>
+                    <div class="pro-tip-content">
+                        <h3>How to Write Listings That Sell</h3>
+                        <p>Master the art of real estate storytelling</p>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- FOUNDER'S NOTE -->
+        <section class="founders-note">
+            <div class="note-content">
+                <h3>A Note from the Founder</h3>
+                <p>"Our Mission: To provide free, legally-aware tools for real estate agents who value speed without
+                    sacrificing compliance."</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FAQ SECTION -->
+    <section class="faq-section">
+        <div class="container">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Frequently Asked <span class="gold">Questions</span></h2>
+                </div>
+
+                <dl class="faq-list">
+                    <div class="faq-item">
+                        <dt class="faq-question">Is AgentListingAI really free?</dt>
+                        <dd class="faq-answer">Yes, completely free. No credit card, no subscription, no hidden fees. We
+                            believe every agent deserves access to professional-quality listing copy, regardless of
+                            budget. Generate as many listings as you need.</dd>
+                    </div>
+
+                    <div class="faq-item">
+                        <dt class="faq-question">Which listing length should I choose?</dt>
+                        <dd class="faq-answer"><strong>Short (MLS)</strong> is ideal for character-limited MLS
+                            fields—punchy, under 900 characters. <strong>Medium</strong> works great for Zillow,
+                            Realtor.com, and website listings. <strong>Long (Brochure)</strong> creates detailed
+                            narratives perfect for luxury print materials and property websites.</dd>
+                    </div>
+
+                    <div class="faq-item">
+                        <dt class="faq-question">How do I get the best results?</dt>
+                        <dd class="faq-answer">The more detail you provide in the "Property Story" field, the better
+                            your
+                            listing. Try using voice dictation on your phone while walking through the property—describe
+                            what you see, how the light feels, what makes it special. Our AI transforms your raw notes
+                            into polished copy.</dd>
+                    </div>
+
+                    <div class="faq-item">
+                        <dt class="faq-question">Is the AI-generated content Fair Housing compliant?</dt>
+                        <dd class="faq-answer">Our AI is designed to avoid protected class language and discriminatory
+                            phrases. For a deeper understanding, see <a href='/blog/fair-housing'>our Fair Housing
+                                compliance guide</a>. However, we always recommend reviewing your listings before
+                            publishing. You know
+                            your local regulations best—use our output as a strong starting point, then apply your
+                            professional judgment.</dd>
+                    </div>
+
+                    <div class="faq-item">
+                        <dt class="faq-question">Can I use these listings on MLS, Zillow, and my website?</dt>
+                        <dd class="faq-answer">Absolutely. The descriptions you generate are yours to use anywhere—MLS,
+                            Zillow, Realtor.com, Redfin, your brokerage website, print brochures, social media, email
+                            campaigns. No attribution required.</dd>
+                    </div>
+
+                    <div class="faq-item">
+                        <dt class="faq-question">Do you save my property information?</dt>
+                        <dd class="faq-answer">Your listing history is saved locally in your browser only—it never
+                            leaves
+                            your device unless you choose to copy and share it. We don't store your property details on
+                            our servers. Clear your browser data anytime to remove saved listings.</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Schema for SEO Rich Snippets -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Is AgentListingAI really free?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, completely free. No credit card, no subscription, no hidden fees. We believe every agent deserves access to professional-quality listing copy, regardless of budget. Generate as many listings as you need."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Which listing length should I choose?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Short (MLS) is ideal for character-limited MLS fields—punchy, under 900 characters. Medium works great for Zillow, Realtor.com, and website listings. Long (Brochure) creates detailed narratives perfect for luxury print materials and property websites."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How do I get the best results from an AI listing generator?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The more detail you provide in the Property Story field, the better your listing. Try using voice dictation on your phone while walking through the property—describe what you see, how the light feels, what makes it special. Our AI transforms your raw notes into polished copy."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is AI-generated real estate content Fair Housing compliant?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Our AI is designed to avoid protected class language and discriminatory phrases. However, we always recommend reviewing your listings before publishing. You know your local regulations best—use our output as a strong starting point, then apply your professional judgment."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Can I use AI-generated listings on MLS and Zillow?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Absolutely. The descriptions you generate are yours to use anywhere—MLS, Zillow, Realtor.com, Redfin, your brokerage website, print brochures, social media, email campaigns. No attribution required."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Does AgentListingAI save my property information?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Your listing history is saved locally in your browser only—it never leaves your device unless you choose to copy and share it. We don't store your property details on our servers. Clear your browser data anytime to remove saved listings."
+                }
+            }
+        ]
+    }
+    </script>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="/" class="no-underline">
+                        <div class="logo">
+                            <span class="logo-icon">A</span>
+                            <h2>AGENT <span class="gold">LISTING</span> AI</h2>
+                        </div>
+                    </a>
+                    <p class="footer-tagline">AI-powered listing descriptions for real estate professionals. Generate
+                        compelling property copy in seconds.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-column">
+                        <h3>Company</h3>
+                        <ul>
+                            <li><a href='/about'>About</a></li>
+                            <li><a href="/blog/">Blog</a></li>
+                            <li><a href='/contact'>Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-column">
+                        <h3>Legal</h3>
+                        <ul>
+                            <li><a href='/terms'>Terms of Service</a></li>
+                            <li><a href='/privacy'>Privacy Policy</a></li>
+                            <li><a href='/blog/fair-housing'>Compliance Resources</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="footer-copyright">© <span id="currentYear"></span> AgentListingAI. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- PROCESSING OVERLAY -->
+    <div class="processing-overlay hidden" id="processingOverlay" aria-live="polite" aria-busy="true">
+        <div class="processing-content">
+            <div class="processing-icon">
+                <div class="processing-spinner"></div>
+            </div>
+            <h2 class="processing-title">Creating Your Listing</h2>
+            <p class="processing-subtitle">Our AI is crafting compelling copy for your property...</p>
+            <div class="processing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- External Scripts (deferred for performance) -->
+    <script src="nav.js" defer></script>
+    <script src="compliance.js" defer></script>
+    <script src="app.js" defer></script>
+
+    <!-- Google Analytics (moved to body for performance) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-Z1E1K7F0FL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-Z1E1K7F0FL');
+    </script>
+    <!-- Google AdSense -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3306427010167950"
+        crossorigin="anonymous"></script>
+
+</body>
+
+</html>

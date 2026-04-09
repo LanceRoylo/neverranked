@@ -1,0 +1,1143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI property description generator that doesn't make things up. MLS-ready AI listing descriptions built from your real property details — accurate public remarks, no hallucination. Try 3 free.">
+    <title>AI Property Description Generator — Accurate AI Listing Descriptions | Nila June</title>
+    <link rel="canonical" href="https://nilajune.com/">
+    <meta property="og:title" content="AI Property Description Generator — Accurate AI Listing Descriptions | Nila June">
+    <meta property="og:description" content="AI property description generator that doesn't make things up. MLS-ready AI listing descriptions built from your real property details — accurate public remarks, no hallucination. Try 3 free.">
+    <meta property="og:url" content="https://nilajune.com/">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://nilajune.com/og-image.png">
+    <meta name="twitter:card" content="summary">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Nila June",
+      "url": "https://nilajune.com",
+      "logo": "https://nilajune.com/nila-june-icon-512.png",
+      "description": "AI property description generator for real estate agents. Writes MLS-ready AI listing descriptions and AI property descriptions from survey answers — no LLM, no hallucination.",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "editors@nilajune.com",
+        "contactType": "customer service"
+      }
+    }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" type="image/png" sizes="512x512" href="/nila-june-icon-512.png">
+    <link rel="apple-touch-icon" href="/nila-june-icon-512.png">
+    <meta name="google-site-verification" content="DVopu_BPHO_jK_gfeJxud1l29mz1ER9acRNdgTY55CY" />
+    <style>
+        /* ============================================
+           RESET & BASE
+           ============================================ */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: #2C2417;
+            background-color: #FDFBF7;
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+        ::selection { background: rgba(139, 115, 85, 0.25); }
+        img { max-width: 100%; height: auto; }
+        a { color: inherit; text-decoration: none; }
+
+        /* ============================================
+           TYPOGRAPHY
+           ============================================ */
+        h1, h2, h3, h4 {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        .accent { font-style: italic; color: #836B4D; }
+
+        /* ============================================
+           LAYOUT
+           ============================================ */
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+        section { padding: 80px 0; }
+
+        /* ============================================
+           NAVIGATION
+           ============================================ */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+            background: rgba(253, 251, 247, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(44, 36, 23, 0.06);
+            padding: 16px 0;
+            transition: all 0.3s ease;
+        }
+        .nav-inner {
+            max-width: 1100px; margin: 0 auto; padding: 0 24px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .logo {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.4em; font-weight: 600;
+            letter-spacing: 0.06em; color: #836B4D;
+        }
+        .nav-cta {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #2C2417 0%, #4A3F2F 100%);
+            color: #FDFBF7; border-radius: 100px;
+            font-size: 0.9em; font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(44, 36, 23, 0.2);
+        }
+
+        /* ============================================
+           HERO
+           ============================================ */
+        .hero {
+            min-height: 90vh;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center;
+            padding: 140px 24px 100px;
+            background: linear-gradient(180deg, #FDFBF7 0%, #F7F3ED 100%);
+            position: relative; overflow: hidden;
+        }
+        .hero::before {
+            content: ""; position: absolute; top: 15%; left: 8%;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(139, 115, 85, 0.05) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(60px); pointer-events: none;
+        }
+        .hero::after {
+            content: ""; position: absolute; bottom: 10%; right: 5%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(184, 157, 121, 0.06) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(80px); pointer-events: none;
+        }
+        .hero-content { position: relative; z-index: 1; max-width: 1020px; }
+        .hero h1 {
+            font-size: clamp(2.8em, 6vw, 4.2em);
+            color: #2C2417; margin-bottom: 24px; letter-spacing: -0.01em;
+        }
+        .hero .subtitle {
+            font-size: 1.25em; color: #5C5144;
+            max-width: 700px; margin: 0 auto 40px; line-height: 1.8;
+        }
+        .hero-cta {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 24px;
+            background: linear-gradient(135deg, #2C2417 0%, #4A3F2F 100%);
+            color: #FDFBF7; border-radius: 12px;
+            font-size: 0.95em; font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(44, 36, 23, 0.15);
+        }
+        .hero-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(44, 36, 23, 0.25);
+        }
+        .hero-cta .arrow { transition: transform 0.3s ease; }
+        .hero-cta:hover .arrow { transform: translateX(4px); }
+
+        /* Hero inline survey */
+        .hero-inline-survey {
+            max-width: 520px; margin: 0 auto 8px; text-align: center;
+            background: #FFFFFF;
+            border: 1px solid rgba(44, 36, 23, 0.1);
+            border-radius: 20px; padding: 28px 32px 32px;
+            box-shadow: 0 4px 24px rgba(44, 36, 23, 0.06);
+        }
+        .hero-survey-title {
+            display: block;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.6em; font-weight: 600;
+            color: #2C2417; letter-spacing: 0.01em; margin-bottom: 16px;
+        }
+        .hero-survey-form-group { text-align: left; }
+        .hero-survey-hint { font-size: 0.75em; color: #836B4D; margin-top: 10px; text-align: center; }
+        .hero-survey-label {
+            display: block; font-family: 'DM Sans', sans-serif;
+            font-size: 0.9em; font-weight: 500;
+            color: #5A4E3C; margin-bottom: 8px;
+        }
+        .hero-survey-row { display: flex; gap: 10px; align-items: stretch; }
+        .hero-survey-input {
+            flex: 1; padding: 14px 18px;
+            font-family: 'DM Sans', sans-serif; font-size: 1em;
+            border: 2px solid rgba(44, 36, 23, 0.15);
+            border-radius: 12px; background: #FFFFFF; color: #2C2417;
+            outline: none; transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .hero-survey-input:focus { border-color: #836B4D; box-shadow: 0 0 0 4px rgba(139, 115, 85, 0.1); }
+        .hero-survey-input::placeholder { color: #A69882; }
+        @media (max-width: 500px) { .hero-survey-row { flex-direction: column; } }
+        .hero-meta {
+            margin-top: 32px; display: flex;
+            justify-content: center; gap: 32px; flex-wrap: wrap;
+        }
+        .hero-meta-item {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.95em; color: #6B5D4D;
+        }
+        .hero-meta-item .icon { color: #3D6B41; }
+
+        /* ============================================
+           TRUST RIBBON
+           ============================================ */
+        .trust-ribbon {
+            background: #FFFFFF;
+            border-top: 1px solid rgba(44, 36, 23, 0.06);
+            border-bottom: 1px solid rgba(44, 36, 23, 0.06);
+            padding: 28px 24px; text-align: center; overflow: hidden;
+        }
+        .trust-ribbon-label {
+            font-size: 0.8em; color: #836B4D;
+            text-transform: uppercase; letter-spacing: 0.12em;
+            margin-bottom: 16px; font-weight: 500;
+        }
+        .trust-ticker-wrapper {
+            position: relative; overflow: hidden;
+            mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+            -webkit-mask-image: linear-gradient(90deg, transparent, black 10%, black 90%, transparent);
+        }
+        .trust-ticker {
+            display: flex; gap: 48px; align-items: center;
+            animation: ticker 30s linear infinite; width: max-content;
+        }
+        .trust-ticker span {
+            font-family: 'DM Sans', sans-serif; font-size: 0.95em;
+            font-weight: 500; color: #6B5D4D; white-space: nowrap;
+            opacity: 0.7; letter-spacing: 0.02em;
+        }
+        .trust-ticker .separator { color: #C9BEA8; font-size: 0.6em; opacity: 0.5; }
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .trust-ticker-wrapper:hover .trust-ticker { animation-play-state: paused; }
+
+        /* ============================================
+           COMPLIANCE SECTION
+           ============================================ */
+        .compliance { background: #FFFFFF; }
+        .compliance h2 {
+            font-size: clamp(2em, 4vw, 2.8em);
+            text-align: center; margin-bottom: 16px;
+        }
+        .compliance .section-subtitle {
+            text-align: center; color: #5C5144;
+            font-size: 1.1em; max-width: 640px;
+            margin: 0 auto 48px;
+        }
+        .compliance-card {
+            background: #FDFBF7; border-radius: 20px;
+            padding: 40px; max-width: 700px; margin: 0 auto;
+            box-shadow: 0 4px 24px rgba(44, 36, 23, 0.06);
+            border: 1px solid rgba(44, 36, 23, 0.06);
+        }
+        .compliance-intro {
+            text-align: center; margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid rgba(44, 36, 23, 0.08);
+        }
+        .compliance-intro p { color: #5C5144; line-height: 1.8; }
+        .compliance-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        @media (max-width: 600px) { .compliance-grid { grid-template-columns: 1fr; } }
+        .compliance-column h3 {
+            font-family: 'DM Sans', sans-serif; font-size: 0.8em;
+            text-transform: uppercase; letter-spacing: 0.1em;
+            margin-bottom: 16px; font-weight: 600;
+        }
+        .compliance-column.blocked h3 { color: #A86155; }
+        .compliance-column.protected h3 { color: #3D6B41; }
+        .compliance-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            padding: 10px 0; font-size: 0.92em; color: #5C5144;
+        }
+        .compliance-item .icon { flex-shrink: 0; margin-top: 2px; }
+        .compliance-column.blocked .icon { color: #A86155; }
+        .compliance-column.protected .icon { color: #3D6B41; }
+        .compliance-footer {
+            text-align: center; margin-top: 32px;
+            padding-top: 32px;
+            border-top: 1px solid rgba(44, 36, 23, 0.08);
+        }
+        .compliance-badge {
+            display: inline-flex; align-items: center; gap: 10px;
+            background: rgba(74, 124, 78, 0.1);
+            border: 1px solid rgba(74, 124, 78, 0.2);
+            padding: 14px 24px; border-radius: 100px;
+            color: #3D6B41; font-weight: 500;
+        }
+
+/* ============================================
+           SURVEY ADVANTAGE SECTION
+           ============================================ */
+        .survey-advantage { background: linear-gradient(180deg, #F7F3ED 0%, #FDFBF7 100%); }
+        .survey-advantage h2 {
+            font-size: clamp(2em, 4vw, 2.8em);
+            text-align: center; margin-bottom: 16px;
+        }
+        .survey-advantage .section-subtitle {
+            text-align: center; color: #5C5144;
+            font-size: 1.1em; max-width: 660px;
+            margin: 0 auto 60px;
+        }
+        .comparison-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 32px; max-width: 950px; margin: 0 auto;
+        }
+        @media (max-width: 800px) { .comparison-grid { grid-template-columns: 1fr; gap: 24px; } }
+        .comparison-card { padding: 32px; border-radius: 20px; }
+        .comparison-card.them { background: #F5F3EF; border: 1px solid rgba(44, 36, 23, 0.08); }
+        .comparison-card.us {
+            background: linear-gradient(135deg, rgba(74, 124, 78, 0.08) 0%, rgba(74, 124, 78, 0.03) 100%);
+            border: 2px solid rgba(74, 124, 78, 0.25);
+        }
+        .comparison-label {
+            font-size: 0.8em; text-transform: uppercase;
+            letter-spacing: 0.12em; margin-bottom: 20px; font-weight: 600;
+        }
+        .comparison-card.them .comparison-label { color: #836B4D; }
+        .comparison-card.us .comparison-label { color: #3D6B41; }
+        .prompt-box {
+            background: #FFFFFF;
+            border: 1px solid rgba(44, 36, 23, 0.1);
+            border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;
+        }
+        .prompt-label { font-size: 0.8em; color: #836B4D; margin-bottom: 8px; display: block; }
+        .prompt-box p {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-style: italic; font-size: 1.1em; color: #5C5144; margin: 0;
+        }
+        .comparison-problems { display: flex; flex-direction: column; gap: 12px; }
+        .problem-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 0.92em; color: #5C5144;
+        }
+        .problem-item .icon { color: #A86155; flex-shrink: 0; }
+        .survey-preview {
+            background: #FFFFFF;
+            border: 1px solid rgba(74, 124, 78, 0.15);
+            border-radius: 12px; padding: 20px; margin-bottom: 24px;
+        }
+        .survey-label { font-size: 0.85em; color: #3D6B41; margin-bottom: 12px; display: block; font-weight: 500; }
+        .survey-topics { display: flex; flex-wrap: wrap; gap: 8px; }
+        .topic {
+            background: rgba(74, 124, 78, 0.1); color: #3D6B41;
+            padding: 6px 12px; border-radius: 100px;
+            font-size: 0.8em; font-weight: 500;
+        }
+        .topic-more { color: #3D6B41; padding: 6px 12px; font-size: 0.8em; font-style: italic; }
+        .comparison-benefits { display: flex; flex-direction: column; gap: 12px; }
+        .benefit-item {
+            display: flex; align-items: flex-start; gap: 10px;
+            font-size: 0.92em; color: #2C2417; font-weight: 500;
+        }
+        .benefit-item .icon { color: #3D6B41; flex-shrink: 0; font-weight: 600; }
+
+        /* ============================================
+           SAMPLE OUTPUT
+           ============================================ */
+        .sample { background: #FFFFFF; }
+        .sample h2 { font-size: clamp(2em, 4vw, 2.8em); text-align: center; margin-bottom: 16px; }
+        .sample .section-subtitle {
+            text-align: center; color: #5C5144;
+            font-size: 1.1em; max-width: 600px; margin: 0 auto 48px;
+        }
+        .sample-card {
+            background: #FFFFFF; border-radius: 24px; overflow: hidden;
+            box-shadow: 0 8px 40px rgba(44, 36, 23, 0.08);
+            border: 1px solid rgba(44, 36, 23, 0.06);
+        }
+        .sample-header {
+            background: linear-gradient(135deg, #2C2417 0%, #3D3425 100%);
+            color: #FDFBF7; padding: 24px 32px;
+            display: flex; justify-content: space-between;
+            align-items: center; flex-wrap: wrap; gap: 16px;
+        }
+        .sample-property { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.3em; }
+        .sample-badges { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+        @media (max-width: 600px) { .sample-badges { align-items: flex-start; } }
+        .sample-badge {
+            display: flex; align-items: center; gap: 8px;
+            background: rgba(74, 124, 78, 0.2);
+            padding: 8px 16px; border-radius: 100px; font-size: 0.85em;
+        }
+        .sample-badge .check { color: #7BC47F; }
+        .sample-tabs { display: flex; border-bottom: 1px solid rgba(44, 36, 23, 0.08); }
+        .sample-tab {
+            flex: 1; padding: 16px 24px; text-align: center;
+            font-size: 0.9em; font-weight: 500; color: #836B4D;
+            cursor: pointer; transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+            background: none; border-left: none; border-right: none; border-top: none;
+        }
+        .sample-tab:hover { background: rgba(139, 115, 85, 0.05); }
+        .sample-tab.active { color: #2C2417; border-bottom-color: #836B4D; }
+        .sample-content { padding: 32px; }
+        .sample-text { display: none; }
+        .sample-text.active { display: block; }
+        .sample-text p { color: #3D3425; line-height: 1.9; margin-bottom: 16px; }
+        .sample-text p:last-child { margin-bottom: 0; }
+        .sample-text p.reveal {
+            opacity: 0; transform: translateY(12px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .sample-text p.reveal.visible { opacity: 1; transform: translateY(0); }
+        .generate-btn {
+            display: inline-block; padding: 16px 36px;
+            font-size: 1em; font-family: 'DM Sans', sans-serif;
+            font-weight: 600; color: #FDFBF7;
+            background: linear-gradient(135deg, #3D6B41 0%, #4a7c59 100%);
+            border: none; border-radius: 100px;
+            cursor: pointer; transition: all 0.3s ease; margin-bottom: 32px;
+        }
+        .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(61, 107, 65, 0.25); }
+        .generate-btn:disabled { opacity: 0.7; cursor: default; transform: none; box-shadow: none; }
+        .survey-demo { transition: opacity 0.5s ease; }
+        .survey-demo.fade-out { opacity: 0; }
+        .survey-demo .sd-question {
+            background: #FDFBF7; padding: 20px 24px; margin-bottom: 14px;
+            border-radius: 14px; border: 1px solid rgba(44, 36, 23, 0.06);
+            opacity: 0; transform: translateY(8px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .survey-demo .sd-question.visible { opacity: 1; transform: translateY(0); }
+        .survey-demo .sd-question:last-child { margin-bottom: 0; }
+        .survey-demo .sd-label {
+            display: block; margin-bottom: 10px;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-weight: 500; font-size: 1.15em; color: #2C2417; line-height: 1.4;
+        }
+        .survey-demo .sd-option {
+            display: inline-flex; align-items: center;
+            padding: 8px 14px; margin: 3px 4px 3px 0;
+            background: rgba(139, 115, 85, 0.03); border-radius: 8px;
+            border: 1px solid transparent; font-size: 0.9em; color: #5C5144;
+            transition: all 0.3s ease;
+        }
+        .survey-demo .sd-option .sd-input {
+            width: 16px; height: 16px;
+            border: 2px solid rgba(44, 36, 23, 0.2);
+            margin-right: 8px; flex-shrink: 0; transition: all 0.25s ease;
+        }
+        .survey-demo .sd-option .sd-radio { border-radius: 50%; }
+        .survey-demo .sd-option .sd-checkbox { border-radius: 4px; }
+        .survey-demo .sd-option.selected {
+            background: rgba(139, 115, 85, 0.08);
+            border-color: rgba(139, 115, 85, 0.2);
+            color: #2C2417; font-weight: 500;
+        }
+        .survey-demo .sd-option.selected .sd-radio {
+            border-color: #8B7355; background: #8B7355;
+            box-shadow: inset 0 0 0 3px #FDFBF7;
+        }
+        .survey-demo .sd-option.selected .sd-checkbox { border-color: #8B7355; background: #8B7355; }
+        .survey-demo .sd-option.selected .sd-checkmark { opacity: 1; }
+        .survey-demo .sd-checkmark {
+            color: #fff; font-size: 11px; font-weight: 700;
+            position: absolute; opacity: 0; transition: opacity 0.2s ease;
+        }
+        .survey-demo .sd-checkbox-wrap {
+            position: relative; display: flex; align-items: center;
+            justify-content: center; width: 16px; height: 16px;
+            margin-right: 8px; flex-shrink: 0;
+        }
+        .survey-demo .sd-select {
+            padding: 8px 14px; background: #FFFFFF;
+            border: 2px solid rgba(44, 36, 23, 0.12); border-radius: 10px;
+            color: #A69882; font-family: 'DM Sans', sans-serif; font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        .survey-demo .sd-select.filled { color: #2C2417; border-color: #8B7355; }
+        .sample-features { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+        .sample-feature {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 4px 14px; border-radius: 100px; font-size: 0.8em;
+        }
+        .sample-cta { text-align: center; margin-top: 48px; }
+        .sample-cta p { color: #5C5144; margin-bottom: 20px; }
+
+        /* ============================================
+           HOW IT WORKS
+           ============================================ */
+        .how-it-works { background: linear-gradient(180deg, #F7F3ED 0%, #FDFBF7 100%); }
+        .how-it-works h2 { font-size: clamp(2em, 4vw, 2.8em); text-align: center; margin-bottom: 60px; }
+        .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+        @media (max-width: 768px) { .steps { grid-template-columns: 1fr; gap: 32px; } }
+        .step { text-align: center; position: relative; }
+        .step-number {
+            width: 56px; height: 56px;
+            background: linear-gradient(135deg, #836B4D 0%, #B89D79 100%);
+            color: #FFFFFF; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.5em; font-weight: 600; margin: 0 auto 20px;
+        }
+        .step h3 { font-size: 1.4em; margin-bottom: 12px; }
+        .step p { color: #5C5144; font-size: 0.95em; line-height: 1.7; }
+        .step-connector { display: none; }
+        @media (min-width: 769px) {
+            .step-connector {
+                display: block; position: absolute; top: 28px; right: -20px;
+                width: 40px; height: 2px;
+                background: linear-gradient(90deg, #B89D79, transparent);
+            }
+            .step:last-child .step-connector { display: none; }
+        }
+
+        /* ============================================
+           TESTIMONIALS
+           ============================================ */
+        .testimonials { background: #FFFFFF; }
+        .testimonials h2 { font-size: clamp(2em, 4vw, 2.8em); text-align: center; margin-bottom: 48px; }
+        .testimonials-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+        @media (max-width: 900px) { .testimonials-grid { grid-template-columns: 1fr; } }
+        .testimonial-card {
+            background: #FFFFFF; border-radius: 20px; padding: 32px;
+            border: 1px solid rgba(44, 36, 23, 0.06);
+            box-shadow: 0 4px 20px rgba(44, 36, 23, 0.04);
+        }
+        .testimonial-metric {
+            display: inline-block;
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.12) 0%, rgba(184, 157, 121, 0.08) 100%);
+            color: #836B4D; padding: 8px 16px; border-radius: 100px;
+            font-size: 0.85em; font-weight: 600; margin-bottom: 20px;
+        }
+        .testimonial-quote {
+            font-family: 'Cormorant Garamond', Georgia, serif;
+            font-size: 1.25em; font-style: italic; color: #2C2417;
+            line-height: 1.6; margin-bottom: 24px;
+        }
+        .testimonial-author { font-weight: 600; color: #2C2417; }
+        .testimonial-location { font-size: 0.9em; color: #836B4D; }
+
+        /* ============================================
+           PRICING
+           ============================================ */
+        .pricing { background: linear-gradient(180deg, #F7F3ED 0%, #FDFBF7 100%); }
+        .pricing h2 { font-size: clamp(2em, 4vw, 2.8em); text-align: center; margin-bottom: 16px; }
+        .pricing .section-subtitle {
+            text-align: center; color: #5C5144;
+            font-size: 1.1em; max-width: 500px; margin: 0 auto 48px;
+        }
+        .pricing-grid {
+            display: grid; grid-template-columns: 1fr 1fr 1fr;
+            gap: 28px; max-width: 1060px; margin: 0 auto;
+        }
+        @media (max-width: 900px) { .pricing-grid { grid-template-columns: 1fr; max-width: 380px; } }
+        .pricing-card {
+            background: #FFFFFF; border: 1px solid rgba(44, 36, 23, 0.1);
+            border-radius: 20px; padding: 36px; text-align: center;
+            position: relative; transition: all 0.3s ease;
+        }
+        .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(44, 36, 23, 0.1); }
+        .pricing-card.featured {
+            background: linear-gradient(135deg, #2C2417 0%, #3D3425 100%);
+            color: #FDFBF7; box-shadow: 0 16px 48px rgba(44, 36, 23, 0.2);
+        }
+        .pricing-card.featured:hover { transform: translateY(-4px); }
+        .pricing-badge {
+            position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+            background: linear-gradient(135deg, #B89D79 0%, #836B4D 100%);
+            color: #FFFFFF; padding: 6px 16px; border-radius: 100px;
+            font-size: 0.75em; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .pricing-card.featured .pricing-badge { background: linear-gradient(135deg, #3D6B41 0%, #335A36 100%); }
+        .plan-name { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5em; margin-bottom: 4px; margin-top: 8px; }
+        .plan-desc { font-size: 0.9em; opacity: 0.7; margin-bottom: 24px; }
+        .price { font-family: 'Cormorant Garamond', Georgia, serif; font-size: 3.5em; font-weight: 500; line-height: 1; margin-bottom: 4px; }
+        .price .currency { font-size: 0.5em; vertical-align: super; }
+        .price-detail { font-size: 0.9em; opacity: 0.7; margin-bottom: 24px; }
+        .pricing-features { list-style: none; text-align: left; margin-bottom: 28px; }
+        .pricing-features li {
+            padding: 10px 0; padding-left: 28px; position: relative;
+            font-size: 0.92em; border-bottom: 1px solid rgba(44, 36, 23, 0.06);
+        }
+        .pricing-card.featured .pricing-features li { border-bottom-color: rgba(255, 255, 255, 0.1); }
+        .pricing-features li:last-child { border-bottom: none; }
+        .pricing-features li::before { content: "\2713"; position: absolute; left: 0; color: #3D6B41; font-weight: 600; }
+        .pricing-card.featured .pricing-features li::before { color: #7BC47F; }
+        .pricing-cta {
+            display: block; padding: 14px 28px; border-radius: 100px;
+            font-weight: 500; transition: all 0.3s ease;
+        }
+        .pricing-card.featured .pricing-cta { background: #FDFBF7; color: #2C2417; }
+        .pricing-card.featured .pricing-cta:hover { background: #FFFFFF; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); }
+        .pricing-cta.secondary { background: transparent; border: 2px solid rgba(44, 36, 23, 0.2); color: #2C2417; }
+        .pricing-cta.secondary:hover { border-color: #836B4D; background: rgba(139, 115, 85, 0.05); }
+        .pricing-footer { text-align: center; margin-top: 40px; color: #5C5144; font-size: 0.95em; }
+        .pricing-footer a { color: #836B4D; text-decoration: underline; text-underline-offset: 3px; }
+        .pricing-footer a:hover { color: #6B5D4D; }
+
+        /* ============================================
+           FINAL CTA
+           ============================================ */
+        .final-cta {
+            background: linear-gradient(135deg, #2C2417 0%, #3D3425 100%);
+            color: #FDFBF7; text-align: center; padding: 100px 24px;
+        }
+        .final-cta h2 { font-size: clamp(2em, 4vw, 2.8em); margin-bottom: 16px; }
+        .final-cta p { font-size: 1.15em; opacity: 0.85; max-width: 500px; margin: 0 auto 40px; }
+        .final-cta .cta-button {
+            display: inline-flex; align-items: center; gap: 12px;
+            padding: 18px 40px; background: #FDFBF7; color: #2C2417;
+            border-radius: 100px; font-size: 1.1em; font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        .final-cta .cta-button:hover { transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3); background: #FFFFFF; }
+        .final-cta .cta-button .arrow { transition: transform 0.3s ease; }
+        .final-cta .cta-button:hover .arrow { transform: translateX(4px); }
+    </style>
+</head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VR60PKGRBK"></script>
+<script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-VR60PKGRBK');
+</script>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="/" class="logo">NILA JUNE</a>
+            <div style="display:flex;align-items:center;gap:28px;">
+                <a href="/articles" style="color:#5C5144;text-decoration:none;font-size:0.9em;transition:color 0.2s ease;">Articles</a>
+                <a href="/partnerships" style="color:#5C5144;text-decoration:none;font-size:0.9em;transition:color 0.2s ease;">Partners</a>
+                <a href="/survey" class="nav-cta">Get My Description</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+    <!-- HERO — VERSION C: THE ANTI-AI AI -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>The AI Property Description Generator That <span class="accent">Doesn&rsquo;t</span> Make Things Up</h1>
+            <p class="subtitle">If you didn&rsquo;t say it, it doesn&rsquo;t appear. Our AI listing descriptions are grounded in pre-vetted real estate language, driven by your property details&mdash;not generated by an LLM that fills in gaps with fiction.</p>
+
+            <div class="hero-inline-survey" id="hero-survey">
+                <span class="hero-survey-title">Try It Free</span>
+                <div class="hero-survey-form-group">
+                    <label for="hero-city" class="hero-survey-label">What city or town is the property in?</label>
+                    <div class="hero-survey-row">
+                        <input type="text" id="hero-city" class="hero-survey-input" placeholder="e.g. Austin, Phoenix, Maryville" autocomplete="off">
+                        <button type="button" class="hero-cta" id="hero-continue-btn" onclick="heroStartSurvey()">
+                            Continue <span class="arrow">&rarr;</span>
+                        </button>
+                    </div>
+                </div>
+                <span class="hero-survey-hint">No credit card needed</span>
+            </div>
+
+            <div class="hero-meta">
+                <span class="hero-meta-item">
+                    <span class="icon">&#10003;</span> Not an LLM
+                </span>
+                <span class="hero-meta-item">
+                    <span class="icon">&#10003;</span> Zero hallucination by design
+                </span>
+                <span class="hero-meta-item">
+                    <span class="icon">&#10003;</span> 150+ flagged terms screened
+                </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trust Ribbon -->
+    <div class="trust-ribbon">
+        <div class="trust-ribbon-label">Nila June descriptions appear on major U.S. Multiple Listing Services</div>
+        <div class="trust-ticker-wrapper">
+            <div class="trust-ticker" id="trust-ticker"></div>
+        </div>
+    </div>
+
+    <!-- HOW OTHER TOOLS WORK vs. HOW NILA JUNE WORKS — Version C Lead Section -->
+    <section class="survey-advantage">
+        <div class="container">
+            <h2>Why most AI descriptions <span class="accent">can&rsquo;t be trusted</span></h2>
+            <p class="section-subtitle">ChatGPT and prompt-based generators predict what sounds right. When they don&rsquo;t have a fact, they invent one. That&rsquo;s not a bug&mdash;it&rsquo;s how they work.</p>
+
+            <div class="comparison-grid">
+                <div class="comparison-card them">
+                    <p class="comparison-label">LLM-Based Tools</p>
+                    <div class="prompt-box">
+                        <span class="prompt-label">How they work:</span>
+                        <p>You type a prompt. The model predicts what sounds right. Details are invented to fill the space.</p>
+                    </div>
+                    <div class="comparison-problems">
+                        <div class="problem-item">
+                            <span class="icon">&#9888;</span>
+                            <span>&ldquo;Sun-drenched breakfast nook&rdquo; appears from nowhere</span>
+                        </div>
+                        <div class="problem-item">
+                            <span class="icon">&#9888;</span>
+                            <span>&ldquo;Mature landscaping&rdquo; is a guess</span>
+                        </div>
+                        <div class="problem-item">
+                            <span class="icon">&#9888;</span>
+                            <span>&ldquo;Steps from shops and dining&rdquo; may not be true</span>
+                        </div>
+                        <div class="problem-item">
+                            <span class="icon">&#9888;</span>
+                            <span>Your seller reads it and notices what&rsquo;s wrong</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="comparison-card us">
+                    <p class="comparison-label">Nila June &mdash; Rules-Based</p>
+                    <div class="survey-preview">
+                        <span class="survey-label">How we work:</span>
+                        <div class="survey-topics">
+                            <span class="topic">50+ guided survey questions</span>
+                            <span class="topic">Pre-vetted language library</span>
+                            <span class="topic">Every sentence traces to your answers</span>
+                            <span class="topic">No LLM. No prediction. No invention.</span>
+                        </div>
+                    </div>
+                    <div class="comparison-benefits">
+                        <div class="benefit-item">
+                            <span class="icon">&#10003;</span>
+                            <span>Hallucination is architecturally impossible</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="icon">&#10003;</span>
+                            <span>Your seller recognizes their own home</span>
+                        </div>
+                        <div class="benefit-item">
+                            <span class="icon">&#10003;</span>
+                            <span>150+ flagged terms screened automatically</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMPLIANCE — Supporting section -->
+    <section class="compliance">
+        <div class="container">
+            <h2>Write with <span class="accent">confidence</span></h2>
+            <p class="section-subtitle">Fair Housing language in listing descriptions is a real compliance concern. Our system is built to help avoid common pitfalls.</p>
+
+            <div class="compliance-card">
+                <div class="compliance-intro">
+                    <p>LLMs don&rsquo;t know the Fair Housing Act exists. They will write &ldquo;perfect for young professionals&rdquo; and &ldquo;walking distance&rdquo; every time. Our engine screens every description against 150+ flagged terms before it reaches your inbox.</p>
+                </div>
+
+                <div class="compliance-grid">
+                    <div class="compliance-column blocked">
+                        <h3>We Avoid</h3>
+                        <div class="compliance-item">
+                            <span class="icon">&#10005;</span>
+                            <span>&ldquo;perfect for young professionals&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10005;</span>
+                            <span>&ldquo;walking distance to shops&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10005;</span>
+                            <span>&ldquo;master bedroom&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10005;</span>
+                            <span>&ldquo;family-friendly neighborhood&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10005;</span>
+                            <span>&ldquo;quiet street&rdquo;</span>
+                        </div>
+                    </div>
+
+                    <div class="compliance-column protected">
+                        <h3>We Use Instead</h3>
+                        <div class="compliance-item">
+                            <span class="icon">&#10003;</span>
+                            <span>No demographic targeting</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10003;</span>
+                            <span>&ldquo;convenient to shops&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10003;</span>
+                            <span>&ldquo;primary bedroom&rdquo;</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10003;</span>
+                            <span>No familial status references</span>
+                        </div>
+                        <div class="compliance-item">
+                            <span class="icon">&#10003;</span>
+                            <span>Describe the home, not the neighbors</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="compliance-footer">
+                    <span class="compliance-badge">
+                        <span>&#10003;</span>
+                        On guard against 150+ language pitfalls
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sample Output -->
+    <section class="sample">
+        <div class="container">
+            <h2>See it in <span class="accent">action</span></h2>
+            <p class="section-subtitle">Real output from a real property. Click generate and watch.</p>
+
+            <div class="sample-card">
+                <div class="sample-header">
+                    <div>
+                        <span class="sample-property">3 BR / 2 BA Ranch &middot; Saint Petersburg, FL</span>
+                        <div class="sample-features">
+                            <span class="sample-feature">Pool</span>
+                            <span class="sample-feature">Hot Tub</span>
+                            <span class="sample-feature">ICW Views</span>
+                            <span class="sample-feature">Sub-Zero / Wolf</span>
+                            <span class="sample-feature">Oak Hardwoods</span>
+                            <span class="sample-feature">Vaulted Ceilings</span>
+                        </div>
+                    </div>
+                    <div class="sample-badges">
+                        <span class="sample-badge">
+                            <span class="check">&#10003;</span> Every fact from the agent&rsquo;s survey
+                        </span>
+                        <span class="sample-badge">
+                            <span class="check">&#10003;</span> Zero AI hallucination
+                        </span>
+                    </div>
+                </div>
+                <div class="sample-tabs">
+                    <button class="sample-tab active" data-tab="long">Full Description</button>
+                    <button class="sample-tab" data-tab="short">Short Version</button>
+                </div>
+                <div class="sample-content" id="sample-content">
+                    <div style="text-align:center;margin-bottom:24px;" id="generate-btn-wrap">
+                        <button class="generate-btn" id="generate-btn" onclick="generateDemo()">Generate Description &rarr;</button>
+                    </div>
+                    <div class="survey-demo" id="survey-demo" style="display:none;">
+                        <div class="sd-question">
+                            <span class="sd-label">What is the architectural style?</span>
+                            <div>
+                                <span class="sd-option" data-select="arch-ranch"><span class="sd-input sd-radio"></span> Ranch</span>
+                                <span class="sd-option"><span class="sd-input sd-radio"></span> Colonial</span>
+                                <span class="sd-option"><span class="sd-input sd-radio"></span> Contemporary</span>
+                                <span class="sd-option"><span class="sd-input sd-radio"></span> Craftsman</span>
+                                <span class="sd-option"><span class="sd-input sd-radio"></span> Cape Cod</span>
+                                <span class="sd-option"><span class="sd-input sd-radio"></span> Other</span>
+                            </div>
+                        </div>
+                        <div class="sd-question">
+                            <span class="sd-label">How many bedrooms?</span>
+                            <span class="sd-select" id="sd-bedrooms">Select...</span>
+                        </div>
+                        <div class="sd-question">
+                            <span class="sd-label">Outdoor structures for leisure and recreation?</span>
+                            <div>
+                                <span class="sd-option" data-select="out-pool"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Pool</span>
+                                <span class="sd-option" data-select="out-hottub"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Hot tub</span>
+                                <span class="sd-option" data-select="out-patio"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Patio</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Deck</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Fire pit</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Gazebo</span>
+                            </div>
+                        </div>
+                        <div class="sd-question">
+                            <span class="sd-label">Premium kitchen appliances?</span>
+                            <div>
+                                <span class="sd-option" data-select="app-subzero"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Sub-Zero</span>
+                                <span class="sd-option" data-select="app-wolf"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Wolf</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Viking</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Thermador</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Miele</span>
+                                <span class="sd-option"><span class="sd-checkbox-wrap"><span class="sd-input sd-checkbox"></span><span class="sd-checkmark">&#10003;</span></span> Bosch</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="reveal survey-note" style="display:none;font-size:0.85em;color:#8B7355;font-style:italic;text-align:center;margin-bottom:20px;">Based on the agent's responses to a detailed survey covering location, interior, exterior, and more.</p>
+                    <div class="sample-text active" id="long" style="display:none;">
+                        <p class="reveal">This charming Saint Petersburg home comes with a bounty of resort-like exterior amenities, including a pavers patio, refreshing pool, and hot tub. The three are part of a low-maintenance, attractively landscaped yard that is fenced in the rear for additional privacy. Standing on a pleasant street lined with sidewalks, the home is within pedestrian range of Denver Park, and convenient to shopping options and local businesses. Amazing views of the ICW await after an easy commute from centers of employment.</p>
+                        <p class="reveal">Across the threshold, beneath a rare combination of stylish and natural lighting, oak hardwoods provide warm flooring throughout the open floor plan. The neutral coloring invites your personal style. Vaulted ceilings add comfortable airflow and a sense of spaciousness. The airy kitchen connects seamlessly to the backyard. Premium appliances (Sub-Zero, Wolf) look great and add value. The island configuration offers wraparound workspace. Beautiful quartz countertops are ready for your cutting board. The double ovens simplify the timing of multi-course meal preparation. The generous apportionment of pantry space is an added bonus. Another remarkable advantage is floor-to-ceiling custom cabinetry.</p>
+                        <p class="reveal">The roomy newly updated double ensuite main-floor primary bedroom handles both the morning routine and the evening wind-down. In addition to the convenience of two baths (curbless shower, separate tub and shower, hot tub), you will find not one but two walk-in closets to accommodate dual wardrobes for all seasons, with room left over for luggage and personal storage. The other two bedrooms are comfortable and ready for personal touches, with generous closet space.</p>
+                        <p class="reveal">Someone&rsquo;s going to be very happy here&nbsp;.&nbsp;.&nbsp;. let it be you!</p>
+                    </div>
+                    <div class="sample-text" id="short" style="display:none;">
+                        <p class="reveal">Presenting classic comfort and the ease of single-story living, this captivating 3-bedroom, 2-bathroom ranch home is ideally situated in Saint Petersburg, just a short drive from town center. Short commute to vibrant areas of employment. Enjoy inspiring views of the Intracoastal Waterway. Exterior amenities include a pool, hot tub, and patio. The low-maintenance, attractively landscaped, and fenced yard sits on a pleasant street.</p>
+                        <p class="reveal">The interior includes a stately entryway, an open layout, stylish fixtures, plentiful natural light, neutral decor, oak hardwood flooring throughout, and vaulted ceilings. Expect to spend quality time in the ample, stylish island kitchen, outfitted with quartz countertops. The newly updated main-floor primary bedroom includes ensuite bath and walk-in closet. Beyond the primary suite, 2 bedrooms await, with generous closet space. You&rsquo;ve toured enough houses. This is a home.</p>
+                    </div>
+                    <div class="demo-nudge" id="demo-nudge" style="display:none;text-align:center;margin-top:32px;padding-top:28px;border-top:1px solid rgba(44,36,23,0.08);">
+                        <p style="color:#5C5144;margin-bottom:16px;font-size:0.95em;">That was from someone else&rsquo;s property. See what we write for <em>yours</em>.</p>
+                        <a href="/survey" class="hero-cta" style="font-size:0.95em;padding:14px 32px;">Describe Your Listing <span class="arrow">&rarr;</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2>Three steps to <span class="accent">trustworthy</span> copy</h2>
+
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Tell us about it</h3>
+                    <p>Complete our guided survey about your listing. Takes about 5 minutes. We ask the right questions so nothing important gets missed.</p>
+                    <span class="step-connector"></span>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>Our engine writes it</h3>
+                    <p>Not an LLM. Our rules-based engine assembles your description from a curated library of real estate language. Every phrase traces to a survey answer you provided. Nothing is predicted, generated, or invented.</p>
+                    <span class="step-connector"></span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>You use it</h3>
+                    <p>Receive long and short versions by email and within your browser. Copy, paste into your MLS public remarks, and move on to your next showing. Not happy? We revise it or refund it.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="container">
+            <h2>Agents who <span class="accent">close</span></h2>
+
+            <div class="testimonials-grid">
+                <div class="testimonial-card">
+                    <span class="testimonial-metric">$1.3M in 24 hours</span>
+                    <p class="testimonial-quote">&ldquo;I got an offer in less than 24 hours on a $1.3M listing!&rdquo;</p>
+                    <p class="testimonial-author">Angie K.</p>
+                    <p class="testimonial-location">Maryville, TN</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <span class="testimonial-metric">5+ hours saved</span>
+                    <p class="testimonial-quote">&ldquo;Nila June&rsquo;s descriptions save me time and make my listings stand out.&rdquo;</p>
+                    <p class="testimonial-author">Christine B.</p>
+                    <p class="testimonial-location">Sparta Township, NJ</p>
+                </div>
+
+                <div class="testimonial-card">
+                    <span class="testimonial-metric">Premium quality</span>
+                    <p class="testimonial-quote">&ldquo;Far better results than cut-rate websites.&rdquo;</p>
+                    <p class="testimonial-author">Claire M.</p>
+                    <p class="testimonial-location">Austin, TX</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing">
+        <div class="container">
+            <h2>Simple <span class="accent">pricing</span></h2>
+            <p class="section-subtitle">No subscriptions to forget. No hidden fees. Pay for what you use.</p>
+
+            <div class="pricing-grid">
+                <div class="pricing-card">
+                    <span class="pricing-badge">Start Here</span>
+                    <h3 class="plan-name">Try It Free</h3>
+                    <p class="plan-desc">See what we can do</p>
+                    <p class="price"><span class="currency">$</span>0</p>
+                    <p class="price-detail">3 free descriptions</p>
+                    <ul class="pricing-features">
+                        <li>Long &amp; short versions</li>
+                        <li>150+ term screening included</li>
+                        <li>MLS-ready formatting</li>
+                        <li>No credit card needed</li>
+                    </ul>
+                    <a href="/survey" class="pricing-cta secondary">Get My Description</a>
+                </div>
+
+                <div class="pricing-card featured">
+                    <span class="pricing-badge">Pay as you go</span>
+                    <h3 class="plan-name">Single Listing</h3>
+                    <p class="plan-desc">After your free descriptions</p>
+                    <p class="price"><span class="currency">$</span>19.99</p>
+                    <p class="price-detail">per set of descriptions</p>
+                    <ul class="pricing-features">
+                        <li>Long &amp; short versions</li>
+                        <li>150+ term screening included</li>
+                        <li>MLS-ready formatting</li>
+                        <li>Accuracy and persuasion</li>
+                    </ul>
+                    <a href="/survey" class="pricing-cta">Get My Description</a>
+                </div>
+
+                <div class="pricing-card">
+                    <span class="pricing-badge">Platform</span>
+                    <h3 class="plan-name">Partners</h3>
+                    <p class="plan-desc">For teams &amp; platforms</p>
+                    <p class="price" style="font-size:2em;padding-top:12px;">Custom</p>
+                    <p class="price-detail">volume pricing</p>
+                    <ul class="pricing-features">
+                        <li>Your branding, your colors</li>
+                        <li>One-line embed integration</li>
+                        <li>No sign-up for your users</li>
+                        <li>Mobile-ready survey</li>
+                    </ul>
+                    <a href="/partnerships" class="pricing-cta secondary">Learn More</a>
+                </div>
+            </div>
+
+            <p class="pricing-footer" id="pricing-footer">
+                <strong>100% satisfaction guarantee.</strong> Not happy? We&rsquo;ll revise it or refund it.<br>
+                Need a team or brokerage plan? <a href="/contact">Let&rsquo;s talk</a>.
+            </p>
+        </div>
+    </section>
+
+    <!-- Final CTA -->
+    <section class="final-cta">
+        <h2>Your facts. Not AI fiction.</h2>
+        <p>Descriptions your sellers will recognize.<br>Your first three are free.</p>
+        <a href="/survey" class="cta-button">
+            Get My Description
+            <span class="arrow">&rarr;</span>
+        </a>
+    </section>
+    </main>
+
+    <script>
+        // TRUST RIBBON — MLS system names (text only, no logos, no endorsement implied)
+        (function() {
+            var mlsSystems = [
+                'Stellar MLS', 'Bright MLS', 'CRMLS', 'MIAMI REALTORS MLS',
+                'FMLS', 'GAMLS', 'MRED', 'ARMLS', 'MARIS', 'BeachesMLS',
+                'OneKey MLS', 'SmartMLS', 'NTREIS', 'REcolorado', 'MLS PIN',
+                'RMLS Alliance', 'Canopy MLS', 'Heartland MLS', 'Unlock MLS',
+                'Realcomp', 'bridgeMLS', 'MetroList', 'MLSListings', 'Northwest MLS'
+            ];
+            var ticker = document.getElementById('trust-ticker');
+            var html = '';
+            for (var r = 0; r < 2; r++) {
+                for (var i = 0; i < mlsSystems.length; i++) {
+                    html += '<span>' + mlsSystems[i] + '</span>';
+                    if (i < mlsSystems.length - 1 || r === 0) { html += '<span class="separator">\u25CF</span>'; }
+                }
+            }
+            ticker.innerHTML = html;
+        })();
+
+// DEMO GENERATE BUTTON
+        var demoGenerated = false;
+        function generateDemo() {
+            if (demoGenerated) return;
+            demoGenerated = true;
+            var btnWrap = document.getElementById('generate-btn-wrap');
+            var demo = document.getElementById('survey-demo');
+            var questions = demo.querySelectorAll('.sd-question');
+            var surveyNote = document.querySelector('.survey-note');
+            btnWrap.style.display = 'none';
+            demo.style.display = 'block';
+            var qDelay = 500;
+            questions.forEach(function(q, i) {
+                setTimeout(function() { q.classList.add('visible'); }, i * qDelay);
+            });
+            var answerStart = questions.length * qDelay + 400;
+            var answers = [
+                ['[data-select="arch-ranch"]', 0],
+                ['#sd-bedrooms', 500],
+                ['[data-select="out-pool"]', 1000],
+                ['[data-select="out-hottub"]', 1300],
+                ['[data-select="out-patio"]', 1600],
+                ['[data-select="app-subzero"]', 2100],
+                ['[data-select="app-wolf"]', 2400]
+            ];
+            answers.forEach(function(a) {
+                setTimeout(function() {
+                    var el = demo.querySelector(a[0]);
+                    if (el.id === 'sd-bedrooms') { el.textContent = '3'; el.classList.add('filled'); }
+                    else { el.classList.add('selected'); }
+                }, answerStart + a[1]);
+            });
+            var transitionTime = answerStart + 3200;
+            setTimeout(function() {
+                demo.classList.add('fade-out');
+                setTimeout(function() {
+                    demo.style.display = 'none';
+                    surveyNote.style.display = 'block';
+                    surveyNote.classList.add('visible');
+                    setTimeout(function() {
+                        var active = document.querySelector('.sample-text.active');
+                        active.style.display = 'block';
+                        var paragraphs = active.querySelectorAll('p.reveal');
+                        paragraphs.forEach(function(p, i) {
+                            setTimeout(function() { p.classList.add('visible'); }, i * 400);
+                        });
+                        setTimeout(function() {
+                            var nudge = document.getElementById('demo-nudge');
+                            nudge.style.display = 'block';
+                            nudge.style.opacity = '0';
+                            nudge.style.transform = 'translateY(12px)';
+                            nudge.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                            setTimeout(function() { nudge.style.opacity = '1'; nudge.style.transform = 'translateY(0)'; }, 50);
+                        }, paragraphs.length * 400 + 200);
+                    }, 400);
+                }, 500);
+            }, transitionTime);
+        }
+
+        // TAB SWITCHING FOR SAMPLE DESCRIPTIONS
+        document.querySelectorAll('.sample-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.sample-tab').forEach(function(t) { t.classList.remove('active'); });
+                document.querySelectorAll('.sample-text').forEach(function(t) {
+                    t.classList.remove('active');
+                    if (demoGenerated) t.style.display = 'none';
+                });
+                tab.classList.add('active');
+                var target = document.getElementById(tab.dataset.tab);
+                target.classList.add('active');
+                if (demoGenerated) {
+                    target.style.display = 'block';
+                    var paragraphs = target.querySelectorAll('p.reveal:not(.visible)');
+                    paragraphs.forEach(function(p, i) {
+                        setTimeout(function() { p.classList.add('visible'); }, i * 300);
+                    });
+                }
+            });
+        });
+
+        // HERO INLINE SURVEY
+        function heroStartSurvey() {
+            var city = document.getElementById('hero-city').value.trim();
+            if (city) {
+                try { sessionStorage.setItem('nj_hero_city', city); } catch(e) {}
+                window.location.href = '/survey?city=' + encodeURIComponent(city);
+            } else {
+                window.location.href = '/survey';
+            }
+        }
+        document.getElementById('hero-city').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') { heroStartSurvey(); }
+        });
+
+        // STICKY NAV SHADOW ON SCROLL
+        window.addEventListener('scroll', function() {
+            var nav = document.querySelector('.nav');
+            if (window.scrollY > 50) { nav.style.boxShadow = '0 2px 20px rgba(44, 36, 23, 0.08)'; }
+            else { nav.style.boxShadow = 'none'; }
+        });
+    </script>
+<script src="/nila-footer.js?v=8"></script></body>
+</html>
