@@ -1073,25 +1073,42 @@ h1,h2,h3,h4{
   letter-spacing:-.02em;
 }
 .audit h2 em{color:var(--gold);font-weight:400}
-.audit .scarcity{
+.audit-status{
+  margin:52px 0 0;
+  max-width:40ch;
+}
+.audit-status .label{
   display:block;
   font-family:var(--label);
-  font-style:normal;
-  font-size:clamp(12px,1.1vw,13px);
-  letter-spacing:.26em;
   text-transform:uppercase;
-  color:var(--gold);
-  margin-top:32px;
-  font-weight:500;
+  letter-spacing:.26em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:14px;
+  position:relative;
+  padding-left:24px;
 }
-.audit .scarcity .dot{
-  display:inline-block;
-  width:6px;height:6px;
+.audit-status .label::before{
+  content:"";
+  position:absolute;
+  left:0;top:50%;
+  width:16px;
+  height:1px;
   background:var(--gold);
-  border-radius:50%;
-  margin-right:10px;
-  transform:translateY(-2px);
-  box-shadow:0 0 0 3px rgba(201,168,76,.15);
+}
+.audit-status p{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:clamp(18px,1.7vw,24px);
+  line-height:1.4;
+  color:var(--text);
+  margin:0;
+  letter-spacing:-.005em;
+}
+.audit-status p em{
+  color:var(--gold);
+  font-style:italic;
+  font-weight:400;
 }
 .audit-body p{
   font-size:14px;
@@ -1640,8 +1657,11 @@ h1,h2,h3,h4{
           <h2 class="reveal">
             Before you hire <em>anyone,</em><br>
             see what's broken.
-            <span class="scarcity"><span class="dot"></span>Limited to 6 audits per month</span>
           </h2>
+          <div class="audit-status reveal" style="transition-delay:.15s">
+            <span class="label">§ Status</span>
+            <p>Paced deliberately. <em>Currently booking Q2 2026.</em></p>
+          </div>
         </div>
 
         <div class="audit-body reveal" style="transition-delay:.15s">
