@@ -1,10 +1,12 @@
-# A11: {Topic Title} Pillar Article
+# A{N}: {Topic Title} Pillar Article
 
 **Client:** {client-name}
-**Action:** A11 (Pillar article)
+**Action:** A{N} (Pillar article)
+**Roadmap source:** `audits/{client-name}/07-roadmap.md` line {L} — {one-line quote}
 **Skeleton:** `remediation-template/content-skeletons/pillar-article-skeleton.md`
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
-**Montaic reference:** `audits/montaic/implementation/A11-fair-housing-pillar-article.md`
+**Reference implementation:** `audits/montaic/implementation/A11-fair-housing-pillar-article.md` _(delete this line if client IS Montaic)_
+**Neighbor reference (cluster only):** `audits/{client-name}/implementation/A{N-1}-{neighbor-slug}.md` _(delete if not part of a cluster)_
 **Status:** pending
 
 ---
