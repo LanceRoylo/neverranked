@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "neverranked",
+  "compatibility_date": "2025-04-09",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page",
+    "html_handling": "auto-trailing-slash"
+  },
+  "routes": [
+    { "pattern": "neverranked.com", "custom_domain": true },
+    { "pattern": "www.neverranked.com", "custom_domain": true }
+  ]
+}
