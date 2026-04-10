@@ -67,6 +67,28 @@ Exact URLs and field-by-field copy for Wikidata, Crunchbase, LinkedIn, Product H
 
 ---
 
+## Month 2+ content (post-kit)
+
+The Month 1 kit (A1–A11) is a one-time foundation. Everything below is ongoing content work that builds on that foundation. Each piece gets its own master working doc and Claire publish handoff, following the A11 pattern.
+
+| # | Piece | Cluster | Status | Published | Verify-deploy pass |
+|---|---|---|---|---|---|
+| A12 | Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026 | Fair Housing (with A11) | draft ready for Claire | — | — |
+
+**Files per piece:**
+- `A{N}-{slug}.md` — master working doc (frame, citations, outline, full draft, schema)
+- `A{N}-claire-paste-this.md` — paste-ready publish handoff for Claire
+
+**Definition of done for a Month 2+ piece:**
+1. Master working doc committed with full draft and schema block
+2. Claire publish handoff created and committed
+3. Claire lands the draft on the blog with `draft: true`
+4. Lance voice pass + flip to `draft: false`
+5. `verify-deploy.sh` returns 5/5 against the live URL
+6. Status table row above updated with publish date and pass date
+
+---
+
 ## What to do first if you only have 30 minutes
 
 Paste the A1 schema block into Montaic's root layout. Deploy. That's it. This one change, shipped today, starts changing how ChatGPT, Perplexity, and Google AI Overviews describe Montaic within 4-6 weeks.

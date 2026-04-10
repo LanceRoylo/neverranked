@@ -58,13 +58,13 @@ author: Lance Roylo
 publishedAt: 2026-04-10
 updatedAt: 2026-04-10
 draft: true
-ogImage: /og/blog/fair-housing-listing-description-rules.png
+ogImage: /og?title=Fair%20Housing%20Act%20Listing%20Description%20Rules%3A%20The%20Words%20You%20Cannot%20Use%20in%202026&subtitle=Montaic%20Blog&type=blog
 category: Compliance
 tags: [Fair Housing, Compliance, Listing Descriptions, AEO]
 relatedPosts: [fair-housing-ai-compliance-agents]
 ```
 
-**OG image fallback:** If `/og/blog/fair-housing-listing-description-rules.png` does not exist yet, temporarily point `ogImage` at the A11 image (`/og/blog/fair-housing-ai-hud-guidance.png`). Flag this in the report-back so Lance can generate a dedicated image before flipping the draft.
+**OG image note:** Montaic's blog uses the dynamic `/og` route (same pattern as A11). The URL above is pre-encoded for A12's title. Do not change it. If the `/og` route returns anything other than a 1200x630 PNG when you visit it directly in a browser, stop and flag in the report-back before publishing.
 
 ---
 
@@ -536,7 +536,7 @@ All checks should pass. Then paste the draft URL into the [Rich Results Test](ht
 - **Heading levels:** The article body uses `##` for section headings and `**bold**` for sub-subsection intros. Preserve this hierarchy. The TL;DR does not have its own heading (it opens the article directly).
 - **Statute quote block:** The opening of "The statute is shorter than you think" has a multi-line blockquote containing the 3604(c) text. Preserve the blockquote formatting. This is a primary source citation and its visual prominence matters for AEO.
 - **Cross-link to A11:** The article body links to `/blog/fair-housing-ai-compliance-agents` twice (once in the modal case section, once in "Related reading" at the bottom). Both should resolve to the live A11 post. If A11 has moved or redirected, update both before publish.
-- **OG image:** If the dedicated A12 OG image does not exist yet, fall back to the A11 image and flag in the report-back.
+- **OG image:** Uses Montaic's dynamic `/og` route (same as A11). The pre-encoded URL is in the frontmatter. Verify it renders a 1200x630 PNG in the browser before publishing.
 - **Voice discipline:** No em dashes, no semicolons in prose. The draft as pasted is clean. If your JSX conversion or linter introduces either, fix before deploying.
 - **wordCount accuracy:** The schema says 3,100. If the blog system auto-computes wordCount from the body text, the actual number may be slightly off because of markdown-to-HTML conversion. A tolerance of ±10% is fine. Flag if the delta is larger.
 
@@ -550,7 +550,7 @@ Report back with:
 
 Include:
 - Path to the article file you created
-- Whether the OG image fell back to A11's or a new one was generated
+- Confirmation that the dynamic `/og` URL in the frontmatter rendered a valid 1200x630 PNG
 - Any markdown-to-JSX conversion quirks you had to handle
 - Actual wordCount the blog system computed (for Lance to update the schema if needed)
 - Any em dash or semicolon violations found and fixed during the paste
@@ -561,11 +561,10 @@ Include:
 
 1. Lance reads the landed draft end-to-end in one sitting for voice
 2. Lance fixes anything that sounds off in his own hand
-3. Lance generates a dedicated OG image if the fallback was used
-4. Lance flips `draft: true` to `draft: false`
-5. Lance commits and redeploys
-6. Never Ranked runs `scripts/verify-deploy.sh` against the LIVE URL and confirms 5/5 checks pass
-7. Lance pastes the Rich Results Test URL one final time to confirm 0 errors
+3. Lance flips `draft: true` to `draft: false`
+4. Lance commits and redeploys
+5. Never Ranked runs `scripts/verify-deploy.sh` against the LIVE URL and confirms 5/5 checks pass
+6. Lance pastes the Rich Results Test URL one final time to confirm 0 errors
 8. Article is live. Fair Housing cluster is a pair.
 
 This article is the operational half of the Fair Housing cluster. A11 is the alarm bell, A12 is the reference document. Together they cover both halves of the AEO query space: agents deciding whether to trust AI (A11) and agents writing specific listings right now (A12). Every search for "fair housing listing description rules" or "what words are illegal in real estate listings" should land on A12. Every search for "is AI safe for listings" should land on A11.
