@@ -343,7 +343,7 @@ Add this to the post's HTML `<head>` as a `<script type="application/ld+json">` 
         {
           "@type": "CreativeWork",
           "name": "NAR Fair Housing advertising resources",
-          "url": "https://www.nar.realtor"
+          "url": "https://www.nar.realtor/fair-housing"
         }
       ],
       "isPartOf": {

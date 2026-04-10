@@ -45,7 +45,7 @@ Per pillar-article-skeleton rule: exactly five external primary-source citations
 1. **42 U.S.C. § 3604(c)** — Cornell Legal Information Institute (https://www.law.cornell.edu/uscode/text/42/3604)
 2. **24 C.F.R. § 100.75** — eCFR (https://www.ecfr.gov/current/title-24/subtitle-B/chapter-I/subchapter-A/part-100/subpart-H/section-100.75)
 3. **HUD 2024 AI Guidance memo** — https://archives.hud.gov/news/2024/pr24-098.cfm (intentionally shared with A11 to bind the cluster)
-4. **NAR Fair Housing advertising resources** — https://www.nar.realtor (specific URL to confirm at draft time)
+4. **NAR Fair Housing advertising resources** — https://www.nar.realtor/fair-housing
 5. **FHEO Handbook 8025.1** — https://www.hud.gov/program_offices/administration/hudclips/handbooks/fheo/80251 (HUD's current enforcement handbook, replaces the withdrawn 1989 advertising memo as the citable HUD source)
 
 **Citation #5 backstory worth working into the article:** The "Fair Housing Advertising Word and Phrase List" that circulates among real estate agents originated in a 1989/1995 HUD memo that has been technically withdrawn. It is no longer published on hud.gov. The list still circulates on third-party fair housing nonprofit sites because nothing replaced it. The current HUD authority is the statute (3604(c)) plus the regulation (24 C.F.R. § 100.75) plus the FHEO Handbook plus case law. This is a "thing worth understanding" no other AEO competitor article surfaces because they all just reprint the old list.
@@ -300,7 +300,7 @@ You do not need to actually discriminate against anyone. You do not need to inte
 
 When a listing gets published, at least three parties are technically liable under 3604(c): the agent who wrote the copy, the brokerage that employs the agent, and the platform that published the listing. Enforcement usually targets the agent, but the broader liability is real.
 
-The brokerage is liable because it employed the agent and failed to train or supervise the advertising compliance process. Most brokerages run Fair Housing training once a year for exactly this reason. The platform, meaning the MLS or the website or the AI writing tool the agent used, is liable under the statute's "cause to be made or published" clause. This is the theory that made the 2022 DOJ settlement with Meta possible. Meta did not write the discriminatory ads itself, but it caused them to be published to a targeted audience.
+The brokerage is liable because it employed the agent and failed to train or supervise the advertising compliance process. Most brokerages run Fair Housing training once a year for exactly this reason. The platform, meaning the MLS or the website or the AI writing tool the agent used, is liable under the statute's "cause to be made or published" clause. This is the theory that made [the 2022 DOJ settlement with Meta](https://www.nar.realtor/legal-case-summaries/meta-facebook-settles-fair-housing-violation-allegations) possible. Meta did not write the discriminatory ads itself, but it caused them to be published to a targeted audience.
 
 If you are an agent reading this, the takeaway is that your brokerage and your tool vendors have skin in this game. The fact that most of them have not updated their compliance protocols does not mean the liability is not there.
 
@@ -490,7 +490,7 @@ Montaic was built from the outside looking in, which is why it catches the thing
 1. 42 U.S.C. § 3604(c) via Cornell LII: https://www.law.cornell.edu/uscode/text/42/3604
 2. 24 C.F.R. § 100.75 via eCFR: https://www.ecfr.gov/current/title-24/subtitle-B/chapter-I/subchapter-A/part-100/subpart-H/section-100.75
 3. HUD 2024 AI Guidance memo: https://archives.hud.gov/news/2024/pr24-098.cfm
-4. NAR Fair Housing advertising resources: https://www.nar.realtor (specific URL to resolve at publish time)
+4. NAR Fair Housing advertising resources: https://www.nar.realtor/fair-housing
 5. FHEO Handbook 8025.1: https://www.hud.gov/program_offices/administration/hudclips/handbooks/fheo/80251
 
 **Word count (Phase 3 draft, pre-voice-pass):** ~3,100 words. Over the 2,500 ceiling by ~600 words. Lance approved shipping at 3,100 (longer pillar articles consistently get more AI-engine citations, A12 is a reference document not a primer).
@@ -551,7 +551,7 @@ Complete JSON-LD payload for the article. Single `@graph` with three nodes: Blog
         {
           "@type": "CreativeWork",
           "name": "NAR Fair Housing advertising resources",
-          "url": "https://www.nar.realtor"
+          "url": "https://www.nar.realtor/fair-housing"
         }
       ],
       "isPartOf": {
