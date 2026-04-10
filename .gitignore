@@ -3,3 +3,11 @@
 
 # Claude local settings
 .claude/settings.local.json
+
+# Node
+node_modules/
+
+# Wrangler dev secrets — never commit
+.dev.vars
+admin/.dev.vars
+admin/node_modules/

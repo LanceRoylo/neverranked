@@ -1,0 +1,20 @@
+{
+  "name": "neverranked-admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Internal ops dashboard for Never Ranked",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create neverranked-admin",
+    "db:migrate:local": "wrangler d1 migrations apply neverranked-admin --local",
+    "db:migrate:remote": "wrangler d1 migrations apply neverranked-admin --remote",
+    "db:exec:local": "wrangler d1 execute neverranked-admin --local --file",
+    "db:exec:remote": "wrangler d1 execute neverranked-admin --remote --file"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250404.0",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
+  }
+}

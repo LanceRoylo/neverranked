@@ -100,29 +100,19 @@
           },
           {
             "@type": "Offer",
-            "name": "Pulse",
-            "description": "Baseline monthly retainer. Monthly technical and AEO audit, schema monitoring, 2 AI-drafted content pieces, live dashboard, 24-hour email SLA.",
-            "price": "1500",
+            "name": "Signal",
+            "description": "Monthly retainer for teams ready to be cited. Schema monitoring, monthly technical and AEO audit, citation tracking across ChatGPT, Perplexity, Gemini, and Google AIO, monthly founder Loom recap, 12-hour email SLA. Three-month minimum engagement.",
+            "price": "2000",
             "priceCurrency": "USD",
             "priceSpecification": {
               "@type": "UnitPriceSpecification",
-              "price": "1500",
+              "price": "2000",
               "priceCurrency": "USD",
               "unitCode": "MON"
             },
-            "availability": "https://schema.org/InStock",
-            "url": "https://neverranked.com/#pricing"
-          },
-          {
-            "@type": "Offer",
-            "name": "Signal",
-            "description": "Featured monthly retainer. Everything in Pulse plus 6 content pieces, competitor citation tracking, monthly founder Loom, 12-hour email SLA.",
-            "price": "3000",
-            "priceCurrency": "USD",
-            "priceSpecification": {
-              "@type": "UnitPriceSpecification",
-              "price": "3000",
-              "priceCurrency": "USD",
+            "eligibleDuration": {
+              "@type": "QuantitativeValue",
+              "value": 3,
               "unitCode": "MON"
             },
             "availability": "https://schema.org/InStock",
@@ -131,13 +121,18 @@
           {
             "@type": "Offer",
             "name": "Amplify",
-            "description": "Full-cover monthly retainer. Limited to 2 clients. 12 content pieces, weekly intelligence digest, biweekly Loom, quarterly deep-dive, 6-hour email SLA.",
-            "price": "5000",
+            "description": "Full-cover monthly retainer. Limited to 2 clients. Everything in Signal plus weekly intelligence digest, biweekly founder Loom, quarterly strategy deep-dive, content drafts on request, 6-hour email SLA. Three-month minimum engagement.",
+            "price": "4500",
             "priceCurrency": "USD",
             "priceSpecification": {
               "@type": "UnitPriceSpecification",
-              "price": "5000",
+              "price": "4500",
               "priceCurrency": "USD",
+              "unitCode": "MON"
+            },
+            "eligibleDuration": {
+              "@type": "QuantitativeValue",
+              "value": 3,
               "unitCode": "MON"
             },
             "availability": "https://schema.org/LimitedAvailability",
@@ -1003,9 +998,10 @@ h1,h2,h3,h4{
 }
 @media(min-width:900px){
   .pricing-grid{
-    grid-template-columns:1fr 1.1fr 1fr;
+    grid-template-columns:1fr 1.1fr;
     gap:0;
     align-items:stretch;
+    max-width:880px;
   }
 }
 .tier{
@@ -1304,6 +1300,186 @@ h1,h2,h3,h4{
   margin-top:14px;
 }
 
+/* ---------- intake ---------- */
+.intake{
+  padding:140px 0 140px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.intake-inner{
+  max-width:1100px;
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:60px;
+}
+@media(min-width:960px){
+  .intake-inner{grid-template-columns:.9fr 1.1fr;gap:100px;align-items:start}
+}
+.intake-head h2{
+  font-size:clamp(42px,6vw,84px);
+  line-height:1;
+  letter-spacing:-.02em;
+  margin-bottom:28px;
+}
+.intake-head h2 em{color:var(--gold);font-weight:400}
+.intake-head p{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:clamp(17px,1.5vw,21px);
+  line-height:1.55;
+  color:var(--text-soft);
+  max-width:42ch;
+  margin:0 0 28px;
+}
+.intake-head .aside{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.24em;
+  font-size:10px;
+  color:var(--text-mute);
+  border-left:1px solid var(--gold-dim);
+  padding:4px 0 4px 18px;
+  line-height:1.8;
+  max-width:34ch;
+}
+.intake-head .aside b{color:var(--gold);font-weight:500}
+
+.intake-form{
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.field-row{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:22px;
+}
+@media(min-width:640px){
+  .field-row{grid-template-columns:1fr 1fr}
+}
+.field{
+  display:block;
+  position:relative;
+}
+.field-label{
+  display:block;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.24em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:10px;
+}
+.field-label .req{
+  color:var(--gold);
+  margin-left:8px;
+  letter-spacing:.22em;
+  font-size:9px;
+}
+.field input,
+.field textarea{
+  display:block;
+  width:100%;
+  background:transparent;
+  border:none;
+  border-bottom:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--serif);
+  font-size:18px;
+  line-height:1.4;
+  padding:12px 0 14px;
+  outline:none;
+  transition:border-color .3s var(--ease);
+  border-radius:0;
+  -webkit-appearance:none;
+  appearance:none;
+}
+.field textarea{
+  resize:vertical;
+  min-height:120px;
+  font-size:16px;
+  line-height:1.6;
+}
+.field input::placeholder,
+.field textarea::placeholder{
+  color:var(--text-faint);
+  font-style:italic;
+}
+.field input:focus,
+.field textarea:focus{
+  border-bottom-color:var(--gold);
+}
+.field input:-webkit-autofill,
+.field input:-webkit-autofill:hover,
+.field input:-webkit-autofill:focus{
+  -webkit-text-fill-color:var(--text);
+  -webkit-box-shadow:0 0 0 1000px var(--bg) inset;
+  transition:background-color 9999s ease-in-out 0s;
+}
+
+.honey{position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden}
+
+.form-actions{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin-top:12px;
+  align-items:flex-start;
+}
+@media(min-width:640px){
+  .form-actions{
+    flex-direction:row;
+    align-items:center;
+    justify-content:space-between;
+    gap:24px;
+  }
+}
+.intake-submit{
+  cursor:pointer;
+  font-family:inherit;
+  background:transparent;
+  border:1px solid var(--line-strong);
+}
+.intake-submit[disabled]{opacity:.5;cursor:wait}
+.intake-note{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin:0;
+}
+
+.form-status{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  line-height:1.5;
+  color:var(--text-soft);
+  min-height:1.5em;
+  margin-top:8px;
+}
+.form-status.error{color:#e88a6e}
+.form-status.success{color:var(--gold)}
+
+.intake-form.sent .field,
+.intake-form.sent .form-actions,
+.intake-form.sent .honey{display:none}
+.intake-form.sent .form-status{
+  padding:40px 0;
+  font-size:clamp(22px,2.4vw,32px);
+  line-height:1.35;
+  color:var(--text);
+  font-style:italic;
+  text-transform:none;
+  letter-spacing:0;
+  font-family:var(--serif);
+  margin-top:0;
+}
+.intake-form.sent .form-status em{color:var(--gold);font-weight:400;font-style:italic}
+
 /* ---------- closing ---------- */
 .closing{
   padding:180px 0 60px;
@@ -1416,7 +1592,7 @@ h1,h2,h3,h4{
     <div class="wrap">
       <div class="hero-eyebrow reveal">
         <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>AI-NATIVE SEO &amp; AEO</span>
-        <span class="tag">EST. <b>2026</b> / INDEX <b>00</b></span>
+        <span class="tag">BY APPOINTMENT</span>
       </div>
 
       <div class="hero-grid">
@@ -1701,7 +1877,7 @@ h1,h2,h3,h4{
         <div class="howe-card">
           <div class="n">§04</div>
           <h3>Email SLAs, <em>kept honestly.</em></h3>
-          <p>Twenty-four hours on Pulse. Twelve on Signal. Six on Amplify. We answer fast because we're not in meetings. If we miss it, we tell you why.</p>
+          <p>Twelve hours on Signal. Six on Amplify. We answer fast because we're not in meetings. If we miss it, we tell you why.</p>
         </div>
       </div>
     </div>
@@ -1714,65 +1890,51 @@ h1,h2,h3,h4{
         <span class="num">§05</span>
         <span>Pricing</span>
         <span class="rule"></span>
-        <span>03 / tiers</span>
+        <span>02 / tiers</span>
       </div>
 
       <div class="pricing-head">
-        <h2 class="reveal">Three ways <em>in.</em></h2>
+        <h2 class="reveal">Two ways <em>in.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          Month-to-month. Cancel anytime. The price you see is the price you pay. No set-up fees, no onboarding tax, no contract that outlives the results.
+          Three-month minimum, then month-to-month. The price you see is the price you pay. No set-up fees, no onboarding tax, no annual contract you'll quietly resent.
         </p>
       </div>
 
       <div class="pricing-grid reveal-stagger">
-        <div class="tier">
-          <div class="meta"><span>§01 / Tier I</span><b>Baseline</b></div>
-          <h3>Pulse</h3>
-          <p class="desc">For teams getting their bearings.</p>
-          <div class="price"><span class="sym">$</span>1,500<span class="per">/mo</span></div>
+        <div class="tier featured">
+          <span class="flag">Most teams start here</span>
+          <div class="meta"><span>§01 / Tier I</span><b>Featured</b></div>
+          <h3>Signal</h3>
+          <p class="desc">For teams ready to be cited.</p>
+          <div class="price"><span class="sym">$</span>2,000<span class="per">/mo</span></div>
           <div class="divider"></div>
           <ul>
             <li>Monthly technical &amp; AEO audit</li>
             <li>Schema monitoring and maintenance</li>
-            <li><b>2 AI-drafted</b> content pieces per month</li>
+            <li>Citation tracking across <b>ChatGPT, Perplexity, Gemini, and Google AIO</b></li>
             <li>Live dashboard, refreshed daily</li>
-            <li>Monthly intelligence digest</li>
-            <li>Email support, <b>24-hour</b> SLA</li>
-          </ul>
-          <a href="mailto:hello@neverranked.com?subject=Pulse" class="choose">Choose Pulse</a>
-        </div>
-
-        <div class="tier featured">
-          <span class="flag">Most teams start here</span>
-          <div class="meta"><span>§02 / Tier II</span><b>Featured</b></div>
-          <h3>Signal</h3>
-          <p class="desc">For teams ready to be cited.</p>
-          <div class="price"><span class="sym">$</span>3,000<span class="per">/mo</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Everything in Pulse, plus:</li>
-            <li>Content output increases to <b>6 pieces</b> per month</li>
-            <li>Competitor citation tracking across ChatGPT, Perplexity, Gemini, and Google AIO</li>
             <li>Monthly founder Loom recap</li>
-            <li>Response time upgrades to <b>12 hours</b></li>
+            <li>Email support, <b>12-hour</b> SLA</li>
+            <li><b>Three-month</b> minimum, then month-to-month</li>
           </ul>
           <a href="mailto:hello@neverranked.com?subject=Signal" class="choose">Choose Signal</a>
         </div>
 
         <div class="tier limited">
-          <span class="flag full">Limited · 2 of 2 taken</span>
-          <div class="meta"><span>§03 / Tier III</span><b>Full Cover</b></div>
+          <span class="flag full">Limited · 2 seats</span>
+          <div class="meta"><span>§02 / Tier II</span><b>Full Cover</b></div>
           <h3>Amplify</h3>
           <p class="desc">For teams who intend to dominate.</p>
-          <div class="price"><span class="sym">$</span>5,000<span class="per">/mo</span></div>
+          <div class="price"><span class="sym">$</span>4,500<span class="per">/mo</span></div>
           <div class="divider"></div>
           <ul>
             <li>Everything in Signal, plus:</li>
-            <li>Content output increases to <b>12 pieces</b> per month</li>
             <li>Digest upgrades to <b>weekly</b></li>
             <li>Biweekly founder Loom recap</li>
-            <li>Quarterly deep-dive strategy Loom</li>
-            <li>Response time upgrades to <b>6 hours</b></li>
+            <li>Quarterly deep-dive strategy session</li>
+            <li>Content drafts on request</li>
+            <li>Email support, <b>6-hour</b> SLA</li>
+            <li><b>Three-month</b> minimum, then month-to-month</li>
           </ul>
           <a href="mailto:hello@neverranked.com?subject=Amplify%20Waitlist" class="choose">Join the waitlist</a>
         </div>
@@ -1825,11 +1987,72 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ INTAKE ============ -->
+  <section class="intake" id="intake">
+    <div class="wrap">
+      <div class="intake-inner">
+        <div class="intake-head">
+          <div class="section-label reveal" style="margin-bottom:30px">
+            <span class="num">§07</span>
+            <span>Begin</span>
+            <span class="rule"></span>
+          </div>
+          <h2 class="reveal">
+            Tell us what's<br>
+            <em>broken.</em>
+          </h2>
+          <p class="reveal" style="transition-delay:.1s">
+            Short brief, honest reply. We read every submission ourselves. If we're not the right fit, we'll say so and point you somewhere better.
+          </p>
+          <div class="aside reveal" style="transition-delay:.2s">
+            <b>§ Twenty-four-hour reply.</b><br>
+            No calendars. No chatbots. No discovery call.
+          </div>
+        </div>
+
+        <form class="intake-form reveal" id="intakeForm" novalidate style="transition-delay:.15s">
+          <div class="field-row">
+            <label class="field">
+              <span class="field-label">Your name</span>
+              <input type="text" name="name" autocomplete="name" maxlength="200" />
+            </label>
+            <label class="field">
+              <span class="field-label">Email <span class="req">required</span></span>
+              <input type="email" name="email" autocomplete="email" required maxlength="200" />
+            </label>
+          </div>
+          <label class="field">
+            <span class="field-label">Your domain <span class="req">required</span></span>
+            <input type="text" name="domain" placeholder="yourdomain.com" required maxlength="200" />
+          </label>
+          <label class="field">
+            <span class="field-label">What's the goal</span>
+            <textarea name="goals" rows="5" maxlength="4000" placeholder="What are you trying to rank for? What's not working?"></textarea>
+          </label>
+
+          <!-- Honeypot: humans leave empty, bots fill it -->
+          <div class="honey" aria-hidden="true">
+            <label>Company website <input type="text" name="company_website" tabindex="-1" autocomplete="off" /></label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="cta intake-submit">
+              <span class="cta-label">Send brief</span>
+              <span class="arrow"></span>
+            </button>
+            <p class="intake-note">§ No spam. No sequences. No sales team.</p>
+          </div>
+          <div class="form-status" id="formStatus" aria-live="polite"></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ CLOSING ============ -->
   <footer class="closing">
     <div class="wrap">
       <div class="eye">
-        <span class="eyebrow reveal"><span class="dot"></span>§ END / 07</span>
+        <span class="eyebrow reveal"><span class="dot"></span>§ END / 08</span>
       </div>
       <h2 class="reveal">
         Done being<br>
@@ -1891,6 +2114,71 @@ h1,h2,h3,h4{
       ticking = true;
     }
   },{passive:true});
+})();
+
+/* ---------- intake form ---------- */
+(function(){
+  var form = document.getElementById('intakeForm');
+  if(!form) return;
+  var status = document.getElementById('formStatus');
+  var button = form.querySelector('button[type="submit"]');
+  var label = button.querySelector('.cta-label');
+
+  function setStatus(kind, text){
+    status.className = 'form-status' + (kind ? ' ' + kind : '');
+    status.textContent = text || '';
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    setStatus('', '');
+
+    var fd = new FormData(form);
+    var payload = {
+      name: String(fd.get('name') || '').trim(),
+      email: String(fd.get('email') || '').trim(),
+      domain: String(fd.get('domain') || '').trim(),
+      goals: String(fd.get('goals') || '').trim(),
+      company_website: String(fd.get('company_website') || '').trim()
+    };
+
+    if(!payload.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)){
+      setStatus('error', '§ Please enter a valid email address.');
+      return;
+    }
+    if(!payload.domain){
+      setStatus('error', '§ Please enter your domain.');
+      return;
+    }
+
+    button.disabled = true;
+    if(label) label.textContent = 'Sending';
+
+    fetch('https://admin.neverranked.com/api/intake', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(payload)
+    })
+    .then(function(r){
+      return r.json().then(function(j){return {ok:r.ok, body:j}}).catch(function(){return {ok:false, body:{}}});
+    })
+    .then(function(res){
+      if(res.ok && res.body && res.body.ok){
+        form.classList.add('sent');
+        status.className = 'form-status';
+        status.innerHTML = 'Thanks. We\'ll read this ourselves and reply within <em>twenty-four hours.</em>';
+      } else {
+        button.disabled = false;
+        if(label) label.textContent = 'Send brief';
+        setStatus('error', '§ ' + ((res.body && res.body.error) || 'Something broke. Email hello@neverranked.com directly.'));
+      }
+    })
+    .catch(function(){
+      button.disabled = false;
+      if(label) label.textContent = 'Send brief';
+      setStatus('error', '§ Network error. Email hello@neverranked.com directly.');
+    });
+  });
 })();
 </script>
 

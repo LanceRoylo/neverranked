@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "neverranked-admin",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-09",
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "neverranked-admin",
+      "database_id": "e4155448-94b2-4ae1-a397-4dad247c895d",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "routes": [
+    { "pattern": "admin.neverranked.com", "custom_domain": true }
+  ]
+}
