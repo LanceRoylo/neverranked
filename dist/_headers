@@ -1,0 +1,21 @@
+# Never Ranked — Cloudflare Pages headers
+# https://developers.cloudflare.com/pages/configuration/headers/
+
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=(), interest-cohort=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
+  X-Robots-Tag: index, follow, max-image-preview:large
+
+# Long cache for hashed static assets if we ever have any
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# The HTML gets a shorter cache so edits propagate quickly
+/*.html
+  Cache-Control: public, max-age=300, must-revalidate
+
+/
+  Cache-Control: public, max-age=300, must-revalidate

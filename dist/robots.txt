@@ -1,0 +1,11 @@
+User-Agent: *
+Allow: /
+
+# The audit workspace and implementation kit are internal
+Disallow: /audits/
+Disallow: /audit-template/
+Disallow: /scripts/
+Disallow: /content/
+
+# Let the indexers know where to find the sitemap
+Sitemap: https://neverranked.com/sitemap.xml
