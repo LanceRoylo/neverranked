@@ -25,25 +25,32 @@ You cannot run remediation without a finished audit. The audit delivers a 90-day
 
 ```bash
 mkdir -p audits/{client-name}/implementation
-cp remediation-template/README.md audits/{client-name}/implementation/README.md
-cp remediation-template/action-catalog.md audits/{client-name}/implementation/action-catalog.md
+cp remediation-template/client-implementation-skeleton.md audits/{client-name}/implementation/README.md
 ```
 
-You now have a stub implementation folder. Rename the README to be client-specific and trim the action-catalog down to only the actions the client's roadmap requires.
+The skeleton is a minimal per-client tracking doc: a status table and a notes log. Fill in the client name, the engagement start date, and the Month 1 action rows based on the audit roadmap. Delete rows that don't apply. Add rows the roadmap requires.
 
-### 3. Pick actions from the action catalog
+**Do not copy `remediation-template/README.md` or `remediation-template/action-catalog.md` into the client folder.** Those are template-level files. The client folder only needs its own `README.md` (the tracking doc) plus one file per action.
 
-Open `action-catalog.md`. It lists the canonical A1-A11 remediation actions with links to the Montaic reference implementation for each. For each action your client needs, create a per-client implementation file in `audits/{client}/implementation/` using the Montaic file as a starting point.
+### 3. Create one file per action
 
-The action catalog is the index. It is NOT the implementation.
+Open `remediation-template/action-catalog.md` in place — do not copy it. It's the canonical index of A1-A11 actions with links to the Montaic reference implementation for each.
+
+For each action in the client's roadmap:
+
+1. If `remediation-template/implementation-stubs/{action-id}-*.md` exists, copy it into the client folder as `{action-id}-{client-topic-slug}.md`.
+2. If no stub exists yet, copy the Montaic reference file (from the link in the action catalog) as a starting point and strip out Montaic-specific content.
+3. Fill in the file and update the status in the client's implementation README.
+
+**Path convention when referencing template files from a client folder:** use the repo-root-relative path (`remediation-template/voice-rubric-v0.md`), not `../../../remediation-template/voice-rubric-v0.md`. Write paths as you would `cd` from the neverranked repo root. This keeps copy-pasted content portable.
 
 ### 4. Use the content skeletons for new content work
 
-If the roadmap calls for new pillar content (most engagements will), start from `content-skeletons/pillar-article-skeleton.md`. This is the Fair Housing article structure generalized for any topic.
+If the roadmap calls for new pillar content (most engagements will), start from `remediation-template/content-skeletons/pillar-article-skeleton.md`. This is the Fair Housing article structure generalized for any topic.
 
 ### 5. Voice-check everything before publish
 
-Before any content ships, run it through `voice-rubric-v0.md`. This is the checklist of "sounds like the client" — the thing that catches AI-generated prose that reads like AI-generated prose.
+Before any content ships, run it through `remediation-template/voice-rubric-v0.md`. This is the checklist of "sounds like the client" — the thing that catches AI-generated prose that reads like AI-generated prose.
 
 ### 6. Verify every deploy
 
@@ -62,11 +69,13 @@ Five automated checks plus the Rich Results Test link. This replaces the manual 
 
 ## Files in this template
 
-- `README.md` — this file
-- `action-catalog.md` — index of the canonical remediation actions (A1-A11) with pointers to the Montaic reference implementation
-- `voice-rubric-v0.md` — pre-publish voice checklist
-- `content-skeletons/pillar-article-skeleton.md` — generalized pillar article structure
-- `schema-patterns/README.md` — pointer to the canonical schema implementations in Montaic's codebase
+- `README.md` — this file. Read-only reference, never copied into a client folder.
+- `client-implementation-skeleton.md` — the per-client tracking doc. Copied into `audits/{client}/implementation/README.md` at engagement start.
+- `action-catalog.md` — index of canonical remediation actions (A1-A11) with pointers to the Montaic reference implementation. Read in place, never copied.
+- `implementation-stubs/` — per-action starting stubs. Copy the matching stub into the client folder for each action in the roadmap. Currently populated: A11. Add stubs for other actions as patterns stabilize (after client #2).
+- `voice-rubric-v0.md` — pre-publish voice checklist. Read in place.
+- `content-skeletons/pillar-article-skeleton.md` — generalized pillar article structure. Read in place.
+- `schema-patterns/README.md` — pointer to the canonical schema implementations in Montaic's codebase. Read in place.
 
 ## Files NOT in this template (intentionally)
 
