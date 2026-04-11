@@ -10,19 +10,19 @@ This catalog is the INDEX. The reference implementations are the source of truth
 
 Actions are numbered A1-A11 in order of impact-per-hour, based on the Montaic engagement. A new client's implementation order is determined by their roadmap, NOT by this catalog.
 
-| # | Action | Impact | Typical effort | Reference |
-|---|---|---|---|---|
-| A1 | Root Layout Schema (Organization + WebSite) | CRITICAL | 30 min | [Montaic A1](../audits/montaic/implementation/A1-root-schema.md) |
-| A2 | BreadcrumbList schema | HIGH | 40 min | [Montaic A2](../audits/montaic/implementation/A2-breadcrumbs.md) |
-| A3 | HowTo schema (tool/calculator pages) | HIGH | 70 min | [Montaic A3](../audits/montaic/implementation/A3-howto-schema.md) |
-| A4 | BlogPosting schema upgrade | MEDIUM | 60 min | [Montaic A4](../audits/montaic/implementation/A4-blogposting-schema.md) |
-| A5 | SoftwareApplication + AggregateRating | HIGH (gated on reviews) | 70 min | [Montaic A5](../audits/montaic/implementation/A5-software-application.md) |
-| A6 | Free tool page full stack (WebApp + HowTo + FAQPage + Breadcrumbs) | HIGH | 40 min | [Montaic A6](../audits/montaic/implementation/A6-free-grader-full-stack.md) |
-| A7 | Canonical tags + robots meta | HIGH | 20 min | [Montaic A7](../audits/montaic/implementation/A7-canonicals-robots.md) |
-| A8 | og:image generation (Vercel @vercel/og or static) | HIGH | 45-100 min | [Montaic A8](../audits/montaic/implementation/A8-og-images.md) |
-| A9 | Title + meta rewrites (top 4-6 pages) | HIGH | 15 min per page | [Montaic A9](../audits/montaic/implementation/A9-title-meta-rewrites.md) |
-| A10 | Entity registration (Wikidata, Crunchbase, LinkedIn, + 7 directories) | CRITICAL | 3-5 hours | [Montaic A10](../audits/montaic/implementation/A10-entity-registration.md) |
-| A11 | Pillar article (single strategic positioning piece) | HIGH | 90 min draft + 60 min voice pass + publish | [Montaic A11](../audits/montaic/implementation/A11-fair-housing-pillar-article.md) |
+| # | Action | Impact | Typical effort | Stub | Reference |
+|---|---|---|---|---|---|
+| A1 | Root Layout Schema (Organization + WebSite) | CRITICAL | 30 min | [A1 stub](implementation-stubs/A1-root-schema-stub.md) | [Montaic A1](../audits/montaic/implementation/A1-root-schema.md) |
+| A2 | BreadcrumbList schema | HIGH | 40 min | [A2 stub](implementation-stubs/A2-breadcrumbs-stub.md) | [Montaic A2](../audits/montaic/implementation/A2-breadcrumbs.md) |
+| A3 | HowTo schema (tool/calculator pages) | HIGH | 70 min | — | [Montaic A3](../audits/montaic/implementation/A3-howto-schema.md) |
+| A4 | BlogPosting schema upgrade | MEDIUM | 60 min | — | [Montaic A4](../audits/montaic/implementation/A4-blogposting-schema.md) |
+| A5 | SoftwareApplication + AggregateRating | HIGH (gated on reviews) | 70 min | — | [Montaic A5](../audits/montaic/implementation/A5-software-application.md) |
+| A6 | Free tool page full stack (WebApp + HowTo + FAQPage + Breadcrumbs) | HIGH | 40 min | — | [Montaic A6](../audits/montaic/implementation/A6-free-grader-full-stack.md) |
+| A7 | Canonical tags + robots meta | HIGH | 20 min | [A7 stub](implementation-stubs/A7-canonicals-robots-stub.md) | [Montaic A7](../audits/montaic/implementation/A7-canonicals-robots.md) |
+| A8 | og:image generation (Vercel @vercel/og or static) | HIGH | 45-100 min | — | [Montaic A8](../audits/montaic/implementation/A8-og-images.md) |
+| A9 | Title + meta rewrites (top 4-6 pages) | HIGH | 15 min per page | [A9 stub](implementation-stubs/A9-title-meta-rewrites-stub.md) | [Montaic A9](../audits/montaic/implementation/A9-title-meta-rewrites.md) |
+| A10 | Entity registration (Wikidata, Crunchbase, LinkedIn, + 7 directories) | CRITICAL | 3-5 hours | — | [Montaic A10](../audits/montaic/implementation/A10-entity-registration.md) |
+| A11 | Pillar article (single strategic positioning piece) | HIGH | 90 min draft + 60 min voice pass + publish | [A11 stub](implementation-stubs/A11-pillar-stub.md) | [Montaic A11](../audits/montaic/implementation/A11-fair-housing-pillar-article.md) |
 
 ---
 

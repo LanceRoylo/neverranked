@@ -72,7 +72,7 @@ Five automated checks plus the Rich Results Test link. This replaces the manual 
 - `README.md` — this file. Read-only reference, never copied into a client folder.
 - `client-implementation-skeleton.md` — the per-client tracking doc. Copied into `audits/{client}/implementation/README.md` at engagement start.
 - `action-catalog.md` — index of canonical remediation actions (A1-A11) with pointers to the Montaic reference implementation. Read in place, never copied.
-- `implementation-stubs/` — per-action starting stubs. Copy the matching stub into the client folder for each action in the roadmap. Currently populated: A11. Add stubs for other actions as patterns stabilize (after client #2).
+- `implementation-stubs/` — per-action starting stubs. Copy the matching stub into the client folder for each action in the roadmap. Currently populated: A1 (root schema), A2 (breadcrumbs), A7 (canonicals + robots), A9 (title + meta rewrites), A11 (pillar article). Add stubs for other actions as patterns stabilize.
 - `voice-rubric-v0.md` — pre-publish voice checklist. Read in place.
 - `content-skeletons/pillar-article-skeleton.md` — generalized pillar article structure. Read in place.
 - `schema-patterns/README.md` — pointer to the canonical schema implementations in Montaic's codebase. Read in place.
