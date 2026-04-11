@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-10
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A12 with Claire, A13 drafting slot open (topic lock needed)
+**Current pipeline state:** A12 with Claire, A13 LOCKED and in Phase 1 drafting
 
 ---
 
@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-10.
 
-**Drafting slot:** OPEN. A13 awaiting topic lock (see backlog below).
+**Drafting slot:** A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)". Master working doc at `A13-zillow-listings-all-sound-the-same.md`. Phase 1 locked 2026-04-10. Phase 2 blocked on grader run (50 Zillow listings in a mid-size market) and lead-conversion citation hunt.
 **Voice pass slot:** empty.
 **With Claire slot:** A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026". Handoff at `A12-claire-paste-this.md`. Awaiting Claire session.
 **Live slot:** A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. verify-deploy last-confirmed clean.
@@ -56,9 +56,9 @@ Every candidate has been pre-evaluated against the Hello Momentum tests: swap te
 
 ---
 
-### #1 RECOMMENDED: Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)
+### #1 PROMOTED TO A13 (2026-04-10): Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)
 
-**Status:** unlocked, ready to promote to A13
+**Status:** LOCKED. Master working doc at `A13-zillow-listings-all-sound-the-same.md`. Phase 1 complete. Phase 2 blocked on two inputs (see master doc).
 **Cluster:** NEW. Listing Differentiation.
 **Lever:** outsider triangulation (the coffee shop + photography/video + Redfin/Zillow-browsing vantage Lance locked in for A12 Section 9)
 **Primary citation source:** comparative textual analysis of the top 50 most-viewed Zillow listings in a mid-size market. Original research Montaic can generate with the existing listing grader tool. Plus 1 or 2 secondary citations on scroll-depth behavior from real estate marketing research.
@@ -181,10 +181,13 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**Lock A13 topic.**
+**Unblock A13 Phase 2.**
 
-Default pick: #1 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)."
+Two inputs needed before drafting can start:
 
-Alternative: #2 "The HUD Advertising Word List Doesn't Exist Anymore. Here's What Replaced It." if cluster discipline beats new-cluster-velocity as the current priority.
+1. **Run 50 Zillow listings through the Montaic grader** in a chosen mid-size market (Nashville, Austin, Charlotte, or a market where Montaic already has a user). ~2 hours of tool time. Output: a frequency table of opening phrases, filler words, and sentence patterns. This becomes the piece's headline data point.
+2. **Find at least one credible source** linking listing description quality to lead conversion (or days on market, or price reduction frequency as fallbacks). If no source is strong enough, the frame softens from "costing leads" to "costing attention."
 
-Once locked, promote the topic into a real A13 master working doc using the A11 pillar stub and run the same Phase 1 → Phase 2 → Phase 3 → Phase 4 sequence that shipped A12.
+Owner split: grader run is Lance (or Claude if the grader has a batch mode). Citation hunt is Claude with Lance as the judgment call on source strength.
+
+Once both unblock, A13 moves into Phase 3 drafting. Target: ~1 week of draft time, then voice pass, then Claire handoff, matching the A11 and A12 cadence.
