@@ -1,173 +1,105 @@
-# A13: Why Zillow Listings All Sound the Same Pillar Article
+# A13 Publish Path: Claire lands, Lance flips
 
-**Client:** Montaic
-**Action:** A13 (Pillar article, third in the blog rotation)
-**Roadmap source:** `audits/montaic/implementation/content-calendar.md`, A13 slot, topic #1, promoted 2026-04-10
-**Skeleton:** `remediation-template/content-skeletons/pillar-article-skeleton.md`
-**Voice rubric:** `remediation-template/voice-rubric-v0.md`
-**Neighbor reference (cluster only):** none. A13 opens the Listing Differentiation cluster.
-**Prior cluster reference:** `audits/montaic/implementation/A11-fair-housing-pillar-article.md` and `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md` (different cluster, same pipeline and voice pattern)
-**Status:** Phase 1 locked, Phase 2 blocked on grader run + source hunt
+**For:** Claire (Montaic codebase)
+**From:** Never Ranked side
+**Scope:** Land a new blog post (Why Zillow Listings All Sound the Same), wire up the full JSON-LD schema payload, leave `draft: true`. Lance does the final voice read-through and flips the draft himself.
+**Time:** ~40 minutes.
+**Cluster context:** This is the first pillar article in the new Listing Differentiation cluster. A11 and A12 are the Fair Housing cluster (both live by the time A13 ships). A13 cross-links to both as `mentions` in the schema and as a single inline body link to A12.
 
 ---
 
-## Phase 1: Frame
+## HARD STOP BEFORE YOU BEGIN
 
-### Working title
+**A13 has a placeholder in the body.** The opening hook contains `[GRADER-DATA-PLACEHOLDER]`. That placeholder is a single-market case study paragraph generated from a Montaic listing grader run. Lance must replace it with the actual grader-output paragraph before this handoff runs.
 
-**Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)**
+**If you open this file and see `[GRADER-DATA-PLACEHOLDER]` in the body block below, STOP.** Do not create the blog post file. Do not paste anything. Close this handoff and ping Lance to resolve. The piece is not shippable until that paragraph is real prose.
 
-Declarative. Names a specific portal (Zillow) so the piece has a concrete target. Second clause commits to a revenue hook, not a compliance hook. First Montaic piece to lead with leads instead of risk.
-
-### Slug
-
-`zillow-listings-all-sound-the-same`
-
-### Cluster
-
-**NEW cluster: Listing Differentiation.**
-
-A11 and A12 built the Fair Housing cluster. A13 opens Listing Differentiation as the second Montaic cluster. Per the content calendar's cluster alternation default, A14 or A15 returns to Fair Housing with topic #2 (the withdrawn HUD Word List piece).
-
-Listing Differentiation cluster thesis: every listing description tool on the market was trained on the same MLS boilerplate corpus, so every listing sounds the same, and the only way to write a listing that sounds like you is to use a tool trained on you.
-
-### Creative lever
-
-**Outsider triangulation.**
-
-Lance has three vantages at once that no competing voice in the real estate content space has:
-
-1. **Coffee shop operator.** Years of running a physical business where the product is hospitality and the margin is tiny. Trains an ear for generic-sounding marketing copy.
-2. **Photography and video.** Professional eye for composition, light, and the moment a listing photo stops being "a photo of a house" and starts being "a reason to click."
-3. **Active Redfin and Zillow browser.** Casual consumer of real estate listings, not just a builder of tools that write them. Notices patterns as a reader, not as an industry insider.
-
-Named lever: no competitor who writes about listing description quality has all three of these vantages. The swap test passes: if a generic real estate marketing blog published this piece, it would feel wrong because the author would not have the coffee-shop ear or the photographer's eye. The piece has to be read in Lance's voice to make sense.
-
-### Why this topic wins the A13 slot
-
-Pulled directly from the content calendar ranking rationale:
-
-- **Clearest commercial hook.** Leads, not compliance. First Montaic piece to lead with revenue instead of risk. Expands what the blog can sell.
-- **Opens a new cluster.** Does not cannibalize A11 and A12's Fair Housing keyword surface. Expands Montaic's topical authority instead of stacking it.
-- **Authentic.** Lance actually noticed this from browsing Zillow and Redfin. Not research-sourced. Passes the authenticity test.
-- **Product bridge is built in.** "Montaic writes in your writing style" is the literal answer to the problem the piece describes. No forced pivot from problem to product.
-- **No new legal research.** Unlike Fair Housing deep-dives, this piece can be written from observation plus the existing Montaic grader output. Lower research burden than A11 or A12.
-- **Passes the swap test.** No competitor has Lance's three vantages at once, so no competitor could write this specific piece without it feeling wrong.
-
-### The problem the piece describes
-
-Every Zillow listing description opens the same way. The opening is almost always a variation of the same three or four phrases: welcoming the buyer, calling the house beautiful, invoking pride, or marking the property as a chance the reader cannot afford to miss. (The actual phrases appear in `remediation-template/voice-rubric-v0.md` as banned AI filler. The piece will call them out by name in the body during Phase 3 drafting, noted here so the voice-check script does not flag this Phase 1 doc.) The boilerplate corpus is so small that a reader who scrolls 20 listings sees the same opening pattern 15 times. This is not the agents' fault. It is that every listing description tool on the market (ChatGPT included) trained on the same MLS corpus and produces the same averaged phrasing by default. The fix is not "write better." The fix is "use a tool that trained on your writing instead of the average writing."
-
-### The Montaic bridge
-
-Montaic writes in your writing style. That is the literal product feature, and it is the literal answer to the problem this piece describes. The bridge does not need to be constructed. It needs to be surfaced at the right moment (after the reader understands the scope of the generic-phrasing problem, before the closing CTA).
+If the placeholder has been replaced with real case-study text, continue.
 
 ---
 
-## Phase 2: Research (citation blocker CLOSED, grader blocker OPEN)
+## Context for Claire
 
-Citation hunt completed 2026-04-10. All 5 primary sources confirmed reachable (200 with browser UA + follow-redirects). The frame locks on the strongest possible version: "costing you both sale price AND days on market," backed by Zillow's own research on 2.8 million listings. This is stronger than the original "costing leads" frame because it cites a specific dollar-value impact with a measurable time component.
+A13 is a new pillar article, not an edit to an existing one. The full article body is included inline below as markdown, and the JSON-LD schema `@graph` block is included as a separate paste target.
 
-### Frame decision (locked)
+**The strategic shape:** A13 opens the Listing Differentiation cluster. It answers "why does every Zillow listing sound the same" by pointing at the training data problem that every listing-description tool shares, then it bridges to Montaic as the category-level fix (a tool trained on your writing instead of on the average). The lever is outsider triangulation: Lance notices the category-average copy problem from three vantage points (coffee shop operator, photography and video, active Zillow and Redfin browser), which no competing voice in the real estate content space has at once.
 
-**Working headline stays:** "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)"
+**Why this matters for publishing:** A13 is designed to get cited by AI search engines when agents ask questions like "why do all Zillow listings sound the same," "do listing description words affect sale price," or "what is the best AI tool for MLS descriptions." The piece leads with Zillow's own 2016 research on 2.8 million listings showing that specific keywords are worth up to 13.4% more on sale price and up to 63 days off the market. That is the citation magnet.
 
-**Subheadline (to draft in Phase 3):** something like "Zillow's own research shows the right words are worth up to 13% more on the sale price and 60 days off the market. The wrong words are the default everyone is using."
-
-The piece leads with the Zillow 2016 study as the headline data point because it is Zillow's own research on Zillow's own listings, which makes the claim impossible to dismiss as third-party opinion. The Montaic grader run becomes the opening narrative hook (Lance's observation plus a mid-size market case study) that sets up the Zillow data as the national-scale proof.
-
-### Confirmed citations (exactly 5 per pillar-article-skeleton rule)
-
-All 5 verified reachable with browser User-Agent on 2026-04-10. Each is a primary source or peer-reviewed research, no secondary press cites.
-
-**Citation 1: Zillow press release (April 12, 2016)**
-- Title: "Homes with 'Subway Tiles,' 'Barn Doors' or 'Farmhouse Sinks' Can Sell for Up to 13 Percent More and 60 Days Faster"
-- URL: https://zillow.mediaroom.com/2016-04-12-Homes-with-Subway-Tiles-Barn-Doors-or-Farmhouse-Sinks-Can-Sell-for-Up-to-13-Percent-More-and-60-Days-Faster
-- Type: Industry primary source (Zillow Digs research)
-- Sample: 2.8 million home sales, January 2014 through March 2016
-- Methodology: regression analysis controlled for property age, size, year, and quarter of sale
-- Key data: 60 keywords analyzed. Barn doors +13.4% and 57 days faster. Shaker cabinets +9.6% and 45 days faster. Farmhouse sinks +7.9% and 58 days faster. Subway tile +6.9% and 63 days faster. Quartz +6% and 50 days faster.
-- What it supports: the central commercial claim that listing description words carry measurable, significant, and fast dollar impact. The headline data point of the entire piece.
-
-**Citation 2: Iowa State University research (Cheng Nie et al., June 2023)**
-- Title: "How Does Online Information Influence Offline Transactions: Insights from Digital Real Estate Platforms"
-- URL (press release): https://www.news.iastate.edu/news/2023/08/22/zillow
-- Publication venue: Social Science Research Network, June 2023
-- Authors: Cheng Nie (Iowa State), Hua Sun (Iowa State), Zhengrui Jiang (Nanjing University), Arun Rai (Georgia State), Yuheng Hu (University of Illinois at Chicago)
-- Methodology: U.S. divided into four regions, smallest/median/largest metro areas sampled from each, random property selection from Zillow in June 2016 tracked through September 2016. Secondary confirmation dataset from Chicago winter 2019-2020.
-- Key finding: "experience attributes" in listing descriptions (language like "upscale bathroom fixtures," "sunlit kitchen," "exceptional lake view") correlate with higher sale prices, especially for homes priced significantly above or below neighborhood averages.
-- What it supports: peer-reviewed academic confirmation that listing description LANGUAGE (not just photos) independently affects sale price. Backs up Citation 1 with academic rigor instead of industry-source rigor.
-
-**Citation 3: Verbalized Sampling paper (Zhang et al., October 2025)**
-- Title: "Verbalized Sampling: How to Mitigate Mode Collapse and Unlock LLM Diversity"
-- URL: https://arxiv.org/abs/2510.01171
-- Authors: Jiayi Zhang, Simon Yu, Derek Chong, Anthony Sicilia, Michael R. Tomz, Christopher D. Manning, Weiyan Shi
-- Key finding: root cause of LLM output homogeneity is "typicality bias" in training data. Human annotators systematically favor familiar text, which drives models to produce familiar text. Training-free prompting can recover 1.6-2.1x diversity but the underlying bias is in the data itself.
-- What it supports: the "this is not your fault, it is the tool" argument. The reason every listing tool produces averaged phrasing is because averaged phrasing is what the training data rewards. Citation 3 is the technical spine of the piece.
-
-**Citation 4: "The Price of Format: Diversity Collapse in LLMs" (Yun et al., May 2025)**
-- URL: https://arxiv.org/abs/2505.18949
-- Authors: Longfei Yun, Chenyang An, Zilong Wang, Letian Peng, Jingbo Shang
-- Key finding: structural homogeneity in instruction-tuned LLMs suppresses output diversity. "Output diversity is primarily governed by the presence or absence of structural tokens, with minimal formatting yielding the most diverse outputs." Standardized templates produce standardized outputs.
-- What it supports: the MLS listing format itself is a diversity-collapse amplifier. When every listing tool is trained to produce the same standard MLS structure (address, bed/bath count, square footage, "welcome home" opener, feature list, closing CTA), the structure enforces homogeneity on top of whatever training data bias already exists. Layered on Citation 3, this explains why listing tools specifically are worse than general-purpose chat models on this axis.
-
-**Citation 5: NAR 2025 Home Buyers and Sellers Generational Trends Report (April 2025)**
-- Landing page URL: https://www.nar.realtor/research-and-statistics/research-reports/home-buyer-and-seller-generational-trends
-- Publisher: National Association of Realtors
-- Publication date: April 1, 2025
-- Key finding: online listings are the most-used information source in the home search across all generations. 86% of all buyers used a real estate agent. Younger millennials (26-34) and older millennials (35-44) together make up 29% of recent buyers. Internet search is the dominant first-touch channel and online listings are the dominant first-touch content type within it.
-- What it supports: the premise that the Zillow listing IS the primary customer touchpoint. Without Citation 5 the piece has to argue that listings matter. With Citation 5 the piece can assume listings matter and spend the word count on what to do about it.
-
-### Phase 2 blockers remaining
-
-**Blocker 1: Run 50 Zillow listings through the Montaic grader.** STILL OPEN.
-- Effort: ~2 hours of tool time. Can run in background.
-- Output: a spreadsheet of opening phrases, filler word counts, sentence length distributions, and Fair Housing hits across 50 listings from a chosen mid-size market.
-- Why still needed: the grader run provides the piece's opening narrative hook. Lance's observation plus single-market case study data makes the national Zillow research feel concrete instead of abstract. Phase 3 draft can start without it, but the opening section will be weaker.
-- Owner: Lance. Or Claude can script the run if the grader has a batch input mode.
-
-**Blocker 2: Lead-conversion citation.** CLOSED.
-- Resolution: the frame pivoted from "costing leads" to "costing sale price and days on market" because Citation 1 (Zillow 2016) gives a stronger and more quantified business-outcome claim than any leads-specific source would have. "Leads" stays in the headline as the recognizable commercial term. The body pays off with dollar impact and days-on-market impact instead.
-
-### Phase 2 deliverables
-
-- [x] Final 5-citation list confirmed with URLs (all 5 verified 200 on 2026-04-10)
-- [x] Frame decision locked: "sale price and days on market" hook, not "leads" alone
-- [ ] Grader output spreadsheet saved to `audits/montaic/implementation/A13-grader-data.md`
-- [ ] Market chosen for grader run (candidates: Nashville, Austin, Charlotte, or a Montaic-user market)
-- [ ] Batch mode vs manual paste decision for grader run
+**Voice rules apply.** Zero em dashes, zero semicolons in the prose, no emojis, no AI filler phrases. The draft has been voice-checked before handoff. If you see anything that looks like a voice violation during the paste, flag it rather than fixing it.
 
 ---
 
-## Phase 3: Draft
+## Pre-flight
 
-Drafted 2026-04-10 against `remediation-template/content-skeletons/pillar-article-skeleton.md`. Grader-data section left as placeholder (`[GRADER-DATA-PLACEHOLDER]`) to be replaced once Blocker 1 closes. Everything else is shippable pending Phase 4 voice pass, schema, and handoff.
+Confirm the Montaic blog infrastructure is ready for a new post. Same shape as the A11 and A12 lands.
 
-### Title
+```bash
+# Blog index renders
+curl -s -o /dev/null -w "%{http_code}" https://montaic.com/blog
+# Expected: 200
 
-**Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)**
+# Sitemap exists and is being served
+curl -s -o /dev/null -w "%{http_code}" https://montaic.com/sitemap.xml
+# Expected: 200
 
-Length: 73 characters. Long for a `<title>` tag (will truncate in SERPs around 60 characters). Phase 4 note: use the full string as the on-page H1 and use a shorter variant like `Why Zillow Listings All Sound the Same | Montaic Blog` for the `<title>` tag.
+# A11 is still live
+curl -s -o /dev/null -w "%{http_code}" https://montaic.com/blog/fair-housing-ai-compliance-agents
+# Expected: 200
 
-### Meta description
+# A12 is live (A13 cross-links to A12 in the body — if A12 is not live, the link will 404)
+curl -s -o /dev/null -w "%{http_code}" https://montaic.com/blog/fair-housing-listing-description-rules
+# Expected: 200
+```
 
-**Every listing description tool on the market trained on the same MLS corpus. Here's what that costs you in dollars and days on market.**
+If any of those fail, stop and flag before creating the new post. A13 specifically cannot ship before A12 is live because the body contains an inline link to A12. If A12 is still in draft or has not landed, hold A13 until A12 is public.
 
-Length: 135 characters. Does not start with the title's first four words. Contains the target concept ("listing description") and the commercial hook ("dollars and days on market").
-
-### Summary paragraph
-
-Every Zillow listing description opens the same way. That is not because every house is the same, or because every agent is lazy. It is because every tool that writes listing descriptions, ChatGPT included, trained on the same averaged MLS corpus. Zillow's own research on 2.8 million listings found that the right words are worth up to 13.4% more on the sale price and up to 63 days off the market. The wrong words are the default output of every tool in the category. The fix is not a better prompt. It is a tool that trained on your writing instead of on the average of everyone else's.
+Also confirm the blog post storage pattern. Use whatever the most recent blog post in the codebase uses. If A12 was stored as TSX, match that pattern.
 
 ---
 
-### DRAFT BODY
+## A13.P1: Create the blog post file
 
+Create a new post at slug `zillow-listings-all-sound-the-same` with `draft: true`. The canonical URL will be `https://montaic.com/blog/zillow-listings-all-sound-the-same`.
+
+**Frontmatter fields to set:**
+
+```
+title: "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)"
+slug: zillow-listings-all-sound-the-same
+description: "Every listing description tool on the market trained on the same MLS corpus. Here's what that costs you in dollars and days on market."
+author: Lance Roylo
+publishedAt: 2026-04-24
+updatedAt: 2026-04-24
+draft: true
+ogImage: /og?title=Why%20Zillow%20Listings%20All%20Sound%20the%20Same%20%28And%20Why%20It%27s%20Costing%20Agents%20Leads%29&subtitle=Montaic%20Blog&type=blog
+category: Listing Differentiation
+tags: [Listing Descriptions, Zillow, AI Content Quality, Real Estate Marketing, AEO]
+relatedPosts: [fair-housing-ai-compliance-agents, fair-housing-listing-description-rules]
+```
+
+**Title length note:** The title is 73 characters. Google typically truncates `<title>` tags around 60 characters. If the blog system renders the full title into the `<title>` tag, that is fine because H1 is more important for on-page reading. If the blog system uses a separate `titleTag` or `seoTitle` field, set it to `Why Zillow Listings All Sound the Same | Montaic Blog` (53 chars). Otherwise leave alone.
+
+**OG image note:** Montaic's blog uses the dynamic `/og` route (same pattern as A11 and A12). The URL above is pre-encoded for A13's title. Do not change it. If the `/og` route returns anything other than a 1200x630 PNG when you visit it directly in a browser, stop and flag in the report-back before publishing.
+
+---
+
+## A13.P2: Paste the full article body
+
+The full article body as markdown. Paste this into whatever the blog system uses for post content. If the system stores content as JSX/TSX, convert the markdown to the JSX structure used by the rest of the Montaic blog.
+
+**CRITICAL:** All inline citation links are already in the markdown below. Do not add or remove any. If your conversion step requires adjusting link syntax, preserve the URLs exactly.
+
+**SECOND CRITICAL:** Scan the body for `[GRADER-DATA-PLACEHOLDER]` before pasting. If you see it, STOP and flag to Lance. See the HARD STOP section at the top.
+
+---
+
+```markdown
 A few nights a week I pull up Zillow in a mid-size market and scroll through listings the way other people scroll through Netflix. I'm not house shopping. I find the writing interesting.
 
 The problem is that the writing is almost always the same. After five listings, the openings blur. After ten, I stop reading the descriptions entirely and scroll straight to the photos. The houses are not the problem. Every listing sounds like every other listing.
 
-`[GRADER-DATA-PLACEHOLDER: a single-market case study where Montaic ran 50 top-performing Zillow listings through the grader. Expected output: specific frequency counts of opening phrases, filler word patterns, and sentence structure convergence. This section is the concrete proof that sets up the national-scale Zillow research below. Replace this paragraph once the grader run lands.]`
+[GRADER-DATA-PLACEHOLDER: a single-market case study where Montaic ran 50 top-performing Zillow listings through the grader. Expected output: specific frequency counts of opening phrases, filler word patterns, and sentence structure convergence. This section is the concrete proof that sets up the national-scale Zillow research below. Replace this paragraph once the grader run lands.]
 
 This is not an agent problem. Agents are not writing bad copy on purpose. The reason every listing sounds the same is that every tool that writes listings, from ChatGPT to the dedicated real estate description generators, was trained on the same averaged MLS writing. When the training data is averaged, the output is averaged. When the output is averaged, your listing sounds like everyone else's. And when your listing sounds like everyone else's, you pay for it in two ways: dollars you leave on the sale price, and days you leave on the market.
 
@@ -277,53 +209,15 @@ Montaic is built primarily for residential real estate. The writing style lock a
 Every Zillow listing sounds the same because every listing tool trained on the same averaged MLS corpus, and the averaged corpus produces averaged output. Zillow's own research shows that the averaged output is leaving dollars and days on the table. The fix is not a better prompt. It is a tool that trained on your writing instead of on everyone else's.
 
 If you want to see where your current listings land on the experience-attribute scale, run one of them through [the Montaic grader](https://montaic.com/grade) for free. No account. The grader returns a score and a breakdown of which phrases are helping and which are hurting, and it takes about a minute.
+```
 
 ---
 
-### Skeleton section checklist (post-draft)
+## A13.P3: Paste the JSON-LD schema @graph block
 
-- [x] Title (declarative, specific stakes)
-- [x] Meta description (<=155 chars, does not repeat title phrase)
-- [x] Summary paragraph (80-150 words)
-- [x] Opening hook (Lance observation + grader placeholder)
-- [x] Authority section (Zillow 2016, 2.8M listings, keyword data)
-- [x] Two to three things worth understanding (three-part key concepts block)
-- [x] Real-world problem (ChatGPT-to-MLS scenario + Iowa State + NAR 2025)
-- [x] Five patterns to watch for
-- [x] Four-step what-to-do-about-it workflow
-- [x] What Montaic does differently (first-person origin from three vantages)
-- [x] FAQ (6 questions, ready for FAQPage schema)
-- [x] Closing + CTA (Montaic grader, no account required)
+Add this to the post's HTML `<head>` as a `<script type="application/ld+json">` block, or wire it in through whatever schema injection component the Montaic blog system uses. Match however A11 and A12 were wired.
 
-### Voice rubric pass (pre-publish)
-
-Run `./scripts/voice-check.sh audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md` on the draft file. Confirm each hard-fail is clean:
-
-- [ ] Em dash count: 0
-- [ ] Semicolon count in marketing prose: 0
-- [ ] AI filler phrase scan: clean
-- [ ] Meta description does not start with title phrase (will skip until frontmatter is wired in Phase 4)
-- [ ] No emojis in body
-- [ ] Closing does not restate the intro (closing reframes with the authority of the evidence, does not repeat the opening observation verbatim)
-- [ ] Swap test: would it feel wrong if a competitor published it? Expected: yes. The piece depends on the coffee shop plus photography plus portal-reader triangulation.
-- [ ] Lever test: can you name the creative lever? Expected answer: outsider triangulation.
-
----
-
-## Phase 4: Schema, handoff, publish (staged, pending grader data)
-
-Schema block is written and locked. Claire handoff is written and staged at `audits/montaic/implementation/A13-claire-paste-this.md`. Both depend on the Phase 3 draft body, which still has `[GRADER-DATA-PLACEHOLDER]` in the opening hook. Before Claire runs the handoff, Lance must replace the placeholder with the single-market case study paragraph generated from the Montaic grader run. Everything else in Phase 4 is ready.
-
-### Cluster binding decision
-
-A13 opens the Listing Differentiation cluster. A11 and A12 are the Fair Housing cluster. To signal topical range without forcing cluster confusion:
-
-- **`isPartOf`**: Blog only. Same as A11 and A12.
-- **`mentions`**: explicit array with A11 and A12 URLs as `CreativeWork` entries. Signals cross-cluster topical relationship without claiming A13 is part of the Fair Housing cluster.
-- **Post-publish task**: update A11 and A12 schemas to add A13 as a reciprocal `mentions` entry once A13 goes live. Tracked in the README Month 2+ status table after A13 ships.
-- **`about`**: entity list for Listing Differentiation cluster. Includes Zillow, listing descriptions, AI content quality, and real estate marketing. Do NOT include Fair Housing as an `about` entity. Fair Housing is a `mentions` relationship in the body via the A12 internal link, not a primary topic of A13.
-
-### Schema block (ready to paste into `<script type="application/ld+json">`)
+The canonical source for this block is `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md` Phase 4 section. If anything below looks inconsistent with the master doc, trust the master doc and flag the drift.
 
 ```json
 {
@@ -484,63 +378,128 @@ A13 opens the Listing Differentiation cluster. A11 and A12 are the Fair Housing 
 }
 ```
 
-### Phase 4 checklist
+---
 
-- [x] Schema block drafted (BlogPosting + FAQPage + BreadcrumbList + citation array + mentions cross-cluster bind)
-- [x] All 5 citation URLs verified reachable with browser User-Agent (Phase 2 work)
-- [x] Cluster binding decision documented (isPartOf Blog, mentions A11/A12, about Listing Differentiation entities)
-- [x] Claire handoff staged at `audits/montaic/implementation/A13-claire-paste-this.md`
-- [ ] Grader placeholder replaced in Phase 3 draft body (BLOCKS handoff)
-- [ ] A12 live at `/blog/fair-housing-listing-description-rules` so A13's internal link resolves (BLOCKS handoff unless Lance decides to ship A13 before A12, which the content calendar does not recommend)
-- [ ] Final voice pass on full draft body (Lance, end-to-end read)
-- [ ] `wordCount` in schema recomputed after grader data lands (currently stub at 2300)
-- [ ] `datePublished` / `dateModified` in schema set to actual publish date (currently stub at 2026-04-24, the target 2-week cadence date)
-- [ ] Claire session runs the paste and reports back
-- [ ] Lance flips `draft: false` and redeploys
-- [ ] `./scripts/verify-deploy.sh` on LIVE URL, expect 7/7 pass (Check 7 citation reachability is critical for A13 because the citation array has 5 entries)
-- [ ] A11 and A12 schemas updated with reciprocal `mentions` entries pointing at A13 (post-publish housekeeping)
+## A13.P4: Do NOT flip the draft
 
-## Verification
+Leave `draft: true` in the frontmatter. The draft should be deployed but noindex'd and excluded from the blog index and sitemap, matching how A11 and A12 were handled during their own lands. Lance does the final voice read and flips `draft: false` himself.
 
-After publish, from the neverranked repo root:
+---
 
-```sh
+## Validation
+
+After deploying the draft, run the canonical verify-deploy script from the neverranked repo root:
+
+```bash
 ./scripts/verify-deploy.sh \
   https://montaic.com/blog/zillow-listings-all-sound-the-same \
   https://montaic.com/blog \
   https://montaic.com/sitemap.xml
 ```
 
-Expected: 7/7 checks pass (all 7 since A13 will include a citation array from Phase 1). Then paste the Rich Results Test URL printed by the script and confirm 0 errors on the live URL.
+For a draft post, Check 1 (noindex) should PASS and Checks 2-3 (blog index, sitemap) should correctly show the post is excluded. Checks 4-6 (BlogPosting, FAQPage, BreadcrumbList schemas) must PASS. Check 7 (citation URL reachability) must PASS. A13 is the first Montaic post to include a 5-entry citation array, so Check 7 is load-bearing for this piece.
 
-Record the pass date in `audits/montaic/implementation/README.md` Month 2+ content status table.
+Additional manual checks specific to A13:
+
+```bash
+# Draft loads
+curl -s -o /dev/null -w "%{http_code}" https://montaic.com/blog/zillow-listings-all-sound-the-same
+# Expected: 200
+
+# noindex tag present (draft state)
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -o 'noindex'
+# Expected: match
+
+# Excluded from blog index (draft state)
+curl -s https://montaic.com/blog | grep -c 'zillow-listings-all-sound-the-same'
+# Expected: 0
+
+# Excluded from sitemap (draft state)
+curl -s https://montaic.com/sitemap.xml | grep -c 'zillow-listings-all-sound-the-same'
+# Expected: 0
+
+# All five citation URLs appear in rendered HTML
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'zillow.mediaroom.com/2016-04-12-Homes-with-Subway-Tiles'
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'news.iastate.edu/news/2023/08/22/zillow'
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'arxiv.org/abs/2510.01171'
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'arxiv.org/abs/2505.18949'
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'nar.realtor/research-and-statistics'
+# Each should return at least 1
+
+# A12 cluster cross-link is present (body link)
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'fair-housing-listing-description-rules'
+# Expected: at least 2 (one in body, one in schema mentions array)
+
+# A11 cluster cross-link is present (schema only, no body link)
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'fair-housing-ai-compliance-agents'
+# Expected: at least 1 (schema mentions array)
+
+# FAQPage schema has 6 Question nodes
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -o '"@type":"Question"' | wc -l
+# Expected: 6
+
+# BlogPosting schema renders with wordCount
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -o '"wordCount":[0-9]*'
+# Expected: "wordCount":2300 (or close, depending on grader paragraph length when placeholder is replaced)
+
+# BreadcrumbList schema has 3 ListItem nodes
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -o '"@type":"ListItem"' | wc -l
+# Expected: 3
+
+# NO em dashes in the rendered article body
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c '—'
+# Expected: 0
+
+# Grader placeholder is NOT in the rendered body
+curl -s https://montaic.com/blog/zillow-listings-all-sound-the-same | grep -c 'GRADER-DATA-PLACEHOLDER'
+# Expected: 0
+```
+
+All checks should pass. Then paste the draft URL into the [Rich Results Test](https://search.google.com/test/rich-results) one more time to confirm BlogPosting + FAQPage + BreadcrumbList are all detected with zero errors.
 
 ---
 
-## Draft notes
+## Known risks
 
-Scratch space. Delete before the piece ships.
+- **Grader placeholder:** If the opening hook still contains `[GRADER-DATA-PLACEHOLDER]` when you paste, STOP. The piece is not shippable until Lance replaces it with the actual grader-output paragraph. This is the single most important risk on A13.
+- **A12 dependency:** A13's body contains an inline link to `/blog/fair-housing-listing-description-rules`. If A12 is not yet live, the link will 404. Pre-flight confirms A12 is up before you start. If the curl fails, hold A13.
+- **wordCount accuracy:** Schema says 2,300. The actual number depends on how long the replacement grader paragraph is. If the grader paragraph is 150-250 words, the schema wordCount is fine. If it is longer, recompute and update the schema before flipping `draft: false`.
+- **Markdown conversion:** If the article body is stored as JSX/TSX, convert the bulleted lists and bolded sub-headers. The inline citation links use standard `[text](url)` markdown. Preserve the URLs exactly.
+- **Heading levels:** The article body uses `##` for section headings and `**bold**` for sub-subsection intros inside the key concepts block and the four-step workflow. Preserve this hierarchy.
+- **Cross-link to A12:** The article body links to `/blog/fair-housing-listing-description-rules` once in the "five patterns" section (item 3, target-demographic pandering). Both the body link and the schema `mentions` entry must resolve to the live A12 post.
+- **OG image:** Uses Montaic's dynamic `/og` route (same as A11 and A12). The pre-encoded URL is in the frontmatter. Verify it renders a 1200x630 PNG in the browser before publishing.
+- **Title length in `<title>` tag:** The full title is 73 characters. If the blog system has a separate `seoTitle` or `titleTag` field, use the shorter variant `Why Zillow Listings All Sound the Same | Montaic Blog` (53 chars). If not, the full title in `<title>` is acceptable but will truncate in Google SERPs.
+- **Voice discipline:** No em dashes, no semicolons in prose. The draft as pasted is clean. If your JSX conversion or linter introduces either, fix before deploying.
+- **Cluster alternation:** A13 opens a new cluster (Listing Differentiation). A14 should return to Fair Housing per the content calendar's cluster alternation policy. Do not schedule another Listing Differentiation piece immediately after A13 without checking `audits/montaic/implementation/content-calendar.md`.
 
-### The opening observation Lance had
+---
 
-Browsing Zillow or Redfin on a weeknight, every listing reads the same. The openings blur together within five or six listings. By the tenth, the reader has stopped reading openings entirely and is scrolling straight to the photos. (Phase 3 will quote specific examples in the body. Those examples are held out of this Phase 1 doc so voice-check does not flag them as if Lance wrote them.) That scroll-past behavior is the mechanism the piece needs to name. The agent's listing description is not winning attention because it is averaged phrasing competing against 49 other averaged phrasings.
+## When you are done
 
-### Candidate headline data points (post-grader-run)
+Report back with:
 
-Speculative. Actual numbers come from the grader. Examples of what the piece might say:
+> "A13 publish-path landed. New blog post created at /blog/zillow-listings-all-sound-the-same with draft:true. Article body pasted, JSON-LD @graph block wired with BlogPosting + FAQPage + BreadcrumbList nodes plus the mentions cross-cluster bind to A11 and A12. All five citation links present in rendered HTML. All N validation checks passed. Grader placeholder confirmed NOT in rendered body. Ready for Lance final read and publish. 0 errors. Returned to Claude."
 
-- "37 of the top 50 Zillow listings in {market} open with 'Welcome home' or 'Beautiful'"
-- "The median listing description has 4.2 words in common with every other listing description in the same market"
-- "Only 3 of 50 listings had an opening sentence that did not appear verbatim in at least one other listing in the same market"
+Include:
+- Path to the article file you created
+- Confirmation that the grader placeholder was absent before paste
+- Confirmation that the dynamic `/og` URL in the frontmatter rendered a valid 1200x630 PNG
+- Any markdown-to-JSX conversion quirks you had to handle
+- Actual wordCount the blog system computed (for Lance to update the schema if the delta is more than 10%)
+- Any em dash or semicolon violations found and fixed during the paste
 
-Any of these would be a headline-worthy data point. The grader run tells us which one is true.
+---
 
-### Tension to resolve in Phase 3
+## What happens after Claire is done
 
-The piece argues that all listings sound the same, including ones that use ChatGPT. But A12 is a Fair Housing compliance piece that treats ChatGPT as a compliance risk. A13 needs to thread these so the reader does not think Montaic is incoherent. The thread: ChatGPT is both a compliance risk AND a voice homogenizer. Both are problems. Both get fixed by using a tool trained on you instead of on the corpus.
+1. Lance reads the landed draft end-to-end in one sitting for voice
+2. Lance fixes anything that sounds off in his own hand
+3. Lance confirms the grader paragraph reads well next to the rest of the piece
+4. Lance flips `draft: true` to `draft: false`
+5. Lance commits and redeploys
+6. Never Ranked runs `scripts/verify-deploy.sh` against the LIVE URL and confirms 7/7 checks pass
+7. Lance pastes the Rich Results Test URL one final time to confirm 0 errors
+8. Lance updates A11 and A12 schemas to add reciprocal `mentions` entries pointing at A13 (cluster housekeeping, ~10 minutes of additional work)
+9. Article is live. Listing Differentiation cluster has its anchor.
 
-### Open Phase 1 questions
-
-- Which mid-size market for the grader run? (Nashville, Austin, Charlotte, or a Lance-chosen market where Montaic has at least one existing user)
-- Does the grader have a batch mode, or does each listing need to be pasted manually? (Affects whether Claude can automate Phase 2 blocker 1)
-- Is there a Montaic user who has consented to having their pre-Montaic listings analyzed for the "before" side of a before/after? This would make the piece land harder than pure third-party analysis.
+A13 is the first Montaic piece to lead with revenue instead of compliance. It opens a second cluster so the blog signals topical range rather than single-topic depth. Every search for "why do Zillow listings sound the same" or "do listing description words matter" or "AI listing description tool comparison" should land on A13. Every search for "is AI safe for listings" lands on A11. Every search for "fair housing listing description rules" lands on A12. Three pieces, two clusters, three commercial hooks.
