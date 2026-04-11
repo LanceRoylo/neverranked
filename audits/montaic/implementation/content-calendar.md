@@ -2,9 +2,9 @@
 
 **Purpose:** Answer "what's next" for Montaic's blog in one file. Not a spreadsheet. A living doc that replaces the ad-hoc "figure out the next piece when the last one ships" pattern.
 
-**Updated:** 2026-04-10
+**Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A11, A12, A13 all SHIPPED 2026-04-10. Fair Housing cluster complete. Listing Differentiation cluster opened. Next drafting slot open for A14 (topic lock pending).
+**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot (topic #2 narrow variant, Fair Housing cluster return per A14 override catchup commitment).
 
 ---
 
@@ -39,17 +39,17 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 ## Pipeline state
 
-Updated every time a piece moves. Last update: 2026-04-10.
+Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** empty. A14 topic lock is the next decision.
+**Drafting slot:** A15 "The 1989 HUD Word List Is Withdrawn. Here Is What Replaced It." Master doc at `A15-hud-word-list-withdrawn.md`. Phase 1 locked. Phase 2 open (provenance research and post-2010 case law selection).
 **Voice pass slot:** empty.
-**With Claire slot:** empty.
+**With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Pending Lance's second read and flip to `draft: false`. Back-propagation to A13's `mentions` array is deferred until the flip.
 **Live slot:**
 - A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. Shipped pre-2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026" at `/blog/fair-housing-listing-description-rules`. Shipped 2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)" at `/blog/zillow-listings-all-sound-the-same`. Shipped 2026-04-10. Opens Listing Differentiation cluster. Mentions A11 and A12 for cross-cluster bind. Grader-data section populated with a 53-listing Nashville run (average 4.6 out of 10, 31 listings scored 3 or 4, nothing cracked 7, "beautiful" in 38% and "spacious" in 34% and "stunning" in 21%).
 
-**Cross-cluster schema bind is live in both directions.** A11 and A12 schemas carry `mentions` pointing at A13, and A13 carries `mentions` pointing at A11 and A12. Fair Housing cluster and Listing Differentiation cluster are linked as a single topical graph.
+**Cross-cluster schema bind is live in both directions.** A11 and A12 schemas carry `mentions` pointing at A13, and A13 carries `mentions` pointing at A11 and A12. Fair Housing cluster and Listing Differentiation cluster are linked as a single topical graph. A14 adds a third edge from Listing Differentiation into Fair Housing (mentions A11 and A12) but the reciprocal back-prop from A13 to A14 is held until A14 flips from `draft: true` to `draft: false`.
 
 ---
 
@@ -85,37 +85,41 @@ Every candidate has been pre-evaluated against the Hello Momentum tests: swap te
 
 ---
 
-### #2: The HUD Advertising Word List Doesn't Exist Anymore. Here's What Replaced It.
+### #2 PROMOTED TO A15 (2026-04-11, narrow variant): The 1989 HUD Word List Is Withdrawn. Here Is What Replaced It.
 
-**Status:** unlocked, next Fair Housing cluster slot
-**Cluster:** EXISTING. Fair Housing (deepens A11/A12).
-**Lever:** deep research + contrarian framing
-**Primary citation source:** the 1989/1995 HUD memo history, FHEO Handbook 8025.1 (already cited in A12), the case law that replaced the list, state fair housing commission enforcement records
-**Frame (2 sentences):** Every Fair Housing training still hands out "the HUD Word List." That list is from 1989, it was withdrawn quietly in the 2000s, it is no longer published on hud.gov, and the piece explains what the list was, why it was withdrawn, and what the current legal authority actually is.
+**Status:** LOCKED as A15 narrow variant. Master working doc at `A15-hud-word-list-withdrawn.md`. Phase 1 locked. Phase 2 open (provenance research and case law selection).
+**Cluster:** EXISTING. Fair Housing (third pillar, cluster return after A14 override).
+**Lever:** Contrarian correction plus Specificity.
+**Primary citation source:** the 1989 HUD memo provenance (to be confirmed), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), two to three post-2010 Fair Housing advertising enforcement cases.
+**Frame (2 sentences):** Fair Housing training still hands out a word list derived from a 1989 HUD staff memorandum that was never a rule, stopped being maintained in the 2000s, and was never formally replaced. The piece explains where the list came from, why it was withdrawn, what actually governs Fair Housing listing language today, and which phrases current enforcement catches that the 1989 list missed.
 
-**Why #2 not #1:**
+**Narrow variant scope:**
 
-- Stays in the Fair Housing cluster, which is good for cluster discipline but risks saturating that keyword surface before the cluster has earned its authority
-- Research burden is heavy. Tracking the Word List withdrawal timeline requires primary source digging that could easily turn into a 2-week research project by itself.
-- Commercial hook is compliance, which is the same hook as A11 and A12. Less differentiation than #1 for Montaic's positioning.
+The A14 master doc flagged topic #2's research burden as potentially too heavy for a single cadence cycle. The narrow variant scopes the piece to the provenance correction plus the three-part current authority framework (statute, regulation, post-2010 case law) and defers the exhaustive withdrawal-timeline research. Target length 2100 words, narrower than A14's 2300.
 
-**When to promote:** after A13 lands and the Listing Differentiation cluster is established. Likely A14 or A15.
+**Why narrow variant works:**
+
+- A12 already did 42 U.S.C. § 3604(c) and 24 C.F.R. § 100.75 research. Reuse.
+- A11 already framed the statutory authority. Reuse.
+- The narrow variant only needs new work on 1989 memo provenance (2 to 3 hours) and post-2010 case law selection (3 to 4 hours).
+- The piece is a correction, not an encyclopedia. Narrowness is feature, not bug.
+
+**Why this wins the A15 slot:**
+
+- Honors the A14 override catchup commitment. A14 extended Listing Differentiation. A15 restores Fair Housing alternation.
+- Three-pillar Fair Housing cluster signal (A11 plus A12 plus A15).
+- Authentic Lance observation: he saw the 1989 list still circulating in training materials while building A12.
+- Commercial hook lands with specificity. "Montaic screens against the current statute, the regulation, and the post-2010 case law. Not the withdrawn 1989 list."
 
 ---
 
-### #3: What ChatGPT Gets Wrong About Your Listing
+### #3 PROMOTED TO A14 (2026-04-10, adapted as three-way comparison): We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened.
 
-**Status:** unlocked, parking lot
-**Cluster:** NEW. AI Content Quality.
-**Lever:** direct product demo + AEO discourse
-**Primary citation source:** side-by-side examples of ChatGPT default listing descriptions vs. Montaic-generated descriptions, with specific failure modes (Fair Housing hits, bland openings, wrong audience framing, scroll-depth drops)
-**Frame (2 sentences):** Agents have been pasting "write me an MLS description for a 3-bed 2-bath" into ChatGPT for two years now. This piece shows what ChatGPT actually produces, what is wrong with it, and why the failure modes are predictable enough that the correct fix is not a better prompt but a different tool.
-
-**Why #3 not higher:**
-
-- Overlaps with A12's operational framing. A12 already shows what Fair Housing failures look like.
-- The "AI discourse" angle risks dating quickly. ChatGPT changes every 6 months. Specific examples age out.
-- Better as a cluster-support piece than a cluster-starter. Works well as A14 or A15 inside the Listing Differentiation cluster.
+**Status:** LOCKED and SHIPPED as A14 on 2026-04-11 (`draft: true`, pending Lance flip). Master working doc at `A14-chatgpt-53-nashville-listings.md`. Adapted from the original "What ChatGPT Gets Wrong" frame into a controlled three-way comparison (53 Nashville originals vs ChatGPT gpt-4o-mini vs Montaic default path) because the Nashville 53 dataset from A13 was still fresh and reusable.
+**Cluster:** EXISTING. Listing Differentiation (second pillar, compounds A13).
+**Lever:** Contrast plus Specificity (numbers-on-the-table three-way comparison).
+**Primary citation source:** three-way comparison dataset at `listing-pipeline-ai/apps/dashboard/scripts/zillow-50-nashville-three-way.json`. ChatGPT averaged 3.6 out of 10. Zillow originals averaged 4.6. Montaic averaged 5.1. Plus A13's citation stack reused (Zillow 2016, Iowa State 2023, Verbalized Sampling 2025, Price of Format 2025, NAR 2025).
+**Override note:** A14 overrode the default cluster alternation policy. A15 restores the alternation with Fair Housing topic #2 as the catchup commitment.
 
 ---
 
@@ -164,6 +168,12 @@ Does Montaic's yacht broker vertical get its own cluster start (topic #4) in the
 
 If that policy breaks down (e.g., a news hook forces three Fair Housing pieces in a row), revisit. Default is the starting point, not the commitment.
 
+**Override history:**
+
+- **A14 override (2026-04-10).** A14 stayed in Listing Differentiation instead of returning to Fair Housing. Three reasons: one-shot marginal-cost dataset economics, topic #3 passed Hello Momentum tests stronger than topic #2, cluster compounding signal. Full rationale in the A14 master doc.
+- **A15 restoration (2026-04-11).** A15 returns to Fair Housing with topic #2 narrow variant. The narrow scope addresses the research burden concern that originally pushed topic #2 out of the A14 slot. Alternation is restored starting at A15.
+- **A16 decision (open).** Default is alternation back to Listing Differentiation. News-hook pieces can jump the queue per the news-hook policy.
+
 ### 3. News-hook vs. evergreen mix
 
 **Default:** evergreen pieces. News hooks (HUD guidance updates, DOJ settlements, new case law) can jump the queue and replace the next drafting slot if the news is time-sensitive.
@@ -186,18 +196,25 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**Lock A14.**
+**A15 Phase 2: research.**
 
-A13 just shipped and opened the Listing Differentiation cluster. Per the cluster alternation policy, A14 should return to Fair Housing (topic #2 "The HUD Advertising Word List Doesn't Exist Anymore. Here's What Replaced It.") unless a news hook or a stronger Listing Differentiation follow-up forces a different call.
+A15 Phase 1 is locked at `A15-hud-word-list-withdrawn.md`. Two Phase 2 blockers are open:
 
-Decision points for A14:
+1. **1989 memo provenance.** 2 to 3 hours of archive research (Wayback Machine, law review secondary sources, FHEO records) to confirm the exact provenance of the 1989 HUD advertising memo or document its absence. Claude can drive.
+2. **Post-2010 case law selection.** 3 to 4 hours to select two or three Fair Housing advertising enforcement cases that show the stale-list problem in both directions (phrases the statute caught that the list missed, and phrases the list over-flagged that case law cleared). Claude can drive.
 
-1. **Cluster direction.** Fair Housing return per alternation policy (topic #2), or stay in Listing Differentiation to compound the new cluster (topic #3 or #5)? Default is alternation. Overriding the default needs a reason.
-2. **Research burden check.** Topic #2 requires tracking the HUD Word List withdrawal timeline. That is primary-source digging that can expand. If it is going to consume more than 1 week of research time, it is not an A14 fit, it is an A16 fit. Judge before locking.
-3. **Authenticity test.** Topic #2 is research-sourced, not observation-sourced. Does Lance have a personal angle on it (for example, observed a Fair Housing training that still handed out the withdrawn list)? If yes, authenticity test passes. If no, consider whether topic #3 or #5 gives a stronger personal hook.
+Total Phase 2 budget: 5 to 7 hours. Target completion before the cadence target of 2 weeks from A14 ship.
 
-**Post-publish housekeeping for the Fair Housing cluster and A13** (optional, can happen in parallel with A14 drafting or deferred):
+**Parallel track: A14 ship-out housekeeping** (Lance-owned, not blocking A15):
 
-1. **Submit A11, A12, A13 URLs to Google Search Console** for re-indexing. 2 minutes in the GSC dashboard. Accelerates how fast the updated schema (reciprocal mentions) propagates to Google's index.
-2. **Amplify the Nashville 4.6/10 finding as a standalone asset.** LinkedIn post, Twitter thread, or homepage footer quoting "We ran 53 of Nashville's most-viewed active listings through our grader. Average score: 4.6 out of 10. Not one cracked 7." That number is a marketing asset bigger than A13 alone and worth independent mileage.
-3. **Track AI search citation emergence.** Query ChatGPT, Perplexity, and Google AI Overviews in 2 to 6 weeks with questions A13 was designed to answer ("why do Zillow listings all sound the same," "do listing description words affect sale price," "what is the best AI tool for MLS descriptions"). Log whether any of the three posts get cited.
+1. Second read of the A14 staged URL at `https://montaic.com/blog/chatgpt-53-nashville-listings`.
+2. Flip `draft: true` to `draft: false` in `posts.ts`. Same commit adds A14 to A13's `mentions` array using the snippet in `A14-claire-paste-this.md`.
+3. Run `./scripts/verify-deploy.sh` against the live URL.
+4. Run Rich Results Test for BlogPosting and FAQPage extraction.
+5. Update this content calendar: move A14 from With Claire slot to Live slot.
+
+**Post-publish housekeeping for the Fair Housing cluster and A13** (optional, deferred):
+
+1. **Submit A11, A12, A13, A14 URLs to Google Search Console** for re-indexing. 2 minutes in the GSC dashboard. Accelerates how fast the updated schema propagates to Google's index.
+2. **Amplify the Nashville three-way headline as a standalone asset.** "53 Nashville listings. Three tools. ChatGPT averaged 3.6 out of 10. Montaic averaged 5.1." That delta is a marketing asset bigger than A14 alone and worth independent mileage on LinkedIn, Twitter, and the homepage footer.
+3. **Track AI search citation emergence.** Query ChatGPT, Perplexity, and Google AI Overviews in 2 to 6 weeks with questions A13 and A14 were designed to answer. Log which of the four cluster posts get cited.
