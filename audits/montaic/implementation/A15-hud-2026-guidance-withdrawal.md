@@ -317,7 +317,11 @@ A12 already cited 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75, and the statutory f
 
 ---
 
-## Phase 3: Draft (NOT STARTED)
+## Phase 3: Draft (COMPLETE 2026-04-11)
+
+Drafted at `audits/montaic/implementation/A15-draft.md`. Ten body blocks matching the working structure below (sections renumbered slightly during writing, see draft file for final order). Roughly 2985 body words, slightly above the original 2500 target because the nine-item mapping and the item 9 deep read both expanded to carry the research memo content. Voice-check 4/4 clean: 0 em dashes, 0 semicolons in prose, 0 AI filler, 0 emojis. No 20+ word verbatim chunks from the HUD memo or the item 9 guidance. HUD concrete violation examples paraphrased with original wording. Commit `a828ebe`.
+
+Working structure captured during Phase 1 planning:
 
 ### Target length
 
@@ -342,7 +346,11 @@ See `remediation-template/voice-rubric-v0.md` for the full banned-phrase list. S
 
 ---
 
-## Phase 4: Schema, handoff, publish (NOT STARTED)
+## Phase 4: Schema, handoff, publish (COMPLETE 2026-04-11)
+
+Claire handoff stub landed at `audits/montaic/implementation/A15-claire-paste-this.md`. Follows the A14 pattern exactly. Includes sanity-check curl block, A15.P1 posts.ts entry with slug `hud-2026-fair-housing-guidance-withdrawal`, seven-item citation array, three-item mentions array (A11, A12, A14), four-item about array, ten body section blocks matching the draft, six-item faqs array for FAQPage schema, and "Grade your listing free" CTA. A15.P2 back-propagation snippets for A11 and A12 mentions arrays included in the same file. Voice-check 4/4 clean. Commit `9ae9004`.
+
+A13 was evaluated as a potential fourth mention and omitted because the master doc Phase 1 planning flagged it as one layer removed. Decision can be revisited in Phase 5 if the cluster graph needs the extra edge.
 
 Same `@graph` structure as A11 through A14.
 

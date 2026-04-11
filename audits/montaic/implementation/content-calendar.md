@@ -187,6 +187,88 @@ If that policy breaks down (e.g., a news hook forces three Fair Housing pieces i
 
 ---
 
+## A16 candidate re-scoring (2026-04-11)
+
+The original backlog (#1 through #5) was scored under A13 conditions, before A13, A14, and A15 actually locked. The cluster state has changed. Fair Housing is now a three-pillar cluster (A11 plus A12 plus A15). Listing Differentiation is at two pillars (A13 plus A14). A16 returns to Listing Differentiation per alternation default and returns to evergreen per news-hook policy.
+
+A13 and A14 also produced an asset the original backlog did not anticipate: the 53 Nashville three-way dataset (Zillow originals, ChatGPT gpt-4o-mini, Montaic default). That dataset is reusable for A16 without a new data-collection run, which changes the effort math for any data-driven frame.
+
+### Candidates considered
+
+Six candidates were walked against the Hello Momentum four-test battery. Two are backlog items (refreshed). Four are new frames surfaced from the A13/A14 data state.
+
+**Candidate A (from backlog): #5 MLS Description Playbook, refreshed with Nashville 53 data.**
+- Frame: the structural and phrase patterns that actually score above 6/10, grounded in the three-way dataset.
+- Swap test: weakest of the six. A best-practices playbook is the category competitors write most often. The data anchor helps but does not fully protect the frame.
+- Lever test: "Structural Playbook plus Empirical Grounding." Nameable but not distinctive.
+- Authenticity test: partial. The data is Lance's. The playbook structure is not a Lance observation, it is a synthesis.
+- So What test: strong. Agents can copy specific patterns on Monday morning.
+- Verdict: serviceable. Not the strongest A16 frame under HM lens.
+
+**Candidate B (from backlog): #4 Yacht Listing Descriptions.**
+- Frame: real estate playbooks fail at sea, and the yacht listing category has different compliance, different buyers, and different emotional levers.
+- Swap test: strong. Nobody is writing this from a Montaic-adjacent angle.
+- Lever test: "Vertical Pivot plus Contrast."
+- Authenticity test: partial. Lance is not a yacht broker. Montaic has yacht-specific product fields but the outside observation is secondhand.
+- So What test: medium. Narrow audience.
+- Verdict: defer. Opening a third cluster when Listing Differentiation is only at two pillars fragments topical authority. Park for A18 or later, after Listing Differentiation hits three pillars.
+
+**Candidate C (new frame): "Why 96 Percent of ChatGPT Listings Open With the Same Two Words".**
+- Frame: take the single sharpest finding from the A14 Nashville dataset (96 percent of ChatGPT outputs opened with the same two-word phrase) and turn it into the headline. Walk the other five or six most-overused patterns (the adjective "stunning" in 81 percent, the adjective "spacious" in 81 percent, the phrase "dream home" in 68 percent, the verb "boasts" in 66 percent, the literal phrase "MLS Description:" in 6 outputs). Each pattern gets a one-paragraph forensic read on why ChatGPT produces it and what the structural alternative looks like.
+- Swap test: strong. Nobody has the three-way Nashville dataset. The 96 percent figure is Montaic-first.
+- Lever test: "Data Mining plus Specificity." Same lever family as A14.
+- Authenticity test: strong. Lance ran the experiment, Lance owns the numbers.
+- So What test: strong. "Stop opening your listings with the phrase every ChatGPT output starts with." Direct Monday-morning action with a specific replacement.
+- Effort: low. Reuses A14 data. No new tool runs required. Draft could start immediately after Phase 1 lock.
+- Risk: listicle framing. Mitigated by leading with the narrative of the 96 percent finding rather than a numbered list.
+- Verdict: strongest A16 candidate under HM lens. Ranks first.
+
+**Candidate D (new frame): "The Voice Calibration Experiment" (fourth dataset run).**
+- Frame: take the same 53 Nashville listings from A14, run them through Montaic's voice-locked path using Lance's own past listings as the style sample, and compare scores across four datasets (Zillow, ChatGPT, Montaic default, Montaic voice-locked). A14 explicitly promised this was where the gap widens further.
+- Swap test: very strong. Nobody else has the voice-locked path.
+- Lever test: "Controlled Follow-up Experiment plus Numbers on the Table."
+- Authenticity test: has a structural issue. The voice sample has to come from somewhere. The cleanest source is Lance's own past listings, which creates a founder-on-founder-style question that needs addressing explicitly in the piece.
+- So What test: very strong. Shows the actual lift from upgrading to the voice-locked path.
+- Effort: medium. Requires roughly 2 hours of tool time to run the voice-locked path on 53 listings, plus grader pass. Infrastructure exists from A14.
+- Risk: reads as product marketing. Could be the third or fourth Listing Differentiation pillar rather than the third.
+- Verdict: strong frame, better as A17 or A18. Ranks second.
+
+**Candidate E (new frame): "The $45,000 Window Listing" case study.**
+- Frame: single-property deep dive on the strongest Montaic output from A14 (Brentwood property, Pella windows, 7/10 score). Walks the specific choices that lifted the score and generalizes the lesson: dollar figures beat adjectives.
+- Swap test: strong. Specific property, specific score, specific grader notes. No competitor can write this piece.
+- Lever test: "Case Study plus Specificity."
+- Authenticity test: very strong. Lance ran the data and picked the example.
+- So What test: medium. "Be specific" is a common lesson. The piece has to earn the lesson with a fresh mechanism, not just restate it.
+- Effort: very low. Reuses A14 data.
+- Risk: one listing is narrow. Better as a sidebar or section inside Candidate C than as its own pillar.
+- Verdict: absorb into Candidate C as a body section rather than ship as a standalone A16. Ranks fifth.
+
+**Candidate F (new frame, parked): Fair Housing news-hook follow-up to A15.**
+- Frame: six-month look ahead on the enforcement and rulemaking sequence that surfaced during A15 research (EO 14281, January 14 2026 disparate impact proposed rule, DOJ v. Meta June 27 2026 sunset, the September 16 2025 FHEO enforcement priorities memo).
+- Swap test: strong if published before the rulemaking closes.
+- Lever test: "Calendar Piece plus Specificity."
+- Verdict: blocked by the news-hook-per-quarter policy. Q2 2026 slot was used by A15. Park for Q3 2026 (earliest A18 or A19). Ranks sixth for A16 purposes but should stay in the queue for Q3.
+
+### A16 ranked recommendation
+
+1. **Candidate C: the 96 percent opening.** Strongest frame under HM lens, reuses existing data, evergreen, cluster-compatible, passes all four tests at max strength, lowest effort to draft.
+2. **Candidate D: voice calibration experiment.** Strong frame, requires one data-run investment. Better positioned as the A17 climax of the Listing Differentiation cluster than as the third pillar.
+3. **Candidate A: MLS Playbook refreshed.** Serviceable backup.
+4. **Candidate E: the $45,000 window listing.** Absorb as a body section in Candidate C.
+5. **Candidate B: Yacht listing descriptions.** Defer to A18 or later.
+6. **Candidate F: Fair Housing Q3 news-hook follow-up.** Blocked by news-hook policy until Q3 2026.
+
+### Open questions for Lance on A16
+
+1. **Candidate C versus Candidate D.** If the goal is taste-score maximization, C wins on all four tests. If the goal is commercial yield (demonstrating product premium), D has a stronger product bridge. Recommend C for A16 and D for A17 so the cluster compounds on data before it compounds on product demo.
+2. **Absorbing Candidate E into Candidate C.** If C is approved, the $45,000 window listing fits naturally as a "positive example" section showing what an above-6/10 listing actually does. Confirm whether you want E merged or held for a later standalone pillar.
+3. **Listicle risk on Candidate C.** Frame must lead with the narrative of the 96 percent finding, not a numbered list. Headline grammar should mirror A13 and A14 ("Why 96 Percent..." not "10 Phrases..."). Confirm acceptable.
+4. **Yacht timing revisit.** Candidate B is deferred. If Montaic's yacht customer base is growing faster than the content calendar assumes, revisit the defer. Otherwise park until Listing Differentiation cluster hits three pillars.
+
+No A16 topic locks until Lance approves one of these candidates. This block is a decision doc only. It does not commit to a frame.
+
+---
+
 ## Update protocol
 
 This doc is a living file. Update rules:
