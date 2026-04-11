@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot, pivoted 2026-04-11 from topic #2 narrow variant (evergreen) to news-hook frame on HUD Federal Register Notice 2026-06624 (April 6, 2026 withdrawal of eight fair housing guidance documents). Fair Housing cluster return per A14 override catchup commitment is preserved.
+**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot, pivoted 2026-04-11 from topic #2 narrow variant (evergreen) to news-hook frame on HUD Federal Register Notice 2026-06624 (April 6, 2026 withdrawal of nine fair housing guidance documents, count corrected from trade-press eight). Phase 2 Blockers 1, 2, and 3 all CLOSED 2026-04-11. A15 Ready for Phase 3 draft. Fair Housing cluster return per A14 override catchup commitment is preserved.
 
 ---
 
@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blocker 1 CLOSED: Gibbs memo and FR Notice 2026-06624 fetched, nine withdrawn items documented (industry trade press miscounted at eight), 201-day gap between memo effective date (Sept 17 2025) and Federal Register publication (April 6 2026) logged. Phase 2 Blockers 2 and 3 open (nine-item current-authority mapping, enforcement action audit in the 201-day window).
+**Drafting slot:** A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blocker 1 CLOSED: Gibbs memo and FR Notice 2026-06624 fetched, nine withdrawn items documented (industry trade press miscounted at eight), 201-day gap between memo effective date (Sept 17 2025) and Federal Register publication (April 6 2026) logged. Phase 2 Blocker 2 CLOSED: nine-item current-authority mapping complete (statute, regulation, and case law for each withdrawn item), item #9 deep read complete (digital platforms guidance anchored on 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75, Inclusive Communities, DOJ v. Meta still active through June 27, 2026), five cross-cutting context shifts documented (EO 14281, Sept 16 2025 FHEO enforcement priorities memo, Jan 14 2026 proposed rule eliminating 24 C.F.R. § 100.500, EO 13988 rescission, EO 13166 rescission via EO 14224). Phase 2 Blocker 3 CLOSED: enforcement action audit in the 201-day window confirms no HUD or DOJ action cited any of the nine withdrawn guidance documents, Turner letter (Nov 25 2025) and FHEO Boston investigation (Dec 11 2025) indicate FHEO is operating on statute and regulation directly. Phase 3 draft target: 2026-04-18.
 **Voice pass slot:** empty.
 **With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Pending Lance's second read and flip to `draft: false`. Back-propagation to A13's `mentions` array is deferred until the flip.
 **Live slot:**
@@ -87,7 +87,7 @@ Every candidate has been pre-evaluated against the Hello Momentum tests: swap te
 
 ### #2 PROMOTED TO A15 (2026-04-11, PIVOTED to news-hook same day, count corrected same day): HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings.
 
-**Status:** LOCKED as A15 news-hook pivot with count correction. Master working doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked 2026-04-11. Phase 2 Blocker 1 CLOSED. Phase 2 Blockers 2 and 3 open.
+**Status:** LOCKED as A15 news-hook pivot with count correction. Master working doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked 2026-04-11. Phase 2 Blockers 1, 2, and 3 all CLOSED 2026-04-11. Ready for Phase 3 draft (target 2026-04-18).
 **Cluster:** EXISTING. Fair Housing (third pillar, cluster return after A14 override).
 **Lever:** News hook plus Specificity plus Count correction.
 **Primary citation source:** HUD Gibbs memo (signed September 17, 2025), Federal Register Notice 2026-06624 (published April 6, 2026, pages 17291-17292), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), post-2010 Fair Housing advertising enforcement cases as needed for current-authority mapping.
@@ -201,14 +201,15 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**A15 Phase 2: research (news-hook frame with count correction).**
+**A15 Phase 3: draft (news-hook frame with count correction, full research memo loaded).**
 
-A15 Phase 1 is locked at `A15-hud-2026-guidance-withdrawal.md`. Blocker 1 CLOSED 2026-04-11 (Gibbs memo and FR Notice 2026-06624 fetched, nine items documented, 201-day gap logged, three-criteria framework captured). Two blockers remain:
+A15 Phase 1 is locked and Phase 2 is fully closed at `A15-hud-2026-guidance-withdrawal.md`. All three Phase 2 blockers CLOSED 2026-04-11:
 
-1. **Current-authority mapping for each of the nine items.** 4 to 6 hours to map each withdrawn item against the statute, regulation, or case law that still covers the same territory. Item #9 (digital platforms guidance, April 29, 2024) gets the deepest read. Claude can drive.
-2. **Enforcement action audit in the 201-day gap window.** 30 minutes to confirm whether any HUD or DOJ enforcement action filed between September 17, 2025 and April 6, 2026 cited any of the nine withdrawn guidance documents. Claude can drive.
+1. **Blocker 1 CLOSED.** Gibbs memo and FR Notice 2026-06624 fetched, nine items documented (trade press miscounted at eight), 201-day gap between memo effective date and Federal Register publication logged, three-criteria framework captured.
+2. **Blocker 2 CLOSED.** Nine-item current-authority mapping complete. Each withdrawn item mapped to the statute, regulation, and case law that still covers the same territory. Item #9 (digital platforms guidance, April 29, 2024) deep read captured the HUD concrete violation examples that validate Montaic's phrase-level grader. Five cross-cutting context shifts documented: EO 14281 (April 23, 2025 meritocracy order), September 16, 2025 FHEO enforcement priorities memo, January 14, 2026 HUD proposed rule eliminating 24 C.F.R. § 100.500, EO 13988 rescission, EO 13166 rescission via EO 14224.
+3. **Blocker 3 CLOSED.** Enforcement action audit in the 201-day gap window confirms no HUD or DOJ enforcement action filed between September 17, 2025 and April 6, 2026 cited any of the nine withdrawn guidance documents. DOJ v. Meta settlement (S.D.N.Y. 2022) still active through June 27, 2026. November 25, 2025 Secretary Turner letter on criminal screening and December 11, 2025 FHEO investigation of City of Boston indicate FHEO is operating on statute and regulation directly rather than on the withdrawn guidance.
 
-Remaining Phase 2 budget: 4.5 to 6.5 hours. Target Phase 3 draft complete within seven days of Phase 1 lock (2026-04-18) to preserve the news-hook window.
+Phase 3 draft target: 2026-04-18 (seven days after Phase 1 lock) to preserve the news-hook window.
 
 **Parallel track: A14 ship-out housekeeping** (Lance-owned, not blocking A15):
 

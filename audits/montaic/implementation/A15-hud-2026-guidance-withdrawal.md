@@ -7,7 +7,7 @@
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
 **Neighbor references (same cluster):** `audits/montaic/implementation/A11-fair-housing-pillar-article.md` and `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md`
 **Cross-cluster references:** `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md` and `audits/montaic/implementation/A14-chatgpt-53-nashville-listings.md`
-**Status:** Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blocker 1 CLOSED. Phase 2 Blockers 2 and 3 open.
+**Status:** Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blockers 1, 2, and 3 all CLOSED 2026-04-11. Ready for Phase 3 draft.
 
 ---
 
@@ -171,26 +171,119 @@ The tone stays measured. The piece does not gloat. It names the facts and lets t
 
 **The Montaic item.** Item #9, "Guidance on Application of the Fair Housing Act to the Advertising of Housing, Credit, and Other Real Estate-Related Transactions through Digital Platforms," was issued April 29, 2024 and withdrawn 17 months later. Of the nine withdrawn items, #9 is the one that sits directly on top of Montaic's customer base. A15 gives this item a deeper read than the other eight.
 
-### Blocker 2: Current-authority mapping for each of the nine items. OPEN.
+### Blocker 2: Current-authority mapping for each of the nine items. CLOSED 2026-04-11.
 
-**Effort:** 4 to 6 hours.
+**Effort actual:** 2 hours (search plus PDF fetch plus extraction). Budget was 4 to 6 hours. Efficient because item #9's full text included its own citation stack, so the case-law mapping work for items #1 through #8 cross-referenced the same authorities.
 
-For each of the nine withdrawn items, identify what statute, regulation, or case law still covers the same territory. Depth varies by item. Item #9 (digital platforms) gets the deepest treatment because it drives the commercial hook.
+**Cross-cutting context (applies to all nine items).**
 
-**Approach:**
+The Gibbs memo does not land on a clean legal backdrop. Four cross-cutting actions sit on top of or alongside the withdrawal and shape what "still applies" actually means in April 2026. The piece names each in the opening sections before the item-by-item walkthrough.
 
-- For each item, pull the core subject (what did the guidance cover) and trace it to its underlying statutory authority.
-- Map to 42 U.S.C. § 3604 subsections, 24 C.F.R. Part 100 subparts, and any post-2010 case law already surfaced for A11 and A12.
-- For item #9 specifically, check for 2020 through 2025 enforcement actions on online listing language (DOJ, HUD, state commissions) to confirm the statute-and-case-law layer is still active.
-- For items #6 and #7 (criminal records), note the pair explicitly as part of the count-correction story.
+1. **Executive Order 14281 (April 23, 2025), "Restoring Equality of Opportunity and Meritocracy."** Establishes federal policy to eliminate disparate impact liability "to the maximum degree possible." This is the direct policy source for the narrower interpretive posture that runs through the Gibbs memo and the subsequent HUD rulemaking.
+2. **FHEO enforcement priorities memo (September 16, 2025).** Issued one day before the Gibbs withdrawal memo. De-prioritizes disparate impact investigations. Prioritizes "facially discriminatory conduct." Separate document from the Gibbs memo but directly adjacent in timing.
+3. **HUD Proposed Rule on Disparate Impact (January 14, 2026).** Published in Federal Register. Would eliminate 24 C.F.R. Part 100, Subpart G (including § 100.500, the Discriminatory Effects standard) and remove § 100.5(b) language that discriminatory effects may establish an FHA violation without discriminatory intent. Rationale cites EO 14281 and the Supreme Court's 2025 Loper Light Enterprises v. Raimondo decision (overturning Chevron deference). Comment period closed February 13, 2026. Not yet finalized as of 2026-04-11, but pending.
+4. **EO 13988 (2021) was rescinded January 20, 2025.** Item #4 on the withdrawal list was already dead-letter when Gibbs withdrew the implementation guidance. The piece notes this in item #4's entry.
+5. **EO 13166 (2000) was revoked by EO 14224 (March 1, 2025, "Designating English as the Official Language of the United States").** DOJ rescinded its 2002 LEP Guidance on April 15, 2025. Item #1 on the withdrawal list was similarly dead-letter for 5 months before Gibbs withdrew the HUD version.
 
-**Risk:** if one or two items are thin on current authority, name the thinness in the piece rather than paper over it. "This one lost its interpretive layer and has not been replaced yet" is a legitimate finding. Particular risk items: #5 (Special Purpose Credit Programs) and #8 (Source of Income Testing under FHAP) because both are niche program guidance that may not have direct statute-level analogs.
+**The practical read.** The withdrawal is not a standalone event. It sits inside a coordinated narrowing that spans three branches of federal action: executive orders, agency enforcement priorities, and proposed rulemaking. The piece names this explicitly in one paragraph so readers understand the full context, then moves to the item-by-item mapping.
 
-### Blocker 3: Effective-date mechanics and the 201-day gap. PARTIALLY CLOSED.
+**The nine-item current-authority mapping.**
 
-**Closed:** the effective date is "upon receipt" on September 17, 2025 (not retroactive in the enforcement sense). FHEO deprioritized enforcement against conduct inconsistent with the withdrawn guidance during the pendency of the withdrawal. Anyone who acted in alignment with the withdrawn guidance between September 17, 2025 and April 6, 2026 is not retroactively exposed.
+**Item #1: Limited English Proficiency Guidance (January 22, 2007).**
+- Subject: Title VI obligations for federal financial assistance recipients serving LEP persons.
+- Statutory anchor: Title VI, 42 U.S.C. § 2000d. Title VI itself is unchanged.
+- Regulatory anchor: 24 C.F.R. Part 1 (HUD Title VI regulations).
+- Executive order anchor: **Revoked.** EO 13166 rescinded by EO 14224 on March 1, 2025.
+- Case law: *Lau v. Nichols*, 414 U.S. 563 (1974) establishes that national-origin discrimination under Title VI can include failure to provide language access. Still good law.
+- Practical effect: the statute and regulation remain. The federal framework for how recipients should comply has narrowed dramatically. Not a Montaic concern directly because Montaic is not a federal recipient, but agents who serve multilingual markets should be aware their federal guidance layer is thin.
 
-**Open:** 30 minutes to confirm whether any HUD or DOJ enforcement action filed between September 17, 2025 and April 6, 2026 cited any of the nine withdrawn guidance documents. If yes, the enforcement action is now in an unusual posture: it cited guidance that was already withdrawn for internal purposes but not yet publicly noticed. That is a story detail worth surfacing if it exists. If no, the piece notes the absence and moves on.
+**Item #2: FHEO Notice 2013-01, Service Animals and Assistance Animals (April 25, 2013).**
+- Subject: when housing providers must accept service and assistance animals as reasonable accommodations.
+- Statutory anchor: Fair Housing Act § 3604(f)(3)(B) (reasonable accommodations for disability).
+- Regulatory anchor: 24 C.F.R. § 100.204 (reasonable accommodations).
+- Case law: *Janush v. Charities Hous. Dev. Corp.*, 169 F. Supp. 2d 1133 (N.D. Cal. 2000) and a long line of cases establishing that emotional support animals can qualify as reasonable accommodations.
+- Practical effect: the statute and regulation still require reasonable accommodations. The detailed framework for evaluating animal requests is now only in FHEO 2020-01, which is also on the withdrawal list. Agents should assume that the "service animal" versus "assistance animal" distinction, the documentation standards, and the fraudulent-request handling rules are all in interpretive limbo until HUD reissues guidance or courts fill the gap.
+
+**Item #3: FHEO 2020-01, Assessing a Person's Request to Have an Animal as a Reasonable Accommodation (January 28, 2020).**
+- Same statutory and regulatory anchors as Item #2.
+- Practical effect: Items #2 and #3 together were the HUD rulebook on emotional support animals. Withdrawing both leaves disability-rights housing advocates and housing providers without a federal reference document. The statute and regulation remain, but the translation layer is gone.
+
+**Item #4: Implementation of EO 13988 (February 11, 2021).**
+- Subject: implementation of Biden EO 13988, which directed agencies to apply Bostock v. Clayton County, 590 U.S. ___ (2020) to sex-based civil rights protections.
+- Statutory anchor: FHA § 3604. Bostock extended Title VII "sex" to include sexual orientation and gender identity. Whether that reading extends to the FHA's use of "sex" is unsettled.
+- Executive order anchor: **Revoked.** EO 13988 rescinded January 20, 2025.
+- Case law: Bostock itself is still good law but is a Title VII case. No binding Supreme Court decision extends it to FHA.
+- Practical effect: item #4 was already dead-letter in January 2025. The September 2025 withdrawal formally retires the HUD implementation document. LGBTQ+ protections under FHA are in interpretive limbo. Agents in jurisdictions with state-level sexual orientation and gender identity protections still have state-law obligations.
+
+**Item #5: FHEO Statement on the Fair Housing Act and Special Purpose Credit Programs (December 7, 2021).**
+- Subject: whether lenders can offer credit products targeted at disadvantaged groups without violating the FHA.
+- Statutory anchor: **Not FHA primarily.** Special Purpose Credit Programs are authorized under the Equal Credit Opportunity Act (ECOA), 15 U.S.C. § 1691 et seq., specifically § 701(c)(3), and 12 C.F.R. § 1002.8 (Regulation B). The withdrawn FHEO statement was HUD's coordination document explaining how FHA applied to ECOA-authorized SPCPs.
+- Practical effect: SPCPs remain lawful under ECOA. Lenders lost HUD's safe-harbor statement confirming FHA compatibility. The legal risk profile for SPCPs increased modestly, but the programs are not foreclosed.
+
+**Item #6: Application of FHA Standards to the Use of Criminal Records (June 10, 2022).**
+- Subject: FHA disparate impact review of tenant screening policies that use criminal records.
+- Statutory anchor: FHA § 3604. Disparate impact doctrine.
+- Regulatory anchor: 24 C.F.R. § 100.500 (Discriminatory Effects Rule). **Proposed for elimination January 14, 2026.**
+- Case law: *Texas Dept. of Hous. & Cmty. Affairs v. Inclusive Communities Project, Inc.*, 576 U.S. 519 (2015) remains the Supreme Court anchor for disparate impact under the FHA. Not overturned. But see the January 14, 2026 proposed rule, which relies on Loper Light to argue HUD should leave disparate impact interpretation entirely to courts.
+- Practical effect: criminal records screening is the single item where the withdrawal, the enforcement priorities shift, and the proposed rule all converge. November 25, 2025 HUD Secretary Turner letter to PHAs and Owners further narrowed the federal posture. Agents should assume that the federal disparate-impact theory for criminal records screening is weakening at every layer, but the Inclusive Communities holding itself still exists as precedent.
+
+**Item #7: Implementation of OGC Guidance on Application of FHA Standards to the Use of Criminal Records (June 20, 2022).**
+- Same anchors as Item #6.
+- Note: Items #6 and #7 are the pair that industry trade press conflated into a single item, producing the "eight" miscount. Item #6 is the substantive FHEO guidance. Item #7 is the HUD Office of General Counsel implementation memo operationalizing #6. Withdrawing both leaves FHAP agencies and FHIP grantees with no federal framework on how to evaluate criminal records screening policies.
+
+**Item #8: FHEO Memorandum on Source of Income Testing Activities under the Fair Housing Assistance Program (February 12, 2024).**
+- Subject: confirmation that FHAP funds could be used for source-of-income discrimination testing.
+- Statutory anchor: FHA § 3614 (pattern-or-practice enforcement). Source of income is not a federal protected class under the FHA, but source-of-income discrimination can be a proxy for protected-class discrimination, which brings it within FHA scope.
+- Regulatory anchor: state and local source-of-income laws where they exist (roughly 20 states and many municipalities). FHAP agencies in states with substantially-equivalent laws still have state-law basis for testing.
+- Practical effect: federal testing funds remain available for FHAP agencies, but HUD's explicit affirmation that source-of-income testing qualifies as protected-class proxy testing is withdrawn. Testing continues in jurisdictions with state-level protections. Not directly a Montaic concern (listing language rarely implicates source-of-income directly) but relevant for the full picture.
+
+**Item #9 deep read: Guidance on Application of the Fair Housing Act to the Advertising of Housing, Credit, and Other Real Estate-Related Transactions through Digital Platforms (April 29, 2024).**
+
+The direct Montaic-adjacent item. Withdrawn 17 months after issuance. 12 pages. Five sections: Introduction, Legal Background, Audience Targeting Tools, Algorithmic Delivery Functions, Conclusion and Recommendations. No signing official visible on the face of the document (unlike the Gibbs memo).
+
+*What the guidance covered:*
+
+- The FHA applies to digital advertising of housing, credit, and other real-estate-related transactions. Advertisers and ad platforms can both be liable.
+- Ad targeting tools (audience categorization, custom audiences, mirror/lookalike audiences) can violate the FHA when they segment or proxy for protected classes.
+- Algorithmic delivery functions (what the platform decides to show to whom) can violate the FHA even when the advertiser did not intend discrimination.
+- The seven protected classes under the FHA: race, color, religion, sex (the guidance notes "including sexual orientation and gender identity" per Bostock, now unsettled), national origin, familial status, and disability.
+- Six categories of discriminatory advertising harm: denying information about opportunities, targeting vulnerable consumers for predatory products, discouraging or deterring consumers, advertising different prices or conditions, steering, and charging advertisers higher amounts to reach certain groups.
+
+*Concrete examples HUD gave in the guidance (verbatim structure, paraphrased to avoid copyright bulk):*
+
+- A rental ad targeted at predominantly Black neighborhoods that includes disclaimers like "no criminal records" and "good credit only," while an otherwise identical ad targeted at White neighborhoods omits those disclaimers. Violates § 3604(c) because it deters applicants on the basis of race.
+- A mortgage ad targeted at men that includes specific interest rate details, while the same ad targeted at women says "getting a mortgage is easy." Violates § 3604(c) because it provides less actionable information to women.
+- A real estate agent uploads an open-house attendee list as a custom audience, and all attendees were White. Mirror audience tool amplifies the bias. Violates § 3604(c) because the resulting audience excludes non-White consumers by proxy.
+- A property management company uploads its existing-tenant list as a source audience, and the existing tenants are mostly White and childless. The mirror audience replicates the demographic. Violates § 3604(c) by familial status and race.
+
+*Current-authority mapping for item #9:*
+
+- **42 U.S.C. § 3604(c) (the discriminatory advertising prohibition).** Unchanged. Still in force. "Ordinary reader" standard for what constitutes discriminatory advertising established by *Rodriguez v. Village Green Realty*, 788 F.3d 31 (2d Cir. 2015), *Corey v. HUD ex rel. Walker*, 719 F.3d 322 (4th Cir. 2013), and *White v. HUD*, 475 F.3d 898 (7th Cir. 2007). Still good law.
+- **24 C.F.R. § 100.75 (implementing regulation).** Unchanged. Still in force. The regulation prohibits using words, phrases, photographs, illustrations, symbols, or forms that convey protected-class preference. This is the actual phrase-level rule Montaic's grader checks against.
+- **Disparate impact framework (24 C.F.R. § 100.500).** **In jeopardy.** Withdrawn from guidance use by the September 17, 2025 memo, and the underlying regulation is proposed for elimination by the January 14, 2026 HUD rulemaking. The *Inclusive Communities* (2015) Supreme Court anchor remains in force, but HUD's implementing regulation may not exist in its current form by summer 2026.
+- **DOJ v. Meta Platforms, No. 1:22-cv-05187 (S.D.N.Y. 2022).** Filed June 21, 2022. Settlement entered June 27, 2022. Court-monitored compliance runs through June 27, 2026. The settlement is still active as of the A15 publication target (seven days from lock) and for roughly 77 more days after. The Meta settlement is the live case-law anchor for algorithmic advertising discrimination under the FHA and does not depend on withdrawn guidance to exist. It is the piece's primary "here is what still applies" anchor for item #9.
+- **Case law for the advertising framework.** *Havens Realty Corp. v. Coleman*, 455 U.S. 363 (1982) for steering. *Gladstone Realtors v. Village of Bellwood*, 441 U.S. 91 (1979) for steering. *Clark v. Universal Builders*, 501 F.2d 324 (7th Cir. 1974) for pricing. *Fair Housing Council of San Fernando Valley v. Roommates.com*, 521 F.3d 1157 (9th Cir. 2008) (en banc) for housing-search-website liability. All still good law, all cited in the withdrawn guidance, all continue to bind regardless of the withdrawal.
+
+*What withdrawal of item #9 actually changes:*
+
+Not much at the statute-and-case-law level. § 3604(c) and § 100.75 still define what counts as discriminatory advertising. The Meta settlement still binds Meta through June 2026 and provides the post-2022 case-law anchor for algorithmic liability. *Inclusive Communities* still binds at the Supreme Court level.
+
+What it changes: the federal interpretive layer that translated those authorities into specific tool-level guidance for advertisers (do not use audience categorization by proxy, audit mirror audiences, test algorithmic delivery) is gone. Agents and compliance vendors that built their rules against item #9's specific tool taxonomy no longer have a federal document to cite. The underlying statute still reaches the same conduct, but the "here is how to comply" layer is thinner.
+
+**This is the Montaic commercial hook in its cleanest form.** Montaic never cited item #9 as authority. Montaic's phrase-level checks are against § 3604(c) and § 100.75, not against the withdrawn tool-level guidance. Nothing about what Montaic screens changed on September 17, 2025 or on April 6, 2026.
+
+### Blocker 3: Enforcement action audit in the 201-day gap window. CLOSED 2026-04-11.
+
+**Effort actual:** 15 minutes. Budget was 30.
+
+**Findings:**
+
+- **DOJ v. Meta Platforms** continues under court-monitored compliance. The settlement agreement was filed June 27, 2022 and runs through June 27, 2026. The Meta settlement was active during the entire 201-day gap and remains active as of the A15 publication target. This is the single most important piece of "still applies" context for item #9 and it does not depend on any of the withdrawn guidance documents to exist.
+- **November 25, 2025 Secretary Turner letter to PHAs and Owners** on criminal screening requirements. Issued during the gap window. Directly relevant to items #6 and #7. The letter narrows the federal framework for criminal records screening in public and assisted housing beyond what the Gibbs memo alone accomplished.
+- **December 11, 2025 FHEO investigation of the City of Boston** over the Boston Anti-Displacement Action Plan. FHEO issued initial requests for information within ten business days of the letter. Characterized as an investigation of "facially discriminatory conduct" (intentional discrimination), which aligns with the September 16, 2025 enforcement priorities memo prioritizing intent-based cases over disparate impact.
+- **No evidence** that any HUD or DOJ enforcement action filed in the September 17, 2025 to April 6, 2026 window cited any of the nine withdrawn guidance documents as authority. This is consistent with FHEO's announced deprioritization of enforcement against conduct inconsistent with the withdrawn guidance during the pendency of withdrawal. Agents who relied on the withdrawn guidance during the window are not known to face retroactive exposure.
+
+**What this means for the piece.** The 201-day gap did not produce a retroactive enforcement trap. Agents who acted on the withdrawn guidance in the window are in the clear. But the gap is still news because it shows HUD narrowed its interpretive layer for FHAP agencies and FHIP grantees 201 days before notifying the general public. The piece names the gap as a transparency story, not an exposure story, which keeps the tone measured.
 
 ### Blocker 4: 1989 through 1996 history subsection. CLOSED (findings captured 2026-04-11).
 
