@@ -189,6 +189,8 @@ If that policy breaks down (e.g., a news hook forces three Fair Housing pieces i
 
 ## A16 candidate re-scoring (2026-04-11)
 
+**A16 Phase 1 frame lock (2026-04-11):** Candidate C PROMOTED TO A16. Candidate E ABSORBED into A16 as a body section. Candidate D held for A17. Candidate B parked for A18 or later. Candidate F parked for Q3 2026 news-hook slot. Candidate A held as serviceable backup. Master doc at `audits/montaic/implementation/A16-96-percent-chatgpt-opening.md`. Phase 2 research scoped at roughly 2.5 hours across three blockers (dataset re-mine, Brentwood record pull, external citation audit). Phase 2 execution gated on Lance approval of the frame.
+
 The original backlog (#1 through #5) was scored under A13 conditions, before A13, A14, and A15 actually locked. The cluster state has changed. Fair Housing is now a three-pillar cluster (A11 plus A12 plus A15). Listing Differentiation is at two pillars (A13 plus A14). A16 returns to Listing Differentiation per alternation default and returns to evergreen per news-hook policy.
 
 A13 and A14 also produced an asset the original backlog did not anticipate: the 53 Nashville three-way dataset (Zillow originals, ChatGPT gpt-4o-mini, Montaic default). That dataset is reusable for A16 without a new data-collection run, which changes the effort math for any data-driven frame.
