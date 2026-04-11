@@ -7,7 +7,7 @@
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
 **Neighbor reference (same cluster):** `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md`
 **Prior cluster reference:** `audits/montaic/implementation/A11-fair-housing-pillar-article.md` and `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md` (Fair Housing cluster, cross-cluster mentions)
-**Status:** Phase 1 locked. Phase 2 open (extended batch script + two new dataset runs).
+**Status:** Phase 1 locked. Phase 2 shipped (three-way dataset at `listing-pipeline-ai/apps/dashboard/scripts/zillow-50-nashville-three-way.json`). Phase 3 shipped (body lives in `posts.ts` entry and `A14-claire-paste-this.md`). Phase 4 shipped (entry landed, `draft: true`). Phase 5 in progress. Lance read staged and approved 2026-04-11. Flip to `draft: false` pending second read and verify-deploy pass.
 
 ---
 
@@ -84,11 +84,38 @@ If the delta is real, the piece is the strongest commercial argument Montaic has
 
 ---
 
-## Phase 2: Research and data generation (OPEN)
+## Phase 2: Research and data generation (SHIPPED)
 
-Phase 2 has one new blocker and three closed ones.
+All four blockers closed. Three-way comparison dataset generated and aggregated.
 
-### Blocker 1: Extend the batch grader script. OPEN.
+### Phase 2 outcome
+
+- Extended `grade-zillow-batch.ts` shipped as commit `8009209` on `listing-pipeline-ai/main` with four new modes: `extract-facts`, `rewrite-chatgpt`, `rewrite-montaic`, `aggregate`
+- Fact extractor uses `claude-haiku-4-5` with Zod schema. Initial schema capped `key_features` at `max(10)`. During Claire's parallel session the cap was widened to unlimited with a post-parse `slice(0, 15)` so 11-15 feature listings would not fail validation. The three-way dataset was generated under the widened version, so the article text reads "up to 15 key physical features" (not 10).
+- ChatGPT run used `gpt-4o-mini` through the OpenAI API with a prompt that approximates what an agent would type. All 53 outputs graded.
+- Montaic run used `generateFreeListingContent()` from `lib/free-generator.ts` (the default path, no voice sample). All 53 outputs graded.
+- Three-way aggregation lives at `apps/dashboard/scripts/zillow-50-nashville-three-way.json`.
+
+### Headline numbers
+
+- Zillow originals: 4.6 / 10 average
+- ChatGPT (gpt-4o-mini): 3.6 / 10
+- Montaic (default path): 5.1 / 10
+- Delta ChatGPT vs Montaic: 1.5 points
+
+### Category deltas
+
+| Category | Originals | ChatGPT | Montaic |
+| --- | --- | --- | --- |
+| Specificity | 6.4 | 5.1 | 6.0 |
+| Emotional appeal | 4.5 | 4.6 | 4.2 |
+| Structure and flow | 4.5 | 4.4 | 5.3 |
+| Fair Housing | 5.5 | 4.7 | 6.7 |
+| Cliche avoidance | 4.2 | 1.8 | 3.7 |
+
+### Blocker history (archived)
+
+### Blocker 1: Extend the batch grader script. CLOSED.
 
 **Effort:** ~2 hours of dev time.
 
@@ -107,7 +134,7 @@ Phase 2 has one new blocker and three closed ones.
 
 **Owner:** Claude writes the script. Lance approves and kicks off the runs.
 
-### Blocker 2: Fact extraction reliability. OPEN.
+### Blocker 2: Fact extraction reliability. CLOSED.
 
 The ChatGPT and Montaic modes both need to start from the same MLS facts, not from the original Zillow description text. Otherwise the experiment measures paraphrase quality instead of generation quality.
 
@@ -135,86 +162,116 @@ A14 reuses A13's citation stack (Zillow 2016, Iowa State 2023, Verbalized Sampli
 
 ---
 
-## Phase 3: Draft (NOT STARTED)
+## Phase 3: Draft (SHIPPED)
 
-### Target length
+### Where the body lives
 
-Same range as A13 and the pillar-article-skeleton: 2000 to 2400 words. Target 2300.
+Single authoritative copy of the article body is in `apps/dashboard/lib/blog/posts.ts` at line 1146 (`slug: "chatgpt-53-nashville-listings"`), landed as commit `0ed99f7` on `listing-pipeline-ai/main` on 2026-04-11. The Claire handoff artifact is at `audits/montaic/implementation/A14-claire-paste-this.md` and contains the same body plus the publish-path instructions.
 
-### Working structure
+Intermediate work product: `audits/montaic/implementation/A14-draft.md` (Claire's first prose pass, superseded by the handoff file). Temporary artifact: `audits/montaic/implementation/A14-draft-for-voice-read.md` (voice-read extraction file, deleted during Step E cleanup on 2026-04-11).
 
-1. **Opening hook.** Lance observation: after A13 shipped, the obvious next question from every reader was "fine, but what does the ChatGPT version actually look like, and is Montaic any better?" This piece is the answer.
-2. **The experiment.** One paragraph describing the three-way setup: 53 Nashville listings, same facts extracted, three processors, one rubric.
-3. **Scorecard section.** The three averages. The category averages. The vocabulary deltas. The filler-phrase frequencies per column. This is the numbers-on-the-table spine of the piece.
-4. **What ChatGPT actually produced.** Two or three representative ChatGPT outputs with the specific failure modes called out (generic openers, no sensory detail, Fair Housing risk language, feature-list-without-context, manufactured urgency).
-5. **What Montaic produced on the same facts.** Two or three representative Montaic outputs with the specific wins called out (specific openers, experience attributes, Fair Housing screened, portal-aware structure).
-6. **Why the gap exists.** Recycles A13's "trained on the same corpus" argument in one tighter paragraph, with the new dataset as evidence instead of the older Zillow-only sample.
-7. **What this means for agents already using ChatGPT.** Concrete next-step guidance. Not preachy.
-8. **What this means for Montaic.** Honest: the experiment was run against our own product. We would have published the numbers either way. The numbers happen to show what they show.
-9. **FAQ.** 6 questions, ready for FAQPage schema. Questions should include: "which ChatGPT version did you use," "is this reproducible," "what happens if you run it on a different market," "did you cherry-pick the listings," "what does the rubric actually measure," "can I run my own listings through the grader."
-10. **Closing and CTA.** Same Montaic grader CTA as A13, with a line about comparing your own listing against the Nashville average.
+### Final shape
 
-### Voice rubric pre-draft checklist
+- 10 sections (including unlabeled opening hook and unlabeled closing)
+- 6 FAQs (FAQPage schema)
+- 5 citations (A13's stack reused: Zillow 2016, Iowa State 2023, Verbalized Sampling 2025, Price of Format 2025, NAR 2025)
+- 3 mentions in schema (A13, A11, A12)
+- 4 `about` Things (ChatGPT, Listing descriptions, AI content quality, Real estate marketing)
+- 13 min estimated reading time
+- ~2300 words (matches target)
 
-- Zero em dashes.
-- Zero semicolons in marketing prose.
-- Zero AI filler phrases in Lance's own prose. The full banned list lives in `remediation-template/voice-rubric-v0.md`. Those phrases can appear inside quoted ChatGPT output or inside the grader data tables because those are evidence, not voice, and the voice-check script should be run on the draft body only, with the quoted evidence sections flagged in advance as known exceptions.
-- Zero emojis.
-- Closing does not restate the intro.
-- Does not sound like A13 paraphrased. A14 has to stand on its own as a different kind of piece (experiment, not observation).
+### Section headings (as shipped)
+
+1. Opening hook (no heading)
+2. How the experiment worked
+3. The scorecard
+4. What ChatGPT actually produced
+5. What Montaic produced on the same facts
+6. Why the gap exists
+7. What this means for agents already using ChatGPT
+8. The honest note on the Montaic numbers
+9. Frequently asked questions
+10. Closing (no heading)
+
+### Notable Phase 3 decisions
+
+- **Drafting path.** A parallel Claire session drafted the article body directly inside the handoff file (`A14-claire-paste-this.md`) rather than in a standalone draft. This session verified and reviewed the draft after Phase 2 had already completed on the Claire side. The governance trail is: Claire drafted → voice-check passed 4/4 → Lance reviewed via staged URL → Lance approved.
+- **"Up to 15 features" factual correction.** An earlier "Step B fix" in this session changed the article text from "up to 15 key physical features" to "up to 10" based on a stale read of the fact extractor schema. The actual extraction ran under Claire's widened schema (`slice(0, 15)`), so 11-15 feature listings were included in the dataset. The text was reverted to "up to 15" before the posts.ts commit landed. Code and article now agree.
+- **Honest note section.** Section 8 names the conflict of interest up front: the experiment was run by the person who built Montaic, using Montaic's own grader. Two mitigators named (reproducibility, Montaic did not win every category). This is the So What test passing.
+- **Reciprocal mentions.** A14 carries mentions to A13, A11, A12. A13's mentions array is NOT yet updated to point back at A14. That back-prop is deferred until A14 flips from `draft: true` to `draft: false` so A13 does not link to a hidden page during the draft window.
+
+### Voice rubric outcome
+
+Voice check run on `A14-claire-paste-this.md` on 2026-04-11: 4/4 clean (no em dashes, no marketing-prose semicolons, no banned filler phrases in Lance prose, no emojis).
+
+Known-exception zones are the quoted ChatGPT outputs and the filler-frequency data tables. Those are evidence, not voice. The voice-check script accepted them because they live inside quotation marks and percentage data, not in Lance prose.
 
 ---
 
-## Phase 4: Schema, handoff, publish (NOT STARTED)
+## Phase 4: Schema, handoff, publish (SHIPPED)
 
-### Schema block target
+### What landed
 
-Same `@graph` structure as A13:
+- **Commit:** `0ed99f7` on `listing-pipeline-ai/main`, pushed 2026-04-11.
+- **File touched:** `apps/dashboard/lib/blog/posts.ts` (A14 entry inserted after A13 at line 1146).
+- **Secondary file in same commit:** `apps/dashboard/scripts/grade-zillow-batch.ts` (Claire's fact extractor widen from `max(10)` to `slice(15)`, previously uncommitted in working tree).
+- **Draft flag:** `draft: true` (intentional, waiting for second-read approval).
+- **Build check:** `npx tsc --noEmit` passed exit 0 before commit.
 
-- **BlogPosting** with headline, description, datePublished, author (Lance Roylo), publisher (Montaic), image, and `citation` array pointing at A13 plus the A13 citation stack.
-- **FAQPage** with 6 Question nodes.
-- **BreadcrumbList** for Home > Blog > A14.
-- **`mentions`** array on the BlogPosting pointing at:
-  - A13 (`/blog/zillow-listings-all-sound-the-same`) as the primary cluster sibling.
-  - A11 (`/blog/fair-housing-ai-compliance-agents`) for cross-cluster bind.
-  - A12 (`/blog/fair-housing-listing-description-rules`) for cross-cluster bind.
+### Schema payload as shipped
 
-### Reciprocal mentions back-propagation
+- **BlogPosting** via posts.ts transform: headline, description, `publishedAt: 2026-04-11`, `updatedAt: 2026-04-11`, author (Lance Roylo), `citation` array (5 items), `mentions` array (3 items), `about` array (4 Things).
+- **FAQPage** with 6 Question / Answer pairs.
+- **BreadcrumbList** inherited from the blog post page template.
+- **`mentions` array** as shipped:
+  - A13 `https://montaic.com/blog/zillow-listings-all-sound-the-same`
+  - A11 `https://montaic.com/blog/fair-housing-ai-compliance-agents`
+  - A12 `https://montaic.com/blog/fair-housing-listing-description-rules`
 
-When A14 ships, A13's `mentions` array needs to add A14 as a sibling. Same schema pattern as the A11 and A12 reciprocal update that shipped on 2026-04-10. Document this as a Phase 4 checklist item so the cluster bind stays symmetric.
+### Reciprocal mentions back-propagation (DEFERRED)
+
+A13's `mentions` array needs to add A14 as a sibling, matching the A11/A12 reciprocal pattern from 2026-04-10. The back-prop is deliberately DEFERRED until A14 flips from `draft: true` to `draft: false`, so A13 does not link to a hidden page during the draft window. The edit is one line in `posts.ts` and ships in a separate commit when the flip happens.
 
 ### Claire handoff
 
-Stub file: `audits/montaic/implementation/A14-claire-paste-this.md`. Create during Phase 4 using A13's Claire handoff as the starting template. Confirm `draft: true` stays until Lance flips it.
+`audits/montaic/implementation/A14-claire-paste-this.md` committed to neverranked as part of Step E (this commit). The handoff file is the full publish instructions package: pre-flight curls, posts.ts entry, back-prop instructions, report-back checklist.
 
 ---
 
-## Phase 5: Voice pass and ship (NOT STARTED)
+## Phase 5: Voice pass and ship (IN PROGRESS)
 
-Standard sequence:
+### Completed 2026-04-11
 
-1. Lance reads the Phase 3 draft end to end out loud.
-2. Run `./scripts/voice-check.sh` on the draft file. Four checks clean.
-3. Commit the Phase 4 updates to the master doc.
-4. Paste Claire handoff.
-5. Claire wires schema and creates the file with `draft: true`.
-6. Lance flips `draft: false` after a second voice read of the live staging copy.
-7. Run `./scripts/verify-deploy.sh` and Rich Results Test.
-8. Update `content-calendar.md`: move A14 to Live slot, open the drafting slot for A15.
+1. Voice-check on `A14-claire-paste-this.md`: 4/4 clean.
+2. Two factual corrections triaged:
+   - Step B error "up to 15" → "up to 10" based on stale schema read, reverted to "up to 15" (matches dataset reality).
+   - Step B kept "Six outputs included the literal phrase 'MLS Description:'" (corrected from Claire's "Five". The three-way JSON shows count 6).
+3. A14 entry inserted into `posts.ts`, typecheck clean, committed and pushed (`0ed99f7`).
+4. Lance read the staged preview at `https://montaic.com/blog/chatgpt-53-nashville-listings` and approved the body.
+5. Phase 3 / Phase 4 / Phase 5 governance updates written into this master doc (Step D).
+6. Temp voice-read artifact `A14-draft-for-voice-read.md` deleted (Step E).
+7. Neverranked commit (this commit): master doc updates, Claire handoff file, first-pass draft artifact.
+
+### Still pending
+
+1. **Lance flips `draft: false`** in `posts.ts`. One-line edit: change `draft: true` to `draft: false` on the A14 entry, commit, push. After this, A14 becomes visible in `/blog` index and sitemap.
+2. **A13 mentions back-prop** (blocked until step 1). Add A14 to A13's `mentions` array in the same commit as the flip, or in a follow-up. Either works. Handoff file has the exact snippet to paste.
+3. **Run `./scripts/verify-deploy.sh`** against the live URL after the flip lands on Vercel. Confirms 200, confirms the slug is in the sitemap, confirms schema validates.
+4. **Rich Results Test** on `https://montaic.com/blog/chatgpt-53-nashville-listings` to confirm BlogPosting and FAQPage both extract cleanly.
+5. **Content calendar update** in `audits/montaic/implementation/content-calendar.md`: move A14 from drafting slot to Live slot, open the drafting slot for A15 (Fair Housing topic #2 per the A14 alternation override catchup commitment).
+6. **A15 kickoff**: A15 returns to Fair Housing cluster with topic #2 (withdrawn HUD Word List piece) per the Phase 1 override commitment.
 
 ---
 
-## Open questions for Lance
+## Open questions for Lance (ANSWERED)
 
-These are not blocking Phase 2 but should be answered before Phase 3 drafts start.
-
-1. **ChatGPT model version.** Which model does the experiment target? The default is "whichever version the free tier serves as of the run date, because that is what agents actually use." Alternative is "the paid tier model, because that is what the strongest ChatGPT users have access to." Pick one before the run, document the choice in the article.
-2. **Montaic mode selection.** Does the Montaic run use the default product path (whatever an agent gets when they sign up today) or does it use a writing-style-locked path that requires a voice sample upload? The default path is the honest comparison. The voice-locked path is the stronger product story. Recommend the default path with a one-paragraph note in the article that voice-locked output would score even higher.
-3. **Article tone on the Montaic numbers.** If Montaic beats ChatGPT by a large margin, is the article allowed to say so directly, or does the house style require softening? Recommend: say the numbers, show the work, let the reader form the opinion. No softening.
-4. **Publication risk check.** If ChatGPT scores embarrassingly low, does OpenAI have any credible complaint? Answer: no, the experiment is on public Zillow data using a documented rubric with reproducible methodology, and the article cites ChatGPT's strengths where they exist. Publish as is.
+1. **ChatGPT model version.** Resolved: `gpt-4o-mini`, free-tier model as of April 2026. This is the version most agents are actually using. Documented in the article FAQ.
+2. **Montaic mode selection.** Resolved: default product path (no voice sample). The honest comparison. The article names the tradeoff explicitly: Montaic's default path optimizes for structure and compliance and loses slightly on emotional appeal vs ChatGPT (4.2 vs 4.6), and the voice-locked path is where that gap closes.
+3. **Article tone on the Montaic numbers.** Resolved: say the numbers, show the work, no softening. Section 8 ("The honest note on the Montaic numbers") names the conflict of interest directly and documents two mitigators (published rubric, Montaic did not win every category).
+4. **Publication risk check.** Resolved: no credible OpenAI complaint path. Public Zillow data, documented rubric, reproducible methodology, article cites ChatGPT's strengths where they exist.
 
 ---
 
 ## Next action
 
-Phase 2 Blocker 1: extend `grade-zillow-batch.ts` with the two new modes. Claude writes, Lance approves, Lance kicks off the runs.
+Lance flips `draft: false` on the A14 entry in `posts.ts` after a second read of the staged URL. Same commit (or immediate follow-up) adds A14 to A13's `mentions` array. Then `verify-deploy.sh`, Rich Results Test, content-calendar update, A15 kickoff.
