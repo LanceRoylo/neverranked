@@ -7,7 +7,7 @@
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
 **Neighbor references (same cluster):** `audits/montaic/implementation/A11-fair-housing-pillar-article.md` and `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md`
 **Cross-cluster references:** `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md` and `audits/montaic/implementation/A14-chatgpt-53-nashville-listings.md`
-**Status:** Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blockers 1, 2, and 3 all CLOSED 2026-04-11. Ready for Phase 3 draft.
+**Status:** Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blockers 1, 2, and 3 all CLOSED 2026-04-11. Phase 3 draft complete 2026-04-11 at `A15-draft.md`, voice-check 4/4 clean. Phase 4 Claire handoff stub complete 2026-04-11 at `A15-claire-paste-this.md`, voice-check 4/4 clean. Ready for Lance voice pass and Claire publish.
 
 ---
 
