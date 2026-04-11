@@ -141,7 +141,7 @@ All 5 verified reachable with browser User-Agent on 2026-04-10. Each is a primar
 
 ## Phase 3: Draft
 
-Drafted 2026-04-10 against `remediation-template/content-skeletons/pillar-article-skeleton.md`. Grader-data section left as placeholder (`[GRADER-DATA-PLACEHOLDER]`) to be replaced once Blocker 1 closes. Everything else is shippable pending Phase 4 voice pass, schema, and handoff.
+Drafted 2026-04-10 against `remediation-template/content-skeletons/pillar-article-skeleton.md`. Grader-data section populated 2026-04-11 with a 53-listing Nashville run through Montaic's listing grader (average 4.6 out of 10, full filler-vocabulary frequency data). All Phase 3 blockers now closed. Shippable pending final end-to-end voice read.
 
 ### Title
 
@@ -167,7 +167,11 @@ A few nights a week I pull up Zillow in a mid-size market and scroll through lis
 
 The problem is that the writing is almost always the same. After five listings, the openings blur. After ten, I stop reading the descriptions entirely and scroll straight to the photos. The houses are not the problem. Every listing sounds like every other listing.
 
-`[GRADER-DATA-PLACEHOLDER: a single-market case study where Montaic ran 50 top-performing Zillow listings through the grader. Expected output: specific frequency counts of opening phrases, filler word patterns, and sentence structure convergence. This section is the concrete proof that sets up the national-scale Zillow research below. Replace this paragraph once the grader run lands.]`
+In April 2026, I ran 53 of the most-viewed active single-family listings in Nashville through Montaic's listing grader. The average score was 4.6 out of 10. Nothing cracked 7. Thirty-one listings scored a 3 or a 4.
+
+The vocabulary is where the pattern lives. "Beautiful" appeared in 38% of the listings. "Spacious" appeared in 34%. "Stunning" in 21%. "Boasts" and "move-in ready" each in 15%. The grader's lowest category score across the whole sample was cliche avoidance, at 4.2 out of 10.
+
+The grader is not reading the listings and getting bored. It is reading them and writing the same feedback every time: "overloaded with generic cliches," "no emotional appeal," "no actual dimensions." The top complaint was the same complaint, over and over, in slightly different words. Which is exactly what the listings sound like.
 
 This is not an agent problem. Agents are not writing bad copy on purpose. The reason every listing sounds the same is that every tool that writes listings, from ChatGPT to the dedicated real estate description generators, was trained on the same averaged MLS writing. When the training data is averaged, the output is averaged. When the output is averaged, your listing sounds like everyone else's. And when your listing sounds like everyone else's, you pay for it in two ways: dollars you leave on the sale price, and days you leave on the market.
 
@@ -310,9 +314,9 @@ Run `./scripts/voice-check.sh audits/montaic/implementation/A13-zillow-listings-
 
 ---
 
-## Phase 4: Schema, handoff, publish (staged, pending grader data)
+## Phase 4: Schema, handoff, publish (ready pending final voice read)
 
-Schema block is written and locked. Claire handoff is written and staged at `audits/montaic/implementation/A13-claire-paste-this.md`. Both depend on the Phase 3 draft body, which still has `[GRADER-DATA-PLACEHOLDER]` in the opening hook. Before Claire runs the handoff, Lance must replace the placeholder with the single-market case study paragraph generated from the Montaic grader run. Everything else in Phase 4 is ready.
+Schema block is written and locked. Claire handoff is written and staged at `audits/montaic/implementation/A13-claire-paste-this.md`. Grader-data placeholder was replaced 2026-04-11 with the real Nashville case study paragraph (53 listings, average 4.6 out of 10). The only remaining gate before shipping to Claire is Lance's end-to-end voice read of the Phase 3 draft body.
 
 ### Cluster binding decision
 
