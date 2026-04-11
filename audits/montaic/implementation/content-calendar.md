@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot (topic #2 narrow variant, Fair Housing cluster return per A14 override catchup commitment).
+**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot, pivoted 2026-04-11 from topic #2 narrow variant (evergreen) to news-hook frame on HUD Federal Register Notice 2026-06624 (April 6, 2026 withdrawal of eight fair housing guidance documents). Fair Housing cluster return per A14 override catchup commitment is preserved.
 
 ---
 
@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** A15 "The 1989 HUD Word List Is Withdrawn. Here Is What Replaced It." Master doc at `A15-hud-word-list-withdrawn.md`. Phase 1 locked. Phase 2 open (provenance research and post-2010 case law selection).
+**Drafting slot:** A15 "HUD Just Withdrew Eight Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11). Phase 2 open (Federal Register Notice 2026-06624 full-text fetch, eight-item current-authority mapping, effective-date mechanics).
 **Voice pass slot:** empty.
 **With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Pending Lance's second read and flip to `draft: false`. Back-propagation to A13's `mentions` array is deferred until the flip.
 **Live slot:**
@@ -85,31 +85,33 @@ Every candidate has been pre-evaluated against the Hello Momentum tests: swap te
 
 ---
 
-### #2 PROMOTED TO A15 (2026-04-11, narrow variant): The 1989 HUD Word List Is Withdrawn. Here Is What Replaced It.
+### #2 PROMOTED TO A15 (2026-04-11, PIVOTED to news-hook same day): HUD Just Withdrew Eight Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings.
 
-**Status:** LOCKED as A15 narrow variant. Master working doc at `A15-hud-word-list-withdrawn.md`. Phase 1 locked. Phase 2 open (provenance research and case law selection).
+**Status:** LOCKED as A15 news-hook pivot. Master working doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked 2026-04-11. Phase 2 open (Federal Register Notice 2026-06624 full-text fetch, eight-item current-authority mapping, effective-date mechanics).
 **Cluster:** EXISTING. Fair Housing (third pillar, cluster return after A14 override).
-**Lever:** Contrarian correction plus Specificity.
-**Primary citation source:** the 1989 HUD memo provenance (to be confirmed), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), two to three post-2010 Fair Housing advertising enforcement cases.
-**Frame (2 sentences):** Fair Housing training still hands out a word list derived from a 1989 HUD staff memorandum that was never a rule, stopped being maintained in the 2000s, and was never formally replaced. The piece explains where the list came from, why it was withdrawn, what actually governs Fair Housing listing language today, and which phrases current enforcement catches that the 1989 list missed.
+**Lever:** News hook plus Specificity.
+**Primary citation source:** Federal Register Notice 2026-06624 (published April 6, 2026, effective September 17, 2025), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), post-2010 Fair Housing advertising enforcement cases as needed for current-authority mapping.
+**Frame (2 sentences):** Five days ago HUD published Federal Register Notice 2026-06624, withdrawing eight fair housing guidance documents including one on digital advertising practices that touches every online real estate listing. The piece walks each withdrawn item against the statute, regulation, and case law that still cover the same territory, and explains why Montaic's compliance layer did not change when HUD narrowed the guidance layer.
 
-**Narrow variant scope:**
+**Pivot history:**
 
-The A14 master doc flagged topic #2's research burden as potentially too heavy for a single cadence cycle. The narrow variant scopes the piece to the provenance correction plus the three-part current authority framework (statute, regulation, post-2010 case law) and defers the exhaustive withdrawal-timeline research. Target length 2100 words, narrower than A14's 2300.
+A15 was originally scoped as a narrow-variant correction of "the 1989 HUD word list" (topic #2 original framing). Phase 2 Blocker 1 research on 2026-04-11 revealed two facts that invalidated the original thesis: (a) the artifact was not a 1989 memo but 24 C.F.R. Part 109, a formal regulation rescinded May 1, 1996 via directive FR-4029-F-01, and (b) HUD published Notice 2026-06624 on April 6, 2026, withdrawing eight additional guidance items. The news hook is five days old and directly overlaps Montaic's cluster. A15 pivoted same day. The 1989 through 1996 history becomes a one-paragraph context subsection in the body rather than the whole thesis.
 
-**Why narrow variant works:**
+**Why news-hook pivot works:**
 
-- A12 already did 42 U.S.C. § 3604(c) and 24 C.F.R. § 100.75 research. Reuse.
+- A12 already did 42 U.S.C. § 3604(c) and 24 C.F.R. § 100.75 research. Reuse for the current-authority mapping.
 - A11 already framed the statutory authority. Reuse.
-- The narrow variant only needs new work on 1989 memo provenance (2 to 3 hours) and post-2010 case law selection (3 to 4 hours).
-- The piece is a correction, not an encyclopedia. Narrowness is feature, not bug.
+- News-hook window is five days old. No competitor has published the full eight-item mapping yet.
+- One of the eight withdrawn items is "digital advertising practices." Direct overlap with Montaic's customer base.
+- Commercial hook is the strongest Fair Housing hook Montaic has had: "Montaic never cited the withdrawn guidance as authority, so our compliance layer did not change."
 
 **Why this wins the A15 slot:**
 
 - Honors the A14 override catchup commitment. A14 extended Listing Differentiation. A15 restores Fair Housing alternation.
 - Three-pillar Fair Housing cluster signal (A11 plus A12 plus A15).
-- Authentic Lance observation: he saw the 1989 list still circulating in training materials while building A12.
-- Commercial hook lands with specificity. "Montaic screens against the current statute, the regulation, and the post-2010 case law. Not the withdrawn 1989 list."
+- News-hook velocity. Notice 2026-06624 is five days old. Every day of delay is compounding lost.
+- Commercial hook lands with specificity. "Montaic screens against 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75, and a case law corpus. Withdrawn guidance does not change what we check because we never cited guidance as authority."
+- Invokes the news-hook-per-quarter policy (below) at max strength.
 
 ---
 
@@ -171,7 +173,7 @@ If that policy breaks down (e.g., a news hook forces three Fair Housing pieces i
 **Override history:**
 
 - **A14 override (2026-04-10).** A14 stayed in Listing Differentiation instead of returning to Fair Housing. Three reasons: one-shot marginal-cost dataset economics, topic #3 passed Hello Momentum tests stronger than topic #2, cluster compounding signal. Full rationale in the A14 master doc.
-- **A15 restoration (2026-04-11).** A15 returns to Fair Housing with topic #2 narrow variant. The narrow scope addresses the research burden concern that originally pushed topic #2 out of the A14 slot. Alternation is restored starting at A15.
+- **A15 restoration (2026-04-11).** A15 returns to Fair Housing. Originally scoped as topic #2 narrow variant ("1989 HUD word list correction"). Same-day pivot to news-hook frame on Federal Register Notice 2026-06624 after Phase 2 research surfaced two findings that invalidated the original thesis. Cluster alternation restoration is preserved. News-hook policy invoked (see below). Full rationale in the A15 master doc.
 - **A16 decision (open).** Default is alternation back to Listing Differentiation. News-hook pieces can jump the queue per the news-hook policy.
 
 ### 3. News-hook vs. evergreen mix
@@ -179,6 +181,8 @@ If that policy breaks down (e.g., a news hook forces three Fair Housing pieces i
 **Default:** evergreen pieces. News hooks (HUD guidance updates, DOJ settlements, new case law) can jump the queue and replace the next drafting slot if the news is time-sensitive.
 
 **Limit:** no more than one news-hook piece per quarter. Evergreen compounds, news hooks decay.
+
+**Q2 2026 news-hook invocation (2026-04-11).** A15 pivoted to news-hook frame on Federal Register Notice 2026-06624 (published April 6, 2026). This is the Q2 2026 news-hook slot. No further news-hook piece can ship in Q2 2026 without explicit revisit of this limit. A16 returns to evergreen per default.
 
 ---
 
@@ -196,14 +200,15 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**A15 Phase 2: research.**
+**A15 Phase 2: research (news-hook frame).**
 
-A15 Phase 1 is locked at `A15-hud-word-list-withdrawn.md`. Two Phase 2 blockers are open:
+A15 Phase 1 is locked at `A15-hud-2026-guidance-withdrawal.md`. Three Phase 2 blockers are open:
 
-1. **1989 memo provenance.** 2 to 3 hours of archive research (Wayback Machine, law review secondary sources, FHEO records) to confirm the exact provenance of the 1989 HUD advertising memo or document its absence. Claude can drive.
-2. **Post-2010 case law selection.** 3 to 4 hours to select two or three Fair Housing advertising enforcement cases that show the stale-list problem in both directions (phrases the statute caught that the list missed, and phrases the list over-flagged that case law cleared). Claude can drive.
+1. **Federal Register Notice 2026-06624 full text.** 2 to 3 hours to fetch and document all eight withdrawn items with original citations and effective-date mechanics. Claude can drive.
+2. **Current-authority mapping for each of the eight items.** 4 to 6 hours to map each withdrawn item against the statute, regulation, or case law that still covers the same territory. Digital advertising practices item gets the deepest read. Claude can drive.
+3. **Effective-date mechanics confirmation.** 1 hour to confirm the September 17, 2025 retroactive effective date language and any implication for enforcement actions taken in the window. Claude can drive.
 
-Total Phase 2 budget: 5 to 7 hours. Target completion before the cadence target of 2 weeks from A14 ship.
+Total Phase 2 budget: 7 to 10 hours. Target Phase 3 draft complete within seven days of Phase 1 lock (2026-04-18) to preserve the news-hook window.
 
 **Parallel track: A14 ship-out housekeeping** (Lance-owned, not blocking A15):
 
