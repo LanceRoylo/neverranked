@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-10
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A12 with Claire, A13 LOCKED and in Phase 1 drafting
+**Current pipeline state:** A11, A12, A13 all SHIPPED 2026-04-10. Fair Housing cluster complete. Listing Differentiation cluster opened. Next drafting slot open for A14 (topic lock pending).
 
 ---
 
@@ -41,10 +41,15 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-10.
 
-**Drafting slot:** A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)". Master working doc at `A13-zillow-listings-all-sound-the-same.md`. Phase 1 locked 2026-04-10. Phase 2 blocked on grader run (50 Zillow listings in a mid-size market) and lead-conversion citation hunt.
+**Drafting slot:** empty. A14 topic lock is the next decision.
 **Voice pass slot:** empty.
-**With Claire slot:** A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026". Handoff at `A12-claire-paste-this.md`. Awaiting Claire session.
-**Live slot:** A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. verify-deploy last-confirmed clean.
+**With Claire slot:** empty.
+**Live slot:**
+- A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. Shipped pre-2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
+- A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026" at `/blog/fair-housing-listing-description-rules`. Shipped 2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
+- A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)" at `/blog/zillow-listings-all-sound-the-same`. Shipped 2026-04-10. Opens Listing Differentiation cluster. Mentions A11 and A12 for cross-cluster bind. Grader-data section populated with a 53-listing Nashville run (average 4.6 out of 10, 31 listings scored 3 or 4, nothing cracked 7, "beautiful" in 38% and "spacious" in 34% and "stunning" in 21%).
+
+**Cross-cluster schema bind is live in both directions.** A11 and A12 schemas carry `mentions` pointing at A13, and A13 carries `mentions` pointing at A11 and A12. Fair Housing cluster and Listing Differentiation cluster are linked as a single topical graph.
 
 ---
 
@@ -181,13 +186,18 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**Unblock A13 Phase 2.**
+**Lock A14.**
 
-Two inputs needed before drafting can start:
+A13 just shipped and opened the Listing Differentiation cluster. Per the cluster alternation policy, A14 should return to Fair Housing (topic #2 "The HUD Advertising Word List Doesn't Exist Anymore. Here's What Replaced It.") unless a news hook or a stronger Listing Differentiation follow-up forces a different call.
 
-1. **Run 50 Zillow listings through the Montaic grader** in a chosen mid-size market (Nashville, Austin, Charlotte, or a market where Montaic already has a user). ~2 hours of tool time. Output: a frequency table of opening phrases, filler words, and sentence patterns. This becomes the piece's headline data point.
-2. **Find at least one credible source** linking listing description quality to lead conversion (or days on market, or price reduction frequency as fallbacks). If no source is strong enough, the frame softens from "costing leads" to "costing attention."
+Decision points for A14:
 
-Owner split: grader run is Lance (or Claude if the grader has a batch mode). Citation hunt is Claude with Lance as the judgment call on source strength.
+1. **Cluster direction.** Fair Housing return per alternation policy (topic #2), or stay in Listing Differentiation to compound the new cluster (topic #3 or #5)? Default is alternation. Overriding the default needs a reason.
+2. **Research burden check.** Topic #2 requires tracking the HUD Word List withdrawal timeline. That is primary-source digging that can expand. If it is going to consume more than 1 week of research time, it is not an A14 fit, it is an A16 fit. Judge before locking.
+3. **Authenticity test.** Topic #2 is research-sourced, not observation-sourced. Does Lance have a personal angle on it (for example, observed a Fair Housing training that still handed out the withdrawn list)? If yes, authenticity test passes. If no, consider whether topic #3 or #5 gives a stronger personal hook.
 
-Once both unblock, A13 moves into Phase 3 drafting. Target: ~1 week of draft time, then voice pass, then Claire handoff, matching the A11 and A12 cadence.
+**Post-publish housekeeping for the Fair Housing cluster and A13** (optional, can happen in parallel with A14 drafting or deferred):
+
+1. **Submit A11, A12, A13 URLs to Google Search Console** for re-indexing. 2 minutes in the GSC dashboard. Accelerates how fast the updated schema (reciprocal mentions) propagates to Google's index.
+2. **Amplify the Nashville 4.6/10 finding as a standalone asset.** LinkedIn post, Twitter thread, or homepage footer quoting "We ran 53 of Nashville's most-viewed active listings through our grader. Average score: 4.6 out of 10. Not one cracked 7." That number is a marketing asset bigger than A13 alone and worth independent mileage.
+3. **Track AI search citation emergence.** Query ChatGPT, Perplexity, and Google AI Overviews in 2 to 6 weeks with questions A13 was designed to answer ("why do Zillow listings all sound the same," "do listing description words affect sale price," "what is the best AI tool for MLS descriptions"). Log whether any of the three posts get cited.
