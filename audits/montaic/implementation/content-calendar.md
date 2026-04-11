@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** A15 "HUD Just Withdrew Eight Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11). Phase 2 open (Federal Register Notice 2026-06624 full-text fetch, eight-item current-authority mapping, effective-date mechanics).
+**Drafting slot:** A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 Blocker 1 CLOSED: Gibbs memo and FR Notice 2026-06624 fetched, nine withdrawn items documented (industry trade press miscounted at eight), 201-day gap between memo effective date (Sept 17 2025) and Federal Register publication (April 6 2026) logged. Phase 2 Blockers 2 and 3 open (nine-item current-authority mapping, enforcement action audit in the 201-day window).
 **Voice pass slot:** empty.
 **With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Pending Lance's second read and flip to `draft: false`. Back-propagation to A13's `mentions` array is deferred until the flip.
 **Live slot:**
@@ -85,24 +85,25 @@ Every candidate has been pre-evaluated against the Hello Momentum tests: swap te
 
 ---
 
-### #2 PROMOTED TO A15 (2026-04-11, PIVOTED to news-hook same day): HUD Just Withdrew Eight Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings.
+### #2 PROMOTED TO A15 (2026-04-11, PIVOTED to news-hook same day, count corrected same day): HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings.
 
-**Status:** LOCKED as A15 news-hook pivot. Master working doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked 2026-04-11. Phase 2 open (Federal Register Notice 2026-06624 full-text fetch, eight-item current-authority mapping, effective-date mechanics).
+**Status:** LOCKED as A15 news-hook pivot with count correction. Master working doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked 2026-04-11. Phase 2 Blocker 1 CLOSED. Phase 2 Blockers 2 and 3 open.
 **Cluster:** EXISTING. Fair Housing (third pillar, cluster return after A14 override).
-**Lever:** News hook plus Specificity.
-**Primary citation source:** Federal Register Notice 2026-06624 (published April 6, 2026, effective September 17, 2025), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), post-2010 Fair Housing advertising enforcement cases as needed for current-authority mapping.
-**Frame (2 sentences):** Five days ago HUD published Federal Register Notice 2026-06624, withdrawing eight fair housing guidance documents including one on digital advertising practices that touches every online real estate listing. The piece walks each withdrawn item against the statute, regulation, and case law that still cover the same territory, and explains why Montaic's compliance layer did not change when HUD narrowed the guidance layer.
+**Lever:** News hook plus Specificity plus Count correction.
+**Primary citation source:** HUD Gibbs memo (signed September 17, 2025), Federal Register Notice 2026-06624 (published April 6, 2026, pages 17291-17292), 42 U.S.C. § 3604(c), 24 C.F.R. § 100.75 (already cited in A12), post-2010 Fair Housing advertising enforcement cases as needed for current-authority mapping.
+**Frame (2 sentences):** On April 6, 2026, the Federal Register published Notice 2026-06624. Trade press reported eight withdrawn fair housing guidance documents, but the underlying HUD memo (effective September 17, 2025, 201 days before the Federal Register caught up) actually withdraws nine, including a 2024 guidance on advertising through digital platforms that sits directly on top of Montaic's customer base. The piece corrects the count, names the timeline gap, walks each of the nine items against the statute and regulation that still cover the same territory, and explains why Montaic's compliance layer did not change when HUD narrowed the guidance layer.
 
 **Pivot history:**
 
-A15 was originally scoped as a narrow-variant correction of "the 1989 HUD word list" (topic #2 original framing). Phase 2 Blocker 1 research on 2026-04-11 revealed two facts that invalidated the original thesis: (a) the artifact was not a 1989 memo but 24 C.F.R. Part 109, a formal regulation rescinded May 1, 1996 via directive FR-4029-F-01, and (b) HUD published Notice 2026-06624 on April 6, 2026, withdrawing eight additional guidance items. The news hook is five days old and directly overlaps Montaic's cluster. A15 pivoted same day. The 1989 through 1996 history becomes a one-paragraph context subsection in the body rather than the whole thesis.
+A15 was originally scoped as a narrow-variant correction of "the 1989 HUD word list" (topic #2 original framing). Phase 2 Blocker 1 research on 2026-04-11 revealed three facts that invalidated the original thesis and corrected a public-record error: (a) the artifact was not a 1989 memo but 24 C.F.R. Part 109, a formal regulation rescinded May 1, 1996 via directive FR-4029-F-01, (b) HUD published Notice 2026-06624 on April 6, 2026 announcing the withdrawal, and (c) the underlying Gibbs memo actually withdraws nine guidance documents (not eight as NAHRO and LeadingAge reported), and the memo took effect September 17, 2025, 201 days before the Federal Register caught up. The news hook is five days old, directly overlaps Montaic's cluster via item #9 (digital platforms advertising guidance, April 29, 2024), and Montaic becomes the first publisher to anchor the accurate count. A15 pivoted same day. The 1989 through 1996 history becomes a one-paragraph context subsection in the body rather than the whole thesis.
 
 **Why news-hook pivot works:**
 
 - A12 already did 42 U.S.C. § 3604(c) and 24 C.F.R. § 100.75 research. Reuse for the current-authority mapping.
 - A11 already framed the statutory authority. Reuse.
-- News-hook window is five days old. No competitor has published the full eight-item mapping yet.
-- One of the eight withdrawn items is "digital advertising practices." Direct overlap with Montaic's customer base.
+- News-hook window is five days old. No competitor has published the corrected-count nine-item mapping yet.
+- Item #9 is "Guidance on Application of the Fair Housing Act to the Advertising of Housing, Credit, and Other Real Estate-Related Transactions through Digital Platforms" (April 29, 2024). Direct overlap with Montaic's customer base.
+- Count correction ("nine, not eight") is a durable authority signal. First publisher to anchor the accurate number becomes the citation source.
 - Commercial hook is the strongest Fair Housing hook Montaic has had: "Montaic never cited the withdrawn guidance as authority, so our compliance layer did not change."
 
 **Why this wins the A15 slot:**
@@ -200,15 +201,14 @@ This doc is a living file. Update rules:
 
 ## Next action
 
-**A15 Phase 2: research (news-hook frame).**
+**A15 Phase 2: research (news-hook frame with count correction).**
 
-A15 Phase 1 is locked at `A15-hud-2026-guidance-withdrawal.md`. Three Phase 2 blockers are open:
+A15 Phase 1 is locked at `A15-hud-2026-guidance-withdrawal.md`. Blocker 1 CLOSED 2026-04-11 (Gibbs memo and FR Notice 2026-06624 fetched, nine items documented, 201-day gap logged, three-criteria framework captured). Two blockers remain:
 
-1. **Federal Register Notice 2026-06624 full text.** 2 to 3 hours to fetch and document all eight withdrawn items with original citations and effective-date mechanics. Claude can drive.
-2. **Current-authority mapping for each of the eight items.** 4 to 6 hours to map each withdrawn item against the statute, regulation, or case law that still covers the same territory. Digital advertising practices item gets the deepest read. Claude can drive.
-3. **Effective-date mechanics confirmation.** 1 hour to confirm the September 17, 2025 retroactive effective date language and any implication for enforcement actions taken in the window. Claude can drive.
+1. **Current-authority mapping for each of the nine items.** 4 to 6 hours to map each withdrawn item against the statute, regulation, or case law that still covers the same territory. Item #9 (digital platforms guidance, April 29, 2024) gets the deepest read. Claude can drive.
+2. **Enforcement action audit in the 201-day gap window.** 30 minutes to confirm whether any HUD or DOJ enforcement action filed between September 17, 2025 and April 6, 2026 cited any of the nine withdrawn guidance documents. Claude can drive.
 
-Total Phase 2 budget: 7 to 10 hours. Target Phase 3 draft complete within seven days of Phase 1 lock (2026-04-18) to preserve the news-hook window.
+Remaining Phase 2 budget: 4.5 to 6.5 hours. Target Phase 3 draft complete within seven days of Phase 1 lock (2026-04-18) to preserve the news-hook window.
 
 **Parallel track: A14 ship-out housekeeping** (Lance-owned, not blocking A15):
 
