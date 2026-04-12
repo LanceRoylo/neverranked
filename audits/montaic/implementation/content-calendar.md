@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** SIX PILLARS LIVE, A17 IN DRAFTING. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). A17 Phase 1 frame locked 2026-04-11. Listing Differentiation will reach four pillars when A17 ships.
+**Current pipeline state:** SIX PILLARS LIVE, A17 IN VOICE PASS. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). A17 Phases 1-4 complete 2026-04-11, waiting on Lance voice pass. Listing Differentiation will reach four pillars when A17 ships.
 
 ---
 
@@ -41,7 +41,8 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** A17 "We Gave Montaic a Style Sample and Ran the Same 53 Listings Again. Here Is What Changed." Phase 1 frame locked 2026-04-11 at `A17-voice-calibration-experiment.md`. Cluster: Listing Differentiation (fourth pillar, alternation override with rationale). Lever: Controlled Follow-up Experiment plus Numbers on the Table. Style sample: 5 highest-scoring Zillow originals from Nashville 53 (Option B, Lance has no past MLS listings). Phase 2 scoped at 3 to 4 hours across 3 blockers: select style sample (30 min), run voice-locked path on 53 listings (2 hr), grade outputs (30 to 60 min).
+**Drafting slot:** empty.
+**Voice pass slot:** A17 "We Gave Montaic a Style Sample and Ran the Same 53 Listings Again. Here Is What Changed." Phase 1-4 complete 2026-04-11. Draft at `A17-draft.md` (2370 words, voice-check 4/4 clean). Claire handoff at `A17-claire-paste-this.md`. Experiment result: voice-locked avg 6.9/10 vs 5.1 default (+1.8 lift), 42/53 in 7-8 bucket, cliche avoidance biggest category mover (+3.3). Waiting on Lance voice pass.
 **Voice pass slot:** empty.
 **With Claire slot:** empty.
 **Live slot:**

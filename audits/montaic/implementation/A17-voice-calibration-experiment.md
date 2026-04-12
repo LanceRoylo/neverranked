@@ -7,7 +7,7 @@
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
 **Neighbor references (same cluster):** `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md`, `audits/montaic/implementation/A14-chatgpt-53-nashville-listings.md`, and `audits/montaic/implementation/A16-96-percent-chatgpt-opening.md`
 **Cross-cluster references:** `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md` and `audits/montaic/implementation/A15-hud-2026-guidance-withdrawal.md`
-**Status:** Phase 1 frame lock in progress (2026-04-11). Phase 2, 3, 4, 5 NOT STARTED.
+**Status:** Phase 4 COMPLETE (2026-04-11). Claire handoff at `A17-claire-paste-this.md`. Draft at `A17-draft.md`, 2370 words, voice-check 4/4 clean. Phase 2 CLOSED: voice-locked avg 6.9/10 (vs 5.1 default, +1.8 lift), 42/53 in 7-8 bucket. Next: Lance voice pass, then flip to live.
 
 ---
 
@@ -140,47 +140,102 @@ The commercial CTA writes itself: the default path is free to try. The voice-loc
 
 Phase 2 has one data-generation blocker and two lightweight blockers. Total budget: 3 to 4 hours, of which 2 hours is tool runtime.
 
-### Blocker 1: Select the five Zillow originals for the style sample. NOT STARTED.
+### Blocker 1: Select the five Zillow originals for the style sample. CLOSED.
 
-**Effort budget:** 30 minutes.
+**Effort budget:** 30 minutes. Actual: ~20 minutes.
 
-**Scope:** query the Zillow originals results JSON (`zillow-50-nashville-results.json`) for listings meeting the four selection criteria. Rank candidates. Select five. Document the selection with index numbers, scores, opening sentences, and the specific phrasing patterns the voice calibration layer will extract.
+**Selection criteria (composite rank):** specificity score + cliche avoidance score + text length bonus, filtered for fair housing compliance (score >= 6) and specificity (score >= 6).
 
-**Open question:** how many Zillow originals score 5/10 or higher with specificity 6/10 or higher and no Fair Housing flags? The three-way aggregate shows 20 Zillow listings in the 5-6 bucket and 1 in the 7-8 bucket. The filtered set (after removing Fair Housing flagged and low-specificity entries) may be smaller. If fewer than five meet all four criteria, relax criterion 4 (distinctive opening) first.
+**Result: 5 listings selected (indices 9, 28, 12, 39, 5).**
 
-### Blocker 2: Run the voice-locked path on 53 listings. NOT STARTED.
+| Index | Overall | Specificity | Cliche Avoidance | Fair Housing | Length | Opening |
+|---|---|---|---|---|---|---|
+| 9 | 6/10 | 8 | 7 | 9 | 1688 | "Price, location and design, this 3 bed / 2.5 bath townhome..." |
+| 28 | 7/10 | 8 | 6 | 6 | 1504 | "DOWNTOWN NASHVILLE VIEWS FROM EVERY LEVEL..." |
+| 12 | 6/10 | 6 | 8 | 9 | 692 | "The Birch combines an efficient footprint..." |
+| 39 | 6/10 | 8 | 5 | 9 | 1074 | "Located in the Mountain View community..." |
+| 5 | 6/10 | 7 | 4 | 9 | 535 | "Looking for space, value, and a quick commute?" |
 
-**Effort budget:** 2 hours (tool runtime, not human effort).
+**Excluded candidates:**
+- Index 24 (specificity 8, cliche 7, but fair housing score 3: disqualified)
+- Index 19 (specificity 4, cliche 3: too generic to teach good voice patterns)
+- Index 13 (duplicate of index 12: same builder copy)
 
-**Scope:** confirm the voice-locked path is available in the listing-pipeline-ai codebase. Feed the five selected Zillow originals as the style sample. Run all 53 Nashville listings through the voice-locked path. Capture full text outputs.
+**Style signal profile:** the five samples collectively provide a conversational-to-bold register, high specificity (names restaurants, dollar amounts, measurements, materials), question openings (idx 5) and feature-first openings (idx 28, 39), moderate length variety (535 to 1688 chars). This is the highest-quality voice signal available from the Nashville 53 dataset without introducing fair housing risk into the style sample.
 
-**Open question:** does `grade-zillow-batch.ts` already support a `rewrite-voice-locked` mode, or does the script need an extension? If the infrastructure exists, Blocker 2 is pure execution. If it needs a script extension, add 30-60 minutes of development.
+**Infrastructure note:** script extended with `rewrite-montaic-voice` mode in `grade-zillow-batch.ts`. The mode calls `distillVoiceFromDocuments()` on the combined sample text, then generates 53 listings using `buildTieredPrompt()` at standard depth with the distilled `agentVoice` and raw `writingSample` both injected. Same grading pipeline as A14.
 
-### Blocker 3: Grade the 53 voice-locked outputs. NOT STARTED.
+### Blocker 2: Run the voice-locked path on 53 listings. CLOSED.
 
-**Effort budget:** 30 minutes to 1 hour (grader runtime).
+**Effort budget:** 2 hours. Actual: ~15 minutes generation, ~15 minutes grading.
 
-**Scope:** run the same five-category grader on all 53 voice-locked outputs. Compute the aggregate (average overall, category averages, score bucket distribution, top filler phrases, top openings, near-duplicate count). Compute the deltas against all three existing columns.
+**Infrastructure:** `rewrite-montaic-voice` mode added to `grade-zillow-batch.ts`. The mode:
+1. Loads the 5 selected Zillow originals from the graded results
+2. Calls `distillVoiceFromDocuments()` to produce an agent voice narrative
+3. Generates 53 listings via `buildTieredPrompt()` with `agentVoice` + `writingSample` injected at standard depth
+4. Uses `claude-sonnet-4-5` (same model as the paid product)
+5. Grades all 53 outputs through the same five-category grader
 
-**Output:** a four-column aggregate JSON or table ready for Phase 3 body.
+**Distilled voice narrative (produced by the voice distillation layer):**
+
+"You write with a pragmatic, benefits-first approach that prioritizes clarity and buyer utility over poetic flourishes. Your sentences toggle between punchy fragments that highlight key features and longer, explanatory flows that connect practical dots for the reader. You favor conversational connectors that create a direct, consultative tone, as if walking someone through the property in real time. You lead with what matters most: price positioning, location advantages, and functional flexibility. You are enthusiastic but grounded. Your descriptions are feature-dense yet accessible, avoiding jargon while maintaining authority."
+
+**Output files (all gitignored under scripts/):**
+- `zillow-50-nashville-montaic-voice.txt` (53 voice-locked descriptions)
+- `zillow-50-nashville-distilled-voice.txt` (the agent voice narrative)
+- `zillow-50-nashville-montaic-voice-results.json` (per-listing graded results)
+- `zillow-50-nashville-montaic-voice-summary.json` (aggregate statistics)
+
+### Blocker 3: Grade the 53 voice-locked outputs. CLOSED (combined with Blocker 2).
+
+Grading ran as part of the same batch. Four-way aggregate produced via `aggregate-four-way` mode.
+
+**Output:** `zillow-50-nashville-four-way.json`
+
+### Phase 2 results: four-way headline numbers
+
+| Dataset | Avg Score | Delta vs Originals | 7-8 Bucket | 3-4 Bucket |
+|---|---|---|---|---|
+| ChatGPT gpt-4o-mini | 3.6/10 | -1.0 | 0 | 53 |
+| Zillow Originals | 4.6/10 | baseline | 1 | 31 |
+| Montaic Default | 5.1/10 | +0.5 | 2 | 21 |
+| **Montaic Voice-Locked** | **6.9/10** | **+2.3** | **42** | **2** |
+
+**Category-level voice-locked lift over Montaic default:**
+
+| Category | Montaic Default | Montaic Voice | Delta |
+|---|---|---|---|
+| Cliche avoidance | 3.7 | 7.0 | **+3.3** |
+| Emotional appeal | 4.2 | 6.8 | **+2.6** |
+| Structure/flow | 5.3 | 7.3 | **+2.0** |
+| Specificity | 6.0 | 7.8 | **+1.8** |
+| Fair housing | 6.7 | 8.1 | **+1.4** |
+
+**Filler phrase elimination (voice-locked column):**
+
+Zero "Welcome to", zero "stunning", zero "charming", zero "beautiful", zero "gorgeous", zero "boasts", zero "nestled", zero "dream home", zero "hidden gem", zero "don't miss". Only residual: 3 "spacious" (6%) and 2 "move-in ready" (4%).
+
+**Key finding for the article:** the biggest lift came from cliche avoidance (+3.3), not specificity (+1.8). The voice sample taught the model what NOT to say as much as what TO say. The five Zillow originals scored cliche avoidance between 4 and 8. The voice-locked outputs averaged 7.0 on cliche avoidance, matching the upper range of the style samples. The voice calibration layer appears to function as both a style amplifier and a cliche suppressor.
+
+**Experiment verdict: POSITIVE. A17 ships.**
 
 ### Phase 2 deliverables
 
-- [ ] Five Zillow originals selected with documentation
-- [ ] Voice-locked path confirmed working or script extended
-- [ ] 53 voice-locked outputs generated
-- [ ] 53 voice-locked outputs graded
-- [ ] Four-column aggregate table with deltas
-- [ ] Score bucket distribution for the fourth column
-- [ ] Top filler phrases for the fourth column (critical: does the two-word opening phrase drop?)
-- [ ] Near-duplicate count for the fourth column
-- [ ] Comparison of three-sentence rule satisfaction rate across all four columns
+- [x] Five Zillow originals selected with documentation (indices 9, 28, 12, 39, 5)
+- [x] Voice-locked path confirmed working and script extended (`rewrite-montaic-voice` mode)
+- [x] 53 voice-locked outputs generated
+- [x] 53 voice-locked outputs graded
+- [x] Four-column aggregate table with deltas (`four-way.json`)
+- [x] Score bucket distribution for the fourth column (42 in 7-8, 9 in 5-6, 2 in 3-4)
+- [x] Top filler phrases for the fourth column (the two-word opening phrase: ZERO. All major filler phrases eliminated.)
+- [x] Near-duplicate count for the fourth column (5, same as Montaic default)
+- [ ] Comparison of three-sentence rule satisfaction rate across all four columns (deferred to Phase 3 analysis)
 
-Total Phase 2 budget: 3 to 4 hours. Heavier than A16 (90 min) because of the data-generation run, lighter than A14 (4 to 6 hours) because the infrastructure already exists.
+Total Phase 2 budget: 3 to 4 hours estimated. Actual: ~1 hour (30 min infrastructure + 30 min generation/grading). Faster than estimated because voice distillation and generation used the same API call pattern as the existing modes.
 
 ---
 
-## Phase 3: Draft (NOT STARTED)
+## Phase 3: Draft (COMPLETE)
 
 ### Target length
 
@@ -203,11 +258,15 @@ Same range as A13 through A16. 2000 to 2600 words. Target 2400, slightly longer 
 
 ### Voice rubric pre-draft checklist
 
-Standard four-check pass required. The same known-exception zone from A14, A15, and A16 applies: the two-word opening phrase will appear in evidence positions when analyzing what the voice-locked outputs did or did not do. Known-exception pattern per A14 precedent.
+Voice-check 4/4 clean. Zero filler phrase hits (the article avoids naming the two-word phrase directly, using "the two-word opening phrase" and "the same two words" instead). Zero em dashes. Zero semicolons. No known-exception hits needed.
+
+### Phase 3 closure note (2026-04-11)
+
+Draft complete at `A17-draft.md`. 2370 words across 9 body sections plus 6-Q FAQ. No closing line (the "four-piece arc" section closes the piece). Voice-check 4/4 clean with zero exceptions. Key findings embedded: 6.9 vs 5.1 headline lift, 42/53 in 7-8 bucket, cliche avoidance as biggest category mover (+3.3), near-total filler elimination, three named limitations, 10-minute Monday-morning action.
 
 ---
 
-## Phase 4: Schema, handoff, publish (NOT STARTED)
+## Phase 4: Schema, handoff, publish (COMPLETE)
 
 Same `@graph` structure as A11 through A16.
 
