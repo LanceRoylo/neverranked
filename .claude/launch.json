@@ -6,6 +6,12 @@
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "serve", ".", "-l", "4173"],
       "port": 4173
+    },
+    {
+      "name": "schema-check",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd tools/schema-check && npx wrangler dev --port 8789"],
+      "port": 8789
     }
   ]
 }

@@ -144,6 +144,43 @@
           }
         ]
       }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does AEO take to show results?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AEO is infrastructure, not advertising. Month one builds the technical foundation (schema, entity registration, structured data). Month two surfaces signals as AI models begin indexing your data. Month three is where citations typically begin. Results compound from there. The three-month minimum engagement exists because quitting before month three means quitting before the return."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is there a three-month minimum for AEO services?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI models retrain on cycles. The schema, content, and structured data deployed in month one gets absorbed into the next training window. It takes approximately 90 days for AI engines like ChatGPT, Perplexity, and Google AI Overviews to consistently recognize and cite a new entity. The minimum exists to protect clients from quitting before the work has time to compound."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between AEO and traditional SEO?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Traditional SEO optimizes for blue-link rankings on search engine results pages. AEO (Answer Engine Optimization) optimizes for citations by AI engines like ChatGPT, Perplexity, Google AI Overviews, and Gemini. These engines do not rank pages. They cite sources. AEO focuses on structured data, entity recognition, and content architecture that makes your site citable by AI models."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to keep paying for AEO after the initial setup?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AEO compounds with ongoing work. AI indexes refresh, competitors update their structured data, and models retrain regularly. If you pause, you do not stay flat. You decay. Ongoing AEO maintains your citation position, monitors for competitor changes, and continuously strengthens the signals that keep AI engines citing your content. After the three-month minimum, the engagement is month-to-month."
+          }
+        }
+      ]
     }
   ]
 }
@@ -969,6 +1006,43 @@ h1,h2,h3,h4{
   max-width:32ch;
 }
 
+/* ---------- free tool banner ---------- */
+.tool-banner{
+  padding:80px 0;
+  border-bottom:1px solid var(--line);
+  text-align:center;
+}
+.tool-banner .inner{
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.tool-banner .kicker{
+  font-family:var(--label);
+  text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;color:var(--gold);
+}
+.tool-banner h2{
+  font-family:var(--serif);font-size:clamp(24px,3.5vw,36px);
+  font-weight:400;letter-spacing:-.02em;line-height:1.2;
+  margin:0;
+}
+.tool-banner h2 em{font-style:italic;color:var(--gold)}
+.tool-banner .sub{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);max-width:460px;
+  line-height:1.7;margin:0;
+}
+.tool-banner .btn{
+  display:inline-block;
+  border:1px solid var(--gold);color:var(--gold);
+  padding:14px 32px;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.18em;font-size:12px;font-weight:500;
+  border-radius:4px;
+  transition:background .35s var(--ease),color .35s var(--ease);
+  margin-top:8px;
+}
+.tool-banner .btn:hover{background:var(--gold);color:var(--bg)}
+
 /* ---------- pricing ---------- */
 .pricing{
   padding:140px 0 140px;
@@ -1170,6 +1244,90 @@ h1,h2,h3,h4{
   color:var(--gold);
   border-color:var(--gold-dim);
 }
+
+/* ---------- compound timeline ---------- */
+.compound{
+  padding:120px 0;
+  border-bottom:1px solid var(--line);
+}
+.compound-head{
+  max-width:680px;
+  margin-bottom:56px;
+}
+.compound-head h2{
+  font-size:clamp(28px,4vw,44px);
+  margin-bottom:18px;
+  letter-spacing:-.02em;
+  line-height:1.12;
+}
+.compound-head h2 em{color:var(--gold);font-weight:400}
+.compound-head p{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-faint);
+  line-height:1.7;
+  max-width:560px;
+}
+.timeline{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+@media(max-width:900px){
+  .timeline{grid-template-columns:1fr}
+}
+.tl-card{
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:32px 28px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.tl-card .month{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:11px;
+  color:var(--gold);
+  font-weight:500;
+}
+.tl-card h3{
+  font-family:var(--serif);
+  font-size:20px;
+  font-weight:400;
+  letter-spacing:-.01em;
+  line-height:1.25;
+  margin:0;
+}
+.tl-card p{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+  margin:0;
+}
+.tl-card .bar-track{
+  height:3px;
+  background:var(--bg-edge);
+  border-radius:2px;
+  overflow:hidden;
+  margin-top:auto;
+}
+.tl-card .bar-fill{
+  height:100%;
+  background:var(--gold);
+  border-radius:2px;
+  transition:width 1.2s var(--ease);
+}
+.compound-note{
+  margin-top:40px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+  max-width:600px;
+}
+.compound-note b{color:var(--text-mute);font-weight:400}
 
 /* ---------- audit ---------- */
 .audit{
@@ -1584,6 +1742,7 @@ h1,h2,h3,h4{
   <div class="right">
     <a href="#services" class="nav-link">Services</a>
     <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
     <span class="status">Taking clients Q2</span>
   </div>
@@ -1631,7 +1790,7 @@ h1,h2,h3,h4{
           <div class="tag">Method</div>
         </div>
         <div class="cell">
-          <div class="stmt">Month-to-month. <em>Cancel anytime.</em></div>
+          <div class="stmt">Three months to compound. <em>Then month-to-month.</em></div>
           <div class="tag">Terms</div>
         </div>
       </div>
@@ -1900,6 +2059,18 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ FREE TOOL ============ -->
+  <section class="tool-banner reveal">
+    <div class="wrap">
+      <div class="inner">
+        <span class="kicker">Free Tool</span>
+        <h2>Schema & AEO <em>Health Check</em></h2>
+        <p class="sub">Enter any URL. Get an instant grade on schema coverage, technical signals, and AEO readiness. No signup. No email gate.</p>
+        <a href="https://check.neverranked.com" class="btn">Run a free check →</a>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PRICING ============ -->
   <section class="pricing" id="pricing">
     <div class="wrap">
@@ -1914,6 +2085,9 @@ h1,h2,h3,h4{
         <h2 class="reveal">Two ways <em>in.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
           Three-month minimum, then month-to-month. The price you see is the price you pay. No set-up fees, no onboarding tax, no annual contract you'll quietly resent.
+        </p>
+        <p class="reveal" style="transition-delay:.18s;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
+          The minimum exists because this work compounds. Month one builds the foundation. Month two surfaces signals. Month three is where citations start. Quitting before then is quitting before the return.
         </p>
       </div>
 
@@ -1959,6 +2133,50 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ COMPOUND VISIBILITY ============ -->
+  <section class="compound" id="timeline">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§05.1</span>
+        <span>Timeline</span>
+        <span class="rule"></span>
+        <span>honest</span>
+      </div>
+
+      <div class="compound-head">
+        <h2 class="reveal">This is infrastructure,<br><em>not advertising.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          Ads stop when you stop paying. AEO compounds. The schema, content, and structured data you build today trains the model that cites you six months from now. Here is what that actually looks like.
+        </p>
+      </div>
+
+      <div class="timeline reveal-stagger">
+        <div class="tl-card">
+          <span class="month">Month 1 / Foundation</span>
+          <h3>Build the signal layer</h3>
+          <p>Technical audit. Schema deployed. Entity registration. Structured data across every critical page. The model can now read your site the way it reads Wikipedia.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+        </div>
+        <div class="tl-card">
+          <span class="month">Month 2 / Indexing</span>
+          <h3>Signals surface</h3>
+          <p>Content indexed. Citation tracking goes live. You start appearing in edge queries. The dashboard shows movement. AI models are learning your entity. Not citing yet. Learning.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:50%"></div></div>
+        </div>
+        <div class="tl-card">
+          <span class="month">Month 3+ / Compounding</span>
+          <h3>Citations begin</h3>
+          <p>First verifiable citations. Share of answer climbs. Each new piece of content reinforces the last. This is where the curve bends. Every month after this compounds on everything before it.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+        </div>
+      </div>
+
+      <p class="compound-note reveal" style="transition-delay:.25s">
+        <b>Why we're honest about this:</b> Agencies that promise results in week one are either lying or selling ads. We build the pipes, not the water. The three-month minimum exists because it takes that long for AI models to absorb, retrain, and begin citing your data consistently. After month three, every additional month compounds on the foundation already in place. Stopping resets the curve.
+      </p>
+    </div>
+  </section>
+
   <!-- ============ AUDIT ============ -->
   <section class="audit" id="audit">
     <div class="wrap">
@@ -1994,6 +2212,9 @@ h1,h2,h3,h4{
           <p class="commitment">
             Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not.
             <b>We don't refund. We deliver.</b>
+          </p>
+          <p class="commitment" style="margin-top:12px;color:var(--text-faint);font-size:12px">
+            The roadmap is a ninety-day plan because that is how long the foundation takes. We will not promise you citations in week one. We will show you exactly what to build and when to expect returns.
           </p>
           <a href="mailto:hello@neverranked.com?subject=Audit" class="cta">
             Book the audit

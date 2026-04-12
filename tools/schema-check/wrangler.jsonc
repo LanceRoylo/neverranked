@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "neverranked-schema-check",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-09",
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true
+  },
+  "routes": [
+    { "pattern": "check.neverranked.com", "custom_domain": true }
+  ]
+}
