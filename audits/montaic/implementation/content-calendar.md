@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 landed 2026-04-11 as `draft: true` at `/blog/chatgpt-53-nashville-listings`, pending Lance's second read and flip to `draft: false`. A15 in Drafting slot, pivoted 2026-04-11 from topic #2 narrow variant (evergreen) to news-hook frame on HUD Federal Register Notice 2026-06624 (April 6, 2026 withdrawal of nine fair housing guidance documents, count corrected from trade-press eight). Phase 2 Blockers 1, 2, and 3 CLOSED 2026-04-11. Phase 3 draft complete 2026-04-11 at `A15-draft.md` (voice-check clean, ~2985 body words). Phase 4 Claire handoff stub complete 2026-04-11 at `A15-claire-paste-this.md` (voice-check clean). Ready for Lance voice pass and Claire publish. Fair Housing cluster return per A14 override catchup commitment is preserved.
+**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 voice pass CLEARED 2026-04-11, ready for Lance to flip `draft: false` in the Montaic codebase. A15 Phase 4 complete, voice pass pending. A16 Phase 4 complete, voice pass pending. Three pieces ready for publish sequence. Fair Housing cluster return per A14 override catchup commitment is preserved.
 
 ---
 
@@ -43,7 +43,7 @@ Updated every time a piece moves. Last update: 2026-04-11.
 
 **Drafting slot:** A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 all blockers CLOSED 2026-04-11 (Gibbs memo and FR Notice fetched, nine items documented with count correction, 201-day gap logged, nine-item current-authority mapping complete, item #9 deep read complete, enforcement audit confirms no retroactive exposure, five cross-cutting context shifts documented). Phase 3 draft complete 2026-04-11 at `A15-draft.md`, nine body sections plus FAQ plus closing, ~2985 body words, voice-check 4/4 clean. Phase 4 Claire handoff stub complete 2026-04-11 at `A15-claire-paste-this.md` with full posts.ts entry, schema citation block, mentions array pointing at A11 A12 A14, six-item FAQ array, sanity-check curl block, A15.P2 back-propagation snippets for A11 and A12, voice-check 4/4 clean. Ready to move into Voice pass slot after Lance's end-to-end read.
 **Voice pass slot:** empty.
-**With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Pending Lance's second read and flip to `draft: false`. Back-propagation to A13's `mentions` array is deferred until the flip.
+**With Claire slot:** A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." Landed at `/blog/chatgpt-53-nashville-listings` as `draft: true` on 2026-04-11 (listing-pipeline-ai commit `0ed99f7`). Lance voice pass CLEARED 2026-04-11. Ready for Lance to flip `draft: false`. Back-propagation to A13's `mentions` array runs immediately after the flip.
 **Live slot:**
 - A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. Shipped pre-2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026" at `/blog/fair-housing-listing-description-rules`. Shipped 2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
