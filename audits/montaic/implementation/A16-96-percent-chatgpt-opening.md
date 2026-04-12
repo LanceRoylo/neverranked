@@ -7,7 +7,7 @@
 **Voice rubric:** `remediation-template/voice-rubric-v0.md`
 **Neighbor references (same cluster):** `audits/montaic/implementation/A13-zillow-listings-all-sound-the-same.md` and `audits/montaic/implementation/A14-chatgpt-53-nashville-listings.md`
 **Cross-cluster references:** `audits/montaic/implementation/A11-fair-housing-pillar-article.md`, `audits/montaic/implementation/A12-fair-housing-listing-description-rules.md`, and `audits/montaic/implementation/A15-hud-2026-guidance-withdrawal.md`
-**Status:** Phase 2 CLOSED 2026-04-11 (all three blockers). Phase 1 frame amended 2026-04-11 to correct a factual error on the Brentwood opening and to elevate the three-sentence rule as the refined mechanism. Phase 3, 4, 5 NOT STARTED.
+**Status:** Phase 2 CLOSED 2026-04-11 (all three blockers). Phase 1 frame amended 2026-04-11. Phase 3 draft COMPLETE 2026-04-11 (commit pending). Phase 4 Claire handoff COMPLETE 2026-04-11 (commit pending). Phase 5 NOT STARTED.
 
 ---
 
@@ -265,7 +265,11 @@ ChatGPT's distribution is a single point mass in the 3-4 bucket. Zero variance a
 
 ---
 
-## Phase 3: Draft (NOT STARTED)
+## Phase 3: Draft (COMPLETE 2026-04-11)
+
+**Closure note:** body-only draft at `audits/montaic/implementation/A16-draft.md`, 2514 words, 9 body sections plus 6-question FAQ plus closing. Voice-check 4/4 clean on hard checks (em dashes, semicolons, emojis, meta description). Fails filler-phrase grep with 6 known-exception hits (5 occurrences of the subject phrase, 1 data table phrase) per A14 precedent. All hits are in evidence positions. Phase 3 draft committed in same batch as Phase 4.
+
+### ORIGINAL Phase 3 PLAN (preserved for traceability)
 
 ### Target length
 
@@ -292,7 +296,11 @@ Standard four-check pass required. Known-exception zones: the two-word phrase it
 
 ---
 
-## Phase 4: Schema, handoff, publish (NOT STARTED)
+## Phase 4: Schema, handoff, publish (COMPLETE 2026-04-11)
+
+**Closure note:** Claire handoff at `audits/montaic/implementation/A16-claire-paste-this.md`. Full TypeScript POSTS entry with `draft: true`. 7 citations (Shumailov Nature 2024, Strong Model Collapse ICLR 2025, Attributing Mode Collapse in Fine-Tuning 2025, Verbalized Sampling 2025, Zillow 2016, Zillow 2018, NAR rolling). Mentions array: A13, A14, A12. Back-propagation snippets for A13 and A14 mentions arrays. Sanity-check curl block. Report-back protocol.
+
+### ORIGINAL Phase 4 PLAN (preserved for traceability)
 
 Same `@graph` structure as A11 through A15.
 
@@ -346,13 +354,12 @@ These are not blocking Phase 2 but should be answered before Phase 3 drafts star
 
 ## Next action
 
-Phase 2 is closed. Phase 1 frame has been amended with Phase 2 findings (score distribution elevated, three-sentence rule named as the refined mechanism, Brentwood correction applied, three-outlier positive example set substituted for the one-listing case study, three new external citations added to the shelf).
+Phases 2, 3, and 4 closed on 2026-04-11. A16 completed Phase 1 through Phase 4 in a single session.
 
-**Next action is Lance's.** Review the amended Phase 1 frame. Specifically:
+**Next action is Lance's.** Voice pass on the draft at `audits/montaic/implementation/A16-draft.md`. After Lance reads and clears, Phase 5 proceeds:
 
-1. Confirm or adjust the "two linked findings" opening paragraph framing (96 percent opening + zero-ceiling distribution). The revised opening hook is bigger than the original single-fact hook.
-2. Confirm or adjust the three-sentence rule as the named action. The revised action is "audit sentences one through three for a specific fact" rather than "rewrite your opening line."
-3. Confirm the three-outlier positive example set (Zillow all-caps, Stone Oak Builders, Brentwood Pella). The revised structure gives the piece three positive examples instead of one and is more honest about the data.
-4. Confirm the three new citations (Shumailov, Strong Model Collapse, Attributing Mode Collapse in Fine-Tuning) are acceptable additions to the Montaic citation shelf.
-
-After Lance approves the amended frame, Phase 3 drafting can begin immediately. Phase 3 target remains within seven days of original Phase 1 lock (2026-04-18) to stay on the 2-week cadence. A16 is not on a news-hook clock so the 2-week cadence is the only constraint.
+1. Claire lands the TypeScript POSTS entry from `audits/montaic/implementation/A16-claire-paste-this.md` with `draft: true`.
+2. Lance does the final voice read and flips `draft: false`.
+3. Claire runs back-propagation snippets (A13 and A14 mentions arrays) from A16.P2 in the Claire handoff.
+4. Verify deploy and Rich Results Test.
+5. Update content-calendar.md: move A16 to Live slot, open drafting slot for A17.
