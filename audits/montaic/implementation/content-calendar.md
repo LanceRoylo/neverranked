@@ -41,17 +41,17 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." Master doc at `A15-hud-2026-guidance-withdrawal.md`. Phase 1 locked (news-hook pivot 2026-04-11, count correction 2026-04-11). Phase 2 all blockers CLOSED 2026-04-11 (Gibbs memo and FR Notice fetched, nine items documented with count correction, 201-day gap logged, nine-item current-authority mapping complete, item #9 deep read complete, enforcement audit confirms no retroactive exposure, five cross-cutting context shifts documented). Phase 3 draft complete 2026-04-11 at `A15-draft.md`, nine body sections plus FAQ plus closing, ~2985 body words, voice-check 4/4 clean. Phase 4 Claire handoff stub complete 2026-04-11 at `A15-claire-paste-this.md` with full posts.ts entry, schema citation block, mentions array pointing at A11 A12 A14, six-item FAQ array, sanity-check curl block, A15.P2 back-propagation snippets for A11 and A12, voice-check 4/4 clean. Ready to move into Voice pass slot after Lance's end-to-end read.
-**Voice pass slot:** empty.
+**Drafting slot:** empty. A16 Phase 4 complete, queued for voice pass.
+**Voice pass slot:** A16 "Why 96 Percent of ChatGPT Listings Open With the Same Two Words." Draft at `A16-draft.md`, Claire handoff at `A16-claire-paste-this.md`. Pending Lance voice pass.
 **With Claire slot:** empty.
-**Queued for voice pass:** A15 (news-hook, time-sensitive) then A16 (evergreen).
 **Live slot:**
 - A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. Shipped pre-2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026" at `/blog/fair-housing-listing-description-rules`. Shipped 2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)" at `/blog/zillow-listings-all-sound-the-same`. Shipped 2026-04-10. Opens Listing Differentiation cluster. Reciprocal mention to A14 added 2026-04-11.
-- **A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." at `/blog/chatgpt-53-nashville-listings`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `b91587c`). Second Listing Differentiation pillar. Back-propagation to A13 mentions array landed in same commit. Mentions A13, A11, A12. Listing Differentiation cluster at two live pillars.**
+- A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." at `/blog/chatgpt-53-nashville-listings`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `b91587c`). Second Listing Differentiation pillar. Back-propagation to A13 mentions array landed in same commit.
+- **A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." at `/blog/hud-2026-fair-housing-guidance-withdrawal`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `f1d2cca`). Third Fair Housing pillar. Back-propagation to A11 and A12 mentions arrays landed in same commit. News-hook piece on Federal Register Notice 2026-06624, published five days after the notice. First public source with accurate nine-item count, 201-day gap, full current-authority mapping.**
 
-**Cross-cluster schema bind is live in both directions.** A11 and A12 schemas carry `mentions` pointing at A13, and A13 carries `mentions` pointing at A11, A12, and A14. A14 carries `mentions` pointing at A13, A11, and A12. Fair Housing cluster and Listing Differentiation cluster are linked as a single topical graph across five edges.
+**Cross-cluster schema bind is live in both directions.** A11, A12, and A15 carry reciprocal `mentions` within the Fair Housing cluster. A13 and A14 carry reciprocal `mentions` within the Listing Differentiation cluster. A14 mentions A11 and A12 for cross-cluster bind. A15 mentions A14 for cross-cluster bind. Seven live edges across two clusters, five live pillars total.
 
 ---
 
