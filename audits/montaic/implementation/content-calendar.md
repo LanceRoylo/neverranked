@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** A11, A12, A13 SHIPPED 2026-04-10. A14 voice pass CLEARED 2026-04-11, ready for Lance to flip `draft: false` in the Montaic codebase. A15 Phase 4 complete, voice pass pending. A16 Phase 4 complete, voice pass pending. Three pieces ready for publish sequence. Fair Housing cluster return per A14 override catchup commitment is preserved.
+**Current pipeline state:** SIX PILLARS LIVE. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). Pipeline empty. Next piece is A17 (voice calibration experiment, Candidate D from the A16 rescoring block).
 
 ---
 
@@ -41,17 +41,18 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** empty. A16 Phase 4 complete, queued for voice pass.
-**Voice pass slot:** A16 "Why 96 Percent of ChatGPT Listings Open With the Same Two Words." Draft at `A16-draft.md`, Claire handoff at `A16-claire-paste-this.md`. Pending Lance voice pass.
+**Drafting slot:** empty. A17 next (voice calibration experiment, Candidate D).
+**Voice pass slot:** empty.
 **With Claire slot:** empty.
 **Live slot:**
 - A11 "Fair Housing AI Compliance Agents" at `/blog/fair-housing-ai-compliance-agents`. Shipped pre-2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A12 "Fair Housing Act Listing Description Rules: The Words You Cannot Use in 2026" at `/blog/fair-housing-listing-description-rules`. Shipped 2026-04-10. Reciprocal mentions pointing at A13 added 2026-04-10.
 - A13 "Why Zillow Listings All Sound the Same (And Why It's Costing Agents Leads)" at `/blog/zillow-listings-all-sound-the-same`. Shipped 2026-04-10. Opens Listing Differentiation cluster. Reciprocal mention to A14 added 2026-04-11.
 - A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." at `/blog/chatgpt-53-nashville-listings`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `b91587c`). Second Listing Differentiation pillar. Back-propagation to A13 mentions array landed in same commit.
-- **A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." at `/blog/hud-2026-fair-housing-guidance-withdrawal`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `f1d2cca`). Third Fair Housing pillar. Back-propagation to A11 and A12 mentions arrays landed in same commit. News-hook piece on Federal Register Notice 2026-06624, published five days after the notice. First public source with accurate nine-item count, 201-day gap, full current-authority mapping.**
+- A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." at `/blog/hud-2026-fair-housing-guidance-withdrawal`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `f1d2cca`). Third Fair Housing pillar. Back-propagation to A11 and A12 mentions arrays landed in same commit. News-hook piece on Federal Register Notice 2026-06624.
+- **A16 "Why 96 Percent of ChatGPT Listings Open With the Same Two Words" at `/blog/96-percent-chatgpt-listings-opening`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `cc425e8`). Third Listing Differentiation pillar. Back-propagation to A13 and A14 mentions arrays landed in same commit. Introduces the three-sentence rule. Evergreen.**
 
-**Cross-cluster schema bind is live in both directions.** A11, A12, and A15 carry reciprocal `mentions` within the Fair Housing cluster. A13 and A14 carry reciprocal `mentions` within the Listing Differentiation cluster. A14 mentions A11 and A12 for cross-cluster bind. A15 mentions A14 for cross-cluster bind. Seven live edges across two clusters, five live pillars total.
+**Cross-cluster schema bind is live in both directions.** A11, A12, and A15 carry reciprocal `mentions` within the Fair Housing cluster. A13, A14, and A16 carry reciprocal `mentions` within the Listing Differentiation cluster. A14 mentions A11 and A12 for cross-cluster bind. A15 mentions A14 for cross-cluster bind. A16 mentions A12 for cross-cluster bind. Nine live edges across two clusters, six live pillars total. Both clusters symmetric at three pillars each.
 
 ---
 
