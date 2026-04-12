@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** SIX PILLARS LIVE. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). Pipeline empty. Next piece is A17 (voice calibration experiment, Candidate D from the A16 rescoring block).
+**Current pipeline state:** SIX PILLARS LIVE, A17 IN DRAFTING. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). A17 Phase 1 frame locked 2026-04-11. Listing Differentiation will reach four pillars when A17 ships.
 
 ---
 
@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** empty. A17 next (voice calibration experiment, Candidate D).
+**Drafting slot:** A17 "We Gave Montaic a Style Sample and Ran the Same 53 Listings Again. Here Is What Changed." Phase 1 frame locked 2026-04-11 at `A17-voice-calibration-experiment.md`. Cluster: Listing Differentiation (fourth pillar, alternation override with rationale). Lever: Controlled Follow-up Experiment plus Numbers on the Table. Style sample: 5 highest-scoring Zillow originals from Nashville 53 (Option B, Lance has no past MLS listings). Phase 2 scoped at 3 to 4 hours across 3 blockers: select style sample (30 min), run voice-locked path on 53 listings (2 hr), grade outputs (30 to 60 min).
 **Voice pass slot:** empty.
 **With Claire slot:** empty.
 **Live slot:**
