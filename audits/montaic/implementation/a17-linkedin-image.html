@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    width: 1200px;
+    height: 1200px;
+    background: #111111;
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 64px 72px;
+    overflow: hidden;
+  }
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .header-title {
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #C17343;
+  }
+
+  .header-byline {
+    font-size: 13px;
+    font-weight: 400;
+    color: #555555;
+  }
+
+  .stats {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .stat-row {
+    display: flex;
+    align-items: center;
+    background: #181818;
+    border: 1px solid #222222;
+    border-radius: 12px;
+    padding: 28px 36px;
+    gap: 40px;
+    transition: all 0.2s;
+  }
+
+  .stat-row.highlighted {
+    background: #1c1714;
+    border-color: #2a2118;
+  }
+
+  .stat-row.highlighted .stat-bracket {
+    background: #C17343;
+  }
+
+  .stat-bracket {
+    width: 3px;
+    height: 48px;
+    background: #2a2a2a;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+
+  .stat-number {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 64px;
+    font-weight: 500;
+    color: #C17343;
+    line-height: 1;
+    min-width: 148px;
+    letter-spacing: -0.02em;
+  }
+
+  .stat-row:not(.highlighted) .stat-number {
+    color: #7a7a7a;
+  }
+
+  .stat-row.highlighted .stat-number {
+    color: #C17343;
+  }
+
+  .stat-row:nth-child(3) .stat-number {
+    color: #999999;
+  }
+
+  .stat-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stat-label {
+    font-size: 18px;
+    font-weight: 400;
+    color: #cccccc;
+    letter-spacing: 0.01em;
+  }
+
+  .stat-row:not(.highlighted) .stat-label {
+    color: #777777;
+  }
+
+  .stat-row.highlighted .stat-label {
+    color: #e0e0e0;
+  }
+
+  .stat-sublabel {
+    font-size: 12px;
+    font-weight: 400;
+    color: #444444;
+    letter-spacing: 0.02em;
+  }
+
+  .stat-badge {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #C17343;
+    opacity: 0.7;
+  }
+
+  .summary {
+    padding-top: 8px;
+  }
+
+  .summary-text {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: #e8e8e8;
+    line-height: 1.5;
+    max-width: 780px;
+    font-style: italic;
+  }
+
+  .footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .footer-url {
+    font-size: 13px;
+    font-weight: 500;
+    color: #C17343;
+    letter-spacing: 0.02em;
+  }
+
+  .footer-tagline {
+    font-size: 12px;
+    font-weight: 400;
+    color: #444444;
+    letter-spacing: 0.06em;
+  }
+
+  .divider {
+    width: 32px;
+    height: 2px;
+    background: #C17343;
+    margin-bottom: 16px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+  <div class="header">
+    <span class="header-title">53 Nashville Listings. Four Paths.</span>
+    <span class="header-byline">Lance Roylo  /  Montaic</span>
+  </div>
+
+  <div class="stats">
+    <div class="stat-row">
+      <div class="stat-bracket"></div>
+      <div class="stat-number">3.6</div>
+      <div class="stat-info">
+        <div class="stat-label">ChatGPT gpt-4o-mini</div>
+        <div class="stat-sublabel">Zero-shot, no style sample</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-bracket"></div>
+      <div class="stat-number">4.6</div>
+      <div class="stat-info">
+        <div class="stat-label">Zillow originals</div>
+        <div class="stat-sublabel">Agent-written, as published</div>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat-bracket"></div>
+      <div class="stat-number">5.1</div>
+      <div class="stat-info">
+        <div class="stat-label">Montaic default path</div>
+        <div class="stat-sublabel">No voice calibration</div>
+      </div>
+    </div>
+
+    <div class="stat-row highlighted">
+      <div class="stat-bracket"></div>
+      <div class="stat-number">6.9</div>
+      <div class="stat-info">
+        <div class="stat-label">Montaic voice-locked</div>
+        <div class="stat-sublabel">Five-listing writing sample</div>
+      </div>
+      <div class="stat-badge">+1.8 over default</div>
+    </div>
+  </div>
+
+  <div class="summary">
+    <div class="divider"></div>
+    <div class="summary-text">The biggest gain was cliche avoidance. The writing sample taught the model what to skip more than what to say.</div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-url">montaic.com</span>
+    <span class="footer-tagline">Precision Marketing for Real Estate</span>
+  </div>
+</body>
+</html>

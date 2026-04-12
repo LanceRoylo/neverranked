@@ -139,13 +139,21 @@ def extract_meta(html: str) -> dict:
     out["title_len"] = len(out["title"]) if out["title"] else 0
 
     # Meta description (two possible attribute orderings)
+    # Use [^>]* to avoid truncating at apostrophes inside the content value
     m = re.search(
-        r'<meta\s+name=["\']description["\']\s+content=["\'](.*?)["\']', html, re.I | re.S
+        r'<meta\s+name=["\']description["\']\s+content="([^"]*)"', html, re.I | re.S
     )
     if not m:
         m = re.search(
-            r'<meta\s+content=["\'](.*?)["\']\s+name=["\']description["\']',
-            html, re.I | re.S,
+            r"<meta\s+name=[\"']description[\"']\s+content='([^']*)'", html, re.I | re.S
+        )
+    if not m:
+        m = re.search(
+            r'<meta\s+content="([^"]*)"\s+name=["\']description["\']', html, re.I | re.S
+        )
+    if not m:
+        m = re.search(
+            r"<meta\s+content='([^']*)'\s+name=[\"']description[\"']", html, re.I | re.S
         )
     out["meta_desc"] = m.group(1).strip() if m else None
     out["meta_desc_len"] = len(out["meta_desc"]) if out["meta_desc"] else 0

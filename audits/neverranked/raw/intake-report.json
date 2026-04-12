@@ -1,0 +1,117 @@
+{
+  "audit_timestamp": "2026-04-12T12:28:08.472553Z",
+  "target": "https://neverranked.com",
+  "pages_sampled": 2,
+  "summary": {
+    "total_pages_sampled": 2,
+    "pages_with_canonical": 2,
+    "pages_with_canonical_pct": 100.0,
+    "pages_with_og_image": 2,
+    "pages_with_og_image_pct": 100.0,
+    "pages_with_any_schema": 2,
+    "pages_with_any_schema_pct": 100.0,
+    "schema_type_frequency": {
+      "Organization": 2,
+      "WebSite": 2,
+      "ProfessionalService": 2
+    },
+    "h1_structure": {
+      "one_h1": 2,
+      "no_h1": 0,
+      "multiple_h1": 0
+    },
+    "title_length": {
+      "too_short_under_30": 0,
+      "in_range_30_65": 2,
+      "too_long_over_65": 0
+    },
+    "meta_desc_length": {
+      "too_short_under_80": 2,
+      "in_range_80_160": 0,
+      "too_long_over_160": 0
+    },
+    "images": {
+      "total": 0,
+      "without_alt": 0
+    },
+    "external_links_per_page_avg": 4.0,
+    "thin_pages_under_300_words": 0
+  },
+  "red_flags": [
+    "No BreadcrumbList schema detected \u2014 rich result breadcrumbs are disabled",
+    "No AggregateRating detected \u2014 AI engines have no social proof hook to cite",
+    "2 pages have meta descriptions under 80 characters (thin)"
+  ],
+  "pages": {
+    "https://neverranked.com": {
+      "title": "Never Ranked \u2014 AI-Native SEO & AEO Agency",
+      "title_len": 41,
+      "meta_desc": "Search changed. Your visibility didn",
+      "meta_desc_len": 36,
+      "canonical": "https://neverranked.com/",
+      "robots_meta": "index, follow, max-image-preview:large, max-snippet:-1",
+      "og_title": true,
+      "og_description": true,
+      "og_image": true,
+      "og_type": true,
+      "twitter_card": true,
+      "twitter_image": true,
+      "h1_count": 1,
+      "h2_count": 8,
+      "h3_count": 16,
+      "h1_first": "Never Ranked. Until&nbsp;now.",
+      "jsonld_block_count": 1,
+      "jsonld_parse_errors": 0,
+      "schema_types": [
+        "Organization",
+        "WebSite",
+        "ProfessionalService"
+      ],
+      "img_count": 0,
+      "img_no_alt": 0,
+      "links_internal": 8,
+      "links_external": 4,
+      "word_count": 1181,
+      "has_rating_text": false,
+      "has_testimonial_text": true,
+      "url": "https://neverranked.com",
+      "file": "home.html",
+      "html_bytes": 63736
+    },
+    "https://neverranked.com/#services": {
+      "title": "Never Ranked \u2014 AI-Native SEO & AEO Agency",
+      "title_len": 41,
+      "meta_desc": "Search changed. Your visibility didn",
+      "meta_desc_len": 36,
+      "canonical": "https://neverranked.com/",
+      "robots_meta": "index, follow, max-image-preview:large, max-snippet:-1",
+      "og_title": true,
+      "og_description": true,
+      "og_image": true,
+      "og_type": true,
+      "twitter_card": true,
+      "twitter_image": true,
+      "h1_count": 1,
+      "h2_count": 8,
+      "h3_count": 16,
+      "h1_first": "Never Ranked. Until&nbsp;now.",
+      "jsonld_block_count": 1,
+      "jsonld_parse_errors": 0,
+      "schema_types": [
+        "Organization",
+        "WebSite",
+        "ProfessionalService"
+      ],
+      "img_count": 0,
+      "img_no_alt": 0,
+      "links_internal": 8,
+      "links_external": 4,
+      "word_count": 1181,
+      "has_rating_text": false,
+      "has_testimonial_text": true,
+      "url": "https://neverranked.com/#services",
+      "file": "_services.html",
+      "html_bytes": 63736
+    }
+  }
+}
