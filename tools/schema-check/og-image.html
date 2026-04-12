@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Schema &amp; AEO Health Check OG</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+html,body{
+  margin:0;padding:0;
+  background:#121212;
+  width:1200px;
+  height:630px;
+  overflow:hidden;
+  position:relative;
+}
+body{
+  font-family:"DM Mono",monospace;
+  color:#f0ece3;
+}
+
+/* grain */
+.grain{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  opacity:.12;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+/* vignette */
+.vignette{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:2;
+  background:
+    radial-gradient(120% 80% at 50% 0%,transparent 35%,rgba(0,0,0,.55) 100%),
+    radial-gradient(80% 60% at 50% 100%,transparent 40%,rgba(0,0,0,.5) 100%);
+}
+
+/* subtle gold glow behind the grade circle */
+.glow{
+  position:absolute;
+  top:100px;
+  right:100px;
+  width:320px;
+  height:320px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(232,199,103,.08) 0%,transparent 70%);
+  z-index:1;
+  pointer-events:none;
+}
+
+/* top-left mark */
+.mark-top{
+  position:absolute;
+  left:72px;
+  top:50px;
+  z-index:3;
+  font-family:"Playfair Display",serif;
+  font-style:italic;
+  font-size:26px;
+  letter-spacing:-.01em;
+  color:#f0ece3;
+}
+.mark-top sup{
+  font-family:"Barlow Condensed",sans-serif;
+  font-style:normal;
+  font-size:11px;
+  letter-spacing:.2em;
+  margin-left:5px;
+  vertical-align:super;
+  opacity:.45;
+  color:rgba(240,236,227,.5);
+}
+
+/* top-right label */
+.label-top{
+  position:absolute;
+  right:72px;
+  top:56px;
+  z-index:3;
+  font-family:"Barlow Condensed",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:15px;
+  color:rgba(240,236,227,.45);
+}
+.dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  background:#e8c767;
+  border-radius:50%;
+  margin-right:10px;
+  vertical-align:middle;
+  box-shadow:0 0 0 3px rgba(232,199,103,.18);
+}
+
+/* headline area */
+.headline-area{
+  position:absolute;
+  left:72px;
+  top:130px;
+  z-index:3;
+  max-width:620px;
+}
+.tool-label{
+  font-family:"Barlow Condensed",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.28em;
+  font-size:14px;
+  color:rgba(240,236,227,.4);
+  margin-bottom:18px;
+}
+.tool-name{
+  font-family:"Playfair Display",serif;
+  font-weight:400;
+  font-size:64px;
+  letter-spacing:-.025em;
+  line-height:1.05;
+  margin:0;
+  color:#f0ece3;
+}
+.tool-name .ampersand{
+  font-style:italic;
+  color:#e8c767;
+}
+
+/* grade circle */
+.grade-wrap{
+  position:absolute;
+  right:120px;
+  top:145px;
+  z-index:3;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.grade-circle{
+  width:200px;
+  height:200px;
+  border-radius:50%;
+  border:3px solid rgba(232,199,103,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  background:rgba(232,199,103,.04);
+}
+.grade-circle::before{
+  content:'';
+  position:absolute;
+  inset:-8px;
+  border-radius:50%;
+  border:1px solid rgba(232,199,103,.1);
+}
+.grade-letter{
+  font-family:"Playfair Display",serif;
+  font-weight:400;
+  font-size:120px;
+  color:#e8c767;
+  line-height:1;
+  margin-top:-4px;
+}
+.grade-label{
+  font-family:"Barlow Condensed",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.28em;
+  font-size:13px;
+  color:rgba(240,236,227,.35);
+  margin-top:14px;
+}
+
+/* free line */
+.free-line{
+  position:absolute;
+  left:72px;
+  bottom:110px;
+  z-index:3;
+  font-family:"DM Mono",monospace;
+  font-size:18px;
+  font-weight:400;
+  color:rgba(232,199,103,.7);
+  letter-spacing:.04em;
+}
+
+/* divider */
+.divider{
+  position:absolute;
+  left:72px;
+  right:72px;
+  bottom:80px;
+  height:1px;
+  background:linear-gradient(90deg,rgba(232,199,103,.2),rgba(232,199,103,.06));
+  z-index:3;
+}
+
+/* bottom */
+.bottom-left{
+  position:absolute;
+  left:72px;
+  bottom:42px;
+  z-index:3;
+  font-family:"Barlow Condensed",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:15px;
+  color:rgba(240,236,227,.35);
+}
+.bottom-right{
+  position:absolute;
+  right:72px;
+  bottom:42px;
+  z-index:3;
+  font-family:"Barlow Condensed",sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:15px;
+  color:rgba(240,236,227,.35);
+}
+.bottom-right .gold{color:rgba(232,199,103,.5)}
+</style>
+</head>
+<body>
+
+<div class="grain"></div>
+<div class="vignette"></div>
+<div class="glow"></div>
+
+<div class="mark-top">Never Ranked<sup>&copy;</sup></div>
+<div class="label-top"><span class="dot"></span>FREE TOOL</div>
+
+<div class="headline-area">
+  <div class="tool-label">Instant Site Audit</div>
+  <h1 class="tool-name">Schema <span class="ampersand">&amp;</span><br>AEO Health Check</h1>
+</div>
+
+<div class="grade-wrap">
+  <div class="grade-circle">
+    <span class="grade-letter">A</span>
+  </div>
+  <div class="grade-label">Sample Grade</div>
+</div>
+
+<div class="free-line">Free. No signup.</div>
+<div class="divider"></div>
+
+<div class="bottom-left">check.neverranked.com</div>
+<div class="bottom-right"><span class="gold">&#167;</span> AI-NATIVE SEO &amp; AEO</div>
+
+</body>
+</html>

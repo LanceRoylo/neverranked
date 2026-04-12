@@ -450,11 +450,11 @@ const HTML_PAGE = `<!doctype html>
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://check.neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image" content="https://neverranked.com/images/check-og.png">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Schema & AEO Health Check — Never Ranked">
 <meta name="twitter:description" content="Free instant AEO readiness report for any URL.">
-<meta name="twitter:image" content="https://neverranked.com/og.png">
+<meta name="twitter:image" content="https://neverranked.com/images/check-og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
