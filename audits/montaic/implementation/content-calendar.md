@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** SEVEN PILLARS LIVE. A11, A12, A13 shipped 2026-04-10. A14, A15, A16 shipped 2026-04-11. A17 shipped 2026-04-12. Fair Housing at three pillars (A11, A12, A15). Listing Differentiation at four pillars (A13, A14, A16, A17). Pipeline empty. A18 next.
+**Current pipeline state:** SEVEN PILLARS LIVE, A18 PARKED. A11, A12, A13 shipped 2026-04-10. A14, A15, A16 shipped 2026-04-11. A17 shipped 2026-04-12. Fair Housing at three pillars (A11, A12, A15). Listing Differentiation at four pillars (A13, A14, A16, A17). A18 Phase 1 frame locked 2026-04-12, PARKED until late June 2026 (gated on DOJ v. Meta sunset June 27 2026).
 
 ---
 
@@ -41,7 +41,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 
 Updated every time a piece moves. Last update: 2026-04-11.
 
-**Drafting slot:** empty.
+**Drafting slot:** empty. A18 enters here in late June / early July 2026.
 **Voice pass slot:** empty.
 **Voice pass slot:** empty.
 **With Claire slot:** empty.
