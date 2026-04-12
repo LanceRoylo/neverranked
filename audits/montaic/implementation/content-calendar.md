@@ -4,7 +4,7 @@
 
 **Updated:** 2026-04-11
 **Cadence:** one pillar article every 2 weeks
-**Current pipeline state:** SIX PILLARS LIVE, A17 IN VOICE PASS. A11, A12, A13 shipped 2026-04-10. A14 shipped 2026-04-11. A15 shipped 2026-04-11. A16 shipped 2026-04-11. Both clusters at three pillars each: Fair Housing (A11, A12, A15) and Listing Differentiation (A13, A14, A16). A17 Phases 1-4 complete 2026-04-11, waiting on Lance voice pass. Listing Differentiation will reach four pillars when A17 ships.
+**Current pipeline state:** SEVEN PILLARS LIVE. A11, A12, A13 shipped 2026-04-10. A14, A15, A16 shipped 2026-04-11. A17 shipped 2026-04-12. Fair Housing at three pillars (A11, A12, A15). Listing Differentiation at four pillars (A13, A14, A16, A17). Pipeline empty. A18 next.
 
 ---
 
@@ -42,7 +42,7 @@ At steady state, four pieces are in flight at any moment. Each piece moves throu
 Updated every time a piece moves. Last update: 2026-04-11.
 
 **Drafting slot:** empty.
-**Voice pass slot:** A17 "We Gave Montaic a Style Sample and Ran the Same 53 Listings Again. Here Is What Changed." Phase 1-4 complete 2026-04-11. Draft at `A17-draft.md` (2370 words, voice-check 4/4 clean). Claire handoff at `A17-claire-paste-this.md`. Experiment result: voice-locked avg 6.9/10 vs 5.1 default (+1.8 lift), 42/53 in 7-8 bucket, cliche avoidance biggest category mover (+3.3). Waiting on Lance voice pass.
+**Voice pass slot:** empty.
 **Voice pass slot:** empty.
 **With Claire slot:** empty.
 **Live slot:**
@@ -52,8 +52,9 @@ Updated every time a piece moves. Last update: 2026-04-11.
 - A14 "We Ran 53 Nashville Listings Through ChatGPT. Here Is What Happened." at `/blog/chatgpt-53-nashville-listings`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `b91587c`). Second Listing Differentiation pillar. Back-propagation to A13 mentions array landed in same commit.
 - A15 "HUD Just Quietly Withdrew Nine Fair Housing Guidance Documents. Here Is What Still Applies to Your Listings." at `/blog/hud-2026-fair-housing-guidance-withdrawal`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `f1d2cca`). Third Fair Housing pillar. Back-propagation to A11 and A12 mentions arrays landed in same commit. News-hook piece on Federal Register Notice 2026-06624.
 - **A16 "Why 96 Percent of ChatGPT Listings Open With the Same Two Words" at `/blog/96-percent-chatgpt-listings-opening`. SHIPPED 2026-04-11 (listing-pipeline-ai commit `cc425e8`). Third Listing Differentiation pillar. Back-propagation to A13 and A14 mentions arrays landed in same commit. Introduces the three-sentence rule. Evergreen.**
+- **A17 "We Gave Montaic a Style Sample and Ran the Same 53 Listings Again. Here Is What Changed." at `/blog/montaic-voice-calibration-53-nashville`. SHIPPED 2026-04-12. Fourth Listing Differentiation pillar. Back-propagation to A13, A14, and A16 mentions arrays landed in same commit. Voice calibration experiment: 6.9/10 avg vs 5.1 default (+1.8 lift), 42/53 in 7-8 bucket, cliche avoidance biggest category gain (+3.3). Evergreen.**
 
-**Cross-cluster schema bind is live in both directions.** A11, A12, and A15 carry reciprocal `mentions` within the Fair Housing cluster. A13, A14, and A16 carry reciprocal `mentions` within the Listing Differentiation cluster. A14 mentions A11 and A12 for cross-cluster bind. A15 mentions A14 for cross-cluster bind. A16 mentions A12 for cross-cluster bind. Nine live edges across two clusters, six live pillars total. Both clusters symmetric at three pillars each.
+**Cross-cluster schema bind is live in both directions.** A11, A12, and A15 carry reciprocal `mentions` within the Fair Housing cluster. A13, A14, A16, and A17 carry reciprocal `mentions` within the Listing Differentiation cluster. A14 mentions A11 and A12 for cross-cluster bind. A15 mentions A14 for cross-cluster bind. A16 mentions A12 for cross-cluster bind. A17 mentions A12 for cross-cluster bind. Twelve live edges across two clusters, seven live pillars total. Fair Housing at three pillars, Listing Differentiation at four.
 
 ---
 
