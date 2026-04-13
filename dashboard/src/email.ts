@@ -1,8 +1,19 @@
 /**
- * Dashboard — Email sending via Resend
+ * Dashboard -- Email sending via Resend
+ *
+ * Magic link auth emails + weekly AEO digest emails.
  */
 
-import type { Env } from "./types";
+import type { Env, ScanResult } from "./types";
+import { generateNarrative } from "./narrative";
+
+export interface DigestData {
+  domain: string;
+  domainId: number;
+  clientSlug: string;
+  latest: ScanResult;
+  previous: ScanResult | null;
+}
 
 export async function sendMagicLinkEmail(
   email: string,
@@ -45,4 +56,231 @@ export async function sendMagicLinkEmail(
     console.error("Email send failed:", err);
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Weekly AEO digest
+// ---------------------------------------------------------------------------
+
+/** Send a digest email to one recipient */
+export async function sendDigestEmail(
+  to: string,
+  userName: string | null,
+  digests: DigestData[],
+  env: Env
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
+    return true;
+  }
+
+  if (digests.length === 0) return false;
+
+  const subject = digests.length === 1
+    ? buildSubjectSingle(digests[0])
+    : `Weekly AEO Report -- ${digests.length} domains scanned`;
+
+  const emailHtml = buildDigestHtml(userName, digests);
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "NeverRanked <reports@neverranked.com>",
+        to: [to],
+        subject,
+        html: emailHtml,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`Digest to ${to} failed: ${res.status} ${err}`);
+      return false;
+    }
+
+    console.log(`Digest sent to ${to}`);
+    return true;
+  } catch (e) {
+    console.log(`Digest to ${to} error: ${e}`);
+    return false;
+  }
+}
+
+function buildSubjectSingle(d: DigestData): string {
+  const diff = d.previous && !d.previous.error
+    ? d.latest.aeo_score - d.previous.aeo_score
+    : null;
+
+  if (diff !== null && diff > 0) {
+    return `${d.domain}: AEO score up ${diff} pts (${d.latest.aeo_score}/100)`;
+  } else if (diff !== null && diff < 0) {
+    return `${d.domain}: AEO score dropped ${Math.abs(diff)} pts (${d.latest.aeo_score}/100)`;
+  }
+  return `${d.domain}: AEO score ${d.latest.aeo_score}/100`;
+}
+
+/** HTML-escape for email content */
+function escEmail(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function buildDigestHtml(userName: string | null, digests: DigestData[]): string {
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  const domainBlocks = digests.map(d => {
+    const narrative = generateNarrative(d.domain, d.latest, d.previous);
+    const diff = d.previous && !d.previous.error
+      ? d.latest.aeo_score - d.previous.aeo_score
+      : null;
+
+    const gradeColor = d.latest.grade === "A" ? "#27ae60"
+      : d.latest.grade === "B" ? "#e8c767"
+      : d.latest.grade === "C" ? "#e67e22"
+      : "#c0392b";
+
+    let deltaText = "";
+    let deltaColor = "#888888";
+    if (diff !== null) {
+      if (diff > 0) { deltaText = `+${diff} pts`; deltaColor = "#27ae60"; }
+      else if (diff < 0) { deltaText = `${diff} pts`; deltaColor = "#c0392b"; }
+      else { deltaText = "no change"; deltaColor = "#888888"; }
+    }
+
+    const topAction = narrative.actions[0] || null;
+
+    return `
+      <!-- Domain block -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
+        <tr>
+          <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+            <!-- Domain name -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;padding-bottom:16px">${escEmail(d.domain)}</td>
+              </tr>
+            </table>
+
+            <!-- Score row -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px">
+              <tr>
+                <td width="60" style="vertical-align:middle">
+                  <div style="width:52px;height:52px;border-radius:50%;border:2px solid ${gradeColor};text-align:center;line-height:52px;font-family:Georgia,serif;font-size:28px;font-style:italic;color:${gradeColor}">${d.latest.grade}</div>
+                </td>
+                <td style="vertical-align:middle;padding-left:16px">
+                  <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef;letter-spacing:-1px">${d.latest.aeo_score}<span style="font-size:14px;color:#888888">/100</span></div>
+                  ${deltaText ? `<div style="font-size:13px;color:${deltaColor};margin-top:2px">${deltaText}</div>` : ""}
+                </td>
+              </tr>
+            </table>
+
+            <!-- Summary -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:${topAction ? '16' : '0'}px">
+              <tr>
+                <td style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#b0b0a8;padding:16px;background:#171717;border-radius:4px">
+                  ${escEmail(narrative.summary)}
+                </td>
+              </tr>
+            </table>
+
+            ${topAction ? `
+            <!-- Top action -->
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding:12px 16px;border-left:3px solid ${topAction.impact === 'high' ? '#c0392b' : topAction.impact === 'medium' ? '#e8c767' : '#888888'};font-size:13px;color:#b0b0a8;font-family:Georgia,serif">
+                  <span style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888">Next step: </span><br>
+                  <span style="color:#fbf8ef">${escEmail(topAction.action)}</span>
+                </td>
+              </tr>
+            </table>
+            ` : ""}
+          </td>
+        </tr>
+      </table>
+    `;
+  }).join("");
+
+  return `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Weekly AEO Digest</title>
+</head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+
+<!-- Wrapper -->
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+  <tr>
+    <td align="center" style="padding:32px 16px">
+
+      <!-- Container -->
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+        <!-- Header -->
+        <tr>
+          <td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+                <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Weekly Digest</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Greeting -->
+        <tr>
+          <td style="padding:32px 0 24px">
+            <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:8px">Hey ${escEmail(greeting)},</div>
+            <div style="font-family:Georgia,serif;font-size:14px;color:#888888;line-height:1.6">Here's your weekly AEO scan from ${scanDate}.</div>
+          </td>
+        </tr>
+
+        <!-- Domain blocks -->
+        <tr>
+          <td>
+            ${domainBlocks}
+          </td>
+        </tr>
+
+        <!-- CTA -->
+        <tr>
+          <td align="center" style="padding:16px 0 32px">
+            <a href="https://app.neverranked.com" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View dashboard</a>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:24px 0;border-top:1px solid #2a2a2a">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+                  Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+                  Scans run weekly. Scores reflect AI search engine readiness.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
+  `.trim();
 }

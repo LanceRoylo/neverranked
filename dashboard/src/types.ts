@@ -16,6 +16,7 @@ export interface User {
   role: "client" | "admin";
   client_slug: string | null;
   onboarded: number;
+  email_digest: number;
   created_at: number;
   last_login_at: number | null;
 }
