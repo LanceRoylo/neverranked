@@ -2,9 +2,48 @@
  * Dashboard — Domain detail route
  */
 
-import type { Env, User, Domain, ScanResult } from "../types";
+import type { Env, User, Domain, ScanResult, RoadmapItem } from "../types";
 import { layout, html, esc } from "../render";
 import { generateNarrative } from "../narrative";
+
+async function buildProgressTimeline(clientSlug: string, env: Env): Promise<string> {
+  const completedItems = (await env.DB.prepare(
+    "SELECT title, category, completed_at FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at IS NOT NULL ORDER BY completed_at DESC LIMIT 10"
+  ).bind(clientSlug).all<{ title: string; category: string; completed_at: number }>()).results;
+
+  if (completedItems.length === 0) return "";
+
+  const categoryIcons: Record<string, string> = {
+    schema: "{ }",
+    content: "Aa",
+    authority: "++",
+    technical: "//",
+  };
+
+  const items = completedItems.map(item => {
+    const date = new Date(item.completed_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const icon = categoryIcons[item.category] || "--";
+    return `
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
+        <div style="flex-shrink:0;width:32px;height:32px;background:var(--bg-edge);border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:var(--gold)">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;color:var(--text)">${esc(item.title)}</div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:2px">${esc(item.category)} -- completed ${date}</div>
+        </div>
+        <div style="color:#4ade80;font-size:11px;flex-shrink:0">Done</div>
+      </div>`;
+  }).join("");
+
+  return `
+    <div class="card" style="margin-top:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h3>What we've <em>done</em></h3>
+        <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${completedItems.length} completed</span>
+      </div>
+      ${items}
+    </div>
+  `;
+}
 
 export async function handleDomainDetail(domainId: number, user: User, env: Env, requestUrl?: URL): Promise<Response> {
   // Get domain
@@ -368,14 +407,15 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
         <form method="POST" action="/domain/${domain.id}/share">
           <button type="submit" class="btn btn-ghost">Share report</button>
         </form>
-        <form method="POST" action="/admin/scan/${domain.id}">
+        ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}">
           <button type="submit" class="btn">Run scan</button>
-        </form>
+        </form>` : ''}
       </div>
     </div>
 
     ${shareFlash}
     ${reportSection}
+    ${await buildProgressTimeline(domain.client_slug, env)}
     ${trendSection}
     ${coverageSection}
     ${historySection}

@@ -22,6 +22,9 @@ interface LeadData {
   lastScan: string;
   drip_day3_sent?: boolean;
   drip_day7_sent?: boolean;
+  converted?: boolean;
+  converted_at?: string;
+  converted_plan?: string;
 }
 
 function daysSince(iso: string): number {
@@ -63,6 +66,7 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
 
   const drip3Sent = leads.filter(l => l.drip_day3_sent).length;
   const drip7Sent = leads.filter(l => l.drip_day7_sent).length;
+  const converted = leads.filter(l => l.converted).length;
 
   const statsRow = `
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:16px;margin-bottom:32px">
@@ -89,6 +93,10 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
       <div class="card" style="text-align:center;padding:20px">
         <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text-soft)">${drip7Sent}</div>
         <div class="label" style="margin-top:4px">Day 7 sent</div>
+      </div>
+      <div class="card" style="text-align:center;padding:20px">
+        <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:#4ade80">${converted}</div>
+        <div class="label" style="margin-top:4px">Converted</div>
       </div>
     </div>
   `;
@@ -121,6 +129,7 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
         <td style="text-align:center">${latest ? `<span style="color:${gradeColor(latest.grade)}">${latest.grade}</span>` : '-'}</td>
         <td style="text-align:center">${scanCount}</td>
         <td style="text-align:center">${dripStatus}</td>
+        <td style="text-align:center">${lead.converted ? `<span style="color:#4ade80;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;background:rgba(74,222,128,.1);padding:2px 8px;border-radius:2px">${esc(lead.converted_plan || 'paid')}</span>` : ''}</td>
         <td style="color:var(--text-faint);font-size:12px">${age}d ago</td>
       </tr>
     `;
@@ -154,6 +163,7 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
             <th style="text-align:center">Grade</th>
             <th style="text-align:center">Scans</th>
             <th style="text-align:center">Drip</th>
+            <th style="text-align:center">Status</th>
             <th>Age</th>
           </tr>
         </thead>

@@ -11,6 +11,7 @@ import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData } from "./email";
 import { checkAndAlertRegression } from "./regression";
+import { sendOnboardingDripEmails } from "./onboarding-drip";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -131,4 +132,9 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
   }
 
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
+}
+
+/** Daily tasks: onboarding drip emails */
+export async function runDailyTasks(env: Env): Promise<void> {
+  await sendOnboardingDripEmails(env);
 }

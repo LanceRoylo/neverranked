@@ -41,6 +41,29 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
   const primary = rows.filter(r => !r.domain.is_competitor);
   const competitors = rows.filter(r => r.domain.is_competitor);
 
+  // If no competitors yet, show helpful empty state
+  if (competitors.length === 0) {
+    const pendingSuggestions = await env.DB.prepare(
+      "SELECT COUNT(*) as count FROM competitor_suggestions WHERE client_slug = ? AND status = 'pending'"
+    ).bind(clientSlug).first<{ count: number }>();
+    const pendingCount = pendingSuggestions?.count || 0;
+
+    const emptyMessage = pendingCount > 0
+      ? `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">You submitted ${pendingCount} competitor${pendingCount > 1 ? 's' : ''} for review. We are setting them up and will run initial scans shortly. Check back soon.</p>`
+      : `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">No competitors are being tracked yet. Add competitors during onboarding or ask your account manager to set them up.</p>`;
+
+    return html(layout("Competitors", `
+      <div style="margin-bottom:40px">
+        <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
+        <h1>Competitor <em>comparison</em></h1>
+      </div>
+      <div class="empty">
+        <h3>Competitors coming soon</h3>
+        ${emptyMessage}
+      </div>
+    `, user));
+  }
+
   // Collect all schema types across all domains
   const allSchemaTypes = new Set<string>();
   rows.forEach(r => r.schemaTypes.forEach(t => allSchemaTypes.add(t)));

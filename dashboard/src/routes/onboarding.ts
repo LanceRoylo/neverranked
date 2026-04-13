@@ -7,6 +7,8 @@
 
 import type { Env, User } from "../types";
 import { layout, html, redirect, esc } from "../render";
+import { scanDomain } from "../scanner";
+import { autoGenerateRoadmap } from "../auto-provision";
 
 export async function handleOnboarding(user: User, env: Env): Promise<Response> {
   // Admin doesn't need onboarding
@@ -48,6 +50,11 @@ export async function handleOnboarding(user: User, env: Env): Promise<Response> 
     return html(layout("Welcome", body, user));
   }
 
+  // Check if user already has a domain provisioned
+  const hasDomain = user.client_slug ? await env.DB.prepare(
+    "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(user.client_slug).first() : null;
+
   // Show onboarding form
   const body = `
     <div style="max-width:600px;margin:0 auto">
@@ -58,6 +65,18 @@ export async function handleOnboarding(user: User, env: Env): Promise<Response> 
       </p>
 
       <form method="POST" action="/onboarding">
+        ${!hasDomain ? `
+        <div style="margin-bottom:32px">
+          <div class="label" style="margin-bottom:16px">What's your domain?</div>
+          <p style="color:var(--text-faint);font-size:12px;margin-bottom:16px">
+            The website we'll monitor and optimize for AI visibility.
+          </p>
+          <div class="form-group">
+            <input type="text" name="primary_domain" placeholder="yourbusiness.com" required style="width:100%;max-width:400px">
+          </div>
+        </div>
+        ` : ''}
+
         <div style="margin-bottom:32px">
           <div class="label" style="margin-bottom:16px">Who are your top competitors?</div>
           <p style="color:var(--text-faint);font-size:12px;margin-bottom:16px">
@@ -133,8 +152,49 @@ export async function handleOnboardingSubmit(request: Request, user: User, env: 
 
   const form = await request.formData();
   const now = Math.floor(Date.now() / 1000);
-  let added = 0;
 
+  // Handle primary domain if provided
+  const primaryDomain = (form.get("primary_domain") as string || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+
+  if (primaryDomain && primaryDomain.length >= 3 && primaryDomain.includes(".")) {
+    const clientSlug = primaryDomain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
+
+    // Set client_slug if not already set
+    if (!user.client_slug) {
+      await env.DB.prepare(
+        "UPDATE users SET client_slug = ? WHERE id = ? AND client_slug IS NULL"
+      ).bind(clientSlug, user.id).run();
+      user.client_slug = clientSlug;
+    }
+
+    // Add domain if it doesn't exist
+    const existingDomain = await env.DB.prepare(
+      "SELECT id FROM domains WHERE domain = ? AND client_slug = ?"
+    ).bind(primaryDomain, user.client_slug).first<{ id: number }>();
+
+    if (!existingDomain) {
+      const domResult = await env.DB.prepare(
+        "INSERT INTO domains (client_slug, domain, is_competitor, active, created_at, updated_at) VALUES (?, ?, 0, 1, ?, ?)"
+      ).bind(user.client_slug, primaryDomain, now, now).run();
+      const domainId = Number(domResult.meta?.last_row_id ?? 0);
+
+      // Run initial scan + generate roadmap
+      if (domainId) {
+        try {
+          const scanResult = await scanDomain(domainId, `https://${primaryDomain}/`, "onboard", env);
+          if (scanResult && !scanResult.error) {
+            await autoGenerateRoadmap(user.client_slug, scanResult, env);
+          }
+        } catch (e) {
+          console.log(`Onboarding scan failed: ${e}`);
+        }
+      }
+    }
+  }
+
+  // Handle competitor suggestions
+  let added = 0;
   for (let i = 1; i <= 5; i++) {
     const domain = (form.get(`domain_${i}`) as string || "").trim().toLowerCase()
       .replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");

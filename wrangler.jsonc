@@ -10,7 +10,7 @@
     "html_handling": "auto-trailing-slash"
   },
   "routes": [
-    { "pattern": "neverranked.com", "custom_domain": true },
-    { "pattern": "www.neverranked.com", "custom_domain": true }
+    { "pattern": "neverranked.com/*", "zone_name": "neverranked.com" },
+    { "pattern": "www.neverranked.com/*", "zone_name": "neverranked.com" }
   ]
 }

@@ -10,8 +10,11 @@
  *   amplify  — $4,500/mo subscription
  */
 
-import type { Env, User } from "../types";
+import type { Env, User, Domain } from "../types";
 import { layout, html, redirect } from "../render";
+import { createMagicLink } from "../auth";
+import { scanDomain } from "../scanner";
+import { autoGenerateRoadmap } from "../auto-provision";
 
 // ---------- Plan config ----------
 
@@ -149,8 +152,9 @@ export async function handleCheckout(
   const url = new URL(request.url);
   const origin = url.origin;
 
-  // Pre-fill email from query param if provided
+  // Pre-fill email and domain from query params if provided
   const prefillEmail = url.searchParams.get("email") || "";
+  const prefillDomain = url.searchParams.get("domain") || "";
 
   // Build checkout session params using pre-created Stripe Price IDs
   const params: Record<string, string> = {
@@ -162,7 +166,16 @@ export async function handleCheckout(
     "payment_method_types[0]": "card",
     "allow_promotion_codes": "true",
     "metadata[plan]": plan,
+    // Ask for the domain to monitor during checkout
+    "custom_fields[0][key]": "domain",
+    "custom_fields[0][label][type]": "custom",
+    "custom_fields[0][label][custom]": "Domain to monitor (e.g. yourbusiness.com)",
+    "custom_fields[0][type]": "text",
   };
+
+  if (prefillDomain) {
+    params["custom_fields[0][text][default_value]"] = prefillDomain;
+  }
 
   if (prefillEmail) {
     params["customer_email"] = prefillEmail;
@@ -195,8 +208,8 @@ export async function handleCheckoutSuccess(
   const config = PLANS[plan];
 
   const nextStep = plan === "audit"
-    ? "We will deliver your full audit within 48 hours. Check your email."
-    : "We will set up your dashboard and send you login details within 24 hours.";
+    ? "Check your email for your dashboard login link. Your full audit will be delivered within 48 hours."
+    : "Check your email for your dashboard login link. Your dashboard is ready to go.";
 
   const body = `
     <div style="text-align:center;padding:80px 0">
@@ -250,25 +263,110 @@ export async function handleStripeWebhook(
 
       if (!email || !plan) break;
 
+      // Get domain from checkout custom field, fall back to email domain
+      const customFields = session.custom_fields || [];
+      const domainField = customFields.find((f: any) => f.key === "domain");
+      const rawDomain = (domainField?.text?.value || "").trim().toLowerCase()
+        .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+      const emailDomain = email.split("@")[1];
+      const provisionDomain = rawDomain || emailDomain;
+      const clientSlug = provisionDomain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
+
       // Check if user exists
       let user = await env.DB.prepare(
-        "SELECT id FROM users WHERE email = ?"
-      ).bind(email).first<{ id: number }>();
+        "SELECT id, client_slug FROM users WHERE email = ?"
+      ).bind(email).first<{ id: number; client_slug: string | null }>();
 
       if (!user) {
-        // Create user for new customers
-        await env.DB.prepare(
-          "INSERT INTO users (email, role, plan, stripe_customer_id, stripe_subscription_id, created_at) VALUES (?, 'client', ?, ?, ?, ?)"
-        ).bind(email, plan, customerId, subscriptionId, now).run();
+        // Create user with client_slug auto-derived from email domain
+        const result = await env.DB.prepare(
+          "INSERT INTO users (email, role, plan, client_slug, stripe_customer_id, stripe_subscription_id, created_at) VALUES (?, 'client', ?, ?, ?, ?, ?)"
+        ).bind(email, plan, clientSlug, customerId, subscriptionId, now).run();
+        const userId = result.meta?.last_row_id ?? 0;
+        user = { id: Number(userId), client_slug: clientSlug };
       } else {
-        // Update existing user
+        // Update existing user -- set client_slug if missing
         await env.DB.prepare(
-          "UPDATE users SET plan = ?, stripe_customer_id = ?, stripe_subscription_id = ? WHERE id = ?"
-        ).bind(plan, customerId, subscriptionId, user.id).run();
+          "UPDATE users SET plan = ?, stripe_customer_id = ?, stripe_subscription_id = ?, client_slug = COALESCE(client_slug, ?) WHERE id = ?"
+        ).bind(plan, customerId, subscriptionId, clientSlug, user.id).run();
+        if (!user.client_slug) user.client_slug = clientSlug;
       }
 
-      // Send notification to admin
+      // Auto-provision: add domain if it doesn't exist yet
+      const slug = user.client_slug || clientSlug;
+      const existingDomain = await env.DB.prepare(
+        "SELECT id FROM domains WHERE domain = ? AND client_slug = ?"
+      ).bind(provisionDomain, slug).first<{ id: number }>();
+
+      let domainId: number | null = null;
+      if (!existingDomain) {
+        // Skip generic email providers (only when falling back to email domain)
+        const genericDomains = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com", "protonmail.com", "mail.com"];
+        if (rawDomain || !genericDomains.includes(provisionDomain)) {
+          const domResult = await env.DB.prepare(
+            "INSERT INTO domains (client_slug, domain, is_competitor, active, created_at, updated_at) VALUES (?, ?, 0, 1, ?, ?)"
+          ).bind(slug, provisionDomain, now, now).run();
+          domainId = Number(domResult.meta?.last_row_id ?? 0);
+        }
+      } else {
+        domainId = existingDomain.id;
+      }
+
+      // Trigger initial scan + auto-generate roadmap
+      if (domainId) {
+        try {
+          const scanResult = await scanDomain(domainId, `https://${provisionDomain}/`, "onboard", env);
+          if (scanResult && !scanResult.error) {
+            await autoGenerateRoadmap(slug, scanResult, env);
+          }
+        } catch (e) {
+          console.log(`Auto-provision scan failed: ${e}`);
+        }
+      }
+
+      // Mark lead as converted in KV (if they came from free scan)
+      try {
+        const leadKey = `lead:${email}`;
+        const leadRaw = await env.LEADS.get(leadKey);
+        if (leadRaw) {
+          const leadData = JSON.parse(leadRaw);
+          leadData.converted = true;
+          leadData.converted_at = new Date().toISOString();
+          leadData.converted_plan = plan;
+          await env.LEADS.put(leadKey, JSON.stringify(leadData));
+        }
+      } catch (e) {
+        console.log(`Lead conversion tracking failed: ${e}`);
+      }
+
+      // Send welcome email with magic link to customer
       if (env.RESEND_API_KEY) {
+        try {
+          const magicToken = await createMagicLink(email, env);
+          if (magicToken) {
+            const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+            const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}`;
+            const planConfig = PLANS[plan];
+
+            await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                from: "NeverRanked <reports@neverranked.com>",
+                to: [email],
+                subject: `Welcome to ${planConfig?.name || "NeverRanked"} -- your dashboard is ready`,
+                html: buildWelcomeEmail(planConfig, loginUrl, plan),
+              }),
+            });
+          }
+        } catch (e) {
+          console.log(`Welcome email failed: ${e}`);
+        }
+
+        // Send notification to admin
         try {
           const planConfig = PLANS[plan];
           await fetch("https://api.resend.com/emails", {
@@ -364,4 +462,53 @@ export async function handleStripeWebhook(
   }
 
   return new Response("OK", { status: 200 });
+}
+
+// ---------- Email templates ----------
+
+function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string, plan: string): string {
+  const planName = planConfig?.name || "NeverRanked";
+  const whatHappensNext = plan === "audit"
+    ? `<p style="margin:0 0 8px">Your full AEO audit is being prepared and will be delivered within 48 hours. In the meantime, your dashboard is live -- log in now to complete onboarding so we can start immediately.</p>`
+    : `<p style="margin:0 0 8px">Your dashboard is live and ready. Log in now to complete onboarding -- it takes about 2 minutes and helps us tailor everything to your business.</p>`;
+
+  return `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,system-ui,sans-serif">
+  <div style="max-width:560px;margin:0 auto;padding:48px 24px">
+
+    <div style="margin-bottom:32px">
+      <span style="font-size:18px;font-weight:700;color:#ffffff;letter-spacing:-0.5px">NeverRanked</span>
+    </div>
+
+    <h1 style="font-size:22px;font-weight:600;color:#ffffff;margin:0 0 8px;line-height:1.3">
+      Welcome to ${planName}
+    </h1>
+    <p style="font-size:14px;color:#888;margin:0 0 32px">
+      Your payment is confirmed. Here is what happens next.
+    </p>
+
+    <div style="background:#111;border:1px solid #222;border-radius:6px;padding:24px;margin-bottom:32px">
+      <div style="font-size:13px;color:#ccc;line-height:1.7">
+        ${whatHappensNext}
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:40px">
+      <a href="${loginUrl}" style="display:inline-block;background:#c8a850;color:#0a0a0a;font-size:14px;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:4px;letter-spacing:0.3px">
+        Log in to your dashboard
+      </a>
+      <p style="font-size:11px;color:#555;margin-top:12px">This link expires in 15 minutes.</p>
+    </div>
+
+    <div style="border-top:1px solid #1a1a1a;padding-top:24px;font-size:11px;color:#444;line-height:1.6">
+      <p style="margin:0 0 4px">Questions? Reply to this email or reach us at hello@neverranked.com</p>
+      <p style="margin:0">NeverRanked -- AI visibility for businesses that depend on being found.</p>
+    </div>
+
+  </div>
+</body>
+</html>`;
 }

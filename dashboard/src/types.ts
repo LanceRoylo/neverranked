@@ -10,6 +10,7 @@ export interface Env {
   RESEND_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  DASHBOARD_ORIGIN?: string;
 }
 
 export interface User {
@@ -23,6 +24,9 @@ export interface User {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   plan: string | null;
+  onboarding_drip_start: number | null;
+  onboarding_drip_day3: number | null;
+  onboarding_drip_day7: number | null;
   created_at: number;
   last_login_at: number | null;
 }
@@ -85,6 +89,37 @@ export interface RoadmapItem {
   sort_order: number;
   due_date: number | null;
   completed_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface SchemaInjection {
+  id: number;
+  client_slug: string;
+  schema_type: string;
+  json_ld: string;
+  target_pages: string;
+  status: "draft" | "approved" | "paused" | "archived";
+  roadmap_item_id: number | null;
+  approved_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface InjectionConfig {
+  id: number;
+  client_slug: string;
+  enabled: number;
+  cache_ttl: number;
+  snippet_token: string;
+  business_name: string | null;
+  business_url: string | null;
+  business_description: string | null;
+  business_phone: string | null;
+  business_email: string | null;
+  business_address: string | null;
+  business_logo_url: string | null;
+  business_social: string | null;
   created_at: number;
   updated_at: number;
 }

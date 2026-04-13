@@ -11,6 +11,7 @@ import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./r
 import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleApproveSuggestion, handleDismissSuggestion } from "./routes/admin";
+import { handleCockpit } from "./routes/cockpit";
 import { handleCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
@@ -19,7 +20,10 @@ import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
-import { runWeeklyScans } from "./cron";
+import { runWeeklyScans, runDailyTasks } from "./cron";
+import { logEvent, hashIP } from "./analytics";
+import { handleInjectScript } from "./routes/inject";
+import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -48,6 +52,8 @@ export default {
     // Stripe checkout (no auth -- public pricing links)
     const checkoutMatch = path.match(/^\/checkout\/(audit|signal|amplify)$/);
     if (checkoutMatch && method === "GET") {
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      ctx.waitUntil(logEvent(env, { type: "checkout_view", detail: { plan: checkoutMatch[1] }, ipHash: hashIP(ip) }));
       return handleCheckout(checkoutMatch[1], request, env);
     }
     if (path === "/checkout/success" && method === "GET") {
@@ -59,6 +65,12 @@ export default {
       return handleStripeWebhook(request, env);
     }
 
+    // Schema injection JS (public, cached at edge)
+    const injectMatch = path.match(/^\/inject\/([a-z0-9_-]+)\.js$/);
+    if (injectMatch) {
+      return handleInjectScript(injectMatch[1], env);
+    }
+
     // --- Auth check ---
 
     const user = await getUser(request, env);
@@ -68,8 +80,14 @@ export default {
     }
 
     if (!user) {
+      // Track page view for public pages that fall through (unauthenticated visit)
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path, authed: false }, ipHash: hashIP(ip) }));
       return redirect("/login");
     }
+
+    // Track authenticated page view
+    ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path }, userId: user.id }));
 
     // --- Authenticated routes ---
 
@@ -89,8 +107,16 @@ export default {
       return redirect("/onboarding");
     }
 
-    // Home
+    // Home -- single-domain clients skip straight to their report
     if (path === "/" || path === "") {
+      if (user.role === "client" && user.client_slug) {
+        const clientDomains = (await env.DB.prepare(
+          "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1"
+        ).bind(user.client_slug).all<{ id: number }>()).results;
+        if (clientDomains.length === 1) {
+          return redirect(`/domain/${clientDomains[0].id}`);
+        }
+      }
       return handleHome(user, env);
     }
 
@@ -102,7 +128,42 @@ export default {
 
     // Admin routes
     if (path === "/admin" && method === "GET" && user.role === "admin") {
+      return handleCockpit(user, env);
+    }
+    if (path === "/admin/manage" && method === "GET" && user.role === "admin") {
       return handleAdminHome(user, env);
+    }
+    if (path === "/admin/alerts/read-all" && method === "POST" && user.role === "admin") {
+      const now = Math.floor(Date.now() / 1000);
+      await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE read_at IS NULL").bind(now).run();
+      return redirect("/admin");
+    }
+    // Alert action: mark roadmap item done + dismiss alert
+    const alertCompleteMatch = path.match(/^\/admin\/alert\/(\d+)\/complete$/);
+    if (alertCompleteMatch && method === "POST" && user.role === "admin") {
+      const alertId = Number(alertCompleteMatch[1]);
+      const now = Math.floor(Date.now() / 1000);
+      const alert = await env.DB.prepare("SELECT * FROM admin_alerts WHERE id = ?").bind(alertId).first<{ id: number; roadmap_item_id: number | null }>();
+      if (alert) {
+        const stmts = [
+          env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ?").bind(now, alertId),
+        ];
+        if (alert.roadmap_item_id) {
+          stmts.push(
+            env.DB.prepare("UPDATE roadmap_items SET status = 'done', completed_at = ?, updated_at = ? WHERE id = ?").bind(now, now, alert.roadmap_item_id)
+          );
+        }
+        await env.DB.batch(stmts);
+      }
+      return redirect("/admin");
+    }
+    // Alert action: dismiss (mark as read, no roadmap change)
+    const alertDismissMatch = path.match(/^\/admin\/alert\/(\d+)\/dismiss$/);
+    if (alertDismissMatch && method === "POST" && user.role === "admin") {
+      const alertId = Number(alertDismissMatch[1]);
+      const now = Math.floor(Date.now() / 1000);
+      await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ?").bind(now, alertId).run();
+      return redirect("/admin");
     }
     if (path === "/admin/domain" && method === "POST" && user.role === "admin") {
       return handleAddDomain(request, user, env);
@@ -128,15 +189,55 @@ export default {
       return handleLeads(user, env);
     }
 
+    // Schema injection admin
+    const injectAdminMatch = path.match(/^\/admin\/inject\/([^/]+)$/);
+    if (injectAdminMatch && method === "GET" && user.role === "admin") {
+      return handleInjectAdmin(decodeURIComponent(injectAdminMatch[1]), user, env);
+    }
+    const injectConfigMatch = path.match(/^\/admin\/inject\/([^/]+)\/config$/);
+    if (injectConfigMatch && method === "POST" && user.role === "admin") {
+      return handleInjectConfig(decodeURIComponent(injectConfigMatch[1]), request, env);
+    }
+    const injectGenerateMatch = path.match(/^\/admin\/inject\/([^/]+)\/generate\/(\w+)$/);
+    if (injectGenerateMatch && method === "POST" && user.role === "admin") {
+      return handleInjectGenerate(decodeURIComponent(injectGenerateMatch[1]), injectGenerateMatch[2], env);
+    }
+    const injectApproveMatch = path.match(/^\/admin\/inject\/([^/]+)\/approve\/(\d+)$/);
+    if (injectApproveMatch && method === "POST" && user.role === "admin") {
+      return handleInjectApprove(decodeURIComponent(injectApproveMatch[1]), Number(injectApproveMatch[2]), env);
+    }
+    const injectPauseMatch = path.match(/^\/admin\/inject\/([^/]+)\/pause\/(\d+)$/);
+    if (injectPauseMatch && method === "POST" && user.role === "admin") {
+      return handleInjectPause(decodeURIComponent(injectPauseMatch[1]), Number(injectPauseMatch[2]), env);
+    }
+    const injectEditMatch = path.match(/^\/admin\/inject\/([^/]+)\/edit\/(\d+)$/);
+    if (injectEditMatch && method === "POST" && user.role === "admin") {
+      return handleInjectEdit(decodeURIComponent(injectEditMatch[1]), Number(injectEditMatch[2]), request, env);
+    }
+    const injectDeleteMatch = path.match(/^\/admin\/inject\/([^/]+)\/delete\/(\d+)$/);
+    if (injectDeleteMatch && method === "POST" && user.role === "admin") {
+      return handleInjectDelete(decodeURIComponent(injectDeleteMatch[1]), Number(injectDeleteMatch[2]), env);
+    }
+    const injectPublishMatch = path.match(/^\/admin\/inject\/([^/]+)\/publish$/);
+    if (injectPublishMatch && method === "POST" && user.role === "admin") {
+      return handleInjectPublish(decodeURIComponent(injectPublishMatch[1]), env);
+    }
+
     // Share report
     const shareMatch = path.match(/^\/domain\/(\d+)\/share$/);
     if (shareMatch && method === "POST") {
       const { token } = await handleCreateShare(Number(shareMatch[1]), user.id, env);
       const shareUrl = `${url.origin}/report/${token}`;
+      ctx.waitUntil(logEvent(env, { type: "report_shared", detail: { domainId: Number(shareMatch[1]) }, userId: user.id }));
       return redirect(`/domain/${shareMatch[1]}?shared=${encodeURIComponent(shareUrl)}`);
     }
 
     // Competitors
+    if (path === "/competitors" || path === "/competitors/") {
+      const slug = user.client_slug || await getFirstClientSlug(env);
+      if (slug) return redirect(`/competitors/${slug}`);
+      return html(layout("Competitors", `<div class="empty"><h3>No clients yet</h3><p>Add a client domain first.</p></div>`, user));
+    }
     const compMatch = path.match(/^\/competitors\/(.+)$/);
     if (compMatch) {
       const slug = decodeURIComponent(compMatch[1]);
@@ -144,6 +245,11 @@ export default {
     }
 
     // Roadmap
+    if (path === "/roadmap" || path === "/roadmap/") {
+      const slug = user.client_slug || await getFirstClientSlug(env);
+      if (slug) return redirect(`/roadmap/${slug}`);
+      return html(layout("Roadmap", `<div class="empty"><h3>No clients yet</h3><p>Add a client domain first.</p></div>`, user));
+    }
     const roadmapMatch = path.match(/^\/roadmap\/([^/]+)$/);
     if (roadmapMatch && method === "GET") {
       return handleRoadmap(decodeURIComponent(roadmapMatch[1]), user, env);
@@ -178,8 +284,23 @@ export default {
     `, user), 404);
   },
 
-  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    // Daily tasks: auth cleanup, onboarding drip emails
     ctx.waitUntil(cleanupAuth(env));
-    ctx.waitUntil(runWeeklyScans(env));
+    ctx.waitUntil(runDailyTasks(env));
+
+    // Weekly tasks: full domain scans + digest emails (Mondays only)
+    const day = new Date().getUTCDay(); // 0=Sun, 1=Mon
+    if (day === 1) {
+      ctx.waitUntil(runWeeklyScans(env));
+    }
   },
 };
+
+/** Get first client slug for admin users who don't have one */
+async function getFirstClientSlug(env: Env): Promise<string | null> {
+  const row = await env.DB.prepare(
+    "SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0 ORDER BY client_slug LIMIT 1"
+  ).first<{ client_slug: string }>();
+  return row?.client_slug || null;
+}

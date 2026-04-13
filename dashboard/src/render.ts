@@ -9,10 +9,10 @@ export function layout(title: string, body: string, user: User | null = null): s
   const navLinks = user
     ? `
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
-      <a href="/competitors" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
-      <a href="/roadmap" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
+      <a href="/competitors/${user.client_slug || ''}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
+      <a href="/roadmap/${user.client_slug || ''}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
       ${user.role === 'admin' ? '<a href="/admin/leads" class="nav-links-item' + (title === 'Leads' ? ' active' : '') + '">Leads</a>' : ''}
-      ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') ? ' active' : '') + '">Admin</a>' : ''}
+      ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') || title === 'Inject' ? ' active' : '') + '">Cockpit</a>' : ''}
     `
     : '';
 
@@ -43,6 +43,7 @@ export function layout(title: string, body: string, user: User | null = null): s
 
 ${user ? `<header class="topbar">
   <a href="/" class="mark">Never Ranked<sup>app</sup></a>
+  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
   <div class="nav-links">${navLinks}</div>
   ${userInfo}
 </header>` : ''}

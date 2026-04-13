@@ -196,7 +196,7 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
   const competitorLabel = (form.get("competitor_label") as string || "").trim() || null;
 
   if (!clientSlug || !domain) {
-    return redirect("/admin");
+    return redirect("/admin/manage");
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -208,7 +208,7 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
     // Likely unique constraint violation
   }
 
-  return redirect("/admin");
+  return redirect("/admin/manage");
 }
 
 /** Add a user */
@@ -220,7 +220,7 @@ export async function handleAddUser(request: Request, user: User, env: Env): Pro
   const role = (form.get("role") as string || "client");
 
   if (!email) {
-    return redirect("/admin");
+    return redirect("/admin/manage");
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -232,7 +232,7 @@ export async function handleAddUser(request: Request, user: User, env: Env): Pro
     // Likely duplicate email
   }
 
-  return redirect("/admin");
+  return redirect("/admin/manage");
 }
 
 /** Trigger a manual scan */
@@ -242,7 +242,7 @@ export async function handleManualScan(domainId: number, user: User, env: Env): 
   ).bind(domainId).first<Domain>();
 
   if (!domain) {
-    return redirect("/admin");
+    return redirect("/admin/manage");
   }
 
   const url = `https://${domain.domain}/`;
@@ -292,7 +292,7 @@ export async function handleApproveSuggestion(suggestionId: number, user: User, 
     await scanDomain(newDomain.id, url, "onboard", env);
   }
 
-  return redirect("/admin");
+  return redirect("/admin/manage");
 }
 
 /** Dismiss a competitor suggestion */
@@ -301,5 +301,5 @@ export async function handleDismissSuggestion(suggestionId: number, user: User, 
     "UPDATE competitor_suggestions SET status = 'rejected' WHERE id = ? AND status = 'pending'"
   ).bind(suggestionId).run();
 
-  return redirect("/admin");
+  return redirect("/admin/manage");
 }

@@ -3,6 +3,7 @@
  */
 
 import type { Env, User } from "./types";
+import { logEvent } from "./analytics";
 
 const SESSION_COOKIE = "nr_app";
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
@@ -26,7 +27,7 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
   const now = Math.floor(Date.now() / 1000);
 
   const row = await env.DB.prepare(
-    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.onboarded, u.email_digest, u.stripe_customer_id, u.stripe_subscription_id, u.plan, u.created_at, u.last_login_at
+    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.onboarded, u.email_digest, u.stripe_customer_id, u.stripe_subscription_id, u.plan, u.onboarding_drip_start, u.onboarding_drip_day3, u.onboarding_drip_day7, u.created_at, u.last_login_at
      FROM sessions s JOIN users u ON s.user_id = u.id
      WHERE s.id = ? AND s.expires_at > ?`
   ).bind(token, now).first<User>();
@@ -82,7 +83,7 @@ export async function verifyMagicLink(
 
   // Get user
   const user = await env.DB.prepare(
-    "SELECT id, email, name, role, client_slug, onboarded, email_digest, stripe_customer_id, stripe_subscription_id, plan, created_at, last_login_at FROM users WHERE email = ?"
+    "SELECT id, email, name, role, client_slug, onboarded, email_digest, stripe_customer_id, stripe_subscription_id, plan, onboarding_drip_start, onboarding_drip_day3, onboarding_drip_day7, created_at, last_login_at FROM users WHERE email = ?"
   ).bind(link.email).first<User>();
   if (!user) return null;
 
@@ -90,14 +91,28 @@ export async function verifyMagicLink(
   const sessionToken = randomHex(32);
   const expiresAt = now + SESSION_MAX_AGE;
 
-  await env.DB.batch([
+  // Start onboarding drip on first login (if not already started)
+  const statements = [
     env.DB.prepare(
       "INSERT INTO sessions (id, user_id, expires_at, created_at) VALUES (?, ?, ?, ?)"
     ).bind(sessionToken, user.id, expiresAt, now),
     env.DB.prepare(
       "UPDATE users SET last_login_at = ? WHERE id = ?"
     ).bind(now, user.id),
-  ]);
+  ];
+
+  if (!user.last_login_at) {
+    statements.push(
+      env.DB.prepare(
+        "UPDATE users SET onboarding_drip_start = ? WHERE id = ? AND onboarding_drip_start IS NULL"
+      ).bind(now, user.id)
+    );
+  }
+
+  await env.DB.batch(statements);
+
+  // Track login event
+  await logEvent(env, { type: "login", detail: { email: user.email, role: user.role }, userId: user.id });
 
   return { sessionToken, user };
 }
@@ -113,12 +128,12 @@ export async function deleteSession(request: Request, env: Env): Promise<void> {
 
 /** Build Set-Cookie header for a session */
 export function sessionCookie(token: string): string {
-  return `${SESSION_COOKIE}=${token}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${SESSION_MAX_AGE}`;
+  return `${SESSION_COOKIE}=${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=${SESSION_MAX_AGE}`;
 }
 
 /** Build Set-Cookie header to clear session */
 export function clearCookie(): string {
-  return `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0`;
+  return `${SESSION_COOKIE}=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`;
 }
 
 /** Clean up expired sessions and used magic links */

@@ -755,24 +755,6 @@ body::before{
     <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Red Flags <span class="rule"></span></div>
     <div class="flags-list" id="flags-list"></div>
 
-    <!-- Email capture -->
-    <div class="email-capture" id="email-capture">
-      <div class="email-capture-inner">
-        <div class="email-capture-icon">&#9993;</div>
-        <div>
-          <div class="email-capture-title">Email me this report</div>
-          <div class="email-capture-sub">Get your score card with a breakdown of every signal. No spam.</div>
-        </div>
-        <div class="email-capture-form" id="email-form">
-          <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
-          <button type="button" id="email-btn">Send</button>
-        </div>
-      </div>
-      <div class="email-success" id="email-success" style="display:none">
-        <span style="color:var(--gold)">Sent.</span> Check your inbox for the full report.
-      </div>
-    </div>
-
     <!-- Competitor teaser -->
     <div class="comp-teaser" id="comp-teaser">
       <div class="section-label"><span class="num">04</span> How do you compare? <span class="rule"></span></div>
@@ -797,18 +779,56 @@ body::before{
 
     <!-- CTA -->
     <div class="cta-section">
-      <h3>This is a snapshot.<br>Your competitors are moving.</h3>
-      <p>AI search changes weekly. Competitors add schema, publish content, climb rankings. A one-time scan tells you where you are today. NeverRanked tells you where you're headed.</p>
-      <div class="cta-buttons">
-        <a href="https://neverranked.com/#intake" class="btn btn-primary">Get weekly monitoring</a>
-        <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link">Talk to us</a>
+      <h3>This is a snapshot.<br>Your competitors are <em>moving now.</em></h3>
+      <p>AI search indexes refresh weekly. Competitors add schema, publish content, climb rankings. Every week without action, the gap widens. A one-time scan tells you where you are. NeverRanked keeps you ahead.</p>
+
+      <div class="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
+        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">One-time audit</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$500</div>
+          <a href="https://app.neverranked.com/checkout/audit" id="cta-audit" class="btn btn-ghost-link" style="margin-top:12px;font-size:10px;display:inline-block">Get audit</a>
+        </div>
+        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+          <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Signal</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$2,000<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
+          <a href="https://app.neverranked.com/checkout/signal" id="cta-signal" class="btn btn-primary" style="margin-top:12px;font-size:10px;display:inline-block">Start monitoring</a>
+        </div>
+        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Amplify</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
+          <a href="https://app.neverranked.com/checkout/amplify" id="cta-amplify" class="btn btn-ghost-link" style="margin-top:12px;font-size:10px;display:inline-block">Go full service</a>
+        </div>
       </div>
+
       <div class="cta-features">
         <span>Weekly scans</span>
         <span>Score tracking</span>
         <span>Competitor benchmarks</span>
-        <span>Action plan</span>
+        <span>Action roadmap</span>
         <span>Regression alerts</span>
+        <span>Schema injection</span>
+      </div>
+      <div style="text-align:center;margin-top:16px">
+        <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
+      </div>
+    </div>
+
+    <!-- Email capture (after CTA) -->
+    <div class="email-capture" id="email-capture">
+      <div class="email-capture-inner">
+        <div class="email-capture-icon">&#9993;</div>
+        <div>
+          <div class="email-capture-title">Email me this report</div>
+          <div class="email-capture-sub">Get your score card with a breakdown of every signal. No spam.</div>
+        </div>
+        <div class="email-capture-form" id="email-form">
+          <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
+          <button type="button" id="email-btn">Send</button>
+        </div>
+      </div>
+      <div class="email-success" id="email-success" style="display:none">
+        <span style="color:var(--gold)">Sent.</span> Check your inbox for the full report.<br>
+        <span style="font-size:12px;color:var(--text-faint)">In 3 days we will send you a competitor comparison. In 7 days, a re-scan check-in.</span>
       </div>
     </div>
   </section>
@@ -951,6 +971,15 @@ body::before{
       compScoreYou.textContent = data.aeo_score;
     }
 
+    // Update CTA links with domain param
+    var domain = data.domain || '';
+    var ctaAudit = document.getElementById('cta-audit');
+    var ctaSignal = document.getElementById('cta-signal');
+    var ctaAmplify = document.getElementById('cta-amplify');
+    if(ctaAudit) ctaAudit.href = 'https://app.neverranked.com/checkout/audit?domain='+encodeURIComponent(domain);
+    if(ctaSignal) ctaSignal.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
+    if(ctaAmplify) ctaAmplify.href = 'https://app.neverranked.com/checkout/amplify?domain='+encodeURIComponent(domain);
+
     // Reset email capture
     emailForm.style.display='flex';
     emailSuccess.style.display='none';
@@ -1067,7 +1096,12 @@ function buildReportEmail(report: any): string {
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">This is a snapshot. Want ongoing monitoring?</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks your AEO score weekly, benchmarks you against competitors, and gives you a clear action plan.</div>
-    <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Get started</a>
+    <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+    <div style="margin-top:12px">
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $500</a>
+      <span style="color:#555555;margin:0 8px">|</span>
+      <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
+    </div>
   </td></tr>
 
   <!-- Footer -->
@@ -1251,8 +1285,11 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, updated weekly. Real domains. Real scores. Not averages.</div>
-    <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Talk to us</a>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores. Not averages.</div>
+    <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+    <div style="margin-top:12px">
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $500</a>
+    </div>
   </td></tr>
 
   <!-- Footer -->
@@ -1332,7 +1369,12 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
     </table>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Get started</a>
+      <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+    </div>
+    <div style="text-align:center;margin-top:12px">
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $500</a>
+      <span style="color:#555555;margin:0 8px">|</span>
+      <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
     </div>
   </td></tr>
 
@@ -1432,6 +1474,19 @@ export default {
       }
 
       const report = buildReport(targetUrl, html);
+
+      // Log anonymous scan event to KV
+      try {
+        const scanKey = `event:scan:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.LEADS.put(scanKey, JSON.stringify({
+          type: "free_scan",
+          domain: report.domain,
+          score: report.aeo_score,
+          grade: report.grade,
+          ts: new Date().toISOString(),
+        }), { expirationTtl: 90 * 24 * 60 * 60 });
+      } catch {}
+
       return Response.json(report, { headers: corsHeaders });
     }
 
@@ -1469,6 +1524,17 @@ export default {
       });
       leadData.lastScan = now;
       await env.LEADS.put(leadKey, JSON.stringify(leadData), { expirationTtl: 365 * 24 * 60 * 60 });
+
+      // Log email capture event
+      try {
+        const captureKey = `event:capture:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.LEADS.put(captureKey, JSON.stringify({
+          type: "email_captured",
+          domain: report.domain,
+          score: report.aeo_score,
+          ts: new Date().toISOString(),
+        }), { expirationTtl: 90 * 24 * 60 * 60 });
+      } catch {}
 
       // Send email if RESEND_API_KEY is set
       if (env.RESEND_API_KEY) {

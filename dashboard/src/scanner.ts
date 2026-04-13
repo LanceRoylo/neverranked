@@ -2,9 +2,10 @@
  * Dashboard — Domain scanner (wraps shared aeo-analyzer)
  */
 
-import type { Env, ScanResult } from "./types";
+import type { Env, ScanResult, Domain } from "./types";
 import { buildReport } from "../../packages/aeo-analyzer/src";
 import type { Report } from "../../packages/aeo-analyzer/src";
+import { autoVerifyRoadmap } from "./auto-roadmap";
 
 const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36 NeverRanked-AEO-Monitor/1.0";
 
@@ -71,6 +72,21 @@ export async function scanDomain(
   ).run();
 
   const id = stmt.meta?.last_row_id ?? 0;
+  const scanResult = { id: Number(id), ...result } as ScanResult;
 
-  return { id: Number(id), ...result } as ScanResult;
+  // Auto-verify roadmap items against scan results
+  if (!error) {
+    try {
+      const domain = await env.DB.prepare(
+        "SELECT * FROM domains WHERE id = ?"
+      ).bind(domainId).first<Domain>();
+      if (domain && !domain.is_competitor) {
+        await autoVerifyRoadmap(domain, scanResult, env);
+      }
+    } catch (e) {
+      console.log(`Auto-roadmap check failed: ${e}`);
+    }
+  }
+
+  return scanResult;
 }
