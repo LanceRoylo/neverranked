@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Page Not Found — Never Ranked</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:wght@300;400&family=Barlow+Condensed:wght@400;500&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{
+  --bg:#121212;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.68);
+  --line:rgba(251,248,239,.28);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:40px 24px;
+  overflow:hidden;
+}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}
+  20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}
+  100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+    radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+.content{position:relative;z-index:2;max-width:520px}
+.code{
+  font-family:var(--serif);
+  font-size:clamp(80px,20vw,160px);
+  font-weight:400;
+  line-height:1;
+  color:var(--gold);
+  opacity:.25;
+  margin-bottom:24px;
+  letter-spacing:-.04em;
+}
+h1{
+  font-family:var(--serif);
+  font-weight:400;
+  font-style:italic;
+  font-size:clamp(28px,5vw,42px);
+  line-height:1.15;
+  letter-spacing:-.02em;
+  margin:0 0 20px;
+}
+p{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-faint);
+  line-height:1.7;
+  margin:0 0 36px;
+}
+a{color:inherit;text-decoration:none}
+.links{
+  display:flex;
+  gap:16px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.link{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  font-weight:500;
+  color:var(--gold);
+  border:1px solid var(--gold);
+  padding:14px 22px;
+  transition:background .35s var(--ease),color .35s var(--ease);
+}
+.link:hover{background:var(--gold);color:var(--bg)}
+.link-ghost{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  font-weight:500;
+  color:var(--text-mute);
+  border:1px solid var(--line);
+  padding:14px 22px;
+  transition:border-color .35s var(--ease),color .35s var(--ease);
+}
+.link-ghost:hover{border-color:var(--text-mute);color:var(--text)}
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+<div class="content">
+  <div class="code">404</div>
+  <h1>This page doesn't exist yet.</h1>
+  <p>The URL you followed is either outdated, mistyped, or points to something we haven't built. Here's where you probably meant to go.</p>
+  <div class="links">
+    <a href="/" class="link">Homepage</a>
+    <a href="/blog/" class="link-ghost">Insights</a>
+    <a href="https://check.neverranked.com" class="link-ghost">Free Tool</a>
+  </div>
+</div>
+</body>
+</html>

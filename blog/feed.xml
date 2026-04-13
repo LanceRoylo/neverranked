@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>Insights — Never Ranked</title>
+    <link>https://neverranked.com/blog/</link>
+    <description>Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.</description>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 12 Apr 2026 12:00:00 +0000</lastBuildDate>
+    <atom:link href="https://neverranked.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <managingEditor>hello@neverranked.com (Lance Roylo)</managingEditor>
+    <webMaster>hello@neverranked.com (Lance Roylo)</webMaster>
+    <copyright>Never Ranked 2026</copyright>
+    <image>
+      <url>https://neverranked.com/og.png</url>
+      <title>Never Ranked</title>
+      <link>https://neverranked.com/</link>
+    </image>
+
+    <item>
+      <title>What Is AEO (and Why It Replaced the Playbook You're Running)</title>
+      <link>https://neverranked.com/blog/what-is-aeo/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/what-is-aeo/</guid>
+      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>AEO is the practice of getting cited by AI engines like ChatGPT, Perplexity, and Google AI Overviews. Here is what changed and why your current SEO playbook stopped working.</description>
+      <category>AEO</category>
+      <category>AI Search</category>
+    </item>
+
+    <item>
+      <title>How Long Does AEO Take to Show Results?</title>
+      <link>https://neverranked.com/blog/how-long-does-aeo-take/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/how-long-does-aeo-take/</guid>
+      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Ninety days. Here is exactly what happens in month one, two, and three of an AEO engagement, why it takes that long, and why anyone promising faster is lying.</description>
+      <category>AEO</category>
+      <category>Timeline</category>
+    </item>
+
+    <item>
+      <title>Schema Markup for AI Search Engines: What Actually Matters</title>
+      <link>https://neverranked.com/blog/schema-markup-ai-search/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/schema-markup-ai-search/</guid>
+      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Most schema guides are written for Google rich snippets. AI models parse structured data differently. Here are the schema types that drive AI citations and the ones you can skip.</description>
+      <category>Schema</category>
+      <category>Structured Data</category>
+      <category>AI Search</category>
+    </item>
+
+  </channel>
+</rss>
