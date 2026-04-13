@@ -9,6 +9,8 @@ import { getUser } from "./auth";
 import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
+import { handleDomainDetail } from "./routes/domain";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan } from "./routes/admin";
 import { cleanupAuth } from "./auth";
 
 export default {
@@ -48,18 +50,32 @@ export default {
       return handleHome(user, env);
     }
 
-    // Domain detail (Phase 1b)
-    // const domainMatch = path.match(/^\/domain\/(\d+)$/);
-    // if (domainMatch) { ... }
+    // Domain detail
+    const domainMatch = path.match(/^\/domain\/(\d+)$/);
+    if (domainMatch) {
+      return handleDomainDetail(Number(domainMatch[1]), user, env);
+    }
+
+    // Admin routes
+    if (path === "/admin" && method === "GET" && user.role === "admin") {
+      return handleAdminHome(user, env);
+    }
+    if (path === "/admin/domain" && method === "POST" && user.role === "admin") {
+      return handleAddDomain(request, user, env);
+    }
+    if (path === "/admin/users" && method === "POST" && user.role === "admin") {
+      return handleAddUser(request, user, env);
+    }
+    const scanMatch = path.match(/^\/admin\/scan\/(\d+)$/);
+    if (scanMatch && method === "POST" && user.role === "admin") {
+      return handleManualScan(Number(scanMatch[1]), user, env);
+    }
 
     // Competitors (Phase 1e)
     // if (path === "/competitors") { ... }
 
     // Roadmap (Phase 1f)
     // if (path === "/roadmap") { ... }
-
-    // Admin routes (Phase 1b)
-    // if (path.startsWith("/admin") && user.role === "admin") { ... }
 
     // 404
     return html(layout("Not Found", `
