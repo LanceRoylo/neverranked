@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>Never Ranked — AI-Native SEO & AEO Agency</title>
-<meta name="description" content="Search changed. Your visibility didn't. We build for AI Overviews, ChatGPT, Perplexity, and the engines that answer for you. Start with a $500 audit.">
+<meta name="description" content="Search changed. Your visibility didn't. Check your AEO score free in 30 seconds, then let us fix it. We build for AI Overviews, ChatGPT, Perplexity, and the engines that answer for you.">
 <link rel="canonical" href="https://neverranked.com/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta property="og:title" content="Never Ranked — AI-Native SEO & AEO">
-<meta property="og:description" content="Search changed. Your visibility didn't. We build for the engines that already answer for you. Async-first. Start with a $500 audit.">
+<meta property="og:description" content="Search changed. Your visibility didn't. Check your AEO score free in 30 seconds. We build for AI Overviews, ChatGPT, Perplexity, and the engines that answer for you.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
@@ -1858,6 +1858,69 @@ h1,h2,h3,h4{
 .reveal-stagger.in > *:nth-child(5){transition-delay:.45s}
 .reveal-stagger.in > *:nth-child(6){transition-delay:.55s}
 
+/* ---------- dashboard features ---------- */
+.dashboard-features{
+  padding:120px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.dash-head{
+  text-align:center;
+  margin-bottom:60px;
+}
+.dash-head h2{
+  font-family:var(--serif);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:400;letter-spacing:-.02em;
+  line-height:1.15;margin:0 0 18px;
+}
+.dash-head h2 em{font-style:italic;color:var(--gold)}
+.dash-head p{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);line-height:1.7;
+  max-width:520px;margin:0 auto;
+}
+.dash-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+.dash-card{
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:32px 28px;
+  transition:border-color .35s var(--ease),transform .35s var(--ease);
+}
+.dash-card:hover{
+  border-color:var(--gold-dim);
+  transform:translateY(-3px);
+}
+.dash-icon{
+  font-size:22px;
+  margin-bottom:14px;
+  color:var(--gold);
+}
+.dash-title{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;font-weight:500;
+  color:var(--text-soft);
+  margin-bottom:10px;
+}
+.dash-desc{
+  font-family:var(--mono);
+  font-size:12px;line-height:1.7;
+  color:var(--text-faint);
+}
+@media(max-width:900px){
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:540px){
+  .dash-grid{grid-template-columns:1fr}
+  .dashboard-features{padding:80px 0 60px}
+}
+
 @media(prefers-reduced-motion:reduce){
   .reveal,.reveal-stagger > *{opacity:1;transform:none;transition:none}
   .marquee-track,.grain{animation:none}
@@ -1907,10 +1970,13 @@ h1,h2,h3,h4{
           <p class="hero-sub">
             <b>Search changed. Your visibility didn't.</b> We build for the engines that already answer for you.
           </p>
-          <a href="#audit" class="cta">
-            Start with a $500 audit
-            <span class="arrow"></span>
-          </a>
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <a href="https://check.neverranked.com" class="cta">
+              See your score free
+              <span class="arrow"></span>
+            </a>
+            <a href="#audit" style="font-family:var(--mono);font-size:12px;color:var(--text-faint);border-bottom:1px solid rgba(251,248,239,.2);padding-bottom:2px;transition:color .3s,border-color .3s">or start with the $500 audit</a>
+          </div>
         </div>
       </div>
 
@@ -2197,10 +2263,62 @@ h1,h2,h3,h4{
   <section class="tool-banner reveal">
     <div class="wrap">
       <div class="inner">
-        <span class="kicker">Free Tool</span>
-        <h2>Schema & AEO <em>Health Check</em></h2>
-        <p class="sub">Enter any URL. Get an instant grade on schema coverage, technical signals, and AEO readiness. No signup. No email gate.</p>
+        <span class="kicker">Free in 30 seconds</span>
+        <h2>What does AI think of <em>your site?</em></h2>
+        <p class="sub">Enter your URL. Get an instant AEO readiness grade, schema coverage breakdown, and a list of exactly what to fix. No signup. No email gate. Takes 30 seconds.</p>
         <a href="https://check.neverranked.com" class="btn">Run a free check →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ YOUR DASHBOARD ============ -->
+  <section class="dashboard-features" id="dashboard">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.1</span>
+        <span>The Dashboard</span>
+        <span class="rule"></span>
+        <span>your tab, always open</span>
+      </div>
+
+      <div class="dash-head">
+        <h2 class="reveal">Not a PDF. <em>A product.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          Every client gets a live dashboard at app.neverranked.com. Not a monthly report you forget to open. A product you check because the data matters to you.
+        </p>
+      </div>
+
+      <div class="dash-grid reveal-stagger">
+        <div class="dash-card">
+          <div class="dash-icon">&#8635;</div>
+          <div class="dash-title">Weekly scans</div>
+          <div class="dash-desc">Your AEO score is scanned every Monday. Score history, trend charts, and deltas so you see movement over time, not a single snapshot.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9670;</div>
+          <div class="dash-title">Phased roadmap</div>
+          <div class="dash-desc">A clear action plan broken into phases: Foundation, Growth, Dominance. See what's done, what's in progress, and what unlocks next. Progress bar included.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9646;&#9646;</div>
+          <div class="dash-title">Competitor benchmarks</div>
+          <div class="dash-desc">Side-by-side AEO comparison against your actual competitors. Schema gaps, score differences, and where you're winning or losing ground.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9888;</div>
+          <div class="dash-title">Regression alerts</div>
+          <div class="dash-desc">If your score drops more than 5 points, you hear about it immediately. Not next Monday. Not next month. The moment it happens.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9993;</div>
+          <div class="dash-title">Weekly digest</div>
+          <div class="dash-desc">Score, changes, and top action item in your inbox every Monday. Forward it to your boss. It speaks plain English, not SEO jargon.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#8599;</div>
+          <div class="dash-title">Shareable reports</div>
+          <div class="dash-desc">Generate a public link to share your AEO report with stakeholders. No login required. Print-friendly. Branded. Expires in 90 days.</div>
+        </div>
       </div>
     </div>
   </section>
@@ -2441,6 +2559,9 @@ h1,h2,h3,h4{
               <span class="arrow"></span>
             </button>
             <p class="intake-note">§ No spam. No sequences. No sales team.</p>
+            <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:24px;line-height:1.7">
+              Not ready for a brief? <a href="https://check.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">See your AEO score free</a> first.
+            </p>
           </div>
           <div class="form-status" id="formStatus" aria-live="polite"></div>
         </form>

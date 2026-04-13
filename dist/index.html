@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>Never Ranked — AI-Native SEO & AEO Agency</title>
-<meta name="description" content="Search changed. Your visibility didn't. We build for AI Overviews, ChatGPT, Perplexity, and the engines that already answer for you. Async-first. Start with a $500 audit.">
+<meta name="description" content="Search changed. Your visibility didn't. Check your AEO score free in 30 seconds, then let us fix it. We build for AI Overviews, ChatGPT, Perplexity, and the engines that answer for you.">
 <link rel="canonical" href="https://neverranked.com/">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
 <meta property="og:title" content="Never Ranked — AI-Native SEO & AEO">
-<meta property="og:description" content="Search changed. Your visibility didn't. We build for the engines that already answer for you. Async-first. Start with a $500 audit.">
+<meta property="og:description" content="Search changed. Your visibility didn't. Check your AEO score free in 30 seconds. We build for AI Overviews, ChatGPT, Perplexity, and the engines that answer for you.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
@@ -21,6 +21,7 @@
 <meta name="twitter:title" content="Never Ranked — AI-Native SEO & AEO">
 <meta name="twitter:description" content="Search changed. Your visibility didn't. We fix that.">
 <meta name="twitter:image" content="https://neverranked.com/og.png">
+<link rel="alternate" type="application/rss+xml" title="Insights — Never Ranked" href="https://neverranked.com/blog/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -58,6 +59,10 @@
         "Google AI Overviews",
         "Structured data",
         "Entity optimization"
+      ],
+      "sameAs": [
+        "https://www.wikidata.org/wiki/Q139259249",
+        "https://www.crunchbase.com/organization/never-ranked"
       ],
       "contactPoint": {
         "@type": "ContactPoint",
@@ -140,6 +145,43 @@
           }
         ]
       }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How long does AEO take to show results?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AEO is infrastructure, not advertising. Month one builds the technical foundation (schema, entity registration, structured data). Month two surfaces signals as AI models begin indexing your data. Month three is where citations typically begin. Results compound from there. The three-month minimum engagement exists because quitting before month three means quitting before the return."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why is there a three-month minimum for AEO services?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AI models retrain on cycles. The schema, content, and structured data deployed in month one gets absorbed into the next training window. It takes approximately 90 days for AI engines like ChatGPT, Perplexity, and Google AI Overviews to consistently recognize and cite a new entity. The minimum exists to protect clients from quitting before the work has time to compound."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the difference between AEO and traditional SEO?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Traditional SEO optimizes for blue-link rankings on search engine results pages. AEO (Answer Engine Optimization) optimizes for citations by AI engines like ChatGPT, Perplexity, Google AI Overviews, and Gemini. These engines do not rank pages. They cite sources. AEO focuses on structured data, entity recognition, and content architecture that makes your site citable by AI models."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to keep paying for AEO after the initial setup?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "AEO compounds with ongoing work. AI indexes refresh, competitors update their structured data, and models retrain regularly. If you pause, you do not stay flat. You decay. Ongoing AEO maintains your citation position, monitors for competitor changes, and continuously strengthens the signals that keep AI engines citing your content. After the three-month minimum, the engagement is month-to-month."
+          }
+        }
+      ]
     }
   ]
 }
@@ -965,6 +1007,162 @@ h1,h2,h3,h4{
   max-width:32ch;
 }
 
+/* ---------- free tool banner ---------- */
+.tool-banner{
+  padding:80px 0;
+  border-bottom:1px solid var(--line);
+  text-align:center;
+}
+.tool-banner .inner{
+  display:flex;flex-direction:column;align-items:center;gap:20px;
+}
+.tool-banner .kicker{
+  font-family:var(--label);
+  text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;color:var(--gold);
+}
+.tool-banner h2{
+  font-family:var(--serif);font-size:clamp(24px,3.5vw,36px);
+  font-weight:400;letter-spacing:-.02em;line-height:1.2;
+  margin:0;
+}
+.tool-banner h2 em{font-style:italic;color:var(--gold)}
+.tool-banner .sub{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);max-width:460px;
+  line-height:1.7;margin:0;
+}
+.tool-banner .btn{
+  display:inline-block;
+  border:1px solid var(--gold);color:var(--gold);
+  padding:14px 32px;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.18em;font-size:12px;font-weight:500;
+  border-radius:4px;
+  transition:background .35s var(--ease),color .35s var(--ease);
+  margin-top:8px;
+}
+.tool-banner .btn:hover{background:var(--gold);color:var(--bg)}
+
+/* ---------- insights preview ---------- */
+.insights-preview{
+  padding:140px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.insights-preview .header-row{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:48px;
+  gap:20px;
+}
+.insights-preview .header-row h2{
+  font-size:clamp(32px,4vw,52px);
+  line-height:1.05;
+}
+.insights-preview .header-row h2 em{color:var(--gold);font-weight:400}
+.insights-preview .view-all{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  font-weight:500;
+  color:var(--gold);
+  white-space:nowrap;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition:opacity .3s var(--ease);
+}
+.insights-preview .view-all:hover{opacity:.7}
+.insights-preview .view-all .arrow{
+  display:inline-block;
+  width:14px;height:1px;
+  background:currentColor;
+  position:relative;
+  transition:width .35s var(--ease);
+}
+.insights-preview .view-all .arrow::after{
+  content:"";
+  position:absolute;
+  right:0;top:-3px;
+  width:5px;height:5px;
+  border-top:1px solid currentColor;
+  border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.insights-preview .view-all:hover .arrow{width:20px}
+.insights-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:20px;
+}
+.insight-card{
+  display:flex;
+  flex-direction:column;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  padding:32px 28px;
+  transition:border-color .4s var(--ease),background .4s var(--ease),transform .4s var(--ease);
+}
+.insight-card:hover{
+  border-color:var(--gold-dim);
+  background:var(--bg-edge);
+  transform:translateY(-3px);
+}
+.insight-card .ic-date{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:14px;
+}
+.insight-card .ic-title{
+  font-family:var(--serif);
+  font-size:clamp(18px,2vw,22px);
+  font-weight:400;
+  line-height:1.2;
+  letter-spacing:-.01em;
+  color:var(--text);
+  margin-bottom:14px;
+  flex:1;
+  transition:color .35s var(--ease);
+}
+.insight-card:hover .ic-title{color:var(--gold)}
+.insight-card .ic-read{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  font-weight:500;
+  color:var(--gold);
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+}
+.insight-card .ic-read .arrow{
+  display:inline-block;
+  width:12px;height:1px;
+  background:currentColor;
+  position:relative;
+  transition:width .35s var(--ease);
+}
+.insight-card .ic-read .arrow::after{
+  content:"";
+  position:absolute;
+  right:0;top:-2px;
+  width:5px;height:5px;
+  border-top:1px solid currentColor;
+  border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.insight-card:hover .ic-read .arrow{width:18px}
+@media(max-width:900px){
+  .insights-grid{grid-template-columns:1fr}
+  .insights-preview .header-row{flex-direction:column;align-items:flex-start}
+}
+
 /* ---------- pricing ---------- */
 .pricing{
   padding:140px 0 140px;
@@ -1167,6 +1365,90 @@ h1,h2,h3,h4{
   border-color:var(--gold-dim);
 }
 
+/* ---------- compound timeline ---------- */
+.compound{
+  padding:120px 0;
+  border-bottom:1px solid var(--line);
+}
+.compound-head{
+  max-width:680px;
+  margin-bottom:56px;
+}
+.compound-head h2{
+  font-size:clamp(28px,4vw,44px);
+  margin-bottom:18px;
+  letter-spacing:-.02em;
+  line-height:1.12;
+}
+.compound-head h2 em{color:var(--gold);font-weight:400}
+.compound-head p{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-faint);
+  line-height:1.7;
+  max-width:560px;
+}
+.timeline{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+@media(max-width:900px){
+  .timeline{grid-template-columns:1fr}
+}
+.tl-card{
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:32px 28px;
+  display:flex;flex-direction:column;gap:16px;
+}
+.tl-card .month{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:11px;
+  color:var(--gold);
+  font-weight:500;
+}
+.tl-card h3{
+  font-family:var(--serif);
+  font-size:20px;
+  font-weight:400;
+  letter-spacing:-.01em;
+  line-height:1.25;
+  margin:0;
+}
+.tl-card p{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+  margin:0;
+}
+.tl-card .bar-track{
+  height:3px;
+  background:var(--bg-edge);
+  border-radius:2px;
+  overflow:hidden;
+  margin-top:auto;
+}
+.tl-card .bar-fill{
+  height:100%;
+  background:var(--gold);
+  border-radius:2px;
+  transition:width 1.2s var(--ease);
+}
+.compound-note{
+  margin-top:40px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+  max-width:600px;
+}
+.compound-note b{color:var(--text-mute);font-weight:400}
+
 /* ---------- audit ---------- */
 .audit{
   padding:160px 0 160px;
@@ -1299,6 +1581,18 @@ h1,h2,h3,h4{
   font-weight:500;
   margin-top:14px;
 }
+.audit-email{
+  margin-top:18px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+}
+.audit-email a{
+  color:var(--gold);
+  border-bottom:1px solid var(--gold-dim);
+  transition:border-color .3s var(--ease);
+}
+.audit-email a:hover{border-color:var(--gold)}
 
 /* ---------- intake ---------- */
 .intake{
@@ -1564,6 +1858,69 @@ h1,h2,h3,h4{
 .reveal-stagger.in > *:nth-child(5){transition-delay:.45s}
 .reveal-stagger.in > *:nth-child(6){transition-delay:.55s}
 
+/* ---------- dashboard features ---------- */
+.dashboard-features{
+  padding:120px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.dash-head{
+  text-align:center;
+  margin-bottom:60px;
+}
+.dash-head h2{
+  font-family:var(--serif);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:400;letter-spacing:-.02em;
+  line-height:1.15;margin:0 0 18px;
+}
+.dash-head h2 em{font-style:italic;color:var(--gold)}
+.dash-head p{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);line-height:1.7;
+  max-width:520px;margin:0 auto;
+}
+.dash-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+}
+.dash-card{
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:32px 28px;
+  transition:border-color .35s var(--ease),transform .35s var(--ease);
+}
+.dash-card:hover{
+  border-color:var(--gold-dim);
+  transform:translateY(-3px);
+}
+.dash-icon{
+  font-size:22px;
+  margin-bottom:14px;
+  color:var(--gold);
+}
+.dash-title{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;font-weight:500;
+  color:var(--text-soft);
+  margin-bottom:10px;
+}
+.dash-desc{
+  font-family:var(--mono);
+  font-size:12px;line-height:1.7;
+  color:var(--text-faint);
+}
+@media(max-width:900px){
+  .dash-grid{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:540px){
+  .dash-grid{grid-template-columns:1fr}
+  .dashboard-features{padding:80px 0 60px}
+}
+
 @media(prefers-reduced-motion:reduce){
   .reveal,.reveal-stagger > *{opacity:1;transform:none;transition:none}
   .marquee-track,.grain{animation:none}
@@ -1578,8 +1935,11 @@ h1,h2,h3,h4{
 <nav class="nav" id="nav">
   <a href="#" class="mark">Never Ranked<sup>©</sup></a>
   <div class="right">
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/blog/" class="nav-link">Insights</a>
     <a href="#services" class="nav-link">Services</a>
     <a href="#pricing" class="nav-link">Pricing</a>
+    <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
     <span class="status">Taking clients Q2</span>
   </div>
@@ -1610,10 +1970,13 @@ h1,h2,h3,h4{
           <p class="hero-sub">
             <b>Search changed. Your visibility didn't.</b> We build for the engines that already answer for you.
           </p>
-          <a href="#audit" class="cta">
-            Start with a $500 audit
-            <span class="arrow"></span>
-          </a>
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <a href="https://check.neverranked.com" class="cta">
+              See your score free
+              <span class="arrow"></span>
+            </a>
+            <a href="#audit" style="font-family:var(--mono);font-size:12px;color:var(--text-faint);border-bottom:1px solid rgba(251,248,239,.2);padding-bottom:2px;transition:color .3s,border-color .3s">or start with the $500 audit</a>
+          </div>
         </div>
       </div>
 
@@ -1627,7 +1990,7 @@ h1,h2,h3,h4{
           <div class="tag">Method</div>
         </div>
         <div class="cell">
-          <div class="stmt">Month-to-month. <em>Cancel anytime.</em></div>
+          <div class="stmt">Three months to compound. <em>Then month-to-month.</em></div>
           <div class="tag">Terms</div>
         </div>
       </div>
@@ -1734,6 +2097,19 @@ h1,h2,h3,h4{
             <p class="desc">AI-drafted MLS descriptions, social captions, and fact sheets for real estate agents and commercial brokers.</p>
             <span class="link">
               Visit montaic.com
+              <span class="arrow"></span>
+            </span>
+          </a>
+
+          <a href="/case-studies/montaic/" class="proof-card">
+            <div class="kicker">
+              <span>Case Study</span>
+              <b>NEW</b>
+            </div>
+            <div class="name">Montaic: 12-Day Rebuild</div>
+            <p class="desc">From zero AI citations to seven pillar articles, full schema coverage, and a voice calibration experiment averaging 6.9 out of 10. The full breakdown.</p>
+            <span class="link">
+              Read the case study
               <span class="arrow"></span>
             </span>
           </a>
@@ -1883,6 +2259,97 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ FREE TOOL ============ -->
+  <section class="tool-banner reveal">
+    <div class="wrap">
+      <div class="inner">
+        <span class="kicker">Free in 30 seconds</span>
+        <h2>What does AI think of <em>your site?</em></h2>
+        <p class="sub">Enter your URL. Get an instant AEO readiness grade, schema coverage breakdown, and a list of exactly what to fix. No signup. No email gate. Takes 30 seconds.</p>
+        <a href="https://check.neverranked.com" class="btn">Run a free check →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ YOUR DASHBOARD ============ -->
+  <section class="dashboard-features" id="dashboard">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.1</span>
+        <span>The Dashboard</span>
+        <span class="rule"></span>
+        <span>your tab, always open</span>
+      </div>
+
+      <div class="dash-head">
+        <h2 class="reveal">Not a PDF. <em>A product.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          Every client gets a live dashboard at app.neverranked.com. Not a monthly report you forget to open. A product you check because the data matters to you.
+        </p>
+      </div>
+
+      <div class="dash-grid reveal-stagger">
+        <div class="dash-card">
+          <div class="dash-icon">&#8635;</div>
+          <div class="dash-title">Weekly scans</div>
+          <div class="dash-desc">Your AEO score is scanned every Monday. Score history, trend charts, and deltas so you see movement over time, not a single snapshot.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9670;</div>
+          <div class="dash-title">Phased roadmap</div>
+          <div class="dash-desc">A clear action plan broken into phases: Foundation, Growth, Dominance. See what's done, what's in progress, and what unlocks next. Progress bar included.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9646;&#9646;</div>
+          <div class="dash-title">Competitor benchmarks</div>
+          <div class="dash-desc">Side-by-side AEO comparison against your actual competitors. Schema gaps, score differences, and where you're winning or losing ground.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9888;</div>
+          <div class="dash-title">Regression alerts</div>
+          <div class="dash-desc">If your score drops more than 5 points, you hear about it immediately. Not next Monday. Not next month. The moment it happens.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9993;</div>
+          <div class="dash-title">Weekly digest</div>
+          <div class="dash-desc">Score, changes, and top action item in your inbox every Monday. Forward it to your boss. It speaks plain English, not SEO jargon.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#8599;</div>
+          <div class="dash-title">Shareable reports</div>
+          <div class="dash-desc">Generate a public link to share your AEO report with stakeholders. No login required. Print-friendly. Branded. Expires in 90 days.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ LATEST INSIGHTS ============ -->
+  <section class="insights-preview">
+    <div class="wrap">
+      <div class="header-row reveal">
+        <h2>Latest <em>Insights</em></h2>
+        <a href="/blog/" class="view-all">View all <span class="arrow"></span></a>
+      </div>
+      <div class="insights-grid">
+        <a href="/blog/what-is-aeo/" class="insight-card reveal">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">What Is AEO (and Why It Replaced the Playbook You're Running)</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+        <a href="/blog/how-long-does-aeo-take/" class="insight-card reveal" style="transition-delay:.08s">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">How Long Does AEO Take to Show Results</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+        <a href="/blog/schema-markup-ai-search/" class="insight-card reveal" style="transition-delay:.16s">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">Schema Markup for AI Search: What Actually Matters</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PRICING ============ -->
   <section class="pricing" id="pricing">
     <div class="wrap">
@@ -1897,6 +2364,9 @@ h1,h2,h3,h4{
         <h2 class="reveal">Two ways <em>in.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
           Three-month minimum, then month-to-month. The price you see is the price you pay. No set-up fees, no onboarding tax, no annual contract you'll quietly resent.
+        </p>
+        <p class="reveal" style="transition-delay:.18s;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
+          The minimum exists because this work compounds. Month one builds the foundation. Month two surfaces signals. Month three is where citations start. Quitting before then is quitting before the return.
         </p>
       </div>
 
@@ -1942,6 +2412,50 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ COMPOUND VISIBILITY ============ -->
+  <section class="compound" id="timeline">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§05.1</span>
+        <span>Timeline</span>
+        <span class="rule"></span>
+        <span>honest</span>
+      </div>
+
+      <div class="compound-head">
+        <h2 class="reveal">This is infrastructure,<br><em>not advertising.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          Ads stop when you stop paying. AEO compounds. The schema, content, and structured data you build today trains the model that cites you six months from now. Here is what that actually looks like.
+        </p>
+      </div>
+
+      <div class="timeline reveal-stagger">
+        <div class="tl-card">
+          <span class="month">Month 1 / Foundation</span>
+          <h3>Build the signal layer</h3>
+          <p>Technical audit. Schema deployed. Entity registration. Structured data across every critical page. The model can now read your site the way it reads Wikipedia.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:20%"></div></div>
+        </div>
+        <div class="tl-card">
+          <span class="month">Month 2 / Indexing</span>
+          <h3>Signals surface</h3>
+          <p>Content indexed. Citation tracking goes live. You start appearing in edge queries. The dashboard shows movement. AI models are learning your entity. Not citing yet. Learning.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:50%"></div></div>
+        </div>
+        <div class="tl-card">
+          <span class="month">Month 3+ / Compounding</span>
+          <h3>Citations begin</h3>
+          <p>First verifiable citations. Share of answer climbs. Each new piece of content reinforces the last. This is where the curve bends. Every month after this compounds on everything before it.</p>
+          <div class="bar-track"><div class="bar-fill" style="width:85%"></div></div>
+        </div>
+      </div>
+
+      <p class="compound-note reveal" style="transition-delay:.25s">
+        <b>Why we're honest about this:</b> Agencies that promise results in week one are either lying or selling ads. We build the pipes, not the water. The three-month minimum exists because it takes that long for AI models to absorb, retrain, and begin citing your data consistently. After month three, every additional month compounds on the foundation already in place. Stopping resets the curve.
+      </p>
+    </div>
+  </section>
+
   <!-- ============ AUDIT ============ -->
   <section class="audit" id="audit">
     <div class="wrap">
@@ -1978,10 +2492,14 @@ h1,h2,h3,h4{
             Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not.
             <b>We don't refund. We deliver.</b>
           </p>
-          <a href="mailto:hello@neverranked.com?subject=Audit" class="cta">
+          <p class="commitment" style="margin-top:12px;color:var(--text-faint);font-size:12px">
+            The roadmap is a ninety-day plan because that is how long the foundation takes. We will not promise you citations in week one. We will show you exactly what to build and when to expect returns.
+          </p>
+          <a href="mailto:hello@neverranked.com?subject=%24500%20Audit%20%E2%80%94%20%5BYour%20Company%5D&body=Site%20URL%3A%20%0ACompany%3A%20%0AAnything%20specific%20you%20want%20audited%3F%20%0A" class="cta">
             Book the audit
             <span class="arrow"></span>
           </a>
+          <p class="audit-email">or email <a href="mailto:hello@neverranked.com">hello@neverranked.com</a> directly</p>
         </div>
       </div>
     </div>
@@ -2041,6 +2559,9 @@ h1,h2,h3,h4{
               <span class="arrow"></span>
             </button>
             <p class="intake-note">§ No spam. No sequences. No sales team.</p>
+            <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:24px;line-height:1.7">
+              Not ready for a brief? <a href="https://check.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">See your AEO score free</a> first.
+            </p>
           </div>
           <div class="form-status" id="formStatus" aria-live="polite"></div>
         </form>
