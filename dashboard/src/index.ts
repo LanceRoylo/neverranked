@@ -12,7 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleApproveSuggestion, handleDismissSuggestion } from "./routes/admin";
 import { handleCompetitors } from "./routes/competitors";
-import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem } from "./routes/roadmap";
+import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { cleanupAuth } from "./auth";
@@ -133,6 +133,10 @@ export default {
     const roadmapUpdateMatch = path.match(/^\/roadmap\/([^/]+)\/update\/(\d+)$/);
     if (roadmapUpdateMatch && method === "POST" && user.role === "admin") {
       return handleUpdateRoadmapItem(decodeURIComponent(roadmapUpdateMatch[1]), Number(roadmapUpdateMatch[2]), request, user, env);
+    }
+    const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
+    if (phaseAddMatch && method === "POST" && user.role === "admin") {
+      return handleAddPhase(decodeURIComponent(phaseAddMatch[1]), request, user, env);
     }
 
     // 404

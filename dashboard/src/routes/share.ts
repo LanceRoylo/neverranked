@@ -5,7 +5,7 @@
  * No login required. Branded with NeverRanked CTA.
  */
 
-import type { Env, Domain, ScanResult, RoadmapItem } from "../types";
+import type { Env, Domain, ScanResult, RoadmapItem, RoadmapPhase } from "../types";
 import { esc } from "../render";
 import { generateNarrative } from "../narrative";
 import { CSS } from "../styles";
@@ -66,7 +66,11 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
   // Narrative
   const narrative = generateNarrative(domain.domain, latest, previous);
 
-  // Roadmap data for "Action Plan" section
+  // Roadmap phases + items for "Action Plan" section
+  const phases = (await env.DB.prepare(
+    "SELECT * FROM roadmap_phases WHERE client_slug = ? ORDER BY phase_number"
+  ).bind(domain.client_slug).all<RoadmapPhase>()).results;
+
   const roadmapItems = (await env.DB.prepare(
     "SELECT * FROM roadmap_items WHERE client_slug = ? ORDER BY sort_order, created_at"
   ).bind(domain.client_slug).all<RoadmapItem>()).results;
@@ -75,7 +79,13 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
   const roadmapDone = roadmapItems.filter(i => i.status === "done").length;
   const roadmapInProgress = roadmapItems.filter(i => i.status === "in_progress").length;
   const roadmapPending = roadmapTotal - roadmapDone - roadmapInProgress;
-  const roadmapPct = roadmapTotal > 0 ? Math.round((roadmapDone / roadmapTotal) * 100) : 0;
+  const completedPhases = phases.filter(p => p.status === "completed").length;
+  const activePhase = phases.find(p => p.status === "active");
+  const activeItems = activePhase ? roadmapItems.filter(i => i.phase_id === activePhase.id) : roadmapItems;
+  const activeDone = activeItems.filter(i => i.status === "done").length;
+  const activeInProgress = activeItems.filter(i => i.status === "in_progress").length;
+  const activePending = activeItems.length - activeDone - activeInProgress;
+  const activePct = activeItems.length > 0 ? Math.round((activeDone / activeItems.length) * 100) : 0;
 
   // Score delta
   let deltaHtml = "";
@@ -323,27 +333,91 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
       <div class="page-break" style="margin-bottom:48px">
         <div class="label" style="margin-bottom:16px">Your AEO Action Plan</div>
 
-        <!-- Progress -->
+        ${phases.length > 1 ? `
+        <!-- Phase journey -->
+        <div style="display:flex;align-items:center;gap:0;margin-bottom:20px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;overflow-x:auto">
+          ${phases.map((p, i) => {
+            const isCompleted = p.status === "completed";
+            const isActive = p.status === "active";
+            const circleStyle = isCompleted
+              ? "background:var(--green);color:#080808"
+              : isActive
+                ? "border:2px solid var(--gold);color:var(--gold)"
+                : "border:1.5px solid var(--line);color:var(--text-faint)";
+            const circleContent = isCompleted ? "&#10003;" : `${p.phase_number}`;
+            const labelColor = isActive ? "color:var(--gold)" : isCompleted ? "color:var(--green)" : "color:var(--text-faint)";
+            const lineColor = isCompleted ? "var(--green)" : "var(--line)";
+            const line = i < phases.length - 1 ? `<div style="flex:1;height:2px;background:${lineColor};min-width:24px"></div>` : "";
+            return `
+              <div style="display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto">
+                <div style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--label);font-size:10px;font-weight:600;${circleStyle}">${circleContent}</div>
+                <div style="font-family:var(--label);font-size:8px;letter-spacing:.12em;text-transform:uppercase;${labelColor};white-space:nowrap">${esc(p.title)}</div>
+              </div>
+              ${line}
+            `;
+          }).join("")}
+        </div>
+        ` : ""}
+
+        ${completedPhases > 0 ? `
+        <!-- Completed phases summary -->
+        <div style="margin-bottom:16px">
+          ${phases.filter(p => p.status === "completed").map(p => {
+            const pItems = roadmapItems.filter(i => i.phase_id === p.id);
+            const completedDate = p.completed_at ? new Date(p.completed_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
+            return `
+              <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;margin-bottom:6px;background:var(--bg-lift);border-radius:4px;opacity:.75">
+                <div style="width:24px;height:24px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:12px;color:#080808;flex-shrink:0">&#10003;</div>
+                <div style="flex:1">
+                  <span style="font-family:var(--serif);font-size:14px;font-style:italic;color:var(--text)">Phase ${p.phase_number}: ${esc(p.title)}</span>
+                  <span style="font-size:11px;color:var(--text-faint);margin-left:8px">${pItems.length} items delivered</span>
+                </div>
+                ${completedDate ? `<span style="font-size:11px;color:var(--text-faint)">${completedDate}</span>` : ""}
+              </div>
+            `;
+          }).join("")}
+        </div>
+        ` : ""}
+
+        ${activePhase ? `
+        <!-- Active phase progress -->
+        <div style="padding:24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;margin-bottom:20px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+            <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">Phase ${activePhase.phase_number}: ${esc(activePhase.title)}</div>
+            <span style="font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">Active</span>
+          </div>
+          ${activePhase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-bottom:14px">${esc(activePhase.subtitle)}</div>` : '<div style="margin-bottom:14px"></div>'}
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+            <div style="font-size:14px;color:var(--text)">${activePct}% complete</div>
+            <div style="font-size:12px;color:var(--text-faint)">${activeDone} of ${activeItems.length} items</div>
+          </div>
+          <div style="height:8px;background:rgba(251,248,239,.06);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${activePct}%;background:var(--gold);border-radius:4px"></div>
+          </div>
+          <div style="display:flex;gap:24px;margin-top:12px;font-size:12px">
+            <span style="color:var(--green)">${activeDone} completed</span>
+            <span style="color:var(--yellow)">${activeInProgress} in progress</span>
+            <span style="color:var(--text-faint)">${activePending} upcoming</span>
+          </div>
+        </div>
+        ` : `
+        <!-- Fallback progress (no phases) -->
         <div style="padding:24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;margin-bottom:20px">
           <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
-            <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">${roadmapPct}% complete</div>
+            <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">${activePct}% complete</div>
             <div style="font-size:12px;color:var(--text-faint)">${roadmapDone} of ${roadmapTotal} items done</div>
           </div>
           <div style="height:8px;background:rgba(251,248,239,.06);border-radius:4px;overflow:hidden">
-            <div style="height:100%;width:${roadmapPct}%;background:var(--gold);border-radius:4px"></div>
-          </div>
-          <div style="display:flex;gap:24px;margin-top:12px;font-size:12px">
-            <span style="color:var(--green)">${roadmapDone} completed</span>
-            <span style="color:var(--yellow)">${roadmapInProgress} in progress</span>
-            <span style="color:var(--text-faint)">${roadmapPending} upcoming</span>
+            <div style="height:100%;width:${activePct}%;background:var(--gold);border-radius:4px"></div>
           </div>
         </div>
+        `}
 
-        ${roadmapDone > 0 ? `
-        <!-- Completed work -->
+        ${activeDone > 0 ? `
+        <!-- Completed work (active phase) -->
         <div style="margin-bottom:20px">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px">Completed</div>
-          ${roadmapItems.filter(i => i.status === "done").map(item => `
+          ${activeItems.filter(i => i.status === "done").map(item => `
             <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px;font-size:13px">
               <span style="color:var(--green);font-size:14px">&#10003;</span>
               <span style="color:var(--text-mute);text-decoration:line-through">${esc(item.title)}</span>
@@ -353,11 +427,11 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
         </div>
         ` : ""}
 
-        ${roadmapInProgress > 0 ? `
+        ${activeInProgress > 0 ? `
         <!-- In progress -->
         <div style="margin-bottom:20px">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px">In Progress</div>
-          ${roadmapItems.filter(i => i.status === "in_progress").map(item => `
+          ${activeItems.filter(i => i.status === "in_progress").map(item => `
             <div style="padding:12px 16px;margin-bottom:4px;background:var(--bg-lift);border-left:3px solid var(--yellow);font-size:13px">
               <div style="color:var(--text)">${esc(item.title)}</div>
               ${item.description ? `<div style="color:var(--text-faint);font-size:12px;margin-top:4px">${esc(item.description)}</div>` : ''}
@@ -366,20 +440,25 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
         </div>
         ` : ""}
 
-        ${roadmapPending > 0 ? `
+        ${activePending > 0 ? `
         <!-- Up next -->
-        <div>
+        <div style="margin-bottom:20px">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">Up Next</div>
-          ${roadmapItems.filter(i => i.status === "pending").slice(0, 3).map(item => `
+          ${activeItems.filter(i => i.status === "pending").slice(0, 3).map(item => `
             <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px;font-size:13px">
               <span style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-faint);flex-shrink:0"></span>
               <span style="color:var(--text-soft)">${esc(item.title)}</span>
               ${item.due_date ? `<span style="margin-left:auto;font-size:11px;color:var(--text-faint)">${new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>` : ''}
             </div>
           `).join("")}
-          ${roadmapPending > 3 ? `<div style="padding:8px 16px;font-size:12px;color:var(--text-faint)">+ ${roadmapPending - 3} more planned</div>` : ''}
+          ${activePending > 3 ? `<div style="padding:8px 16px;font-size:12px;color:var(--text-faint)">+ ${activePending - 3} more planned</div>` : ''}
         </div>
         ` : ""}
+
+        <!-- Moving target note -->
+        <div style="padding:16px 20px;background:var(--bg-edge);border-radius:4px;font-size:12px;color:var(--text-faint);line-height:1.7">
+          <strong style="color:var(--text-soft);font-weight:400">AEO is a moving target.</strong> AI models retrain, competitors improve, and search algorithms evolve. Each completed phase unlocks the next level of optimization${phases.length > 1 ? ` -- ${phases.length - completedPhases - 1} more phase${phases.length - completedPhases - 1 !== 1 ? 's' : ''} ahead` : ''}.
+        </div>
       </div>
       ` : ""}
 

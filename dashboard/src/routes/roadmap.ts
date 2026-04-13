@@ -1,11 +1,12 @@
 /**
- * Dashboard — 90-day AEO roadmap tracker
+ * Dashboard -- Phased AEO roadmap tracker
  *
- * Prioritized improvement plan for each client. Admin adds items,
- * both admin and client can see progress. Admin can update status.
+ * Each client has multiple phases (Foundation, Growth, Dominance, etc).
+ * When all items in a phase are done, the phase completes and the next unlocks.
+ * AEO is a moving target -- there is always a next phase.
  */
 
-import type { Env, User, RoadmapItem } from "../types";
+import type { Env, User, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, redirect, esc } from "../render";
 
 const CATEGORIES: Record<string, string> = {
@@ -23,100 +24,227 @@ const STATUSES: Record<string, { label: string; color: string }> = {
   blocked: { label: "Blocked", color: "var(--red)" },
 };
 
-export async function handleRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+const PHASE_TEMPLATES: { title: string; subtitle: string; description: string }[] = [
+  {
+    title: "Foundation",
+    subtitle: "Get the basics right",
+    description: "Core technical SEO, essential schema markup, and content fundamentals that AI models need to understand and cite your site.",
+  },
+  {
+    title: "Growth",
+    subtitle: "Expand your visibility",
+    description: "Advanced schema coverage, content authority signals, entity optimization, and competitive gap closure.",
+  },
+  {
+    title: "Dominance",
+    subtitle: "Own your category",
+    description: "Featured snippet capture, cross-platform entity presence, competitive displacement, and sustained authority building.",
+  },
+  {
+    title: "Maintenance",
+    subtitle: "Protect what you've built",
+    description: "Ongoing monitoring, regression prevention, algorithm adaptation, and emerging opportunity capture.",
+  },
+];
+
+/** Ensure a client has at least Phase 1. Returns all phases. */
+async function ensurePhases(clientSlug: string, env: Env): Promise<RoadmapPhase[]> {
+  let phases = (await env.DB.prepare(
+    "SELECT * FROM roadmap_phases WHERE client_slug = ? ORDER BY phase_number"
+  ).bind(clientSlug).all<RoadmapPhase>()).results;
+
+  if (phases.length === 0) {
+    const now = Math.floor(Date.now() / 1000);
+    const tpl = PHASE_TEMPLATES[0];
+    await env.DB.prepare(
+      "INSERT INTO roadmap_phases (client_slug, phase_number, title, subtitle, description, status, created_at, updated_at) VALUES (?, 1, ?, ?, ?, 'active', ?, ?)"
+    ).bind(clientSlug, tpl.title, tpl.subtitle, tpl.description, now, now).run();
+
+    // Link any orphaned items to this new phase
+    const phase = await env.DB.prepare(
+      "SELECT * FROM roadmap_phases WHERE client_slug = ? AND phase_number = 1"
+    ).bind(clientSlug).first<RoadmapPhase>();
+
+    if (phase) {
+      await env.DB.prepare(
+        "UPDATE roadmap_items SET phase_id = ? WHERE client_slug = ? AND phase_id IS NULL"
+      ).bind(phase.id, clientSlug).run();
+      phases = [phase];
+    }
+  }
+
+  return phases;
+}
+
+/** Check if active phase is complete, and auto-complete + unlock next */
+async function checkPhaseCompletion(clientSlug: string, env: Env): Promise<void> {
+  const activePhase = await env.DB.prepare(
+    "SELECT * FROM roadmap_phases WHERE client_slug = ? AND status = 'active' ORDER BY phase_number LIMIT 1"
+  ).bind(clientSlug).first<RoadmapPhase>();
+
+  if (!activePhase) return;
+
   const items = (await env.DB.prepare(
+    "SELECT * FROM roadmap_items WHERE phase_id = ?"
+  ).bind(activePhase.id).all<RoadmapItem>()).results;
+
+  if (items.length === 0) return;
+
+  const allDone = items.every(i => i.status === "done");
+  if (!allDone) return;
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Complete the active phase
+  await env.DB.prepare(
+    "UPDATE roadmap_phases SET status = 'completed', completed_at = ?, updated_at = ? WHERE id = ?"
+  ).bind(now, now, activePhase.id).run();
+
+  // Unlock the next phase (if locked)
+  const nextPhase = await env.DB.prepare(
+    "SELECT * FROM roadmap_phases WHERE client_slug = ? AND phase_number = ? AND status = 'locked'"
+  ).bind(clientSlug, activePhase.phase_number + 1).first<RoadmapPhase>();
+
+  if (nextPhase) {
+    await env.DB.prepare(
+      "UPDATE roadmap_phases SET status = 'active', updated_at = ? WHERE id = ?"
+    ).bind(now, nextPhase.id).run();
+  }
+}
+
+export async function handleRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+  const phases = await ensurePhases(clientSlug, env);
+
+  // Check for auto-completion
+  await checkPhaseCompletion(clientSlug, env);
+
+  // Re-fetch after potential completion
+  const updatedPhases = (await env.DB.prepare(
+    "SELECT * FROM roadmap_phases WHERE client_slug = ? ORDER BY phase_number"
+  ).bind(clientSlug).all<RoadmapPhase>()).results;
+
+  // Get all items grouped by phase
+  const allItems = (await env.DB.prepare(
     "SELECT * FROM roadmap_items WHERE client_slug = ? ORDER BY sort_order, created_at"
   ).bind(clientSlug).all<RoadmapItem>()).results;
 
   const now = Math.floor(Date.now() / 1000);
-  const total = items.length;
-  const done = items.filter(i => i.status === "done").length;
-  const inProgress = items.filter(i => i.status === "in_progress").length;
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
 
-  // Group by category
-  const grouped = new Map<string, RoadmapItem[]>();
-  for (const item of items) {
-    const arr = grouped.get(item.category) || [];
-    arr.push(item);
-    grouped.set(item.category, arr);
+  // Overall progress across all phases
+  const totalItems = allItems.length;
+  const totalDone = allItems.filter(i => i.status === "done").length;
+  const completedPhases = updatedPhases.filter(p => p.status === "completed").length;
+
+  // Build the phase journey indicator
+  const journeyHtml = buildPhaseJourney(updatedPhases);
+
+  // Build each phase section
+  let phaseSections = "";
+  for (const phase of updatedPhases) {
+    const phaseItems = allItems.filter(i => i.phase_id === phase.id);
+    const phaseDone = phaseItems.filter(i => i.status === "done").length;
+    const phaseInProgress = phaseItems.filter(i => i.status === "in_progress").length;
+    const phasePct = phaseItems.length > 0 ? Math.round((phaseDone / phaseItems.length) * 100) : 0;
+
+    if (phase.status === "completed") {
+      // Collapsed completed phase
+      const completedDate = phase.completed_at
+        ? new Date(phase.completed_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
+        : "";
+      phaseSections += `
+        <div class="card" style="margin-bottom:16px;opacity:.7">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;color:#080808;flex-shrink:0">&#10003;</div>
+              <div>
+                <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">Phase ${phase.phase_number}: ${esc(phase.title)}</div>
+                ${phase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-top:2px">${esc(phase.subtitle)}</div>` : ""}
+              </div>
+            </div>
+            <div style="text-align:right;flex-shrink:0">
+              <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green)">Completed</div>
+              ${completedDate ? `<div style="font-size:11px;color:var(--text-faint);margin-top:2px">${completedDate}</div>` : ""}
+              <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${phaseDone} items delivered</div>
+            </div>
+          </div>
+        </div>
+      `;
+    } else if (phase.status === "active") {
+      // Expanded active phase with full item list
+      phaseSections += `
+        <div class="card" style="margin-bottom:16px;border:1px solid var(--gold-dim)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:32px;height:32px;border-radius:50%;border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--label);font-size:12px;font-weight:600;color:var(--gold);flex-shrink:0">${phase.phase_number}</div>
+              <div>
+                <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">Phase ${phase.phase_number}: ${esc(phase.title)}</div>
+                ${phase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-top:2px">${esc(phase.subtitle)}</div>` : ""}
+              </div>
+            </div>
+            <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:var(--gold-wash);padding:4px 12px;border-radius:2px">Active</span>
+          </div>
+
+          ${phase.description ? `<div style="font-size:13px;color:var(--text-faint);line-height:1.7;margin-bottom:24px;padding:16px 20px;background:var(--bg-edge);border-radius:4px">${esc(phase.description)}</div>` : ""}
+
+          <!-- Phase progress bar -->
+          <div style="margin-bottom:28px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px">
+              <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">Phase progress</div>
+              <div style="font-size:13px;color:var(--text-faint)">${phaseDone} of ${phaseItems.length} complete (${phasePct}%)</div>
+            </div>
+            <div style="height:8px;background:rgba(251,248,239,.06);border-radius:4px;overflow:hidden">
+              <div style="height:100%;width:${phasePct}%;background:var(--gold);border-radius:4px;transition:width .3s var(--ease)"></div>
+            </div>
+            <div style="display:flex;gap:20px;margin-top:10px;font-size:12px">
+              <span style="color:var(--green)">${phaseDone} done</span>
+              <span style="color:var(--yellow)">${phaseInProgress} in progress</span>
+              <span style="color:var(--text-faint)">${phaseItems.length - phaseDone - phaseInProgress} pending</span>
+            </div>
+          </div>
+
+          ${buildItemList(phaseItems, clientSlug, user, now)}
+        </div>
+      `;
+    } else {
+      // Locked future phase
+      phaseSections += `
+        <div class="card" style="margin-bottom:16px;opacity:.45">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="display:flex;align-items:center;gap:16px">
+              <div style="width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-family:var(--label);font-size:12px;color:var(--text-faint);flex-shrink:0">${phase.phase_number}</div>
+              <div>
+                <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text-mute)">Phase ${phase.phase_number}: ${esc(phase.title)}</div>
+                ${phase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-top:2px">${esc(phase.subtitle)}</div>` : ""}
+              </div>
+            </div>
+            <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">Locked</span>
+          </div>
+          ${phase.description ? `<div style="font-size:13px;color:var(--text-faint);line-height:1.7;margin-top:16px">${esc(phase.description)}</div>` : ""}
+        </div>
+      `;
+    }
   }
 
-  // Progress bar
-  const progressBar = `
-    <div style="margin-bottom:48px">
-      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
-        <div class="label">Progress</div>
-        <div style="font-size:13px;color:var(--text-faint)">${done} of ${total} complete (${pct}%)</div>
-      </div>
-      <div style="height:8px;background:rgba(251,248,239,.06);border-radius:4px;overflow:hidden">
-        <div style="height:100%;width:${pct}%;background:var(--gold);border-radius:4px;transition:width .3s var(--ease)"></div>
-      </div>
-      <div style="display:flex;gap:20px;margin-top:12px;font-size:12px">
-        <span style="color:var(--green)">${done} done</span>
-        <span style="color:var(--yellow)">${inProgress} in progress</span>
-        <span style="color:var(--text-faint)">${total - done - inProgress} pending</span>
+  // The "AEO is a moving target" callout
+  const movingTargetCallout = `
+    <div style="margin-top:48px;padding:24px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <div style="display:flex;align-items:flex-start;gap:16px">
+        <div style="font-size:20px;flex-shrink:0;margin-top:2px">&#8635;</div>
+        <div>
+          <div style="font-family:var(--serif);font-size:16px;font-style:italic;color:var(--text);margin-bottom:8px">AEO is a moving target</div>
+          <div style="font-size:13px;color:var(--text-faint);line-height:1.7">AI models retrain. Competitors improve. Search algorithms evolve. A strong score today can slip tomorrow without ongoing monitoring and optimization. Each phase builds on the last, and there is always work that moves the needle.</div>
+        </div>
       </div>
     </div>
   `;
 
-  // Category sections
-  let itemSections = "";
-  for (const [cat, catItems] of grouped) {
-    const catLabel = CATEGORIES[cat] || cat;
-    itemSections += `
-      <div style="margin-bottom:32px">
-        <div class="label" style="margin-bottom:12px">${esc(catLabel)}</div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${catItems.map(item => {
-            const st = STATUSES[item.status] || STATUSES.pending;
-            const dueStr = item.due_date
-              ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-              : null;
-            const overdue = item.due_date && item.due_date < now && item.status !== "done";
-
-            return `
-              <div style="display:flex;align-items:center;gap:16px;padding:14px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
-                <div style="width:10px;height:10px;border-radius:50%;background:${st.color};flex-shrink:0"></div>
-                <div style="flex:1;min-width:0">
-                  <div style="font-size:14px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
-                  ${item.description ? `<div style="font-size:12px;color:var(--text-faint);margin-top:4px">${esc(item.description)}</div>` : ''}
-                </div>
-                <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
-                  ${dueStr ? `<span style="font-size:11px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-                  ${user.role === "admin" ? `
-                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
-                      ${item.status !== "done" ? `<button type="submit" name="status" value="done" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Mark done">Done</button>` : ''}
-                      ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
-                      ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
-                      ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
-                    </form>
-                  ` : `
-                    <span class="status status-${item.status === 'in_progress' ? 'in_progress' : item.status === 'done' ? 'done' : 'pending'}" style="font-size:9px">${st.label}</span>
-                  `}
-                </div>
-              </div>
-            `;
-          }).join("")}
-        </div>
-      </div>
-    `;
-  }
-
-  if (!itemSections) {
-    itemSections = `
-      <div class="empty" style="padding:40px">
-        <h3>No roadmap items yet</h3>
-        <p>${user.role === "admin" ? "Add items below to build the 90-day improvement plan." : "Your AEO improvement roadmap is being prepared."}</p>
-      </div>
-    `;
-  }
-
-  // Admin: add item form
+  // Admin: add item form (scoped to active phase)
+  const activePhase = updatedPhases.find(p => p.status === "active");
   const addForm = user.role === "admin" ? `
-    <div class="card" style="margin-top:48px">
+    <div class="card" style="margin-top:32px">
       <h3 style="margin-bottom:20px">Add roadmap <em>item</em></h3>
       <form method="POST" action="/roadmap/${clientSlug}/add">
+        ${activePhase ? `<input type="hidden" name="phase_id" value="${activePhase.id}">` : ""}
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
           <div class="form-group">
             <label>Title</label>
@@ -140,10 +268,31 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
           </div>
           <div class="form-group">
             <label>Priority order</label>
-            <input type="number" name="sort_order" value="${total + 1}" min="1" style="width:100%;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:14px">
+            <input type="number" name="sort_order" value="${totalItems + 1}" min="1" style="width:100%;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:14px">
           </div>
         </div>
         <button type="submit" class="btn">Add item</button>
+      </form>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3 style="margin-bottom:20px">Add <em>phase</em></h3>
+      <form method="POST" action="/roadmap/${clientSlug}/add-phase">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+          <div class="form-group">
+            <label>Title</label>
+            <input type="text" name="title" required placeholder="Growth" value="${PHASE_TEMPLATES[updatedPhases.length] ? PHASE_TEMPLATES[updatedPhases.length].title : ''}">
+          </div>
+          <div class="form-group">
+            <label>Subtitle</label>
+            <input type="text" name="subtitle" placeholder="Expand your visibility" value="${PHASE_TEMPLATES[updatedPhases.length] ? PHASE_TEMPLATES[updatedPhases.length].subtitle : ''}">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <input type="text" name="description" placeholder="What this phase focuses on" value="${PHASE_TEMPLATES[updatedPhases.length] ? esc(PHASE_TEMPLATES[updatedPhases.length].description) : ''}">
+        </div>
+        <button type="submit" class="btn btn-ghost">Add phase (locked)</button>
       </form>
     </div>
   ` : "";
@@ -154,16 +303,124 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
         <div class="label" style="margin-bottom:8px">
           <a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}
         </div>
-        <h1>90-Day <em>Roadmap</em></h1>
+        <h1>AEO <em>Roadmap</em></h1>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:12px;color:var(--text-faint)">${completedPhases} of ${updatedPhases.length} phases complete</div>
+        <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${totalDone} of ${totalItems} items delivered</div>
       </div>
     </div>
 
-    ${progressBar}
-    ${itemSections}
+    ${journeyHtml}
+    ${phaseSections}
+    ${movingTargetCallout}
     ${addForm}
   `;
 
   return html(layout("Roadmap", body, user));
+}
+
+/** Build the horizontal phase journey indicator */
+function buildPhaseJourney(phases: RoadmapPhase[]): string {
+  if (phases.length <= 1) return "";
+
+  const steps = phases.map((p, i) => {
+    const isCompleted = p.status === "completed";
+    const isActive = p.status === "active";
+    const circleStyle = isCompleted
+      ? "background:var(--green);color:#080808"
+      : isActive
+        ? "border:2px solid var(--gold);color:var(--gold)"
+        : "border:1.5px solid var(--line);color:var(--text-faint)";
+    const circleContent = isCompleted ? "&#10003;" : `${p.phase_number}`;
+    const labelColor = isActive ? "color:var(--gold)" : isCompleted ? "color:var(--green)" : "color:var(--text-faint)";
+
+    return `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:8px;flex:0 0 auto">
+        <div style="width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--label);font-size:11px;font-weight:600;${circleStyle}">${circleContent}</div>
+        <div style="font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;${labelColor};white-space:nowrap">${esc(p.title)}</div>
+      </div>
+    `;
+  });
+
+  // Connect with lines
+  const connected: string[] = [];
+  for (let i = 0; i < steps.length; i++) {
+    connected.push(steps[i]);
+    if (i < steps.length - 1) {
+      const prevDone = phases[i].status === "completed";
+      const lineColor = prevDone ? "var(--green)" : "var(--line)";
+      connected.push(`<div style="flex:1;height:2px;background:${lineColor};margin-top:14px;min-width:24px"></div>`);
+    }
+  }
+
+  return `
+    <div style="display:flex;align-items:flex-start;gap:0;margin-bottom:32px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;overflow-x:auto">
+      ${connected.join("")}
+    </div>
+  `;
+}
+
+/** Build item list grouped by category */
+function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number): string {
+  if (items.length === 0) {
+    return `
+      <div class="empty" style="padding:24px">
+        <p style="color:var(--text-faint)">${user.role === "admin" ? "Add items below to build this phase." : "Items for this phase are being prepared."}</p>
+      </div>
+    `;
+  }
+
+  const grouped = new Map<string, RoadmapItem[]>();
+  for (const item of items) {
+    const arr = grouped.get(item.category) || [];
+    arr.push(item);
+    grouped.set(item.category, arr);
+  }
+
+  let sections = "";
+  for (const [cat, catItems] of grouped) {
+    const catLabel = CATEGORIES[cat] || cat;
+    sections += `
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">${esc(catLabel)}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${catItems.map(item => {
+            const st = STATUSES[item.status] || STATUSES.pending;
+            const dueStr = item.due_date
+              ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              : null;
+            const overdue = item.due_date && item.due_date < now && item.status !== "done";
+
+            return `
+              <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
+                <div style="width:10px;height:10px;border-radius:50%;background:${st.color};flex-shrink:0"></div>
+                <div style="flex:1;min-width:0">
+                  <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
+                  ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                  ${dueStr ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
+                  ${user.role === "admin" ? `
+                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
+                      ${item.status !== "done" ? `<button type="submit" name="status" value="done" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Mark done">Done</button>` : ''}
+                      ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
+                      ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
+                      ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
+                    </form>
+                  ` : `
+                    <span class="status status-${item.status === 'in_progress' ? 'in_progress' : item.status === 'done' ? 'done' : 'pending'}" style="font-size:9px">${st.label}</span>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  return sections;
 }
 
 /** Add a roadmap item (admin only) */
@@ -174,6 +431,7 @@ export async function handleAddRoadmapItem(clientSlug: string, request: Request,
   const category = (form.get("category") as string || "custom");
   const sortOrder = parseInt(form.get("sort_order") as string || "0", 10);
   const dueDateStr = (form.get("due_date") as string || "").trim();
+  const phaseId = form.get("phase_id") ? parseInt(form.get("phase_id") as string, 10) : null;
 
   if (!title) return redirect(`/roadmap/${clientSlug}`);
 
@@ -185,8 +443,8 @@ export async function handleAddRoadmapItem(clientSlug: string, request: Request,
   }
 
   await env.DB.prepare(
-    "INSERT INTO roadmap_items (client_slug, title, description, category, status, sort_order, due_date, created_at, updated_at) VALUES (?, ?, ?, ?, 'pending', ?, ?, ?, ?)"
-  ).bind(clientSlug, title, description, category, sortOrder, dueDate, now, now).run();
+    "INSERT INTO roadmap_items (client_slug, phase_id, title, description, category, status, sort_order, due_date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)"
+  ).bind(clientSlug, phaseId, title, description, category, sortOrder, dueDate, now, now).run();
 
   return redirect(`/roadmap/${clientSlug}`);
 }
@@ -202,6 +460,33 @@ export async function handleUpdateRoadmapItem(clientSlug: string, itemId: number
   await env.DB.prepare(
     "UPDATE roadmap_items SET status = ?, completed_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
   ).bind(status, completedAt, now, itemId, clientSlug).run();
+
+  // Check if this completes the phase
+  await checkPhaseCompletion(clientSlug, env);
+
+  return redirect(`/roadmap/${clientSlug}`);
+}
+
+/** Add a new phase (admin only) */
+export async function handleAddPhase(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {
+  const form = await request.formData();
+  const title = (form.get("title") as string || "").trim();
+  const subtitle = (form.get("subtitle") as string || "").trim() || null;
+  const description = (form.get("description") as string || "").trim() || null;
+
+  if (!title) return redirect(`/roadmap/${clientSlug}`);
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Get next phase number
+  const last = await env.DB.prepare(
+    "SELECT MAX(phase_number) as max_num FROM roadmap_phases WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ max_num: number | null }>();
+  const nextNum = (last?.max_num || 0) + 1;
+
+  await env.DB.prepare(
+    "INSERT INTO roadmap_phases (client_slug, phase_number, title, subtitle, description, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'locked', ?, ?)"
+  ).bind(clientSlug, nextNum, title, subtitle, description, now, now).run();
 
   return redirect(`/roadmap/${clientSlug}`);
 }

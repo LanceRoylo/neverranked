@@ -54,9 +54,23 @@ export interface ScanResult {
   scanned_at: number;
 }
 
+export interface RoadmapPhase {
+  id: number;
+  client_slug: string;
+  phase_number: number;
+  title: string;
+  subtitle: string | null;
+  description: string | null;
+  status: "active" | "completed" | "locked";
+  completed_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface RoadmapItem {
   id: number;
   client_slug: string;
+  phase_id: number | null;
   title: string;
   description: string | null;
   category: string;

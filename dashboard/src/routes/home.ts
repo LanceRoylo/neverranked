@@ -95,7 +95,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
         <div class="label" style="margin-bottom:8px">Dashboard</div>
         <h1>Your <em>domains</em></h1>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
         ${roadmapLinks}
         ${compLinks}
         ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
