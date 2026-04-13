@@ -15,6 +15,7 @@ import { handleCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
+import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -137,6 +138,14 @@ export default {
     const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
     if (phaseAddMatch && method === "POST" && user.role === "admin") {
       return handleAddPhase(decodeURIComponent(phaseAddMatch[1]), request, user, env);
+    }
+
+    // Settings
+    if (path === "/settings" && method === "GET") {
+      return handleSettings(user, env);
+    }
+    if (path === "/settings/emails" && method === "POST") {
+      return handleUpdateEmailPrefs(request, user, env);
     }
 
     // 404

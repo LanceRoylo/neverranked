@@ -17,6 +17,7 @@ export function layout(title: string, body: string, user: User | null = null): s
 
   const userInfo = user
     ? `<div class="user-info">
+        <a href="/settings" style="color:var(--text-faint);text-decoration:none;font-size:12px${title === 'Settings' ? ';color:var(--gold)' : ''}">Settings</a>
         <span>${user.email}</span>
         <a href="/logout">Sign out</a>
       </div>`

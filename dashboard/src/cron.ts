@@ -9,7 +9,8 @@
 import type { Env, Domain, User, ScanResult } from "./types";
 import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
-import { sendDigestEmail, type DigestData } from "./email";
+import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData } from "./email";
+import { checkAndAlertRegression } from "./regression";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -34,6 +35,9 @@ export async function runWeeklyScans(env: Env): Promise<void> {
       }
       // Also scan individual pages for schema coverage
       await scanDomainPages(d.id, d.domain, env);
+
+      // Check for score regression and alert if needed
+      await checkAndAlertRegression(d, env);
     } catch {
       errors++;
     }

@@ -124,6 +124,209 @@ function buildSubjectSingle(d: DigestData): string {
   return `${d.domain}: AEO score ${d.latest.aeo_score}/100`;
 }
 
+// ---------------------------------------------------------------------------
+// Score regression alerts
+// ---------------------------------------------------------------------------
+
+const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
+
+export { REGRESSION_THRESHOLD };
+
+/** Send a regression alert for a single domain */
+export async function sendRegressionAlert(
+  to: string,
+  userName: string | null,
+  domain: string,
+  domainId: number,
+  newScore: number,
+  oldScore: number,
+  newGrade: string,
+  latest: ScanResult,
+  env: Env
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Regression alert for ${to}: ${domain} ${oldScore} -> ${newScore}`);
+    return true;
+  }
+
+  const drop = oldScore - newScore;
+  const subject = `Alert: ${domain} AEO score dropped ${drop} pts (${newScore}/100)`;
+  const emailHtml = buildRegressionHtml(userName, domain, domainId, newScore, oldScore, newGrade, latest);
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "NeverRanked <alerts@neverranked.com>",
+        to: [to],
+        subject,
+        html: emailHtml,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`Regression alert to ${to} failed: ${res.status} ${err}`);
+      return false;
+    }
+
+    console.log(`Regression alert sent to ${to}: ${domain} dropped ${drop} pts`);
+    return true;
+  } catch (e) {
+    console.log(`Regression alert to ${to} error: ${e}`);
+    return false;
+  }
+}
+
+function buildRegressionHtml(
+  userName: string | null,
+  domain: string,
+  domainId: number,
+  newScore: number,
+  oldScore: number,
+  newGrade: string,
+  latest: ScanResult
+): string {
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const drop = oldScore - newScore;
+  const narrative = generateNarrative(domain, latest, null);
+  const topAction = narrative.actions[0] || null;
+  const redFlags: string[] = JSON.parse(latest.red_flags);
+  const newRedFlags = redFlags.slice(0, 3);
+
+  const gradeColor = newGrade === "A" ? "#27ae60"
+    : newGrade === "B" ? "#e8c767"
+    : newGrade === "C" ? "#e67e22"
+    : "#c0392b";
+
+  return `
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Score Drop Alert</title>
+</head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+  <tr>
+    <td align="center" style="padding:32px 16px">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+        <!-- Header -->
+        <tr>
+          <td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+                <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#c0392b">Score Alert</td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        <!-- Greeting -->
+        <tr>
+          <td style="padding:32px 0 8px">
+            <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:12px">Hey ${escEmail(greeting)},</div>
+            <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.6">We detected a score drop on <strong style="color:#fbf8ef">${escEmail(domain)}</strong>. Here's what we found.</div>
+          </td>
+        </tr>
+
+        <!-- Score change -->
+        <tr>
+          <td style="padding:24px 0">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="padding:24px;background:#1c1c1c;border:1px solid #c0392b;border-radius:4px">
+                  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                    <tr>
+                      <td width="60" style="vertical-align:middle">
+                        <div style="width:52px;height:52px;border-radius:50%;border:2px solid ${gradeColor};text-align:center;line-height:52px;font-family:Georgia,serif;font-size:28px;font-style:italic;color:${gradeColor}">${newGrade}</div>
+                      </td>
+                      <td style="vertical-align:middle;padding-left:16px">
+                        <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef;letter-spacing:-1px">${newScore}<span style="font-size:14px;color:#888888">/100</span></div>
+                        <div style="font-size:13px;color:#c0392b;margin-top:2px">-${drop} pts from ${oldScore}</div>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+        ${newRedFlags.length > 0 ? `
+        <!-- Key issues -->
+        <tr>
+          <td style="padding-bottom:24px">
+            <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Issues detected</div>
+            ${newRedFlags.map(f => `
+              <div style="padding:10px 16px;margin-bottom:6px;background:#1c1c1c;border-left:3px solid #c0392b;font-family:Georgia,serif;font-size:13px;color:#b0b0a8">${escEmail(f)}</div>
+            `).join("")}
+          </td>
+        </tr>
+        ` : ""}
+
+        ${topAction ? `
+        <!-- What we recommend -->
+        <tr>
+          <td style="padding-bottom:24px">
+            <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Recommended action</div>
+            <div style="padding:16px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+              <div style="font-family:Georgia,serif;font-size:14px;color:#fbf8ef;margin-bottom:6px">${escEmail(topAction.action)}</div>
+              <div style="font-family:Georgia,serif;font-size:12px;color:#888888;line-height:1.6">${escEmail(topAction.reason)}</div>
+            </div>
+          </td>
+        </tr>
+        ` : ""}
+
+        <!-- CTA -->
+        <tr>
+          <td align="center" style="padding:8px 0 32px">
+            <a href="https://app.neverranked.com/domain/${domainId}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View full report</a>
+          </td>
+        </tr>
+
+        <!-- Reassurance -->
+        <tr>
+          <td style="padding:0 0 32px">
+            <div style="font-family:Georgia,serif;font-size:13px;color:#888888;line-height:1.7;text-align:center">
+              Score fluctuations happen as AI models retrain and sites change.<br>
+              Your NeverRanked team is monitoring this.
+            </div>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:24px 0;border-top:1px solid #2a2a2a">
+            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+                  Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+                  You received this because your AEO score changed significantly.
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+
+      </table>
+    </td>
+  </tr>
+</table>
+
+</body>
+</html>
+  `.trim();
+}
+
 /** HTML-escape for email content */
 function escEmail(s: string): string {
   return s
