@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>About — Never Ranked</title>
-<meta name="description" content="Never Ranked is an AI-native SEO and AEO agency founded by Lance Roylo. We build for the engines that answer, not rank.">
-<link rel="canonical" href="https://neverranked.com/about/">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="About — Never Ranked">
-<meta property="og:description" content="AI-native SEO and AEO agency founded by Lance Roylo. We build for the engines that answer, not rank.">
+<title>Insights — Never Ranked</title>
+<meta name="description" content="Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.">
+<link rel="canonical" href="https://neverranked.com/blog/">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+<meta property="og:title" content="Insights — Never Ranked">
+<meta property="og:description" content="Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://neverranked.com/about/">
+<meta property="og:url" content="https://neverranked.com/blog/">
 <meta property="og:site_name" content="Never Ranked">
 <meta property="og:image" content="https://neverranked.com/og.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Never Ranked — AI-native SEO and AEO agency">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="About — Never Ranked">
-<meta name="twitter:description" content="AI-native SEO and AEO agency founded by Lance Roylo.">
+<meta name="twitter:title" content="Insights — Never Ranked">
+<meta name="twitter:description" content="Clear thinking on AI search, AEO, and the infrastructure behind AI citations.">
 <meta name="twitter:image" content="https://neverranked.com/og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,30 +30,34 @@
   "@context": "https://schema.org",
   "@graph": [
     {
-      "@type": "Person",
-      "@id": "https://neverranked.com/about/#founder",
-      "name": "Lance Roylo",
-      "jobTitle": "Founder",
-      "worksFor": {
-        "@id": "https://neverranked.com/#organization"
-      },
-      "foundedOrganization": [
-        {
-          "@id": "https://neverranked.com/#organization"
-        },
-        {
-          "@type": "Organization",
-          "name": "Montaic",
-          "url": "https://montaic.com"
-        }
-      ],
-      "knowsAbout": [
-        "Answer Engine Optimization",
-        "AI-native SEO",
-        "Schema markup",
-        "Structured data",
-        "AI citation tracking"
-      ]
+      "@type": "CollectionPage",
+      "@id": "https://neverranked.com/blog/#page",
+      "url": "https://neverranked.com/blog/",
+      "name": "Insights — Never Ranked",
+      "description": "Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.",
+      "isPartOf": {"@id": "https://neverranked.com/#website"},
+      "about": {"@id": "https://neverranked.com/#organization"},
+      "inLanguage": "en-US",
+      "mainEntity": {
+        "@type": "ItemList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "url": "https://neverranked.com/blog/what-is-aeo/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "url": "https://neverranked.com/blog/how-long-does-aeo-take/"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "url": "https://neverranked.com/blog/schema-markup-ai-search/"
+          }
+        ]
+      }
     },
     {
       "@type": "BreadcrumbList",
@@ -67,8 +71,8 @@
         {
           "@type": "ListItem",
           "position": 2,
-          "name": "About",
-          "item": "https://neverranked.com/about/"
+          "name": "Insights",
+          "item": "https://neverranked.com/blog/"
         }
       ]
     }
@@ -309,85 +313,97 @@ h1,h2,h3,h4{
   margin:0;
 }
 
-/* ---------- about sections ---------- */
-.about-section{
-  padding:100px 0;
-  border-bottom:1px solid var(--line);
+/* ---------- articles ---------- */
+.articles{
+  padding:100px 0 60px;
 }
 
-/* founder */
-.founder-grid{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:48px;
+.article-list{
+  display:flex;
+  flex-direction:column;
+  gap:24px;
+  margin-top:8px;
 }
-@media(min-width:700px){
-  .founder-grid{
-    grid-template-columns:1fr 1.4fr;
-    gap:80px;
-    align-items:start;
-  }
+
+.article-card{
+  display:block;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  padding:36px 40px;
+  position:relative;
+  transition:border-color .4s var(--ease),background .4s var(--ease),transform .4s var(--ease);
 }
-.founder-name{
-  font-family:var(--serif);
-  font-size:clamp(32px,5vw,56px);
-  line-height:1;
-  letter-spacing:-.02em;
-  margin-bottom:8px;
+.article-card:hover{
+  border-color:var(--gold-dim);
+  background:var(--bg-edge);
+  transform:translateY(-2px);
 }
-.founder-title{
+
+.article-date{
   font-family:var(--label);
   text-transform:uppercase;
   letter-spacing:.22em;
-  font-size:11px;
-  color:var(--gold);
-  margin-bottom:0;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:16px;
 }
-.founder-bio p{
-  font-family:var(--mono);
-  font-size:14px;
-  line-height:1.75;
-  color:var(--text-soft);
-  margin:0 0 20px;
-  max-width:52ch;
-}
-.founder-bio p:last-child{margin-bottom:0}
-.founder-bio a{
-  color:var(--gold);
-  border-bottom:1px solid var(--gold-dim);
-  transition:border-color .3s var(--ease);
-}
-.founder-bio a:hover{border-color:var(--gold)}
 
-/* philosophy */
-.beliefs{
-  display:grid;
-  grid-template-columns:1fr;
-  gap:56px;
-  margin-top:8px;
-}
-@media(min-width:700px){
-  .beliefs{
-    grid-template-columns:1fr 1fr;
-    gap:48px 80px;
-  }
-}
-.belief{}
-.belief-head{
+.article-title{
   font-family:var(--serif);
-  font-style:italic;
-  font-size:clamp(20px,2.4vw,28px);
-  line-height:1.2;
+  font-size:clamp(22px,3vw,32px);
+  font-weight:400;
+  line-height:1.15;
+  letter-spacing:-.015em;
   color:var(--text);
   margin-bottom:14px;
+  transition:color .35s var(--ease);
 }
-.belief p{
+.article-card:hover .article-title{
+  color:var(--gold);
+}
+
+.article-desc{
   font-family:var(--mono);
   font-size:13px;
-  line-height:1.75;
+  line-height:1.7;
   color:var(--text-faint);
-  margin:0;
-  max-width:44ch;
+  max-width:60ch;
+  margin:0 0 24px;
+}
+
+.article-read{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  font-weight:500;
+  color:var(--gold);
+}
+.article-read .arrow{
+  display:inline-block;
+  width:16px;height:1px;
+  background:currentColor;
+  position:relative;
+  transition:width .4s var(--ease);
+}
+.article-read .arrow::after{
+  content:"";
+  position:absolute;
+  right:0;top:-3px;
+  width:6px;height:6px;
+  border-top:1px solid currentColor;
+  border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.article-card:hover .article-read .arrow{width:24px}
+
+@media(max-width:600px){
+  .article-card{
+    padding:28px 24px;
+  }
 }
 
 /* ---------- CTA / closing ---------- */
@@ -492,8 +508,8 @@ h1,h2,h3,h4{
 <nav class="nav" id="nav">
   <a href="/" class="mark">Never Ranked<sup>&copy;</sup></a>
   <div class="right">
-    <a href="/about/" class="nav-link active">About</a>
-    <a href="/blog/" class="nav-link">Insights</a>
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/blog/" class="nav-link active">Insights</a>
     <a href="/#services" class="nav-link">Services</a>
     <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
     <a href="/#audit" class="nav-cta">$500 Audit</a>
@@ -505,60 +521,43 @@ h1,h2,h3,h4{
   <!-- ============ HERO ============ -->
   <section class="hero">
     <div class="wrap">
-      <h1 class="reveal">About <em>Never Ranked</em></h1>
-      <p class="hero-sub reveal" style="transition-delay:.1s">An AI-native SEO and AEO agency built for the way search actually works now.</p>
+      <h1 class="reveal"><em>Insights</em></h1>
+      <p class="hero-sub reveal" style="transition-delay:.1s">Thinking clearly about AI search, answer engines, and the infrastructure behind getting cited.</p>
     </div>
   </section>
 
-  <!-- ============ FOUNDER ============ -->
-  <section class="about-section">
+  <!-- ============ ARTICLES ============ -->
+  <section class="articles">
     <div class="wrap">
       <div class="section-label reveal">
         <span class="num">01</span>
-        <span>FOUNDER</span>
+        <span>RECENT</span>
         <span class="rule"></span>
       </div>
 
-      <div class="founder-grid">
-        <div class="reveal" style="transition-delay:.08s">
-          <h2 class="founder-name">Lance Roylo</h2>
-          <p class="founder-title">Founder</p>
-        </div>
-        <div class="founder-bio reveal" style="transition-delay:.16s">
-          <p>Lance Roylo started Never Ranked after watching traditional SEO agencies sell rankings on a results page that fewer people read every quarter. AI search engines don't rank pages. They cite sources. The gap between what agencies were selling and what the models actually needed was wide enough to build a company in.</p>
-          <p>Before Never Ranked, he built <a href="https://montaic.com" target="_blank" rel="noopener">Montaic</a>, an AI-native listing content platform for real estate agents. Same thesis: if the model layer changed, the tooling had to change with it.</p>
-          <p>Based in Hawaii. Works async. Takes on a small number of clients at a time.</p>
-        </div>
-      </div>
-    </div>
-  </section>
+      <div class="article-list">
 
-  <!-- ============ PHILOSOPHY ============ -->
-  <section class="about-section">
-    <div class="wrap">
-      <div class="section-label reveal">
-        <span class="num">02</span>
-        <span>PHILOSOPHY</span>
-        <span class="rule"></span>
-      </div>
+        <a href="/blog/what-is-aeo/" class="article-card reveal">
+          <div class="article-date">April 2026</div>
+          <h2 class="article-title">What Is AEO (and Why It Replaced the Playbook You're Running)</h2>
+          <p class="article-desc">The SEO playbook most agencies sell was built for ten blue links. AI engines don't serve ten blue links. Here's what replaced it and why the shift matters now.</p>
+          <span class="article-read">Read <span class="arrow"></span></span>
+        </a>
 
-      <div class="beliefs">
-        <div class="belief reveal">
-          <h3 class="belief-head">Search changed. Most agencies didn't.</h3>
-          <p>Traditional SEO agencies are still selling rankings on a SERP nobody reads. AI Overviews, ChatGPT, Perplexity, and Gemini don't serve ten blue links. They cite one or two sources and move on. AEO is here now. The agencies that ignored it are already behind.</p>
-        </div>
-        <div class="belief reveal" style="transition-delay:.08s">
-          <h3 class="belief-head">Infrastructure, not advertising.</h3>
-          <p>The work compounds. Schema, entity registration, and structured data train the models that cite you months later. This is not a campaign you turn on and off. It is a layer you build once and maintain.</p>
-        </div>
-        <div class="belief reveal" style="transition-delay:.16s">
-          <h3 class="belief-head">Async-first.</h3>
-          <p>No standing meetings. No Slack channels. Everything written, recorded, or on the dashboard. You get a founder Loom, not a junior account manager on a calendar invite.</p>
-        </div>
-        <div class="belief reveal" style="transition-delay:.24s">
-          <h3 class="belief-head">Three months to compound.</h3>
-          <p>We are honest about timelines. The three-month minimum engagement exists because it takes that long for AI models to absorb, index, and begin citing your structured data. Quitting before month three means quitting before the return.</p>
-        </div>
+        <a href="/blog/how-long-does-aeo-take/" class="article-card reveal" style="transition-delay:.08s">
+          <div class="article-date">April 2026</div>
+          <h2 class="article-title">How Long Does AEO Take to Show Results</h2>
+          <p class="article-desc">Everyone wants a timeline. The honest answer has three phases, and most brands quit before the third one hits. We break down what actually happens month by month.</p>
+          <span class="article-read">Read <span class="arrow"></span></span>
+        </a>
+
+        <a href="/blog/schema-markup-ai-search/" class="article-card reveal" style="transition-delay:.16s">
+          <div class="article-date">April 2026</div>
+          <h2 class="article-title">Schema Markup for AI Search Engines: What Actually Matters</h2>
+          <p class="article-desc">Most schema guides are written for Google's rich snippets circa 2019. AI models parse structured data differently. This is what to prioritize and what to skip.</p>
+          <span class="article-read">Read <span class="arrow"></span></span>
+        </a>
+
       </div>
     </div>
   </section>
