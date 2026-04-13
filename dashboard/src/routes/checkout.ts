@@ -19,9 +19,7 @@ interface PlanConfig {
   name: string;
   priceLabel: string;
   mode: "payment" | "subscription";
-  amount: number;        // in cents
-  interval?: "month";
-  description: string;
+  priceId: string;
 }
 
 const PLANS: Record<string, PlanConfig> = {
@@ -29,24 +27,19 @@ const PLANS: Record<string, PlanConfig> = {
     name: "NeverRanked Audit",
     priceLabel: "$500",
     mode: "payment",
-    amount: 50000,
-    description: "Full technical + AEO audit. Schema review, keyword gap analysis, AI citation audit, competitor teardown, and 90-day roadmap. Delivered within 48 hours.",
+    priceId: "price_1TLgcBChs9v2cUMPj5Sd7E0o",
   },
   signal: {
     name: "NeverRanked Signal",
     priceLabel: "$2,000/mo",
     mode: "subscription",
-    amount: 200000,
-    interval: "month",
-    description: "Monthly retainer: technical & AEO audit, schema monitoring, citation tracking, live dashboard, monthly Loom recap, 12-hour email SLA. Three-month minimum.",
+    priceId: "price_1TLgcZChs9v2cUMPgum7Ujgt",
   },
   amplify: {
     name: "NeverRanked Amplify",
     priceLabel: "$4,500/mo",
     mode: "subscription",
-    amount: 450000,
-    interval: "month",
-    description: "Full-cover retainer: everything in Signal plus weekly digest, biweekly Looms, quarterly strategy, content drafts, 6-hour SLA. Limited to 2 clients.",
+    priceId: "price_1TLgctChs9v2cUMPFGY47fcC",
   },
 };
 
@@ -159,30 +152,21 @@ export async function handleCheckout(
   // Pre-fill email from query param if provided
   const prefillEmail = url.searchParams.get("email") || "";
 
-  // Build checkout session params
+  // Build checkout session params using pre-created Stripe Price IDs
   const params: Record<string, string> = {
     "success_url": `${origin}/checkout/success?plan=${plan}&session_id={CHECKOUT_SESSION_ID}`,
     "cancel_url": `https://neverranked.com/#pricing`,
     "mode": config.mode,
-    "line_items[0][price_data][currency]": "usd",
-    "line_items[0][price_data][product_data][name]": config.name,
-    "line_items[0][price_data][product_data][description]": config.description,
-    "line_items[0][price_data][unit_amount]": config.amount.toString(),
+    "line_items[0][price]": config.priceId,
     "line_items[0][quantity]": "1",
     "payment_method_types[0]": "card",
     "allow_promotion_codes": "true",
+    "metadata[plan]": plan,
   };
-
-  if (config.mode === "subscription" && config.interval) {
-    params["line_items[0][price_data][recurring][interval]"] = config.interval;
-  }
 
   if (prefillEmail) {
     params["customer_email"] = prefillEmail;
   }
-
-  // Metadata for webhook processing
-  params["metadata[plan]"] = plan;
 
   const session = await stripeRequest("/checkout/sessions", env.STRIPE_SECRET_KEY, params);
 
