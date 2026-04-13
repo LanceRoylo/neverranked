@@ -20,17 +20,32 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     ).all<Domain>()).results;
   }
 
-  // Get latest scan for each domain
+  // Get latest scan + previous scan for each domain
   const domainCards: string[] = [];
   for (const d of domains) {
-    const scan = await env.DB.prepare(
-      "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 1"
-    ).bind(d.id).first<ScanResult>();
+    const recent = (await env.DB.prepare(
+      "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 2"
+    ).bind(d.id).all<ScanResult>()).results;
 
+    const scan = recent[0] || null;
+    const prev = recent[1] || null;
     const score = scan ? scan.aeo_score : null;
     const grade = scan ? scan.grade : "?";
     const redFlagCount = scan ? JSON.parse(scan.red_flags).length : 0;
     const scanDate = scan ? new Date(scan.scanned_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No scans yet";
+
+    // Score delta vs previous scan
+    let deltaHtml = "";
+    if (scan && prev && !scan.error && !prev.error) {
+      const diff = scan.aeo_score - prev.aeo_score;
+      if (diff > 0) {
+        deltaHtml = `<span style="color:var(--green);font-size:11px;font-weight:500">+${diff}</span>`;
+      } else if (diff < 0) {
+        deltaHtml = `<span style="color:var(--red);font-size:11px;font-weight:500">${diff}</span>`;
+      } else {
+        deltaHtml = `<span style="color:var(--text-faint);font-size:11px">--</span>`;
+      }
+    }
 
     domainCards.push(`
       <a href="/domain/${d.id}" class="card" style="display:block;text-decoration:none">
@@ -39,7 +54,10 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
             <div class="label" style="margin-bottom:6px">${esc(d.client_slug)}</div>
             <h3 style="font-style:italic">${esc(d.domain)}</h3>
           </div>
-          <div class="grade grade-${grade}" style="flex-shrink:0">${grade}</div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            ${deltaHtml}
+            <div class="grade grade-${grade}">${grade}</div>
+          </div>
         </div>
         <div style="display:flex;gap:24px;font-size:12px;color:var(--text-faint)">
           ${score !== null ? `<span>Score: <strong style="color:var(--text);font-weight:400">${score}/100</strong></span>` : ''}

@@ -12,6 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan } from "./routes/admin";
 import { cleanupAuth } from "./auth";
+import { runWeeklyScans } from "./cron";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -87,7 +88,7 @@ export default {
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    // Phase 1c: Weekly scans will run here
     ctx.waitUntil(cleanupAuth(env));
+    ctx.waitUntil(runWeeklyScans(env));
   },
 };

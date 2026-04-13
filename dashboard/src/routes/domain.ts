@@ -20,10 +20,12 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     return html(layout("Not Found", `<div class="empty"><h3>Domain not found</h3></div>`, user), 404);
   }
 
-  // Get latest scan
-  const latest = await env.DB.prepare(
-    "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 1"
-  ).bind(domainId).first<ScanResult>();
+  // Get latest + previous scan
+  const recentScans = (await env.DB.prepare(
+    "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 2"
+  ).bind(domainId).all<ScanResult>()).results;
+  const latest = recentScans[0] || null;
+  const previous = recentScans[1] || null;
 
   // Get scan history (last 12)
   const history = (await env.DB.prepare(
@@ -38,11 +40,25 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     const schemaCoverage: { type: string; present: boolean }[] = JSON.parse(latest.schema_coverage);
     const scanDate = new Date(latest.scanned_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
+    // Score delta
+    let deltaHtml = "";
+    if (previous && !previous.error) {
+      const diff = latest.aeo_score - previous.aeo_score;
+      if (diff > 0) {
+        deltaHtml = `<div style="font-size:13px;color:var(--green);margin-top:4px">+${diff} pts</div>`;
+      } else if (diff < 0) {
+        deltaHtml = `<div style="font-size:13px;color:var(--red);margin-top:4px">${diff} pts</div>`;
+      } else {
+        deltaHtml = `<div style="font-size:13px;color:var(--text-faint);margin-top:4px">no change</div>`;
+      }
+    }
+
     reportSection = `
       <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:48px">
         <div style="text-align:center">
           <div class="grade grade-${latest.grade}" style="width:80px;height:80px;font-size:40px;margin-bottom:12px">${latest.grade}</div>
           <div class="score">${latest.aeo_score}<small>/100</small></div>
+          ${deltaHtml}
         </div>
         <div>
           <div style="font-size:12px;color:var(--text-faint);margin-bottom:8px">Last scanned ${scanDate} (${latest.scan_type})</div>
@@ -107,6 +123,75 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     `;
   }
 
+  // Trend chart (SVG)
+  let trendSection = "";
+  const successfulScans = history.filter(h => !h.error && h.aeo_score > 0).reverse(); // oldest first
+  if (successfulScans.length >= 2) {
+    const W = 600;
+    const H = 180;
+    const PAD_X = 40;
+    const PAD_Y = 24;
+    const chartW = W - PAD_X * 2;
+    const chartH = H - PAD_Y * 2;
+
+    const scores = successfulScans.map(s => s.aeo_score);
+    const minScore = Math.max(0, Math.min(...scores) - 10);
+    const maxScore = Math.min(100, Math.max(...scores) + 10);
+    const range = maxScore - minScore || 1;
+
+    const points = successfulScans.map((s, i) => {
+      const x = PAD_X + (i / (successfulScans.length - 1)) * chartW;
+      const y = PAD_Y + chartH - ((s.aeo_score - minScore) / range) * chartH;
+      return { x, y, score: s.aeo_score, date: new Date(s.scanned_at * 1000) };
+    });
+
+    const polyline = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+
+    // Gradient fill area
+    const areaPath = `M ${points[0].x.toFixed(1)},${(PAD_Y + chartH).toFixed(1)} ${points.map(p => `L ${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")} L ${points[points.length - 1].x.toFixed(1)},${(PAD_Y + chartH).toFixed(1)} Z`;
+
+    // Grid lines at 25-point intervals
+    const gridLines: string[] = [];
+    const gridLabels: string[] = [];
+    for (let v = Math.ceil(minScore / 25) * 25; v <= maxScore; v += 25) {
+      const y = PAD_Y + chartH - ((v - minScore) / range) * chartH;
+      gridLines.push(`<line x1="${PAD_X}" y1="${y.toFixed(1)}" x2="${W - PAD_X}" y2="${y.toFixed(1)}" stroke="rgba(251,248,239,.1)" stroke-dasharray="4,4"/>`);
+      gridLabels.push(`<text x="${PAD_X - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${v}</text>`);
+    }
+
+    // Date labels (first and last)
+    const firstDate = points[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    const lastDate = points[points.length - 1].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+    // Dots
+    const dots = points.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--gold)" stroke="var(--bg)" stroke-width="2"/>`
+    ).join("\n");
+
+    trendSection = `
+      <div style="margin-bottom:48px">
+        <div class="label" style="margin-bottom:16px">Score Trend</div>
+        <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px;overflow-x:auto">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">
+            <defs>
+              <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.2"/>
+                <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            ${gridLines.join("\n")}
+            ${gridLabels.join("\n")}
+            <path d="${areaPath}" fill="url(#areaGrad)"/>
+            <polyline points="${polyline}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            ${dots}
+            <text x="${PAD_X}" y="${H - 4}" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${firstDate}</text>
+            <text x="${W - PAD_X}" y="${H - 4}" text-anchor="end" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${lastDate}</text>
+          </svg>
+        </div>
+      </div>
+    `;
+  }
+
   // History table
   let historySection = "";
   if (history.length > 0) {
@@ -149,6 +234,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     </div>
 
     ${reportSection}
+    ${trendSection}
     ${historySection}
   `;
 
