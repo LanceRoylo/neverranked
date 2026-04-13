@@ -10,9 +10,10 @@ import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan } from "./routes/admin";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleApproveSuggestion, handleDismissSuggestion } from "./routes/admin";
 import { handleCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem } from "./routes/roadmap";
+import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -48,6 +49,22 @@ export default {
 
     // --- Authenticated routes ---
 
+    // Onboarding
+    if (path === "/onboarding" && method === "GET") {
+      return handleOnboarding(user, env);
+    }
+    if (path === "/onboarding" && method === "POST") {
+      return handleOnboardingSubmit(request, user, env);
+    }
+    if (path === "/onboarding/skip") {
+      return handleOnboardingSkip(user, env);
+    }
+
+    // Auto-redirect non-onboarded clients to onboarding
+    if (user.role === "client" && !user.onboarded) {
+      return redirect("/onboarding");
+    }
+
     // Home
     if (path === "/" || path === "") {
       return handleHome(user, env);
@@ -72,6 +89,14 @@ export default {
     const scanMatch = path.match(/^\/admin\/scan\/(\d+)$/);
     if (scanMatch && method === "POST" && user.role === "admin") {
       return handleManualScan(Number(scanMatch[1]), user, env);
+    }
+    const approveMatch = path.match(/^\/admin\/suggestion\/(\d+)\/approve$/);
+    if (approveMatch && method === "POST" && user.role === "admin") {
+      return handleApproveSuggestion(Number(approveMatch[1]), user, env);
+    }
+    const dismissMatch = path.match(/^\/admin\/suggestion\/(\d+)\/dismiss$/);
+    if (dismissMatch && method === "POST" && user.role === "admin") {
+      return handleDismissSuggestion(Number(dismissMatch[1]), user, env);
     }
 
     // Competitors
