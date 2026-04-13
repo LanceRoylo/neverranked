@@ -280,6 +280,25 @@ p b{font-weight:400;color:var(--text)}
 }
 .cta-btn:hover{background:var(--gold);color:var(--bg)}
 
+/* related reading */
+.related{padding:100px 0;border-top:1px solid var(--line)}
+.related h3{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;color:var(--text-faint);margin-bottom:28px;font-weight:500;
+}
+.related-links{display:flex;flex-direction:column;gap:12px}
+.related-links a{
+  font-family:var(--serif);font-size:clamp(17px,2vw,20px);font-weight:400;
+  line-height:1.3;color:var(--text-soft);
+  transition:color .3s var(--ease);
+  display:flex;align-items:baseline;gap:12px;
+}
+.related-links a:hover{color:var(--gold)}
+.related-links a::before{
+  content:"";display:inline-block;width:10px;height:1px;
+  background:var(--gold);flex-shrink:0;transform:translateY(-3px);
+}
+
 /* footer */
 .case-footer{
   border-top:1px solid var(--line);padding:40px 0;
@@ -304,9 +323,10 @@ p b{font-weight:400;color:var(--text)}
 <nav class="nav">
   <a href="/" class="mark">N<sup>R</sup></a>
   <div class="right">
-    <a href="/">Home</a>
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
     <a href="/#audit">The Audit</a>
-    <a href="/#intake">Begin</a>
   </div>
 </nav>
 
@@ -499,6 +519,17 @@ p b{font-weight:400;color:var(--text)}
         <div class="after-title">90-Day Targets Set</div>
         <div class="after-desc">15%+ AI citation share. Knowledge panel. 3+ comparison pages ranking in top 10. Monthly Loom recaps. Citation tracking dashboard.</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<section class="related">
+  <div class="wrap">
+    <h3>Related Reading</h3>
+    <div class="related-links">
+      <a href="/blog/what-is-aeo/">What Is AEO (and Why It Replaced the Playbook You're Running)</a>
+      <a href="/blog/how-long-does-aeo-take/">How Long Does AEO Take to Show Results</a>
+      <a href="/blog/schema-markup-ai-search/">Schema Markup for AI Search: What Actually Matters</a>
     </div>
   </div>
 </section>
