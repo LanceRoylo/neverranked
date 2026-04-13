@@ -11,6 +11,7 @@ import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./r
 import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan } from "./routes/admin";
+import { handleCompetitors } from "./routes/competitors";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -72,8 +73,12 @@ export default {
       return handleManualScan(Number(scanMatch[1]), user, env);
     }
 
-    // Competitors (Phase 1e)
-    // if (path === "/competitors") { ... }
+    // Competitors
+    const compMatch = path.match(/^\/competitors\/(.+)$/);
+    if (compMatch) {
+      const slug = decodeURIComponent(compMatch[1]);
+      return handleCompetitors(slug, user, env);
+    }
 
     // Roadmap (Phase 1f)
     // if (path === "/roadmap") { ... }

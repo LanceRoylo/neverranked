@@ -68,13 +68,32 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     `);
   }
 
+  // Check which client slugs have competitors (for showing comparison links)
+  const slugsWithCompetitors = new Set<string>();
+  const compCheck = clientSlug
+    ? (await env.DB.prepare("SELECT DISTINCT client_slug FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1").bind(clientSlug).all<{ client_slug: string }>()).results
+    : (await env.DB.prepare("SELECT DISTINCT client_slug FROM domains WHERE is_competitor = 1 AND active = 1").all<{ client_slug: string }>()).results;
+  compCheck.forEach(r => slugsWithCompetitors.add(r.client_slug));
+
+  // Group domain cards by client_slug for admin view
+  const clientSlugs = [...new Set(domains.map(d => d.client_slug))];
+
+  // Competitor comparison links per client
+  const compLinks = clientSlugs
+    .filter(slug => slugsWithCompetitors.has(slug))
+    .map(slug => `<a href="/competitors/${encodeURIComponent(slug)}" class="btn btn-ghost" style="font-size:11px">Competitors: ${esc(slug)}</a>`)
+    .join(" ");
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
         <div class="label" style="margin-bottom:8px">Dashboard</div>
         <h1>Your <em>domains</em></h1>
       </div>
-      ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
+      <div style="display:flex;gap:8px;align-items:center">
+        ${compLinks}
+        ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
+      </div>
     </div>
 
     ${domainCards.length > 0

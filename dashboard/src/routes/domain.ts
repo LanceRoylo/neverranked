@@ -278,6 +278,71 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     `;
   }
 
+  // Schema coverage matrix (per-page)
+  let coverageSection = "";
+  const pageScans = (await env.DB.prepare(
+    "SELECT url, schema_types, aeo_score, grade FROM page_scans WHERE domain_id = ? ORDER BY url"
+  ).bind(domainId).all<{ url: string; schema_types: string; aeo_score: number; grade: string }>()).results;
+
+  if (pageScans.length > 0) {
+    // Collect all unique schema types across all pages
+    const allTypes = new Set<string>();
+    const pageData = pageScans.map(ps => {
+      const types: string[] = JSON.parse(ps.schema_types);
+      types.forEach(t => allTypes.add(t));
+      return { url: ps.url, types: new Set(types), score: ps.aeo_score, grade: ps.grade };
+    });
+    const schemaColumns = [...allTypes].sort();
+
+    // Build short page labels from URLs
+    const getPageLabel = (url: string): string => {
+      try {
+        const u = new URL(url);
+        const p = u.pathname === "/" ? "Homepage" : u.pathname.replace(/\/$/, "").split("/").pop() || u.pathname;
+        return p === "Homepage" ? p : `/${p}`;
+      } catch {
+        return url;
+      }
+    };
+
+    if (schemaColumns.length > 0) {
+      coverageSection = `
+        <div style="margin-bottom:48px">
+          <div class="label" style="margin-bottom:16px">Schema Coverage by Page</div>
+          <div style="overflow-x:auto;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:${Math.max(500, 160 + schemaColumns.length * 90)}px">
+              <thead>
+                <tr style="border-bottom:1px solid var(--line)">
+                  <th style="text-align:left;padding:12px 16px;font-family:var(--label);font-weight:500;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--text-faint);position:sticky;left:0;background:var(--bg-lift);min-width:140px">Page</th>
+                  ${schemaColumns.map(col => `
+                    <th style="text-align:center;padding:12px 8px;font-family:var(--label);font-weight:500;letter-spacing:.1em;text-transform:uppercase;font-size:9px;color:var(--text-faint);white-space:nowrap">${esc(col)}</th>
+                  `).join('')}
+                  <th style="text-align:center;padding:12px 8px;font-family:var(--label);font-weight:500;letter-spacing:.1em;text-transform:uppercase;font-size:10px;color:var(--text-faint)">Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pageData.map(page => `
+                  <tr style="border-bottom:1px solid rgba(251,248,239,.08)">
+                    <td style="padding:10px 16px;font-size:12px;color:var(--text-soft);position:sticky;left:0;background:var(--bg-lift);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(page.url)}">${esc(getPageLabel(page.url))}</td>
+                    ${schemaColumns.map(col => {
+                      const has = page.types.has(col);
+                      return `<td style="text-align:center;padding:10px 8px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;${has ? 'background:var(--green)' : 'background:rgba(251,248,239,.08);border:1px solid rgba(251,248,239,.12)'}"></span></td>`;
+                    }).join('')}
+                    <td style="text-align:center;padding:10px 8px"><span class="grade grade-${page.grade}" style="width:24px;height:24px;font-size:11px">${page.grade}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text-faint);display:flex;gap:16px">
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);vertical-align:middle;margin-right:4px"></span> Present</span>
+            <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(251,248,239,.08);border:1px solid rgba(251,248,239,.12);vertical-align:middle;margin-right:4px"></span> Missing</span>
+          </div>
+        </div>
+      `;
+    }
+  }
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -293,6 +358,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
 
     ${reportSection}
     ${trendSection}
+    ${coverageSection}
     ${historySection}
   `;
 

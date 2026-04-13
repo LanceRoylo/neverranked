@@ -5,6 +5,7 @@
 import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
+import { scanDomainPages } from "../pages";
 
 /** Admin overview: list all clients and domains */
 export async function handleAdminHome(user: User, env: Env): Promise<Response> {
@@ -208,6 +209,9 @@ export async function handleManualScan(domainId: number, user: User, env: Env): 
 
   const url = `https://${domain.domain}/`;
   await scanDomain(domain.id, url, "manual", env);
+
+  // Also scan individual pages for schema coverage matrix
+  await scanDomainPages(domain.id, domain.domain, env);
 
   // Redirect to domain detail if coming from there, otherwise admin
   return redirect(`/domain/${domain.id}`);
