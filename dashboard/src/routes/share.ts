@@ -5,7 +5,7 @@
  * No login required. Branded with NeverRanked CTA.
  */
 
-import type { Env, Domain, ScanResult } from "../types";
+import type { Env, Domain, ScanResult, RoadmapItem } from "../types";
 import { esc } from "../render";
 import { generateNarrative } from "../narrative";
 import { CSS } from "../styles";
@@ -65,6 +65,17 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
 
   // Narrative
   const narrative = generateNarrative(domain.domain, latest, previous);
+
+  // Roadmap data for "Action Plan" section
+  const roadmapItems = (await env.DB.prepare(
+    "SELECT * FROM roadmap_items WHERE client_slug = ? ORDER BY sort_order, created_at"
+  ).bind(domain.client_slug).all<RoadmapItem>()).results;
+
+  const roadmapTotal = roadmapItems.length;
+  const roadmapDone = roadmapItems.filter(i => i.status === "done").length;
+  const roadmapInProgress = roadmapItems.filter(i => i.status === "in_progress").length;
+  const roadmapPending = roadmapTotal - roadmapDone - roadmapInProgress;
+  const roadmapPct = roadmapTotal > 0 ? Math.round((roadmapDone / roadmapTotal) * 100) : 0;
 
   // Score delta
   let deltaHtml = "";
@@ -142,16 +153,55 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <style>${CSS}</style>
+    <style>${CSS}
+
+    /* Print styles */
+    @media print {
+      :root {
+        --bg: #ffffff;
+        --bg-lift: #f8f8f6;
+        --bg-edge: #f0f0ee;
+        --gold: #8a6d1b;
+        --gold-dim: #a68520;
+        --gold-wash: rgba(138,109,27,.08);
+        --text: #1a1a1a;
+        --text-soft: #2a2a2a;
+        --text-mute: #555555;
+        --text-faint: #888888;
+        --line: #e0e0de;
+        --line-strong: #cccccc;
+        --red: #c0392b;
+        --green: #27ae60;
+        --yellow: #8a6d1b;
+      }
+      body { background: white; color: #1a1a1a; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .grain { display: none !important; }
+      .no-print { display: none !important; }
+      main { padding: 24px 0 !important; }
+      .grade { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      a { color: #1a1a1a !important; text-decoration: none !important; }
+      @page { margin: 0.75in; size: letter; }
+      .page-break { page-break-before: always; }
+      table { font-size: 11px !important; }
+      /* Ensure status dots print */
+      span[style*="border-radius:50%"], span[style*="border-radius:2px"] {
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+    }
+    </style>
     </head>
     <body>
-    <div class="grain"></div>
+    <div class="grain">
+</div>
 
     <!-- Header -->
     <div style="border-bottom:1px solid var(--line);padding:16px var(--gutter)">
       <div style="max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between">
         <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--gold)">Never Ranked</div>
-        <div style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint)">AEO Report</div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <span style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint)">AEO Report</span>
+          <button onclick="window.print()" class="no-print" style="padding:6px 14px;background:none;border:1px solid var(--line);color:var(--text-faint);font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">Print report</button>
+        </div>
       </div>
     </div>
 
@@ -268,13 +318,86 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
 
       ${coverageMatrix}
 
+      ${roadmapTotal > 0 ? `
+      <!-- Your AEO Action Plan -->
+      <div class="page-break" style="margin-bottom:48px">
+        <div class="label" style="margin-bottom:16px">Your AEO Action Plan</div>
+
+        <!-- Progress -->
+        <div style="padding:24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;margin-bottom:20px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+            <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">${roadmapPct}% complete</div>
+            <div style="font-size:12px;color:var(--text-faint)">${roadmapDone} of ${roadmapTotal} items done</div>
+          </div>
+          <div style="height:8px;background:rgba(251,248,239,.06);border-radius:4px;overflow:hidden">
+            <div style="height:100%;width:${roadmapPct}%;background:var(--gold);border-radius:4px"></div>
+          </div>
+          <div style="display:flex;gap:24px;margin-top:12px;font-size:12px">
+            <span style="color:var(--green)">${roadmapDone} completed</span>
+            <span style="color:var(--yellow)">${roadmapInProgress} in progress</span>
+            <span style="color:var(--text-faint)">${roadmapPending} upcoming</span>
+          </div>
+        </div>
+
+        ${roadmapDone > 0 ? `
+        <!-- Completed work -->
+        <div style="margin-bottom:20px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px">Completed</div>
+          ${roadmapItems.filter(i => i.status === "done").map(item => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px;font-size:13px">
+              <span style="color:var(--green);font-size:14px">&#10003;</span>
+              <span style="color:var(--text-mute);text-decoration:line-through">${esc(item.title)}</span>
+              ${item.completed_at ? `<span style="margin-left:auto;font-size:11px;color:var(--text-faint)">${new Date(item.completed_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>` : ''}
+            </div>
+          `).join("")}
+        </div>
+        ` : ""}
+
+        ${roadmapInProgress > 0 ? `
+        <!-- In progress -->
+        <div style="margin-bottom:20px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--yellow);margin-bottom:10px">In Progress</div>
+          ${roadmapItems.filter(i => i.status === "in_progress").map(item => `
+            <div style="padding:12px 16px;margin-bottom:4px;background:var(--bg-lift);border-left:3px solid var(--yellow);font-size:13px">
+              <div style="color:var(--text)">${esc(item.title)}</div>
+              ${item.description ? `<div style="color:var(--text-faint);font-size:12px;margin-top:4px">${esc(item.description)}</div>` : ''}
+            </div>
+          `).join("")}
+        </div>
+        ` : ""}
+
+        ${roadmapPending > 0 ? `
+        <!-- Up next -->
+        <div>
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">Up Next</div>
+          ${roadmapItems.filter(i => i.status === "pending").slice(0, 3).map(item => `
+            <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;margin-bottom:4px;font-size:13px">
+              <span style="display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--text-faint);flex-shrink:0"></span>
+              <span style="color:var(--text-soft)">${esc(item.title)}</span>
+              ${item.due_date ? `<span style="margin-left:auto;font-size:11px;color:var(--text-faint)">${new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>` : ''}
+            </div>
+          `).join("")}
+          ${roadmapPending > 3 ? `<div style="padding:8px 16px;font-size:12px;color:var(--text-faint)">+ ${roadmapPending - 3} more planned</div>` : ''}
+        </div>
+        ` : ""}
+      </div>
+      ` : ""}
+
       <!-- CTA -->
-      <div style="margin-top:64px;padding:40px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
+      <div class="no-print" style="margin-top:64px;padding:40px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
+        ${roadmapTotal > 0 ? `
+        <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text);margin-bottom:12px">Questions about your report?</div>
+        <p style="color:var(--text-faint);font-size:14px;max-width:480px;margin:0 auto 24px;line-height:1.7">
+          Your NeverRanked team is actively working on the action items above. Log in to your dashboard for real-time updates, competitive benchmarking, and full scan history.
+        </p>
+        <a href="https://app.neverranked.com/login" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px">Go to dashboard</a>
+        ` : `
         <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text);margin-bottom:12px">Ready to improve your AEO score?</div>
         <p style="color:var(--text-faint);font-size:14px;max-width:480px;margin:0 auto 24px;line-height:1.7">
-          NeverRanked monitors your AI search visibility and gives you a clear roadmap to improve. See where you stand, track progress, and outperform competitors.
+          NeverRanked monitors your AI search visibility, tracks your score over time, and gives you a clear action plan. See exactly where you stand and what to fix first.
         </p>
-        <a href="https://neverranked.com" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px">Learn more</a>
+        <a href="https://neverranked.com" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px">Get started</a>
+        `}
       </div>
 
     </main>
