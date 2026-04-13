@@ -1,0 +1,14 @@
+{
+  "name": "neverranked-dashboard",
+  "private": true,
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply neverranked-app --remote",
+    "db:migrate:local": "wrangler d1 migrations apply neverranked-app --local"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20250410.0",
+    "wrangler": "^4.81.1"
+  }
+}

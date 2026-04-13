@@ -1,0 +1,25 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "neverranked-dashboard",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-09",
+  "workers_dev": true,
+  "preview_urls": true,
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "neverranked-app",
+      "database_id": "def9e1a6-3d37-4a2c-b797-7c5de2cff1ef",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "routes": [
+    { "pattern": "app.neverranked.com", "custom_domain": true }
+  ],
+  "triggers": {
+    "crons": ["0 6 * * 1"]
+  }
+}
