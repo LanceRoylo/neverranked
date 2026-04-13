@@ -84,6 +84,11 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     .map(slug => `<a href="/competitors/${encodeURIComponent(slug)}" class="btn btn-ghost" style="font-size:11px">Competitors: ${esc(slug)}</a>`)
     .join(" ");
 
+  // Roadmap links per client
+  const roadmapLinks = clientSlugs
+    .map(slug => `<a href="/roadmap/${encodeURIComponent(slug)}" class="btn btn-ghost" style="font-size:11px">Roadmap: ${esc(slug)}</a>`)
+    .join(" ");
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -91,6 +96,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
         <h1>Your <em>domains</em></h1>
       </div>
       <div style="display:flex;gap:8px;align-items:center">
+        ${roadmapLinks}
         ${compLinks}
         ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
       </div>

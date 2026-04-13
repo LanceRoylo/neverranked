@@ -12,6 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan } from "./routes/admin";
 import { handleCompetitors } from "./routes/competitors";
+import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem } from "./routes/roadmap";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -80,8 +81,19 @@ export default {
       return handleCompetitors(slug, user, env);
     }
 
-    // Roadmap (Phase 1f)
-    // if (path === "/roadmap") { ... }
+    // Roadmap
+    const roadmapMatch = path.match(/^\/roadmap\/([^/]+)$/);
+    if (roadmapMatch && method === "GET") {
+      return handleRoadmap(decodeURIComponent(roadmapMatch[1]), user, env);
+    }
+    const roadmapAddMatch = path.match(/^\/roadmap\/([^/]+)\/add$/);
+    if (roadmapAddMatch && method === "POST" && user.role === "admin") {
+      return handleAddRoadmapItem(decodeURIComponent(roadmapAddMatch[1]), request, user, env);
+    }
+    const roadmapUpdateMatch = path.match(/^\/roadmap\/([^/]+)\/update\/(\d+)$/);
+    if (roadmapUpdateMatch && method === "POST" && user.role === "admin") {
+      return handleUpdateRoadmapItem(decodeURIComponent(roadmapUpdateMatch[1]), Number(roadmapUpdateMatch[2]), request, user, env);
+    }
 
     // 404
     return html(layout("Not Found", `
