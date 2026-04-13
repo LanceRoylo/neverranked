@@ -391,8 +391,92 @@ h1,h2,h3,h4{
   0%,100%{box-shadow:0 0 0 3px rgba(201,168,76,.18)}
   50%{box-shadow:0 0 0 6px rgba(201,168,76,.05)}
 }
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;
+  position:absolute;
+  left:0;right:0;
+  height:2px;
+  background:#f0ece3;
+  transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+
+.mobile-overlay{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  z-index:190;
+  background:#080808;
+  padding:90px var(--gutter) 40px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+  overflow-y:auto;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:14px;
+  color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;
+  width:100%;
+  padding:16px 0;
+  letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);
+  color:#f0ece3;
+  text-decoration:none;
+  transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;
+  text-align:center;
+  color:var(--gold);
+  border:1px solid var(--gold);
+  padding:16px 24px;
+  width:100%;
+  box-sizing:border-box;
+  font-weight:500;
+  letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;
+  opacity:.5;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";
+  width:6px;height:6px;border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+
 @media(max-width:820px){
-  .nav .right{gap:16px}
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
   .nav .right .nav-link,
   .nav .right .status{display:none}
 }
@@ -2127,6 +2211,18 @@ h1,h2,h3,h4{
 
 <div class="grain" aria-hidden="true"></div>
 
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="#services">Services</a>
+  <a href="#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="#audit" class="mob-cta">$500 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
 <nav class="nav" id="nav">
   <a href="#" class="mark">Never Ranked<sup>©</sup></a>
   <div class="right">
@@ -2147,7 +2243,7 @@ h1,h2,h3,h4{
   <section class="hero">
     <div class="wrap">
       <div class="hero-eyebrow reveal">
-        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>AI-NATIVE SEO &amp; AEO</span>
+        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>AI-NATIVE SEO &amp; AEO (ANSWER ENGINE OPTIMIZATION)</span>
         <span class="tag">BY APPOINTMENT</span>
       </div>
 
@@ -2870,6 +2966,10 @@ h1,h2,h3,h4{
 </main>
 
 <script>
+/* ---------- force top on reload ---------- */
+if('scrollRestoration' in history) history.scrollRestoration='manual';
+window.scrollTo(0,0);
+
 /* ---------- scroll reveal ---------- */
 (function(){
   var els = document.querySelectorAll('.reveal, .reveal-stagger, .svc');
@@ -2891,10 +2991,12 @@ h1,h2,h3,h4{
 /* ---------- nav hide on scroll down ---------- */
 (function(){
   var nav = document.getElementById('nav');
+  var menu = document.getElementById('mobileMenu');
   var last = 0;
   var ticking = false;
   function onScroll(){
     var y = window.scrollY;
+    if(menu && menu.classList.contains('open')) { last = y; ticking = false; return; }
     if(y > last && y > 200){nav.classList.add('hide')}
     else{nav.classList.remove('hide')}
     last = y;
@@ -2906,6 +3008,32 @@ h1,h2,h3,h4{
       ticking = true;
     }
   },{passive:true});
+})();
+
+/* ---------- mobile hamburger ---------- */
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+
+  function open(){
+    btn.classList.add('active');
+    menu.classList.add('open');
+    document.body.style.overflow='hidden';
+  }
+  function close(){
+    btn.classList.remove('active');
+    menu.classList.remove('open');
+    document.body.style.overflow='';
+  }
+
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    menu.classList.contains('open') ? close() : open();
+  });
+  menu.addEventListener('click',function(e){
+    if(e.target.tagName==='A') close();
+  });
 })();
 
 /* ---------- intake form ---------- */

@@ -723,7 +723,7 @@ body::before{
 
 <nav class="nav">
   <a href="https://neverranked.com" class="mark">N</a>
-  <span class="tool-name">Schema & AEO Health Check</span>
+  <span class="tool-name">Schema & AEO (Answer Engine Optimization) Health Check</span>
 </nav>
 
 <main class="wrap">
@@ -1065,7 +1065,7 @@ function buildReportEmail(report: any): string {
   <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
     <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
       <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
-      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AEO Report</td>
+      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AEO (Answer Engine Optimization) Report</td>
     </tr></table>
   </td></tr>
 
@@ -1226,7 +1226,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   const diffColor = diff > 0 ? "#27ae60" : diff < 0 ? "#c0392b" : "#e8c767";
 
   const narrative = diff >= 15
-    ? "You are well ahead of the pack. But competitors are catching up fast as AEO becomes mainstream. Maintaining this lead takes active work."
+    ? "You are well ahead of the pack. But competitors are catching up fast as AEO (Answer Engine Optimization) becomes mainstream. Maintaining this lead takes active work."
     : diff >= 5
     ? "You are ahead of most, but the gap is smaller than you think. A few schema changes from a competitor could close it in weeks."
     : diff >= 0
@@ -1331,7 +1331,7 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">Has anything changed for ${escHtml(scan.domain)}?</div>
 
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.8;margin-bottom:24px">
-      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on AEO readiness.<br><br>
+      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on AEO (Answer Engine Optimization) readiness.<br><br>
       In those seven days:<br>
       &bull; Google may have updated AI Overviews<br>
       &bull; ChatGPT refreshed its source index<br>
