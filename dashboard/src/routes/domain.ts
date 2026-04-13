@@ -6,7 +6,7 @@ import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, esc } from "../render";
 import { generateNarrative } from "../narrative";
 
-export async function handleDomainDetail(domainId: number, user: User, env: Env): Promise<Response> {
+export async function handleDomainDetail(domainId: number, user: User, env: Env, requestUrl?: URL): Promise<Response> {
   // Get domain
   const domain = await env.DB.prepare(
     "SELECT * FROM domains WHERE id = ? AND active = 1"
@@ -343,6 +343,19 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
     }
   }
 
+  // Check for share URL flash message
+  const sharedUrl = requestUrl?.searchParams.get("shared") || "";
+  const shareFlash = sharedUrl ? `
+    <div style="margin-bottom:24px;padding:16px 20px;background:var(--gold-wash);border:1px solid var(--gold-dim);border-radius:4px">
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">Shareable link created</div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <input type="text" value="${esc(sharedUrl)}" readonly onclick="this.select()" style="flex:1;padding:8px 12px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12px;border-radius:2px">
+        <button onclick="navigator.clipboard.writeText(this.previousElementSibling.value);this.textContent='Copied'" class="btn" style="padding:8px 16px;font-size:10px;white-space:nowrap">Copy link</button>
+      </div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:8px">Anyone with this link can view the report. No login required. Expires in 90 days.</div>
+    </div>
+  ` : "";
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -351,11 +364,17 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
         </div>
         <h1><em>${esc(domain.domain)}</em></h1>
       </div>
-      <form method="POST" action="/admin/scan/${domain.id}">
-        <button type="submit" class="btn">Run scan</button>
-      </form>
+      <div style="display:flex;gap:8px">
+        <form method="POST" action="/domain/${domain.id}/share">
+          <button type="submit" class="btn btn-ghost">Share report</button>
+        </form>
+        <form method="POST" action="/admin/scan/${domain.id}">
+          <button type="submit" class="btn">Run scan</button>
+        </form>
+      </div>
     </div>
 
+    ${shareFlash}
     ${reportSection}
     ${trendSection}
     ${coverageSection}

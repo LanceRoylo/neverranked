@@ -14,6 +14,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
+import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -33,6 +34,12 @@ export default {
     }
     if (path === "/auth/verify" && method === "GET") {
       return handleVerify(request, env);
+    }
+
+    // Public shared report (no auth)
+    const reportMatch = path.match(/^\/report\/([a-f0-9]{32})$/);
+    if (reportMatch) {
+      return handlePublicReport(reportMatch[1], env);
     }
 
     // --- Auth check ---
@@ -73,7 +80,7 @@ export default {
     // Domain detail
     const domainMatch = path.match(/^\/domain\/(\d+)$/);
     if (domainMatch) {
-      return handleDomainDetail(Number(domainMatch[1]), user, env);
+      return handleDomainDetail(Number(domainMatch[1]), user, env, url);
     }
 
     // Admin routes
@@ -97,6 +104,14 @@ export default {
     const dismissMatch = path.match(/^\/admin\/suggestion\/(\d+)\/dismiss$/);
     if (dismissMatch && method === "POST" && user.role === "admin") {
       return handleDismissSuggestion(Number(dismissMatch[1]), user, env);
+    }
+
+    // Share report
+    const shareMatch = path.match(/^\/domain\/(\d+)\/share$/);
+    if (shareMatch && method === "POST") {
+      const { token } = await handleCreateShare(Number(shareMatch[1]), user.id, env);
+      const shareUrl = `${url.origin}/report/${token}`;
+      return redirect(`/domain/${shareMatch[1]}?shared=${encodeURIComponent(shareUrl)}`);
     }
 
     // Competitors
