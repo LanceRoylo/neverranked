@@ -4,6 +4,7 @@
 
 import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, esc } from "../render";
+import { generateNarrative } from "../narrative";
 
 export async function handleDomainDetail(domainId: number, user: User, env: Env): Promise<Response> {
   // Get domain
@@ -53,6 +54,9 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
       }
     }
 
+    // Generate narrative
+    const narrative = generateNarrative(domain.domain, latest, previous);
+
     reportSection = `
       <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:48px">
         <div style="text-align:center">
@@ -71,6 +75,60 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env)
           </div>
         </div>
       </div>
+
+      <!-- Executive Summary -->
+      <div style="margin-bottom:48px">
+        <div class="label" style="margin-bottom:16px">Executive Summary</div>
+        <div style="padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;font-size:14px;line-height:1.75;color:var(--text-soft)">
+          ${esc(narrative.summary)}
+        </div>
+      </div>
+
+      ${narrative.changes.length > 0 ? `
+      <!-- What Changed -->
+      <div style="margin-bottom:48px">
+        <div class="label" style="margin-bottom:16px">What Changed</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${narrative.changes.map(c => {
+            const color = c.type === "improved" || c.type === "resolved"
+              ? "var(--green)" : "var(--red)";
+            const icon = c.type === "improved" || c.type === "resolved"
+              ? "+" : c.type === "regressed" || c.type === "new_issue" ? "-" : "~";
+            return `
+              <div style="display:flex;align-items:baseline;gap:12px;padding:8px 16px;background:var(--bg-lift);border-left:3px solid ${color};font-size:13px">
+                <span style="color:${color};font-weight:500;font-family:var(--mono);flex-shrink:0">${icon}</span>
+                <span style="color:var(--text-soft)">${esc(c.text)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ` : ''}
+
+      ${narrative.actions.length > 0 ? `
+      <!-- Recommended Next Actions -->
+      <div style="margin-bottom:48px">
+        <div class="label" style="margin-bottom:16px">Recommended Next Actions</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${narrative.actions.map((a, i) => {
+            const impactColor = a.impact === "high" ? "var(--red)"
+              : a.impact === "medium" ? "var(--yellow)" : "var(--text-faint)";
+            const impactLabel = a.impact === "high" ? "HIGH IMPACT"
+              : a.impact === "medium" ? "MEDIUM" : "LOW";
+            return `
+              <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+                  <span style="font-family:var(--label);font-size:11px;font-weight:500;letter-spacing:.15em;color:var(--text-faint)">${i + 1}</span>
+                  <span style="font-size:14px;font-weight:400;color:var(--text)">${esc(a.action)}</span>
+                  <span style="margin-left:auto;font-family:var(--label);font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:${impactColor};border:1px solid ${impactColor};padding:2px 8px;border-radius:2px;flex-shrink:0">${impactLabel}</span>
+                </div>
+                <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">${esc(a.reason)}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+      ` : ''}
 
       <!-- Technical Signals -->
       <div style="margin-bottom:48px">
