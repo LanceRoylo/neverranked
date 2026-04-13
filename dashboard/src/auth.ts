@@ -26,7 +26,7 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
   const now = Math.floor(Date.now() / 1000);
 
   const row = await env.DB.prepare(
-    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.onboarded, u.email_digest, u.created_at, u.last_login_at
+    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.onboarded, u.email_digest, u.stripe_customer_id, u.stripe_subscription_id, u.plan, u.created_at, u.last_login_at
      FROM sessions s JOIN users u ON s.user_id = u.id
      WHERE s.id = ? AND s.expires_at > ?`
   ).bind(token, now).first<User>();
@@ -82,7 +82,7 @@ export async function verifyMagicLink(
 
   // Get user
   const user = await env.DB.prepare(
-    "SELECT id, email, name, role, client_slug, onboarded, email_digest, created_at, last_login_at FROM users WHERE email = ?"
+    "SELECT id, email, name, role, client_slug, onboarded, email_digest, stripe_customer_id, stripe_subscription_id, plan, created_at, last_login_at FROM users WHERE email = ?"
   ).bind(link.email).first<User>();
   if (!user) return null;
 

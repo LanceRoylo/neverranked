@@ -8,6 +8,8 @@ export interface Env {
   ADMIN_SECRET: string;
   ADMIN_EMAIL: string;
   RESEND_API_KEY?: string;
+  STRIPE_SECRET_KEY?: string;
+  STRIPE_WEBHOOK_SECRET?: string;
 }
 
 export interface User {
@@ -18,6 +20,9 @@ export interface User {
   client_slug: string | null;
   onboarded: number;
   email_digest: number;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  plan: string | null;
   created_at: number;
   last_login_at: number | null;
 }

@@ -17,6 +17,7 @@ import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads } from "./routes/leads";
+import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -42,6 +43,20 @@ export default {
     const reportMatch = path.match(/^\/report\/([a-f0-9]{32})$/);
     if (reportMatch) {
       return handlePublicReport(reportMatch[1], env);
+    }
+
+    // Stripe checkout (no auth -- public pricing links)
+    const checkoutMatch = path.match(/^\/checkout\/(audit|signal|amplify)$/);
+    if (checkoutMatch && method === "GET") {
+      return handleCheckout(checkoutMatch[1], request, env);
+    }
+    if (path === "/checkout/success" && method === "GET") {
+      return handleCheckoutSuccess(request, env);
+    }
+
+    // Stripe webhook (no auth -- verified by signature)
+    if (path === "/stripe/webhook" && method === "POST") {
+      return handleStripeWebhook(request, env);
     }
 
     // --- Auth check ---
