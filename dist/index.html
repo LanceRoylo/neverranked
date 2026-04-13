@@ -1921,6 +1921,201 @@ h1,h2,h3,h4{
   .dashboard-features{padding:80px 0 60px}
 }
 
+/* ---------- ROI calculator ---------- */
+.roi-calc{
+  padding:120px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.roi-head{
+  text-align:center;
+  margin-bottom:60px;
+}
+.roi-head h2{
+  font-family:var(--serif);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:400;letter-spacing:-.02em;
+  line-height:1.15;margin:0 0 16px;
+}
+.roi-head h2 em{font-style:italic;color:var(--gold)}
+.roi-head p{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);line-height:1.7;
+  max-width:520px;margin:0 auto;
+}
+.roi-body{
+  max-width:640px;
+  margin:0 auto;
+}
+.roi-select{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  margin-bottom:48px;
+}
+.roi-select label{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:11px;font-weight:500;
+  color:var(--text-faint);
+}
+.roi-select select{
+  padding:12px 20px;
+  background:var(--bg-edge);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  border-radius:4px;
+  cursor:pointer;
+  transition:border-color .3s var(--ease);
+}
+.roi-select select:hover{border-color:var(--gold-dim)}
+.roi-select select:focus{border-color:var(--gold);outline:none}
+.roi-result{
+  display:none;
+  text-align:center;
+}
+.roi-result.visible{display:block}
+.roi-big{
+  font-family:var(--serif);
+  font-size:clamp(48px,8vw,80px);
+  font-style:italic;
+  color:var(--gold);
+  line-height:1;
+  margin-bottom:8px;
+}
+.roi-label{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-soft);
+  margin-bottom:32px;
+  line-height:1.6;
+}
+.roi-bar-wrap{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-bottom:32px;
+}
+.roi-bar{
+  display:grid;
+  grid-template-columns:160px 1fr auto;
+  gap:16px;
+  align-items:center;
+}
+.roi-bar-name{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  text-align:right;
+}
+.roi-bar-track{
+  height:32px;
+  background:rgba(251,248,239,.04);
+  border-radius:3px;
+  overflow:hidden;
+  position:relative;
+}
+.roi-bar-fill{
+  position:absolute;left:0;top:0;bottom:0;
+  border-radius:3px;
+  transition:width .6s var(--ease);
+}
+.roi-bar-val{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-soft);
+  min-width:80px;
+}
+.roi-context{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+  margin-bottom:32px;
+  padding:16px 20px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.roi-ctas{
+  display:flex;
+  justify-content:center;
+  gap:16px;
+  flex-wrap:wrap;
+}
+.roi-ctas .btn-primary{
+  display:inline-block;
+  padding:14px 32px;
+  background:var(--gold);
+  color:var(--bg);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;font-weight:500;
+  border-radius:4px;
+  transition:opacity .3s var(--ease);
+}
+.roi-ctas .btn-primary:hover{opacity:.85}
+.roi-ctas .btn-secondary{
+  display:inline-block;
+  padding:14px 32px;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;font-weight:500;
+  border-radius:4px;
+  transition:background .3s var(--ease),color .3s var(--ease);
+}
+.roi-ctas .btn-secondary:hover{background:var(--gold);color:var(--bg)}
+.roi-adjust{
+  text-align:center;
+  margin-top:20px;
+}
+.roi-adjust button{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+  border-bottom:1px solid var(--line);
+  padding-bottom:1px;
+  transition:color .3s var(--ease);
+}
+.roi-adjust button:hover{color:var(--gold)}
+.roi-custom{
+  display:none;
+  margin-top:24px;
+  text-align:center;
+}
+.roi-custom.visible{display:block}
+.roi-custom label{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+  margin-right:8px;
+}
+.roi-custom input{
+  width:120px;
+  padding:8px 12px;
+  background:var(--bg-edge);
+  border:1px solid var(--line);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:13px;
+  border-radius:4px;
+  text-align:center;
+}
+.roi-custom input:focus{border-color:var(--gold);outline:none}
+@media(max-width:600px){
+  .roi-select{flex-direction:column}
+  .roi-bar{grid-template-columns:1fr auto;gap:8px}
+  .roi-bar-name{text-align:left}
+  .roi-calc{padding:80px 0 60px}
+}
+
 @media(prefers-reduced-motion:reduce){
   .reveal,.reveal-stagger > *{opacity:1;transform:none;transition:none}
   .marquee-track,.grain{animation:none}
@@ -2323,6 +2518,81 @@ h1,h2,h3,h4{
     </div>
   </section>
 
+  <!-- ============ ROI CALCULATOR ============ -->
+  <section class="roi-calc" id="roi">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.2</span>
+        <span>The Math</span>
+        <span class="rule"></span>
+        <span>your industry, your numbers</span>
+      </div>
+
+      <div class="roi-head">
+        <h2 class="reveal">How fast does it <em>pay for itself?</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          45% of consumers now use AI to find services. But AI only recommends 1.2% of businesses. Pick your industry and see what one change in visibility is worth.
+        </p>
+      </div>
+
+      <div class="roi-body reveal" style="transition-delay:.2s">
+        <div class="roi-select">
+          <label for="roi-industry">Your industry</label>
+          <select id="roi-industry">
+            <option value="" disabled selected>Select your industry</option>
+            <option value="medspa">Med Spa / Aesthetics</option>
+            <option value="dentist">Dentist</option>
+            <option value="pi-law">Personal Injury Law</option>
+            <option value="family-law">Family Law</option>
+            <option value="realestate">Real Estate</option>
+            <option value="roofing">Roofing</option>
+            <option value="hvac">HVAC</option>
+            <option value="restaurant">Restaurant</option>
+            <option value="financial">Financial Advisor</option>
+            <option value="chiro">Chiropractor / PT</option>
+          </select>
+        </div>
+
+        <div class="roi-result" id="roi-result">
+          <div class="roi-big" id="roi-number"></div>
+          <div class="roi-label" id="roi-text"></div>
+
+          <div class="roi-bar-wrap">
+            <div class="roi-bar">
+              <div class="roi-bar-name">One new customer</div>
+              <div class="roi-bar-track">
+                <div class="roi-bar-fill" id="roi-bar-customer" style="background:var(--gold);width:0"></div>
+              </div>
+              <div class="roi-bar-val" id="roi-val-customer"></div>
+            </div>
+            <div class="roi-bar">
+              <div class="roi-bar-name">Monthly cost</div>
+              <div class="roi-bar-track">
+                <div class="roi-bar-fill" id="roi-bar-cost" style="background:rgba(251,248,239,.15);width:0"></div>
+              </div>
+              <div class="roi-bar-val" id="roi-val-cost">$2,000/mo</div>
+            </div>
+          </div>
+
+          <div class="roi-context" id="roi-context"></div>
+
+          <div class="roi-ctas">
+            <a href="https://check.neverranked.com" class="btn-primary">See your score free</a>
+            <a href="https://app.neverranked.com/checkout/audit" class="btn-secondary">Start with the $500 audit</a>
+          </div>
+
+          <div class="roi-adjust">
+            <button type="button" id="roi-adjust-btn">Adjust assumptions</button>
+          </div>
+          <div class="roi-custom" id="roi-custom">
+            <label for="roi-custom-val">Your avg customer value: $</label>
+            <input type="number" id="roi-custom-val" min="100" step="100">
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ LATEST INSIGHTS ============ -->
   <section class="insights-preview">
     <div class="wrap">
@@ -2699,6 +2969,72 @@ h1,h2,h3,h4{
       if(label) label.textContent = 'Send brief';
       setStatus('error', '§ Network error. Email hello@neverranked.com directly.');
     });
+  });
+})();
+
+/* ---------- ROI calculator ---------- */
+(function(){
+  var data = {
+    medspa:      {value:5000,  label:'clients',  name:'Med Spa',            note:'Based on avg client lifetime value of $5,000 across Botox, fillers, and laser treatments with repeat visits over 2-3 years.'},
+    dentist:     {value:10000, label:'patients',  name:'Dental Practice',    note:'Based on avg patient lifetime value of $10,000 including cleanings, procedures, and referrals over a 5-7 year relationship.'},
+    'pi-law':    {value:15000, label:'cases',     name:'Personal Injury',    note:'Based on avg settlement of $40,000-$55,000 with 33% contingency fee. One case more than covers the entire year.'},
+    'family-law':{value:11000, label:'cases',     name:'Family Law',         note:'Based on avg case value of $11,300 for divorce and custody matters.'},
+    realestate:  {value:10000, label:'deals',     name:'Real Estate',        note:'Based on avg commission of $10,000 per transaction on a $400K home at 2.5% buyer or seller side.'},
+    roofing:     {value:15000, label:'jobs',      name:'Roofing',            note:'Based on avg residential roof replacement of $15,000. One job covers more than half the year.'},
+    hvac:        {value:5000,  label:'jobs',      name:'HVAC',               note:'Based on avg job value of $5,000 including installs and major repairs. Lifetime value with maintenance contracts is much higher.'},
+    restaurant:  {value:2000,  label:'regulars',  name:'Restaurant',         note:'Based on avg regular customer spending $35/visit weekly for a year. One loyal regular is worth $1,820-$2,000/yr.'},
+    financial:   {value:40000, label:'clients',   name:'Financial Advisory', note:'Based on avg client lifetime value of $40,000+ over a 10-year relationship at 1% AUM on a $400K portfolio.'},
+    chiro:       {value:4000,  label:'patients',  name:'Chiropractic / PT',  note:'Based on avg annual patient value of $4,000 with regular adjustment or therapy visits.'}
+  };
+
+  var annual = 24000;
+  var monthly = 2000;
+  var select = document.getElementById('roi-industry');
+  var result = document.getElementById('roi-result');
+  var numEl = document.getElementById('roi-number');
+  var textEl = document.getElementById('roi-text');
+  var barCustomer = document.getElementById('roi-bar-customer');
+  var barCost = document.getElementById('roi-bar-cost');
+  var valCustomer = document.getElementById('roi-val-customer');
+  var contextEl = document.getElementById('roi-context');
+  var adjustBtn = document.getElementById('roi-adjust-btn');
+  var customWrap = document.getElementById('roi-custom');
+  var customInput = document.getElementById('roi-custom-val');
+
+  function fmt(n){return '$'+n.toLocaleString('en-US')}
+
+  function update(industry, customValue){
+    var d = data[industry];
+    if(!d) return;
+    var val = customValue || d.value;
+    var needed = Math.ceil(annual / val);
+    var auditNeeded = Math.ceil(500 / val);
+    var maxBar = Math.max(val, monthly);
+
+    numEl.textContent = needed;
+    textEl.innerHTML = 'new ' + d.label + ' per year to pay for NeverRanked Signal.<br><span style="font-size:12px;color:var(--text-faint)">The $500 audit? ' + (auditNeeded <= 1 ? 'One ' + d.label.replace(/s$/,'') + ' covers it.' : auditNeeded + ' ' + d.label + ' cover it.') + '</span>';
+
+    barCustomer.style.width = ((val / maxBar) * 100) + '%';
+    barCost.style.width = ((monthly / maxBar) * 100) + '%';
+    valCustomer.textContent = fmt(val);
+    contextEl.textContent = d.note;
+
+    if(customInput.value === '' || !customValue) customInput.value = val;
+
+    result.classList.add('visible');
+  }
+
+  select.addEventListener('change', function(){
+    update(this.value);
+  });
+
+  adjustBtn.addEventListener('click', function(){
+    customWrap.classList.toggle('visible');
+  });
+
+  customInput.addEventListener('input', function(){
+    var v = parseInt(this.value);
+    if(v && v > 0 && select.value) update(select.value, v);
   });
 })();
 </script>
