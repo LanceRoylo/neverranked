@@ -4,6 +4,7 @@
 
 export interface Env {
   DB: D1Database;
+  LEADS: KVNamespace;
   ADMIN_SECRET: string;
   ADMIN_EMAIL: string;
   RESEND_API_KEY?: string;

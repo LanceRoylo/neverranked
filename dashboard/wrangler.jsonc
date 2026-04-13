@@ -16,6 +16,12 @@
       "migrations_dir": "migrations"
     }
   ],
+  "kv_namespaces": [
+    {
+      "binding": "LEADS",
+      "id": "d95d981b0ee5482a8d49e1f56105670e"
+    }
+  ],
   "routes": [
     { "pattern": "app.neverranked.com", "custom_domain": true }
   ],

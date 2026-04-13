@@ -16,6 +16,7 @@ import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAdd
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
+import { handleLeads } from "./routes/leads";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans } from "./cron";
 
@@ -105,6 +106,11 @@ export default {
     const dismissMatch = path.match(/^\/admin\/suggestion\/(\d+)\/dismiss$/);
     if (dismissMatch && method === "POST" && user.role === "admin") {
       return handleDismissSuggestion(Number(dismissMatch[1]), user, env);
+    }
+
+    // Leads (admin only)
+    if (path === "/admin/leads" && method === "GET" && user.role === "admin") {
+      return handleLeads(user, env);
     }
 
     // Share report

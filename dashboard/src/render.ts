@@ -11,6 +11,7 @@ export function layout(title: string, body: string, user: User | null = null): s
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
       <a href="/competitors" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
       <a href="/roadmap" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
+      ${user.role === 'admin' ? '<a href="/admin/leads" class="nav-links-item' + (title === 'Leads' ? ' active' : '') + '">Leads</a>' : ''}
       ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') ? ' active' : '') + '">Admin</a>' : ''}
     `
     : '';

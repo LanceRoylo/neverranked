@@ -16,5 +16,8 @@
       "binding": "LEADS",
       "id": "d95d981b0ee5482a8d49e1f56105670e"
     }
-  ]
+  ],
+  "triggers": {
+    "crons": ["0 14 * * *"]
+  }
 }

@@ -1085,6 +1085,273 @@ function buildReportEmail(report: any): string {
 </html>`.trim();
 }
 
+// ---------- Drip sequence ----------
+
+const DRIP_DAY_3 = 3;
+const DRIP_DAY_7 = 7;
+const INDUSTRY_AVG = 52;
+
+interface LeadData {
+  email: string;
+  scans: { domain: string; score: number; grade: string; date: string }[];
+  created: string;
+  lastScan: string;
+  drip_day3_sent?: boolean;
+  drip_day7_sent?: boolean;
+}
+
+function daysSince(isoDate: string): number {
+  return Math.floor((Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60 * 24));
+}
+
+async function runDripSequence(env: Env): Promise<void> {
+  if (!env.RESEND_API_KEY) return;
+
+  // List all leads from KV
+  const list = await env.LEADS.list({ prefix: "lead:" });
+  let sent = 0;
+
+  for (const key of list.keys) {
+    const raw = await env.LEADS.get(key.name);
+    if (!raw) continue;
+
+    const lead: LeadData = JSON.parse(raw);
+    const age = daysSince(lead.created);
+    let updated = false;
+
+    // Day 3: Competitor comparison email
+    if (age >= DRIP_DAY_3 && !lead.drip_day3_sent) {
+      const latestScan = lead.scans[lead.scans.length - 1];
+      if (latestScan) {
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "NeverRanked <reports@neverranked.com>",
+              to: [lead.email],
+              subject: `${latestScan.domain} vs. the industry: where you stand`,
+              html: buildDripDay3Email(latestScan, lead.email),
+            }),
+          });
+          lead.drip_day3_sent = true;
+          updated = true;
+          sent++;
+        } catch (e) {
+          console.log(`Drip day3 failed for ${lead.email}: ${e}`);
+        }
+      }
+    }
+
+    // Day 7: Re-scan nudge + monitoring pitch
+    if (age >= DRIP_DAY_7 && !lead.drip_day7_sent) {
+      const latestScan = lead.scans[lead.scans.length - 1];
+      if (latestScan) {
+        try {
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "NeverRanked <reports@neverranked.com>",
+              to: [lead.email],
+              subject: `A week later: has ${latestScan.domain} moved?`,
+              html: buildDripDay7Email(latestScan, lead.email),
+            }),
+          });
+          lead.drip_day7_sent = true;
+          updated = true;
+          sent++;
+        } catch (e) {
+          console.log(`Drip day7 failed for ${lead.email}: ${e}`);
+        }
+      }
+    }
+
+    if (updated) {
+      await env.LEADS.put(key.name, JSON.stringify(lead), { expirationTtl: 365 * 24 * 60 * 60 });
+    }
+
+    // Rate limit: 200ms between sends
+    if (sent > 0 && sent % 5 === 0) {
+      await new Promise(r => setTimeout(r, 200));
+    }
+  }
+
+  console.log(`Drip sequence complete: ${sent} emails sent`);
+}
+
+function buildDripDay3Email(scan: { domain: string; score: number; grade: string }, email: string): string {
+  const diff = scan.score - INDUSTRY_AVG;
+  const diffLabel = diff > 0 ? `+${diff} above` : diff < 0 ? `${Math.abs(diff)} below` : "right at";
+  const diffColor = diff > 0 ? "#27ae60" : diff < 0 ? "#c0392b" : "#e8c767";
+
+  const narrative = diff >= 15
+    ? "You are well ahead of the pack. But competitors are catching up fast as AEO becomes mainstream. Maintaining this lead takes active work."
+    : diff >= 5
+    ? "You are ahead of most, but the gap is smaller than you think. A few schema changes from a competitor could close it in weeks."
+    : diff >= 0
+    ? "You are right around the industry average. That means you are invisible to AI engines -- they will pick whoever optimizes first."
+    : diff >= -10
+    ? "You are behind the curve. AI engines are already choosing your competitors over you for the queries that matter."
+    : "You are significantly behind. Every day without action is a day your competitors pull further ahead in AI search results.";
+
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Competitor Comparison</title></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+<tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <!-- Header -->
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Day 3 Update</td>
+    </tr></table>
+  </td></tr>
+
+  <!-- Comparison -->
+  <tr><td style="padding:32px 0">
+    <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;margin-bottom:8px">How do you compare?</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">${escHtml(scan.domain)} vs. industry average</div>
+
+    <!-- Score bars -->
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
+      <tr>
+        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;width:100px">${escHtml(scan.domain)}</td>
+        <td style="padding:8px 0">
+          <div style="background:#1c1c1c;border-radius:2px;height:24px;position:relative">
+            <div style="background:${diffColor};height:24px;border-radius:2px;width:${Math.min(scan.score, 100)}%;max-width:100%"></div>
+            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#fbf8ef">${scan.score}</span>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#888888">Industry avg</td>
+        <td style="padding:8px 0">
+          <div style="background:#1c1c1c;border-radius:2px;height:24px;position:relative">
+            <div style="background:#555555;height:24px;border-radius:2px;width:${INDUSTRY_AVG}%"></div>
+            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#888888">${INDUSTRY_AVG}</span>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div style="font-family:'Courier New',monospace;font-size:13px;color:${diffColor};margin-bottom:16px">${diffLabel} the industry average</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.7">${narrative}</div>
+  </td></tr>
+
+  <!-- CTA -->
+  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
+    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, updated weekly. Real domains. Real scores. Not averages.</div>
+    <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Talk to us</a>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+      You received this because you scanned ${escHtml(scan.domain)} at check.neverranked.com<br>
+      This is email 2 of 3. No further emails after this series.
+    </div>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`.trim();
+}
+
+function buildDripDay7Email(scan: { domain: string; score: number; grade: string }, email: string): string {
+  return `<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Score Update</title></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+<tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <!-- Header -->
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Week 1 Check-in</td>
+    </tr></table>
+  </td></tr>
+
+  <!-- Content -->
+  <tr><td style="padding:32px 0">
+    <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;margin-bottom:8px">A week has passed.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">Has anything changed for ${escHtml(scan.domain)}?</div>
+
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.8;margin-bottom:24px">
+      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on AEO readiness.<br><br>
+      In those seven days:<br>
+      &bull; Google may have updated AI Overviews<br>
+      &bull; ChatGPT refreshed its source index<br>
+      &bull; Your competitors may have added schema<br>
+      &bull; Perplexity re-crawled millions of pages<br><br>
+      One scan tells you where you were. Monitoring tells you where you are heading.
+    </div>
+
+    <!-- Re-scan CTA -->
+    <div style="text-align:center;margin-bottom:28px">
+      <a href="https://check.neverranked.com" style="display:inline-block;padding:14px 32px;border:1px solid #e8c767;color:#e8c767;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Re-scan your site free</a>
+    </div>
+  </td></tr>
+
+  <!-- Monitoring pitch -->
+  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">Stop checking manually.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">
+      NeverRanked clients get automatic weekly scans, trend tracking, regression alerts, competitor benchmarks, and a phased action plan. All in one dashboard.
+    </div>
+
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Weekly AEO scans</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9670; Phased roadmap</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9888; Regression alerts</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Competitor tracking</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Weekly digest</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8599; Shareable reports</td>
+      </tr>
+    </table>
+
+    <div style="text-align:center;margin-top:20px">
+      <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Get started</a>
+    </div>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+      You received this because you scanned ${escHtml(scan.domain)} at check.neverranked.com<br>
+      This is the last email in this series. No further emails.
+    </div>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`.trim();
+}
+
 // ---------- Worker handler ----------
 
 export default {
@@ -1236,5 +1503,11 @@ export default {
         ...corsHeaders,
       },
     });
+  },
+
+  // ---------- Drip sequence cron (runs daily at 2pm UTC) ----------
+
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    ctx.waitUntil(runDripSequence(env));
   },
 };
