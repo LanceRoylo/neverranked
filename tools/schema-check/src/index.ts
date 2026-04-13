@@ -6,7 +6,10 @@
  * a graded JSON report.
  */
 
-export interface Env {}
+export interface Env {
+  LEADS: KVNamespace;
+  RESEND_API_KEY?: string;
+}
 
 // ---------- Rate limiting (in-memory, per-isolate) ----------
 
@@ -533,6 +536,172 @@ body::before{
   to{opacity:1;transform:translateY(0)}
 }
 
+/* email capture */
+.email-capture{
+  margin:32px 0 0;
+  padding:24px 28px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:4px;
+  animation:fadeUp .5s var(--ease) .2s both;
+}
+.email-capture-inner{
+  display:flex;align-items:center;gap:20px;
+}
+.email-capture-icon{
+  font-size:24px;flex-shrink:0;
+  opacity:.6;
+}
+.email-capture-title{
+  font-family:var(--mono);
+  font-size:14px;color:var(--text);
+}
+.email-capture-sub{
+  font-family:var(--mono);
+  font-size:11px;color:var(--text-faint);
+  margin-top:2px;
+}
+.email-capture-form{
+  display:flex;gap:8px;margin-left:auto;flex-shrink:0;
+}
+.email-capture-form input{
+  background:var(--bg-edge);
+  border:1px solid var(--line);
+  border-radius:4px;
+  padding:10px 14px;
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text);
+  outline:none;
+  width:200px;
+  transition:border-color .3s var(--ease);
+}
+.email-capture-form input:focus{border-color:var(--gold)}
+.email-capture-form input::placeholder{color:var(--text-faint)}
+.email-capture-form button{
+  background:var(--gold);
+  color:var(--bg);
+  border:none;
+  padding:10px 20px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:11px;
+  font-weight:600;
+  border-radius:4px;
+  cursor:pointer;
+  white-space:nowrap;
+  transition:opacity .2s;
+}
+.email-capture-form button:disabled{opacity:.4;cursor:not-allowed}
+.email-success{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-faint);
+  margin-top:12px;
+}
+
+/* competitor teaser */
+.comp-teaser{
+  animation:fadeUp .5s var(--ease) .3s both;
+}
+.comp-teaser-inner{
+  padding:24px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.comp-teaser-bars{
+  display:flex;flex-direction:column;gap:14px;
+  margin-bottom:20px;
+}
+.comp-bar{
+  display:flex;align-items:center;gap:14px;
+}
+.comp-bar-label{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.15em;
+  font-size:10px;
+  color:var(--gold);
+  min-width:90px;
+}
+.comp-bar-track{
+  flex:1;height:8px;
+  background:rgba(251,248,239,.06);
+  border-radius:4px;overflow:hidden;
+}
+.comp-bar-fill{
+  height:100%;border-radius:4px;
+  transition:width .8s var(--ease);
+}
+.comp-bar-you{background:var(--gold)}
+.comp-bar-avg{background:var(--text-faint);width:52%}
+.comp-bar-score{
+  font-family:var(--mono);
+  font-size:14px;
+  font-weight:400;
+  color:var(--gold);
+  min-width:32px;
+  text-align:right;
+}
+.comp-teaser-text{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.7;
+}
+
+/* updated cta */
+.cta-buttons{
+  display:flex;gap:16px;
+  justify-content:center;
+  margin-bottom:24px;
+}
+.btn-primary{
+  display:inline-block;
+  background:var(--gold) !important;
+  color:var(--bg) !important;
+  border:1px solid var(--gold);
+  padding:14px 32px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;
+  font-weight:600;
+  border-radius:4px;
+  transition:opacity .3s var(--ease);
+}
+.btn-primary:hover{opacity:.85}
+.btn-ghost-link{
+  display:inline-block;
+  border:1px solid var(--line) !important;
+  color:var(--text-faint) !important;
+  padding:14px 32px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;
+  font-weight:500;
+  border-radius:4px;
+  transition:border-color .3s var(--ease),color .3s var(--ease);
+}
+.btn-ghost-link:hover{border-color:var(--text-mute) !important;color:var(--text-mute) !important}
+.cta-features{
+  display:flex;gap:20px;
+  justify-content:center;
+  flex-wrap:wrap;
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+}
+.cta-features span::before{
+  content:"+";
+  color:var(--gold);
+  margin-right:6px;
+  font-weight:500;
+}
+
 /* responsive */
 @media(max-width:600px){
   .input-area{flex-direction:column}
@@ -541,6 +710,11 @@ body::before{
   .tech-row{flex-direction:column;gap:6px}
   .tech-row .label{min-width:unset}
   .cta-section{padding:28px 20px}
+  .email-capture-inner{flex-direction:column;align-items:flex-start;gap:12px}
+  .email-capture-form{margin-left:0;width:100%}
+  .email-capture-form input{flex:1;width:auto}
+  .cta-buttons{flex-direction:column;align-items:center}
+  .comp-bar-label{min-width:70px;font-size:9px}
 }
 </style>
 </head>
@@ -581,10 +755,61 @@ body::before{
     <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Red Flags <span class="rule"></span></div>
     <div class="flags-list" id="flags-list"></div>
 
+    <!-- Email capture -->
+    <div class="email-capture" id="email-capture">
+      <div class="email-capture-inner">
+        <div class="email-capture-icon">&#9993;</div>
+        <div>
+          <div class="email-capture-title">Email me this report</div>
+          <div class="email-capture-sub">Get your score card with a breakdown of every signal. No spam.</div>
+        </div>
+        <div class="email-capture-form" id="email-form">
+          <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
+          <button type="button" id="email-btn">Send</button>
+        </div>
+      </div>
+      <div class="email-success" id="email-success" style="display:none">
+        <span style="color:var(--gold)">Sent.</span> Check your inbox for the full report.
+      </div>
+    </div>
+
+    <!-- Competitor teaser -->
+    <div class="comp-teaser" id="comp-teaser">
+      <div class="section-label"><span class="num">04</span> How do you compare? <span class="rule"></span></div>
+      <div class="comp-teaser-inner">
+        <div class="comp-teaser-bars">
+          <div class="comp-bar">
+            <div class="comp-bar-label">You</div>
+            <div class="comp-bar-track"><div class="comp-bar-fill comp-bar-you" id="comp-bar-you"></div></div>
+            <div class="comp-bar-score" id="comp-score-you"></div>
+          </div>
+          <div class="comp-bar">
+            <div class="comp-bar-label" style="color:var(--text-faint)">Industry avg</div>
+            <div class="comp-bar-track"><div class="comp-bar-fill comp-bar-avg"></div></div>
+            <div class="comp-bar-score" style="color:var(--text-faint)">52</div>
+          </div>
+        </div>
+        <div class="comp-teaser-text">
+          Most sites score between 35 and 60. The ones ranking in AI answers are above 75. NeverRanked tracks where you stand against your actual competitors, not averages.
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
     <div class="cta-section">
-      <h3>Want the full audit?</h3>
-      <p>This is a surface scan. The full audit goes deeper: AI citation tracking across ChatGPT, Perplexity, and Gemini. Competitor teardown. Keyword gap analysis. 90-day roadmap. Six deliverables. $500.</p>
-      <a href="https://neverranked.com/#intake" class="btn">Book the $500 audit</a>
+      <h3>This is a snapshot.<br>Your competitors are moving.</h3>
+      <p>AI search changes weekly. Competitors add schema, publish content, climb rankings. A one-time scan tells you where you are today. NeverRanked tells you where you're headed.</p>
+      <div class="cta-buttons">
+        <a href="https://neverranked.com/#intake" class="btn btn-primary">Get weekly monitoring</a>
+        <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link">Talk to us</a>
+      </div>
+      <div class="cta-features">
+        <span>Weekly scans</span>
+        <span>Score tracking</span>
+        <span>Competitor benchmarks</span>
+        <span>Action plan</span>
+        <span>Regression alerts</span>
+      </div>
     </div>
   </section>
 </main>
@@ -621,36 +846,7 @@ body::before{
     return val;
   }
 
-  async function runCheck(){
-    const url = normalizeUrl(input.value);
-    if(!url){input.focus();return;}
-
-    let domain;
-    try{domain=new URL(url).hostname}catch{domain=url}
-
-    btn.disabled=true;
-    errorMsg.classList.remove('active');
-    results.classList.remove('active');
-    loading.classList.add('active');
-    loadingText.textContent='Analyzing '+domain+'...';
-
-    try{
-      const resp = await fetch('/api/check',{
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url})
-      });
-      const data = await resp.json();
-      if(!resp.ok) throw new Error(data.error||'Check failed');
-      renderResults(data);
-    }catch(err){
-      errorMsg.textContent=err.message||'Something went wrong. Please try again.';
-      errorMsg.classList.add('active');
-    }finally{
-      loading.classList.remove('active');
-      btn.disabled=false;
-    }
-  }
+  // runCheck replaced by runCheckFinal below
 
   function renderResults(data){
     // Grade
@@ -706,19 +902,193 @@ body::before{
     gradeSection.scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  btn.addEventListener('click',runCheck);
+  // Email capture
+  const emailInput = document.getElementById('email-input');
+  const emailBtn = document.getElementById('email-btn');
+  const emailForm = document.getElementById('email-form');
+  const emailSuccess = document.getElementById('email-success');
+  let lastReportData = null;
+
+  async function sendReport(){
+    const email = emailInput.value.trim();
+    if(!email || !email.includes('@')){emailInput.focus();return;}
+    if(!lastReportData) return;
+
+    emailBtn.disabled=true;
+    emailBtn.textContent='Sending...';
+
+    try{
+      const resp = await fetch('/api/send-report',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email,report:lastReportData})
+      });
+      if(!resp.ok) throw new Error('Failed');
+      emailForm.style.display='none';
+      emailSuccess.style.display='block';
+    }catch{
+      emailBtn.textContent='Retry';
+      emailBtn.disabled=false;
+    }
+  }
+
+  emailBtn.addEventListener('click',sendReport);
+  emailInput.addEventListener('keydown',function(e){
+    if(e.key==='Enter')sendReport();
+  });
+
+  // Override renderResults to store data and update competitor bar
+  const origRender = renderResults;
+  function renderResultsWrapped(data){
+    lastReportData = data;
+    origRender(data);
+
+    // Update competitor teaser bar
+    const compBarYou = document.getElementById('comp-bar-you');
+    const compScoreYou = document.getElementById('comp-score-you');
+    if(compBarYou && compScoreYou){
+      compBarYou.style.width = data.aeo_score+'%';
+      compScoreYou.textContent = data.aeo_score;
+    }
+
+    // Reset email capture
+    emailForm.style.display='flex';
+    emailSuccess.style.display='none';
+    emailBtn.textContent='Send';
+    emailBtn.disabled=false;
+    emailInput.value='';
+  }
+
+  // Rebind
+  async function runCheckFinal(){
+    const url = normalizeUrl(input.value);
+    if(!url){input.focus();return;}
+
+    let domain;
+    try{domain=new URL(url).hostname}catch{domain=url}
+
+    btn.disabled=true;
+    errorMsg.classList.remove('active');
+    results.classList.remove('active');
+    loading.classList.add('active');
+    loadingText.textContent='Analyzing '+domain+'...';
+
+    try{
+      const resp = await fetch('/api/check',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({url})
+      });
+      const data = await resp.json();
+      if(!resp.ok) throw new Error(data.error||'Check failed');
+      renderResultsWrapped(data);
+    }catch(err){
+      errorMsg.textContent=err.message||'Something went wrong. Please try again.';
+      errorMsg.classList.add('active');
+    }finally{
+      loading.classList.remove('active');
+      btn.disabled=false;
+    }
+  }
+
+  btn.addEventListener('click',runCheckFinal);
   input.addEventListener('keydown',function(e){
-    if(e.key==='Enter')runCheck();
+    if(e.key==='Enter')runCheckFinal();
   });
 })();
 </script>
 </body>
 </html>`;
 
+// ---------- Report email builder ----------
+
+function escHtml(s: string): string {
+  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function buildReportEmail(report: any): string {
+  const gradeColor = report.grade === "A" ? "#27ae60"
+    : report.grade === "B" ? "#e8c767"
+    : report.grade === "C" ? "#e67e22"
+    : "#c0392b";
+
+  const schemaRows = (report.schema_coverage || []).map((s: any) => `
+    <tr>
+      <td style="padding:8px 16px;font-family:'Courier New',monospace;font-size:13px;color:#b0b0a8;border-bottom:1px solid #2a2a2a">${escHtml(s.type)}</td>
+      <td style="padding:8px 16px;text-align:center;border-bottom:1px solid #2a2a2a"><span style="color:${s.present ? '#27ae60' : '#c0392b'}">${s.present ? 'Found' : 'Missing'}</span></td>
+    </tr>
+  `).join("");
+
+  const flagRows = (report.red_flags || []).map((f: string) => `
+    <div style="padding:10px 16px;margin-bottom:6px;background:#1c1c1c;border-left:3px solid #c0392b;font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8">${escHtml(f)}</div>
+  `).join("");
+
+  return `
+<!doctype html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AEO Report</title></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+<tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <!-- Header -->
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+      <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AEO Report</td>
+    </tr></table>
+  </td></tr>
+
+  <!-- Score -->
+  <tr><td style="padding:32px 0;text-align:center">
+    <div style="display:inline-block;width:80px;height:80px;border-radius:50%;border:2px solid ${gradeColor};text-align:center;line-height:80px;font-family:Georgia,serif;font-size:42px;font-style:italic;color:${gradeColor}">${report.grade}</div>
+    <div style="font-family:'Courier New',monospace;font-size:32px;color:#fbf8ef;margin-top:12px">${report.aeo_score}<span style="font-size:14px;color:#888888">/100</span></div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-top:8px">${escHtml(report.domain)}</div>
+  </td></tr>
+
+  <!-- Schema coverage -->
+  <tr><td style="padding-bottom:24px">
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Schema Coverage</div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+      ${schemaRows}
+    </table>
+  </td></tr>
+
+  ${flagRows ? `
+  <!-- Red flags -->
+  <tr><td style="padding-bottom:24px">
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Red Flags (${report.red_flags.length})</div>
+    ${flagRows}
+  </td></tr>
+  ` : ""}
+
+  <!-- CTA -->
+  <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
+    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">This is a snapshot. Want ongoing monitoring?</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks your AEO score weekly, benchmarks you against competitors, and gives you a clear action plan.</div>
+    <a href="https://neverranked.com/#intake" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Get started</a>
+  </td></tr>
+
+  <!-- Footer -->
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+      Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+      You received this because you requested an AEO report at check.neverranked.com
+    </div>
+  </td></tr>
+
+</table>
+</td></tr>
+</table>
+</body>
+</html>`.trim();
+}
+
 // ---------- Worker handler ----------
 
 export default {
-  async fetch(request: Request, _env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     // CORS headers
@@ -796,6 +1166,66 @@ export default {
 
       const report = buildReport(targetUrl, html);
       return Response.json(report, { headers: corsHeaders });
+    }
+
+    // Send report via email + capture lead
+    if (url.pathname === "/api/send-report" && request.method === "POST") {
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      if (isRateLimited(ip)) {
+        return Response.json({ error: "Rate limit exceeded." }, { status: 429, headers: corsHeaders });
+      }
+
+      let body: { email?: string; report?: any };
+      try {
+        body = await request.json();
+      } catch {
+        return Response.json({ error: "Invalid request." }, { status: 400, headers: corsHeaders });
+      }
+
+      const email = body.email?.trim().toLowerCase();
+      const report = body.report;
+
+      if (!email || !email.includes("@") || !report) {
+        return Response.json({ error: "Email and report required." }, { status: 400, headers: corsHeaders });
+      }
+
+      // Store lead in KV
+      const leadKey = `lead:${email}`;
+      const now = new Date().toISOString();
+      const existing = await env.LEADS.get(leadKey);
+      const leadData = existing ? JSON.parse(existing) : { email, scans: [], created: now };
+      leadData.scans.push({
+        domain: report.domain,
+        score: report.aeo_score,
+        grade: report.grade,
+        date: now,
+      });
+      leadData.lastScan = now;
+      await env.LEADS.put(leadKey, JSON.stringify(leadData), { expirationTtl: 365 * 24 * 60 * 60 });
+
+      // Send email if RESEND_API_KEY is set
+      if (env.RESEND_API_KEY) {
+        try {
+          const emailHtml = buildReportEmail(report);
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "NeverRanked <reports@neverranked.com>",
+              to: [email],
+              subject: `Your AEO Report: ${report.domain} scored ${report.aeo_score}/100`,
+              html: emailHtml,
+            }),
+          });
+        } catch (e) {
+          console.log(`Report email failed: ${e}`);
+        }
+      }
+
+      return Response.json({ ok: true }, { headers: corsHeaders });
     }
 
     // Serve HTML UI
