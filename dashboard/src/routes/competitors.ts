@@ -59,10 +59,13 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     const pct = (score / maxScore) * 100;
     const isPrimary = !r.domain.is_competitor;
     const label = isPrimary ? r.domain.domain : `${r.domain.domain}${r.domain.competitor_label ? ` (${r.domain.competitor_label})` : ""}`;
+    const tag = isPrimary
+      ? '<span style="font-family:var(--label);font-size:8px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-dim);padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle">YOU</span>'
+      : '<span style="font-family:var(--label);font-size:8px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--line);padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle">COMPETITOR</span>';
 
     return `
-      <div style="display:grid;grid-template-columns:200px 1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(251,248,239,.06)">
-        <div style="font-size:13px;${isPrimary ? 'color:var(--gold);font-weight:400' : 'color:var(--text-faint)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${esc(label)}</div>
+      <div style="display:grid;grid-template-columns:260px 1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(251,248,239,.06)">
+        <div style="font-size:13px;${isPrimary ? 'color:var(--gold);font-weight:400' : 'color:var(--text-faint)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${esc(label)}${tag}</div>
         <div style="position:relative;height:28px;background:rgba(251,248,239,.04);border-radius:3px;overflow:hidden">
           <div style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:${isPrimary ? 'var(--gold-wash)' : 'rgba(251,248,239,.06)'};border-right:2px solid ${isPrimary ? 'var(--gold)' : barColor(score)};transition:width .3s var(--ease)"></div>
           <div style="position:relative;padding:0 12px;line-height:28px;font-size:12px;color:var(--text-soft)">${score}/100</div>
@@ -116,7 +119,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
                 const isPrimary = !r.domain.is_competitor;
                 return `
                   <tr style="border-bottom:1px solid rgba(251,248,239,.06)">
-                    <td style="padding:10px 16px;font-size:12px;${isPrimary ? 'color:var(--gold)' : 'color:var(--text-faint)'};position:sticky;left:0;background:var(--bg-lift)">${esc(r.domain.domain)}</td>
+                    <td style="padding:10px 16px;font-size:12px;${isPrimary ? 'color:var(--gold)' : 'color:var(--text-faint)'};position:sticky;left:0;background:var(--bg-lift)">${esc(r.domain.domain)} ${isPrimary ? '<span style="font-family:var(--label);font-size:7px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);padding:0 4px;border-radius:2px;vertical-align:middle">YOU</span>' : ''}</td>
                     ${schemaColumns.map(col => {
                       const has = r.schemaTypes.includes(col);
                       return `<td style="text-align:center;padding:10px 6px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;${has ? 'background:var(--green)' : 'background:rgba(251,248,239,.08);border:1px solid rgba(251,248,239,.12)'}"></span></td>`;
@@ -140,9 +143,10 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     const barBg = count > 4 ? "rgba(232,84,84,.2)" : "rgba(94,199,106,.1)";
     const barBorder = count > 4 ? "var(--red)" : count > 0 ? "var(--yellow)" : "var(--green)";
     const countColor = count > 4 ? "var(--red)" : "var(--text)";
+    const youTag = isPrimary ? ' <span style="font-family:var(--label);font-size:7px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);padding:0 4px;border-radius:2px;vertical-align:middle">YOU</span>' : '';
     return `
-      <div style="display:grid;grid-template-columns:200px 1fr auto;gap:16px;align-items:center">
-        <div style="font-size:12px;${nameColor};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.domain.domain)}</div>
+      <div style="display:grid;grid-template-columns:260px 1fr auto;gap:16px;align-items:center">
+        <div style="font-size:12px;${nameColor};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(r.domain.domain)}${youTag}</div>
         <div style="position:relative;height:20px;background:rgba(251,248,239,.04);border-radius:3px;overflow:hidden">
           <div style="position:absolute;left:0;top:0;bottom:0;width:${barPct}%;background:${barBg};border-right:2px solid ${barBorder}"></div>
         </div>
