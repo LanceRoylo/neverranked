@@ -4,7 +4,7 @@
  * Magic link auth emails + weekly AEO digest emails.
  */
 
-import type { Env, ScanResult } from "./types";
+import type { Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
 
@@ -14,6 +14,18 @@ export interface DigestData {
   clientSlug: string;
   latest: ScanResult;
   previous: ScanResult | null;
+}
+
+export interface GscDigestData {
+  clientSlug: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  prevClicks: number | null;
+  prevImpressions: number | null;
+  topQuery: string | null;
+  dateRange: string;
 }
 
 export async function sendMagicLinkEmail(
@@ -69,7 +81,8 @@ export async function sendDigestEmail(
   userName: string | null,
   digests: DigestData[],
   env: Env,
-  citationData?: Map<string, CitationDigestData>
+  citationData?: Map<string, CitationDigestData>,
+  gscData?: Map<string, GscDigestData>
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -82,7 +95,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0])
     : `Weekly AEO Report -- ${digests.length} domains scanned`;
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -384,7 +397,67 @@ function buildCitationBlock(cd: CitationDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>): string {
+function buildGscBlock(gsc: GscDigestData): string {
+  let clicksDelta = "";
+  if (gsc.prevClicks !== null) {
+    const diff = gsc.clicks - gsc.prevClicks;
+    if (diff > 0) clicksDelta = '<span style="color:#27ae60;font-size:13px;margin-left:8px">+' + diff + '</span>';
+    else if (diff < 0) clicksDelta = '<span style="color:#c0392b;font-size:13px;margin-left:8px">' + diff + '</span>';
+  }
+
+  let impDelta = "";
+  if (gsc.prevImpressions !== null) {
+    const diff = gsc.impressions - gsc.prevImpressions;
+    if (diff > 0) impDelta = '<span style="color:#27ae60;font-size:13px;margin-left:8px">+' + diff.toLocaleString() + '</span>';
+    else if (diff < 0) impDelta = '<span style="color:#c0392b;font-size:13px;margin-left:8px">' + diff.toLocaleString() + '</span>';
+  }
+
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
+      <tr>
+        <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">Google Search Performance</div>
+          <div style="font-family:Georgia,serif;font-size:12px;color:#555555;margin-bottom:16px">${escEmail(gsc.dateRange)}</div>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td width="50%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Clicks</div>
+                <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef">${gsc.clicks.toLocaleString()}${clicksDelta}</div>
+              </td>
+              <td width="50%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Impressions</div>
+                <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef">${gsc.impressions.toLocaleString()}${impDelta}</div>
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px">
+            <tr>
+              <td width="50%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">CTR</div>
+                <div style="font-family:'Courier New',monospace;font-size:18px;color:#fbf8ef">${(gsc.ctr * 100).toFixed(1)}%</div>
+              </td>
+              <td width="50%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Avg Position</div>
+                <div style="font-family:'Courier New',monospace;font-size:18px;color:#fbf8ef">${gsc.position.toFixed(1)}</div>
+              </td>
+            </tr>
+          </table>
+
+          ${gsc.topQuery ? `
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">
+            <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Top query</div>
+            <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;font-style:italic">${escEmail(gsc.topQuery)}</div>
+          </div>
+          ` : ""}
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>): string {
   const greeting = userName ? userName.split(" ")[0] : "there";
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -515,6 +588,20 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             slugsSeen.add(d.clientSlug);
             const cd = citationData.get(d.clientSlug);
             if (cd) blocks.push(buildCitationBlock(cd));
+          }
+          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
+        })()}
+
+        <!-- Google Search Console blocks -->
+        ${(() => {
+          if (!gscData || gscData.size === 0) return "";
+          const blocks: string[] = [];
+          const slugsSeen = new Set<string>();
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const gd = gscData.get(d.clientSlug);
+            if (gd) blocks.push(buildGscBlock(gd));
           }
           return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}

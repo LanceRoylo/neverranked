@@ -350,7 +350,7 @@ export default {
     }
     const searchMatch = path.match(/^\/search\/([^/]+?)\/?$/);
     if (searchMatch && method === "GET") {
-      return handleSearchPerformance(decodeURIComponent(searchMatch[1]), user, env);
+      return handleSearchPerformance(decodeURIComponent(searchMatch[1]), user, env, url);
     }
 
     // Settings

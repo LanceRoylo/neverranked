@@ -6,10 +6,10 @@
  * 2. Sends digest emails to opted-in users with their domain results
  */
 
-import type { Env, Domain, User, ScanResult } from "./types";
+import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
-import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData } from "./email";
+import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData } from "./email";
 import { checkAndAlertRegression } from "./regression";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
@@ -124,15 +124,41 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
 
     // Gather citation data for each client_slug in the digest
     const citationDataMap = new Map<string, CitationDigestData>();
+    const gscDataMap = new Map<string, GscDigestData>();
     const slugsSeen = new Set<string>();
     for (const d of digests) {
       if (slugsSeen.has(d.clientSlug)) continue;
       slugsSeen.add(d.clientSlug);
       const cData = await getCitationDigestData(d.clientSlug, env);
       if (cData) citationDataMap.set(d.clientSlug, cData);
+
+      // Gather GSC data
+      const gscSnaps = (await env.DB.prepare(
+        "SELECT * FROM gsc_snapshots WHERE client_slug = ? ORDER BY date_end DESC LIMIT 2"
+      ).bind(d.clientSlug).all<GscSnapshot>()).results;
+      if (gscSnaps.length > 0) {
+        const latest = gscSnaps[0];
+        const prev = gscSnaps[1] || null;
+        let topQuery: string | null = null;
+        try {
+          const queries: { query: string; clicks: number }[] = JSON.parse(latest.top_queries);
+          if (queries.length > 0) topQuery = queries[0].query;
+        } catch {}
+        gscDataMap.set(d.clientSlug, {
+          clientSlug: d.clientSlug,
+          clicks: latest.clicks,
+          impressions: latest.impressions,
+          ctr: latest.ctr,
+          position: latest.position,
+          prevClicks: prev ? prev.clicks : null,
+          prevImpressions: prev ? prev.impressions : null,
+          topQuery,
+          dateRange: latest.date_start + " to " + latest.date_end,
+        });
+      }
     }
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap);
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap);
     if (ok) {
       sent++;
       // Log to email_log

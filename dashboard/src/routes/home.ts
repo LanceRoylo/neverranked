@@ -2,16 +2,42 @@
  * Dashboard — Home route (domain overview)
  */
 
-import type { Env, User, Domain, ScanResult } from "../types";
+import type { Env, User, Domain, ScanResult, GscSnapshot } from "../types";
 import { layout, html, esc } from "../render";
 
-function buildHomeNarrative(user: User, domainCount: number, clientCount: number): string {
+interface HomeGscData {
+  clicks: number;
+  impressions: number;
+  prevClicks: number | null;
+}
+
+function buildHomeNarrative(user: User, domainCount: number, clientCount: number, gscMap: Map<string, HomeGscData>): string {
   if (user.role === "admin") {
     if (domainCount === 0) return "No client domains are being tracked yet. Add clients and their primary domains from the admin panel to start monitoring AEO readiness.";
-    return "This is the overview of all " + domainCount + " tracked domains across " + clientCount + " client" + (clientCount > 1 ? "s" : "") + ". Each card shows the current AEO readiness grade and score. Click any domain for the full report with technical signals, schema coverage, and recommended actions.";
+    let base = "This is the overview of all " + domainCount + " tracked domains across " + clientCount + " client" + (clientCount > 1 ? "s" : "") + ". Each card shows the current AEO readiness grade and score. Click any domain for the full report with technical signals, schema coverage, and recommended actions.";
+    if (gscMap.size > 0) {
+      let totalClicks = 0;
+      let totalImpressions = 0;
+      for (const g of gscMap.values()) { totalClicks += g.clicks; totalImpressions += g.impressions; }
+      if (totalClicks > 0 || totalImpressions > 0) {
+        base += " Across all connected Search Console properties, there were " + totalClicks.toLocaleString() + " clicks and " + totalImpressions.toLocaleString() + " impressions in the latest reporting period.";
+      }
+    }
+    return base;
   }
   if (domainCount === 0) return "Your account is being set up. Once your domains are added, this dashboard will show your AEO readiness scores, track progress over time, and highlight exactly what needs attention.";
-  if (domainCount === 1) return "This is your AEO readiness dashboard. The score and grade below reflect how well your site is optimized for AI engine visibility. Click through for the full breakdown of technical signals, schema coverage, and what to improve next.";
+  if (domainCount === 1) {
+    let base = "This is your AEO readiness dashboard. The score and grade below reflect how well your site is optimized for AI engine visibility. Click through for the full breakdown of technical signals, schema coverage, and what to improve next.";
+    if (gscMap.size > 0) {
+      const g = [...gscMap.values()][0];
+      if (g.clicks > 0) {
+        base += " Your site received " + g.clicks.toLocaleString() + " clicks from Google search this past week.";
+      } else if (g.impressions > 0) {
+        base += " Your site appeared " + g.impressions.toLocaleString() + " times in Google search results this past week.";
+      }
+    }
+    return base;
+  }
   return "These are your tracked domains. Each one is scored independently for AEO readiness. Click any domain to see its full report, including schema coverage, technical signals, and prioritized recommendations.";
 }
 
@@ -28,6 +54,24 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     domains = (await env.DB.prepare(
       "SELECT * FROM domains WHERE active = 1 AND is_competitor = 0 ORDER BY client_slug, domain"
     ).all<Domain>()).results;
+  }
+
+  // Get GSC data per client_slug
+  const gscMap = new Map<string, HomeGscData>();
+  const gscSlugsChecked = new Set<string>();
+  for (const d of domains) {
+    if (gscSlugsChecked.has(d.client_slug)) continue;
+    gscSlugsChecked.add(d.client_slug);
+    const snaps = (await env.DB.prepare(
+      "SELECT * FROM gsc_snapshots WHERE client_slug = ? ORDER BY date_end DESC LIMIT 2"
+    ).bind(d.client_slug).all<GscSnapshot>()).results;
+    if (snaps.length > 0) {
+      gscMap.set(d.client_slug, {
+        clicks: snaps[0].clicks,
+        impressions: snaps[0].impressions,
+        prevClicks: snaps[1] ? snaps[1].clicks : null,
+      });
+    }
   }
 
   // Get latest scan + previous scan for each domain
@@ -69,10 +113,21 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
             <div class="grade grade-${grade}">${grade}</div>
           </div>
         </div>
-        <div style="display:flex;gap:24px;font-size:12px;color:var(--text-faint)">
+        <div style="display:flex;gap:24px;font-size:12px;color:var(--text-faint);flex-wrap:wrap">
           ${score !== null ? `<span>Score: <strong style="color:var(--text);font-weight:400">${score}/100</strong></span>` : ''}
           <span>Red flags: <strong style="color:${redFlagCount > 4 ? 'var(--red)' : 'var(--text)'};font-weight:400">${redFlagCount}</strong></span>
           <span>Last scan: ${scanDate}</span>
+          ${(() => {
+            const gsc = gscMap.get(d.client_slug);
+            if (!gsc) return "";
+            let clicksDelta = "";
+            if (gsc.prevClicks !== null) {
+              const diff = gsc.clicks - gsc.prevClicks;
+              if (diff > 0) clicksDelta = ' <span style="color:var(--green)">+' + diff + '</span>';
+              else if (diff < 0) clicksDelta = ' <span style="color:var(--red)">' + diff + '</span>';
+            }
+            return '<span style="border-left:1px solid var(--line);padding-left:12px">Search: <strong style="color:var(--text);font-weight:400">' + gsc.clicks + ' clicks</strong>' + clicksDelta + ' / ' + gsc.impressions.toLocaleString() + ' imp</span>';
+          })()}
         </div>
       </a>
     `);
@@ -100,7 +155,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     .join(" ");
 
   // Build home narrative
-  const homeNarrative = buildHomeNarrative(user, domains.length, clientSlugs.length);
+  const homeNarrative = buildHomeNarrative(user, domains.length, clientSlugs.length, gscMap);
 
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">

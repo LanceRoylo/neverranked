@@ -292,19 +292,24 @@ export async function handleManualGscPull(
 export async function handleSearchPerformance(
   slug: string,
   user: User,
-  env: Env
+  env: Env,
+  url?: URL
 ): Promise<Response> {
   if (user.role === "client" && user.client_slug !== slug) {
     return redirect("/");
   }
 
-  // Get latest snapshot
+  // Week param: 0 = latest (default), 1 = previous, etc.
+  const weekParam = url ? parseInt(url.searchParams.get("week") || "0") : 0;
+  const weekIndex = Math.max(0, Math.min(weekParam, 7));
+
+  // Get all snapshots
   const snapshots = (await env.DB.prepare(
     "SELECT * FROM gsc_snapshots WHERE client_slug = ? ORDER BY date_end DESC LIMIT 8"
   ).bind(slug).all<GscSnapshot>()).results;
 
-  const latest = snapshots[0] || null;
-  const previous = snapshots[1] || null;
+  const latest = snapshots[weekIndex] || null;
+  const previous = snapshots[weekIndex + 1] || null;
 
   // Check if property is linked
   const property = await env.DB.prepare(
@@ -396,6 +401,22 @@ export async function handleSearchPerformance(
       '</svg></div></div>';
   })() : "";
 
+  // Build week picker
+  const weekPicker = snapshots.length > 1 ? (() => {
+    const items = snapshots.map((s, i) => {
+      const label = s.date_start.slice(5) + " to " + s.date_end.slice(5);
+      const isActive = i === weekIndex;
+      return '<a href="/search/' + encodeURIComponent(slug) + '?week=' + i + '" ' +
+        'style="display:inline-block;padding:6px 14px;font-size:12px;font-family:var(--mono);border:1px solid ' +
+        (isActive ? 'var(--gold)' : 'var(--line)') + ';border-radius:4px;color:' +
+        (isActive ? 'var(--gold)' : 'var(--text-faint)') + ';text-decoration:none;background:' +
+        (isActive ? 'rgba(232,199,103,0.08)' : 'transparent') + '">' + label + '</a>';
+    }).join(" ");
+    return '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;align-items:center">' +
+      '<span style="font-size:11px;color:var(--text-faint);font-family:var(--mono);text-transform:uppercase;letter-spacing:1px;margin-right:4px">Week</span>' +
+      items + '</div>';
+  })() : "";
+
   const body = `
     <div class="section-header">
       <h1>Search Performance</h1>
@@ -406,6 +427,9 @@ export async function handleSearchPerformance(
     <div class="narrative-context" style="margin-bottom:24px">
       ${esc(narrative)}
     </div>
+
+    <!-- Week picker -->
+    ${weekPicker}
 
     <!-- KPI cards -->
     <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
