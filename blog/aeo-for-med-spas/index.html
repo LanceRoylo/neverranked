@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>Schema Markup for AI Search Engines: What Actually Matters — Never Ranked</title>
-<meta name="description" content="Most schema guides are written for Google rich snippets. AI models parse structured data differently. Here are the schema types that drive AI citations and the ones you can skip.">
-<link rel="canonical" href="https://neverranked.com/blog/schema-markup-ai-search/">
+<title>AEO for Med Spas: Getting Recommended When Patients Ask AI About Treatments — Never Ranked</title>
+<meta name="description" content="Patients now ask ChatGPT and Google AI which med spa to visit for Botox, fillers, and laser treatments. Here is what determines who gets recommended and how to make it your practice.">
+<link rel="canonical" href="https://neverranked.com/blog/aeo-for-med-spas/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:title" content="Schema Markup for AI Search Engines: What Actually Matters">
-<meta property="og:description" content="AI models parse structured data differently than crawlers. Here are the schema types that drive citations.">
+<meta property="og:title" content="AEO for Med Spas: Getting Recommended When Patients Ask AI About Treatments">
+<meta property="og:description" content="Patients now ask ChatGPT and Google AI which med spa to visit for Botox, fillers, and laser treatments. Here is what determines who gets recommended.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://neverranked.com/blog/schema-markup-ai-search/">
+<meta property="og:url" content="https://neverranked.com/blog/aeo-for-med-spas/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/blog/og-schema-markup.png">
+<meta property="og:image" content="https://neverranked.com/blog/og-aeo-for-med-spas.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Schema Markup for AI Search — Never Ranked">
+<meta property="og:image:alt" content="AEO for Med Spas — Never Ranked">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Schema Markup for AI Search Engines: What Actually Matters">
-<meta name="twitter:description" content="The schema types that drive AI citations and the ones you can skip.">
-<meta name="twitter:image" content="https://neverranked.com/blog/og-schema-markup.png">
+<meta name="twitter:title" content="AEO for Med Spas: Getting Recommended When Patients Ask AI About Treatments">
+<meta name="twitter:description" content="Patients now ask ChatGPT and Google AI which med spa to visit. Here is what determines who gets recommended.">
+<meta name="twitter:image" content="https://neverranked.com/blog/og-aeo-for-med-spas.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -31,8 +31,8 @@
   "@graph": [
     {
       "@type": "Article",
-      "headline": "Schema Markup for AI Search Engines: What Actually Matters",
-      "description": "Most schema guides are written for Google rich snippets circa 2019. AI models parse structured data differently. Here are the types that drive AI citations and the ones you can skip.",
+      "headline": "AEO for Med Spas: Getting Recommended When Patients Ask AI About Treatments",
+      "description": "Patients now ask ChatGPT and Google AI which med spa to visit for Botox, fillers, and laser treatments. Here is what determines who gets recommended and how to make it your practice.",
       "author": {
         "@type": "Person",
         "name": "Lance Roylo",
@@ -41,12 +41,12 @@
       "publisher": {
         "@id": "https://neverranked.com/#organization"
       },
-      "datePublished": "2026-03-31",
-      "dateModified": "2026-03-31",
-      "url": "https://neverranked.com/blog/schema-markup-ai-search/",
-      "wordCount": 1150,
-      "mainEntityOfPage": "https://neverranked.com/blog/schema-markup-ai-search/",
-      "keywords": ["schema markup", "structured data", "AI search", "JSON-LD", "AEO", "Organization schema"]
+      "datePublished": "2026-04-21",
+      "dateModified": "2026-04-21",
+      "url": "https://neverranked.com/blog/aeo-for-med-spas/",
+      "wordCount": 1400,
+      "mainEntityOfPage": "https://neverranked.com/blog/aeo-for-med-spas/",
+      "keywords": ["AEO for med spas", "med spa AI search", "med spa ChatGPT", "aesthetics AI visibility", "med spa marketing 2026"]
     },
     {
       "@type": "BreadcrumbList",
@@ -66,8 +66,8 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Schema Markup for AI Search",
-          "item": "https://neverranked.com/blog/schema-markup-ai-search/"
+          "name": "AEO for Med Spas",
+          "item": "https://neverranked.com/blog/aeo-for-med-spas/"
         }
       ]
     }
@@ -415,24 +415,15 @@ body::before{
   color:var(--text);
 }
 
-.article-body code{
-  font-family:var(--mono);
-  font-size:12px;
-  background:var(--bg-edge);
-  padding:2px 7px;
-  border-radius:3px;
-  color:var(--gold);
-}
-
-/* ---------- schema blocks ---------- */
-.schema-block{
+/* ---------- signal blocks ---------- */
+.signal-block{
   background:var(--bg-lift);
   border-left:3px solid var(--gold);
   border-radius:0 6px 6px 0;
   padding:28px 28px 28px 24px;
   margin:28px 0 32px;
 }
-.schema-block .schema-label{
+.signal-block .signal-label{
   font-family:var(--label);
   text-transform:uppercase;
   letter-spacing:.22em;
@@ -441,38 +432,44 @@ body::before{
   font-weight:500;
   margin-bottom:12px;
 }
-.schema-block p{
+.signal-block p{
   font-size:13px;
   line-height:1.8;
   color:var(--text-soft);
   margin:0 0 10px;
 }
-.schema-block p:last-child{margin-bottom:0}
+.signal-block p:last-child{margin-bottom:0}
 
-/* skip blocks */
-.skip-block{
-  background:var(--bg-lift);
-  border-left:3px solid var(--line);
-  border-radius:0 6px 6px 0;
-  padding:28px 28px 28px 24px;
-  margin:28px 0 32px;
+/* ---------- comparison table ---------- */
+.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--line);
+  margin:32px 0;
+  border-radius:6px;
+  overflow:hidden;
 }
-.skip-block .skip-label{
+.compare-cell{
+  background:var(--bg-lift);
+  padding:20px 24px;
+}
+.compare-head{
   font-family:var(--label);
   text-transform:uppercase;
-  letter-spacing:.22em;
+  letter-spacing:.18em;
   font-size:11px;
-  color:var(--text-mute);
   font-weight:500;
-  margin-bottom:12px;
+  color:var(--gold);
+  background:var(--bg-edge);
+  padding:16px 24px;
 }
-.skip-block p{
+.compare-cell p{
   font-size:13px;
-  line-height:1.8;
-  color:var(--text-faint);
-  margin:0 0 10px;
+  line-height:1.75;
+  color:var(--text-soft);
+  margin:0;
 }
-.skip-block p:last-child{margin-bottom:0}
 
 /* ---------- CTA section ---------- */
 .article-cta{
@@ -618,9 +615,9 @@ body::before{
 /* ---------- mobile ---------- */
 @media(max-width:640px){
   .article-meta{flex-direction:column;gap:12px}
-  .schema-block{padding:20px 20px 20px 18px}
-  .skip-block{padding:20px 20px 20px 18px}
+  .signal-block{padding:20px 20px 20px 18px}
   .article-body{padding:60px var(--gutter)}
+  .compare{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -662,11 +659,11 @@ body::before{
         <span>Insights</span>
         <span class="rule"></span>
       </div>
-      <h1 class="reveal" style="transition-delay:.06s">Schema Markup for AI Search: <em>What Actually Matters</em></h1>
+      <h1 class="reveal" style="transition-delay:.06s">AEO for Med Spas <em>Getting Recommended When Patients Ask AI About Treatments</em></h1>
       <div class="article-meta reveal" style="transition-delay:.12s">
         <span><b>By</b> Lance Roylo</span>
-        <span><b>Published</b> March 2026</span>
-        <span><b>Read</b> 6 min</span>
+        <span><b>Published</b> April 2026</span>
+        <span><b>Read</b> 7 min</span>
       </div>
     </div>
   </section>
@@ -675,92 +672,84 @@ body::before{
   <article class="article-body">
 
     <div class="reveal">
-      <p>Most websites have no schema markup at all. Of the ones that do, most have the wrong types. They deployed whatever their CMS plugin generated, never checked whether it was valid, and assumed the job was done.</p>
-      <p>For traditional SEO, that was fine. Google could figure out your site without structured data. It was helpful but not critical.</p>
-      <p>For AI search, it is critical. Language models and retrieval systems use structured data as a primary signal for entity recognition, content classification, and citation decisions. The schema on your site is how AI models read you. If it is missing, broken, or wrong, the model moves on to a source that is easier to parse.</p>
+      <p>"Best med spa for lip filler in [city]."</p>
+      <p>That is what your next patient is typing into ChatGPT right now. Not Google. ChatGPT. And the practices that show up in that answer are getting the appointment while you are still paying for the same Google Ads you ran last year.</p>
+      <p>This is not a trend piece. This is the shift. Patients are asking AI which provider to see for Botox, which clinic has the best results for laser resurfacing, and how much a liquid facelift costs in their area. The AI answers. It names specific practices. And those practices get the call.</p>
+      <p>The ones it does not name? They do not exist in that conversation. Full stop.</p>
     </div>
 
-    <h2 class="reveal">The schema types <em>that drive citations</em></h2>
+    <h2 class="reveal">Why med spas are <em>built for AI search</em></h2>
 
     <div class="reveal">
-      <p>Not all schema types are equally useful for AEO (Answer Engine Optimization). These are the six that directly influence whether AI models cite your content, ranked by impact.</p>
+      <p>Med spas sit at the intersection of two things AI models handle extremely well: specific treatment queries and local business recommendations.</p>
+      <p>Think about how patients actually search now. They do not type "med spa near me" and scroll through ten results. They ask specific questions. "How long does Botox last?" "What is the difference between Juvederm and Restylane?" "Best place for a chemical peel in Austin." These are the exact types of queries that AI engines answer directly -- pulling from structured data, provider credentials, and treatment-specific content to build a recommendation.</p>
+      <p>The practices that have that structured data get cited. The ones running a five-page website with a generic services list and an Instagram link do not. It is that simple.</p>
+      <p><a href="/blog/what-is-aeo/">AEO (Answer Engine Optimization)</a> is the practice of making your content readable and citable by these AI engines. For med spas, the opportunity is massive because the competitive bar is still on the floor. Almost nobody in aesthetics has done this work yet.</p>
     </div>
 
-    <div class="schema-block reveal">
-      <div class="schema-label">Organization</div>
-      <p>This is the foundation. Organization schema tells the model who you are: your name, description, URL, logo, contact information, and social profiles. Without it, the model has to guess your identity from page content. With it, you are a registered entity.</p>
-      <p>The <code>sameAs</code> property is where the real leverage is. Linking your Organization to your LinkedIn, Crunchbase, Wikidata, and G2 profiles creates entity coherence across the knowledge graph. The model can cross-reference your identity from multiple sources. That cross-referencing builds trust.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">WebSite</div>
-      <p>WebSite schema with a <code>SearchAction</code> registers your canonical web presence. It tells the model this is your primary domain and enables sitelinks search. Think of it as domain-level identity verification. Simple to implement. High signal value.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">FAQPage</div>
-      <p>This is the most directly AEO-relevant schema type. FAQPage structures content as explicit question-answer pairs. AI models synthesize responses by matching user queries to answer-ready content. FAQ schema serves your answers in the exact format the model needs. You are literally pre-formatting your content for AI extraction.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">BreadcrumbList</div>
-      <p>BreadcrumbList gives the model your site hierarchy. It maps how your content relates to itself: Home > Blog > This Article. That hierarchy helps the model understand context and scope. It also enables rich breadcrumbs in search results, which improves click-through rates on the traditional side.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">Article / BlogPosting</div>
-      <p>Article schema with <code>datePublished</code>, <code>dateModified</code>, <code>author</code>, and <code>wordCount</code> makes your content explicitly citable. The model knows who wrote it, when it was published, and when it was last updated. Freshness signals matter for citation decisions. A well-attributed article outranks an anonymous page.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">AggregateRating</div>
-      <p>Social proof in machine-readable format. If your product or service has reviews, AggregateRating schema tells the model how many reviews exist and what the average score is. Models use this as a trust signal when deciding which sources to cite. A company with 200 reviews at 4.8 stars is more citable than one with no reviews at all.</p>
-    </div>
-
-    <h2 class="reveal">Schema types you <em>can deprioritize</em></h2>
+    <h2 class="reveal">The signals AI uses <em>to recommend med spas</em></h2>
 
     <div class="reveal">
-      <p>Not everything in the schema.org vocabulary moves the needle for AI citations. These types are either misused or low-impact for AEO specifically.</p>
+      <p>AI models do not guess which med spa to recommend. They pull from specific, measurable signals. Here is what drives citations for aesthetics practices.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Generic ItemList</div>
-      <p>Unless it is a structured product catalog or article index, ItemList adds noise without signal. A list of your team members or office locations does not help AI citation.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">MedicalBusiness + HealthAndBeautyBusiness Schema</div>
+      <p>Your site needs schema markup that tells AI models exactly what you are: a medical aesthetics practice with a defined treatment catalog. This means MedicalBusiness or HealthAndBeautyBusiness schema with each service listed as an Offer -- Botox, dermal fillers, laser treatments, chemical peels, microneedling, all of it. Without this markup, the AI model has to guess what you offer by reading your copy. Models do not like guessing. They like structured data that tells them directly.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Overly Nested Schemas</div>
-      <p>Ten levels of nested JSON-LD with every possible property filled in does not impress models. It confuses parsers and increases the odds of validation errors. Keep schema clean and specific. Every property should earn its place.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">FAQ Schema for Treatment Questions</div>
+      <p>Every treatment page should have FAQPage schema answering the questions patients actually ask. How long does Botox last? What is the recovery time for a chemical peel? How much do fillers cost? What are the side effects of laser resurfacing? When AI gets asked these questions, it looks for structured FAQ content first. If your site has it in proper schema markup, you become the source it cites. If you do not, someone else does.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Schema for Schema's Sake</div>
-      <p>Adding SpeakableSpecification, HowTo, or Recipe schema to pages that do not contain speakable content, instructions, or recipes is worse than having no schema. It creates a mismatch between your structured data and your visible content. Models penalize inconsistency.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">Provider Credentials and Person Schema</div>
+      <p>Patients want to know who is doing the injecting. AI models reflect that priority. Person schema for every provider -- physician, nurse practitioner, PA -- with their medical licenses, board certifications, years of experience, and areas of specialization. This is not just about trust. It is about entity recognition. When the model can connect a named provider to verified credentials, it treats that practice as more authoritative than one with an anonymous "our team" page.</p>
     </div>
 
-    <h2 class="reveal">Common mistakes <em>we see constantly</em></h2>
+    <div class="signal-block reveal">
+      <div class="signal-label">Before/After Content with Image Markup</div>
+      <p>Before-and-after galleries are the currency of med spa marketing. But most practices post them only on Instagram where AI models cannot access them. The ones that host galleries on their own site with proper ImageObject schema, descriptive alt text, and treatment-specific tagging give AI models visual proof of results tied to specific procedures. That content becomes citable evidence when a patient asks "who does the best lip filler in [city]."</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">Review Signals Across Platforms</div>
+      <p>AI models pull from Google Business reviews, RealSelf ratings, Yelp profiles, and Healthgrades listings. A 4.8-star average across 200+ Google reviews tells the model something different than a 4.2 with 15 reviews. AggregateRating schema on your site confirms these numbers in a format the model can parse instantly. The practices with strong, consistent review signals across multiple platforms get recommended. The ones with reviews scattered and unstructured get overlooked.</p>
+    </div>
+
+    <h2 class="reveal">What content <em>to build</em></h2>
 
     <div class="reveal">
-      <p><strong>JSON-LD parse errors.</strong> A missing comma, an unclosed bracket, a trailing comma after the last property. The schema looks like it is there in the source code but the parser rejects it silently. The model never sees it.</p>
-      <p><strong>Duplicate schemas.</strong> Two Organization blocks on the same page with different data. A CMS plugin generates one, a theme generates another. The model does not know which to trust, so it trusts neither.</p>
-      <p><strong>Missing @context.</strong> Every JSON-LD block needs <code>"@context": "https://schema.org"</code>. Without it, the structured data is just JSON. The model has no way to interpret it as schema.</p>
-      <p><strong>Schema that contradicts visible content.</strong> Your Organization schema says you are a SaaS company but your homepage headline says "Digital Marketing Agency." Your Article schema says the word count is 2,000 but the visible article is 400 words. Inconsistency erodes trust at the machine level.</p>
+      <p>You need 5 to 7 treatment pillar pages. Not blog posts. Not service blurbs. Full pillar pages that answer every question a patient might ask AI about that treatment.</p>
+      <p>Each page needs six components: a detailed treatment description that explains the procedure in plain language, candidate criteria so patients know if they qualify, a realistic recovery timeline, a pricing range for your market, FAQ schema covering the top 5-8 questions for that treatment, and your practitioner credentials with links to their profiles.</p>
+      <p>Start with your highest-revenue treatments. For most med spas that means Botox, dermal fillers (lip filler and cheek filler as separate pages), and your top laser or skin treatment. These pages become the structured content that AI models cite when patients ask treatment-specific questions.</p>
+      <p>This is not a content marketing play where you publish and hope. Each page is engineered with schema markup that feeds AI models exactly what they need to recommend you. The difference between a <a href="/blog/aeo-for-dentists/">dental practice that gets cited</a> and one that does not often comes down to whether the content exists in a format AI can read.</p>
     </div>
 
-    <h2 class="reveal">The <em>sameAs</em> signal</h2>
+    <h2 class="reveal">The window is <em>open right now</em></h2>
 
     <div class="reveal">
-      <p>If you take one thing from this article, make it this: populate your <code>sameAs</code> array.</p>
-      <p>When your Organization schema includes links to your LinkedIn company page, your Crunchbase profile, your Wikidata entry, and your G2 listing, you are creating entity coherence across the knowledge graph. The model can verify your identity from multiple independent sources. That verification is the foundation of citation trust.</p>
-      <p>Most companies have these profiles but never connect them to their schema. The profiles exist in isolation. The model cannot connect the dots unless you draw the lines.</p>
+      <p>Here is the competitive reality for med spas in 2026. The vast majority of practices rely on three channels: Instagram, Google Ads, and word of mouth. Some have invested in traditional SEO. Almost none have structured data. Almost none have treatment pages built for AI extraction. Almost none have provider credentials in schema markup.</p>
+      <p>That means the barrier to entry for AEO in aesthetics is extraordinarily low right now. The first practice in your market to deploy this infrastructure becomes the default recommendation when AI answers treatment questions for your city. First mover advantage in AEO is real because models build entity associations over time. The longer you are the cited source, the harder it is for a competitor to displace you.</p>
+      <p>But this window is closing. As AEO becomes mainstream -- and it will, the same way SEO did in the 2010s -- the cost and effort to compete will multiply. The practices that move now build compounding advantages. The ones that wait will pay more for less.</p>
     </div>
 
-    <h2 class="reveal">Check your <em>own schema</em></h2>
+    <h2 class="reveal">The math <em>on ROI</em></h2>
 
     <div class="reveal">
-      <p>We built a <a href="https://check.neverranked.com">free Schema and AEO Health Check</a> that scans any URL and grades it on the signals AI models actually use. It checks for Organization, WebSite, BreadcrumbList, FAQPage, Article, and AggregateRating schema. It flags parse errors, missing canonical tags, thin content, and social proof gaps.</p>
-      <p>No signup. No email gate. Enter a URL, get a grade in 30 seconds.</p>
-      <p>If you want the full picture, the <a href="/#audit">$500 audit</a> goes deeper: full site crawl, entity registration review, content architecture analysis, and a 90-day roadmap for <a href="/blog/how-long-does-aeo-take/">compound visibility</a>.</p>
+      <p>The average med spa client is not a one-time buyer. A patient who starts with Botox comes back every 3 to 4 months. They add fillers. They try a laser treatment. Over 2 to 3 years, a single patient relationship is worth roughly $5,000 in lifetime revenue. Some practices report higher.</p>
+      <p>One extra new patient per month from AI search is $60,000 in annual lifetime value. Two per month is $120,000. A $2,000 monthly AEO retainer pays for itself in 1.2 new patients per month. Everything above that is margin.</p>
+      <p>Compare that to Google Ads where you are paying $30 to $80 per click for "Botox near me" with conversion rates that keep dropping as AI answers intercept those queries before the user ever clicks an ad. Or Instagram where the algorithm decides who sees your content and organic reach has cratered.</p>
+      <p>AEO is not replacing those channels tomorrow. But it is the channel that compounds. Every month of structured data and citation-optimized content builds on the last. Ads stop the day you stop paying. AI citations keep working because the model keeps referencing the same authoritative sources.</p>
+    </div>
+
+    <h2 class="reveal">Find out <em>where your practice stands</em></h2>
+
+    <div class="reveal">
+      <p>We built a <a href="https://check.neverranked.com">free Schema and AEO Health Check</a> that grades any URL on the signals AI models use to decide who gets cited. No signup. No email gate. Takes 30 seconds. Run your practice site through it and see exactly where the gaps are.</p>
+      <p>If you want the full picture, the <a href="/#audit">$500 audit</a> maps every gap across your treatment pages, provider profiles, and review signals. You get a 90-day roadmap built specifically for med spas -- what to deploy, in what order, and the projected impact on AI visibility.</p>
+      <p>The practices that show up in AI answers this year are the ones that invested in the infrastructure now. The rest will wonder where their next patients went.</p>
     </div>
 
   </article>
@@ -768,12 +757,12 @@ body::before{
   <!-- ============ CTA ============ -->
   <section class="article-cta">
     <div class="wrap">
-      <div class="eyebrow reveal"><span class="dot"></span>Check Your Schema</div>
-      <h2 class="reveal" style="transition-delay:.06s">Grade your site in 30 seconds.</h2>
-      <p class="cta-sub reveal" style="transition-delay:.12s">Free check. No signup. Or start with the $500 audit for the complete roadmap.</p>
+      <div class="eyebrow reveal"><span class="dot"></span>Start Now</div>
+      <h2 class="reveal" style="transition-delay:.06s">See your AEO score.</h2>
+      <p class="cta-sub reveal" style="transition-delay:.12s">Free check in 30 seconds. Or start with the $500 audit and get the full roadmap.</p>
       <div class="cta-row reveal" style="transition-delay:.18s">
         <a href="https://check.neverranked.com" class="cta">
-          Free schema check
+          Free AEO check
           <span class="arrow"></span>
         </a>
         <a href="https://neverranked.com/#audit" class="cta-secondary">

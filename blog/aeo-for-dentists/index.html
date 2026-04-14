@@ -4,23 +4,23 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>Schema Markup for AI Search Engines: What Actually Matters — Never Ranked</title>
-<meta name="description" content="Most schema guides are written for Google rich snippets. AI models parse structured data differently. Here are the schema types that drive AI citations and the ones you can skip.">
-<link rel="canonical" href="https://neverranked.com/blog/schema-markup-ai-search/">
+<title>AEO for Dentists: How Patients Find (and Choose) You in AI Search — Never Ranked</title>
+<meta name="description" content="45% of consumers now use AI for local business recommendations. When a patient asks ChatGPT for the best dentist near them, here is what determines whether you show up.">
+<link rel="canonical" href="https://neverranked.com/blog/aeo-for-dentists/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:title" content="Schema Markup for AI Search Engines: What Actually Matters">
-<meta property="og:description" content="AI models parse structured data differently than crawlers. Here are the schema types that drive citations.">
+<meta property="og:title" content="AEO for Dentists: How Patients Find (and Choose) You in AI Search">
+<meta property="og:description" content="45% of consumers now use AI for local business recommendations. When a patient asks ChatGPT for the best dentist near them, here is what determines whether you show up.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://neverranked.com/blog/schema-markup-ai-search/">
+<meta property="og:url" content="https://neverranked.com/blog/aeo-for-dentists/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/blog/og-schema-markup.png">
+<meta property="og:image" content="https://neverranked.com/blog/og-aeo-for-dentists.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Schema Markup for AI Search — Never Ranked">
+<meta property="og:image:alt" content="AEO for Dentists — Never Ranked">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Schema Markup for AI Search Engines: What Actually Matters">
-<meta name="twitter:description" content="The schema types that drive AI citations and the ones you can skip.">
-<meta name="twitter:image" content="https://neverranked.com/blog/og-schema-markup.png">
+<meta name="twitter:title" content="AEO for Dentists: How Patients Find (and Choose) You in AI Search">
+<meta name="twitter:description" content="45% of consumers now use AI for local business recommendations. Here is what determines whether your dental practice shows up in AI search.">
+<meta name="twitter:image" content="https://neverranked.com/blog/og-aeo-for-dentists.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -31,8 +31,8 @@
   "@graph": [
     {
       "@type": "Article",
-      "headline": "Schema Markup for AI Search Engines: What Actually Matters",
-      "description": "Most schema guides are written for Google rich snippets circa 2019. AI models parse structured data differently. Here are the types that drive AI citations and the ones you can skip.",
+      "headline": "AEO for Dentists: How Patients Find (and Choose) You in AI Search",
+      "description": "45% of consumers now use AI for local business recommendations. When a patient asks ChatGPT for the best dentist near them, here is what determines whether you show up.",
       "author": {
         "@type": "Person",
         "name": "Lance Roylo",
@@ -41,12 +41,12 @@
       "publisher": {
         "@id": "https://neverranked.com/#organization"
       },
-      "datePublished": "2026-03-31",
-      "dateModified": "2026-03-31",
-      "url": "https://neverranked.com/blog/schema-markup-ai-search/",
-      "wordCount": 1150,
-      "mainEntityOfPage": "https://neverranked.com/blog/schema-markup-ai-search/",
-      "keywords": ["schema markup", "structured data", "AI search", "JSON-LD", "AEO", "Organization schema"]
+      "datePublished": "2026-04-17",
+      "dateModified": "2026-04-17",
+      "url": "https://neverranked.com/blog/aeo-for-dentists/",
+      "wordCount": 1500,
+      "mainEntityOfPage": "https://neverranked.com/blog/aeo-for-dentists/",
+      "keywords": ["AEO for dentists", "dentist AI search", "dental practice ChatGPT", "dentist AI visibility", "dental SEO 2026"]
     },
     {
       "@type": "BreadcrumbList",
@@ -66,8 +66,8 @@
         {
           "@type": "ListItem",
           "position": 3,
-          "name": "Schema Markup for AI Search",
-          "item": "https://neverranked.com/blog/schema-markup-ai-search/"
+          "name": "AEO for Dentists",
+          "item": "https://neverranked.com/blog/aeo-for-dentists/"
         }
       ]
     }
@@ -415,24 +415,15 @@ body::before{
   color:var(--text);
 }
 
-.article-body code{
-  font-family:var(--mono);
-  font-size:12px;
-  background:var(--bg-edge);
-  padding:2px 7px;
-  border-radius:3px;
-  color:var(--gold);
-}
-
-/* ---------- schema blocks ---------- */
-.schema-block{
+/* ---------- signal blocks ---------- */
+.signal-block{
   background:var(--bg-lift);
   border-left:3px solid var(--gold);
   border-radius:0 6px 6px 0;
   padding:28px 28px 28px 24px;
   margin:28px 0 32px;
 }
-.schema-block .schema-label{
+.signal-block .signal-label{
   font-family:var(--label);
   text-transform:uppercase;
   letter-spacing:.22em;
@@ -441,38 +432,44 @@ body::before{
   font-weight:500;
   margin-bottom:12px;
 }
-.schema-block p{
+.signal-block p{
   font-size:13px;
   line-height:1.8;
   color:var(--text-soft);
   margin:0 0 10px;
 }
-.schema-block p:last-child{margin-bottom:0}
+.signal-block p:last-child{margin-bottom:0}
 
-/* skip blocks */
-.skip-block{
-  background:var(--bg-lift);
-  border-left:3px solid var(--line);
-  border-radius:0 6px 6px 0;
-  padding:28px 28px 28px 24px;
-  margin:28px 0 32px;
+/* ---------- comparison table ---------- */
+.compare{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:1px;
+  background:var(--line);
+  margin:32px 0;
+  border-radius:6px;
+  overflow:hidden;
 }
-.skip-block .skip-label{
+.compare-cell{
+  background:var(--bg-lift);
+  padding:20px 24px;
+}
+.compare-head{
   font-family:var(--label);
   text-transform:uppercase;
-  letter-spacing:.22em;
+  letter-spacing:.18em;
   font-size:11px;
-  color:var(--text-mute);
   font-weight:500;
-  margin-bottom:12px;
+  color:var(--gold);
+  background:var(--bg-edge);
+  padding:16px 24px;
 }
-.skip-block p{
+.compare-cell p{
   font-size:13px;
-  line-height:1.8;
-  color:var(--text-faint);
-  margin:0 0 10px;
+  line-height:1.75;
+  color:var(--text-soft);
+  margin:0;
 }
-.skip-block p:last-child{margin-bottom:0}
 
 /* ---------- CTA section ---------- */
 .article-cta{
@@ -618,9 +615,9 @@ body::before{
 /* ---------- mobile ---------- */
 @media(max-width:640px){
   .article-meta{flex-direction:column;gap:12px}
-  .schema-block{padding:20px 20px 20px 18px}
-  .skip-block{padding:20px 20px 20px 18px}
+  .signal-block{padding:20px 20px 20px 18px}
   .article-body{padding:60px var(--gutter)}
+  .compare{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -662,11 +659,11 @@ body::before{
         <span>Insights</span>
         <span class="rule"></span>
       </div>
-      <h1 class="reveal" style="transition-delay:.06s">Schema Markup for AI Search: <em>What Actually Matters</em></h1>
+      <h1 class="reveal" style="transition-delay:.06s">AEO for Dentists <em>How Patients Find (and Choose) You in AI Search</em></h1>
       <div class="article-meta reveal" style="transition-delay:.12s">
         <span><b>By</b> Lance Roylo</span>
-        <span><b>Published</b> March 2026</span>
-        <span><b>Read</b> 6 min</span>
+        <span><b>Published</b> April 2026</span>
+        <span><b>Read</b> 8 min</span>
       </div>
     </div>
   </section>
@@ -675,92 +672,84 @@ body::before{
   <article class="article-body">
 
     <div class="reveal">
-      <p>Most websites have no schema markup at all. Of the ones that do, most have the wrong types. They deployed whatever their CMS plugin generated, never checked whether it was valid, and assumed the job was done.</p>
-      <p>For traditional SEO, that was fine. Google could figure out your site without structured data. It was helpful but not critical.</p>
-      <p>For AI search, it is critical. Language models and retrieval systems use structured data as a primary signal for entity recognition, content classification, and citation decisions. The schema on your site is how AI models read you. If it is missing, broken, or wrong, the model moves on to a source that is easier to parse.</p>
+      <p>A patient in your city opens ChatGPT and types "best dentist near me for Invisalign." Three practices get named. Yours is not one of them.</p>
+      <p>This is not a hypothetical. It is happening right now, thousands of times a day, in every metro area in the country. 45% of consumers now use AI tools like ChatGPT, Perplexity, and Google Gemini for local business recommendations. That number was 27% eighteen months ago. The trajectory is obvious.</p>
+      <p>The practices getting named did not pay for placement. They did not game the system. They gave AI models the structured information those models need to confidently recommend them. Your competitors may have already done this. If you have not, you are invisible in the fastest-growing discovery channel in healthcare.</p>
     </div>
 
-    <h2 class="reveal">The schema types <em>that drive citations</em></h2>
+    <h2 class="reveal">Why dental is <em>especially vulnerable</em></h2>
 
     <div class="reveal">
-      <p>Not all schema types are equally useful for AEO (Answer Engine Optimization). These are the six that directly influence whether AI models cite your content, ranked by impact.</p>
+      <p>Choosing a dentist is a trust decision. Patients do not want 50 blue links. They want a filtered answer from something they trust -- and increasingly, that something is an AI assistant.</p>
+      <p>Think about how the decision actually works. A patient moves to a new city, or their current dentist retires, or they need a specialist for a procedure they have never had before. In the old model, they would Google it, scroll through ads, skim some reviews, and pick one. Now they ask ChatGPT or Gemini: "Who is the best cosmetic dentist in Austin that takes Delta Dental?" And they get a direct answer. Two or three names. Maybe a short explanation of why each one was recommended.</p>
+      <p>AI does not rank by ad spend. It does not simply count star ratings. It cites practices that have <a href="/blog/schema-markup-ai-search/">structured data it can parse</a>, content it can extract answers from, and enough third-party validation to justify a confident recommendation. Most dental practices have none of this infrastructure. That is both the problem and the opportunity.</p>
     </div>
 
-    <div class="schema-block reveal">
-      <div class="schema-label">Organization</div>
-      <p>This is the foundation. Organization schema tells the model who you are: your name, description, URL, logo, contact information, and social profiles. Without it, the model has to guess your identity from page content. With it, you are a registered entity.</p>
-      <p>The <code>sameAs</code> property is where the real leverage is. Linking your Organization to your LinkedIn, Crunchbase, Wikidata, and G2 profiles creates entity coherence across the knowledge graph. The model can cross-reference your identity from multiple sources. That cross-referencing builds trust.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">WebSite</div>
-      <p>WebSite schema with a <code>SearchAction</code> registers your canonical web presence. It tells the model this is your primary domain and enables sitelinks search. Think of it as domain-level identity verification. Simple to implement. High signal value.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">FAQPage</div>
-      <p>This is the most directly AEO-relevant schema type. FAQPage structures content as explicit question-answer pairs. AI models synthesize responses by matching user queries to answer-ready content. FAQ schema serves your answers in the exact format the model needs. You are literally pre-formatting your content for AI extraction.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">BreadcrumbList</div>
-      <p>BreadcrumbList gives the model your site hierarchy. It maps how your content relates to itself: Home > Blog > This Article. That hierarchy helps the model understand context and scope. It also enables rich breadcrumbs in search results, which improves click-through rates on the traditional side.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">Article / BlogPosting</div>
-      <p>Article schema with <code>datePublished</code>, <code>dateModified</code>, <code>author</code>, and <code>wordCount</code> makes your content explicitly citable. The model knows who wrote it, when it was published, and when it was last updated. Freshness signals matter for citation decisions. A well-attributed article outranks an anonymous page.</p>
-    </div>
-
-    <div class="schema-block reveal">
-      <div class="schema-label">AggregateRating</div>
-      <p>Social proof in machine-readable format. If your product or service has reviews, AggregateRating schema tells the model how many reviews exist and what the average score is. Models use this as a trust signal when deciding which sources to cite. A company with 200 reviews at 4.8 stars is more citable than one with no reviews at all.</p>
-    </div>
-
-    <h2 class="reveal">Schema types you <em>can deprioritize</em></h2>
+    <h2 class="reveal">What AI actually <em>looks for</em></h2>
 
     <div class="reveal">
-      <p>Not everything in the schema.org vocabulary moves the needle for AI citations. These types are either misused or low-impact for AEO specifically.</p>
+      <p>When an AI model decides which dental practices to recommend, it pulls from a specific set of signals. These are not vague "authority" metrics. They are concrete, measurable data points that you either have or you do not. AEO (Answer Engine Optimization) is the practice of making sure you have them.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Generic ItemList</div>
-      <p>Unless it is a structured product catalog or article index, ItemList adds noise without signal. A list of your team members or office locations does not help AI citation.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">Organization + Dentist Schema</div>
+      <p>The model needs to know who you are in machine-readable format. That means Organization schema with your practice name, address, phone number, operating hours, and accepted insurance plans. It also means LocalBusiness schema using the specific Dentist subtype -- not a generic "HealthBusiness" but the precise classification that tells the model you are a dental practice in a specific service area with specific specialties.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Overly Nested Schemas</div>
-      <p>Ten levels of nested JSON-LD with every possible property filled in does not impress models. It confuses parsers and increases the odds of validation errors. Keep schema clean and specific. Every property should earn its place.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">FAQ Schema for Patient Questions</div>
+      <p>Patients ask the same questions over and over. How much does Invisalign cost. Does a root canal hurt. Do you take my insurance. What is the difference between a crown and a veneer. FAQPage schema wraps your answers to these questions in a format that AI models can directly extract and cite. Without it, your answers are buried in page copy that models may or may not find.</p>
     </div>
 
-    <div class="skip-block reveal">
-      <div class="skip-label">Schema for Schema's Sake</div>
-      <p>Adding SpeakableSpecification, HowTo, or Recipe schema to pages that do not contain speakable content, instructions, or recipes is worse than having no schema. It creates a mismatch between your structured data and your visible content. Models penalize inconsistency.</p>
+    <div class="signal-block reveal">
+      <div class="signal-label">Review Signals</div>
+      <p>AI models cross-reference reviews from Google Business Profile, Healthgrades, Zocdoc, and Yelp. They look for volume, recency, and sentiment consistency. A practice with 300 Google reviews averaging 4.8 stars and recent Healthgrades ratings carries more weight than a practice with 40 reviews from three years ago. AggregateRating schema makes these signals machine-readable and citable.</p>
     </div>
 
-    <h2 class="reveal">Common mistakes <em>we see constantly</em></h2>
+    <div class="signal-block reveal">
+      <div class="signal-label">Treatment-Specific Content</div>
+      <p>Models cite practices that answer clinical questions authoritatively. A 1,200-word guide on "What to Expect During Wisdom Tooth Extraction" with Article schema, clear subheadings, and specific recovery timelines gives the model something to reference. A generic services page with three bullet points does not. The depth and specificity of your content directly determines whether you get cited for treatment-related queries.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">Site Structure</div>
+      <p>BreadcrumbList schema maps your content hierarchy so models understand the relationship between your homepage, service pages, treatment guides, and blog posts. Without it, the model sees a flat collection of pages with no clear architecture. With it, the model understands that your Invisalign page is a child of your Cosmetic Dentistry section, which strengthens the topical authority signal.</p>
+    </div>
+
+    <h2 class="reveal">The exact schema <em>your practice needs</em></h2>
 
     <div class="reveal">
-      <p><strong>JSON-LD parse errors.</strong> A missing comma, an unclosed bracket, a trailing comma after the last property. The schema looks like it is there in the source code but the parser rejects it silently. The model never sees it.</p>
-      <p><strong>Duplicate schemas.</strong> Two Organization blocks on the same page with different data. A CMS plugin generates one, a theme generates another. The model does not know which to trust, so it trusts neither.</p>
-      <p><strong>Missing @context.</strong> Every JSON-LD block needs <code>"@context": "https://schema.org"</code>. Without it, the structured data is just JSON. The model has no way to interpret it as schema.</p>
-      <p><strong>Schema that contradicts visible content.</strong> Your Organization schema says you are a SaaS company but your homepage headline says "Digital Marketing Agency." Your Article schema says the word count is 2,000 but the visible article is 400 words. Inconsistency erodes trust at the machine level.</p>
+      <p>If you want AI models to cite your practice, here is the specific technical stack you need deployed. No ambiguity.</p>
+      <p><strong>Organization + Dentist LocalBusiness</strong> -- Your identity layer. Practice name, NPI number, address, phone, hours, insurance networks, and sameAs links to your Google Business Profile, Healthgrades listing, and social accounts. This is the foundation everything else builds on.</p>
+      <p><strong>MedicalBusiness service catalog</strong> -- A structured list of every service you offer, from routine cleanings to full-mouth reconstructions. Each service should have its own schema entry with a description and, where possible, a price range. This is how models match patient queries to your specific capabilities.</p>
+      <p><strong>FAQPage for top patient questions</strong> -- Take your 15-20 most common patient questions and structure them as FAQ schema. Cost questions. Pain questions. Insurance questions. Recovery time questions. These are the exact queries patients are asking AI models right now.</p>
+      <p><strong>Article and BlogPosting for treatment guides</strong> -- Every pillar treatment you offer should have a dedicated, long-form guide with proper Article schema, author attribution, publication dates, and word count metadata. This is the content layer that gets cited.</p>
+      <p><strong>BreadcrumbList for site structure</strong> -- Maps the hierarchy of your entire site so models understand content relationships and topical depth.</p>
+      <p><strong>AggregateRating from review platforms</strong> -- Surfaces your review data in machine-readable format so models can factor your reputation into recommendations.</p>
     </div>
 
-    <h2 class="reveal">The <em>sameAs</em> signal</h2>
+    <h2 class="reveal">What your competitors <em>are doing</em></h2>
 
     <div class="reveal">
-      <p>If you take one thing from this article, make it this: populate your <code>sameAs</code> array.</p>
-      <p>When your Organization schema includes links to your LinkedIn company page, your Crunchbase profile, your Wikidata entry, and your G2 listing, you are creating entity coherence across the knowledge graph. The model can verify your identity from multiple independent sources. That verification is the foundation of citation trust.</p>
-      <p>Most companies have these profiles but never connect them to their schema. The profiles exist in isolation. The model cannot connect the dots unless you draw the lines.</p>
+      <p>The dental practices that consistently get cited in AI answers share a pattern. They have 3 to 5 pillar articles answering the most common patient queries for their specialty. They have full <a href="/blog/schema-markup-ai-search/">schema coverage</a> across their site -- not just basic Organization markup, but the full stack described above. They have entity registrations linking their practice to Google Knowledge Panel, Healthgrades, Zocdoc, and other authoritative directories.</p>
+      <p>Most dental practices have none of this. Run any dental practice website through a <a href="https://check.neverranked.com">schema validator</a> and you will likely find zero structured data or, at best, a basic LocalBusiness entry missing half its properties. That is the gap. And it is wide open.</p>
+      <p>The practices closing this gap now are building a compounding advantage. Every month with full schema coverage and citable content is another month of training data that reinforces their position in AI recommendations. The longer you wait, the more ground you give up.</p>
     </div>
 
-    <h2 class="reveal">Check your <em>own schema</em></h2>
+    <h2 class="reveal">The ROI math <em>for your practice</em></h2>
 
     <div class="reveal">
-      <p>We built a <a href="https://check.neverranked.com">free Schema and AEO Health Check</a> that scans any URL and grades it on the signals AI models actually use. It checks for Organization, WebSite, BreadcrumbList, FAQPage, Article, and AggregateRating schema. It flags parse errors, missing canonical tags, thin content, and social proof gaps.</p>
-      <p>No signup. No email gate. Enter a URL, get a grade in 30 seconds.</p>
-      <p>If you want the full picture, the <a href="/#audit">$500 audit</a> goes deeper: full site crawl, entity registration review, content architecture analysis, and a 90-day roadmap for <a href="/blog/how-long-does-aeo-take/">compound visibility</a>.</p>
+      <p>The average patient lifetime value at a dental practice is roughly $10,000. That accounts for biannual cleanings, periodic procedures, emergency visits, and referrals over a 5 to 7 year relationship. Some practices with strong cosmetic or implant programs see lifetime values of $15,000 to $25,000.</p>
+      <p>If AI search sends your practice one additional new patient per month -- just one -- that is $120,000 per year in lifetime value. Two patients per month is $240,000. These are not aspirational numbers. These are the economics of showing up when patients ask AI for a dentist recommendation.</p>
+      <p>The <a href="/#audit">$500 audit</a> costs less than a single cleaning. It maps every gap in your AI visibility and delivers a 90-day implementation roadmap. The <a href="https://check.neverranked.com">free AEO check</a> takes 30 seconds and gives you a baseline score right now. Either way, you will know exactly where you stand.</p>
+    </div>
+
+    <h2 class="reveal">Start with <em>the data</em></h2>
+
+    <div class="reveal">
+      <p>We built a <a href="https://check.neverranked.com">free Schema and AEO Health Check</a> that grades any URL on the signals AI models use to generate recommendations. No signup. No email gate. Paste your practice URL and see your score in 30 seconds.</p>
+      <p>If you want the full picture -- every schema gap, every missing entity registration, a prioritized 90-day roadmap -- the <a href="/#audit">$500 audit</a> is where serious practices start. One new patient from AI search covers it 20 times over.</p>
+      <p>The shift to <a href="/blog/what-is-aeo/">AI-powered search</a> is not coming. It already happened. The only question is whether your practice is visible in it.</p>
     </div>
 
   </article>
@@ -768,12 +757,12 @@ body::before{
   <!-- ============ CTA ============ -->
   <section class="article-cta">
     <div class="wrap">
-      <div class="eyebrow reveal"><span class="dot"></span>Check Your Schema</div>
-      <h2 class="reveal" style="transition-delay:.06s">Grade your site in 30 seconds.</h2>
-      <p class="cta-sub reveal" style="transition-delay:.12s">Free check. No signup. Or start with the $500 audit for the complete roadmap.</p>
+      <div class="eyebrow reveal"><span class="dot"></span>Start Now</div>
+      <h2 class="reveal" style="transition-delay:.06s">See your practice's AEO score.</h2>
+      <p class="cta-sub reveal" style="transition-delay:.12s">Free check in 30 seconds. Or start with the $500 audit and get the full roadmap.</p>
       <div class="cta-row reveal" style="transition-delay:.18s">
         <a href="https://check.neverranked.com" class="cta">
-          Free schema check
+          Free AEO check
           <span class="arrow"></span>
         </a>
         <a href="https://neverranked.com/#audit" class="cta-secondary">
