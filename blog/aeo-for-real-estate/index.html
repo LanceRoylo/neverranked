@@ -30,6 +30,22 @@
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "Organization",
+      "@id": "https://neverranked.com/#organization",
+      "name": "Never Ranked",
+      "url": "https://neverranked.com",
+      "logo": "https://neverranked.com/og.png",
+      "sameAs": []
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://neverranked.com/#website",
+      "name": "Never Ranked",
+      "url": "https://neverranked.com",
+      "publisher": { "@id": "https://neverranked.com/#organization" }
+    },
+
+    {
       "@type": "Article",
       "headline": "AEO for Real Estate Agents: Getting Cited When Buyers Ask AI for Help",
       "description": "Homebuyers now ask ChatGPT for agent recommendations instead of searching Google. When someone types 'best real estate agent in [city],' here is what determines whether AI names you.",
