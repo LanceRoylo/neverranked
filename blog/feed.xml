@@ -5,7 +5,7 @@
     <link>https://neverranked.com/blog/</link>
     <description>Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.</description>
     <language>en-us</language>
-    <lastBuildDate>Tue, 12 May 2026 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Mon, 18 May 2026 12:00:00 +0000</lastBuildDate>
     <atom:link href="https://neverranked.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
     <managingEditor>hello@neverranked.com (Lance Roylo)</managingEditor>
     <webMaster>hello@neverranked.com (Lance Roylo)</webMaster>
@@ -15,6 +15,28 @@
       <title>Never Ranked</title>
       <link>https://neverranked.com/</link>
     </image>
+
+    <item>
+      <title>AEO Pricing: What It Costs and What You Should Get</title>
+      <link>https://neverranked.com/blog/aeo-pricing/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-pricing/</guid>
+      <pubDate>Mon, 18 May 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>AEO pricing ranges from $500 audits to $5,000 monthly retainers. What each tier includes, what to expect, and how to calculate the ROI for your business.</description>
+      <category>AEO</category>
+      <category>Pricing</category>
+    </item>
+
+    <item>
+      <title>How to Choose an AEO Agency (What to Ask First)</title>
+      <link>https://neverranked.com/blog/best-aeo-agency/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/best-aeo-agency/</guid>
+      <pubDate>Thu, 15 May 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Most agencies selling AEO services are repackaging old SEO playbooks with new language. Here is how to tell the difference and what to ask before signing.</description>
+      <category>AEO</category>
+      <category>Agency</category>
+    </item>
 
     <item>
       <title>AEO for Chiropractors: How Chiropractic and PT Practices Get Cited by AI</title>
