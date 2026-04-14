@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Mono:wght@300;400&family=Barlow+Condensed:wght@400;500&display=swap');
+body{
+  width:1200px;height:630px;
+  background:#121212;
+  color:#fbf8ef;
+  font-family:'DM Mono',monospace;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  padding:80px 90px;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.5) 100%),
+    radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.45) 100%);
+  z-index:1;
+}
+.content{position:relative;z-index:2}
+.kicker{
+  font-family:'Barlow Condensed',sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:14px;
+  color:rgba(251,248,239,.6);
+  margin-bottom:32px;
+  font-weight:500;
+}
+.kicker span{color:#e8c767}
+h1{
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;
+  font-size:58px;
+  line-height:1.08;
+  letter-spacing:-.02em;
+  max-width:16ch;
+  margin-bottom:36px;
+}
+h1 em{
+  color:#e8c767;
+  font-style:italic;
+}
+.meta{
+  font-family:'DM Mono',monospace;
+  font-size:14px;
+  color:rgba(251,248,239,.55);
+  font-weight:300;
+}
+.bottom{
+  position:absolute;
+  bottom:50px;left:90px;right:90px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  z-index:2;
+}
+.mark{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-size:22px;
+  color:rgba(251,248,239,.7);
+}
+.url{
+  font-family:'DM Mono',monospace;
+  font-size:13px;
+  color:rgba(251,248,239,.4);
+  font-weight:300;
+}
+.gold-line{
+  position:absolute;
+  top:0;left:0;right:0;
+  height:4px;
+  background:linear-gradient(90deg,#e8c767,#bfa04d);
+  z-index:3;
+}
+</style>
+</head>
+<body>
+<div class="gold-line"></div>
+<div class="content">
+  <div class="kicker"><span>Insights</span> / Never Ranked</div>
+  <h1>AEO for Restaurants: <em>Getting Recommended When Diners Ask AI</em></h1>
+  <div class="meta">By Lance Roylo / May 2026 / 7 min read</div>
+</div>
+<div class="bottom">
+  <div class="mark">Never Ranked<sup style="font-size:10px;font-style:normal;opacity:.6">&copy;</sup></div>
+  <div class="url">neverranked.com/blog</div>
+</div>
+</body>
+</html>
