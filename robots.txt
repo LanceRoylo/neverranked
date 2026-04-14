@@ -1,11 +1,32 @@
 User-Agent: *
 Allow: /
 
-# The audit workspace and implementation kit are internal
+# AI crawlers are explicitly welcome
+User-Agent: GPTBot
+Allow: /
+
+User-Agent: ChatGPT-User
+Allow: /
+
+User-Agent: Google-Extended
+Allow: /
+
+User-Agent: PerplexityBot
+Allow: /
+
+User-Agent: ClaudeBot
+Allow: /
+
+User-Agent: Applebot-Extended
+Allow: /
+
+User-Agent: cohere-ai
+Allow: /
+
+# Internal workspaces
 Disallow: /audits/
 Disallow: /audit-template/
 Disallow: /scripts/
 Disallow: /content/
 
-# Let the indexers know where to find the sitemap
 Sitemap: https://neverranked.com/sitemap.xml

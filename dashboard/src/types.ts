@@ -27,6 +27,8 @@ export interface User {
   onboarding_drip_start: number | null;
   onboarding_drip_day3: number | null;
   onboarding_drip_day7: number | null;
+  nurture_day14_sent: number | null;
+  nurture_day30_sent: number | null;
   created_at: number;
   last_login_at: number | null;
 }
