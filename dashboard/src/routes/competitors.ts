@@ -15,14 +15,57 @@ interface ComparisonRow {
   redFlagCount: number;
 }
 
+function buildCompetitorNarrative(
+  primaryScore: number,
+  wins: number,
+  losses: number,
+  ties: number,
+  totalCompetitors: number,
+  advantages: string[],
+  gaps: string[]
+): string {
+  const parts: string[] = [];
+
+  if (primaryScore === 0) {
+    parts.push("Your site has not been scanned yet, so there is no score to compare. Once a scan runs, this page will show how your AEO readiness compares to the competitors being tracked.");
+    return esc(parts.join(" "));
+  }
+
+  if (wins === totalCompetitors && totalCompetitors > 0) {
+    parts.push("You are outperforming every tracked competitor on AEO readiness. That is a strong position, but scores shift as competitors improve their structured data and content.");
+  } else if (losses === totalCompetitors && totalCompetitors > 0) {
+    parts.push("Every tracked competitor currently scores higher on AEO readiness. The gap is closable. The schema comparison and red flag breakdown below show exactly where to focus.");
+  } else if (losses > wins) {
+    parts.push("More competitors are scoring above you than below. The score comparison chart shows the gap, and the schema matrix reveals the specific markup and signals you are missing that they have.");
+  } else if (wins > losses) {
+    parts.push("You are ahead of most tracked competitors, which means AI engines are more likely to see your site as a credible source. Maintaining this lead requires monitoring for when competitors close their gaps.");
+  } else {
+    parts.push("The field is tight. You and your competitors have similar AEO readiness scores, so small improvements in schema coverage or content quality can shift the competitive balance.");
+  }
+
+  if (gaps.length > 0) {
+    parts.push("The schema comparison below highlights " + gaps.length + " schema type" + (gaps.length > 1 ? "s" : "") + " that competitors have and you do not. These are the highest-leverage items to add.");
+  }
+  if (advantages.length > 0) {
+    parts.push("You have " + advantages.length + " schema type" + (advantages.length > 1 ? "s" : "") + " that no competitor has implemented yet. That is a defensible advantage worth protecting.");
+  }
+
+  return esc(parts.join(" "));
+}
+
 export async function handleCompetitors(clientSlug: string, user: User, env: Env): Promise<Response> {
+  // Access check: client can only see their own slug
+  if (user.role === "client" && user.client_slug !== clientSlug) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
   // Get all domains for this client (primary + competitors)
   const domains = (await env.DB.prepare(
     "SELECT * FROM domains WHERE client_slug = ? AND active = 1 ORDER BY is_competitor, domain"
   ).bind(clientSlug).all<Domain>()).results;
 
   if (domains.length === 0) {
-    return html(layout("Competitors", `<div class="empty"><h3>No domains found</h3></div>`, user), 404);
+    return html(layout("Competitors", `<div class="empty"><h3>No domains found</h3></div>`, user, clientSlug), 404);
   }
 
   // Get latest scan for each domain
@@ -52,8 +95,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       ? `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">You submitted ${pendingCount} competitor${pendingCount > 1 ? 's' : ''} for review. We are setting them up and will run initial scans shortly. Check back soon.</p>`
       : `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">No competitors are being tracked yet. Add competitors during onboarding or ask your account manager to set them up.</p>`;
 
-    return html(layout("Competitors", `
-      <div style="margin-bottom:40px">
+    return html(layout("Competitors", `      <div style="margin-bottom:40px">
         <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
         <h1>Competitor <em>comparison</em></h1>
       </div>
@@ -61,7 +103,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
         <h3>Competitors coming soon</h3>
         ${emptyMessage}
       </div>
-    `, user));
+    `, user, clientSlug));
   }
 
   // Collect all schema types across all domains
@@ -197,6 +239,11 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       </div>
     </div>
 
+    <!-- Context -->
+    <div class="narrative-context" style="margin-bottom:32px">
+      ${buildCompetitorNarrative(primaryScore, wins, losses, ties, competitors.length, advantages, gaps)}
+    </div>
+
     <!-- Win/Loss Summary -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px">
       <div style="padding:20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
@@ -248,5 +295,5 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     ${flagComparison}
   `;
 
-  return html(layout("Competitors", body, user));
+  return html(layout("Competitors", body, user, clientSlug));
 }

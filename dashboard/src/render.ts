@@ -5,12 +5,19 @@
 import { CSS } from "./styles";
 import type { User } from "./types";
 
-export function layout(title: string, body: string, user: User | null = null): string {
+export function layout(title: string, body: string, user: User | null = null, activeSlug?: string): string {
+  // For slug-dependent nav links: use activeSlug if we know which client we're viewing,
+  // otherwise use the user's client_slug, otherwise use bare path (triggers auto-redirect)
+  const slug = activeSlug || user?.client_slug || '';
+  const compHref = slug ? `/competitors/${slug}` : '/competitors';
+  const citeHref = slug ? `/citations/${slug}` : '/citations';
+  const roadHref = slug ? `/roadmap/${slug}` : '/roadmap';
   const navLinks = user
     ? `
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
-      <a href="/competitors/${user.client_slug || ''}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
-      <a href="/roadmap/${user.client_slug || ''}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
+      <a href="${user.role === 'admin' ? '/competitors' : compHref}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
+      <a href="${user.role === 'admin' ? '/citations' : citeHref}" class="nav-links-item${title === 'Citations' || title === 'Citation Keywords' ? ' active' : ''}">Citations</a>
+      <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
       ${user.role === 'admin' ? '<a href="/admin/leads" class="nav-links-item' + (title === 'Leads' ? ' active' : '') + '">Leads</a>' : ''}
       ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') || title === 'Inject' ? ' active' : '') + '">Cockpit</a>' : ''}
     `

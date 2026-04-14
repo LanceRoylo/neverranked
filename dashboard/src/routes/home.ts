@@ -5,6 +5,16 @@
 import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, esc } from "../render";
 
+function buildHomeNarrative(user: User, domainCount: number, clientCount: number): string {
+  if (user.role === "admin") {
+    if (domainCount === 0) return "No client domains are being tracked yet. Add clients and their primary domains from the admin panel to start monitoring AEO readiness.";
+    return "This is the overview of all " + domainCount + " tracked domains across " + clientCount + " client" + (clientCount > 1 ? "s" : "") + ". Each card shows the current AEO readiness grade and score. Click any domain for the full report with technical signals, schema coverage, and recommended actions.";
+  }
+  if (domainCount === 0) return "Your account is being set up. Once your domains are added, this dashboard will show your AEO readiness scores, track progress over time, and highlight exactly what needs attention.";
+  if (domainCount === 1) return "This is your AEO readiness dashboard. The score and grade below reflect how well your site is optimized for AI engine visibility. Click through for the full breakdown of technical signals, schema coverage, and what to improve next.";
+  return "These are your tracked domains. Each one is scored independently for AEO readiness. Click any domain to see its full report, including schema coverage, technical signals, and prioritized recommendations.";
+}
+
 export async function handleHome(user: User, env: Env): Promise<Response> {
   const clientSlug = user.role === "admin" ? null : user.client_slug;
 
@@ -89,6 +99,9 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     .map(slug => `<a href="/roadmap/${encodeURIComponent(slug)}" class="btn btn-ghost" style="font-size:11px">Roadmap: ${esc(slug)}</a>`)
     .join(" ");
 
+  // Build home narrative
+  const homeNarrative = buildHomeNarrative(user, domains.length, clientSlugs.length);
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -103,7 +116,8 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     </div>
 
     ${domainCards.length > 0
-      ? `<div style="display:flex;flex-direction:column;gap:16px">${domainCards.join('')}</div>`
+      ? `<div class="narrative-context" style="margin-bottom:24px">${esc(homeNarrative)}</div>
+         <div style="display:flex;flex-direction:column;gap:16px">${domainCards.join('')}</div>`
       : `<div class="empty">
           <h3>No domains yet</h3>
           <p>${user.role === 'admin' ? 'Add a client and their domains from the admin panel.' : 'Your account is being set up. Check back soon.'}</p>

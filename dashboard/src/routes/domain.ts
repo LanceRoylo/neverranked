@@ -427,5 +427,5 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${historySection}
   `;
 
-  return html(layout(domain.domain, body, user));
+  return html(layout(domain.domain, body, user, domain.client_slug));
 }

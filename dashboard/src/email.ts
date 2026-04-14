@@ -6,6 +6,7 @@
 
 import type { Env, ScanResult } from "./types";
 import { generateNarrative } from "./narrative";
+import type { CitationDigestData } from "./citations";
 
 export interface DigestData {
   domain: string;
@@ -67,7 +68,8 @@ export async function sendDigestEmail(
   to: string,
   userName: string | null,
   digests: DigestData[],
-  env: Env
+  env: Env,
+  citationData?: Map<string, CitationDigestData>
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -80,7 +82,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0])
     : `Weekly AEO Report -- ${digests.length} domains scanned`;
 
-  const emailHtml = buildDigestHtml(userName, digests);
+  const emailHtml = buildDigestHtml(userName, digests, citationData);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -336,7 +338,53 @@ function escEmail(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[]): string {
+function buildCitationBlock(cd: CitationDigestData): string {
+  const sharePct = (cd.citationShare * 100).toFixed(0);
+  const prevPct = cd.previousShare !== null ? (cd.previousShare * 100).toFixed(0) : null;
+
+  let deltaHtml = "";
+  if (prevPct !== null) {
+    const diff = Number(sharePct) - Number(prevPct);
+    if (diff > 0) {
+      deltaHtml = `<span style="color:#27ae60;font-size:13px;margin-left:8px">+${diff} pts</span>`;
+    } else if (diff < 0) {
+      deltaHtml = `<span style="color:#c0392b;font-size:13px;margin-left:8px">${diff} pts</span>`;
+    } else {
+      deltaHtml = `<span style="color:#888888;font-size:13px;margin-left:8px">no change</span>`;
+    }
+  }
+
+  const competitorRows = cd.topCompetitors.slice(0, 3).map(c =>
+    `<div style="padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;color:#b0b0a8;display:flex;justify-content:space-between">
+      <span>${escEmail(c.name)}</span>
+      <span style="color:#888888">${c.count} mentions</span>
+    </div>`
+  ).join("");
+
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
+      <tr>
+        <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">AI Citation Share</div>
+
+          <div style="font-family:'Courier New',monospace;font-size:36px;color:#fbf8ef;letter-spacing:-1px">
+            ${sharePct}<span style="font-size:16px;color:#888888">%</span>${deltaHtml}
+          </div>
+          <div style="font-family:Georgia,serif;font-size:13px;color:#888888;margin-top:4px;margin-bottom:16px">
+            Cited in ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries
+          </div>
+
+          ${cd.topCompetitors.length > 0 ? `
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">Top competitors</div>
+          ${competitorRows}
+          ` : ""}
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>): string {
   const greeting = userName ? userName.split(" ")[0] : "there";
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -456,6 +504,20 @@ function buildDigestHtml(userName: string | null, digests: DigestData[]): string
             ${domainBlocks}
           </td>
         </tr>
+
+        <!-- Citation share blocks -->
+        ${(() => {
+          if (!citationData || citationData.size === 0) return "";
+          const blocks: string[] = [];
+          const slugsSeen = new Set<string>();
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const cd = citationData.get(d.clientSlug);
+            if (cd) blocks.push(buildCitationBlock(cd));
+          }
+          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
+        })()}
 
         <!-- CTA -->
         <tr>

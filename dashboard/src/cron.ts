@@ -13,6 +13,7 @@ import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type Digest
 import { checkAndAlertRegression } from "./regression";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
+import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -52,7 +53,11 @@ export async function runWeeklyScans(env: Env): Promise<void> {
 
   console.log(`Weekly scan complete: ${scanned} succeeded, ${errors} failed, ${domains.length} total`);
 
-  // --- Phase 2: Send digest emails ---
+  // --- Phase 2: Run citation tracking ---
+
+  await runWeeklyCitations(env);
+
+  // --- Phase 3: Send digest emails ---
 
   await sendWeeklyDigests(domains, env);
 }
@@ -112,7 +117,17 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
 
     if (digests.length === 0) continue;
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env);
+    // Gather citation data for each client_slug in the digest
+    const citationDataMap = new Map<string, CitationDigestData>();
+    const slugsSeen = new Set<string>();
+    for (const d of digests) {
+      if (slugsSeen.has(d.clientSlug)) continue;
+      slugsSeen.add(d.clientSlug);
+      const cData = await getCitationDigestData(d.clientSlug, env);
+      if (cData) citationDataMap.set(d.clientSlug, cData);
+    }
+
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap);
     if (ok) {
       sent++;
       // Log to email_log

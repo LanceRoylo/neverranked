@@ -215,6 +215,13 @@ em{color:var(--gold);font-weight:400}
 }
 .data-table tr:hover td{background:var(--bg-lift)}
 
+/* narrative context blocks */
+.narrative-context{
+  font-size:13px;line-height:1.85;color:var(--text-faint);
+  margin-top:12px;padding:16px 20px;
+  background:var(--bg-edge);border-radius:4px;
+}
+
 /* empty state */
 .empty{
   text-align:center;padding:80px 20px;

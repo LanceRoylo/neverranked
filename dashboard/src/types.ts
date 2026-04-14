@@ -11,6 +11,8 @@ export interface Env {
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
   DASHBOARD_ORIGIN?: string;
+  PERPLEXITY_API_KEY?: string;
+  OPENAI_API_KEY?: string;
 }
 
 export interface User {
@@ -124,6 +126,45 @@ export interface InjectionConfig {
   business_social: string | null;
   created_at: number;
   updated_at: number;
+}
+
+export interface CitationKeyword {
+  id: number;
+  client_slug: string;
+  keyword: string;
+  category: string;
+  active: number;
+  created_at: number;
+}
+
+export interface CitationRun {
+  id: number;
+  keyword_id: number;
+  engine: string;
+  response_text: string;
+  cited_entities: string;
+  cited_urls: string;
+  client_cited: number;
+  run_at: number;
+}
+
+export interface CitedEntity {
+  name: string;
+  url: string | null;
+  context: string;
+}
+
+export interface CitationSnapshot {
+  id: number;
+  client_slug: string;
+  week_start: number;
+  total_queries: number;
+  client_citations: number;
+  citation_share: number;
+  top_competitors: string;
+  keyword_breakdown: string;
+  engines_breakdown: string;
+  created_at: number;
 }
 
 export interface RequestContext {

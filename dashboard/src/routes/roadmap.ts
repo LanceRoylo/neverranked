@@ -47,6 +47,46 @@ const PHASE_TEMPLATES: { title: string; subtitle: string; description: string }[
   },
 ];
 
+function buildRoadmapNarrative(
+  totalItems: number,
+  totalDone: number,
+  completedPhases: number,
+  totalPhases: number,
+  allItems: RoadmapItem[]
+): string {
+  const parts: string[] = [];
+
+  if (totalItems === 0) {
+    parts.push("Your AEO roadmap is being built. Once items are added, this page will track every optimization task from start to finish, organized into phases that build on each other.");
+    return esc(parts.join(" "));
+  }
+
+  const pctDone = Math.round((totalDone / totalItems) * 100);
+  const inProgress = allItems.filter(i => i.status === "in_progress").length;
+  const blocked = allItems.filter(i => i.status === "blocked").length;
+
+  if (pctDone === 100) {
+    parts.push("Every item in the current roadmap is complete. " + completedPhases + " of " + totalPhases + " phases delivered. If there are locked phases ahead, the next one will activate automatically. If all phases are done, new optimization opportunities will be added as AI engines evolve.");
+  } else if (pctDone >= 75) {
+    parts.push("The roadmap is " + pctDone + "% complete with " + totalDone + " of " + totalItems + " items delivered. The finish line for the current phase is close. Each completed item compounds, because AI models reward sites that get multiple authority signals right, not just one.");
+  } else if (pctDone >= 40) {
+    parts.push("Progress is steady at " + pctDone + "% (" + totalDone + " of " + totalItems + " items done). The active phase shows what is being worked on now and what is coming next. AEO improvements take 2-4 weeks to reflect in AI model responses, so results from recently completed items may not show in scores yet.");
+  } else if (totalDone > 0) {
+    parts.push("The roadmap is " + pctDone + "% complete. Early-phase work focuses on the foundational signals AI models check first: structured data, entity consistency, and content quality. These are the building blocks everything else depends on.");
+  } else {
+    parts.push("Work has not started yet on the " + totalItems + " items in the roadmap. The items are organized by priority, with the most impactful optimizations first. Each completed item strengthens the signals AI engines look for when deciding whether to cite a source.");
+  }
+
+  if (inProgress > 0) {
+    parts.push(inProgress + " item" + (inProgress > 1 ? "s are" : " is") + " currently in progress.");
+  }
+  if (blocked > 0) {
+    parts.push(blocked + " item" + (blocked > 1 ? "s are" : " is") + " blocked and may need attention.");
+  }
+
+  return esc(parts.join(" "));
+}
+
 /** Ensure a client has at least Phase 1. Returns all phases. */
 async function ensurePhases(clientSlug: string, env: Env): Promise<RoadmapPhase[]> {
   let phases = (await env.DB.prepare(
@@ -113,6 +153,11 @@ async function checkPhaseCompletion(clientSlug: string, env: Env): Promise<void>
 }
 
 export async function handleRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+  // Access check: client can only see their own slug
+  if (user.role === "client" && user.client_slug !== clientSlug) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
   const phases = await ensurePhases(clientSlug, env);
 
   // Check for auto-completion
@@ -311,13 +356,18 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
       </div>
     </div>
 
+    <!-- Context -->
+    <div class="narrative-context" style="margin-bottom:32px">
+      ${buildRoadmapNarrative(totalItems, totalDone, completedPhases, updatedPhases.length, allItems)}
+    </div>
+
     ${journeyHtml}
     ${phaseSections}
     ${movingTargetCallout}
     ${addForm}
   `;
 
-  return html(layout("Roadmap", body, user));
+  return html(layout("Roadmap", body, user, clientSlug));
 }
 
 /** Build the horizontal phase journey indicator */

@@ -24,6 +24,7 @@ import { runWeeklyScans, runDailyTasks } from "./cron";
 import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript } from "./routes/inject";
 import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
+import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -234,9 +235,8 @@ export default {
 
     // Competitors
     if (path === "/competitors" || path === "/competitors/") {
-      const slug = user.client_slug || await getFirstClientSlug(env);
-      if (slug) return redirect(`/competitors/${slug}`);
-      return html(layout("Competitors", `<div class="empty"><h3>No clients yet</h3><p>Add a client domain first.</p></div>`, user));
+      if (user.client_slug) return redirect(`/competitors/${user.client_slug}`);
+      return renderClientPicker("Competitors", "competitors", user, env);
     }
     const compMatch = path.match(/^\/competitors\/(.+)$/);
     if (compMatch) {
@@ -246,9 +246,8 @@ export default {
 
     // Roadmap
     if (path === "/roadmap" || path === "/roadmap/") {
-      const slug = user.client_slug || await getFirstClientSlug(env);
-      if (slug) return redirect(`/roadmap/${slug}`);
-      return html(layout("Roadmap", `<div class="empty"><h3>No clients yet</h3><p>Add a client domain first.</p></div>`, user));
+      if (user.client_slug) return redirect(`/roadmap/${user.client_slug}`);
+      return renderClientPicker("Roadmap", "roadmap", user, env);
     }
     const roadmapMatch = path.match(/^\/roadmap\/([^/]+)$/);
     if (roadmapMatch && method === "GET") {
@@ -265,6 +264,43 @@ export default {
     const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
     if (phaseAddMatch && method === "POST" && user.role === "admin") {
       return handleAddPhase(decodeURIComponent(phaseAddMatch[1]), request, user, env);
+    }
+
+    // Citations -- redirect or pick client
+    if ((path === "/citations" || path === "/citations/") && method === "GET") {
+      if (user.client_slug) return redirect(`/citations/${user.client_slug}`);
+      return renderClientPicker("Citations", "citations", user, env);
+    }
+    // Citations -- client view
+    const citationsMatch = path.match(/^\/citations\/([^/]+?)\/?$/);
+    if (citationsMatch && method === "GET") {
+      return handleCitations(decodeURIComponent(citationsMatch[1]), user, env);
+    }
+
+    // Citations -- admin keyword management
+    const citationsAdminMatch = path.match(/^\/admin\/citations\/([^/]+?)\/?$/);
+    if (citationsAdminMatch && method === "GET" && user.role === "admin") {
+      return handleAdminCitations(decodeURIComponent(citationsAdminMatch[1]), user, env, url);
+    }
+    const citationsAddMatch = path.match(/^\/admin\/citations\/([^/]+)\/add$/);
+    if (citationsAddMatch && method === "POST" && user.role === "admin") {
+      return handleAddKeyword(decodeURIComponent(citationsAddMatch[1]), request, env);
+    }
+    const citationsBulkMatch = path.match(/^\/admin\/citations\/([^/]+)\/bulk$/);
+    if (citationsBulkMatch && method === "POST" && user.role === "admin") {
+      return handleBulkAddKeywords(decodeURIComponent(citationsBulkMatch[1]), request, env);
+    }
+    const citationsDeleteMatch = path.match(/^\/admin\/citations\/([^/]+)\/delete\/(\d+)$/);
+    if (citationsDeleteMatch && method === "POST" && user.role === "admin") {
+      return handleDeleteKeyword(decodeURIComponent(citationsDeleteMatch[1]), Number(citationsDeleteMatch[2]), env);
+    }
+    const citationsGenerateMatch = path.match(/^\/admin\/citations\/([^/]+)\/generate$/);
+    if (citationsGenerateMatch && method === "POST" && user.role === "admin") {
+      return handleGenerateKeywords(decodeURIComponent(citationsGenerateMatch[1]), request, env);
+    }
+    const citationsRunMatch = path.match(/^\/admin\/citations\/([^/]+)\/run$/);
+    if (citationsRunMatch && method === "POST" && user.role === "admin") {
+      return handleManualCitationRun(decodeURIComponent(citationsRunMatch[1]), env, ctx);
     }
 
     // Settings
@@ -308,4 +344,38 @@ async function getFirstClientSlug(env: Env): Promise<string | null> {
     "SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0 ORDER BY client_slug LIMIT 1"
   ).first<{ client_slug: string }>();
   return row?.client_slug || null;
+}
+
+/** Render a client picker page for admin users hitting a bare slug-dependent route */
+async function renderClientPicker(title: string, basePath: string, user: import("./types").User, env: Env): Promise<Response> {
+  const slugs = (await env.DB.prepare(
+    "SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0 ORDER BY client_slug"
+  ).all<{ client_slug: string }>()).results;
+
+  if (slugs.length === 0) {
+    return html(layout(title, `<div class="empty"><h3>No clients yet</h3><p>Add a client domain first.</p></div>`, user));
+  }
+
+  if (slugs.length === 1) {
+    return redirect(`/${basePath}/${slugs[0].client_slug}`);
+  }
+
+  const cards = slugs.map(s => `
+    <a href="/${basePath}/${s.client_slug}" class="card" style="display:block;padding:20px 24px;text-decoration:none;transition:border-color .3s">
+      <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">${s.client_slug}</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-top:4px">View ${title.toLowerCase()}</div>
+    </a>
+  `).join("");
+
+  const body = `
+    <div class="section-header">
+      <h1>${title}</h1>
+      <div class="section-sub">Select a client</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px;max-width:480px">
+      ${cards}
+    </div>
+  `;
+
+  return html(layout(title, body, user));
 }
