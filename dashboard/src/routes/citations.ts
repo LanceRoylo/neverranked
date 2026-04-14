@@ -26,6 +26,104 @@ function buildEngineRows(enginesBreakdown: Record<string, { queries: number; cit
   }).join("");
 }
 
+async function buildContentRecommendations(
+  slug: string,
+  keywordBreakdown: { keyword: string; keyword_id: number; cited: boolean; engines: string[] }[],
+  env: Env
+): Promise<string> {
+  // Find keywords where client is NOT cited
+  const gaps = keywordBreakdown.filter(k => !k.cited);
+  if (gaps.length === 0) return "";
+
+  // For each gap keyword, find who IS being cited (from citation_runs)
+  interface GapInsight {
+    keyword: string;
+    citedBy: string[];
+    recommendation: string;
+  }
+
+  const insights: GapInsight[] = [];
+
+  for (const gap of gaps.slice(0, 8)) {
+    // Get recent citation runs for this keyword across all engines
+    const runs = (await env.DB.prepare(
+      `SELECT cited_entities FROM citation_runs
+       WHERE keyword_id = ? AND client_cited = 0
+       ORDER BY run_at DESC LIMIT 8`
+    ).bind(gap.keyword_id).all<{ cited_entities: string }>()).results;
+
+    // Collect all entities cited across runs
+    const entityCounts = new Map<string, number>();
+    for (const run of runs) {
+      try {
+        const entities: { name: string; url?: string | null }[] = JSON.parse(run.cited_entities);
+        for (const e of entities) {
+          const name = e.name.trim();
+          if (name.length > 2 && name.length < 80) {
+            entityCounts.set(name, (entityCounts.get(name) || 0) + 1);
+          }
+        }
+      } catch {}
+    }
+
+    // Sort by frequency, take top 3
+    const topCited = [...entityCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([name]) => name);
+
+    // Generate recommendation based on keyword type
+    const kw = gap.keyword.toLowerCase();
+    let rec = "";
+    if (kw.includes("best") || kw.includes("top") || kw.includes("recommend")) {
+      rec = "Create a comprehensive guide or comparison piece that directly answers this query. AI engines cite sources that provide structured, authoritative comparisons.";
+    } else if (kw.includes("how") || kw.includes("what is") || kw.includes("guide")) {
+      rec = "Write an in-depth explainer article with clear structure, FAQ schema, and step-by-step breakdowns. AI models favor sources with detailed, well-organized answers.";
+    } else if (kw.includes("vs") || kw.includes("compare") || kw.includes("difference")) {
+      rec = "Publish a detailed comparison page with structured data. Side-by-side comparisons with clear criteria get cited more often by AI engines.";
+    } else if (kw.includes("cost") || kw.includes("price") || kw.includes("pricing")) {
+      rec = "Create a transparent pricing or cost breakdown page. AI engines cite sources that provide specific, structured pricing information.";
+    } else if (kw.includes("near me") || kw.includes("local") || kw.includes("city")) {
+      rec = "Strengthen local schema markup (LocalBusiness, address, serviceArea) and create location-specific content pages.";
+    } else {
+      rec = "Create authoritative content that directly addresses this query. Use structured data, clear headings, and factual detail to increase citation likelihood.";
+    }
+
+    insights.push({ keyword: gap.keyword, citedBy: topCited, recommendation: rec });
+  }
+
+  if (insights.length === 0) return "";
+
+  // Build the HTML
+  const cards = insights.map(ins => {
+    const competitorList = ins.citedBy.length > 0
+      ? '<div style="margin-top:8px;font-size:11px;color:var(--text-faint)">Currently cited: ' +
+        ins.citedBy.map(c => '<span style="color:var(--text-mute)">' + esc(c) + '</span>').join(", ") + '</div>'
+      : '';
+
+    return '<div style="padding:16px;background:var(--bg-edge);border-radius:4px;border-left:3px solid var(--gold)">' +
+      '<div style="font-size:13px;color:var(--text);font-style:italic;margin-bottom:6px">"' + esc(ins.keyword) + '"</div>' +
+      '<div style="font-size:12px;color:var(--text-soft);line-height:1.6">' + esc(ins.recommendation) + '</div>' +
+      competitorList +
+      '</div>';
+  }).join("");
+
+  return `
+    <div class="card">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+        <div class="label">Content Opportunities</div>
+        <div style="font-size:12px;color:var(--text-faint)">${gaps.length} uncited keyword${gaps.length !== 1 ? "s" : ""}</div>
+      </div>
+      <div style="font-size:13px;color:var(--text-faint);line-height:1.6;margin-bottom:16px">
+        These are queries where AI engines do not cite your brand. Each one is a content opportunity. The recommendations below show what to create and who currently owns the citation.
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${cards}
+      </div>
+    </div>
+  `;
+}
+
 function buildCitationDataSection(
   latest: CitationSnapshot,
   previous: CitationSnapshot | null,
@@ -279,6 +377,9 @@ export async function handleCitations(
       latest, previous, shareNow, deltaHtml, chartData,
       topCompetitors, keywordBreakdown, enginesBreakdown, slug, aeoContext
     )}
+
+    <!-- Content recommendations from citation gaps -->
+    ${await buildContentRecommendations(slug, keywordBreakdown, env)}
 
     <!-- Active keywords -->
     <div class="card">

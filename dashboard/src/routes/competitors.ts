@@ -294,6 +294,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     ${schemaMatrix}
     ${flagComparison}
     ${await buildCitationComparison(clientSlug, primary, competitors, env)}
+    ${user.role === "admin" ? await buildCompetitorDiscovery(clientSlug, allRows, env) : ""}
   `;
 
   return html(layout("Competitors", body, user, clientSlug));
@@ -399,6 +400,67 @@ async function buildCitationComparison(
         ${bars}
         ${engineBreakdown}
         ${rankInsight}
+      </div>
+    </div>
+  `;
+}
+
+/** Discover potential competitors from citation data */
+async function buildCompetitorDiscovery(
+  clientSlug: string,
+  trackedRows: ComparisonRow[],
+  env: Env
+): Promise<string> {
+  // Get the latest citation snapshot's top_competitors
+  const snapshot = await env.DB.prepare(
+    "SELECT top_competitors FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1"
+  ).bind(clientSlug).first<{ top_competitors: string }>();
+
+  if (!snapshot) return "";
+
+  const topCompetitors: { name: string; count: number }[] = JSON.parse(snapshot.top_competitors || "[]");
+  if (topCompetitors.length === 0) return "";
+
+  // Get already-tracked competitor domains
+  const trackedDomains = new Set(trackedRows.map(r => r.domain.domain.toLowerCase().replace(/^www\./, "")));
+  // Also add common variations
+  trackedRows.forEach(r => {
+    const d = r.domain.domain.toLowerCase();
+    trackedDomains.add(d);
+    trackedDomains.add(d.replace(/^www\./, ""));
+    trackedDomains.add("www." + d.replace(/^www\./, ""));
+  });
+
+  // Filter: find cited entities NOT already tracked
+  const suggestions = topCompetitors
+    .filter(c => {
+      const name = c.name.toLowerCase().trim();
+      // Skip if it matches any tracked domain
+      for (const td of trackedDomains) {
+        if (name.includes(td) || td.includes(name)) return false;
+      }
+      // Skip very generic or short names
+      if (name.length < 4) return false;
+      return true;
+    })
+    .slice(0, 6);
+
+  if (suggestions.length === 0) return "";
+
+  const rows = suggestions.map(s => {
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06)">' +
+      '<div style="font-size:13px;color:var(--text)">' + esc(s.name) + '</div>' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span style="font-size:12px;color:var(--text-faint)">' + s.count + ' citations</span>' +
+      '</div></div>';
+  }).join("");
+
+  return `
+    <div style="margin-top:48px">
+      <div class="label" style="margin-bottom:4px">Discovered Competitors</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">These brands appear frequently in AI responses for your tracked keywords but are not yet being monitored. Consider adding them as competitors.</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px 20px">
+        ${rows}
       </div>
     </div>
   `;
