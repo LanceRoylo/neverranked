@@ -5,7 +5,7 @@
  * comparing AEO scores, grades, schema coverage, and red flags.
  */
 
-import type { Env, User, Domain, ScanResult } from "../types";
+import type { Env, User, Domain, ScanResult, CitationSnapshot } from "../types";
 import { layout, html, esc } from "../render";
 
 interface ComparisonRow {
@@ -293,7 +293,113 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
 
     ${schemaMatrix}
     ${flagComparison}
+    ${await buildCitationComparison(clientSlug, primary, competitors, env)}
   `;
 
   return html(layout("Competitors", body, user, clientSlug));
+}
+
+/** Build the AI citation comparison section */
+async function buildCitationComparison(
+  clientSlug: string,
+  primary: ComparisonRow[],
+  competitors: ComparisonRow[],
+  env: Env
+): Promise<string> {
+  // Get latest citation snapshot
+  const snapshot = await env.DB.prepare(
+    "SELECT * FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1"
+  ).bind(clientSlug).first<CitationSnapshot>();
+
+  if (!snapshot) return "";
+
+  const topCompetitors: { name: string; count: number }[] = JSON.parse(snapshot.top_competitors || "[]");
+  if (topCompetitors.length === 0 && snapshot.client_citations === 0) return "";
+
+  // Build the comparison data: client + top cited competitors
+  const clientDomain = primary[0]?.domain.domain || clientSlug;
+  const totalQueries = snapshot.total_queries;
+  const clientCitations = snapshot.client_citations;
+  const clientPct = totalQueries > 0 ? Math.round((clientCitations / totalQueries) * 100) : 0;
+
+  // Build ranked list: client + competitors sorted by citation count
+  interface CitationEntry { name: string; count: number; pct: number; isClient: boolean }
+  const entries: CitationEntry[] = [];
+  entries.push({ name: clientDomain, count: clientCitations, pct: clientPct, isClient: true });
+
+  for (const c of topCompetitors.slice(0, 8)) {
+    const pct = totalQueries > 0 ? Math.round((c.count / totalQueries) * 100) : 0;
+    entries.push({ name: c.name, count: c.count, pct, isClient: false });
+  }
+
+  // Sort by count descending
+  entries.sort((a, b) => b.count - a.count);
+
+  const maxCount = Math.max(...entries.map(e => e.count), 1);
+
+  // Build bars
+  const bars = entries.map(e => {
+    const barPct = (e.count / maxCount) * 100;
+    const nameColor = e.isClient ? "color:var(--gold)" : "color:var(--text-faint)";
+    const barBg = e.isClient ? "var(--gold-wash)" : "rgba(251,248,239,.06)";
+    const barBorder = e.isClient ? "var(--gold)" : "rgba(251,248,239,.15)";
+    const youTag = e.isClient ? ' <span style="font-family:var(--label);font-size:7px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);padding:0 4px;border-radius:2px;vertical-align:middle">YOU</span>' : '';
+
+    return '<div style="display:grid;grid-template-columns:260px 1fr auto;gap:16px;align-items:center;padding:8px 0;border-bottom:1px solid rgba(251,248,239,.06)">' +
+      '<div style="font-size:12px;' + nameColor + ';overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(e.name) + youTag + '</div>' +
+      '<div style="position:relative;height:22px;background:rgba(251,248,239,.04);border-radius:3px;overflow:hidden">' +
+      '<div style="position:absolute;left:0;top:0;bottom:0;width:' + barPct + '%;background:' + barBg + ';border-right:2px solid ' + barBorder + '"></div>' +
+      '<div style="position:relative;padding:0 10px;line-height:22px;font-size:11px;color:var(--text-soft)">' + e.count + ' citations (' + e.pct + '%)</div>' +
+      '</div>' +
+      '<div style="font-size:13px;color:var(--text-faint);min-width:32px;text-align:right">' + e.pct + '%</div>' +
+      '</div>';
+  }).join("");
+
+  // Engine breakdown if available
+  let engineBreakdown = "";
+  if (snapshot.engines_breakdown) {
+    try {
+      const engines: { engine: string; total: number; client_cited: number }[] = JSON.parse(snapshot.engines_breakdown);
+      if (engines.length > 0) {
+        const engineRows = engines.map(e => {
+          const pct = e.total > 0 ? Math.round((e.client_cited / e.total) * 100) : 0;
+          const engineLabel = e.engine === "perplexity" ? "Perplexity" : e.engine === "chatgpt" ? "ChatGPT" : e.engine === "gemini" ? "Gemini" : e.engine === "anthropic" ? "Claude" : e.engine;
+          return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06)">' +
+            '<div style="font-size:13px;color:var(--text-soft)">' + esc(engineLabel) + '</div>' +
+            '<div style="display:flex;align-items:center;gap:12px">' +
+            '<div style="width:80px;height:6px;background:rgba(251,248,239,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:var(--gold);border-radius:3px"></div></div>' +
+            '<div style="font-size:12px;color:var(--text-faint);min-width:60px;text-align:right">' + e.client_cited + '/' + e.total + ' (' + pct + '%)</div>' +
+            '</div></div>';
+        }).join("");
+
+        engineBreakdown = '<div style="margin-top:24px">' +
+          '<div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:12px">Your citation rate by engine</div>' +
+          engineRows + '</div>';
+      }
+    } catch {}
+  }
+
+  // Client ranking insight
+  const clientRank = entries.findIndex(e => e.isClient) + 1;
+  const totalEntries = entries.length;
+  let rankInsight = "";
+  if (clientRank === 1) {
+    rankInsight = '<div style="margin-top:16px;padding:12px 16px;background:rgba(94,199,106,0.06);border:1px solid rgba(94,199,106,0.15);border-radius:4px;font-size:13px;color:var(--text-soft)">You are the most-cited source across your tracked keywords. AI engines reference you more than any competitor.</div>';
+  } else if (clientRank <= 3 && totalEntries > 3) {
+    rankInsight = '<div style="margin-top:16px;padding:12px 16px;background:rgba(232,199,103,0.06);border:1px solid rgba(232,199,103,0.15);border-radius:4px;font-size:13px;color:var(--text-soft)">You rank #' + clientRank + ' in AI citations among tracked competitors. Closing the gap means improving the content signals the top-cited sources have that you do not.</div>';
+  } else if (entries.length > 1) {
+    rankInsight = '<div style="margin-top:16px;padding:12px 16px;background:rgba(232,84,84,0.06);border:1px solid rgba(232,84,84,0.15);border-radius:4px;font-size:13px;color:var(--text-soft)">You rank #' + clientRank + ' of ' + totalEntries + ' in AI citations. The competitive gap is an opportunity. Improving schema coverage, content authority, and AEO fundamentals will move your citation share upward.</div>';
+  }
+
+  return `
+    <div style="margin-top:48px">
+      <div class="label" style="margin-bottom:4px">AI Citation Share</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Who gets cited when AI engines answer questions about your industry (${totalQueries} tracked queries)</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px 20px">
+        ${bars}
+        ${engineBreakdown}
+        ${rankInsight}
+      </div>
+    </div>
+  `;
 }

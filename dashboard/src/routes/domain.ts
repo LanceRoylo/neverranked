@@ -67,9 +67,9 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
   const latest = recentScans[0] || null;
   const previous = recentScans[1] || null;
 
-  // Get scan history (last 12)
+  // Get scan history (up to 52 weeks / 1 year)
   const history = (await env.DB.prepare(
-    "SELECT id, aeo_score, grade, scanned_at, scan_type, error FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 12"
+    "SELECT id, aeo_score, grade, scanned_at, scan_type, error FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 52"
   ).bind(domainId).all<ScanResult>()).results;
 
   // Build page
@@ -220,71 +220,122 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     `;
   }
 
-  // Trend chart (SVG)
+  // Trend chart (SVG) -- full history with grade bands
   let trendSection = "";
   const successfulScans = history.filter(h => !h.error && h.aeo_score > 0).reverse(); // oldest first
   if (successfulScans.length >= 2) {
-    const W = 600;
-    const H = 180;
-    const PAD_X = 40;
-    const PAD_Y = 24;
-    const chartW = W - PAD_X * 2;
-    const chartH = H - PAD_Y * 2;
+    const W = 720;
+    const H = 260;
+    const PAD_L = 48;
+    const PAD_R = 24;
+    const PAD_T = 20;
+    const PAD_B = 36;
+    const chartW = W - PAD_L - PAD_R;
+    const chartH = H - PAD_T - PAD_B;
 
-    const scores = successfulScans.map(s => s.aeo_score);
-    const minScore = Math.max(0, Math.min(...scores) - 10);
-    const maxScore = Math.min(100, Math.max(...scores) + 10);
-    const range = maxScore - minScore || 1;
+    // Always show 0-100 scale for grade band context
+    const minScore = 0;
+    const maxScore = 100;
+    const range = 100;
 
     const points = successfulScans.map((s, i) => {
-      const x = PAD_X + (i / (successfulScans.length - 1)) * chartW;
-      const y = PAD_Y + chartH - ((s.aeo_score - minScore) / range) * chartH;
-      return { x, y, score: s.aeo_score, date: new Date(s.scanned_at * 1000) };
+      const x = PAD_L + (i / (successfulScans.length - 1)) * chartW;
+      const y = PAD_T + chartH - ((s.aeo_score - minScore) / range) * chartH;
+      return { x, y, score: s.aeo_score, grade: s.grade, date: new Date(s.scanned_at * 1000) };
     });
 
-    const polyline = points.map(p => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    const polyline = points.map(p => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
 
-    // Gradient fill area
-    const areaPath = `M ${points[0].x.toFixed(1)},${(PAD_Y + chartH).toFixed(1)} ${points.map(p => `L ${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")} L ${points[points.length - 1].x.toFixed(1)},${(PAD_Y + chartH).toFixed(1)} Z`;
+    // Gradient fill area under the line
+    const areaPath = "M " + points[0].x.toFixed(1) + "," + (PAD_T + chartH).toFixed(1) + " " +
+      points.map(p => "L " + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ") +
+      " L " + points[points.length - 1].x.toFixed(1) + "," + (PAD_T + chartH).toFixed(1) + " Z";
 
-    // Grid lines at 25-point intervals
+    // Grade bands (D: 0-39, C: 40-59, B: 60-79, A: 80-100)
+    const bands = [
+      { min: 0, max: 39, color: "rgba(192,57,43,0.06)", label: "D" },
+      { min: 40, max: 59, color: "rgba(230,126,34,0.06)", label: "C" },
+      { min: 60, max: 79, color: "rgba(232,199,103,0.06)", label: "B" },
+      { min: 80, max: 100, color: "rgba(94,199,106,0.06)", label: "A" },
+    ];
+    const bandRects = bands.map(b => {
+      const y1 = PAD_T + chartH - ((b.max - minScore) / range) * chartH;
+      const y2 = PAD_T + chartH - ((b.min - minScore) / range) * chartH;
+      const bandH = y2 - y1;
+      return '<rect x="' + PAD_L + '" y="' + y1.toFixed(1) + '" width="' + chartW + '" height="' + bandH.toFixed(1) + '" fill="' + b.color + '"/>' +
+        '<text x="' + (W - PAD_R + 4) + '" y="' + ((y1 + y2) / 2 + 4).toFixed(1) + '" fill="rgba(251,248,239,.25)" font-size="11" font-family="var(--mono)" font-weight="500">' + b.label + '</text>';
+    }).join("\n");
+
+    // Grid lines at 20-point intervals
     const gridLines: string[] = [];
     const gridLabels: string[] = [];
-    for (let v = Math.ceil(minScore / 25) * 25; v <= maxScore; v += 25) {
-      const y = PAD_Y + chartH - ((v - minScore) / range) * chartH;
-      gridLines.push(`<line x1="${PAD_X}" y1="${y.toFixed(1)}" x2="${W - PAD_X}" y2="${y.toFixed(1)}" stroke="rgba(251,248,239,.1)" stroke-dasharray="4,4"/>`);
-      gridLabels.push(`<text x="${PAD_X - 8}" y="${(y + 4).toFixed(1)}" text-anchor="end" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${v}</text>`);
+    for (let v = 0; v <= 100; v += 20) {
+      const y = PAD_T + chartH - ((v - minScore) / range) * chartH;
+      gridLines.push('<line x1="' + PAD_L + '" y1="' + y.toFixed(1) + '" x2="' + (W - PAD_R) + '" y2="' + y.toFixed(1) + '" stroke="rgba(251,248,239,.08)" stroke-dasharray="4,4"/>');
+      gridLabels.push('<text x="' + (PAD_L - 10) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" fill="rgba(251,248,239,.35)" font-size="10" font-family="var(--mono)">' + v + '</text>');
     }
 
-    // Date labels (first and last)
-    const firstDate = points[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const lastDate = points[points.length - 1].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    // Date labels -- distribute evenly, max 6 labels
+    const dateLabels: string[] = [];
+    const maxDateLabels = Math.min(6, points.length);
+    for (let i = 0; i < maxDateLabels; i++) {
+      const idx = maxDateLabels <= 1 ? 0 : Math.round(i * (points.length - 1) / (maxDateLabels - 1));
+      const p = points[idx];
+      const label = p.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      dateLabels.push('<text x="' + p.x.toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" fill="rgba(251,248,239,.35)" font-size="9" font-family="var(--mono)">' + label + '</text>');
+    }
 
-    // Dots
-    const dots = points.map(p =>
-      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--gold)" stroke="var(--bg)" stroke-width="2"/>`
-    ).join("\n");
+    // Dots -- all points get dots, key points get score labels
+    const scores = successfulScans.map(s => s.aeo_score);
+    const minIdx = scores.indexOf(Math.min(...scores));
+    const maxIdx = scores.lastIndexOf(Math.max(...scores));
+    const keyIndices = new Set([0, points.length - 1, minIdx, maxIdx]);
+
+    const dots = points.map((p, i) => {
+      const isKey = keyIndices.has(i);
+      const r = isKey ? 5 : 3;
+      let label = "";
+      if (isKey) {
+        const labelY = p.y - 10;
+        label = '<text x="' + p.x.toFixed(1) + '" y="' + labelY.toFixed(1) + '" text-anchor="middle" fill="var(--text-mute)" font-size="11" font-family="var(--mono)" font-weight="500">' + p.score + '</text>';
+      }
+      return '<circle cx="' + p.x.toFixed(1) + '" cy="' + p.y.toFixed(1) + '" r="' + r + '" fill="var(--gold)" stroke="var(--bg)" stroke-width="2"/>' + label;
+    }).join("\n");
+
+    // Summary line under the chart
+    const first = points[0];
+    const last = points[points.length - 1];
+    const totalChange = last.score - first.score;
+    const changeText = totalChange > 0
+      ? '<span style="color:var(--green)">+' + totalChange + ' pts</span> since ' + first.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : totalChange < 0
+      ? '<span style="color:var(--red)">' + totalChange + ' pts</span> since ' + first.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : 'No net change since ' + first.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
     trendSection = `
       <div style="margin-bottom:48px">
-        <div class="label" style="margin-bottom:16px">Score Trend</div>
-        <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px;overflow-x:auto">
-          <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
+          <div class="label">Score Trend</div>
+          <div style="font-size:12px;color:var(--text-faint)">${successfulScans.length} scans over ${Math.round((last.date.getTime() - first.date.getTime()) / 86400000)} days</div>
+        </div>
+        <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px;overflow-x:auto">
+          <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto">
             <defs>
               <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.2"/>
+                <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.25"/>
                 <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
               </linearGradient>
             </defs>
+            ${bandRects}
             ${gridLines.join("\n")}
             ${gridLabels.join("\n")}
             <path d="${areaPath}" fill="url(#areaGrad)"/>
-            <polyline points="${polyline}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+            <polyline points="${polyline}" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
             ${dots}
-            <text x="${PAD_X}" y="${H - 4}" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${firstDate}</text>
-            <text x="${W - PAD_X}" y="${H - 4}" text-anchor="end" fill="rgba(251,248,239,.4)" font-size="10" font-family="var(--mono)">${lastDate}</text>
+            ${dateLabels.join("\n")}
           </svg>
         </div>
+        <div style="margin-top:12px;font-size:13px;color:var(--text-faint);text-align:center">${changeText}</div>
       </div>
     `;
   }
@@ -421,8 +472,8 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
 
     ${shareFlash}
     ${reportSection}
-    ${await buildProgressTimeline(domain.client_slug, env)}
     ${trendSection}
+    ${await buildProgressTimeline(domain.client_slug, env)}
     ${coverageSection}
     ${historySection}
   `;
