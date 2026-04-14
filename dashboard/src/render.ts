@@ -12,11 +12,13 @@ export function layout(title: string, body: string, user: User | null = null, ac
   const compHref = slug ? `/competitors/${slug}` : '/competitors';
   const citeHref = slug ? `/citations/${slug}` : '/citations';
   const roadHref = slug ? `/roadmap/${slug}` : '/roadmap';
+  const searchHref = slug ? `/search/${slug}` : '/search';
   const navLinks = user
     ? `
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
       <a href="${user.role === 'admin' ? '/competitors' : compHref}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
       <a href="${user.role === 'admin' ? '/citations' : citeHref}" class="nav-links-item${title === 'Citations' || title === 'Citation Keywords' ? ' active' : ''}">Citations</a>
+      <a href="${user.role === 'admin' ? '/search' : searchHref}" class="nav-links-item${title === 'Search Performance' || title === 'Search Console' ? ' active' : ''}">Search</a>
       <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
       ${user.role === 'admin' ? '<a href="/admin/leads" class="nav-links-item' + (title === 'Leads' ? ' active' : '') + '">Leads</a>' : ''}
       ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') || title === 'Inject' ? ' active' : '') + '">Cockpit</a>' : ''}

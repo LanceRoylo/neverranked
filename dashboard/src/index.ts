@@ -25,6 +25,7 @@ import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript } from "./routes/inject";
 import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
 import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
+import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -314,6 +315,42 @@ export default {
       return new Response(JSON.stringify({ done: !!recent }), {
         headers: { "Content-Type": "application/json" },
       });
+    }
+
+    // Google Search Console
+    if (path === "/auth/google/callback" && method === "GET") {
+      return handleGoogleCallback(request, user, env);
+    }
+    if ((path === "/admin/gsc" || path === "/admin/gsc/") && method === "GET" && user.role === "admin") {
+      return handleAdminGsc(user, env, url);
+    }
+    if (path === "/admin/gsc/link" && method === "POST" && user.role === "admin") {
+      return handleLinkProperty(request, env);
+    }
+    const gscUnlinkMatch = path.match(/^\/admin\/gsc\/unlink\/(\d+)$/);
+    if (gscUnlinkMatch && method === "POST" && user.role === "admin") {
+      return handleUnlinkProperty(parseInt(gscUnlinkMatch[1]), env);
+    }
+    if (path === "/admin/gsc/pull" && method === "POST" && user.role === "admin") {
+      return handleManualGscPull(env, ctx);
+    }
+    if (path === "/api/gsc-status" && method === "GET" && user.role === "admin") {
+      const twoMinAgo = Math.floor(Date.now() / 1000) - 120;
+      const recent = await env.DB.prepare(
+        "SELECT created_at FROM gsc_snapshots WHERE created_at > ? ORDER BY created_at DESC LIMIT 1"
+      ).bind(twoMinAgo).first<{ created_at: number }>();
+      return new Response(JSON.stringify({ done: !!recent }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    // Search performance -- client picker for admin, direct for client
+    if ((path === "/search" || path === "/search/") && method === "GET") {
+      if (user.client_slug) return redirect("/search/" + user.client_slug);
+      return renderClientPicker("Search Performance", "search", user, env);
+    }
+    const searchMatch = path.match(/^\/search\/([^/]+?)\/?$/);
+    if (searchMatch && method === "GET") {
+      return handleSearchPerformance(decodeURIComponent(searchMatch[1]), user, env);
     }
 
     // Settings

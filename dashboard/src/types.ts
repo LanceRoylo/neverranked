@@ -15,6 +15,42 @@ export interface Env {
   OPENAI_API_KEY?: string;
   GEMINI_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+}
+
+export interface GscToken {
+  id: number;
+  user_id: number;
+  access_token: string;
+  refresh_token: string;
+  expires_at: number;
+  scope: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface GscProperty {
+  id: number;
+  client_slug: string;
+  site_url: string;
+  permission_level: string | null;
+  created_at: number;
+}
+
+export interface GscSnapshot {
+  id: number;
+  client_slug: string;
+  site_url: string;
+  date_start: string;
+  date_end: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+  top_queries: string;
+  top_pages: string;
+  created_at: number;
 }
 
 export interface User {

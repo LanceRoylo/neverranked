@@ -14,6 +14,7 @@ import { checkAndAlertRegression } from "./regression";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
+import { pullGscData } from "./gsc";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -56,6 +57,10 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   // --- Phase 2: Run citation tracking ---
 
   await runWeeklyCitations(env);
+
+  // --- Phase 2b: Pull Google Search Console data ---
+
+  await pullGscData(env);
 
   // --- Phase 3: Send digest emails ---
 
