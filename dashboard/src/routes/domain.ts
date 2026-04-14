@@ -2,7 +2,7 @@
  * Dashboard — Domain detail route
  */
 
-import type { Env, User, Domain, ScanResult, RoadmapItem } from "../types";
+import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
 import { layout, html, esc } from "../render";
 import { generateNarrative } from "../narrative";
 
@@ -41,6 +41,117 @@ async function buildProgressTimeline(clientSlug: string, env: Env): Promise<stri
         <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${completedItems.length} completed</span>
       </div>
       ${items}
+    </div>
+  `;
+}
+
+interface TimelineEvent {
+  timestamp: number;
+  icon: string;
+  iconColor: string;
+  title: string;
+  detail: string;
+  type: string;
+}
+
+async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> {
+  const events: TimelineEvent[] = [];
+
+  // 1. Scan events (last 10)
+  const scans = (await env.DB.prepare(
+    "SELECT aeo_score, grade, scan_type, error, scanned_at FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 10"
+  ).bind(domain.id).all<{ aeo_score: number; grade: string; scan_type: string; error: string | null; scanned_at: number }>()).results;
+
+  for (const s of scans) {
+    if (s.error) {
+      events.push({ timestamp: s.scanned_at, icon: "!!", iconColor: "var(--red)", title: "Scan failed", detail: s.error, type: "scan" });
+    } else {
+      events.push({ timestamp: s.scanned_at, icon: s.grade, iconColor: s.grade === "A" ? "var(--green)" : s.grade === "B" ? "var(--gold)" : s.grade === "C" ? "var(--yellow)" : "var(--red)", title: "AEO scan: " + s.aeo_score + "/100 (Grade " + s.grade + ")", detail: s.scan_type === "cron" ? "Weekly automated scan" : s.scan_type === "manual" ? "Manual scan" : "Onboarding scan", type: "scan" });
+    }
+  }
+
+  // 2. Admin alerts for this client (last 10)
+  const alerts = (await env.DB.prepare(
+    "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 10"
+  ).bind(domain.client_slug).all<{ type: string; title: string; detail: string | null; created_at: number }>()).results;
+
+  for (const a of alerts) {
+    let icon = "--";
+    let iconColor = "var(--text-faint)";
+    if (a.type === "milestone") { icon = "^^"; iconColor = "var(--gold)"; }
+    else if (a.type === "regression" || a.type === "score_change") { icon = "vv"; iconColor = "var(--red)"; }
+    else if (a.type === "auto_completed") { icon = "ok"; iconColor = "var(--green)"; }
+    else if (a.type === "needs_review") { icon = "??"; iconColor = "var(--yellow)"; }
+    events.push({ timestamp: a.created_at, icon, iconColor, title: a.title, detail: a.detail || "", type: "alert" });
+  }
+
+  // 3. Completed roadmap items (last 5)
+  const roadmapDone = (await env.DB.prepare(
+    "SELECT title, category, completed_at FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at IS NOT NULL ORDER BY completed_at DESC LIMIT 5"
+  ).bind(domain.client_slug).all<{ title: string; category: string; completed_at: number }>()).results;
+
+  for (const r of roadmapDone) {
+    events.push({ timestamp: r.completed_at, icon: "//", iconColor: "var(--green)", title: "Roadmap completed: " + r.title, detail: r.category, type: "roadmap" });
+  }
+
+  // 4. Citation snapshots (last 4)
+  const citations = (await env.DB.prepare(
+    "SELECT citation_share, client_citations, total_queries, created_at FROM citation_snapshots WHERE client_slug = ? ORDER BY created_at DESC LIMIT 4"
+  ).bind(domain.client_slug).all<{ citation_share: number; client_citations: number; total_queries: number; created_at: number }>()).results;
+
+  for (const c of citations) {
+    const pct = (c.citation_share * 100).toFixed(0);
+    events.push({ timestamp: c.created_at, icon: "Ai", iconColor: "var(--gold)", title: "Citation scan: " + pct + "% share (" + c.client_citations + "/" + c.total_queries + ")", detail: "AI engines checked across tracked keywords", type: "citation" });
+  }
+
+  // 5. GSC snapshots (last 4)
+  const gsc = (await env.DB.prepare(
+    "SELECT clicks, impressions, date_start, date_end, created_at FROM gsc_snapshots WHERE client_slug = ? ORDER BY created_at DESC LIMIT 4"
+  ).bind(domain.client_slug).all<{ clicks: number; impressions: number; date_start: string; date_end: string; created_at: number }>()).results;
+
+  for (const g of gsc) {
+    events.push({ timestamp: g.created_at, icon: "G", iconColor: "rgba(251,248,239,.5)", title: "Search data: " + g.clicks + " clicks, " + g.impressions.toLocaleString() + " impressions", detail: g.date_start + " to " + g.date_end, type: "gsc" });
+  }
+
+  if (events.length === 0) return "";
+
+  // Sort by timestamp descending, take top 20
+  events.sort((a, b) => b.timestamp - a.timestamp);
+  const display = events.slice(0, 20);
+
+  // Group by date
+  const grouped = new Map<string, TimelineEvent[]>();
+  for (const e of display) {
+    const d = new Date(e.timestamp * 1000);
+    const key = d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+    const arr = grouped.get(key) || [];
+    arr.push(e);
+    grouped.set(key, arr);
+  }
+
+  let html = "";
+  for (const [dateLabel, dayEvents] of grouped) {
+    html += '<div style="margin-bottom:20px">';
+    html += '<div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px;padding-left:44px">' + esc(dateLabel) + '</div>';
+    for (const e of dayEvents) {
+      const time = new Date(e.timestamp * 1000).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+      html += '<div style="display:flex;align-items:flex-start;gap:12px;padding:8px 0;border-left:2px solid rgba(251,248,239,.08);margin-left:15px;padding-left:20px;position:relative">';
+      html += '<div style="position:absolute;left:-7px;top:10px;width:12px;height:12px;border-radius:50%;background:var(--bg);border:2px solid ' + e.iconColor + '"></div>';
+      html += '<div style="flex-shrink:0;width:28px;height:28px;border-radius:4px;background:var(--bg-edge);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500;color:' + e.iconColor + '">' + e.icon + '</div>';
+      html += '<div style="flex:1;min-width:0">';
+      html += '<div style="font-size:13px;color:var(--text)">' + esc(e.title) + '</div>';
+      html += '<div style="font-size:11px;color:var(--text-faint);margin-top:2px">' + esc(e.detail) + ' -- ' + time + '</div>';
+      html += '</div></div>';
+    }
+    html += '</div>';
+  }
+
+  return `
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:16px">Recent Activity</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px 24px">
+        ${html}
+      </div>
     </div>
   `;
 }
@@ -473,6 +584,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${shareFlash}
     ${reportSection}
     ${trendSection}
+    ${await buildActivityTimeline(domain, env)}
     ${await buildProgressTimeline(domain.client_slug, env)}
     ${coverageSection}
     ${historySection}
