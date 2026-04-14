@@ -251,4 +251,38 @@ em{color:var(--gold);font-weight:400}
   .topbar .user-info{font-size:10px}
   .topbar{flex-wrap:wrap}
 }
+
+/* ---------- print ---------- */
+@media print{
+  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
+  body{background:#fff !important;color:#111 !important;font-size:11px !important}
+  .grain,.topbar,.hamburger,.no-print{display:none !important}
+  body::before{display:none !important}
+  .page{padding:0 !important;max-width:100% !important}
+  .card,.data-table,table{break-inside:avoid}
+  a{color:#111 !important;text-decoration:none !important}
+  .grade{border:2px solid #333 !important}
+  .grade-A{color:#27ae60 !important;border-color:#27ae60 !important}
+  .grade-B{color:#e8c767 !important;border-color:#e8c767 !important}
+  .grade-C{color:#e67e22 !important;border-color:#e67e22 !important}
+  .grade-D,.grade-F{color:#c0392b !important;border-color:#c0392b !important}
+  .score small{color:#666 !important}
+  .label{color:#555 !important}
+  [style*="background:var(--bg-lift)"],[style*="background: var(--bg-lift)"]{background:#f5f5f5 !important;border-color:#ddd !important}
+  [style*="background:var(--bg-edge)"],[style*="background: var(--bg-edge)"]{background:#eee !important}
+  [style*="color:var(--text-soft)"],[style*="color: var(--text-soft)"]{color:#333 !important}
+  [style*="color:var(--text-faint)"],[style*="color: var(--text-faint)"]{color:#777 !important}
+  [style*="color:var(--text-mute)"],[style*="color: var(--text-mute)"]{color:#555 !important}
+  [style*="color:var(--text)"],[style*="color: var(--text)"]{color:#111 !important}
+  [style*="color:var(--gold)"],[style*="color: var(--gold)"]{color:#b8860b !important}
+  [style*="border-color:var(--line)"],[style*="border: 1px solid var(--line)"]{border-color:#ddd !important}
+  svg text{fill:#555 !important}
+  svg line{stroke:#ddd !important}
+  svg polyline{stroke:#b8860b !important}
+  svg circle{fill:#b8860b !important;stroke:#fff !important}
+  .print-header{display:flex !important;justify-content:space-between;align-items:center;padding-bottom:16px;margin-bottom:24px;border-bottom:2px solid #111}
+  .print-header .print-logo{font-family:var(--serif);font-style:italic;font-size:18px;color:#111}
+  .print-header .print-date{font-family:var(--mono);font-size:10px;color:#777}
+  @page{margin:0.6in;size:letter}
+}
 `;

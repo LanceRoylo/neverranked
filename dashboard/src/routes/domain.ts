@@ -395,7 +395,12 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     </div>
   ` : "";
 
+  const printDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   const body = `
+    <div class="print-header" style="display:none">
+      <div class="print-logo">Never Ranked</div>
+      <div class="print-date">AEO Report -- ${esc(domain.domain)} -- ${printDate}</div>
+    </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
         <div class="label" style="margin-bottom:8px">
@@ -404,11 +409,12 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
         <h1><em>${esc(domain.domain)}</em></h1>
       </div>
       <div style="display:flex;gap:8px">
+        <button onclick="window.print()" class="btn btn-ghost no-print">Export PDF</button>
         <form method="POST" action="/domain/${domain.id}/share">
-          <button type="submit" class="btn btn-ghost">Share report</button>
+          <button type="submit" class="btn btn-ghost no-print">Share report</button>
         </form>
         ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}">
-          <button type="submit" class="btn">Run scan</button>
+          <button type="submit" class="btn no-print">Run scan</button>
         </form>` : ''}
       </div>
     </div>
