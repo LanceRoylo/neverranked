@@ -717,6 +717,36 @@ body::before{
   .comp-bar-label{min-width:70px;font-size:9px}
 }
 </style>
+
+<!-- Meta Pixel -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', 'YOUR_PIXEL_ID');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
+
+<!-- LinkedIn Insight Tag -->
+<script type="text/javascript">
+_linkedin_partner_id="YOUR_PARTNER_ID";
+window._linkedin_data_partner_ids=window._linkedin_data_partner_ids||[];
+window._linkedin_data_partner_ids.push(_linkedin_partner_id);
+</script>
+<script type="text/javascript">
+(function(l){if(!l){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[]}
+var s=document.getElementsByTagName("script")[0];var b=document.createElement("script");
+b.type="text/javascript";b.async=true;b.src="https://snap.licdn.com/li.lms-analytics/insight.min.js";
+s.parentNode.insertBefore(b,s);})(window.lintrk);
+</script>
+<noscript><img height="1" width="1" style="display:none" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_PARTNER_ID&fmt=gif"/></noscript>
+
 </head>
 <body>
 <div class="grain"></div>
@@ -946,6 +976,9 @@ body::before{
       if(!resp.ok) throw new Error('Failed');
       emailForm.style.display='none';
       emailSuccess.style.display='block';
+      // Fire conversion events for retargeting
+      if(typeof fbq==='function') fbq('track','Lead');
+      if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
     }catch{
       emailBtn.textContent='Retry';
       emailBtn.disabled=false;
@@ -962,6 +995,10 @@ body::before{
   function renderResultsWrapped(data){
     lastReportData = data;
     origRender(data);
+
+    // Fire retargeting events on scan completion
+    if(typeof fbq==='function') fbq('track','ViewContent',{content_name:'aeo_check',value:data.aeo_score});
+    if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
 
     // Update competitor teaser bar
     const compBarYou = document.getElementById('comp-bar-you');
@@ -988,6 +1025,14 @@ body::before{
     emailInput.value='';
   }
 
+  // Capture referrer + UTM params on page load for attribution
+  var _ref = document.referrer || '';
+  var _sp = new URLSearchParams(window.location.search);
+  var _utm = {};
+  ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
+    if(_sp.get(k)) _utm[k] = _sp.get(k);
+  });
+
   // Rebind
   async function runCheckFinal(){
     const url = normalizeUrl(input.value);
@@ -1006,7 +1051,7 @@ body::before{
       const resp = await fetch('/api/check',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url})
+        body:JSON.stringify({url, referrer:_ref, utm:Object.keys(_utm).length?_utm:undefined})
       });
       const data = await resp.json();
       if(!resp.ok) throw new Error(data.error||'Check failed');
@@ -1422,7 +1467,7 @@ export default {
         );
       }
 
-      let body: { url?: string };
+      let body: { url?: string; referrer?: string; utm?: Record<string, string> };
       try {
         body = await request.json();
       } catch {
@@ -1430,6 +1475,8 @@ export default {
       }
 
       const targetUrl = body.url?.trim();
+      const referrer = body.referrer?.trim() || "";
+      const utm = body.utm || {};
       if (!targetUrl) {
         return Response.json({ error: "Please provide a URL." }, { status: 400, headers: corsHeaders });
       }
@@ -1475,16 +1522,19 @@ export default {
 
       const report = buildReport(targetUrl, html);
 
-      // Log anonymous scan event to KV
+      // Log anonymous scan event to KV (with referrer/UTM attribution)
       try {
         const scanKey = `event:scan:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-        await env.LEADS.put(scanKey, JSON.stringify({
+        const eventData: Record<string, unknown> = {
           type: "free_scan",
           domain: report.domain,
           score: report.aeo_score,
           grade: report.grade,
           ts: new Date().toISOString(),
-        }), { expirationTtl: 90 * 24 * 60 * 60 });
+        };
+        if (referrer) eventData.referrer = referrer;
+        if (Object.keys(utm).length > 0) eventData.utm = utm;
+        await env.LEADS.put(scanKey, JSON.stringify(eventData), { expirationTtl: 90 * 24 * 60 * 60 });
       } catch {}
 
       return Response.json(report, { headers: corsHeaders });
@@ -1559,6 +1609,54 @@ export default {
       }
 
       return Response.json({ ok: true }, { headers: corsHeaders });
+    }
+
+    // Admin: referrer attribution breakdown (last 500 scan events)
+    if (url.pathname === "/api/admin/referrers" && request.method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+
+      try {
+        const list = await env.LEADS.list({ prefix: "event:scan:", limit: 500 });
+        const referrerCounts: Record<string, number> = {};
+        const utmCounts: Record<string, number> = {};
+        let total = 0;
+
+        for (const key of list.keys) {
+          const raw = await env.LEADS.get(key.name);
+          if (!raw) continue;
+          total++;
+          try {
+            const evt = JSON.parse(raw);
+            const ref = evt.referrer || "(direct)";
+            // Normalize referrer to hostname
+            let refHost = "(direct)";
+            if (ref && ref !== "(direct)") {
+              try { refHost = new URL(ref).hostname; } catch { refHost = ref; }
+            }
+            referrerCounts[refHost] = (referrerCounts[refHost] || 0) + 1;
+
+            if (evt.utm?.utm_source) {
+              const src = `${evt.utm.utm_source}/${evt.utm.utm_medium || "none"}`;
+              utmCounts[src] = (utmCounts[src] || 0) + 1;
+            }
+          } catch {}
+        }
+
+        // Sort descending
+        const referrers = Object.entries(referrerCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([source, count]) => ({ source, count, pct: Math.round((count / total) * 100) }));
+        const utmSources = Object.entries(utmCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([source, count]) => ({ source, count }));
+
+        return Response.json({ total, referrers, utmSources }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({ error: "Failed to read events" }, { status: 500, headers: corsHeaders });
+      }
     }
 
     // Serve HTML UI
