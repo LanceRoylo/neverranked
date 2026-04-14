@@ -9,10 +9,10 @@
  * Admin: POST /admin/citations/:slug/run -- manual citation scan trigger
  */
 
-import type { Env, User, CitationKeyword, CitationSnapshot } from "../types";
+import type { Env, User, CitationKeyword, CitationSnapshot, Domain, ScanResult } from "../types";
 import { html, layout, esc, redirect } from "../render";
 import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
-import { generateCitationNarrative } from "../citation-narrative";
+import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -35,7 +35,8 @@ function buildCitationDataSection(
   topCompetitors: { name: string; count: number }[],
   keywordBreakdown: { keyword: string; keyword_id: number; cited: boolean; engines: string[] }[],
   enginesBreakdown: Record<string, { queries: number; citations: number }>,
-  slug: string
+  slug: string,
+  aeoContext?: AeoContext | null
 ): string {
   const narrative = generateCitationNarrative(
     latest.citation_share,
@@ -45,7 +46,8 @@ function buildCitationDataSection(
     topCompetitors,
     keywordBreakdown,
     enginesBreakdown,
-    slug
+    slug,
+    aeoContext
   );
 
   const chartHtml = chartData.length > 1 ? `
@@ -149,6 +151,12 @@ function buildCitationDataSection(
         ${esc(narrative.summary)}
       </div>
     </div>
+    ${narrative.outlook ? `
+    <div class="card">
+      <div class="label">Outlook</div>
+      <div style="font-size:14px;line-height:1.9;color:var(--text-soft);margin-top:12px">${esc(narrative.outlook)}</div>
+    </div>
+    ` : ""}
     ${chartHtml}
     ${engineHtml}
     ${keywordHtml}
@@ -230,6 +238,27 @@ export async function handleCitations(
     } catch { /* ignore */ }
   }
 
+  // Fetch AEO score data for cross-reference
+  let aeoContext: AeoContext | null = null;
+  const domain = await env.DB.prepare(
+    "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(slug).first<{ id: number }>();
+  if (domain) {
+    const scan = await env.DB.prepare(
+      "SELECT aeo_score, grade, red_flags, schema_types FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
+    ).bind(domain.id).first<{ aeo_score: number; grade: string; red_flags: string; schema_types: string }>();
+    if (scan) {
+      const redFlags: string[] = JSON.parse(scan.red_flags);
+      const schemaTypes: string[] = JSON.parse(scan.schema_types);
+      aeoContext = {
+        aeoScore: scan.aeo_score,
+        grade: scan.grade,
+        redFlagCount: redFlags.length,
+        schemaCount: schemaTypes.length,
+      };
+    }
+  }
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
@@ -248,7 +277,7 @@ export async function handleCitations(
     </div>
     ` : buildCitationDataSection(
       latest, previous, shareNow, deltaHtml, chartData,
-      topCompetitors, keywordBreakdown, enginesBreakdown, slug
+      topCompetitors, keywordBreakdown, enginesBreakdown, slug, aeoContext
     )}
 
     <!-- Active keywords -->
@@ -380,7 +409,7 @@ export async function handleAdminCitations(
     <div class="card">
       <form method="POST" action="/admin/citations/${esc(slug)}/run">
         <button type="submit" class="btn" style="background:var(--gold);color:var(--bg)">Run citation scan now</button>
-        <span style="font-size:12px;color:var(--text-faint);margin-left:8px">Runs all keywords against Perplexity + OpenAI</span>
+        <span style="font-size:12px;color:var(--text-faint);margin-left:8px">Runs all keywords against Perplexity, ChatGPT, Gemini, and Claude</span>
       </form>
     </div>
 

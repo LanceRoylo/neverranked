@@ -9,6 +9,7 @@
 export interface CitationNarrative {
   headline: string;
   summary: string;
+  outlook: string;
   competitorInsight: string;
   keywordInsight: string;
   engineInsight: string;
@@ -32,6 +33,13 @@ interface EngineData {
   citations: number;
 }
 
+export interface AeoContext {
+  aeoScore: number;
+  grade: string;
+  redFlagCount: number;
+  schemaCount: number;
+}
+
 export function generateCitationNarrative(
   citationShare: number,
   previousShare: number | null,
@@ -40,7 +48,8 @@ export function generateCitationNarrative(
   topCompetitors: CompetitorEntry[],
   keywordBreakdown: KeywordResult[],
   enginesBreakdown: Record<string, EngineData>,
-  clientSlug: string
+  clientSlug: string,
+  aeoContext?: AeoContext | null
 ): CitationNarrative {
   const sharePct = (citationShare * 100).toFixed(0);
   const citedKeywords = keywordBreakdown.filter(k => k.cited);
@@ -52,7 +61,7 @@ export function generateCitationNarrative(
   // --- Summary ---
   const summary = buildSummary(
     citationShare, previousShare, totalQueries, clientCitations,
-    citedKeywords, uncitedKeywords, topCompetitors, clientSlug
+    citedKeywords, uncitedKeywords, topCompetitors, clientSlug, aeoContext
   );
 
   // --- Competitor insight ---
@@ -64,13 +73,19 @@ export function generateCitationNarrative(
   // --- Engine insight ---
   const engineInsight = buildEngineInsight(enginesBreakdown);
 
+  // --- Outlook ---
+  const outlook = buildOutlook(
+    citationShare, previousShare, citedKeywords, uncitedKeywords,
+    topCompetitors, enginesBreakdown, aeoContext
+  );
+
   // --- Next steps ---
   const nextSteps = buildNextSteps(
     citationShare, citedKeywords, uncitedKeywords,
-    topCompetitors, enginesBreakdown
+    topCompetitors, enginesBreakdown, aeoContext
   );
 
-  return { headline, summary, competitorInsight, keywordInsight, engineInsight, nextSteps };
+  return { headline, summary, outlook, competitorInsight, keywordInsight, engineInsight, nextSteps };
 }
 
 // ---------------------------------------------------------------------------
@@ -114,7 +129,8 @@ function buildSummary(
   cited: KeywordResult[],
   uncited: KeywordResult[],
   competitors: CompetitorEntry[],
-  slug: string
+  slug: string,
+  aeo?: AeoContext | null
 ): string {
   const parts: string[] = [];
   const totalKeywords = cited.length + uncited.length;
@@ -146,6 +162,31 @@ function buildSummary(
     );
   }
 
+  // AEO score cross-reference
+  if (aeo) {
+    if (aeo.aeoScore >= 70 && share === 0) {
+      parts.push(
+        "Your site scores " + aeo.aeoScore + "/100 on AEO readiness (grade " + aeo.grade + "), which means the technical foundation is solid. The gap between a good readiness score and actually being cited usually comes down to external authority: AI models need to see your business mentioned and linked across multiple third-party sources before they trust it enough to recommend by name."
+      );
+    } else if (aeo.aeoScore >= 70 && share > 0 && share < 0.3) {
+      parts.push(
+        "Your AEO readiness score of " + aeo.aeoScore + "/100 supports the citations you are earning. Continued improvements in content depth and external authority will push citation share higher."
+      );
+    } else if (aeo.aeoScore < 50 && share === 0) {
+      parts.push(
+        "Your site currently scores " + aeo.aeoScore + "/100 on AEO readiness (grade " + aeo.grade + "), which means there are foundational technical issues holding you back. AI engines cannot cite a site they cannot properly read. Fixing the " + aeo.redFlagCount + " red flag" + (aeo.redFlagCount !== 1 ? "s" : "") + " and adding structured data is the first step before citation share can improve."
+      );
+    } else if (aeo.aeoScore < 50 && share > 0) {
+      parts.push(
+        "Notably, your site is earning some citations despite a low AEO readiness score of " + aeo.aeoScore + "/100. This suggests your brand has external authority that AI models are picking up on. Improving the technical foundation would amplify that signal significantly."
+      );
+    } else if (aeo.aeoScore >= 50 && aeo.aeoScore < 70 && share === 0) {
+      parts.push(
+        "Your AEO readiness score of " + aeo.aeoScore + "/100 is moderate. The technical foundation is partially there but has gaps. " + (aeo.redFlagCount > 0 ? "Resolving the " + aeo.redFlagCount + " remaining red flag" + (aeo.redFlagCount !== 1 ? "s" : "") + " and expanding schema coverage from " + aeo.schemaCount + " type" + (aeo.schemaCount !== 1 ? "s" : "") + " would strengthen the signals AI engines rely on." : "Expanding schema coverage and content depth would strengthen the signals AI engines need to cite your business.")
+      );
+    }
+  }
+
   // Trend context
   if (prevShare !== null) {
     const diff = share - prevShare;
@@ -163,6 +204,130 @@ function buildSummary(
   }
 
   return parts.join(" ");
+}
+
+// ---------------------------------------------------------------------------
+// Competitor insight
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Outlook (forward-looking, honest, soft)
+// ---------------------------------------------------------------------------
+
+function buildOutlook(
+  share: number,
+  prevShare: number | null,
+  cited: KeywordResult[],
+  uncited: KeywordResult[],
+  competitors: CompetitorEntry[],
+  engines: Record<string, EngineData>,
+  aeo?: AeoContext | null
+): string {
+  const parts: string[] = [];
+  const totalKeywords = cited.length + uncited.length;
+  const engineCount = Object.keys(engines).length;
+
+  // ------ Zero state: first scan, no citations yet ------
+  if (share === 0 && prevShare === null) {
+    parts.push(
+      "This is the baseline. Every business starts here. The value of this first scan is not the score itself but the fact that you now have a clear, measurable starting point."
+    );
+    if (aeo && aeo.aeoScore >= 60) {
+      parts.push(
+        "Your technical readiness is already in a solid place. As content authority and external signals build over the coming weeks, the citation share will follow. Most businesses in a similar position begin seeing their first AI citations within 4-8 weeks of consistent optimization."
+      );
+    } else if (aeo && aeo.aeoScore >= 40) {
+      parts.push(
+        "The foundation is partially built. As the roadmap items are completed and the site's structured data improves, AI engines will have more to work with. The typical timeline from here to first citations is 6-10 weeks, depending on how quickly the technical gaps close."
+      );
+    } else {
+      parts.push(
+        "There is real work to do on the technical side, and that is exactly why this tracking exists. As each piece of the foundation gets built, the data here will reflect it. First citations typically appear 8-12 weeks into the optimization process."
+      );
+    }
+    if (competitors.length > 0) {
+      parts.push(
+        "The competitors already showing up in AI responses give you a roadmap. What they have built is visible and replicable."
+      );
+    }
+    return parts.join(" ");
+  }
+
+  // ------ Zero state: not first scan, still no citations ------
+  if (share === 0 && prevShare !== null) {
+    parts.push(
+      "No citations this week, but that does not mean the work is not moving. AI models update their understanding of the web on their own timeline. The optimizations being made now are building toward a threshold. Once that threshold is crossed, citations tend to come in clusters rather than one at a time."
+    );
+    if (aeo && aeo.aeoScore > (prevShare !== null ? 50 : 0)) {
+      parts.push(
+        "The AEO readiness score shows the site is improving technically. That progress will translate to citations as the external authority signals catch up."
+      );
+    }
+    return parts.join(" ");
+  }
+
+  // ------ Has citations, trending up ------
+  if (prevShare !== null && share > prevShare) {
+    const gain = share - prevShare;
+    const gainPts = (gain * 100).toFixed(1);
+    parts.push(
+      "Citation share grew by " + gainPts + " points this week. That is real momentum."
+    );
+    if (share < 0.15) {
+      parts.push(
+        "Early gains like this are significant because they show AI engines are starting to recognize and trust your site. The first citations are the hardest to earn. Each one after gets easier as the authority compounds."
+      );
+    } else if (share < 0.4) {
+      parts.push(
+        "At this pace, the trajectory is strong. Continued work on the roadmap items and keyword coverage will keep pushing citation share up. The businesses that reach 30-40% citation share typically see measurable lead impact from AI-driven referrals."
+      );
+    } else {
+      parts.push(
+        "This is a strong position. The focus now shifts from building to maintaining and expanding into adjacent keyword territory."
+      );
+    }
+    return parts.join(" ");
+  }
+
+  // ------ Has citations, flat or first scan with citations ------
+  if (share > 0 && (prevShare === null || share === prevShare)) {
+    const pct = (share * 100).toFixed(0);
+    if (prevShare === null) {
+      parts.push(
+        "Starting at " + pct + "% citation share means AI engines are already aware of your business. That is a better starting position than most. The work ahead is about expanding which keywords trigger citations and making sure the coverage is consistent across all " + engineCount + " AI engines being tracked."
+      );
+    } else {
+      parts.push(
+        "Citation share held steady at " + pct + "%. Stability is not stagnation. It means the current authority signals are holding. The next move is expanding into the " + uncited.length + " keyword" + (uncited.length !== 1 ? "s" : "") + " where you are not yet cited."
+      );
+    }
+    return parts.join(" ");
+  }
+
+  // ------ Has citations, trending down ------
+  if (prevShare !== null && share < prevShare && share > 0) {
+    const lossPts = ((prevShare - share) * 100).toFixed(1);
+    parts.push(
+      "Citation share dipped " + lossPts + " points this week. Small fluctuations are normal because AI responses are non-deterministic. The same query can produce different results on different days."
+    );
+    parts.push(
+      "What matters is the trend over 4-6 weeks, not any single week. If the dip continues, it is worth investigating whether competitors published new content or whether any site changes affected structured data."
+    );
+    return parts.join(" ");
+  }
+
+  // ------ Had citations, lost them all ------
+  if (share === 0 && prevShare !== null && prevShare > 0) {
+    parts.push(
+      "Citations dropped to zero this week after " + (prevShare * 100).toFixed(0) + "% last week. This can happen when AI models refresh their source data or when competitors improve. It does not erase the progress that has been made."
+    );
+    parts.push(
+      "The authority signals your site has built are still there. Check whether any recent site changes may have affected structured data, and continue the roadmap work. Citations often return once the model's next update cycle picks up the latest signals."
+    );
+    return parts.join(" ");
+  }
+
+  return "The tracking data will become more meaningful over the next few weeks as patterns emerge across multiple scans.";
 }
 
 // ---------------------------------------------------------------------------
@@ -284,9 +449,24 @@ function buildNextSteps(
   cited: KeywordResult[],
   uncited: KeywordResult[],
   competitors: CompetitorEntry[],
-  engines: Record<string, EngineData>
+  engines: Record<string, EngineData>,
+  aeo?: AeoContext | null
 ): { action: string; reason: string }[] {
   const steps: { action: string; reason: string }[] = [];
+
+  // AEO-specific steps come first when score is low
+  if (aeo && aeo.aeoScore < 50 && aeo.redFlagCount > 0) {
+    steps.push({
+      action: "Fix the " + aeo.redFlagCount + " technical red flag" + (aeo.redFlagCount !== 1 ? "s" : "") + " on your site",
+      reason: "AI engines skip sites with broken structured data, missing meta information, or poor accessibility. These red flags are actively preventing citations regardless of content quality."
+    });
+  }
+  if (aeo && aeo.schemaCount < 3) {
+    steps.push({
+      action: "Add more structured data types (currently " + aeo.schemaCount + ")",
+      reason: "AI models use structured data to understand what your business does, where you operate, and what services you offer. More schema types give AI engines more reasons to cite you."
+    });
+  }
 
   if (share === 0) {
     steps.push({

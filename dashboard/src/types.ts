@@ -13,6 +13,8 @@ export interface Env {
   DASHBOARD_ORIGIN?: string;
   PERPLEXITY_API_KEY?: string;
   OPENAI_API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
 }
 
 export interface User {
