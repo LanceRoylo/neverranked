@@ -19,7 +19,7 @@ export function buildReport(url: string, html: string): Report {
   const signals = extractMeta(html, url);
   const redFlags = generateRedFlags(signals);
   const aeoScore = calculateAeoScore(signals);
-  const grade = calculateGrade(signals, redFlags);
+  const grade = calculateGrade(aeoScore);
 
   const schemaCoverage = CRITICAL_SCHEMAS.map((type) => ({
     type,

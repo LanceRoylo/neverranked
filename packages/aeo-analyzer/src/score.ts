@@ -19,25 +19,10 @@ export function calculateAeoScore(signals: Signals): number {
   return score;
 }
 
-export function calculateGrade(signals: Signals, redFlags: string[]): string {
-  const hasOrg = signals.schema_types.includes("Organization");
-  const hasWebSite = signals.schema_types.includes("WebSite");
-  const hasBreadcrumb = signals.schema_types.includes("BreadcrumbList");
-  const hasCanonical = !!signals.canonical;
-  const hasOgImage = signals.og_image;
-  const hasAnySchema = signals.schema_types.length > 0;
-
-  if (hasOrg && hasWebSite && hasBreadcrumb && hasCanonical && hasOgImage && signals.links_external >= 3 && redFlags.length <= 2) {
-    return "A";
-  }
-  if (hasOrg && hasWebSite && hasCanonical && hasOgImage && redFlags.length <= 4) {
-    return "B";
-  }
-  if (hasAnySchema && hasCanonical && redFlags.length <= 6) {
-    return "C";
-  }
-  if (hasAnySchema || (hasCanonical && hasOgImage)) {
-    return "D";
-  }
+export function calculateGrade(score: number): string {
+  if (score >= 90) return "A";
+  if (score >= 70) return "B";
+  if (score >= 50) return "C";
+  if (score >= 30) return "D";
   return "F";
 }
