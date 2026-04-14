@@ -303,6 +303,19 @@ export default {
       return handleManualCitationRun(decodeURIComponent(citationsRunMatch[1]), env, ctx);
     }
 
+    // Citation scan status API (polling endpoint for admin)
+    const citationStatusMatch = path.match(/^\/api\/citation-status\/([^/]+?)\/?$/);
+    if (citationStatusMatch && method === "GET" && user.role === "admin") {
+      const statusSlug = decodeURIComponent(citationStatusMatch[1]);
+      const tenMinAgo = Math.floor(Date.now() / 1000) - 600;
+      const recent = await env.DB.prepare(
+        "SELECT created_at FROM citation_snapshots WHERE client_slug = ? AND created_at > ? ORDER BY created_at DESC LIMIT 1"
+      ).bind(statusSlug, tenMinAgo).first<{ created_at: number }>();
+      return new Response(JSON.stringify({ done: !!recent }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
     // Settings
     if (path === "/settings" && method === "GET") {
       return handleSettings(user, env);

@@ -262,7 +262,7 @@ export async function handleCitations(
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
-      <div class="section-sub">${esc(slug)}</div>
+      <div class="section-sub">${esc(slug)}${latest ? ' -- last updated ' + new Date(latest.created_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ''}</div>
     </div>
 
     ${!latest ? `
@@ -343,16 +343,39 @@ export async function handleAdminCitations(
     </div>
 
     ${isRunning ? `
-    <div class="card" style="border:1px solid var(--gold);background:rgba(232,199,103,0.06)">
+    <div id="scan-banner" class="card" style="border:1px solid var(--gold);background:rgba(232,199,103,0.06)">
       <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
+        <div id="scan-dot" style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
         <div>
-          <div style="color:var(--text);font-size:14px">Citation scan running in the background</div>
-          <div style="color:var(--text-faint);font-size:12px;margin-top:4px">This takes 1-2 minutes. Refresh the <a href="/citations/${esc(slug)}" style="color:var(--gold)">citations page</a> to see results when complete.</div>
+          <div id="scan-title" style="color:var(--text);font-size:14px">Citation scan running in the background</div>
+          <div id="scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">This takes 3-5 minutes. This page will update automatically when the scan finishes.</div>
         </div>
       </div>
     </div>
     <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+    <script>
+    (function(){
+      var started = Date.now();
+      var slug = "${esc(slug)}";
+      function check(){
+        fetch("/api/citation-status/" + slug).then(function(r){return r.json()}).then(function(d){
+          if(d.done){
+            document.getElementById("scan-dot").style.animation="none";
+            document.getElementById("scan-dot").style.background="var(--green)";
+            document.getElementById("scan-title").textContent="Citation scan complete";
+            document.getElementById("scan-sub").innerHTML='Results are ready. <a href="/citations/'+slug+'" style="color:var(--gold);font-weight:500">View citation dashboard</a>';
+            document.getElementById("scan-banner").style.borderColor="var(--green)";
+            document.getElementById("scan-banner").style.background="rgba(94,199,106,0.06)";
+          } else if(Date.now()-started < 600000){
+            setTimeout(check, 8000);
+          }
+        }).catch(function(){
+          if(Date.now()-started < 600000) setTimeout(check, 10000);
+        });
+      }
+      setTimeout(check, 15000);
+    })();
+    </script>
     ` : ""}
 
     <!-- Add keyword form -->
