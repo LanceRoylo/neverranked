@@ -41,6 +41,28 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
       </div>
     </div>
 
+    <!-- Billing -->
+    ${user.stripe_customer_id ? `
+    <div class="card" style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:16px">Billing</div>
+      <div style="display:grid;grid-template-columns:120px 1fr;gap:12px;font-size:14px;margin-bottom:20px">
+        <div style="color:var(--text-faint)">Plan</div>
+        <div><span class="status status-${user.plan === 'churned' || user.plan === 'none' ? 'blocked' : 'done'}">${esc(user.plan || 'none')}</span></div>
+        ${user.stripe_subscription_id ? `
+          <div style="color:var(--text-faint)">Status</div>
+          <div style="color:var(--text)">Active subscription</div>
+        ` : `
+          <div style="color:var(--text-faint)">Status</div>
+          <div style="color:var(--text-faint)">One-time purchase</div>
+        `}
+      </div>
+      <form method="POST" action="/billing/portal">
+        <button type="submit" class="btn">Manage billing</button>
+        <span style="font-size:12px;color:var(--text-faint);margin-left:12px">Update payment method, view invoices, or cancel</span>
+      </form>
+    </div>
+    ` : ""}
+
     <!-- Email preferences -->
     <div class="card">
       <div class="label" style="margin-bottom:16px">Email Preferences</div>

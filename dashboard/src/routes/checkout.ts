@@ -464,6 +464,53 @@ export async function handleStripeWebhook(
   return new Response("OK", { status: 200 });
 }
 
+// ---------- Billing Portal ----------
+
+/**
+ * POST /billing/portal — Create Stripe Billing Portal session and redirect
+ */
+export async function handleBillingPortal(
+  user: User,
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (!env.STRIPE_SECRET_KEY) {
+    return html(layout("Error", `
+      <div class="empty">
+        <h3>Billing not configured</h3>
+        <p>Please contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
+      </div>
+    `, user), 500);
+  }
+
+  if (!user.stripe_customer_id) {
+    return html(layout("Billing", `
+      <div class="empty">
+        <h3>No billing account</h3>
+        <p>You don't have an active subscription. <a href="https://neverranked.com/#pricing" style="color:var(--gold)">View plans</a></p>
+      </div>
+    `, user), 404);
+  }
+
+  const origin = new URL(request.url).origin;
+  const session = await stripeRequest("/billing_portal/sessions", env.STRIPE_SECRET_KEY, {
+    customer: user.stripe_customer_id,
+    return_url: `${origin}/settings`,
+  });
+
+  if (session.error) {
+    console.log(`Stripe portal error: ${JSON.stringify(session.error)}`);
+    return html(layout("Error", `
+      <div class="empty">
+        <h3>Something went wrong</h3>
+        <p>Could not open billing portal. Please contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
+      </div>
+    `, user), 500);
+  }
+
+  return redirect(session.url);
+}
+
 // ---------- Email templates ----------
 
 function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string, plan: string): string {

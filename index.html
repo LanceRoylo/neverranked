@@ -3166,6 +3166,35 @@ window.scrollTo(0,0);
     if(v && v > 0 && select.value) update(select.value, v);
   });
 })();
+
+/* ---------- domain pre-fill on checkout links ---------- */
+(function(){
+  var checkoutLinks = document.querySelectorAll('a[href*="app.neverranked.com/checkout/"]');
+  if(!checkoutLinks.length) return;
+
+  function setDomain(d){
+    if(!d) return;
+    d = d.replace(/^https?:\/\//,'').replace(/^www\./,'').replace(/\/.*$/,'').trim();
+    if(!d) return;
+    checkoutLinks.forEach(function(a){
+      var u = new URL(a.href);
+      u.searchParams.set('domain', d);
+      a.href = u.toString();
+    });
+  }
+
+  // 1. Check URL params (e.g. neverranked.com/?domain=example.com)
+  var params = new URLSearchParams(window.location.search);
+  if(params.get('domain')) setDomain(params.get('domain'));
+
+  // 2. Update live as user types in the intake form domain field
+  var domainInput = document.querySelector('input[name="domain"]');
+  if(domainInput){
+    domainInput.addEventListener('input', function(){
+      setDomain(this.value);
+    });
+  }
+})();
 </script>
 
 </body>

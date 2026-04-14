@@ -18,7 +18,7 @@ import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads } from "./routes/leads";
-import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook } from "./routes/checkout";
+import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks } from "./cron";
 import { logEvent, hashIP } from "./analytics";
@@ -273,6 +273,11 @@ export default {
     }
     if (path === "/settings/emails" && method === "POST") {
       return handleUpdateEmailPrefs(request, user, env);
+    }
+
+    // Billing portal
+    if (path === "/billing/portal" && method === "POST") {
+      return handleBillingPortal(user, request, env);
     }
 
     // 404
