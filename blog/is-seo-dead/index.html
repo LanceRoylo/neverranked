@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Is SEO Dead? What Actually Replaced It — Never Ranked</title>
+<meta name="description" content="SEO is not dead. But the version of SEO most businesses are running stopped working when AI engines started answering queries directly. Here is what replaced the old playbook.">
+<link rel="canonical" href="https://neverranked.com/blog/is-seo-dead/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="Is SEO Dead? What Actually Replaced It">
+<meta property="og:description" content="SEO is not dead. But the version most businesses are running stopped working when AI engines started answering queries directly.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/blog/is-seo-dead/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Is SEO Dead? What Actually Replaced It — Never Ranked">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Is SEO Dead? What Actually Replaced It">
+<meta name="twitter:description" content="SEO is not dead. But the version most businesses are running stopped working. Here is what replaced it.">
+<meta name="twitter:image" content="https://neverranked.com/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "Is SEO Dead? What Actually Replaced It",
+      "description": "SEO is not dead. But the version of SEO most businesses are running stopped working when AI engines started answering queries directly. Here is what replaced the old playbook.",
+      "author": {
+        "@type": "Person",
+        "name": "Lance Roylo",
+        "@id": "https://neverranked.com/about/#founder"
+      },
+      "publisher": {
+        "@id": "https://neverranked.com/#organization"
+      },
+      "datePublished": "2026-04-19",
+      "dateModified": "2026-04-19",
+      "url": "https://neverranked.com/blog/is-seo-dead/",
+      "wordCount": 1400,
+      "mainEntityOfPage": "https://neverranked.com/blog/is-seo-dead/",
+      "keywords": ["is SEO dead", "SEO vs AEO", "future of SEO", "AI search optimization", "answer engine optimization"]
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://neverranked.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Insights",
+          "item": "https://neverranked.com/blog/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Is SEO Dead?",
+          "item": "https://neverranked.com/blog/is-seo-dead/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.68);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* ---------- reset ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:300;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* ---------- grain overlay ---------- */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* ---------- shared layout ---------- */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative}
+
+/* ---------- nav ---------- */
+.nav{position:fixed;top:0;left:0;right:0;z-index:80;padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;mix-blend-mode:difference;color:#f0ece3;transition:transform .6s var(--ease)}
+.nav.hide{transform:translateY(-120%)}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s,color .25s}
+.nav .right .nav-link{opacity:.88}
+.nav .right .nav-link:hover{opacity:1}
+.nav .right .nav-link.active{opacity:1;color:var(--gold)}
+.nav .right .nav-cta{color:var(--gold);border:1px solid var(--gold);padding:10px 16px;font-weight:500;letter-spacing:.2em;transition:background .35s var(--ease),color .35s var(--ease)}
+.nav .right .nav-cta:hover{background:var(--gold);color:var(--bg)}
+
+/* ---------- hamburger ---------- */
+.hamburger{display:none;position:fixed;top:22px;left:var(--gutter);z-index:200;background:none;border:none;cursor:pointer;width:28px;height:20px;padding:0;-webkit-tap-highlight-color:transparent}
+.hamburger span,.hamburger span::before,.hamburger span::after{display:block;position:absolute;left:0;right:0;height:2px;background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease)}
+.hamburger span{top:9px}.hamburger span::before{content:"";top:-7px}.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;background:#080808;padding:90px var(--gutter) 40px;flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{display:block;width:100%;padding:16px 0;letter-spacing:.22em;border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;border-bottom:1px solid var(--gold)}
+.mobile-overlay .mob-status{margin-top:20px;display:flex;align-items:center;gap:8px;font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em}
+.mobile-overlay .mob-status::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.18)}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right .nav-link,.nav .right .status{display:none}
+}
+
+/* ---------- article hero ---------- */
+.article-hero{padding:180px 0 80px;border-bottom:1px solid var(--line);position:relative}
+.article-hero::before{content:"";position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,var(--line-strong) 20%,var(--line-strong) 80%,transparent)}
+.article-hero .section-label{display:flex;align-items:center;gap:14px;font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--text-mute);margin-bottom:40px}
+.article-hero .section-label .dot{display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.article-hero .section-label .rule{flex:1;height:1px;background:var(--line)}
+.article-hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);line-height:1.08;letter-spacing:-.02em;margin:0 0 32px;max-width:20ch}
+.article-hero h1 em{font-style:italic;color:var(--gold)}
+.article-meta{display:flex;gap:28px;flex-wrap:wrap;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--text-faint)}
+.article-meta span{display:flex;align-items:center;gap:8px}
+.article-meta b{color:var(--text-mute);font-weight:500}
+
+/* ---------- article body ---------- */
+.article-body{max-width:680px;margin:0 auto;padding:80px var(--gutter)}
+.article-body p{font-family:var(--mono);font-size:14px;line-height:1.85;color:var(--text-soft);margin:0 0 22px}
+.article-body p:last-child{margin-bottom:0}
+.article-body a{color:var(--gold);border-bottom:1px solid var(--gold-dim);transition:border-color .3s var(--ease)}
+.article-body a:hover{border-color:var(--gold)}
+.article-body h2{font-family:var(--serif);font-weight:400;font-size:clamp(22px,3vw,32px);line-height:1.15;letter-spacing:-.015em;color:var(--text);margin:56px 0 20px}
+.article-body h2:first-child{margin-top:0}
+.article-body h2 em{font-style:italic;color:var(--gold)}
+.article-body strong{font-weight:400;color:var(--text)}
+.article-body ol,.article-body ul{font-family:var(--mono);font-size:14px;line-height:1.85;color:var(--text-soft);margin:0 0 22px;padding-left:24px}
+.article-body ol li,.article-body ul li{margin-bottom:16px}
+
+/* ---------- signal blocks ---------- */
+.signal-block{background:var(--bg-lift);border-left:3px solid var(--gold);border-radius:0 6px 6px 0;padding:28px 28px 28px 24px;margin:28px 0 32px}
+.signal-block .signal-label{font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--gold);font-weight:500;margin-bottom:12px}
+.signal-block p{font-size:13px;line-height:1.8;color:var(--text-soft);margin:0 0 10px}
+.signal-block p:last-child{margin-bottom:0}
+
+/* ---------- CTA section ---------- */
+.article-cta{border-top:1px solid var(--line);padding:100px 0;text-align:center}
+.article-cta .eyebrow{font-family:var(--label);font-weight:500;text-transform:uppercase;letter-spacing:.18em;font-size:12px;color:var(--text-mute);margin-bottom:24px}
+.article-cta .eyebrow .dot{display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)}
+.article-cta h2{font-family:var(--serif);font-weight:400;font-style:italic;font-size:clamp(28px,5vw,48px);line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;color:var(--text-soft)}
+.article-cta .cta-sub{font-family:var(--mono);font-size:14px;color:var(--text-faint);line-height:1.7;margin:0 auto 40px;max-width:44ch}
+.cta{display:inline-flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;border:1px solid var(--gold);color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:12px;font-weight:500;position:relative;overflow:hidden;transition:color .4s var(--ease)}
+.cta::before{content:"";position:absolute;inset:0;background:var(--gold);transform:translateY(101%);transition:transform .5s var(--ease);z-index:-1}
+.cta:hover{color:var(--bg)}.cta:hover::before{transform:translateY(0)}
+.cta .arrow{display:inline-block;width:18px;height:1px;background:currentColor;position:relative;transition:width .4s var(--ease)}
+.cta .arrow::after{content:"";position:absolute;right:0;top:-3px;width:7px;height:7px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)}
+.cta:hover .arrow{width:24px}
+.cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.cta-secondary{display:inline-flex;align-items:center;gap:16px;padding:18px 26px 18px 28px;border:1px solid var(--line);color:var(--text-mute);font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:12px;font-weight:500;transition:border-color .35s var(--ease),color .35s var(--ease)}
+.cta-secondary:hover{border-color:var(--text-mute);color:var(--text)}
+
+/* ---------- footer ---------- */
+.footer{border-top:1px solid var(--line);margin-top:0;padding:36px 0 40px;display:grid;grid-template-columns:1fr;gap:20px;font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:10px;color:var(--text-mute)}
+@media(min-width:720px){.footer{grid-template-columns:1fr 1fr 1fr;align-items:center}.footer .c{text-align:center}.footer .r{text-align:right}}
+.footer a{color:var(--text-mute);transition:color .3s}.footer a:hover{color:var(--gold)}
+
+/* ---------- reveal ---------- */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity 1s var(--ease),transform 1s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+
+@media(max-width:640px){
+  .article-meta{flex-direction:column;gap:12px}
+  .signal-block{padding:20px 20px 20px 18px}
+  .article-body{padding:60px var(--gutter)}
+}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$500 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav" id="nav">
+  <a href="/" class="mark">Never Ranked<sup>&copy;</sup></a>
+  <div class="right">
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/blog/" class="nav-link">Insights</a>
+    <a href="/#services" class="nav-link">Services</a>
+    <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
+    <a href="/#audit" class="nav-cta">$500 Audit</a>
+  </div>
+</nav>
+
+<main>
+
+  <section class="article-hero">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="dot"></span>
+        <span>Insights</span>
+        <span class="rule"></span>
+      </div>
+      <h1 class="reveal" style="transition-delay:.06s">Is SEO Dead? <em>What Actually Replaced It</em></h1>
+      <div class="article-meta reveal" style="transition-delay:.12s">
+        <span><b>By</b> Lance Roylo</span>
+        <span><b>Published</b> April 2026</span>
+        <span><b>Read</b> 7 min</span>
+      </div>
+    </div>
+  </section>
+
+  <article class="article-body">
+
+    <div class="reveal">
+      <p>Every few years someone declares SEO is dead. Usually it is a marketer selling the next thing. Usually they are wrong. But this time the underlying mechanics actually changed, and the businesses that ignore the shift are going to pay for it.</p>
+      <p>SEO is not dead. But the version of SEO that most businesses are running has a shrinking surface area. The search experience is being restructured around AI-generated answers, and the rules for who shows up in those answers are fundamentally different from the rules that governed ten blue links.</p>
+    </div>
+
+    <h2 class="reveal">What actually <em>changed</em></h2>
+
+    <div class="reveal">
+      <p>For twenty years, the search model was simple. A user types a query. Google returns a list of web pages. The user clicks one. Traffic flows to publishers. Businesses optimize for rankings in that list.</p>
+      <p>That model is eroding. Google AI Overviews now appear on a significant percentage of searches, answering the query directly above the organic results. ChatGPT handles hundreds of millions of conversations weekly where users ask questions they used to Google. Perplexity, Claude, Gemini, and a growing list of AI search tools are training users to get answers without clicking through to websites.</p>
+      <p>The result: <a href="/blog/website-traffic-dropped/">organic traffic is declining across nearly every industry</a>, even for businesses that rank well. The click is disappearing. Not because Google penalized anyone. Because AI answered the question before the user needed to click.</p>
+    </div>
+
+    <h2 class="reveal">What SEO got right -- <em>and what it missed</em></h2>
+
+    <div class="reveal">
+      <p>Traditional SEO got a few things permanently right. Technical site health matters. Content quality matters. Authority signals matter. None of that goes away. A slow, broken website with thin content will not perform in any search paradigm.</p>
+      <p>But traditional SEO optimized for a specific delivery mechanism: the ranked list of links. Keywords, title tags, backlink profiles, featured snippets. All of these are about positioning within a list. When the list stops being the primary answer format, the optimization framework built around it loses leverage.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">The shift in one sentence</div>
+      <p>SEO optimized for rankings. AEO (Answer Engine Optimization) optimizes for citations. Rankings get you into a list. Citations get you into the answer. The businesses that understand this distinction early are the ones building compounding visibility right now.</p>
+    </div>
+
+    <h2 class="reveal">How AEO <em>differs from SEO</em></h2>
+
+    <div class="reveal">
+      <p>AEO, or Answer Engine Optimization, is the practice of making your business visible in AI-generated answers. It shares DNA with SEO but operates on different mechanics.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">SEO: Keyword targeting</div>
+      <p>Traditional SEO targets specific keyword phrases and optimizes pages to rank for them. The page that best matches the keyword intent and authority signals wins the ranking slot.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">AEO: Entity resolution</div>
+      <p>AI engines think in entities, not keywords. An entity is a recognized thing -- a company, a person, a product, a concept. If the model recognizes your business as a credible entity in a topic area, it can cite you across thousands of different phrasings. Entity recognition scales in a way that keyword targeting never did. One clear entity profile generates visibility across every way a human might ask about your category.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">SEO: Content for ranking</div>
+      <p>SEO content is optimized for Google's ranking algorithm. Word count, keyword density, heading structure, internal linking. The content is written for the algorithm first and the reader second.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">AEO: Content for extraction</div>
+      <p>AEO content is structured so AI models can extract clear, citable facts. Direct answers to specific questions. Structured data that machines can parse. Content written so a model can confidently say "according to [your business], the answer is X." The reader benefits because extraction-optimized content is also clearer and more direct for humans.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">SEO: Backlinks as votes</div>
+      <p>In traditional SEO, backlinks act as votes of confidence that improve your ranking position. More links from authoritative domains means higher rankings.</p>
+    </div>
+
+    <div class="signal-block reveal">
+      <div class="signal-label">AEO: Mentions as validation</div>
+      <p>AI engines use mentions on authoritative sources as trust signals, but the mechanics differ. A mention of your business name on a respected industry publication tells the model that your entity is real and recognized. It is not about passing link equity. It is about confirming entity identity across multiple trusted sources.</p>
+    </div>
+
+    <h2 class="reveal">The real answer -- <em>SEO evolved</em></h2>
+
+    <div class="reveal">
+      <p>SEO is not dead. It evolved. The businesses that will thrive in the next five years are the ones that keep the technical foundation SEO built and layer on the new infrastructure that AI engines require.</p>
+      <p>That means <a href="/blog/schema-markup-ai-search/">deploying schema markup</a> that gives AI models machine-readable data about your business. It means registering your entity across knowledge bases so models can identify you. It means writing content structured for extraction, not just ranking. It means tracking <a href="/blog/aeo-score-what-it-means/">your AEO score</a> alongside your keyword rankings.</p>
+      <p>The businesses still running a pure keyword-and-backlink playbook are not failing because SEO died. They are failing because the surface area where that playbook works is shrinking. Every query that gets an AI Overview answer is a query where ranking number one delivers fewer clicks than it did a year ago.</p>
+      <p>The move is not to abandon SEO. It is to add the AEO layer. <a href="/blog/what-is-aeo/">AEO builds on SEO</a>. Technical health, content depth, and authority signals remain the foundation. AEO adds structured data, entity infrastructure, and content architecture that makes the foundation visible to the new class of answer engines that are replacing the click.</p>
+    </div>
+
+    <h2 class="reveal">Where to start</h2>
+
+    <div class="reveal">
+      <p>Run the <a href="https://check.neverranked.com">free AEO health check</a> on your website. It takes thirty seconds, no signup. You will see how your site scores on the signals AI engines actually use to decide who gets cited. That score is the gap between your current SEO infrastructure and what answer engines need.</p>
+      <p>If the score is low, that is not a crisis. It is a head start. Most of your competitors have not even checked yet.</p>
+    </div>
+
+  </article>
+
+  <section class="article-cta">
+    <div class="wrap">
+      <div class="eyebrow reveal"><span class="dot"></span>Check Your Score</div>
+      <h2 class="reveal" style="transition-delay:.06s">Your SEO might be strong. Your AEO might not.</h2>
+      <p class="cta-sub reveal" style="transition-delay:.12s">Free scan shows exactly where you stand with the AI engines that are replacing the click.</p>
+      <div class="cta-row reveal" style="transition-delay:.18s">
+        <a href="https://check.neverranked.com" class="cta">
+          Free AEO check
+          <span class="arrow"></span>
+        </a>
+        <a href="https://neverranked.com/#audit" class="cta-secondary">
+          $500 Audit
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="footer">
+        <div class="l">Never Ranked &copy; 2026</div>
+        <div class="c">AI-Native SEO &amp; AEO</div>
+        <div class="r"><a href="mailto:hello@neverranked.com">hello@neverranked.com</a></div>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(function(el){el.classList.add('in')});return}
+  var io = new IntersectionObserver(function(entries){entries.forEach(function(entry){if(entry.isIntersecting){entry.target.classList.add('in');io.unobserve(entry.target)}})},{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(el){io.observe(el)});
+})();
+(function(){
+  var btn=document.getElementById('hamburger'),menu=document.getElementById('mobileMenu');
+  if(!btn||!menu)return;
+  function open(){btn.classList.add('active');menu.classList.add('open');document.body.style.overflow='hidden'}
+  function close(){btn.classList.remove('active');menu.classList.remove('open');document.body.style.overflow=''}
+  btn.addEventListener('click',function(e){e.stopPropagation();menu.classList.contains('open')?close():open()});
+  menu.addEventListener('click',function(e){if(e.target.tagName==='A')close()});
+})();
+(function(){
+  var nav=document.getElementById('nav'),menu=document.getElementById('mobileMenu'),last=0,ticking=false;
+  function onScroll(){var y=window.scrollY;if(menu&&menu.classList.contains('open')){last=y;ticking=false;return}if(y>last&&y>200){nav.classList.add('hide')}else{nav.classList.remove('hide')}last=y;ticking=false}
+  window.addEventListener('scroll',function(){if(!ticking){window.requestAnimationFrame(onScroll);ticking=true}},{passive:true});
+})();
+</script>
+</body>
+</html>

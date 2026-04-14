@@ -5,7 +5,7 @@
     <link>https://neverranked.com/blog/</link>
     <description>Clear thinking on AI search, AEO, schema, and the infrastructure that gets brands cited by machines.</description>
     <language>en-us</language>
-    <lastBuildDate>Sat, 12 Apr 2026 12:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 05 May 2026 12:00:00 +0000</lastBuildDate>
     <atom:link href="https://neverranked.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
     <managingEditor>hello@neverranked.com (Lance Roylo)</managingEditor>
     <webMaster>hello@neverranked.com (Lance Roylo)</webMaster>
@@ -17,13 +17,135 @@
     </image>
 
     <item>
-      <title>What Is AEO (and Why It Replaced the Playbook You're Running)</title>
-      <link>https://neverranked.com/blog/what-is-aeo/</link>
-      <guid isPermaLink="true">https://neverranked.com/blog/what-is-aeo/</guid>
-      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <title>AEO for Financial Advisors: How Wealth Managers Get Recommended by AI</title>
+      <link>https://neverranked.com/blog/aeo-for-financial-advisors/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-financial-advisors/</guid>
+      <pubDate>Tue, 05 May 2026 12:00:00 +0000</pubDate>
       <dc:creator>Lance Roylo</dc:creator>
-      <description>AEO is the practice of getting cited by AI engines like ChatGPT, Perplexity, and Google AI Overviews. Here is what changed and why your current SEO playbook stopped working.</description>
+      <description>People ask ChatGPT for financial advisor recommendations the way they used to ask friends. The advisors who show up in those answers are capturing clients before the first meeting.</description>
       <category>AEO</category>
+      <category>Financial Services</category>
+    </item>
+
+    <item>
+      <title>AEO for Real Estate Agents: Getting Cited When Buyers Ask AI for Help</title>
+      <link>https://neverranked.com/blog/aeo-for-real-estate/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-real-estate/</guid>
+      <pubDate>Sat, 02 May 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Homebuyers now ask ChatGPT for agent recommendations before they open Zillow. Here is what determines which agents get named and how to become one of them.</description>
+      <category>AEO</category>
+      <category>Real Estate</category>
+    </item>
+
+    <item>
+      <title>AEO for HVAC and Home Services: How Contractors Get Recommended by AI</title>
+      <link>https://neverranked.com/blog/aeo-for-hvac/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-hvac/</guid>
+      <pubDate>Tue, 28 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>When the furnace dies or the AC quits, homeowners ask AI for help. The contractors who show up in those answers win the job before anyone checks Google.</description>
+      <category>AEO</category>
+      <category>Home Services</category>
+    </item>
+
+    <item>
+      <title>Is SEO Dead? What Actually Replaced It</title>
+      <link>https://neverranked.com/blog/is-seo-dead/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/is-seo-dead/</guid>
+      <pubDate>Sun, 19 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>SEO is not dead. But the version of SEO most businesses are running stopped working when AI engines started answering queries directly. Here is what replaced the old playbook.</description>
+      <category>AEO</category>
+      <category>SEO</category>
+    </item>
+
+    <item>
+      <title>How to Check If Your Business Shows Up in ChatGPT</title>
+      <link>https://neverranked.com/blog/check-if-business-shows-up-chatgpt/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/check-if-business-shows-up-chatgpt/</guid>
+      <pubDate>Wed, 15 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>A step-by-step guide to checking whether AI engines like ChatGPT, Perplexity, and Google AI Overviews mention your business. Plus what to do if they don't.</description>
+      <category>AEO</category>
+      <category>ChatGPT</category>
+    </item>
+
+    <item>
+      <title>AEO for Lawyers: How Law Firms Get Cited by AI Search</title>
+      <link>https://neverranked.com/blog/aeo-for-lawyers/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-lawyers/</guid>
+      <pubDate>Sat, 25 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>When someone asks ChatGPT for a personal injury lawyer or estate planning attorney, the model pulls from structured data and authoritative content. Here is how law firms get into those answers.</description>
+      <category>AEO</category>
+      <category>Legal</category>
+    </item>
+
+    <item>
+      <title>AEO for Med Spas: Getting Cited When Clients Ask AI for Recommendations</title>
+      <link>https://neverranked.com/blog/aeo-for-med-spas/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-med-spas/</guid>
+      <pubDate>Tue, 21 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Med spa clients are already asking AI for treatment recommendations and provider suggestions. The practices that show up in those answers are winning bookings before a Google search ever happens.</description>
+      <category>AEO</category>
+      <category>Med Spa</category>
+    </item>
+
+    <item>
+      <title>AEO for Dentists: How Dental Practices Show Up in AI Search Results</title>
+      <link>https://neverranked.com/blog/aeo-for-dentists/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-for-dentists/</guid>
+      <pubDate>Fri, 17 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Patients are asking ChatGPT and Google AI for dentist recommendations. The practices that show up in those AI answers are capturing patients before they ever see a search result page.</description>
+      <category>AEO</category>
+      <category>Dental</category>
+    </item>
+
+    <item>
+      <title>Your Website Traffic Dropped. Here Is What Actually Happened.</title>
+      <link>https://neverranked.com/blog/website-traffic-dropped/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/website-traffic-dropped/</guid>
+      <pubDate>Mon, 13 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Traffic is down across nearly every industry and it is not a Google penalty. AI engines are answering queries directly, which means fewer clicks to your site. Here is what is really happening and what to do about it.</description>
+      <category>AEO</category>
+      <category>Traffic</category>
+    </item>
+
+    <item>
+      <title>AEO Score: What It Means and Why It Matters</title>
+      <link>https://neverranked.com/blog/aeo-score-what-it-means/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/aeo-score-what-it-means/</guid>
+      <pubDate>Fri, 10 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Your AEO score measures how likely AI engines are to cite your business. Here is how the score works, what each grade means, and exactly what moves the number.</description>
+      <category>AEO</category>
+      <category>Scoring</category>
+    </item>
+
+    <item>
+      <title>Why ChatGPT Recommends Your Competitor (and How to Fix It)</title>
+      <link>https://neverranked.com/blog/why-chatgpt-recommends-your-competitor/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/why-chatgpt-recommends-your-competitor/</guid>
+      <pubDate>Tue, 07 Apr 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>You searched your industry in ChatGPT and your competitor showed up instead of you. Here is exactly why that happens and what the model is looking for when it picks who to recommend.</description>
+      <category>AEO</category>
+      <category>ChatGPT</category>
+    </item>
+
+    <item>
+      <title>Schema Markup for AI Search Engines: What Actually Matters</title>
+      <link>https://neverranked.com/blog/schema-markup-ai-search/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/schema-markup-ai-search/</guid>
+      <pubDate>Tue, 31 Mar 2026 12:00:00 +0000</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Most schema guides are written for Google rich snippets. AI models parse structured data differently. Here are the schema types that drive AI citations and the ones you can skip.</description>
+      <category>Schema</category>
+      <category>Structured Data</category>
       <category>AI Search</category>
     </item>
 
@@ -31,7 +153,7 @@
       <title>How Long Does AEO Take to Show Results?</title>
       <link>https://neverranked.com/blog/how-long-does-aeo-take/</link>
       <guid isPermaLink="true">https://neverranked.com/blog/how-long-does-aeo-take/</guid>
-      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <pubDate>Tue, 24 Mar 2026 12:00:00 +0000</pubDate>
       <dc:creator>Lance Roylo</dc:creator>
       <description>Ninety days. Here is exactly what happens in month one, two, and three of an AEO engagement, why it takes that long, and why anyone promising faster is lying.</description>
       <category>AEO</category>
@@ -39,14 +161,13 @@
     </item>
 
     <item>
-      <title>Schema Markup for AI Search Engines: What Actually Matters</title>
-      <link>https://neverranked.com/blog/schema-markup-ai-search/</link>
-      <guid isPermaLink="true">https://neverranked.com/blog/schema-markup-ai-search/</guid>
-      <pubDate>Sat, 12 Apr 2026 12:00:00 +0000</pubDate>
+      <title>What Is AEO (and Why It Replaced the Playbook You're Running)</title>
+      <link>https://neverranked.com/blog/what-is-aeo/</link>
+      <guid isPermaLink="true">https://neverranked.com/blog/what-is-aeo/</guid>
+      <pubDate>Tue, 17 Mar 2026 12:00:00 +0000</pubDate>
       <dc:creator>Lance Roylo</dc:creator>
-      <description>Most schema guides are written for Google rich snippets. AI models parse structured data differently. Here are the schema types that drive AI citations and the ones you can skip.</description>
-      <category>Schema</category>
-      <category>Structured Data</category>
+      <description>AEO is the practice of getting cited by AI engines like ChatGPT, Perplexity, and Google AI Overviews. Here is what changed and why your current SEO playbook stopped working.</description>
+      <category>AEO</category>
       <category>AI Search</category>
     </item>
 
