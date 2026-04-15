@@ -59,6 +59,20 @@ function demoLayout(title: string, body: string, activePage: string): string {
   transition:opacity .3s;
 }
 .demo-banner a:hover{opacity:.8}
+
+/* -- Demo mobile overrides -- */
+@media(max-width:640px){
+  .demo-banner{flex-direction:column;gap:10px;padding:12px 16px}
+  .demo-gsc-grid{grid-template-columns:repeat(2,1fr) !important}
+  .demo-two-col{grid-template-columns:1fr !important;gap:24px !important}
+  .demo-three-col{grid-template-columns:1fr !important}
+  .demo-score-headline{flex-direction:column;align-items:flex-start !important;gap:16px !important}
+  .demo-score-headline .grade-ring{align-self:center}
+  .demo-projection-row{flex-direction:column;align-items:flex-start !important}
+  .demo-projection-row>div:last-child{min-width:100% !important}
+  .demo-nav-actions{flex-direction:column}
+  .demo-nav-actions>div{width:100% !important}
+}
 </style>
 </head>
 <body>
@@ -292,8 +306,8 @@ function renderDomainPage(): string {
 
     <!-- Score headline -->
     <div class="card" style="margin-bottom:32px">
-      <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
-        <div style="width:80px;height:80px;border-radius:50%;border:3px solid ${gradeColor(latest.grade)};display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <div class="demo-score-headline" style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
+        <div class="grade-ring" style="width:80px;height:80px;border-radius:50%;border:3px solid ${gradeColor(latest.grade)};display:flex;align-items:center;justify-content:center;flex-shrink:0">
           <span style="font-family:var(--serif);font-size:36px;font-style:italic;color:${gradeColor(latest.grade)}">${latest.grade}</span>
         </div>
         <div>
@@ -317,7 +331,7 @@ function renderDomainPage(): string {
       <div class="label" style="margin-bottom:4px">Score Projection</div>
       <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Estimated score if all remaining roadmap items are completed. Based on typical impact per category.</div>
       <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:24px">
-        <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+        <div class="demo-projection-row" style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
           <div style="text-align:center">
             <div style="font-family:var(--mono);font-size:32px;color:var(--text)">${proj.currentScore}</div>
             <div style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-top:4px">Current</div>
@@ -381,7 +395,7 @@ function renderDomainPage(): string {
     <!-- GSC summary -->
     <div style="margin-bottom:48px">
       <div class="label" style="margin-bottom:16px">Search Console</div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+      <div class="demo-gsc-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
         <div class="card" style="text-align:center">
           <div style="font-family:var(--mono);font-size:24px;color:var(--text)">${GSC_DATA.clicks.toLocaleString()}</div>
           <div style="font-size:11px;color:var(--text-faint);margin-top:4px">Clicks (${clicksDiffHtml})</div>
@@ -441,7 +455,7 @@ function renderDomainPage(): string {
     </div>
 
     <!-- Technical signals -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:48px">
+    <div class="demo-two-col" style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:48px">
       <div>
         <div class="label" style="margin-bottom:4px">Technical Signals</div>
         <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Scanned every Monday. Green means you're covered. Warnings feed directly into your <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">roadmap</a>.</div>
@@ -516,7 +530,7 @@ function renderCitationsPage(): string {
     </div>
 
     <!-- Summary -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px">
+    <div class="demo-three-col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px">
       <div class="card" style="text-align:center">
         <div style="font-family:var(--mono);font-size:32px;color:var(--gold)">${sharePct}%</div>
         <div style="font-size:11px;color:var(--text-faint);margin-top:4px">Citation Share</div>
