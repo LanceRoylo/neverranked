@@ -2,8 +2,8 @@
  * Dashboard — Home route (domain overview)
  */
 
-import type { Env, User, Domain, ScanResult, GscSnapshot, RoadmapItem, CitationSnapshot } from "../types";
-import { layout, html, esc } from "../render";
+import type { Env, User, Domain, ScanResult, GscSnapshot, CitationSnapshot } from "../types";
+import { layout, html, esc, safeParse } from "../render";
 
 interface HomeGscData {
   clicks: number;
@@ -248,58 +248,89 @@ async function buildClientHealth(env: Env): Promise<string> {
   }
 
   const rows: ClientRow[] = [];
+  const fourteenDaysAgo = now - 14 * 86400;
+  const sevenDaysAgo = now - 7 * 86400;
 
+  // Batch queries: fetch all data upfront instead of N+1 per client
+  const domainIds = allDomains.map(d => d.id);
+
+  // 1. All recent scans (ranked by domain, limited by window function emulation)
+  const allScans = (await env.DB.prepare(
+    `SELECT sr.domain_id, sr.aeo_score, sr.grade, sr.scanned_at
+     FROM scan_results sr
+     JOIN domains d ON sr.domain_id = d.id
+     WHERE d.active = 1 AND d.is_competitor = 0 AND sr.error IS NULL
+     ORDER BY sr.domain_id, sr.scanned_at DESC`
+  ).all<{ domain_id: number; aeo_score: number; grade: string; scanned_at: number }>()).results;
+
+  // Group scans by domain_id (take first 2 per domain)
+  const scansByDomain = new Map<number, { aeo_score: number; grade: string; scanned_at: number }[]>();
+  for (const s of allScans) {
+    const arr = scansByDomain.get(s.domain_id) || [];
+    if (arr.length < 2) arr.push(s);
+    scansByDomain.set(s.domain_id, arr);
+  }
+
+  // 2. All roadmap items
+  const allRoadmapItems = (await env.DB.prepare(
+    "SELECT client_slug, status, updated_at FROM roadmap_items"
+  ).all<{ client_slug: string; status: string; updated_at: number }>()).results;
+
+  const roadmapBySlug = new Map<string, typeof allRoadmapItems>();
+  for (const item of allRoadmapItems) {
+    const arr = roadmapBySlug.get(item.client_slug) || [];
+    arr.push(item);
+    roadmapBySlug.set(item.client_slug, arr);
+  }
+
+  // 3. Latest citation snapshot per client (one query)
+  const allCitSnaps = (await env.DB.prepare(
+    `SELECT cs.client_slug, cs.citation_share FROM citation_snapshots cs
+     INNER JOIN (SELECT client_slug, MAX(week_start) as max_ws FROM citation_snapshots GROUP BY client_slug) mx
+     ON cs.client_slug = mx.client_slug AND cs.week_start = mx.max_ws`
+  ).all<{ client_slug: string; citation_share: number }>()).results;
+  const citBySlug = new Map(allCitSnaps.map(c => [c.client_slug, c.citation_share]));
+
+  // 4. Unread alert counts per client (one query)
+  const allAlertCounts = (await env.DB.prepare(
+    "SELECT client_slug, COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL GROUP BY client_slug"
+  ).all<{ client_slug: string; cnt: number }>()).results;
+  const alertsBySlug = new Map(allAlertCounts.map(a => [a.client_slug, a.cnt]));
+
+  // 5. Page views this week + last activity (two queries)
+  const allViewCounts = (await env.DB.prepare(
+    "SELECT client_slug, COUNT(*) as cnt FROM page_views WHERE created_at >= ? GROUP BY client_slug"
+  ).bind(sevenDaysAgo).all<{ client_slug: string; cnt: number }>()).results;
+  const viewsBySlug = new Map(allViewCounts.map(v => [v.client_slug, v.cnt]));
+
+  const allLastViews = (await env.DB.prepare(
+    "SELECT client_slug, MAX(created_at) as last_at FROM page_views GROUP BY client_slug"
+  ).all<{ client_slug: string; last_at: number | null }>()).results;
+  const lastViewBySlug = new Map(allLastViews.map(v => [v.client_slug, v.last_at]));
+
+  // Build rows from pre-fetched data (no queries in loop)
   for (const slug of slugs) {
     const clientDomains = allDomains.filter(d => d.client_slug === slug);
     const primaryDomain = clientDomains[0];
+    const scans = scansByDomain.get(primaryDomain.id) || [];
 
-    // Latest scan
-    const recentScans = (await env.DB.prepare(
-      "SELECT aeo_score, grade, scanned_at FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 2"
-    ).bind(primaryDomain.id).all<{ aeo_score: number; grade: string; scanned_at: number }>()).results;
-
-    const latest = recentScans[0] || null;
-    const prev = recentScans[1] || null;
+    const latest = scans[0] || null;
+    const prev = scans[1] || null;
     const score = latest ? latest.aeo_score : null;
     const grade = latest ? latest.grade : "?";
     const scoreDelta = latest && prev ? latest.aeo_score - prev.aeo_score : 0;
     const daysSinceScan = latest ? Math.floor((now - latest.scanned_at) / 86400) : 999;
 
-    // Roadmap
-    const roadmapStats = await env.DB.prepare(
-      "SELECT status, updated_at FROM roadmap_items WHERE client_slug = ?"
-    ).bind(slug).all<{ status: string; updated_at: number }>();
-    const rmItems = roadmapStats.results;
+    const rmItems = roadmapBySlug.get(slug) || [];
     const roadmapTotal = rmItems.length;
     const roadmapDone = rmItems.filter(i => i.status === "done").length;
-    const fourteenDaysAgo = now - 14 * 86400;
     const roadmapStale = rmItems.filter(i => i.status === "in_progress" && i.updated_at < fourteenDaysAgo).length;
 
-    // Citation share (latest)
-    const citSnap = await env.DB.prepare(
-      "SELECT citation_share FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1"
-    ).bind(slug).first<{ citation_share: number }>();
-    const citationShare = citSnap ? citSnap.citation_share : null;
+    const citationShare = citBySlug.get(slug) ?? null;
+    const unreadAlerts = alertsBySlug.get(slug) || 0;
+    const viewsThisWeek = viewsBySlug.get(slug) || 0;
+    const lastActivity = lastViewBySlug.get(slug) || null;
 
-    // Unread alerts
-    const alertCount = await env.DB.prepare(
-      "SELECT COUNT(*) as cnt FROM admin_alerts WHERE client_slug = ? AND read_at IS NULL"
-    ).bind(slug).first<{ cnt: number }>();
-    const unreadAlerts = alertCount?.cnt || 0;
-
-    // Engagement: page views in last 7 days + last activity
-    const sevenDaysAgo = now - 7 * 86400;
-    const viewCount = await env.DB.prepare(
-      "SELECT COUNT(*) as cnt FROM page_views WHERE client_slug = ? AND created_at >= ?"
-    ).bind(slug, sevenDaysAgo).first<{ cnt: number }>();
-    const viewsThisWeek = viewCount?.cnt || 0;
-
-    const lastView = await env.DB.prepare(
-      "SELECT MAX(created_at) as last_at FROM page_views WHERE client_slug = ?"
-    ).bind(slug).first<{ last_at: number | null }>();
-    const lastActivity = lastView?.last_at || null;
-
-    // Health status
     let healthStatus: ClientRow["healthStatus"] = "healthy";
     if (daysSinceScan > 14 || (score !== null && score < 40) || roadmapStale > 3 || scoreDelta < -10) {
       healthStatus = "critical";
@@ -450,7 +481,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     const prev = recent[1] || null;
     const score = scan ? scan.aeo_score : null;
     const grade = scan ? scan.grade : "?";
-    const redFlagCount = scan ? JSON.parse(scan.red_flags).length : 0;
+    const redFlagCount = scan ? safeParse<string[]>(scan.red_flags, []).length : 0;
     const scanDate = scan ? new Date(scan.scanned_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No scans yet";
 
     // Score delta vs previous scan

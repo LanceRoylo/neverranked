@@ -6,7 +6,7 @@
  */
 
 import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
-import { layout, html, esc, redirect } from "../render";
+import { layout, html, esc, redirect, safeParse, shortDate } from "../render";
 
 interface MonthBounds {
   label: string;       // "April 2026"
@@ -103,8 +103,8 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
   let flagsResolved: string[] = [];
   let flagsNew: string[] = [];
   if (priorScan && monthScans.length > 0) {
-    const startFlags: string[] = JSON.parse(priorScan.red_flags);
-    const endFlags: string[] = JSON.parse(monthScans[monthScans.length - 1].red_flags);
+    const startFlags: string[] = safeParse(priorScan.red_flags, []);
+    const endFlags: string[] = safeParse(monthScans[monthScans.length - 1].red_flags, []);
     flagsResolved = startFlags.filter(f => !endFlags.includes(f));
     flagsNew = endFlags.filter(f => !startFlags.includes(f));
   }
@@ -115,8 +115,8 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
   let schemasAdded: string[] = [];
   let schemasRemoved: string[] = [];
   if (priorScan && monthScans.length > 0) {
-    const startSchemas: string[] = JSON.parse(priorScan.schema_types);
-    const endSchemas: string[] = JSON.parse(monthScans[monthScans.length - 1].schema_types);
+    const startSchemas: string[] = safeParse(priorScan.schema_types, []);
+    const endSchemas: string[] = safeParse(monthScans[monthScans.length - 1].schema_types, []);
     schemasAdded = endSchemas.filter(s => !startSchemas.includes(s));
     schemasRemoved = startSchemas.filter(s => !endSchemas.includes(s));
   }
@@ -269,7 +269,7 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
         <div class="label" style="margin-bottom:16px">Roadmap Items Completed (${completedItems.length})</div>
         <div style="display:flex;flex-direction:column;gap:6px">
           ${completedItems.map(item => {
-            const date = new Date(item.completed_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            const date = shortDate(item.completed_at);
             const icon = categoryIcons[item.category] || "--";
             return `
               <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg-lift);border-radius:4px">
@@ -361,7 +361,7 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
         <div class="label" style="margin-bottom:16px">Notable Events (${alerts.length})</div>
         <div style="display:flex;flex-direction:column;gap:6px">
           ${alerts.slice(0, 10).map(a => {
-            const date = new Date(a.created_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+            const date = shortDate(a.created_at);
             const color = typeColors[a.type] || "var(--text-faint)";
             return `
               <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--bg-lift);border-left:3px solid ${color};font-size:13px">

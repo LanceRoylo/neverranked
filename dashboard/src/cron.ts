@@ -56,7 +56,7 @@ export async function runWeeklyScans(env: Env): Promise<void> {
     }
 
     // Small delay between scans to be respectful
-    if (domains.indexOf(d) < domains.length - 1) {
+    if (d !== domains[domains.length - 1]) {
       await new Promise(r => setTimeout(r, 500));
     }
   }
@@ -233,22 +233,16 @@ export async function runDailyTasks(env: Env): Promise<void> {
 
 /** Flag roadmap items stuck in "in_progress" for 14+ days */
 async function checkStaleRoadmapItems(env: Env): Promise<void> {
-  const fourteenDaysAgo = Math.floor(Date.now() / 1000) - 14 * 24 * 60 * 60;
+  const now = Math.floor(Date.now() / 1000);
+  const fourteenDaysAgo = now - 14 * 86400;
 
-  // Find items that have been in_progress since before the cutoff and haven't already been flagged
+  // Find stale items grouped by client, excluding clients already flagged in the last 14 days
   const staleItems = (await env.DB.prepare(`
     SELECT ri.id, ri.client_slug, ri.title, ri.updated_at
     FROM roadmap_items ri
     WHERE ri.status = 'in_progress'
       AND ri.updated_at < ?
-      AND NOT EXISTS (
-        SELECT 1 FROM admin_alerts aa
-        WHERE aa.client_slug = ri.client_slug
-          AND aa.type = 'stale_item'
-          AND aa.detail LIKE '%' || ri.title || '%'
-          AND aa.created_at > ?
-      )
-  `).bind(fourteenDaysAgo, fourteenDaysAgo).all<{
+  `).bind(fourteenDaysAgo).all<{
     id: number;
     client_slug: string;
     title: string;
@@ -265,19 +259,32 @@ async function checkStaleRoadmapItems(env: Env): Promise<void> {
     byClient.set(item.client_slug, arr);
   }
 
-  const now = Math.floor(Date.now() / 1000);
+  // Check which clients were already flagged recently (avoid spamming)
+  const recentlyFlagged = (await env.DB.prepare(
+    "SELECT DISTINCT client_slug FROM admin_alerts WHERE type = 'stale_item' AND created_at > ?"
+  ).bind(fourteenDaysAgo).all<{ client_slug: string }>()).results;
+  const flaggedSlugs = new Set(recentlyFlagged.map(r => r.client_slug));
+
+  let flagged = 0;
   for (const [slug, items] of byClient) {
-    const titles = items.map(i => i.title).join(", ");
+    if (flaggedSlugs.has(slug)) continue; // Already alerted recently
+
+    const titles = items.map(i => i.title).slice(0, 5).join(", ");
     const daysStale = Math.floor((now - Math.min(...items.map(i => i.updated_at))) / 86400);
-    await env.DB.prepare(
-      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'stale_item', ?, ?, ?)"
-    ).bind(
-      slug,
-      `${items.length} roadmap item${items.length > 1 ? 's' : ''} stale for ${daysStale}+ days`,
-      titles,
-      now
-    ).run();
+    try {
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'stale_item', ?, ?, ?)"
+      ).bind(
+        slug,
+        `${items.length} roadmap item${items.length > 1 ? 's' : ''} stale for ${daysStale}+ days`,
+        titles,
+        now
+      ).run();
+      flagged++;
+    } catch (e) {
+      console.log(`Failed to create stale alert for ${slug}: ${e}`);
+    }
   }
 
-  console.log(`Stale roadmap check: flagged items for ${byClient.size} client(s)`);
+  if (flagged > 0) console.log(`Stale roadmap check: flagged ${flagged} client(s)`);
 }

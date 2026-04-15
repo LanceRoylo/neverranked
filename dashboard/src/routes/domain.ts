@@ -3,7 +3,7 @@
  */
 
 import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
-import { layout, html, esc, redirect } from "../render";
+import { layout, html, esc, redirect, safeParse, shortDate, longDate, fullDate } from "../render";
 import { generateNarrative } from "../narrative";
 import { scanDomain } from "../scanner";
 import { autoCompleteRoadmapItems } from "../auto-complete";
@@ -790,21 +790,21 @@ export async function handleScanCompare(domainId: number, user: User, env: Env, 
       const diffText = diff > 0 ? "+" + diff : diff === 0 ? "no change" : String(diff);
 
       // Schema changes
-      const schemasA: string[] = JSON.parse(scanA.schema_types);
-      const schemasB: string[] = JSON.parse(scanB.schema_types);
+      const schemasA: string[] = safeParse(scanA.schema_types, []);
+      const schemasB: string[] = safeParse(scanB.schema_types, []);
       const added = schemasB.filter(s => !schemasA.includes(s));
       const removed = schemasA.filter(s => !schemasB.includes(s));
       const kept = schemasA.filter(s => schemasB.includes(s));
 
       // Red flag changes
-      const flagsA: string[] = JSON.parse(scanA.red_flags);
-      const flagsB: string[] = JSON.parse(scanB.red_flags);
+      const flagsA: string[] = safeParse(scanA.red_flags, []);
+      const flagsB: string[] = safeParse(scanB.red_flags, []);
       const newFlags = flagsB.filter(f => !flagsA.includes(f));
       const resolvedFlags = flagsA.filter(f => !flagsB.includes(f));
 
       // Tech signal changes
-      const sigA: { label: string; value: string; status: string }[] = JSON.parse(scanA.technical_signals);
-      const sigB: { label: string; value: string; status: string }[] = JSON.parse(scanB.technical_signals);
+      const sigA: { label: string; value: string; status: string }[] = safeParse(scanA.technical_signals, []);
+      const sigB: { label: string; value: string; status: string }[] = safeParse(scanB.technical_signals, []);
       const sigMap = new Map(sigA.map(s => [s.label, s]));
       const signalChanges: { label: string; fromVal: string; toVal: string; fromStatus: string; toStatus: string }[] = [];
       for (const s of sigB) {
@@ -950,24 +950,19 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     return html(layout("Not Found", `<div class="empty"><h3>Domain not found</h3></div>`, user), 404);
   }
 
-  // Get latest + previous scan
-  const recentScans = (await env.DB.prepare(
-    "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 2"
-  ).bind(domainId).all<ScanResult>()).results;
-  const latest = recentScans[0] || null;
-  const previous = recentScans[1] || null;
-
-  // Get scan history (up to 52 weeks / 1 year)
+  // Get scan history (up to 52 weeks / 1 year) -- latest and previous are derived from this
   const history = (await env.DB.prepare(
-    "SELECT id, aeo_score, grade, scanned_at, scan_type, error FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 52"
+    "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 52"
   ).bind(domainId).all<ScanResult>()).results;
+  const latest = history[0] || null;
+  const previous = history[1] || null;
 
   // Build page
   let reportSection = "";
   if (latest && !latest.error) {
-    const redFlags: string[] = JSON.parse(latest.red_flags);
-    const techSignals: { label: string; value: string; status: string }[] = JSON.parse(latest.technical_signals);
-    const schemaCoverage: { type: string; present: boolean }[] = JSON.parse(latest.schema_coverage);
+    const redFlags: string[] = safeParse(latest.red_flags, []);
+    const techSignals: { label: string; value: string; status: string }[] = safeParse(latest.technical_signals, []);
+    const schemaCoverage: { type: string; present: boolean }[] = safeParse(latest.schema_coverage, []);
     const scanDate = new Date(latest.scanned_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
 
     // Score delta
@@ -1270,7 +1265,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     // Collect all unique schema types across all pages
     const allTypes = new Set<string>();
     const pageData = pageScans.map(ps => {
-      const types: string[] = JSON.parse(ps.schema_types);
+      const types: string[] = safeParse(ps.schema_types, []);
       types.forEach(t => allTypes.add(t));
       return { url: ps.url, types: new Set(types), score: ps.aeo_score, grade: ps.grade };
     });

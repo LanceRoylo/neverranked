@@ -93,3 +93,54 @@ export function redirect(url: string, status = 302): Response {
     headers: { Location: url },
   });
 }
+
+// ---------------------------------------------------------------------------
+// Shared utilities
+// ---------------------------------------------------------------------------
+
+/** Safe JSON parse with fallback */
+export function safeParse<T>(value: string | null | undefined, fallback: T): T {
+  if (!value) return fallback;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+/** Format a unix timestamp as a short date: "Apr 14" */
+export function shortDate(ts: number): string {
+  return new Date(ts * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/** Format a unix timestamp as a long date: "April 14, 2026" */
+export function longDate(ts: number): string {
+  return new Date(ts * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+/** Format a unix timestamp as a full datetime: "April 14, 2026, 02:30 PM" */
+export function fullDate(ts: number): string {
+  return new Date(ts * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" });
+}
+
+/** Build a delta indicator: "+5" in green, "-3" in red, "--" in muted */
+export function deltaHtml(diff: number, suffix = ""): string {
+  if (diff > 0) return `<span style="color:var(--green)">+${diff}${suffix}</span>`;
+  if (diff < 0) return `<span style="color:var(--red)">${diff}${suffix}</span>`;
+  return `<span style="color:var(--text-faint)">--</span>`;
+}
+
+/** Map a status to a color variable */
+export function statusColor(status: string): string {
+  switch (status) {
+    case "good": case "done": case "completed": case "healthy": return "var(--green)";
+    case "warning": case "in_progress": case "stale": return "var(--yellow)";
+    case "bad": case "error": case "critical": case "blocked": return "var(--red)";
+    default: return "var(--text-faint)";
+  }
+}
+
+/** Pluralize a word: pluralize("item", 3) => "items" */
+export function pluralize(word: string, count: number): string {
+  return count === 1 ? word : word + "s";
+}
