@@ -30,6 +30,7 @@ import { handleSummary } from "./routes/summary";
 import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead } from "./routes/alerts";
 import { handleLearn, handleLearnArticle } from "./routes/learn";
 import { handleReport, handleReportIndex, handleSendReport } from "./routes/report";
+import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRoadmap, handleDemoPost } from "./routes/demo";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -95,6 +96,23 @@ export default {
     // Stripe webhook (no auth -- verified by signature)
     if (path === "/stripe/webhook" && method === "POST") {
       return handleStripeWebhook(request, env);
+    }
+
+    // Demo mode (public, no auth)
+    if (path === "/demo" || path === "/demo/") {
+      return handleDemoRedirect();
+    }
+    if (path === "/demo/domain") {
+      return method === "POST" ? handleDemoPost() : handleDemoDomain();
+    }
+    if (path === "/demo/citations") {
+      return method === "POST" ? handleDemoPost() : handleDemoCitations();
+    }
+    if (path === "/demo/roadmap") {
+      return method === "POST" ? handleDemoPost() : handleDemoRoadmap();
+    }
+    if (path.startsWith("/demo/") && method === "POST") {
+      return handleDemoPost();
     }
 
     // Schema injection JS (public, cached at edge)

@@ -2005,6 +2005,68 @@ h1,h2,h3,h4{
   .dashboard-features{padding:80px 0 60px}
 }
 
+/* ---------- product showcase ---------- */
+.product-showcase{
+  padding:120px 0 100px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-lift);
+}
+.showcase-head{
+  max-width:680px;
+  margin-bottom:60px;
+}
+.showcase-head h2{
+  font-family:var(--serif);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:400;letter-spacing:-.02em;
+  line-height:1.15;margin:0 0 18px;
+}
+.showcase-head h2 em{font-style:italic;color:var(--gold)}
+.showcase-head p{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);line-height:1.7;
+  max-width:520px;
+}
+.showcase-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+}
+.showcase-step{
+  background:var(--bg-lift);
+  padding:42px 32px 46px;
+  display:flex;flex-direction:column;gap:16px;
+  min-height:260px;
+  transition:background .5s var(--ease);
+  position:relative;
+}
+.showcase-step:hover{background:var(--bg)}
+.showcase-step .step-n{
+  font-family:var(--label);
+  font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--gold);font-weight:500;
+}
+.showcase-step h3{
+  font-family:var(--serif);
+  font-size:clamp(20px,2vw,26px);
+  font-weight:400;letter-spacing:-.01em;line-height:1.15;
+}
+.showcase-step h3 em{font-style:italic;color:var(--gold);font-weight:400}
+.showcase-step p{
+  font-size:13px;line-height:1.7;
+  color:var(--text-soft);margin:0;max-width:32ch;
+}
+@media(max-width:900px){
+  .showcase-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:540px){
+  .showcase-grid{grid-template-columns:1fr}
+  .product-showcase{padding:80px 0 60px}
+}
+
 /* ---------- ROI calculator ---------- */
 .roi-calc{
   padding:120px 0 100px;
@@ -2248,6 +2310,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <a href="#services">Services</a>
   <a href="#pricing">Pricing</a>
   <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com/demo">Live Demo</a>
   <a href="https://app.neverranked.com">Client Login</a>
   <a href="#audit" class="mob-cta">$500 Audit</a>
   <span class="mob-status">Taking clients Q2</span>
@@ -2261,6 +2324,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <a href="#services" class="nav-link">Services</a>
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
+    <a href="https://app.neverranked.com/demo" class="nav-link">Live Demo</a>
     <a href="https://app.neverranked.com" class="nav-link">Client Login</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
     <span class="status">Taking clients Q2</span>
@@ -2312,8 +2376,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="tag">Method</div>
         </div>
         <div class="cell">
-          <div class="stmt">Three months to compound. <em>Then month-to-month.</em></div>
-          <div class="tag">Terms</div>
+          <div class="stmt">One new client <em>pays for a year.</em></div>
+          <div class="tag">ROI</div>
         </div>
       </div>
     </div>
@@ -2606,40 +2670,98 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="dash-head">
         <h2 class="reveal">Not a PDF. <em>A product.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          Every client gets a live dashboard at app.neverranked.com. Not a monthly report you forget to open. A product you check because the data matters to you.
+          Every client gets a live dashboard at app.neverranked.com. AEO scores, citation tracking, competitor gaps, Search Console data, and a roadmap that auto-generates from your scan results. Not a report you forget to open. A product you check because the data matters.
         </p>
       </div>
 
       <div class="dash-grid reveal-stagger">
         <div class="dash-card">
           <div class="dash-icon">&#8635;</div>
-          <div class="dash-title">Weekly scans</div>
-          <div class="dash-desc">Your AEO score is scanned every Monday. Score history, trend charts, and deltas so you see movement over time, not a single snapshot.</div>
+          <div class="dash-title">Weekly AEO scans</div>
+          <div class="dash-desc">Every Monday your site is re-scanned across 30+ AEO signals. Score history, trend charts, and week-over-week deltas. Movement over time, not a single snapshot.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9650;</div>
+          <div class="dash-title">Score projection</div>
+          <div class="dash-desc">See where your AEO score is headed based on remaining roadmap items. The dashboard estimates your projected ceiling so you know the gap between now and full optimization.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#10003;</div>
+          <div class="dash-title">AI citation tracking</div>
+          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, and Google AI Overviews. See which queries cite you, which cite competitors, and your share of answer over time.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9638;</div>
+          <div class="dash-title">Competitor citation matrix</div>
+          <div class="dash-desc">A keyword-by-competitor grid showing exactly who gets cited where. Green where you win. Red where you don't. The gaps are the opportunity.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9670;</div>
-          <div class="dash-title">Phased roadmap</div>
-          <div class="dash-desc">A clear action plan broken into phases: Foundation, Growth, Dominance. See what's done, what's in progress, and what unlocks next. Progress bar included.</div>
+          <div class="dash-title">Auto-generated roadmap</div>
+          <div class="dash-desc">When your domain is added, a phased roadmap generates automatically from scan results. Foundation, Growth, Dominance. Items auto-complete as improvements land.</div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon">&#9646;&#9646;</div>
-          <div class="dash-title">Competitor benchmarks</div>
-          <div class="dash-desc">Side-by-side AEO comparison against your actual competitors. Schema gaps, score differences, and where you're winning or losing ground.</div>
+          <div class="dash-icon">&#9776;</div>
+          <div class="dash-title">Monthly reports</div>
+          <div class="dash-desc">Score deltas, red flags resolved, schema changes, roadmap progress, citation movement, and GSC trends. One page. Emailable. Printable. No PDF theatre.</div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon">&#9888;</div>
-          <div class="dash-title">Regression alerts</div>
-          <div class="dash-desc">If your score drops more than 5 points, you hear about it immediately. Not next Monday. Not next month. The moment it happens.</div>
+          <div class="dash-icon">&#9740;</div>
+          <div class="dash-title">Search console integration</div>
+          <div class="dash-desc">Google Search Console data pulled directly into the dashboard. Clicks, impressions, CTR, and average position alongside your AEO metrics in one view.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9881;</div>
+          <div class="dash-title">Content gap analysis</div>
+          <div class="dash-desc">Surfaces topics your competitors get cited for and you don't. Grouped by category with the competitor names attached. Your next content calendar writes itself.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9993;</div>
-          <div class="dash-title">Weekly digest</div>
-          <div class="dash-desc">Score, changes, and top action item in your inbox every Monday. Forward it to your boss. It speaks plain English, not SEO jargon.</div>
+          <div class="dash-title">Alerts & weekly digest</div>
+          <div class="dash-desc">Score regressions trigger instant alerts. Every Monday a digest lands in your inbox: score, citation share, GSC clicks, roadmap progress. Forward it to your board.</div>
         </div>
-        <div class="dash-card">
-          <div class="dash-icon">&#8599;</div>
-          <div class="dash-title">Shareable reports</div>
-          <div class="dash-desc">Generate a public link to share your AEO report with stakeholders. No login required. Print-friendly. Branded. Expires in 90 days.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRODUCT SHOWCASE ============ -->
+  <section class="product-showcase" id="experience">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.2</span>
+        <span>The Experience</span>
+        <span class="rule"></span>
+        <span>what it feels like</span>
+      </div>
+
+      <div class="showcase-head">
+        <h2 class="reveal">From scan to <em>cited.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          You don't learn the dashboard. You open a tab and the data is already there. Here is what the first 30 days look like from the inside.
+        </p>
+        <a href="https://app.neverranked.com/demo" class="reveal" style="transition-delay:.2s;display:inline-flex;align-items:center;gap:10px;margin-top:20px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none">See the live demo <span style="display:inline-block;width:14px;height:1px;background:currentColor;position:relative"><span style="position:absolute;right:0;top:-3px;width:5px;height:5px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)"></span></span></a>
+      </div>
+
+      <div class="showcase-grid reveal-stagger">
+        <div class="showcase-step">
+          <div class="step-n">Day 1</div>
+          <h3>We scan. A roadmap <em>writes itself.</em></h3>
+          <p>Your domain is added and scanned across 30+ AEO signals. A phased roadmap generates automatically from the results. No kickoff meeting. No onboarding deck.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Week 1</div>
+          <h3>You see the <em>full picture.</em></h3>
+          <p>AEO score, citation share, competitor gaps, Search Console data, and content opportunities. Everything in one tab. Refreshed every Monday.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Every Monday</div>
+          <h3>A digest lands in <em>your inbox.</em></h3>
+          <p>Score, citation movement, GSC clicks, roadmap progress, and the one thing that matters most this week. Plain English. Forward it to whoever needs to know.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Monthly</div>
+          <h3>A report you'd actually <em>send upward.</em></h3>
+          <p>Score delta, red flags resolved, schema changes, competitor movement, and GSC trends. One page. Printable. Emailable. Built so your boss reads it.</p>
         </div>
       </div>
     </div>
@@ -2649,7 +2771,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <section class="roi-calc" id="roi">
     <div class="wrap">
       <div class="section-label reveal">
-        <span class="num">§04.2</span>
+        <span class="num">§04.3</span>
         <span>The Math</span>
         <span class="rule"></span>
         <span>your industry, your numbers</span>
