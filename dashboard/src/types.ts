@@ -61,6 +61,8 @@ export interface User {
   client_slug: string | null;
   onboarded: number;
   email_digest: number;
+  email_alerts: number;
+  email_regression: number;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   plan: string | null;

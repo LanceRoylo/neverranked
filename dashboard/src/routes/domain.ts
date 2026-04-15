@@ -3,8 +3,591 @@
  */
 
 import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
-import { layout, html, esc } from "../render";
+import { layout, html, esc, redirect } from "../render";
 import { generateNarrative } from "../narrative";
+import { scanDomain } from "../scanner";
+import { autoCompleteRoadmapItems } from "../auto-complete";
+
+/** Build a getting-started checklist for new clients */
+async function buildGettingStarted(domain: Domain, user: User, env: Env): Promise<string> {
+  // Only show for clients, not admins
+  if (user.role === "admin") return "";
+
+  const slug = domain.client_slug;
+
+  // Check completion of each step
+  const steps: { label: string; done: boolean; href: string; description: string }[] = [];
+
+  // 1. Review your AEO report (always done if they're on this page)
+  steps.push({
+    label: "Review your AEO report",
+    done: true,
+    href: `/domain/${domain.id}`,
+    description: "Understand your current score and what it means",
+  });
+
+  // 2. Add competitors
+  const compCount = await env.DB.prepare(
+    "SELECT COUNT(*) as cnt FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1"
+  ).bind(slug).first<{ cnt: number }>();
+  steps.push({
+    label: "Add your competitors",
+    done: (compCount?.cnt || 0) > 0,
+    href: `/competitors/${slug}`,
+    description: "See how you stack up against the competition",
+  });
+
+  // 3. Connect Google Search Console
+  const gscProp = await env.DB.prepare(
+    "SELECT id FROM gsc_properties WHERE client_slug = ?"
+  ).bind(slug).first();
+  steps.push({
+    label: "Connect Google Search Console",
+    done: !!gscProp,
+    href: "/settings",
+    description: "Bring in your real search performance data",
+  });
+
+  // 4. Review your roadmap
+  const roadmapViewed = await env.DB.prepare(
+    "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ?"
+  ).bind(slug).first<{ cnt: number }>();
+  const hasRoadmap = (roadmapViewed?.cnt || 0) > 0;
+  steps.push({
+    label: "Review your roadmap",
+    done: hasRoadmap,
+    href: `/roadmap/${slug}`,
+    description: "Your prioritized action plan for improving AEO readiness",
+  });
+
+  // 5. Read the AEO primer
+  steps.push({
+    label: "Learn what AEO means",
+    done: false, // We can't track this without adding page view tracking, so keep it as a nudge
+    href: "/learn/what-is-aeo",
+    description: "5-minute read on why AI engine optimization matters",
+  });
+
+  const doneCount = steps.filter(s => s.done).length;
+
+  // If all steps are done (except the learn one which we can't track), hide the widget
+  if (doneCount >= 4) return "";
+
+  const stepRows = steps.map(s => `
+    <a href="${s.href}" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06);text-decoration:none;transition:opacity .2s${s.done ? ';opacity:.5' : ''}" ${s.done ? '' : 'onmouseover="this.style.opacity=\'.8\'" onmouseout="this.style.opacity=\'1\'"'}>
+      <div style="flex-shrink:0;width:22px;height:22px;border-radius:50%;${s.done ? 'background:var(--green);' : 'border:2px solid var(--line);'}display:flex;align-items:center;justify-content:center">
+        ${s.done ? '<span style="color:#080808;font-size:12px;font-weight:bold">&#10003;</span>' : ''}
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;color:${s.done ? 'var(--text-faint)' : 'var(--text)'};${s.done ? 'text-decoration:line-through' : ''}">${s.label}</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:2px">${s.description}</div>
+      </div>
+      ${!s.done ? '<span style="font-family:var(--mono);font-size:11px;color:var(--gold);flex-shrink:0">&rarr;</span>' : ''}
+    </a>
+  `).join("");
+
+  return `
+    <div style="margin-bottom:48px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="label" style="color:var(--gold);margin-bottom:4px">Getting Started</div>
+          <div style="font-size:12px;color:var(--text-faint)">${doneCount} of ${steps.length} complete</div>
+        </div>
+        <div style="width:48px;height:48px;border-radius:50%;border:3px solid var(--line);display:flex;align-items:center;justify-content:center;position:relative">
+          <svg width="48" height="48" style="position:absolute;top:-3px;left:-3px;transform:rotate(-90deg)">
+            <circle cx="24" cy="24" r="21" fill="none" stroke="var(--gold)" stroke-width="3" stroke-dasharray="${(doneCount / steps.length) * 132} 132" stroke-linecap="round"/>
+          </svg>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--gold);position:relative">${Math.round((doneCount / steps.length) * 100)}%</span>
+        </div>
+      </div>
+      ${stepRows}
+    </div>
+  `;
+}
+
+/** Generate a JSON-LD template for a given schema type */
+function getSchemaTemplate(type: string, domain: string): string | null {
+  const url = `https://${domain}`;
+  const templates: Record<string, object> = {
+    Organization: {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      name: "Your Business Name",
+      url: url,
+      logo: `${url}/logo.png`,
+      description: "A brief description of your business.",
+      sameAs: [
+        "https://www.facebook.com/yourbusiness",
+        "https://www.linkedin.com/company/yourbusiness",
+      ],
+      contactPoint: {
+        "@type": "ContactPoint",
+        telephone: "+1-555-000-0000",
+        contactType: "customer service",
+      },
+    },
+    LocalBusiness: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: "Your Business Name",
+      url: url,
+      telephone: "+1-555-000-0000",
+      address: {
+        "@type": "PostalAddress",
+        streetAddress: "123 Main St",
+        addressLocality: "Your City",
+        addressRegion: "ST",
+        postalCode: "00000",
+        addressCountry: "US",
+      },
+      openingHoursSpecification: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        opens: "09:00",
+        closes: "17:00",
+      },
+    },
+    FAQPage: {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      mainEntity: [
+        {
+          "@type": "Question",
+          name: "What services do you offer?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "We offer [describe your services here].",
+          },
+        },
+        {
+          "@type": "Question",
+          name: "How can I contact you?",
+          acceptedAnswer: {
+            "@type": "Answer",
+            text: "You can reach us at [your contact details].",
+          },
+        },
+      ],
+    },
+    BreadcrumbList: {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "Home", item: url },
+        { "@type": "ListItem", position: 2, name: "Services", item: `${url}/services` },
+        { "@type": "ListItem", position: 3, name: "Current Page" },
+      ],
+    },
+    Product: {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      name: "Product Name",
+      description: "Product description.",
+      url: `${url}/product`,
+      image: `${url}/product.jpg`,
+      brand: { "@type": "Brand", name: "Your Brand" },
+      offers: {
+        "@type": "Offer",
+        price: "29.99",
+        priceCurrency: "USD",
+        availability: "https://schema.org/InStock",
+      },
+    },
+    Article: {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: "Article Title",
+      author: { "@type": "Person", name: "Author Name" },
+      datePublished: "2025-01-01",
+      dateModified: "2025-01-01",
+      publisher: {
+        "@type": "Organization",
+        name: "Your Business Name",
+        logo: { "@type": "ImageObject", url: `${url}/logo.png` },
+      },
+      image: `${url}/article-image.jpg`,
+      description: "A brief summary of the article.",
+    },
+    WebSite: {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      name: "Your Business Name",
+      url: url,
+      potentialAction: {
+        "@type": "SearchAction",
+        target: `${url}/search?q={search_term_string}`,
+        "query-input": "required name=search_term_string",
+      },
+    },
+    Service: {
+      "@context": "https://schema.org",
+      "@type": "Service",
+      name: "Service Name",
+      description: "What this service does.",
+      provider: { "@type": "Organization", name: "Your Business Name" },
+      areaServed: { "@type": "Place", name: "Your Service Area" },
+      serviceType: "Your Service Category",
+    },
+    AggregateRating: {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      name: "Your Business Name",
+      aggregateRating: {
+        "@type": "AggregateRating",
+        ratingValue: "4.8",
+        reviewCount: "120",
+        bestRating: "5",
+      },
+    },
+    Review: {
+      "@context": "https://schema.org",
+      "@type": "Review",
+      itemReviewed: { "@type": "LocalBusiness", name: "Your Business Name" },
+      author: { "@type": "Person", name: "Customer Name" },
+      reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+      reviewBody: "Great experience with this business.",
+      datePublished: "2025-01-01",
+    },
+  };
+
+  const tmpl = templates[type];
+  if (!tmpl) return null;
+  return JSON.stringify(tmpl, null, 2);
+}
+
+/** Build the "missing schema" snippet section */
+function buildSchemaSnippets(schemaCoverage: { type: string; present: boolean }[], domain: string): string {
+  const missing = schemaCoverage.filter(s => !s.present);
+  if (missing.length === 0) return "";
+
+  const snippets = missing.map(s => {
+    const tmpl = getSchemaTemplate(s.type, domain);
+    if (!tmpl) return "";
+
+    const id = "snippet-" + s.type.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    return `
+      <div style="margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px 4px 0 0;cursor:pointer" onclick="var el=document.getElementById('${id}');el.style.display=el.style.display==='none'?'block':'none'">
+          <div style="display:flex;align-items:center;gap:10px">
+            <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(251,248,239,.08);border:1px solid rgba(251,248,239,.12)"></span>
+            <span style="font-size:13px;color:var(--text)">${esc(s.type)}</span>
+            <span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:1px 6px;border-radius:2px">MISSING</span>
+          </div>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">View template</span>
+        </div>
+        <div id="${id}" style="display:none;border:1px solid var(--line);border-top:none;border-radius:0 0 4px 4px;overflow:hidden">
+          <div style="display:flex;justify-content:flex-end;padding:8px 12px;background:rgba(251,248,239,.02);border-bottom:1px solid var(--line)">
+            <button onclick="navigator.clipboard.writeText(document.getElementById('${id}-code').textContent);this.textContent='Copied'" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:none;border:1px solid var(--gold-dim);padding:4px 12px;border-radius:2px;cursor:pointer">Copy JSON-LD</button>
+          </div>
+          <pre id="${id}-code" style="margin:0;padding:16px;background:var(--bg-edge);font-family:var(--mono);font-size:11px;color:var(--text-soft);line-height:1.6;overflow-x:auto;white-space:pre">&lt;script type="application/ld+json"&gt;
+${esc(tmpl)}
+&lt;/script&gt;</pre>
+        </div>
+      </div>
+    `;
+  }).filter(s => s).join("");
+
+  if (!snippets) return "";
+
+  return `
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:4px">Schema Templates</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Ready-to-use JSON-LD for missing schema types. Click to expand, copy, and add to your site's &lt;head&gt;. Replace placeholder values with your actual business information.</div>
+      ${snippets}
+    </div>
+  `;
+}
+
+/** Estimate projected score based on remaining roadmap items */
+async function buildScoreProjection(clientSlug: string, currentScore: number, env: Env): Promise<string> {
+  const items = (await env.DB.prepare(
+    "SELECT category, status FROM roadmap_items WHERE client_slug = ?"
+  ).bind(clientSlug).all<{ category: string; status: string }>()).results;
+
+  if (items.length === 0) return "";
+
+  const remaining = items.filter(i => i.status !== "done");
+  const done = items.filter(i => i.status === "done");
+
+  if (remaining.length === 0) return "";
+
+  // Point estimates per category -- conservative, based on typical scan impact
+  const categoryPoints: Record<string, number> = {
+    schema: 4,      // Adding a schema type typically gains 3-5 pts
+    technical: 5,    // Fixing technical issues (meta desc, headings, HTTPS) has strong impact
+    content: 3,      // Content improvements have moderate scan impact
+    authority: 2,    // Authority signals are harder to measure in scans
+    advanced: 2,     // Advanced items are incremental
+  };
+
+  // Calculate projected gains by category
+  const gains: { category: string; count: number; points: number }[] = [];
+  const catCounts = new Map<string, number>();
+  for (const item of remaining) {
+    const cat = item.category || "other";
+    catCounts.set(cat, (catCounts.get(cat) || 0) + 1);
+  }
+
+  let totalGain = 0;
+  for (const [cat, count] of catCounts) {
+    const perItem = categoryPoints[cat] || 2;
+    // Diminishing returns: first items in a category worth more, later ones less
+    const effectivePoints = Math.round(count * perItem * 0.7); // 70% discount for diminishing returns
+    gains.push({ category: cat, count, points: effectivePoints });
+    totalGain += effectivePoints;
+  }
+
+  // Cap projected score at 100
+  const projectedScore = Math.min(100, currentScore + totalGain);
+
+  // Don't show if projection barely moves the needle
+  if (projectedScore - currentScore < 3) return "";
+
+  gains.sort((a, b) => b.points - a.points);
+
+  // Build the visual
+  const currentPct = currentScore;
+  const projectedPct = projectedScore;
+
+  // Progress bar showing current vs projected
+  const barWidth = 320;
+  const currentWidth = (currentPct / 100) * barWidth;
+  const projectedWidth = (projectedPct / 100) * barWidth;
+
+  const gainBreakdown = gains.map(g => {
+    const catLabel = g.category.charAt(0).toUpperCase() + g.category.slice(1);
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(251,248,239,.06)">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">${esc(catLabel)}</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${g.count} item${g.count !== 1 ? 's' : ''}</span>
+        </div>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--green)">+${g.points} pts</span>
+      </div>`;
+  }).join("");
+
+  return `
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:4px">Score Projection</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Estimated score if all remaining roadmap items are completed. Based on typical impact per category with diminishing returns.</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:24px">
+        <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+          <div style="text-align:center">
+            <div style="font-family:var(--mono);font-size:32px;color:var(--text)">${currentScore}</div>
+            <div style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-top:4px">Current</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:20px;color:var(--text-faint)">-></div>
+          <div style="text-align:center">
+            <div style="font-family:var(--mono);font-size:32px;color:var(--gold)">${projectedScore}</div>
+            <div style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:4px">Projected</div>
+          </div>
+          <div style="flex:1;min-width:200px">
+            <div style="position:relative;height:24px;background:var(--bg-edge);border-radius:12px;overflow:hidden">
+              <div style="position:absolute;left:0;top:0;height:100%;width:${(projectedPct / 100) * 100}%;background:rgba(232,199,103,.15);border-radius:12px;transition:width .3s"></div>
+              <div style="position:absolute;left:0;top:0;height:100%;width:${(currentPct / 100) * 100}%;background:var(--gold);border-radius:12px;transition:width .3s"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint)">0</span>
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint)">100</span>
+            </div>
+          </div>
+        </div>
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-bottom:8px">Estimated gains by category</div>
+        ${gainBreakdown}
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:10px;margin-top:4px">
+          <span style="font-size:12px;color:var(--text-faint)">${done.length} of ${items.length} items completed</span>
+          <span style="font-family:var(--mono);font-size:13px;color:var(--green);font-weight:500">+${projectedScore - currentScore} pts potential</span>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/** Content topic suggestions from citation gaps */
+async function buildContentTopics(clientSlug: string, env: Env): Promise<string> {
+  // Get keywords where client is NOT cited but at least one competitor is
+  const gaps = (await env.DB.prepare(`
+    SELECT ck.keyword, ck.category, cr.engine, cr.cited_entities
+    FROM citation_runs cr
+    JOIN citation_keywords ck ON ck.id = cr.keyword_id
+    WHERE ck.client_slug = ?
+      AND cr.client_cited = 0
+      AND cr.cited_entities != '[]'
+    ORDER BY cr.run_at DESC
+  `).bind(clientSlug).all<{
+    keyword: string;
+    category: string;
+    engine: string;
+    cited_entities: string;
+  }>()).results;
+
+  if (gaps.length === 0) return "";
+
+  // Deduplicate by keyword, collect engines and competitors
+  const keywordMap = new Map<string, {
+    keyword: string;
+    category: string;
+    engines: Set<string>;
+    competitors: Set<string>;
+  }>();
+
+  for (const g of gaps) {
+    const existing = keywordMap.get(g.keyword);
+    let entities: { name: string }[] = [];
+    try { entities = JSON.parse(g.cited_entities); } catch {}
+    const compNames = entities.map(e => e.name).filter(Boolean);
+
+    if (existing) {
+      existing.engines.add(g.engine);
+      compNames.forEach(c => existing.competitors.add(c));
+    } else {
+      keywordMap.set(g.keyword, {
+        keyword: g.keyword,
+        category: g.category,
+        engines: new Set([g.engine]),
+        competitors: new Set(compNames),
+      });
+    }
+  }
+
+  // Limit to top 10 most impactful gaps (most engines + competitors)
+  const sorted = [...keywordMap.values()]
+    .sort((a, b) => (b.engines.size + b.competitors.size) - (a.engines.size + a.competitors.size))
+    .slice(0, 10);
+
+  if (sorted.length === 0) return "";
+
+  // Group by category
+  const byCategory = new Map<string, typeof sorted>();
+  for (const item of sorted) {
+    const cat = item.category || "general";
+    const arr = byCategory.get(cat) || [];
+    arr.push(item);
+    byCategory.set(cat, arr);
+  }
+
+  const categoryBlocks = [...byCategory.entries()].map(([cat, items]) => {
+    const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
+    const rows = items.map(item => {
+      const engines = [...item.engines].join(", ");
+      const topComps = [...item.competitors].slice(0, 3).join(", ");
+      return `
+        <div style="padding:12px 16px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;margin-bottom:8px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;color:var(--text);margin-bottom:4px">${esc(item.keyword)}</div>
+              <div style="font-size:11px;color:var(--text-faint)">
+                Competitors cited: ${topComps ? esc(topComps) : 'various'}
+              </div>
+            </div>
+            <div style="flex-shrink:0;text-align:right">
+              <div style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:2px;white-space:nowrap">Not cited</div>
+              <div style="font-size:10px;color:var(--text-faint);margin-top:4px">${engines}</div>
+            </div>
+          </div>
+        </div>`;
+    }).join("");
+
+    return `
+      <div style="margin-bottom:16px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:8px">${esc(catLabel)}</div>
+        ${rows}
+      </div>`;
+  }).join("");
+
+  return `
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:4px">Content Opportunities</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Keywords where competitors get cited by AI engines but you don't. Creating authoritative content on these topics can improve your citation share.</div>
+      ${categoryBlocks}
+      <div style="margin-top:8px">
+        <a href="/citations/${esc(clientSlug)}" style="font-size:12px;color:var(--gold)">View full citation tracking -></a>
+      </div>
+    </div>
+  `;
+}
+
+/** Citation share trend mini-chart */
+async function buildCitationTrend(clientSlug: string, env: Env): Promise<string> {
+  const snapshots = (await env.DB.prepare(
+    "SELECT citation_share, client_citations, total_queries, week_start FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start ASC LIMIT 12"
+  ).bind(clientSlug).all<{
+    citation_share: number;
+    client_citations: number;
+    total_queries: number;
+    week_start: number;
+  }>()).results;
+
+  if (snapshots.length < 2) return "";
+
+  const W = 400;
+  const H = 120;
+  const PAD_L = 36;
+  const PAD_R = 16;
+  const PAD_T = 12;
+  const PAD_B = 24;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  const shares = snapshots.map(s => s.citation_share * 100);
+  const maxShare = Math.max(...shares, 20); // At least 20% scale
+  const minShare = 0;
+  const range = maxShare - minShare;
+
+  const points = snapshots.map((s, i) => {
+    const x = PAD_L + (i / (snapshots.length - 1)) * chartW;
+    const pct = s.citation_share * 100;
+    const y = PAD_T + chartH - ((pct - minShare) / range) * chartH;
+    return { x, y, pct, date: new Date(s.week_start * 1000) };
+  });
+
+  const polyline = points.map(p => p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ");
+  const areaPath = "M " + points[0].x.toFixed(1) + "," + (PAD_T + chartH).toFixed(1) + " " +
+    points.map(p => "L " + p.x.toFixed(1) + "," + p.y.toFixed(1)).join(" ") +
+    " L " + points[points.length - 1].x.toFixed(1) + "," + (PAD_T + chartH).toFixed(1) + " Z";
+
+  // Date labels (first and last)
+  const firstDate = points[0].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const lastDate = points[points.length - 1].date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  const latest = snapshots[snapshots.length - 1];
+  const prev = snapshots[snapshots.length - 2];
+  const latestPct = (latest.citation_share * 100).toFixed(0);
+  const diff = (latest.citation_share - prev.citation_share) * 100;
+  const diffText = diff > 0.5 ? `<span style="color:var(--green)">+${diff.toFixed(0)}%</span>` :
+    diff < -0.5 ? `<span style="color:var(--red)">${diff.toFixed(0)}%</span>` :
+    `<span style="color:var(--text-faint)">steady</span>`;
+
+  return `
+    <div style="margin-bottom:48px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px">
+        <div class="label">Citation Share Trend</div>
+        <a href="/citations/${esc(clientSlug)}" style="font-size:11px;color:var(--gold)">Full report -></a>
+      </div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px">
+        <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+          <span style="font-family:var(--mono);font-size:24px;color:var(--text)">${latestPct}%</span>
+          <span style="font-size:12px;color:var(--text-faint)">citation share (${diffText} vs last week)</span>
+        </div>
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">
+          <defs>
+            <linearGradient id="citGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--gold)" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="var(--gold)" stop-opacity="0"/>
+            </linearGradient>
+          </defs>
+          <line x1="${PAD_L}" y1="${PAD_T + chartH}" x2="${W - PAD_R}" y2="${PAD_T + chartH}" stroke="rgba(251,248,239,.1)"/>
+          <path d="${areaPath}" fill="url(#citGrad)"/>
+          <polyline points="${polyline}" fill="none" stroke="var(--gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+          ${points.map((p, i) => i === points.length - 1 ? `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="4" fill="var(--gold)" stroke="var(--bg)" stroke-width="2"/>` : '').join('')}
+          <text x="${PAD_L}" y="${H - 4}" fill="rgba(251,248,239,.3)" font-size="9" font-family="var(--mono)">${firstDate}</text>
+          <text x="${W - PAD_R}" y="${H - 4}" text-anchor="end" fill="rgba(251,248,239,.3)" font-size="9" font-family="var(--mono)">${lastDate}</text>
+        </svg>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:8px">${latest.client_citations} of ${latest.total_queries} tracked queries cite you</div>
+      </div>
+    </div>
+  `;
+}
 
 async function buildProgressTimeline(clientSlug: string, env: Env): Promise<string> {
   const completedItems = (await env.DB.prepare(
@@ -511,6 +1094,8 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
           <div style="padding:16px;color:var(--green);font-size:13px">No red flags detected.</div>
         </div>
       `}
+
+      ${buildSchemaSnippets(schemaCoverage, domain.domain)}
     `;
   } else if (latest && latest.error) {
     reportSection = `
@@ -774,18 +1359,71 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
         </form>
         ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}">
           <button type="submit" class="btn no-print">Run scan</button>
-        </form>` : ''}
+        </form>` : (() => {
+          // Client rescan: rate-limited to once per 24h
+          const now = Math.floor(Date.now() / 1000);
+          const lastScanTime = latest ? latest.scanned_at : 0;
+          const canRescan = (now - lastScanTime) > 86400;
+          if (canRescan) {
+            return `<form method="POST" action="/domain/${domain.id}/rescan">
+              <button type="submit" class="btn btn-ghost no-print">Rescan</button>
+            </form>`;
+          }
+          const hoursLeft = Math.ceil((86400 - (now - lastScanTime)) / 3600);
+          return `<span class="btn btn-ghost no-print" style="opacity:.4;cursor:default;pointer-events:none" title="Available in ${hoursLeft}h">Rescan</span>`;
+        })()}
       </div>
     </div>
 
     ${shareFlash}
+    ${await buildGettingStarted(domain, user, env)}
     ${reportSection}
     ${trendSection}
+    ${latest && !latest.error ? await buildScoreProjection(domain.client_slug, latest.aeo_score, env) : ''}
     ${await buildActivityTimeline(domain, env)}
     ${await buildProgressTimeline(domain.client_slug, env)}
     ${coverageSection}
+    ${await buildContentTopics(domain.client_slug, env)}
+    ${await buildCitationTrend(domain.client_slug, env)}
     ${historySection}
   `;
 
   return html(layout(domain.domain, body, user, domain.client_slug));
+}
+
+/** Handle client-initiated rescan (rate-limited to once per 24h) */
+export async function handleClientRescan(domainId: number, user: User, env: Env): Promise<Response> {
+  const domain = await env.DB.prepare(
+    "SELECT * FROM domains WHERE id = ? AND active = 1"
+  ).bind(domainId).first<Domain>();
+
+  if (!domain) return redirect("/");
+
+  // Auth check
+  if (user.role !== "admin" && user.client_slug !== domain.client_slug) {
+    return redirect("/");
+  }
+
+  // Rate limit: check last scan time
+  const lastScan = await env.DB.prepare(
+    "SELECT scanned_at FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 1"
+  ).bind(domainId).first<{ scanned_at: number }>();
+
+  const now = Math.floor(Date.now() / 1000);
+  if (lastScan && (now - lastScan.scanned_at) < 86400) {
+    // Too recent, just redirect back
+    return redirect(`/domain/${domainId}`);
+  }
+
+  // Run scan + auto-complete roadmap items
+  try {
+    const result = await scanDomain(domainId, `https://${domain.domain}/`, "manual", env);
+    if (result && !result.error && !domain.is_competitor) {
+      await autoCompleteRoadmapItems(domain.client_slug, result, env);
+    }
+  } catch (e) {
+    console.log(`Client rescan failed for ${domain.domain}: ${e}`);
+  }
+
+  return redirect(`/domain/${domainId}`);
 }

@@ -8,6 +8,7 @@
 
 import type { Env, User, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, redirect, esc } from "../render";
+import { regenerateRoadmap } from "../auto-provision";
 
 const CATEGORIES: Record<string, string> = {
   schema: "Schema Markup",
@@ -117,7 +118,7 @@ async function ensurePhases(clientSlug: string, env: Env): Promise<RoadmapPhase[
 }
 
 /** Check if active phase is complete, and auto-complete + unlock next */
-async function checkPhaseCompletion(clientSlug: string, env: Env): Promise<void> {
+export async function checkPhaseCompletion(clientSlug: string, env: Env): Promise<void> {
   const activePhase = await env.DB.prepare(
     "SELECT * FROM roadmap_phases WHERE client_slug = ? AND status = 'active' ORDER BY phase_number LIMIT 1"
   ).bind(clientSlug).first<RoadmapPhase>();
@@ -350,9 +351,23 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
         </div>
         <h1>AEO <em>Roadmap</em></h1>
       </div>
-      <div style="text-align:right">
-        <div style="font-size:12px;color:var(--text-faint)">${completedPhases} of ${updatedPhases.length} phases complete</div>
-        <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${totalDone} of ${totalItems} items delivered</div>
+      <div style="display:flex;align-items:flex-end;gap:16px">
+        ${user.role === "admin" ? `
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/regenerate" onsubmit="return confirm('This will replace all existing roadmap items with a fresh plan based on the latest scan. Continue?')">
+              <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Regenerate</button>
+            </form>
+            ${allItems.some(i => i.status === "pending") ? `
+              <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/bulk-start" onsubmit="return confirm('Start all pending items in the active phase?')">
+                <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Start all pending</button>
+              </form>
+            ` : ''}
+          </div>
+        ` : ''}
+        <div style="text-align:right">
+          <div style="font-size:12px;color:var(--text-faint)">${completedPhases} of ${updatedPhases.length} phases complete</div>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${totalDone} of ${totalItems} items delivered</div>
+        </div>
       </div>
     </div>
 
@@ -580,6 +595,36 @@ export async function handleAddPhase(clientSlug: string, request: Request, user:
   await env.DB.prepare(
     "INSERT INTO roadmap_phases (client_slug, phase_number, title, subtitle, description, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 'locked', ?, ?)"
   ).bind(clientSlug, nextNum, title, subtitle, description, now, now).run();
+
+  return redirect(`/roadmap/${clientSlug}`);
+}
+
+/** Bulk start all pending items in active phase (admin only) */
+export async function handleBulkStartItems(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin") return redirect(`/roadmap/${clientSlug}`);
+
+  const activePhase = await env.DB.prepare(
+    "SELECT id FROM roadmap_phases WHERE client_slug = ? AND status = 'active' LIMIT 1"
+  ).bind(clientSlug).first<{ id: number }>();
+
+  if (activePhase) {
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare(
+      "UPDATE roadmap_items SET status = 'in_progress', updated_at = ? WHERE client_slug = ? AND phase_id = ? AND status = 'pending'"
+    ).bind(now, clientSlug, activePhase.id).run();
+  }
+
+  return redirect(`/roadmap/${clientSlug}`);
+}
+
+/** Regenerate roadmap from latest scan (admin only) */
+export async function handleRegenerateRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin") return redirect(`/roadmap/${clientSlug}`);
+
+  const result = await regenerateRoadmap(clientSlug, env);
+  if (!result) {
+    console.log(`Regenerate failed for ${clientSlug}: no scan data found`);
+  }
 
   return redirect(`/roadmap/${clientSlug}`);
 }

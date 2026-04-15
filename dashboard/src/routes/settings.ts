@@ -8,6 +8,23 @@ import type { Env, User, Domain } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { getGoogleAuthUrl, getValidToken, listSites } from "../gsc";
 
+function buildToggleRow(name: string, label: string, description: string, checked: number): string {
+  const isOn = !!checked;
+  return `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg-edge);border-radius:4px;margin-bottom:12px">
+      <div>
+        <div style="font-size:14px;color:var(--text)">${esc(label)}</div>
+        <div style="font-size:12px;color:var(--text-faint);margin-top:4px">${esc(description)}</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer;flex-shrink:0">
+        <input type="checkbox" name="${name}" value="1" ${isOn ? 'checked' : ''} style="opacity:0;width:0;height:0">
+        <span style="position:absolute;inset:0;background:${isOn ? 'var(--gold)' : 'var(--line)'};border-radius:12px;transition:background .2s"></span>
+        <span style="position:absolute;top:2px;left:${isOn ? '22px' : '2px'};width:20px;height:20px;background:var(--bg);border-radius:50%;transition:left .2s"></span>
+      </label>
+    </div>
+  `;
+}
+
 export async function handleSettings(user: User, env: Env, flashMessage?: string, url?: URL): Promise<Response> {
   // Check for GSC connection status from URL params
   const gscParam = url?.searchParams.get("gsc");
@@ -161,25 +178,9 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
       <div class="label" style="margin-bottom:16px">Email Preferences</div>
 
       <form method="POST" action="/settings/emails">
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg-edge);border-radius:4px;margin-bottom:12px">
-          <div>
-            <div style="font-size:14px;color:var(--text)">Weekly AEO digest</div>
-            <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Score, changes, and top action items every Monday</div>
-          </div>
-          <label style="position:relative;display:inline-block;width:44px;height:24px;cursor:pointer">
-            <input type="checkbox" name="email_digest" value="1" ${user.email_digest ? 'checked' : ''} style="opacity:0;width:0;height:0">
-            <span style="position:absolute;inset:0;background:${user.email_digest ? 'var(--gold)' : 'var(--line)'};border-radius:12px;transition:background .2s"></span>
-            <span style="position:absolute;top:2px;left:${user.email_digest ? '22px' : '2px'};width:20px;height:20px;background:var(--bg);border-radius:50%;transition:left .2s"></span>
-          </label>
-        </div>
-
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:var(--bg-edge);border-radius:4px;margin-bottom:16px">
-          <div>
-            <div style="font-size:14px;color:var(--text)">Score drop alerts</div>
-            <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Immediate notification when your score drops 5+ points</div>
-          </div>
-          <div style="font-size:12px;color:var(--text-faint);font-style:italic">Included with digest</div>
-        </div>
+        ${buildToggleRow("email_digest", "Weekly AEO digest", "Score, changes, citations, and top action items every Monday", user.email_digest)}
+        ${buildToggleRow("email_regression", "Score drop alerts", "Immediate email when your AEO score drops 5 or more points", user.email_regression ?? 1)}
+        ${buildToggleRow("email_alerts", "Activity alerts", "Milestone achievements, competitor changes, and roadmap updates", user.email_alerts ?? 1)}
 
         <div style="display:flex;gap:12px;align-items:center">
           <button type="submit" class="btn">Save preferences</button>
@@ -195,18 +196,16 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
 export async function handleUpdateEmailPrefs(request: Request, user: User, env: Env): Promise<Response> {
   const form = await request.formData();
   const emailDigest = form.get("email_digest") === "1" ? 1 : 0;
-  const now = Math.floor(Date.now() / 1000);
+  const emailAlerts = form.get("email_alerts") === "1" ? 1 : 0;
+  const emailRegression = form.get("email_regression") === "1" ? 1 : 0;
 
   await env.DB.prepare(
-    "UPDATE users SET email_digest = ? WHERE id = ?"
-  ).bind(emailDigest, user.id).run();
+    "UPDATE users SET email_digest = ?, email_alerts = ?, email_regression = ? WHERE id = ?"
+  ).bind(emailDigest, emailAlerts, emailRegression, user.id).run();
 
-  // Return settings page with flash
-  const message = emailDigest
-    ? "Weekly digest enabled. You'll receive scan reports every Monday."
-    : "Weekly digest disabled. You won't receive scan emails.";
+  const message = "Email preferences saved.";
 
-  // Re-fetch user with updated preference
-  const updatedUser = { ...user, email_digest: emailDigest };
+  // Re-fetch user with updated preferences
+  const updatedUser = { ...user, email_digest: emailDigest, email_alerts: emailAlerts, email_regression: emailRegression };
   return handleSettings(updatedUser, env, message);
 }

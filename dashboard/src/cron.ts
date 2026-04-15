@@ -11,6 +11,7 @@ import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { checkAndAlertRegression } from "./regression";
+import { autoCompleteRoadmapItems } from "./auto-complete";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
@@ -36,6 +37,14 @@ export async function runWeeklyScans(env: Env): Promise<void> {
         errors++;
       } else {
         scanned++;
+        // Auto-complete roadmap items based on scan improvements
+        if (result && !d.is_competitor) {
+          try {
+            await autoCompleteRoadmapItems(d.client_slug, result, env);
+          } catch (e) {
+            console.log(`Auto-complete failed for ${d.client_slug}: ${e}`);
+          }
+        }
       }
       // Also scan individual pages for schema coverage
       await scanDomainPages(d.id, d.domain, env);
@@ -215,8 +224,60 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
 }
 
-/** Daily tasks: onboarding drip + nurture drip emails */
+/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check */
 export async function runDailyTasks(env: Env): Promise<void> {
   await sendOnboardingDripEmails(env);
   await sendNurtureDripEmails(env);
+  await checkStaleRoadmapItems(env);
+}
+
+/** Flag roadmap items stuck in "in_progress" for 14+ days */
+async function checkStaleRoadmapItems(env: Env): Promise<void> {
+  const fourteenDaysAgo = Math.floor(Date.now() / 1000) - 14 * 24 * 60 * 60;
+
+  // Find items that have been in_progress since before the cutoff and haven't already been flagged
+  const staleItems = (await env.DB.prepare(`
+    SELECT ri.id, ri.client_slug, ri.title, ri.updated_at
+    FROM roadmap_items ri
+    WHERE ri.status = 'in_progress'
+      AND ri.updated_at < ?
+      AND NOT EXISTS (
+        SELECT 1 FROM admin_alerts aa
+        WHERE aa.client_slug = ri.client_slug
+          AND aa.type = 'stale_item'
+          AND aa.detail LIKE '%' || ri.title || '%'
+          AND aa.created_at > ?
+      )
+  `).bind(fourteenDaysAgo, fourteenDaysAgo).all<{
+    id: number;
+    client_slug: string;
+    title: string;
+    updated_at: number;
+  }>()).results;
+
+  if (staleItems.length === 0) return;
+
+  // Group by client_slug
+  const byClient = new Map<string, typeof staleItems>();
+  for (const item of staleItems) {
+    const arr = byClient.get(item.client_slug) || [];
+    arr.push(item);
+    byClient.set(item.client_slug, arr);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  for (const [slug, items] of byClient) {
+    const titles = items.map(i => i.title).join(", ");
+    const daysStale = Math.floor((now - Math.min(...items.map(i => i.updated_at))) / 86400);
+    await env.DB.prepare(
+      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'stale_item', ?, ?, ?)"
+    ).bind(
+      slug,
+      `${items.length} roadmap item${items.length > 1 ? 's' : ''} stale for ${daysStale}+ days`,
+      titles,
+      now
+    ).run();
+  }
+
+  console.log(`Stale roadmap check: flagged items for ${byClient.size} client(s)`);
 }

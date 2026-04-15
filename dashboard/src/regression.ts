@@ -28,9 +28,9 @@ export async function checkAndAlertRegression(domain: Domain, env: Env): Promise
 
   console.log(`Regression detected: ${domain.domain} dropped ${drop} pts (${previous.aeo_score} -> ${latest.aeo_score})`);
 
-  // Find users to alert: clients with this slug + all admins, who have digests on
+  // Find users to alert: clients with this slug + all admins, who have regression alerts on
   const users = (await env.DB.prepare(
-    "SELECT * FROM users WHERE email_digest = 1 AND (role = 'admin' OR client_slug = ?)"
+    "SELECT * FROM users WHERE (email_regression = 1 OR email_regression IS NULL) AND (role = 'admin' OR client_slug = ?)"
   ).bind(domain.client_slug).all<User>()).results;
 
   let sent = 0;

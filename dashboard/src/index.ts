@@ -9,11 +9,11 @@ import { getUser } from "./auth";
 import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
-import { handleDomainDetail, handleScanCompare } from "./routes/domain";
+import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion } from "./routes/admin";
 import { handleCockpit } from "./routes/cockpit";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage } from "./routes/competitors";
-import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase } from "./routes/roadmap";
+import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -178,6 +178,10 @@ export default {
     if (domainCompareMatch) {
       return handleScanCompare(Number(domainCompareMatch[1]), user, env, url);
     }
+    const domainRescanMatch = path.match(/^\/domain\/(\d+)\/rescan$/);
+    if (domainRescanMatch && method === "POST") {
+      return handleClientRescan(Number(domainRescanMatch[1]), user, env);
+    }
     const domainMatch = path.match(/^\/domain\/(\d+)$/);
     if (domainMatch) {
       return handleDomainDetail(Number(domainMatch[1]), user, env, url);
@@ -324,6 +328,14 @@ export default {
     const roadmapUpdateMatch = path.match(/^\/roadmap\/([^/]+)\/update\/(\d+)$/);
     if (roadmapUpdateMatch && method === "POST") {
       return handleUpdateRoadmapItem(decodeURIComponent(roadmapUpdateMatch[1]), Number(roadmapUpdateMatch[2]), request, user, env);
+    }
+    const roadmapRegenMatch = path.match(/^\/roadmap\/([^/]+)\/regenerate$/);
+    if (roadmapRegenMatch && method === "POST" && user.role === "admin") {
+      return handleRegenerateRoadmap(decodeURIComponent(roadmapRegenMatch[1]), user, env);
+    }
+    const roadmapBulkStartMatch = path.match(/^\/roadmap\/([^/]+)\/bulk-start$/);
+    if (roadmapBulkStartMatch && method === "POST" && user.role === "admin") {
+      return handleBulkStartItems(decodeURIComponent(roadmapBulkStartMatch[1]), user, env);
     }
     const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
     if (phaseAddMatch && method === "POST" && user.role === "admin") {
