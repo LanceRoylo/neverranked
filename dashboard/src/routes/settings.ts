@@ -1,16 +1,45 @@
 /**
  * Dashboard -- User settings
  *
- * Email preferences and account settings.
+ * Account info, billing, email prefs, competitors, GSC connection.
  */
 
-import type { Env, User } from "../types";
+import type { Env, User, Domain } from "../types";
 import { layout, html, redirect, esc } from "../render";
+import { getGoogleAuthUrl, getValidToken, listSites } from "../gsc";
 
-export async function handleSettings(user: User, env: Env, flashMessage?: string): Promise<Response> {
-  const flash = flashMessage
-    ? `<div style="margin-bottom:24px;padding:14px 20px;background:var(--gold-wash);border:1px solid var(--gold-dim);border-radius:4px;font-size:13px;color:var(--gold)">${esc(flashMessage)}</div>`
+export async function handleSettings(user: User, env: Env, flashMessage?: string, url?: URL): Promise<Response> {
+  // Check for GSC connection status from URL params
+  const gscParam = url?.searchParams.get("gsc");
+  const gscLinkParam = url?.searchParams.get("link");
+  const gscError = url?.searchParams.get("error");
+
+  let derivedFlash = flashMessage || "";
+  if (gscParam === "connected" && !gscLinkParam) {
+    derivedFlash = "Google Search Console connected and linked. Search data will appear on your next weekly pull.";
+  } else if (gscParam === "connected" && gscLinkParam === "manual") {
+    derivedFlash = "Google account connected, but we could not auto-link a property. Please contact us to complete the setup.";
+  } else if (gscError) {
+    derivedFlash = "Google connection failed: " + gscError;
+  }
+
+  const flash = derivedFlash
+    ? `<div style="margin-bottom:24px;padding:14px 20px;background:var(--gold-wash);border:1px solid var(--gold-dim);border-radius:4px;font-size:13px;color:var(--gold)">${esc(derivedFlash)}</div>`
     : "";
+
+  // Load competitors for this client
+  const competitors = user.client_slug ? (await env.DB.prepare(
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1 ORDER BY domain"
+  ).bind(user.client_slug).all<Domain>()).results : [];
+
+  // Check GSC connection status for this client
+  const gscProperty = user.client_slug ? await env.DB.prepare(
+    "SELECT * FROM gsc_properties WHERE client_slug = ? LIMIT 1"
+  ).bind(user.client_slug).first<{ id: number; site_url: string }>() : null;
+
+  // For the connect button, we need the origin
+  const origin = url ? url.origin : "https://app.neverranked.com";
+  const gscAuthUrl = getGoogleAuthUrl(env, origin);
 
   const body = `
     <div style="margin-bottom:40px">
@@ -60,6 +89,70 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
         <button type="submit" class="btn">Manage billing</button>
         <span style="font-size:12px;color:var(--text-faint);margin-left:12px">Update payment method, view invoices, or cancel</span>
       </form>
+    </div>
+    ` : ""}
+
+    <!-- Competitors -->
+    ${user.client_slug ? `
+    <div class="card" style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:16px">Competitors</div>
+      ${competitors.length > 0 ? `
+        <div style="margin-bottom:16px">
+          ${competitors.map(c => `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.08)">
+              <span style="font-size:13px;color:var(--text)">${esc(c.domain)}${c.competitor_label ? ` <span style="color:var(--text-faint)">(${esc(c.competitor_label)})</span>` : ''}</span>
+              <form method="POST" action="/competitors/${esc(user.client_slug)}/remove" style="display:inline">
+                <input type="hidden" name="domain_id" value="${c.id}">
+                <button type="submit" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);background:none;border:1px solid var(--line);padding:3px 8px;border-radius:2px;cursor:pointer">Remove</button>
+              </form>
+            </div>
+          `).join("")}
+        </div>
+      ` : `
+        <div style="font-size:13px;color:var(--text-faint);margin-bottom:16px">No competitors tracked yet.</div>
+      `}
+      <form method="POST" action="/competitors/${esc(user.client_slug)}/add" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:160px">
+          <label>Domain</label>
+          <input type="text" name="domain" placeholder="competitor.com" required style="width:100%">
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:120px">
+          <label>Label (optional)</label>
+          <input type="text" name="label" placeholder="Main competitor">
+        </div>
+        <button type="submit" class="btn" style="white-space:nowrap">Add</button>
+      </form>
+    </div>
+    ` : ""}
+
+    <!-- Google Search Console -->
+    ${user.client_slug ? `
+    <div class="card" style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:16px">Google Search Console</div>
+      ${gscProperty ? `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--green)"></div>
+          <div style="font-size:14px;color:var(--text)">Connected</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-faint);margin-bottom:12px">
+          Linked property: <span style="color:var(--text)">${esc(gscProperty.site_url)}</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.6">
+          Search data is pulled automatically every week. You can view your search performance on the <a href="/search/${esc(user.client_slug)}" style="color:var(--gold)">Search page</a>.
+        </div>
+      ` : `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--text-faint)"></div>
+          <div style="font-size:14px;color:var(--text-faint)">Not connected</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-faint);line-height:1.6;margin-bottom:16px">
+          Connect Google Search Console to see how your site performs in traditional search alongside your AEO data. We pull clicks, impressions, top queries, and average position weekly.
+        </div>
+        <a href="${esc(gscAuthUrl)}&state=client:${esc(user.client_slug)}" class="btn">Connect Search Console</a>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:8px">
+          We only request read-only access. You can disconnect at any time.
+        </div>
+      `}
     </div>
     ` : ""}
 

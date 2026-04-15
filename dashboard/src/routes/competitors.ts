@@ -6,7 +6,8 @@
  */
 
 import type { Env, User, Domain, ScanResult, CitationSnapshot } from "../types";
-import { layout, html, esc } from "../render";
+import { layout, html, redirect, esc } from "../render";
+import { scanDomain } from "../scanner";
 
 interface ComparisonRow {
   domain: Domain;
@@ -84,26 +85,34 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
   const primary = rows.filter(r => !r.domain.is_competitor);
   const competitors = rows.filter(r => r.domain.is_competitor);
 
-  // If no competitors yet, show helpful empty state
+  // If no competitors yet, show helpful empty state with add form
   if (competitors.length === 0) {
-    const pendingSuggestions = await env.DB.prepare(
-      "SELECT COUNT(*) as count FROM competitor_suggestions WHERE client_slug = ? AND status = 'pending'"
-    ).bind(clientSlug).first<{ count: number }>();
-    const pendingCount = pendingSuggestions?.count || 0;
-
-    const emptyMessage = pendingCount > 0
-      ? `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">You submitted ${pendingCount} competitor${pendingCount > 1 ? 's' : ''} for review. We are setting them up and will run initial scans shortly. Check back soon.</p>`
-      : `<p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">No competitors are being tracked yet. Add competitors during onboarding or ask your account manager to set them up.</p>`;
-
-    return html(layout("Competitors", `      <div style="margin-bottom:40px">
+    return html(layout("Competitors", `
+      <div style="margin-bottom:40px">
         <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
-        <h1>Competitor <em>comparison</em></h1>
+        <h1>Competitive <em>comparison</em></h1>
       </div>
-      <div class="empty">
-        <h3>Competitors coming soon</h3>
-        ${emptyMessage}
+      <div class="empty" style="margin-bottom:32px">
+        <h3>No competitors tracked yet</h3>
+        <p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">Add your competitors below. We'll scan them on the same schedule as your site and show you side-by-side AEO scores, citation rates, and schema coverage.</p>
       </div>
+      ${buildAddCompetitorForm(clientSlug)}
     `, user, clientSlug));
+  }
+
+  // Gather score history for trend chart (last 8 scans per domain)
+  interface TrendPoint { date: number; score: number }
+  const trendData = new Map<number, { domain: Domain; points: TrendPoint[] }>();
+  for (const d of domains) {
+    const scans = (await env.DB.prepare(
+      "SELECT aeo_score, scanned_at FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 8"
+    ).bind(d.id).all<{ aeo_score: number; scanned_at: number }>()).results;
+    if (scans.length >= 2) {
+      trendData.set(d.id, {
+        domain: d,
+        points: scans.map(s => ({ date: s.scanned_at, score: s.aeo_score })).reverse(),
+      });
+    }
   }
 
   // Collect all schema types across all domains
@@ -291,13 +300,112 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       </div>
     </div>
 
+    ${buildTrendChart(trendData)}
+
     ${schemaMatrix}
     ${flagComparison}
     ${await buildCitationComparison(clientSlug, primary, competitors, env)}
     ${user.role === "admin" ? await buildCompetitorDiscovery(clientSlug, allRows, env) : ""}
+
+    <!-- Add / manage competitors -->
+    ${buildAddCompetitorForm(clientSlug)}
+    ${buildManageCompetitors(competitors, clientSlug)}
   `;
 
   return html(layout("Competitors", body, user, clientSlug));
+}
+
+/** Build SVG trend chart showing score over time for all domains */
+function buildTrendChart(trendData: Map<number, { domain: Domain; points: { date: number; score: number }[] }>): string {
+  if (trendData.size === 0) return "";
+
+  const W = 640;
+  const H = 260;
+  const PAD_L = 40;
+  const PAD_R = 20;
+  const PAD_T = 20;
+  const PAD_B = 36;
+  const chartW = W - PAD_L - PAD_R;
+  const chartH = H - PAD_T - PAD_B;
+
+  // Collect all dates and find range
+  let minDate = Infinity;
+  let maxDate = -Infinity;
+  for (const { points } of trendData.values()) {
+    for (const p of points) {
+      if (p.date < minDate) minDate = p.date;
+      if (p.date > maxDate) maxDate = p.date;
+    }
+  }
+  const dateRange = maxDate - minDate || 1;
+
+  const x = (ts: number) => PAD_L + ((ts - minDate) / dateRange) * chartW;
+  const y = (score: number) => PAD_T + chartH - (score / 100) * chartH;
+
+  // Competitor line colors (muted palette)
+  const compColors = ["rgba(251,248,239,.35)", "rgba(180,170,150,.4)", "rgba(150,165,175,.4)", "rgba(170,155,140,.35)", "rgba(145,160,150,.35)", "rgba(160,150,170,.35)"];
+  let colorIdx = 0;
+
+  // Grid lines at 0, 25, 50, 75, 100
+  const gridLines = [0, 25, 50, 75, 100].map(v => {
+    const yy = y(v);
+    return `<line x1="${PAD_L}" x2="${W - PAD_R}" y1="${yy}" y2="${yy}" stroke="rgba(251,248,239,.06)" stroke-width="1"/>` +
+      `<text x="${PAD_L - 8}" y="${yy + 4}" text-anchor="end" fill="rgba(251,248,239,.3)" font-size="10" font-family="var(--mono)">${v}</text>`;
+  }).join("");
+
+  // Date labels (first and last)
+  const fmtDate = (ts: number) => new Date(ts * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const dateLabels = `
+    <text x="${PAD_L}" y="${H - 4}" fill="rgba(251,248,239,.3)" font-size="10" font-family="var(--mono)">${fmtDate(minDate)}</text>
+    <text x="${W - PAD_R}" y="${H - 4}" text-anchor="end" fill="rgba(251,248,239,.3)" font-size="10" font-family="var(--mono)">${fmtDate(maxDate)}</text>
+  `;
+
+  // Lines + dots
+  const lines: string[] = [];
+  const legendItems: string[] = [];
+
+  for (const [, { domain: d, points }] of trendData) {
+    const isPrimary = !d.is_competitor;
+    const color = isPrimary ? "var(--gold)" : compColors[colorIdx++ % compColors.length];
+    const strokeW = isPrimary ? "2.5" : "1.5";
+    const opacity = isPrimary ? "1" : "0.8";
+
+    const pathPoints = points.map(p => `${x(p.date).toFixed(1)},${y(p.score).toFixed(1)}`);
+    const pathD = "M" + pathPoints.join("L");
+    lines.push(`<path d="${pathD}" fill="none" stroke="${color}" stroke-width="${strokeW}" opacity="${opacity}" stroke-linejoin="round" stroke-linecap="round"/>`);
+
+    // End dot
+    const last = points[points.length - 1];
+    const dotR = isPrimary ? "4" : "3";
+    lines.push(`<circle cx="${x(last.date).toFixed(1)}" cy="${y(last.score).toFixed(1)}" r="${dotR}" fill="${color}" opacity="${opacity}"/>`);
+
+    // Legend
+    const label = isPrimary ? d.domain : (d.competitor_label || d.domain);
+    const tag = isPrimary ? ' <span style="font-family:var(--label);font-size:7px;letter-spacing:.1em;color:var(--gold);border:1px solid var(--gold-dim);padding:0 4px;border-radius:2px;vertical-align:middle">YOU</span>' : '';
+    legendItems.push(
+      `<span style="display:inline-flex;align-items:center;gap:6px;margin-right:16px;margin-bottom:4px">` +
+      `<span style="display:inline-block;width:16px;height:2px;background:${color};border-radius:1px${isPrimary ? '' : ';opacity:.7'}"></span>` +
+      `<span style="font-size:11px;color:${isPrimary ? 'var(--gold)' : 'var(--text-faint)'}">${esc(label)}${tag}</span>` +
+      `</span>`
+    );
+  }
+
+  return `
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:4px">Score Trend</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">AEO readiness over time across all tracked domains</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px">
+        <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block">
+          ${gridLines}
+          ${dateLabels}
+          ${lines.join("")}
+        </svg>
+        <div style="display:flex;flex-wrap:wrap;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">
+          ${legendItems.join("")}
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 /** Build the AI citation comparison section */
@@ -403,6 +511,140 @@ async function buildCitationComparison(
       </div>
     </div>
   `;
+}
+
+/** Inline form to add a competitor */
+function buildAddCompetitorForm(clientSlug: string): string {
+  return `
+    <div style="margin-top:48px">
+      <div class="label" style="margin-bottom:12px">Add a competitor</div>
+      <form method="POST" action="/competitors/${esc(clientSlug)}/add" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap">
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:180px">
+          <label>Domain</label>
+          <input type="text" name="domain" placeholder="competitor.com" required style="width:100%">
+        </div>
+        <div class="form-group" style="margin-bottom:0;flex:1;min-width:140px">
+          <label>Label (optional)</label>
+          <input type="text" name="label" placeholder="Main competitor, etc.">
+        </div>
+        <button type="submit" class="btn" style="margin-bottom:0;white-space:nowrap">Add competitor</button>
+      </form>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:8px">
+        We'll run an initial scan immediately. Weekly scans follow the same schedule as your site.
+      </div>
+    </div>
+  `;
+}
+
+/** List of current competitors with remove option */
+function buildManageCompetitors(competitors: ComparisonRow[], clientSlug: string): string {
+  if (competitors.length === 0) return "";
+
+  const rows = competitors.map(c => {
+    const label = c.domain.competitor_label ? ` <span style="color:var(--text-faint)">(${esc(c.domain.competitor_label)})</span>` : '';
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06)">
+        <span style="font-size:13px;color:var(--text)">${esc(c.domain.domain)}${label}</span>
+        <form method="POST" action="/competitors/${esc(clientSlug)}/remove" style="display:inline">
+          <input type="hidden" name="domain_id" value="${c.domain.id}">
+          <button type="submit" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);background:none;border:1px solid var(--line);padding:4px 10px;border-radius:2px;cursor:pointer;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--red)';this.style.borderColor='var(--red)'" onmouseout="this.style.color='var(--text-faint)';this.style.borderColor='var(--line)'">Remove</button>
+        </form>
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <div style="margin-top:24px">
+      <div class="label" style="margin-bottom:12px">Tracked competitors</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:8px 20px">
+        ${rows}
+      </div>
+    </div>
+  `;
+}
+
+/** Handle POST to add a new competitor from the competitors page */
+export async function handleAddCompetitorFromPage(
+  clientSlug: string,
+  request: Request,
+  user: User,
+  env: Env
+): Promise<Response> {
+  // Access check
+  if (user.role === "client" && user.client_slug !== clientSlug) {
+    return redirect("/competitors");
+  }
+
+  const form = await request.formData();
+  const domain = (form.get("domain") as string || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
+  const label = (form.get("label") as string || "").trim() || null;
+
+  if (!domain || domain.length < 3 || !domain.includes(".")) {
+    return redirect(`/competitors/${clientSlug}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Check if already tracked
+  const existing = await env.DB.prepare(
+    "SELECT id FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+  ).bind(domain, clientSlug).first();
+
+  if (!existing) {
+    // Add domain
+    await env.DB.prepare(
+      "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, 1, ?, 1, ?, ?)"
+    ).bind(clientSlug, domain, label, now, now).run();
+
+    // Record as suggestion for audit trail
+    try {
+      await env.DB.prepare(
+        "INSERT INTO competitor_suggestions (client_slug, suggested_by, domain, label, status, created_at) VALUES (?, ?, ?, ?, 'approved', ?)"
+      ).bind(clientSlug, user.id, domain, label, now).run();
+    } catch {
+      // Duplicate suggestion, fine
+    }
+
+    // Trigger initial scan
+    const newDomain = await env.DB.prepare(
+      "SELECT id FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+    ).bind(domain, clientSlug).first<{ id: number }>();
+    if (newDomain) {
+      try {
+        await scanDomain(newDomain.id, `https://${domain}/`, "manual", env);
+      } catch (e) {
+        console.log(`Competitor scan failed for ${domain}: ${e}`);
+      }
+    }
+  }
+
+  return redirect(`/competitors/${clientSlug}`);
+}
+
+/** Handle POST to remove a competitor */
+export async function handleRemoveCompetitorFromPage(
+  clientSlug: string,
+  request: Request,
+  user: User,
+  env: Env
+): Promise<Response> {
+  // Access check
+  if (user.role === "client" && user.client_slug !== clientSlug) {
+    return redirect("/competitors");
+  }
+
+  const form = await request.formData();
+  const domainId = Number(form.get("domain_id") || 0);
+
+  if (domainId > 0) {
+    // Verify it belongs to this client and is a competitor
+    await env.DB.prepare(
+      "UPDATE domains SET active = 0 WHERE id = ? AND client_slug = ? AND is_competitor = 1"
+    ).bind(domainId, clientSlug).run();
+  }
+
+  return redirect(`/competitors/${clientSlug}`);
 }
 
 /** Discover potential competitors from citation data */

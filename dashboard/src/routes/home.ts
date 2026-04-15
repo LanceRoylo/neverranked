@@ -41,6 +41,71 @@ function buildHomeNarrative(user: User, domainCount: number, clientCount: number
   return "These are your tracked domains. Each one is scored independently for AEO readiness. Click any domain to see its full report, including schema coverage, technical signals, and prioritized recommendations.";
 }
 
+/** Build a "what changed" banner for clients based on activity since last login */
+async function buildChangeBanner(user: User, env: Env): Promise<string> {
+  if (user.role === "admin" || !user.client_slug || !user.last_login_at) return "";
+
+  const since = user.last_login_at;
+  const changes: string[] = [];
+
+  // Score changes since last login
+  const latestScan = await env.DB.prepare(
+    "SELECT sr.aeo_score, sr.grade, d.domain FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at > ? ORDER BY sr.scanned_at DESC LIMIT 1"
+  ).bind(user.client_slug, since).first<{ aeo_score: number; grade: string; domain: string }>();
+
+  const prevScan = await env.DB.prepare(
+    "SELECT sr.aeo_score FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at <= ? ORDER BY sr.scanned_at DESC LIMIT 1"
+  ).bind(user.client_slug, since).first<{ aeo_score: number }>();
+
+  if (latestScan && prevScan) {
+    const diff = latestScan.aeo_score - prevScan.aeo_score;
+    if (diff > 0) {
+      changes.push(`AEO score rose <span style="color:var(--green)">+${diff}</span> to ${latestScan.aeo_score}`);
+    } else if (diff < 0) {
+      changes.push(`AEO score dropped <span style="color:var(--red)">${diff}</span> to ${latestScan.aeo_score}`);
+    }
+  }
+
+  // Roadmap items completed since last login
+  const completedItems = await env.DB.prepare(
+    "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at > ?"
+  ).bind(user.client_slug, since).first<{ cnt: number }>();
+  if (completedItems && completedItems.cnt > 0) {
+    changes.push(`${completedItems.cnt} roadmap item${completedItems.cnt > 1 ? 's' : ''} completed`);
+  }
+
+  // New alerts since last login
+  const newAlerts = await env.DB.prepare(
+    "SELECT COUNT(*) as cnt FROM admin_alerts WHERE client_slug = ? AND created_at > ? AND read_at IS NULL"
+  ).bind(user.client_slug, since).first<{ cnt: number }>();
+  if (newAlerts && newAlerts.cnt > 0) {
+    changes.push(`${newAlerts.cnt} new alert${newAlerts.cnt > 1 ? 's' : ''}`);
+  }
+
+  // New competitor scans since last login
+  const compScans = await env.DB.prepare(
+    "SELECT COUNT(DISTINCT d.id) as cnt FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 1 AND sr.scanned_at > ?"
+  ).bind(user.client_slug, since).first<{ cnt: number }>();
+  if (compScans && compScans.cnt > 0) {
+    changes.push(`${compScans.cnt} competitor${compScans.cnt > 1 ? 's' : ''} re-scanned`);
+  }
+
+  if (changes.length === 0) return "";
+
+  const lastVisit = new Date(since * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+  return `
+    <div style="margin-bottom:24px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)">Since ${lastVisit}</div>
+      </div>
+      <div style="display:flex;gap:20px;flex-wrap:wrap;font-size:13px;color:var(--text-soft)">
+        ${changes.map(c => `<span>${c}</span>`).join('<span style="color:var(--line)">|</span>')}
+      </div>
+    </div>
+  `;
+}
+
 export async function handleHome(user: User, env: Env): Promise<Response> {
   const clientSlug = user.role === "admin" ? null : user.client_slug;
 
@@ -157,6 +222,9 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
   // Build home narrative
   const homeNarrative = buildHomeNarrative(user, domains.length, clientSlugs.length, gscMap);
 
+  // "What changed" banner for clients returning after absence
+  const changeBanner = await buildChangeBanner(user, env);
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -169,6 +237,8 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
         ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
       </div>
     </div>
+
+    ${changeBanner}
 
     ${domainCards.length > 0
       ? `<div class="narrative-context" style="margin-bottom:24px">${esc(homeNarrative)}</div>

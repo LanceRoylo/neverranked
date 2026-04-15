@@ -22,13 +22,25 @@ export async function handleGoogleCallback(
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
+  const state = url.searchParams.get("state") || "";
+
+  // Determine if this is a client-initiated connect
+  const isClientConnect = state.startsWith("client:");
+  const clientSlug = isClientConnect ? state.replace("client:", "") : null;
+  const errorRedirect = isClientConnect ? "/settings" : "/admin/gsc";
+  const successRedirect = isClientConnect ? "/settings" : "/admin/gsc";
 
   if (error) {
-    return redirect("/admin/gsc?error=" + encodeURIComponent(error));
+    return redirect(errorRedirect + "?error=" + encodeURIComponent(error));
   }
 
   if (!code) {
-    return redirect("/admin/gsc?error=no_code");
+    return redirect(errorRedirect + "?error=no_code");
+  }
+
+  // Client can only connect their own slug
+  if (isClientConnect && user.role === "client" && user.client_slug !== clientSlug) {
+    return redirect("/settings");
   }
 
   try {
@@ -36,7 +48,7 @@ export async function handleGoogleCallback(
     const tokens = await exchangeCodeForTokens(code, env, origin);
     const now = Math.floor(Date.now() / 1000);
 
-    // Store tokens (replace any existing)
+    // Store tokens (replace any existing for this user)
     await env.DB.prepare("DELETE FROM gsc_tokens WHERE user_id = ?").bind(user.id).run();
     await env.DB.prepare(
       `INSERT INTO gsc_tokens (user_id, access_token, refresh_token, expires_at, scope, created_at, updated_at)
@@ -51,16 +63,69 @@ export async function handleGoogleCallback(
       now
     ).run();
 
-    // Auto-discover and list available sites
+    // Auto-discover available sites
     const sites = await listSites(tokens.access_token);
-    if (sites.length > 0) {
-      return redirect("/admin/gsc?connected=1&sites=" + sites.length);
+
+    // If client-initiated, auto-link the matching property
+    if (isClientConnect && clientSlug && sites.length > 0) {
+      // Get client's primary domain to match against GSC properties
+      const primaryDomain = await env.DB.prepare(
+        "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+      ).bind(clientSlug).first<{ domain: string }>();
+
+      if (primaryDomain) {
+        // Try to find a matching GSC property
+        const domainLower = primaryDomain.domain.toLowerCase();
+        const matchingSite = sites.find(s => {
+          const siteUrlLower = s.siteUrl.toLowerCase();
+          return siteUrlLower.includes(domainLower) || domainLower.includes(siteUrlLower.replace(/^(sc-domain:|https?:\/\/)/, "").replace(/\/$/, ""));
+        });
+
+        if (matchingSite) {
+          // Check if already linked
+          const existingLink = await env.DB.prepare(
+            "SELECT id FROM gsc_properties WHERE site_url = ? AND client_slug = ?"
+          ).bind(matchingSite.siteUrl, clientSlug).first();
+
+          if (!existingLink) {
+            await env.DB.prepare(
+              "INSERT INTO gsc_properties (client_slug, site_url, permission_level, created_at) VALUES (?, ?, ?, ?)"
+            ).bind(clientSlug, matchingSite.siteUrl, matchingSite.permissionLevel, now).run();
+          }
+
+          return redirect("/settings?gsc=connected");
+        }
+
+        // No exact match found -- link the first available property as a best guess
+        // (most small businesses have one property)
+        if (sites.length === 1) {
+          const existingLink = await env.DB.prepare(
+            "SELECT id FROM gsc_properties WHERE site_url = ? AND client_slug = ?"
+          ).bind(sites[0].siteUrl, clientSlug).first();
+
+          if (!existingLink) {
+            await env.DB.prepare(
+              "INSERT INTO gsc_properties (client_slug, site_url, permission_level, created_at) VALUES (?, ?, ?, ?)"
+            ).bind(clientSlug, sites[0].siteUrl, sites[0].permissionLevel, now).run();
+          }
+
+          return redirect("/settings?gsc=connected");
+        }
+      }
+
+      // Could not auto-link, redirect to settings with a note
+      return redirect("/settings?gsc=connected&link=manual");
     }
 
-    return redirect("/admin/gsc?connected=1");
+    // Admin flow: redirect to admin GSC page
+    if (sites.length > 0) {
+      return redirect(successRedirect + "?connected=1&sites=" + sites.length);
+    }
+
+    return redirect(successRedirect + "?connected=1");
   } catch (err) {
     console.log("Google OAuth error: " + err);
-    return redirect("/admin/gsc?error=" + encodeURIComponent("" + err));
+    return redirect(errorRedirect + "?error=" + encodeURIComponent("" + err));
   }
 }
 

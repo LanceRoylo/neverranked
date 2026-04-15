@@ -441,27 +441,49 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
               ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
               : null;
             const overdue = item.due_date && item.due_date < now && item.status !== "done";
+            const hasNote = item.client_note && item.client_note.trim();
 
             return `
-              <div style="display:flex;align-items:center;gap:14px;padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
-                <div style="width:10px;height:10px;border-radius:50%;background:${st.color};flex-shrink:0"></div>
-                <div style="flex:1;min-width:0">
-                  <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
-                  ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
-                </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-                  ${dueStr ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-                  ${user.role === "admin" ? `
-                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
-                      ${item.status !== "done" ? `<button type="submit" name="status" value="done" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Mark done">Done</button>` : ''}
-                      ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
-                      ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
-                      ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
+              <div style="padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
+                <div style="display:flex;align-items:center;gap:14px">
+                  ${item.status !== "done" && (user.role === "client" || user.role === "admin") ? `
+                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;flex-shrink:0">
+                      <button type="submit" name="status" value="done" style="width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s" title="Mark done" onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--gold-wash)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='none'"></button>
                     </form>
                   ` : `
-                    <span class="status status-${item.status === 'in_progress' ? 'in_progress' : item.status === 'done' ? 'done' : 'pending'}" style="font-size:9px">${st.label}</span>
+                    <div style="width:20px;height:20px;border-radius:4px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;color:#080808;flex-shrink:0">&#10003;</div>
                   `}
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
+                    ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
+                  </div>
+                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+                    ${dueStr ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
+                    ${user.role === "admin" ? `
+                      <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
+                        ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
+                        ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
+                        ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
+                      </form>
+                    ` : `
+                      <span class="status status-${item.status === 'in_progress' ? 'in_progress' : item.status === 'done' ? 'done' : 'pending'}" style="font-size:9px">${st.label}</span>
+                    `}
+                  </div>
                 </div>
+                ${hasNote ? `
+                  <div style="margin-top:8px;margin-left:34px;padding:8px 12px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);font-size:11px;color:var(--text-faint);line-height:1.5;border-radius:0 2px 2px 0">
+                    ${esc(item.client_note!)}
+                  </div>
+                ` : ''}
+                ${item.status !== "done" ? `
+                  <details style="margin-top:6px;margin-left:34px">
+                    <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">${hasNote ? 'Edit note' : 'Add note'}</summary>
+                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="margin-top:6px;display:flex;gap:6px">
+                      <input type="text" name="client_note" value="${hasNote ? esc(item.client_note!) : ''}" placeholder="Leave a note (e.g., done on our end, waiting on dev, need help)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px">
+                      <button type="submit" class="btn" style="padding:6px 12px;font-size:9px">Save</button>
+                    </form>
+                  </details>
+                ` : ''}
               </div>
             `;
           }).join("")}
@@ -499,20 +521,41 @@ export async function handleAddRoadmapItem(clientSlug: string, request: Request,
   return redirect(`/roadmap/${clientSlug}`);
 }
 
-/** Update a roadmap item status (admin only) */
+/** Update a roadmap item status or note */
 export async function handleUpdateRoadmapItem(clientSlug: string, itemId: number, request: Request, user: User, env: Env): Promise<Response> {
+  // Access check: client can only update their own slug
+  if (user.role === "client" && user.client_slug !== clientSlug) {
+    return redirect("/roadmap");
+  }
+
   const form = await request.formData();
-  const status = (form.get("status") as string || "pending");
+  const status = form.get("status") as string | null;
+  const clientNote = form.get("client_note") as string | null;
   const now = Math.floor(Date.now() / 1000);
 
-  const completedAt = status === "done" ? now : null;
+  // Clients can only mark items as "done" or save notes -- not start/block/reopen
+  if (user.role === "client") {
+    if (status && status !== "done") {
+      return redirect(`/roadmap/${clientSlug}`);
+    }
+  }
 
-  await env.DB.prepare(
-    "UPDATE roadmap_items SET status = ?, completed_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
-  ).bind(status, completedAt, now, itemId, clientSlug).run();
+  if (status) {
+    const completedAt = status === "done" ? now : null;
+    await env.DB.prepare(
+      "UPDATE roadmap_items SET status = ?, completed_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(status, completedAt, now, itemId, clientSlug).run();
 
-  // Check if this completes the phase
-  await checkPhaseCompletion(clientSlug, env);
+    // Check if this completes the phase
+    await checkPhaseCompletion(clientSlug, env);
+  }
+
+  if (clientNote !== null) {
+    const noteValue = clientNote.trim() || null;
+    await env.DB.prepare(
+      "UPDATE roadmap_items SET client_note = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(noteValue, now, itemId, clientSlug).run();
+  }
 
   return redirect(`/roadmap/${clientSlug}`);
 }

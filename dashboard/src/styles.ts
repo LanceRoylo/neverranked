@@ -109,6 +109,15 @@ img,svg{display:block;max-width:100%}
 .topbar .nav-links a:hover::after{transform:scaleX(1)}
 .topbar .nav-links a.active{color:var(--gold)}
 .topbar .nav-links a.active::after{transform:scaleX(1)}
+.nav-badge{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:16px;height:16px;padding:0 4px;
+  background:var(--red);color:#fff;
+  font-family:var(--mono);font-size:9px;font-weight:500;
+  border-radius:8px;margin-right:6px;
+  letter-spacing:0;text-transform:none;
+  line-height:1;
+}
 .topbar .user-info{
   font-family:var(--mono);font-size:12px;color:var(--text-faint);
   display:flex;align-items:center;gap:16px;
@@ -301,6 +310,13 @@ a.card:hover{border-color:var(--gold-dim)}
   background:var(--bg-edge);border:1px solid var(--line);
   border-radius:var(--radius);font-size:11px;text-transform:capitalize;
 }
+
+/* article body (knowledge base) */
+.article-body h4{font-family:var(--serif);font-weight:400;font-size:16px;color:var(--text);margin:28px 0 8px;font-style:italic}
+.article-body p{margin:0 0 16px}
+.article-body ul{margin:0 0 16px;padding-left:20px}
+.article-body li{margin-bottom:8px}
+.article-body strong{color:var(--text);font-weight:400}
 
 /* chart containers */
 .chart-container{overflow:hidden;border-radius:var(--radius);background:var(--bg-edge)}

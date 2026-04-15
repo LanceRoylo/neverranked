@@ -9,10 +9,10 @@ import { getUser } from "./auth";
 import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
-import { handleDomainDetail } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleApproveSuggestion, handleDismissSuggestion } from "./routes/admin";
+import { handleDomainDetail, handleScanCompare } from "./routes/domain";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion } from "./routes/admin";
 import { handleCockpit } from "./routes/cockpit";
-import { handleCompetitors } from "./routes/competitors";
+import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
@@ -27,6 +27,8 @@ import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInje
 import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
 import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
 import { handleSummary } from "./routes/summary";
+import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead } from "./routes/alerts";
+import { handleLearn, handleLearnArticle } from "./routes/learn";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -63,6 +65,32 @@ export default {
       return handleCheckoutSuccess(request, env);
     }
 
+    // Digest unsubscribe (no auth -- token-based)
+    if (path === "/digest/unsubscribe" && method === "GET") {
+      const token = url.searchParams.get("token") || "";
+      try {
+        // Pad base64 back
+        const padded = token + "=".repeat((4 - token.length % 4) % 4);
+        const decoded = atob(padded);
+        const [userId, email] = decoded.split(":", 2);
+        if (userId && email) {
+          await env.DB.prepare("UPDATE users SET email_digest = 0 WHERE id = ? AND email = ?").bind(Number(userId), email).run();
+        }
+      } catch {}
+      return html(`
+        <!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>Unsubscribed</title></head>
+        <body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif;color:#fbf8ef;display:flex;align-items:center;justify-content:center;min-height:100vh">
+          <div style="text-align:center;max-width:400px;padding:40px 20px">
+            <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#e8c767;margin-bottom:24px">Never Ranked</div>
+            <h2 style="font-family:Georgia,serif;font-weight:400;font-size:18px;margin:0 0 12px">You've been unsubscribed</h2>
+            <p style="font-size:14px;color:#888888;line-height:1.6;margin:0 0 24px">You won't receive weekly digest emails anymore. You can re-enable them anytime from your dashboard settings.</p>
+            <a href="https://app.neverranked.com/settings" style="display:inline-block;padding:12px 28px;background:#e8c767;color:#080808;font-family:monospace;font-size:12px;letter-spacing:.05em;text-decoration:none;border-radius:2px">Go to settings</a>
+          </div>
+        </body></html>
+      `);
+    }
+
     // Stripe webhook (no auth -- verified by signature)
     if (path === "/stripe/webhook" && method === "POST") {
       return handleStripeWebhook(request, env);
@@ -91,6 +119,28 @@ export default {
 
     // Track authenticated page view
     ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path }, userId: user.id }));
+
+    // Compute nav badges (lightweight counts for notification dots)
+    try {
+      if (user.role === "client" && user.client_slug) {
+        const alertCount = await env.DB.prepare(
+          "SELECT COUNT(*) as cnt FROM admin_alerts WHERE client_slug = ? AND read_at IS NULL"
+        ).bind(user.client_slug).first<{ cnt: number }>();
+        user._alertCount = alertCount?.cnt || 0;
+
+        const rmCount = await env.DB.prepare(
+          "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ? AND status = 'in_progress'"
+        ).bind(user.client_slug).first<{ cnt: number }>();
+        user._roadmapInProgress = rmCount?.cnt || 0;
+      } else if (user.role === "admin") {
+        const alertCount = await env.DB.prepare(
+          "SELECT COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL"
+        ).first<{ cnt: number }>();
+        user._alertCount = alertCount?.cnt || 0;
+      }
+    } catch {
+      // Non-critical -- don't break routing if badge query fails
+    }
 
     // --- Authenticated routes ---
 
@@ -124,6 +174,10 @@ export default {
     }
 
     // Domain detail
+    const domainCompareMatch = path.match(/^\/domain\/(\d+)\/compare$/);
+    if (domainCompareMatch) {
+      return handleScanCompare(Number(domainCompareMatch[1]), user, env, url);
+    }
     const domainMatch = path.match(/^\/domain\/(\d+)$/);
     if (domainMatch) {
       return handleDomainDetail(Number(domainMatch[1]), user, env, url);
@@ -178,13 +232,13 @@ export default {
     if (scanMatch && method === "POST" && user.role === "admin") {
       return handleManualScan(Number(scanMatch[1]), user, env);
     }
-    const approveMatch = path.match(/^\/admin\/suggestion\/(\d+)\/approve$/);
-    if (approveMatch && method === "POST" && user.role === "admin") {
-      return handleApproveSuggestion(Number(approveMatch[1]), user, env);
+    const editMatch = path.match(/^\/admin\/suggestion\/(\d+)\/edit$/);
+    if (editMatch && method === "POST" && user.role === "admin") {
+      return handleEditSuggestion(Number(editMatch[1]), request, user, env);
     }
-    const dismissMatch = path.match(/^\/admin\/suggestion\/(\d+)\/dismiss$/);
-    if (dismissMatch && method === "POST" && user.role === "admin") {
-      return handleDismissSuggestion(Number(dismissMatch[1]), user, env);
+    const removeMatch = path.match(/^\/admin\/suggestion\/(\d+)\/remove$/);
+    if (removeMatch && method === "POST" && user.role === "admin") {
+      return handleRemoveSuggestion(Number(removeMatch[1]), user, env);
     }
 
     // Leads (admin only)
@@ -240,7 +294,15 @@ export default {
       if (user.client_slug) return redirect(`/competitors/${user.client_slug}`);
       return renderClientPicker("Competitors", "competitors", user, env);
     }
-    const compMatch = path.match(/^\/competitors\/(.+)$/);
+    const compAddMatch = path.match(/^\/competitors\/([^/]+)\/add$/);
+    if (compAddMatch && method === "POST") {
+      return handleAddCompetitorFromPage(decodeURIComponent(compAddMatch[1]), request, user, env);
+    }
+    const compRemoveMatch = path.match(/^\/competitors\/([^/]+)\/remove$/);
+    if (compRemoveMatch && method === "POST") {
+      return handleRemoveCompetitorFromPage(decodeURIComponent(compRemoveMatch[1]), request, user, env);
+    }
+    const compMatch = path.match(/^\/competitors\/([^/]+)$/);
     if (compMatch) {
       const slug = decodeURIComponent(compMatch[1]);
       return handleCompetitors(slug, user, env);
@@ -260,7 +322,7 @@ export default {
       return handleAddRoadmapItem(decodeURIComponent(roadmapAddMatch[1]), request, user, env);
     }
     const roadmapUpdateMatch = path.match(/^\/roadmap\/([^/]+)\/update\/(\d+)$/);
-    if (roadmapUpdateMatch && method === "POST" && user.role === "admin") {
+    if (roadmapUpdateMatch && method === "POST") {
       return handleUpdateRoadmapItem(decodeURIComponent(roadmapUpdateMatch[1]), Number(roadmapUpdateMatch[2]), request, user, env);
     }
     const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
@@ -366,10 +428,31 @@ export default {
 
     // Settings
     if (path === "/settings" && method === "GET") {
-      return handleSettings(user, env);
+      return handleSettings(user, env, undefined, url);
     }
     if (path === "/settings/emails" && method === "POST") {
       return handleUpdateEmailPrefs(request, user, env);
+    }
+
+    // Knowledge base
+    if (path === "/learn" && method === "GET") {
+      return handleLearn(user);
+    }
+    const learnMatch = path.match(/^\/learn\/([a-z0-9-]+)$/);
+    if (learnMatch && method === "GET") {
+      return handleLearnArticle(learnMatch[1], user);
+    }
+
+    // Alerts
+    if (path === "/alerts" && method === "GET") {
+      return handleAlerts(user, env);
+    }
+    const alertReadMatch = path.match(/^\/alerts\/read\/(\d+)$/);
+    if (alertReadMatch && method === "POST") {
+      return handleMarkAlertRead(Number(alertReadMatch[1]), user, env);
+    }
+    if (path === "/alerts/read-all" && method === "POST") {
+      return handleMarkAllAlertsRead(user, env);
     }
 
     // Billing portal

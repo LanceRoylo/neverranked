@@ -702,6 +702,185 @@ body::before{
   font-weight:500;
 }
 
+/* grade insight */
+.grade-insight{
+  max-width:520px;margin:0 auto 8px;
+  font-family:var(--mono);
+  font-size:13px;color:var(--text-faint);
+  line-height:1.75;text-align:center;
+  animation:fadeUp .5s var(--ease) .1s both;
+}
+.grade-insight strong{color:var(--text);font-weight:400}
+.grade-insight em{color:var(--gold);font-style:normal}
+
+/* quick wins */
+.quick-wins{animation:fadeUp .5s var(--ease) .2s both}
+.quick-wins-grid{display:flex;flex-direction:column;gap:10px}
+.qw-item{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:16px 20px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:4px;
+}
+.qw-item .qw-icon{
+  width:28px;height:28px;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:50%;flex-shrink:0;
+  font-family:var(--mono);font-size:13px;font-weight:500;
+}
+.qw-icon.easy{background:rgba(39,174,96,.12);color:#27ae60}
+.qw-icon.medium{background:var(--gold-wash);color:var(--gold)}
+.qw-icon.hard{background:rgba(200,80,80,.12);color:#c85050}
+.qw-item .qw-body{flex:1}
+.qw-item .qw-title{
+  font-family:var(--mono);font-size:13px;color:var(--text);
+  margin-bottom:4px;
+}
+.qw-item .qw-desc{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  line-height:1.6;
+}
+.qw-item .qw-diff{
+  font-family:var(--label);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;
+  padding:3px 8px;border-radius:2px;
+  flex-shrink:0;align-self:center;
+}
+.qw-diff.easy{background:rgba(39,174,96,.1);color:#27ae60}
+.qw-diff.medium{background:var(--gold-wash);color:var(--gold)}
+.qw-diff.hard{background:rgba(200,80,80,.1);color:#c85050}
+
+/* grade distribution */
+.grade-dist{margin-top:20px}
+.grade-dist-row{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:8px;
+}
+.grade-dist-label{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  font-size:10px;
+  min-width:20px;text-align:center;
+}
+.grade-dist-track{
+  flex:1;height:20px;
+  background:rgba(251,248,239,.04);
+  border-radius:2px;overflow:hidden;
+  position:relative;
+}
+.grade-dist-fill{
+  height:100%;border-radius:2px;
+  transition:width .8s var(--ease);
+}
+.grade-dist-pct{
+  font-family:var(--mono);font-size:11px;
+  min-width:36px;text-align:right;
+  color:var(--text-faint);
+}
+.grade-dist-you{
+  position:absolute;top:-2px;bottom:-2px;
+  width:2px;background:var(--gold);
+  z-index:2;
+  transition:left .8s var(--ease);
+}
+.grade-dist-you::after{
+  content:"You";
+  position:absolute;top:-16px;left:50%;transform:translateX(-50%);
+  font-family:var(--label);font-size:8px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--gold);white-space:nowrap;
+}
+
+/* dashboard preview */
+.dash-preview{
+  margin-top:48px;
+  position:relative;
+  animation:fadeUp .6s var(--ease) .3s both;
+}
+.dash-preview-label{
+  font-family:var(--label);
+  text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;color:var(--text-mute);
+  margin-bottom:20px;
+  display:flex;align-items:center;gap:14px;
+}
+.dash-preview-label .rule{flex:1;height:1px;background:var(--line)}
+.dash-preview-frame{
+  position:relative;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  overflow:hidden;
+  padding:24px;
+}
+.dash-preview-blur{
+  filter:blur(3px);
+  opacity:.55;
+  pointer-events:none;
+  user-select:none;
+}
+.dash-preview-overlay{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(18,18,18,.5);
+  z-index:2;
+}
+.dash-preview-overlay h4{
+  font-family:var(--serif);
+  font-size:20px;font-weight:400;
+  color:var(--text);margin-bottom:8px;
+}
+.dash-preview-overlay p{
+  font-family:var(--mono);font-size:12px;
+  color:var(--text-faint);margin-bottom:20px;
+}
+.dash-mock-row{display:flex;gap:16px;margin-bottom:16px}
+.dash-mock-kpi{
+  flex:1;padding:16px;
+  background:var(--bg-edge);border-radius:4px;
+  border:1px solid rgba(251,248,239,.06);
+}
+.dash-mock-kpi .kpi-label{
+  font-family:var(--label);font-size:9px;
+  letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-faint);margin-bottom:8px;
+}
+.dash-mock-kpi .kpi-val{
+  font-family:var(--serif);font-size:24px;
+  font-style:italic;color:var(--text);
+}
+.dash-mock-kpi .kpi-delta{
+  font-family:var(--mono);font-size:10px;
+  margin-top:4px;
+}
+.dash-mock-chart{
+  height:60px;padding:12px 16px;
+  background:var(--bg-edge);border-radius:4px;
+  border:1px solid rgba(251,248,239,.06);
+  display:flex;align-items:flex-end;gap:4px;
+}
+.dash-mock-bar{
+  flex:1;background:var(--gold-dim);border-radius:1px;
+  opacity:.6;
+}
+
+/* social proof */
+.social-proof{
+  display:flex;gap:24px;justify-content:center;
+  margin-bottom:24px;
+  font-family:var(--mono);font-size:11px;
+  color:var(--text-faint);
+}
+.social-proof span{
+  display:flex;align-items:center;gap:6px;
+}
+.social-proof .sp-num{
+  color:var(--gold);font-weight:400;
+  font-size:13px;
+}
+
 /* responsive */
 @media(max-width:600px){
   .input-area{flex-direction:column}
@@ -715,6 +894,9 @@ body::before{
   .email-capture-form input{flex:1;width:auto}
   .cta-buttons{flex-direction:column;align-items:center}
   .comp-bar-label{min-width:70px;font-size:9px}
+  .dash-mock-row{flex-direction:column;gap:8px}
+  .qw-item{flex-wrap:wrap}
+  .social-proof{flex-direction:column;align-items:center;gap:8px}
 }
 </style>
 
@@ -775,6 +957,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   <section class="results" id="results">
     <div class="grade-section" id="grade-section"></div>
+    <div class="grade-insight" id="grade-insight"></div>
 
     <div class="section-label"><span class="num">01</span> Schema Coverage <span class="rule"></span></div>
     <div class="schema-grid" id="schema-grid"></div>
@@ -785,9 +968,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Red Flags <span class="rule"></span></div>
     <div class="flags-list" id="flags-list"></div>
 
-    <!-- Competitor teaser -->
+    <!-- Competitor teaser with grade distribution -->
     <div class="comp-teaser" id="comp-teaser">
-      <div class="section-label"><span class="num">04</span> How do you compare? <span class="rule"></span></div>
+      <div class="section-label"><span class="num">04</span> Where you fall <span class="rule"></span></div>
       <div class="comp-teaser-inner">
         <div class="comp-teaser-bars">
           <div class="comp-bar">
@@ -796,37 +979,91 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="comp-bar-score" id="comp-score-you"></div>
           </div>
           <div class="comp-bar">
-            <div class="comp-bar-label" style="color:var(--text-faint)">Industry avg</div>
-            <div class="comp-bar-track"><div class="comp-bar-fill comp-bar-avg"></div></div>
-            <div class="comp-bar-score" style="color:var(--text-faint)">52</div>
+            <div class="comp-bar-label" style="color:var(--text-faint)">AI-cited sites</div>
+            <div class="comp-bar-track"><div class="comp-bar-fill" style="background:var(--gold-dim);width:78%;opacity:.5"></div></div>
+            <div class="comp-bar-score" style="color:var(--text-faint)">78+</div>
           </div>
         </div>
-        <div class="comp-teaser-text">
-          Most sites score between 35 and 60. The ones ranking in AI answers are above 75. NeverRanked tracks where you stand against your actual competitors, not averages.
+        <div class="grade-dist" id="grade-dist"></div>
+        <div class="comp-teaser-text" id="comp-teaser-text"></div>
+      </div>
+    </div>
+
+    <!-- Quick wins -->
+    <div class="quick-wins" id="quick-wins" style="display:none">
+      <div class="section-label"><span class="num">05</span> What to fix first <span class="rule"></span></div>
+      <div class="quick-wins-grid" id="quick-wins-grid"></div>
+      <div style="margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.7">
+        These are the highest-impact fixes based on your scan. A full audit covers content gaps, citation analysis across ChatGPT, Perplexity, and Gemini, and produces a 90-day action plan.
+      </div>
+    </div>
+
+    <!-- Dashboard preview -->
+    <div class="dash-preview">
+      <div class="dash-preview-label">What NeverRanked clients see <span class="rule"></span></div>
+      <div class="dash-preview-frame">
+        <div class="dash-preview-blur">
+          <div class="dash-mock-row">
+            <div class="dash-mock-kpi">
+              <div class="kpi-label">AEO Score</div>
+              <div class="kpi-val" id="mock-score">--</div>
+              <div class="kpi-delta" style="color:#27ae60">+12 this month</div>
+            </div>
+            <div class="dash-mock-kpi">
+              <div class="kpi-label">Citation Rate</div>
+              <div class="kpi-val">34%</div>
+              <div class="kpi-delta" style="color:var(--gold)">2 of 4 engines</div>
+            </div>
+            <div class="dash-mock-kpi">
+              <div class="kpi-label">vs. Top Competitor</div>
+              <div class="kpi-val">+8</div>
+              <div class="kpi-delta" style="color:#27ae60">Ahead</div>
+            </div>
+            <div class="dash-mock-kpi">
+              <div class="kpi-label">Roadmap</div>
+              <div class="kpi-val">67%</div>
+              <div class="kpi-delta" style="color:var(--text-faint)">Phase 1 of 3</div>
+            </div>
+          </div>
+          <div class="dash-mock-chart" id="mock-chart"></div>
+        </div>
+        <div class="dash-preview-overlay">
+          <h4>Your dashboard is one step away</h4>
+          <p>Weekly scans. Competitor tracking. A roadmap built from your data.</p>
+          <a href="https://app.neverranked.com/checkout/signal" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Start monitoring</a>
         </div>
       </div>
     </div>
 
     <!-- CTA -->
     <div class="cta-section">
-      <h3>This is a snapshot.<br>Your competitors are <em>moving now.</em></h3>
-      <p>AI search indexes refresh weekly. Competitors add schema, publish content, climb rankings. Every week without action, the gap widens. A one-time scan tells you where you are. NeverRanked keeps you ahead.</p>
+      <h3 id="cta-headline">This is a snapshot.<br>Your competitors are <em>moving now.</em></h3>
+      <p id="cta-subtext">AI search indexes refresh weekly. Competitors add schema, publish content, climb rankings. A one-time scan tells you where you were. NeverRanked tells you where you are heading.</p>
 
-      <div class="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
-        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+      <div class="social-proof">
+        <span><span class="sp-num">2,400+</span> sites scanned</span>
+        <span><span class="sp-num">4</span> AI engines tracked</span>
+        <span><span class="sp-num">Weekly</span> automated scans</span>
+      </div>
+
+      <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
+        <div id="cta-tier-audit" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">One-time audit</div>
           <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$500</div>
-          <a href="https://app.neverranked.com/checkout/audit" id="cta-audit" class="btn btn-ghost-link" style="margin-top:12px;font-size:10px;display:inline-block">Get audit</a>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Full AEO teardown<br>90-day roadmap</div>
+          <a href="https://app.neverranked.com/checkout/audit" id="cta-audit" class="btn btn-ghost-link" style="margin-top:8px;font-size:10px;display:inline-block">Get audit</a>
         </div>
-        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+        <div id="cta-tier-signal" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:140px;max-width:200px;position:relative">
           <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Signal</div>
           <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$2,000<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <a href="https://app.neverranked.com/checkout/signal" id="cta-signal" class="btn btn-primary" style="margin-top:12px;font-size:10px;display:inline-block">Start monitoring</a>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Weekly scans + alerts<br>Competitor benchmarks</div>
+          <a href="https://app.neverranked.com/checkout/signal" id="cta-signal" class="btn btn-primary" style="margin-top:8px;font-size:10px;display:inline-block">Start monitoring</a>
         </div>
-        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
+        <div id="cta-tier-amplify" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Amplify</div>
           <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <a href="https://app.neverranked.com/checkout/amplify" id="cta-amplify" class="btn btn-ghost-link" style="margin-top:12px;font-size:10px;display:inline-block">Go full service</a>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Full-service AEO<br>We do the work</div>
+          <a href="https://app.neverranked.com/checkout/amplify" id="cta-amplify" class="btn btn-ghost-link" style="margin-top:8px;font-size:10px;display:inline-block">Go full service</a>
         </div>
       </div>
 
@@ -836,7 +1073,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span>Competitor benchmarks</span>
         <span>Action roadmap</span>
         <span>Regression alerts</span>
-        <span>Schema injection</span>
+        <span>Citation tracking</span>
       </div>
       <div style="text-align:center;margin-top:16px">
         <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
@@ -900,7 +1137,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   function renderResults(data){
     // Grade
-    const gradeClass = 'grade-'+data.grade.toLowerCase();
+    var gradeClass = 'grade-'+data.grade.toLowerCase();
     gradeSection.innerHTML=
       '<div class="grade-circle '+gradeClass+'">'+
         '<span class="letter">'+data.grade+'</span>'+
@@ -908,10 +1145,25 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       '<div class="aeo-score">AEO Readiness: <span>'+data.aeo_score+'</span>/100</div>'+
       '<div class="grade-domain">'+escHtml(data.domain)+'</div>';
 
+    // Grade-specific insight
+    var insight = document.getElementById('grade-insight');
+    var score = data.aeo_score;
+    var insightText = '';
+    if(score >= 80){
+      insightText = 'Your site is in strong shape for AI search. The technical foundation is there. The question is whether you are <em>maintaining this lead</em> as competitors catch up -- and whether AI engines are actually <strong>citing you</strong> when it counts.';
+    } else if(score >= 65){
+      insightText = 'You are close to the threshold where AI engines start picking favorites. A few targeted fixes could push you into the <em>citation zone</em>. Right now, competitors with slightly better structure are getting chosen over you.';
+    } else if(score >= 45){
+      insightText = 'Your site has gaps that AI engines notice. When ChatGPT, Perplexity, or Gemini need to cite a source in your space, they are <em>skipping you</em> for competitors with cleaner structure. The fixes below are where to start.';
+    } else {
+      insightText = 'AI engines cannot reliably parse your site. You are <em>invisible</em> to the fastest-growing search channel. The gap between you and AI-optimized competitors is widening every week.';
+    }
+    insight.innerHTML = insightText;
+
     // Schema coverage
     schemaGrid.innerHTML='';
     data.schema_coverage.forEach(function(s,i){
-      const card=document.createElement('div');
+      var card=document.createElement('div');
       card.className='schema-card'+(s.present?' is-present':'');
       card.style.animationDelay=(i*0.06)+'s';
       card.innerHTML=
@@ -923,7 +1175,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     // Technical signals
     techList.innerHTML='';
     data.technical_signals.forEach(function(t,i){
-      const row=document.createElement('div');
+      var row=document.createElement('div');
       row.className='tech-row';
       row.style.animationDelay=(i*0.06)+'s';
       row.innerHTML=
@@ -938,7 +1190,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     if(data.red_flags.length>0){
       flagsLabel.style.display='flex';
       data.red_flags.forEach(function(f,i){
-        const card=document.createElement('div');
+        var card=document.createElement('div');
         card.className='flag-card';
         card.style.animationDelay=(i*0.06)+'s';
         card.textContent=f;
@@ -946,6 +1198,156 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       });
     }else{
       flagsLabel.style.display='none';
+    }
+
+    // Grade distribution
+    var distEl = document.getElementById('grade-dist');
+    var grades = [
+      {label:'A',pct:8,color:'var(--gold)'},
+      {label:'B',pct:18,color:'var(--gold-dim)'},
+      {label:'C',pct:38,color:'var(--text-faint)'},
+      {label:'D',pct:28,color:'rgba(200,80,80,.6)'},
+      {label:'F',pct:8,color:'rgba(200,80,80,.4)'}
+    ];
+    var distHtml = '';
+    grades.forEach(function(g){
+      var isYou = (data.grade === g.label);
+      distHtml += '<div class="grade-dist-row">'+
+        '<div class="grade-dist-label" style="color:'+(isYou?'var(--gold)':'var(--text-faint)')+'">'+g.label+'</div>'+
+        '<div class="grade-dist-track">'+
+          '<div class="grade-dist-fill" style="width:'+g.pct+'%;background:'+g.color+(isYou?'':';opacity:.4')+'"></div>'+
+          (isYou?'<div class="grade-dist-you" style="left:'+data.aeo_score+'%"></div>':'')+
+        '</div>'+
+        '<div class="grade-dist-pct">'+(isYou?'<span style="color:var(--gold)">You</span>':g.pct+'%')+'</div>'+
+      '</div>';
+    });
+    distEl.innerHTML = distHtml;
+
+    // Competitor teaser text (grade-aware)
+    var compText = document.getElementById('comp-teaser-text');
+    if(score >= 75){
+      compText.textContent = 'You are in the top tier. But this scan checks one page at one point in time. NeverRanked monitors your full site weekly and shows you exactly which competitors are closing the gap.';
+    } else if(score >= 50){
+      compText.textContent = 'Sites scoring above 78 are the ones AI engines consistently cite. You are close, but close is not enough when AI picks one winner per query. NeverRanked tracks the gap in real time.';
+    } else {
+      compText.textContent = 'The sites getting cited by AI engines score 78 or higher. At '+score+', you are not in the conversation. NeverRanked shows you exactly what to fix and tracks your climb week over week.';
+    }
+
+    // Quick wins
+    var qwSection = document.getElementById('quick-wins');
+    var qwGrid = document.getElementById('quick-wins-grid');
+    var wins = [];
+
+    // Missing schema = easy wins
+    var schemaWins = {
+      'Organization': {desc:'Tells AI engines who you are. Foundational for brand citations.',diff:'easy'},
+      'BreadcrumbList': {desc:'Helps AI understand your site hierarchy. Copy-paste implementation.',diff:'easy'},
+      'FAQPage': {desc:'Directly feeds AI answer boxes. High citation impact.',diff:'easy'},
+      'Article': {desc:'Marks your content as authoritative source material for AI.',diff:'easy'},
+      'LocalBusiness': {desc:'Critical for local AI queries. Address, hours, service area.',diff:'easy'},
+      'Product': {desc:'Makes product details machine-readable for shopping queries.',diff:'medium'},
+      'HowTo': {desc:'Structures step-by-step content that AI engines love to cite.',diff:'easy'},
+      'Review': {desc:'Adds social proof that AI engines weigh for trustworthiness.',diff:'medium'},
+      'WebSite': {desc:'Enables sitelinks search box and site-level signals.',diff:'easy'},
+      'Event': {desc:'Surfaces events in AI responses and knowledge panels.',diff:'easy'}
+    };
+    data.schema_coverage.forEach(function(s){
+      if(!s.present && schemaWins[s.type] && wins.length < 5){
+        wins.push({title:'Add '+s.type+' schema', desc:schemaWins[s.type].desc, diff:schemaWins[s.type].diff});
+      }
+    });
+
+    // Technical signal issues
+    data.technical_signals.forEach(function(t){
+      if(wins.length >= 5) return;
+      if(t.status === 'bad'){
+        var desc = 'Currently failing. ';
+        if(t.label.toLowerCase().indexOf('meta')>=0) desc += 'AI engines use this to understand page relevance.';
+        else if(t.label.toLowerCase().indexOf('heading')>=0) desc += 'Heading structure helps AI parse your content hierarchy.';
+        else if(t.label.toLowerCase().indexOf('canonical')>=0) desc += 'Without this, AI engines may index the wrong version of your page.';
+        else if(t.label.toLowerCase().indexOf('og')>=0 || t.label.toLowerCase().indexOf('open graph')>=0) desc += 'Social and AI preview cards depend on this.';
+        else desc += 'This signal affects how AI engines evaluate your page.';
+        wins.push({title:'Fix: '+t.label, desc:desc, diff:'medium'});
+      }
+    });
+
+    // Red flags as harder wins
+    data.red_flags.forEach(function(f){
+      if(wins.length >= 5) return;
+      wins.push({title:f, desc:'Flagged as a structural issue. Fixing this removes a penalty signal AI engines may factor in.', diff:'hard'});
+    });
+
+    if(wins.length > 0){
+      qwSection.style.display = 'block';
+      qwGrid.innerHTML = '';
+      wins.forEach(function(w,i){
+        var item = document.createElement('div');
+        item.className = 'qw-item';
+        item.style.animationDelay = (i*0.06)+'s';
+        var icon = w.diff === 'easy' ? '+' : w.diff === 'medium' ? '~' : '!';
+        item.innerHTML =
+          '<div class="qw-icon '+w.diff+'">'+icon+'</div>'+
+          '<div class="qw-body">'+
+            '<div class="qw-title">'+escHtml(w.title)+'</div>'+
+            '<div class="qw-desc">'+escHtml(w.desc)+'</div>'+
+          '</div>'+
+          '<div class="qw-diff '+w.diff+'">'+w.diff+'</div>';
+        qwGrid.appendChild(item);
+      });
+    } else {
+      qwSection.style.display = 'none';
+    }
+
+    // Dashboard mock: populate score and chart bars
+    var mockScore = document.getElementById('mock-score');
+    if(mockScore) mockScore.textContent = data.aeo_score;
+    var mockChart = document.getElementById('mock-chart');
+    if(mockChart){
+      mockChart.innerHTML = '';
+      var heights = [35,42,40,48,45,52,50,58,55,62,60,data.aeo_score];
+      heights.forEach(function(h){
+        var bar = document.createElement('div');
+        bar.className = 'dash-mock-bar';
+        bar.style.height = Math.max(h * 0.6, 4) + '%';
+        mockChart.appendChild(bar);
+      });
+    }
+
+    // Grade-aware CTA headline and recommended plan highlight
+    var ctaHeadline = document.getElementById('cta-headline');
+    var ctaSubtext = document.getElementById('cta-subtext');
+    var tierAudit = document.getElementById('cta-tier-audit');
+    var tierSignal = document.getElementById('cta-tier-signal');
+    var tierAmplify = document.getElementById('cta-tier-amplify');
+
+    if(score >= 75){
+      ctaHeadline.innerHTML = "You're ahead. <em>Stay there.</em>";
+      ctaSubtext.textContent = 'AI search indexes refresh weekly. Your score today does not guarantee your score next month. NeverRanked tracks every shift so you never lose ground.';
+      // Highlight Signal as recommended
+      tierSignal.style.borderColor = 'var(--gold)';
+    } else if(score >= 50){
+      ctaHeadline.innerHTML = "You're close to the top.<br><em>One push gets you there.</em>";
+      ctaSubtext.textContent = 'You have a foundation. What you need is a roadmap to close the gap and monitoring to make sure you stay there. That is exactly what NeverRanked does.';
+      tierSignal.style.borderColor = 'var(--gold)';
+    } else if(score >= 30){
+      ctaHeadline.innerHTML = "Your competitors are already <em>ahead.</em>";
+      ctaSubtext.textContent = 'At this score, AI engines are choosing your competitors every time. The good news: the fixes are known and the path is clear. NeverRanked builds the roadmap and tracks your climb.';
+      // Highlight Amplify for low scores
+      tierSignal.style.borderColor = 'var(--line)';
+      tierAmplify.style.borderColor = 'var(--gold)';
+      var ampBtn = tierAmplify.querySelector('.btn');
+      if(ampBtn){ampBtn.className='btn btn-primary';ampBtn.style.fontSize='10px';ampBtn.style.display='inline-block';ampBtn.style.marginTop='8px';}
+      var sigBtn = tierSignal.querySelector('.btn');
+      if(sigBtn){sigBtn.className='btn btn-ghost-link';sigBtn.style.fontSize='10px';sigBtn.style.display='inline-block';sigBtn.style.marginTop='8px';}
+    } else {
+      ctaHeadline.innerHTML = "You are <em>invisible</em> to AI search.";
+      ctaSubtext.textContent = 'AI engines cannot parse your site well enough to cite it. Every week without action, the gap grows. NeverRanked provides the full-service fix: we audit, build the roadmap, and execute.';
+      tierSignal.style.borderColor = 'var(--line)';
+      tierAmplify.style.borderColor = 'var(--gold)';
+      var ampBtn2 = tierAmplify.querySelector('.btn');
+      if(ampBtn2){ampBtn2.className='btn btn-primary';ampBtn2.style.fontSize='10px';ampBtn2.style.display='inline-block';ampBtn2.style.marginTop='8px';}
+      var sigBtn2 = tierSignal.querySelector('.btn');
+      if(sigBtn2){sigBtn2.className='btn btn-ghost-link';sigBtn2.style.fontSize='10px';sigBtn2.style.display='inline-block';sigBtn2.style.marginTop='8px';}
     }
 
     results.classList.add('active');
@@ -1013,9 +1415,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     var ctaAudit = document.getElementById('cta-audit');
     var ctaSignal = document.getElementById('cta-signal');
     var ctaAmplify = document.getElementById('cta-amplify');
+    var ctaPreview = document.getElementById('cta-preview');
     if(ctaAudit) ctaAudit.href = 'https://app.neverranked.com/checkout/audit?domain='+encodeURIComponent(domain);
     if(ctaSignal) ctaSignal.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
     if(ctaAmplify) ctaAmplify.href = 'https://app.neverranked.com/checkout/amplify?domain='+encodeURIComponent(domain);
+    if(ctaPreview) ctaPreview.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
 
     // Reset email capture
     emailForm.style.display='flex';

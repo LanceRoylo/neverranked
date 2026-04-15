@@ -18,9 +18,9 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
     "SELECT * FROM users ORDER BY role DESC, email"
   ).all<User>()).results;
 
-  // Pending competitor suggestions
+  // Active competitor suggestions (auto-approved, editable/removable)
   const suggestions = (await env.DB.prepare(
-    "SELECT cs.*, u.email as suggested_by_email FROM competitor_suggestions cs JOIN users u ON cs.suggested_by = u.id WHERE cs.status = 'pending' ORDER BY cs.created_at DESC"
+    "SELECT cs.*, u.email as suggested_by_email FROM competitor_suggestions cs JOIN users u ON cs.suggested_by = u.id WHERE cs.status = 'approved' ORDER BY cs.created_at DESC"
   ).all<{ id: number; client_slug: string; domain: string; label: string | null; suggested_by_email: string; created_at: number }>()).results;
 
   // Group domains by client_slug
@@ -134,10 +134,10 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
     </div>
 
     ${suggestions.length > 0 ? `
-    <div class="card" style="margin-top:24px;border:1px solid var(--gold-dim)">
+    <div class="card" style="margin-top:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <h3>Competitor <em>suggestions</em></h3>
-        <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:var(--gold-wash);padding:4px 10px;border-radius:2px">${suggestions.length} pending</span>
+        <h3>Client-submitted <em>competitors</em></h3>
+        <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${suggestions.length} active</span>
       </div>
       <table class="data-table">
         <thead><tr><th>Client</th><th>Domain</th><th>Label</th><th>Suggested by</th><th>Actions</th></tr></thead>
@@ -145,18 +145,18 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
           ${suggestions.map(s => `
             <tr>
               <td>${esc(s.client_slug)}</td>
-              <td style="font-weight:400">${esc(s.domain)}</td>
-              <td style="color:var(--text-faint)">${s.label ? esc(s.label) : '-'}</td>
+              <td>
+                <form method="POST" action="/admin/suggestion/${s.id}/edit" style="display:flex;gap:6px;align-items:center">
+                  <input type="text" name="domain" value="${esc(s.domain)}" style="background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:2px;width:160px">
+                  <input type="text" name="label" value="${s.label ? esc(s.label) : ''}" placeholder="Label" style="background:var(--bg-edge);border:1px solid var(--line);color:var(--text-faint);font-family:var(--mono);font-size:12px;padding:4px 8px;border-radius:2px;width:120px">
+                  <button type="submit" class="btn" style="padding:4px 10px;font-size:9px">Save</button>
+                </form>
+              </td>
               <td style="color:var(--text-faint);font-size:12px">${esc(s.suggested_by_email)}</td>
               <td>
-                <div style="display:flex;gap:6px">
-                  <form method="POST" action="/admin/suggestion/${s.id}/approve" style="display:inline">
-                    <button type="submit" class="btn" style="padding:6px 12px;font-size:9px">Approve</button>
-                  </form>
-                  <form method="POST" action="/admin/suggestion/${s.id}/dismiss" style="display:inline">
-                    <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Dismiss</button>
-                  </form>
-                </div>
+                <form method="POST" action="/admin/suggestion/${s.id}/remove" style="display:inline">
+                  <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px;color:var(--red,#c85050)">Remove</button>
+                </form>
               </td>
             </tr>
           `).join('')}
@@ -258,47 +258,79 @@ export async function handleManualScan(domainId: number, user: User, env: Env): 
   return redirect(`/domain/${domain.id}`);
 }
 
-/** Approve a competitor suggestion -- adds it as a competitor domain and triggers a scan */
-export async function handleApproveSuggestion(suggestionId: number, user: User, env: Env): Promise<Response> {
+/** Edit a competitor suggestion — updates both the suggestion record and the domains table */
+export async function handleEditSuggestion(suggestionId: number, request: Request, user: User, env: Env): Promise<Response> {
   const suggestion = await env.DB.prepare(
-    "SELECT * FROM competitor_suggestions WHERE id = ? AND status = 'pending'"
+    "SELECT * FROM competitor_suggestions WHERE id = ? AND status = 'approved'"
   ).bind(suggestionId).first<{ id: number; client_slug: string; domain: string; label: string | null }>();
 
-  if (!suggestion) return redirect("/admin");
+  if (!suggestion) return redirect("/admin/manage");
 
-  const now = Math.floor(Date.now() / 1000);
+  const form = await request.formData();
+  const newDomain = (form.get("domain") as string || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
+  const newLabel = (form.get("label") as string || "").trim() || null;
 
-  // Add as competitor domain
-  try {
-    await env.DB.prepare(
-      "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, 1, ?, 1, ?, ?)"
-    ).bind(suggestion.client_slug, suggestion.domain, suggestion.label, now, now).run();
-  } catch {
-    // Likely duplicate
+  if (!newDomain || newDomain.length < 3 || !newDomain.includes(".")) {
+    return redirect("/admin/manage");
   }
 
-  // Mark suggestion as approved
+  const now = Math.floor(Date.now() / 1000);
+  const oldDomain = suggestion.domain;
+
+  // Update the suggestion record
   await env.DB.prepare(
-    "UPDATE competitor_suggestions SET status = 'approved' WHERE id = ?"
-  ).bind(suggestionId).run();
+    "UPDATE competitor_suggestions SET domain = ?, label = ? WHERE id = ?"
+  ).bind(newDomain, newLabel, suggestionId).run();
 
-  // Trigger initial scan of the new competitor
-  const newDomain = await env.DB.prepare(
-    "SELECT * FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
-  ).bind(suggestion.domain, suggestion.client_slug).first<Domain>();
+  // Update the domains table entry
+  if (newDomain !== oldDomain) {
+    // Domain changed — remove old, add new
+    await env.DB.prepare(
+      "DELETE FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+    ).bind(oldDomain, suggestion.client_slug).run();
 
-  if (newDomain) {
-    const url = `https://${newDomain.domain}/`;
-    await scanDomain(newDomain.id, url, "onboard", env);
+    try {
+      await env.DB.prepare(
+        "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, 1, ?, 1, ?, ?)"
+      ).bind(suggestion.client_slug, newDomain, newLabel, now, now).run();
+
+      // Trigger scan of the corrected domain
+      const dom = await env.DB.prepare(
+        "SELECT * FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+      ).bind(newDomain, suggestion.client_slug).first<Domain>();
+      if (dom) {
+        await scanDomain(dom.id, `https://${newDomain}/`, "manual", env);
+      }
+    } catch {
+      // Duplicate domain
+    }
+  } else {
+    // Just update the label
+    await env.DB.prepare(
+      "UPDATE domains SET competitor_label = ?, updated_at = ? WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+    ).bind(newLabel, now, newDomain, suggestion.client_slug).run();
   }
 
   return redirect("/admin/manage");
 }
 
-/** Dismiss a competitor suggestion */
-export async function handleDismissSuggestion(suggestionId: number, user: User, env: Env): Promise<Response> {
+/** Remove a competitor suggestion — deletes from domains and marks suggestion as rejected */
+export async function handleRemoveSuggestion(suggestionId: number, user: User, env: Env): Promise<Response> {
+  const suggestion = await env.DB.prepare(
+    "SELECT * FROM competitor_suggestions WHERE id = ? AND status = 'approved'"
+  ).bind(suggestionId).first<{ id: number; client_slug: string; domain: string }>();
+
+  if (!suggestion) return redirect("/admin/manage");
+
+  // Remove from domains table
   await env.DB.prepare(
-    "UPDATE competitor_suggestions SET status = 'rejected' WHERE id = ? AND status = 'pending'"
+    "DELETE FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
+  ).bind(suggestion.domain, suggestion.client_slug).run();
+
+  // Mark suggestion as rejected
+  await env.DB.prepare(
+    "UPDATE competitor_suggestions SET status = 'rejected' WHERE id = ?"
   ).bind(suggestionId).run();
 
   return redirect("/admin/manage");

@@ -75,6 +75,14 @@ export async function sendMagicLinkEmail(
 // Weekly AEO digest
 // ---------------------------------------------------------------------------
 
+export interface RoadmapDigestData {
+  clientSlug: string;
+  total: number;
+  done: number;
+  inProgress: number;
+  recentlyCompleted: string[];  // titles of items completed this week
+}
+
 /** Send a digest email to one recipient */
 export async function sendDigestEmail(
   to: string,
@@ -82,7 +90,9 @@ export async function sendDigestEmail(
   digests: DigestData[],
   env: Env,
   citationData?: Map<string, CitationDigestData>,
-  gscData?: Map<string, GscDigestData>
+  gscData?: Map<string, GscDigestData>,
+  roadmapData?: Map<string, RoadmapDigestData>,
+  unsubToken?: string
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -95,7 +105,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0])
     : `Weekly AEO Report -- ${digests.length} domains scanned`;
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -457,7 +467,51 @@ function buildGscBlock(gsc: GscDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>): string {
+function buildRoadmapBlock(rd: RoadmapDigestData): string {
+  const pct = rd.total > 0 ? Math.round((rd.done / rd.total) * 100) : 0;
+  const recentList = rd.recentlyCompleted.slice(0, 3).map(t =>
+    `<div style="padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;color:#b0b0a8">${escEmail(t)}</div>`
+  ).join("");
+
+  return `
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
+      <tr>
+        <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">Roadmap Progress</div>
+
+          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:12px">
+            <tr>
+              <td width="33%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Complete</div>
+                <div style="font-family:'Courier New',monospace;font-size:24px;color:#27ae60">${rd.done}<span style="font-size:12px;color:#888888">/${rd.total}</span></div>
+              </td>
+              <td width="33%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">In Progress</div>
+                <div style="font-family:'Courier New',monospace;font-size:24px;color:#e8c767">${rd.inProgress}</div>
+              </td>
+              <td width="34%" style="vertical-align:top">
+                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Progress</div>
+                <div style="font-family:'Courier New',monospace;font-size:24px;color:#fbf8ef">${pct}<span style="font-size:12px;color:#888888">%</span></div>
+              </td>
+            </tr>
+          </table>
+
+          <!-- Progress bar -->
+          <div style="height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden;margin-bottom:${recentList ? '16' : '0'}px">
+            <div style="height:100%;width:${pct}%;background:#27ae60;border-radius:3px"></div>
+          </div>
+
+          ${rd.recentlyCompleted.length > 0 ? `
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">Completed this week</div>
+          ${recentList}
+          ` : ""}
+        </td>
+      </tr>
+    </table>
+  `;
+}
+
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string): string {
   const greeting = userName ? userName.split(" ")[0] : "there";
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -606,6 +660,20 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
           return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}
 
+        <!-- Roadmap progress blocks -->
+        ${(() => {
+          if (!roadmapData || roadmapData.size === 0) return "";
+          const blocks: string[] = [];
+          const slugsSeen = new Set<string>();
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const rd = roadmapData.get(d.clientSlug);
+            if (rd && rd.total > 0) blocks.push(buildRoadmapBlock(rd));
+          }
+          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
+        })()}
+
         <!-- CTA -->
         <tr>
           <td align="center" style="padding:16px 0 32px">
@@ -620,7 +688,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
               <tr>
                 <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
                   Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
-                  Scans run weekly. Scores reflect AI search engine readiness.
+                  Scans run weekly. Scores reflect AI search engine readiness.${unsubToken ? `<br><a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:#555555;text-decoration:underline">Unsubscribe from weekly digests</a>` : ""}
                 </td>
               </tr>
             </table>

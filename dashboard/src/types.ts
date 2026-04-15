@@ -71,6 +71,9 @@ export interface User {
   nurture_day30_sent: number | null;
   created_at: number;
   last_login_at: number | null;
+  // Runtime-only fields (not in DB)
+  _alertCount?: number;
+  _roadmapInProgress?: number;
 }
 
 export interface Session {
@@ -131,6 +134,7 @@ export interface RoadmapItem {
   sort_order: number;
   due_date: number | null;
   completed_at: number | null;
+  client_note: string | null;
   created_at: number;
   updated_at: number;
 }

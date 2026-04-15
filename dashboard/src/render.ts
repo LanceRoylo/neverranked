@@ -6,6 +6,7 @@ import { CSS } from "./styles";
 import type { User } from "./types";
 
 export function layout(title: string, body: string, user: User | null = null, activeSlug?: string): string {
+  const badges = user ? { alerts: user._alertCount || 0, roadmap: user._roadmapInProgress || 0 } : { alerts: 0, roadmap: 0 };
   // For slug-dependent nav links: use activeSlug if we know which client we're viewing,
   // otherwise use the user's client_slug, otherwise use bare path (triggers auto-redirect)
   const slug = activeSlug || user?.client_slug || '';
@@ -17,11 +18,13 @@ export function layout(title: string, body: string, user: User | null = null, ac
   const navLinks = user
     ? `
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
+      <a href="/alerts" class="nav-links-item${title === 'Alerts' ? ' active' : ''}">${badges.alerts ? '<span class="nav-badge">' + (badges.alerts > 9 ? '9+' : badges.alerts) + '</span>' : ''}Alerts</a>
       <a href="${user.role === 'admin' ? '/summary' : summaryHref}" class="nav-links-item${title === 'Summary' ? ' active' : ''}">Summary</a>
       <a href="${user.role === 'admin' ? '/competitors' : compHref}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
       <a href="${user.role === 'admin' ? '/citations' : citeHref}" class="nav-links-item${title === 'Citations' || title === 'Citation Keywords' ? ' active' : ''}">Citations</a>
       <a href="${user.role === 'admin' ? '/search' : searchHref}" class="nav-links-item${title === 'Search Performance' || title === 'Search Console' ? ' active' : ''}">Search</a>
-      <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">Roadmap</a>
+      <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">${badges.roadmap ? '<span class="nav-badge">' + badges.roadmap + '</span>' : ''}Roadmap</a>
+      <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
       ${user.role === 'admin' ? '<a href="/admin/leads" class="nav-links-item' + (title === 'Leads' ? ' active' : '') + '">Leads</a>' : ''}
       ${user.role === 'admin' ? '<a href="/admin" class="nav-links-item' + (title.startsWith('Admin') || title === 'Inject' ? ' active' : '') + '">Cockpit</a>' : ''}
     `

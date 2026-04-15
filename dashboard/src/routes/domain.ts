@@ -156,6 +156,202 @@ async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> 
   `;
 }
 
+/** Compare two scans side-by-side */
+export async function handleScanCompare(domainId: number, user: User, env: Env, url: URL): Promise<Response> {
+  const domain = await env.DB.prepare("SELECT * FROM domains WHERE id = ? AND active = 1").bind(domainId).first<Domain>();
+  if (!domain) return html(layout("Not Found", '<div class="empty"><h3>Domain not found</h3></div>', user), 404);
+  if (user.role !== "admin" && user.client_slug !== domain.client_slug) {
+    return html(layout("Not Found", '<div class="empty"><h3>Domain not found</h3></div>', user), 404);
+  }
+
+  const scanA_id = Number(url.searchParams.get("a") || 0);
+  const scanB_id = Number(url.searchParams.get("b") || 0);
+
+  // Get all scans for the picker
+  const allScans = (await env.DB.prepare(
+    "SELECT id, aeo_score, grade, scanned_at, scan_type, error FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 52"
+  ).bind(domainId).all<{ id: number; aeo_score: number; grade: string; scanned_at: number; scan_type: string; error: string | null }>()).results;
+
+  if (allScans.length < 2) {
+    return html(layout("Compare Scans", `
+      <div class="empty">
+        <h3>Not enough scans</h3>
+        <p>At least two successful scans are needed to compare. <a href="/domain/${domainId}" style="color:var(--gold)">Back to report</a></p>
+      </div>
+    `, user, domain.client_slug));
+  }
+
+  // Build the picker
+  const optionList = allScans.map(s => {
+    const d = new Date(s.scanned_at * 1000);
+    const label = d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + " -- " + s.aeo_score + "/100 (" + s.grade + ")";
+    return { id: s.id, label };
+  });
+
+  const pickerA = optionList.map(o => `<option value="${o.id}"${o.id === scanA_id ? ' selected' : ''}>${esc(o.label)}</option>`).join("");
+  const pickerB = optionList.map(o => `<option value="${o.id}"${o.id === scanB_id ? ' selected' : ''}>${esc(o.label)}</option>`).join("");
+
+  let comparisonHtml = "";
+
+  if (scanA_id && scanB_id && scanA_id !== scanB_id) {
+    const scanA = await env.DB.prepare("SELECT * FROM scan_results WHERE id = ? AND domain_id = ?").bind(scanA_id, domainId).first<ScanResult>();
+    const scanB = await env.DB.prepare("SELECT * FROM scan_results WHERE id = ? AND domain_id = ?").bind(scanB_id, domainId).first<ScanResult>();
+
+    if (scanA && scanB && !scanA.error && !scanB.error) {
+      const dateA = new Date(scanA.scanned_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const dateB = new Date(scanB.scanned_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+
+      // Score comparison
+      const diff = scanB.aeo_score - scanA.aeo_score;
+      const diffColor = diff > 0 ? "var(--green)" : diff < 0 ? "var(--red)" : "var(--text-faint)";
+      const diffText = diff > 0 ? "+" + diff : diff === 0 ? "no change" : String(diff);
+
+      // Schema changes
+      const schemasA: string[] = JSON.parse(scanA.schema_types);
+      const schemasB: string[] = JSON.parse(scanB.schema_types);
+      const added = schemasB.filter(s => !schemasA.includes(s));
+      const removed = schemasA.filter(s => !schemasB.includes(s));
+      const kept = schemasA.filter(s => schemasB.includes(s));
+
+      // Red flag changes
+      const flagsA: string[] = JSON.parse(scanA.red_flags);
+      const flagsB: string[] = JSON.parse(scanB.red_flags);
+      const newFlags = flagsB.filter(f => !flagsA.includes(f));
+      const resolvedFlags = flagsA.filter(f => !flagsB.includes(f));
+
+      // Tech signal changes
+      const sigA: { label: string; value: string; status: string }[] = JSON.parse(scanA.technical_signals);
+      const sigB: { label: string; value: string; status: string }[] = JSON.parse(scanB.technical_signals);
+      const sigMap = new Map(sigA.map(s => [s.label, s]));
+      const signalChanges: { label: string; fromVal: string; toVal: string; fromStatus: string; toStatus: string }[] = [];
+      for (const s of sigB) {
+        const prev = sigMap.get(s.label);
+        if (prev && (prev.value !== s.value || prev.status !== s.status)) {
+          signalChanges.push({ label: s.label, fromVal: prev.value, toVal: s.value, fromStatus: prev.status, toStatus: s.status });
+        }
+      }
+
+      comparisonHtml = `
+        <!-- Score delta -->
+        <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:24px;align-items:center;margin-bottom:48px">
+          <div style="text-align:center;padding:24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+            <div class="label" style="margin-bottom:12px">${dateA} (Older)</div>
+            <div class="grade grade-${scanA.grade}" style="width:64px;height:64px;font-size:32px;margin:0 auto 8px">${scanA.grade}</div>
+            <div style="font-family:var(--mono);font-size:24px;color:var(--text)">${scanA.aeo_score}<span style="font-size:12px;color:var(--text-faint)">/100</span></div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-family:var(--mono);font-size:28px;color:${diffColor};font-weight:500">${diffText}</div>
+            <div style="font-size:11px;color:var(--text-faint);margin-top:4px">pts</div>
+          </div>
+          <div style="text-align:center;padding:24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+            <div class="label" style="margin-bottom:12px">${dateB} (Newer)</div>
+            <div class="grade grade-${scanB.grade}" style="width:64px;height:64px;font-size:32px;margin:0 auto 8px">${scanB.grade}</div>
+            <div style="font-family:var(--mono);font-size:24px;color:var(--text)">${scanB.aeo_score}<span style="font-size:12px;color:var(--text-faint)">/100</span></div>
+          </div>
+        </div>
+
+        ${signalChanges.length > 0 ? `
+        <!-- Signal changes -->
+        <div style="margin-bottom:48px">
+          <div class="label" style="margin-bottom:16px">Technical Signal Changes</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${signalChanges.map(s => {
+              const improved = s.toStatus === "good" && s.fromStatus !== "good";
+              const regressed = s.fromStatus === "good" && s.toStatus !== "good";
+              const color = improved ? "var(--green)" : regressed ? "var(--red)" : "var(--yellow)";
+              return `
+                <div style="display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--bg-lift);border-left:3px solid ${color}">
+                  <span style="font-size:13px;color:var(--text);flex:1">${esc(s.label)}</span>
+                  <span style="font-size:12px;color:var(--text-faint)">${esc(s.fromVal)}</span>
+                  <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">-></span>
+                  <span style="font-size:12px;color:${color};font-weight:400">${esc(s.toVal)}</span>
+                </div>`;
+            }).join("")}
+          </div>
+        </div>
+        ` : ''}
+
+        ${added.length > 0 || removed.length > 0 ? `
+        <!-- Schema changes -->
+        <div style="margin-bottom:48px">
+          <div class="label" style="margin-bottom:16px">Schema Changes</div>
+          <div style="display:flex;gap:24px;flex-wrap:wrap">
+            ${added.length > 0 ? `
+              <div style="flex:1;min-width:200px">
+                <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green);margin-bottom:10px">Added (${added.length})</div>
+                ${added.map(s => `<div style="padding:6px 12px;margin-bottom:4px;background:rgba(94,199,106,0.06);border:1px solid rgba(94,199,106,0.15);border-radius:2px;font-size:12px;color:var(--text)">${esc(s)}</div>`).join("")}
+              </div>
+            ` : ''}
+            ${removed.length > 0 ? `
+              <div style="flex:1;min-width:200px">
+                <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:10px">Removed (${removed.length})</div>
+                ${removed.map(s => `<div style="padding:6px 12px;margin-bottom:4px;background:rgba(232,84,84,0.06);border:1px solid rgba(232,84,84,0.15);border-radius:2px;font-size:12px;color:var(--text)">${esc(s)}</div>`).join("")}
+              </div>
+            ` : ''}
+            ${kept.length > 0 ? `
+              <div style="flex:1;min-width:200px">
+                <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">Unchanged (${kept.length})</div>
+                ${kept.map(s => `<div style="padding:6px 12px;margin-bottom:4px;background:var(--bg-lift);border:1px solid var(--line);border-radius:2px;font-size:12px;color:var(--text-faint)">${esc(s)}</div>`).join("")}
+              </div>
+            ` : ''}
+          </div>
+        </div>
+        ` : ''}
+
+        ${newFlags.length > 0 || resolvedFlags.length > 0 ? `
+        <!-- Red flag changes -->
+        <div style="margin-bottom:48px">
+          <div class="label" style="margin-bottom:16px">Red Flag Changes</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            ${resolvedFlags.map(f => `
+              <div style="padding:8px 16px;background:var(--bg-lift);border-left:3px solid var(--green);font-size:13px">
+                <span style="color:var(--green);font-family:var(--mono);margin-right:8px">RESOLVED</span>
+                <span style="color:var(--text-soft)">${esc(f)}</span>
+              </div>
+            `).join("")}
+            ${newFlags.map(f => `
+              <div style="padding:8px 16px;background:var(--bg-lift);border-left:3px solid var(--red);font-size:13px">
+                <span style="color:var(--red);font-family:var(--mono);margin-right:8px">NEW</span>
+                <span style="color:var(--text-soft)">${esc(f)}</span>
+              </div>
+            `).join("")}
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-faint)">
+            ${flagsA.length} flags -> ${flagsB.length} flags (${flagsB.length - flagsA.length >= 0 ? '+' : ''}${flagsB.length - flagsA.length})
+          </div>
+        </div>
+        ` : '<div style="margin-bottom:32px;font-size:13px;color:var(--text-faint)">No red flag changes between these scans.</div>'}
+      `;
+    }
+  }
+
+  const body = `
+    <div style="margin-bottom:40px">
+      <div class="label" style="margin-bottom:8px">
+        <a href="/" style="color:var(--text-mute)">Dashboard</a> / <a href="/domain/${domain.id}" style="color:var(--text-mute)">${esc(domain.domain)}</a>
+      </div>
+      <h1>Compare <em>scans</em></h1>
+    </div>
+
+    <form method="GET" style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap;margin-bottom:48px">
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px">
+        <label>Older scan</label>
+        <select name="a" style="width:100%">${pickerA}</select>
+      </div>
+      <div style="font-family:var(--mono);font-size:16px;color:var(--text-faint);padding-bottom:8px">vs</div>
+      <div class="form-group" style="margin-bottom:0;flex:1;min-width:200px">
+        <label>Newer scan</label>
+        <select name="b" style="width:100%">${pickerB}</select>
+      </div>
+      <button type="submit" class="btn" style="margin-bottom:0">Compare</button>
+    </form>
+
+    ${comparisonHtml}
+  `;
+
+  return html(layout("Compare Scans", body, user, domain.client_slug));
+}
+
 export async function handleDomainDetail(domainId: number, user: User, env: Env, requestUrl?: URL): Promise<Response> {
   // Get domain
   const domain = await env.DB.prepare(
@@ -571,6 +767,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
         <h1><em>${esc(domain.domain)}</em></h1>
       </div>
       <div style="display:flex;gap:8px">
+        ${history.filter(h => !h.error).length >= 2 ? `<a href="/domain/${domain.id}/compare" class="btn btn-ghost no-print">Compare scans</a>` : ''}
         <button onclick="window.print()" class="btn btn-ghost no-print">Export PDF</button>
         <form method="POST" action="/domain/${domain.id}/share">
           <button type="submit" class="btn btn-ghost no-print">Share report</button>

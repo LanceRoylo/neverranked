@@ -9,7 +9,7 @@
 import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
-import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData } from "./email";
+import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { checkAndAlertRegression } from "./regression";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
@@ -158,7 +158,41 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
       }
     }
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap);
+    // Gather roadmap data per client_slug
+    const roadmapDataMap = new Map<string, RoadmapDigestData>();
+    const rmSlugsSeen = new Set<string>();
+    const oneWeekAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
+    for (const d of digests) {
+      if (rmSlugsSeen.has(d.clientSlug)) continue;
+      rmSlugsSeen.add(d.clientSlug);
+      const total = await env.DB.prepare(
+        "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ?"
+      ).bind(d.clientSlug).first<{ cnt: number }>();
+      const done = await env.DB.prepare(
+        "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ? AND status = 'done'"
+      ).bind(d.clientSlug).first<{ cnt: number }>();
+      const inProg = await env.DB.prepare(
+        "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ? AND status = 'in_progress'"
+      ).bind(d.clientSlug).first<{ cnt: number }>();
+      const recentDone = (await env.DB.prepare(
+        "SELECT title FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at > ? ORDER BY completed_at DESC LIMIT 3"
+      ).bind(d.clientSlug, oneWeekAgo).all<{ title: string }>()).results;
+
+      if (total && total.cnt > 0) {
+        roadmapDataMap.set(d.clientSlug, {
+          clientSlug: d.clientSlug,
+          total: total.cnt,
+          done: done?.cnt || 0,
+          inProgress: inProg?.cnt || 0,
+          recentlyCompleted: recentDone.map(r => r.title),
+        });
+      }
+    }
+
+    // Generate a simple unsub token (base64 of user id + email)
+    const unsubToken = btoa(`${user.id}:${user.email}`).replace(/=/g, "");
+
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken);
     if (ok) {
       sent++;
       // Log to email_log

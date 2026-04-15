@@ -138,8 +138,8 @@ export async function handleCheckout(
     if (activeAmplify && activeAmplify.count >= 2) {
       return html(layout("Amplify", `
         <div class="empty">
-          <h3>Amplify is full</h3>
-          <p style="max-width:400px">We limit Amplify to 2 clients to maintain quality. Join the waitlist or start with Signal.</p>
+          <h3>Amplify is at capacity</h3>
+          <p style="max-width:440px">Amplify is a hands-on engagement. We cap the roster to keep quality high. Join the waitlist and we will reach out when a spot opens, or start with Signal in the meantime.</p>
           <div style="margin-top:24px;display:flex;gap:12px">
             <a href="https://neverranked.com/#intake" class="btn">Join waitlist</a>
             <a href="/checkout/signal" class="btn btn-ghost">Start with Signal</a>
