@@ -315,7 +315,7 @@ function renderDomainPage(): string {
     <!-- Score projection -->
     <div style="margin-bottom:48px">
       <div class="label" style="margin-bottom:4px">Score Projection</div>
-      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Estimated score if all remaining roadmap items are completed. Based on typical impact per category with diminishing returns.</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Estimated score if all remaining roadmap items are completed. Based on typical impact per category.</div>
       <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:24px">
         <div style="display:flex;align-items:center;gap:24px;margin-bottom:20px;flex-wrap:wrap">
           <div style="text-align:center">
@@ -344,7 +344,7 @@ function renderDomainPage(): string {
           <span style="font-size:12px;color:var(--text-faint)">${proj.doneItems} of ${proj.totalItems} items completed</span>
           <span style="font-family:var(--mono);font-size:13px;color:var(--green);font-weight:500">+${proj.projectedScore - proj.currentScore} pts potential</span>
         </div>
-        <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">Completing the remaining 11 roadmap items would bring the score to an estimated 82. The biggest gains come from adding missing schema types (AggregateRating, Review, Service) and creating pillar content for high-value keywords. Diminishing returns are factored in -- each additional item in a category contributes less than the first.</div>
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">Completing the remaining 11 roadmap items would bring the score to an estimated 82. The biggest gains come from adding missing schema types (AggregateRating, Review, Service) and creating pillar content for high-value keywords.</div>
       </div>
     </div>
 
@@ -436,18 +436,20 @@ function renderDomainPage(): string {
     <!-- Content opportunities -->
     <div style="margin-bottom:48px">
       <div class="label" style="margin-bottom:4px">Content Opportunities</div>
-      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Keywords where competitors get cited by AI engines but you don't. Creating authoritative content on these topics can improve your citation share.</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Keywords where competitors get cited by AI engines but you don't. Each gap generates a content recommendation in your <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">roadmap</a>.</div>
       ${gapBlocks}
     </div>
 
     <!-- Technical signals -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:48px">
       <div>
-        <div class="label" style="margin-bottom:16px">Technical Signals</div>
+        <div class="label" style="margin-bottom:4px">Technical Signals</div>
+        <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Scanned every Monday. Green means you're covered. Warnings feed directly into your <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">roadmap</a>.</div>
         ${signalRows}
       </div>
       <div>
-        <div class="label" style="margin-bottom:16px">Schema Coverage</div>
+        <div class="label" style="margin-bottom:4px">Schema Coverage</div>
+        <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Schema tells AI engines what your business is, what you offer, and what customers think. Missing types are queued as roadmap items. <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">See your fix plan</a></div>
         ${schemaRows}
       </div>
     </div>
@@ -455,13 +457,15 @@ function renderDomainPage(): string {
     <!-- Red flags -->
     ${redFlags.length > 0 ? `
     <div style="margin-bottom:48px">
-      <div class="label" style="margin-bottom:16px;color:var(--red)">${redFlags.length} Red Flag${redFlags.length !== 1 ? 's' : ''}</div>
+      <div class="label" style="margin-bottom:4px;color:var(--red)">${redFlags.length} Red Flag${redFlags.length !== 1 ? 's' : ''}</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">Issues actively hurting your score. Each one is mapped to a roadmap item with a fix. <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">View roadmap</a></div>
       ${flagRows}
     </div>` : ''}
 
     <!-- Page scans -->
     <div style="margin-bottom:48px">
-      <div class="label" style="margin-bottom:16px">Page-Level Schema Coverage</div>
+      <div class="label" style="margin-bottom:4px">Page-Level Schema Coverage</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:16px">We scan every page individually and track coverage over time. Gaps here generate specific <a href="/demo/roadmap" style="color:var(--gold);text-decoration:none">roadmap items</a>.</div>
       <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px 20px">
         ${pageRows}
       </div>
