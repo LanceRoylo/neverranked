@@ -284,6 +284,12 @@ function renderDomainPage(): string {
       </div>
     </div>
 
+    <!-- Executive Summary -->
+    <div style="margin-bottom:32px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <div class="label" style="margin-bottom:12px">Executive Summary</div>
+      <div style="font-size:14px;line-height:1.75;color:var(--text-soft)">meridiandental.com scored 68/100 (B), improved by 3 points since the last scan. Schema coverage is solid with 5 types detected, though AggregateRating, Review, Service, and Article are still missing. There are 3 red flags to address, and page speed at 2.1 seconds is a moderate drag on the score. The upward trend over the last 12 weeks is strong.</div>
+    </div>
+
     <!-- Score headline -->
     <div class="card" style="margin-bottom:32px">
       <div style="display:flex;align-items:center;gap:24px;flex-wrap:wrap">
@@ -302,6 +308,7 @@ function renderDomainPage(): string {
       <div class="label" style="margin-bottom:16px">Score History (12 weeks)</div>
       <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px">
         ${chartSvg}
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">Score has climbed 34 points since week one, from D-grade to B-grade. The steepest gains came in the first 6 weeks when foundational schema was deployed. Growth is now steadier as remaining improvements are more incremental.</div>
       </div>
     </div>
 
@@ -337,6 +344,7 @@ function renderDomainPage(): string {
           <span style="font-size:12px;color:var(--text-faint)">${proj.doneItems} of ${proj.totalItems} items completed</span>
           <span style="font-family:var(--mono);font-size:13px;color:var(--green);font-weight:500">+${proj.projectedScore - proj.currentScore} pts potential</span>
         </div>
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">Completing the remaining 11 roadmap items would bring the score to an estimated 82. The biggest gains come from adding missing schema types (AggregateRating, Review, Service) and creating pillar content for high-value keywords. Diminishing returns are factored in -- each additional item in a category contributes less than the first.</div>
       </div>
     </div>
 
@@ -366,6 +374,7 @@ function renderDomainPage(): string {
           <text x="${citW - cPAD_R}" y="${citH - 4}" text-anchor="end" fill="rgba(251,248,239,.3)" font-size="9" font-family="var(--mono)">${citLastDate}</text>
         </svg>
         <div style="font-size:11px;color:var(--text-faint);margin-top:8px">${latestCit.client_citations} of ${latestCit.total_queries} tracked queries cite you</div>
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px;padding-top:12px;border-top:1px solid rgba(251,248,239,.06)">Citation share has grown from 5% to 35% over 12 weeks. AI engines are citing Meridian Dental for 7 of 20 tracked queries, primarily on ChatGPT and Perplexity. The remaining 13 queries are opportunities where competitors are being cited instead.</div>
       </div>
     </div>
 
@@ -388,6 +397,38 @@ function renderDomainPage(): string {
         <div class="card" style="text-align:center">
           <div style="font-family:var(--mono);font-size:24px;color:var(--text)">${GSC_DATA.position}</div>
           <div style="font-size:11px;color:var(--text-faint);margin-top:4px">Avg Position</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-top:12px">Clicks are up 15% week-over-week. Top performing query is "dentist downtown" with 180 clicks. Average position of 14.2 means most pages rank on page two -- improving schema and content depth should push key pages onto page one.</div>
+    </div>
+
+    <!-- Recommended next actions -->
+    <div style="margin-bottom:48px">
+      <div class="label" style="margin-bottom:16px">Recommended Next Actions</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <span style="font-family:var(--label);font-size:11px;font-weight:500;letter-spacing:.15em;color:var(--text-faint)">1</span>
+            <span style="font-size:14px;color:var(--text)">Add AggregateRating schema with Google review data</span>
+            <span style="margin-left:auto;font-family:var(--label);font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:2px;flex-shrink:0">HIGH IMPACT</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">AI engines weight review signals heavily when deciding who to cite for "best" and "recommended" queries. This is the single biggest lever for the next score jump.</div>
+        </div>
+        <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <span style="font-family:var(--label);font-size:11px;font-weight:500;letter-spacing:.15em;color:var(--text-faint)">2</span>
+            <span style="font-size:14px;color:var(--text)">Create a dental implants pillar article (2,000+ words)</span>
+            <span style="margin-left:auto;font-family:var(--label);font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:2px;flex-shrink:0">HIGH IMPACT</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">Both competitors are being cited for "dental implants cost" and Meridian is not. A comprehensive guide with FAQ schema and cost breakdowns would give AI engines a citable source.</div>
+        </div>
+        <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+            <span style="font-family:var(--label);font-size:11px;font-weight:500;letter-spacing:.15em;color:var(--text-faint)">3</span>
+            <span style="font-size:14px;color:var(--text)">Extend meta description to 120-160 characters</span>
+            <span style="margin-left:auto;font-family:var(--label);font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--yellow);border:1px solid var(--yellow);padding:2px 8px;border-radius:2px;flex-shrink:0">MEDIUM</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">Current meta description is only 43 characters. AI models and search engines use this as a summary signal. A descriptive meta between 120-160 characters improves both click-through rate and AI comprehension.</div>
         </div>
       </div>
     </div>
@@ -518,6 +559,9 @@ function renderCitationsPage(): string {
         </table>
       </div>
     </div>
+
+    <!-- Matrix insight -->
+    <div style="font-size:12px;color:var(--text-faint);line-height:1.7;margin-bottom:32px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">Meridian Dental is cited for 4 of 8 tracked keywords. The biggest gaps are in service-specific queries: "dental implants cost," "teeth whitening professional," and "root canal procedure" are all going to competitors. These are high-intent keywords where a single pillar article with proper schema could flip the citation. Aspen Dental leads with citations on 5 keywords.</div>
 
     <!-- Legend -->
     <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:11px;color:var(--text-faint)">
@@ -652,6 +696,9 @@ function renderRoadmapPage(): string {
         <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Meridian Dental -- ${totalItems} items across ${ROADMAP_PHASES.length} phases</div>
       </div>
     </div>
+
+    <!-- Roadmap narrative -->
+    <div style="margin-bottom:32px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;font-size:13px;color:var(--text-soft);line-height:1.7">The roadmap is ${overallPct}% complete with ${totalDone} of ${totalItems} items delivered. Phase 1 (Foundation) is finished. Phase 2 (Growth) is active with 3 items in progress and 4 pending. The most impactful remaining work is deploying AggregateRating and Review schema, which directly affects how AI engines assess credibility. AEO improvements take 2-4 weeks to reflect in AI model responses, so results from recently completed items may not show in scores yet.</div>
 
     <!-- Overall progress -->
     <div class="card" style="margin-bottom:32px">
