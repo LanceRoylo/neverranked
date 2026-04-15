@@ -124,6 +124,113 @@ async function buildContentRecommendations(
   `;
 }
 
+/** Competitor citation comparison matrix */
+async function buildCompetitorCitationMatrix(
+  slug: string,
+  keywordBreakdown: { keyword: string; keyword_id: number; cited: boolean; engines: string[] }[],
+  env: Env
+): Promise<string> {
+  if (keywordBreakdown.length === 0) return "";
+
+  // Collect competitor citation data per keyword
+  interface KeywordRow {
+    keyword: string;
+    clientCited: boolean;
+    competitors: Map<string, string[]>; // competitor name -> engines that cite them
+  }
+
+  const kwRows: KeywordRow[] = [];
+  const allCompetitors = new Map<string, number>(); // name -> total citation count
+
+  for (const kb of keywordBreakdown.slice(0, 15)) {
+    const runs = (await env.DB.prepare(
+      "SELECT engine, cited_entities FROM citation_runs WHERE keyword_id = ? ORDER BY run_at DESC LIMIT 8"
+    ).bind(kb.keyword_id).all<{ engine: string; cited_entities: string }>()).results;
+
+    const compMap = new Map<string, string[]>();
+
+    for (const run of runs) {
+      try {
+        const entities: { name: string }[] = JSON.parse(run.cited_entities);
+        for (const e of entities) {
+          const name = e.name.trim();
+          if (name.length > 2 && name.length < 60) {
+            const existing = compMap.get(name) || [];
+            if (!existing.includes(run.engine)) existing.push(run.engine);
+            compMap.set(name, existing);
+            allCompetitors.set(name, (allCompetitors.get(name) || 0) + 1);
+          }
+        }
+      } catch {}
+    }
+
+    kwRows.push({ keyword: kb.keyword, clientCited: kb.cited, competitors: compMap });
+  }
+
+  if (allCompetitors.size === 0) return "";
+
+  // Top 6 competitors by total mentions
+  const topComps = [...allCompetitors.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 6)
+    .map(([name]) => name);
+
+  // Build the matrix table
+  const headerCells = topComps.map(c =>
+    `<th style="text-align:center;padding:8px 6px;font-family:var(--label);font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(c)}">${esc(c.length > 12 ? c.slice(0, 11) + '...' : c)}</th>`
+  ).join("");
+
+  const rows = kwRows.map(kr => {
+    const youCell = kr.clientCited
+      ? '<td style="text-align:center;padding:8px 6px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green)"></span></td>'
+      : '<td style="text-align:center;padding:8px 6px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(232,84,84,.3);border:1px solid rgba(232,84,84,.5)"></span></td>';
+
+    const compCells = topComps.map(comp => {
+      const engines = kr.competitors.get(comp);
+      if (engines && engines.length > 0) {
+        return `<td style="text-align:center;padding:8px 6px" title="${esc(comp)}: ${engines.join(', ')}"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--gold)"></span></td>`;
+      }
+      return '<td style="text-align:center;padding:8px 6px"><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(251,248,239,.06)"></span></td>';
+    }).join("");
+
+    return `
+      <tr style="border-bottom:1px solid rgba(251,248,239,.06)">
+        <td style="padding:8px 12px;font-size:12px;color:var(--text-soft);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(kr.keyword)}">${esc(kr.keyword)}</td>
+        ${youCell}
+        ${compCells}
+      </tr>`;
+  }).join("");
+
+  return `
+    <div class="card">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:4px">
+        <div class="label">Citation Matrix</div>
+        <div style="font-size:11px;color:var(--text-faint)">You vs competitors per keyword</div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.6;margin-bottom:16px">
+        Each cell shows whether the source gets cited by AI engines for that keyword. Green = cited, gold = competitor cited, empty = not cited.
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;min-width:${400 + topComps.length * 80}px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--line)">
+              <th style="text-align:left;padding:8px 12px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Keyword</th>
+              <th style="text-align:center;padding:8px 6px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--green)">You</th>
+              ${headerCells}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-faint);display:flex;gap:16px">
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--green);vertical-align:middle;margin-right:4px"></span> You cited</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(--gold);vertical-align:middle;margin-right:4px"></span> Competitor cited</span>
+        <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:rgba(232,84,84,.3);border:1px solid rgba(232,84,84,.5);vertical-align:middle;margin-right:4px"></span> Gap</span>
+      </div>
+    </div>
+  `;
+}
+
 function buildCitationDataSection(
   latest: CitationSnapshot,
   previous: CitationSnapshot | null,
@@ -377,6 +484,9 @@ export async function handleCitations(
       latest, previous, shareNow, deltaHtml, chartData,
       topCompetitors, keywordBreakdown, enginesBreakdown, slug, aeoContext
     )}
+
+    <!-- Competitor citation comparison matrix -->
+    ${await buildCompetitorCitationMatrix(slug, keywordBreakdown, env)}
 
     <!-- Content recommendations from citation gaps -->
     ${await buildContentRecommendations(slug, keywordBreakdown, env)}

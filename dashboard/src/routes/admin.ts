@@ -7,6 +7,8 @@ import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
 import { scanDomainPages } from "../pages";
 import { checkAndAlertRegression } from "../regression";
+import { autoGenerateRoadmap } from "../auto-provision";
+import { autoCompleteRoadmapItems } from "../auto-complete";
 
 /** Admin overview: list all clients and domains */
 export async function handleAdminHome(user: User, env: Env): Promise<Response> {
@@ -200,12 +202,35 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
   }
 
   const now = Math.floor(Date.now() / 1000);
+  let newDomainId: number | null = null;
   try {
-    await env.DB.prepare(
+    const result = await env.DB.prepare(
       "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)"
     ).bind(clientSlug, domain, isCompetitor, competitorLabel, now, now).run();
+    newDomainId = result.meta.last_row_id as number || null;
   } catch {
     // Likely unique constraint violation
+  }
+
+  // Auto-provision for primary (non-competitor) domains
+  if (newDomainId && !isCompetitor) {
+    // Run first scan in background
+    try {
+      const scanResult = await scanDomain(newDomainId, `https://${domain}/`, "onboarding", env);
+
+      // Auto-generate roadmap from scan
+      if (scanResult && !scanResult.error) {
+        await autoGenerateRoadmap(clientSlug, env);
+        await autoCompleteRoadmapItems(clientSlug, scanResult, env);
+      }
+
+      // Create admin alert for the new client
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'onboarding', ?, ?, ?)"
+      ).bind(clientSlug, `New client domain added: ${domain}`, `Auto-provisioned: scan + roadmap generated`, now).run();
+    } catch (e) {
+      console.log(`Auto-provision failed for ${domain}: ${e}`);
+    }
   }
 
   return redirect("/admin/manage");

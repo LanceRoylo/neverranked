@@ -29,6 +29,7 @@ import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkP
 import { handleSummary } from "./routes/summary";
 import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead } from "./routes/alerts";
 import { handleLearn, handleLearnArticle } from "./routes/learn";
+import { handleReport, handleReportIndex, handleSendReport } from "./routes/report";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -119,6 +120,14 @@ export default {
 
     // Track authenticated page view
     ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path }, userId: user.id }));
+    // Engagement tracking (DB-backed, for admin reports)
+    if (method === "GET") {
+      const pvNow = Math.floor(Date.now() / 1000);
+      ctx.waitUntil(
+        env.DB.prepare("INSERT INTO page_views (user_id, client_slug, path, created_at) VALUES (?, ?, ?, ?)")
+          .bind(user.id, user.client_slug || null, path, pvNow).run().catch(() => {})
+      );
+    }
 
     // Compute nav badges (lightweight counts for notification dots)
     try {
@@ -465,6 +474,24 @@ export default {
     }
     if (path === "/alerts/read-all" && method === "POST") {
       return handleMarkAllAlertsRead(user, env);
+    }
+
+    // Monthly reports
+    const reportMonthMatch = path.match(/^\/report\/([^/]+)\/(\d{4}-\d{2})$/);
+    if (reportMonthMatch && method === "GET") {
+      return handleReport(decodeURIComponent(reportMonthMatch[1]), reportMonthMatch[2], user, env);
+    }
+    const reportSendMatch = path.match(/^\/report\/([^/]+)\/(\d{4}-\d{2})\/send$/);
+    if (reportSendMatch && method === "POST" && user.role === "admin") {
+      return handleSendReport(decodeURIComponent(reportSendMatch[1]), reportSendMatch[2], user, env);
+    }
+    const reportIndexMatch = path.match(/^\/report\/([^/]+)\/?$/);
+    if (reportIndexMatch && method === "GET") {
+      return handleReportIndex(decodeURIComponent(reportIndexMatch[1]), user, env);
+    }
+    if ((path === "/report" || path === "/report/") && method === "GET") {
+      if (user.client_slug) return redirect(`/report/${user.client_slug}`);
+      return renderClientPicker("Reports", "report", user, env);
     }
 
     // Billing portal

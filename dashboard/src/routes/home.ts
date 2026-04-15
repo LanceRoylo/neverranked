@@ -242,6 +242,8 @@ async function buildClientHealth(env: Env): Promise<string> {
     roadmapStale: number;
     citationShare: number | null;
     unreadAlerts: number;
+    viewsThisWeek: number;
+    lastActivity: number | null;
     healthStatus: "healthy" | "warning" | "critical";
   }
 
@@ -285,6 +287,18 @@ async function buildClientHealth(env: Env): Promise<string> {
     ).bind(slug).first<{ cnt: number }>();
     const unreadAlerts = alertCount?.cnt || 0;
 
+    // Engagement: page views in last 7 days + last activity
+    const sevenDaysAgo = now - 7 * 86400;
+    const viewCount = await env.DB.prepare(
+      "SELECT COUNT(*) as cnt FROM page_views WHERE client_slug = ? AND created_at >= ?"
+    ).bind(slug, sevenDaysAgo).first<{ cnt: number }>();
+    const viewsThisWeek = viewCount?.cnt || 0;
+
+    const lastView = await env.DB.prepare(
+      "SELECT MAX(created_at) as last_at FROM page_views WHERE client_slug = ?"
+    ).bind(slug).first<{ last_at: number | null }>();
+    const lastActivity = lastView?.last_at || null;
+
     // Health status
     let healthStatus: ClientRow["healthStatus"] = "healthy";
     if (daysSinceScan > 14 || (score !== null && score < 40) || roadmapStale > 3 || scoreDelta < -10) {
@@ -293,7 +307,7 @@ async function buildClientHealth(env: Env): Promise<string> {
       healthStatus = "warning";
     }
 
-    rows.push({ slug, score, grade, scoreDelta, daysSinceScan, roadmapTotal, roadmapDone, roadmapStale, citationShare, unreadAlerts, healthStatus });
+    rows.push({ slug, score, grade, scoreDelta, daysSinceScan, roadmapTotal, roadmapDone, roadmapStale, citationShare, unreadAlerts, viewsThisWeek, lastActivity, healthStatus });
   }
 
   // Sort: critical first, then warning, then healthy
@@ -349,6 +363,8 @@ async function buildClientHealth(env: Env): Promise<string> {
         <td style="padding:12px 8px;text-align:center">
           ${r.unreadAlerts > 0 ? `<span style="font-family:var(--mono);font-size:11px;color:var(--gold);background:var(--gold-wash);padding:2px 8px;border-radius:10px">${r.unreadAlerts}</span>` : '<span style="color:var(--text-faint);font-size:11px">0</span>'}
         </td>
+        <td style="padding:12px 8px;text-align:center;font-family:var(--mono);font-size:12px;color:${r.viewsThisWeek > 0 ? 'var(--text)' : 'var(--red)'}">${r.viewsThisWeek}</td>
+        <td style="padding:12px 8px;text-align:center;font-size:11px;color:var(--text-faint)">${r.lastActivity ? (() => { const d = Math.floor((now - r.lastActivity) / 86400); return d === 0 ? 'today' : d === 1 ? '1d ago' : d + 'd ago'; })() : 'never'}</td>
       </tr>`;
   }).join("");
 
@@ -367,7 +383,7 @@ async function buildClientHealth(env: Env): Promise<string> {
         </div>
       </div>
       <div style="overflow-x:auto;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
-        <table style="width:100%;border-collapse:collapse;min-width:700px">
+        <table style="width:100%;border-collapse:collapse;min-width:850px">
           <thead>
             <tr style="border-bottom:1px solid var(--line)">
               <th style="text-align:left;padding:10px 16px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Client</th>
@@ -379,6 +395,8 @@ async function buildClientHealth(env: Env): Promise<string> {
               <th style="text-align:center;padding:10px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Stale</th>
               <th style="text-align:center;padding:10px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Citations</th>
               <th style="text-align:center;padding:10px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Alerts</th>
+              <th style="text-align:center;padding:10px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Views/wk</th>
+              <th style="text-align:center;padding:10px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">Last Seen</th>
             </tr>
           </thead>
           <tbody>${tableRows}</tbody>
