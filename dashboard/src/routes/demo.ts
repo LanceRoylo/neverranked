@@ -68,10 +68,11 @@ function demoLayout(title: string, body: string, activePage: string): string {
   .demo-three-col{grid-template-columns:1fr !important}
   .demo-score-headline{flex-direction:column;align-items:flex-start !important;gap:16px !important}
   .demo-score-headline .grade-ring{align-self:center}
-  .demo-projection-row{flex-direction:column;align-items:flex-start !important}
-  .demo-projection-row>div:last-child{min-width:100% !important}
+  .demo-projection-row{flex-direction:row;flex-wrap:wrap;align-items:center !important;gap:16px !important}
+  .demo-projection-row>div:last-child{min-width:100% !important;margin-top:8px}
   .demo-nav-actions{flex-direction:column}
   .demo-nav-actions>div{width:100% !important}
+  .demo-banner span{font-size:11px;line-height:1.5}
 }
 </style>
 </head>
