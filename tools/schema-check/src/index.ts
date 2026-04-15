@@ -1030,7 +1030,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <div class="dash-preview-overlay">
           <h4>Your dashboard is one step away</h4>
           <p>Weekly scans. Competitor tracking. A roadmap built from your data.</p>
-          <a href="https://app.neverranked.com/checkout/signal" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Start monitoring</a>
+          <div style="display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap">
+            <a href="https://app.neverranked.com/checkout/signal" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Start monitoring</a>
+            <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or explore the live demo</a>
+          </div>
         </div>
       </div>
     </div>
@@ -1075,7 +1078,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span>Regression alerts</span>
         <span>Citation tracking</span>
       </div>
-      <div style="text-align:center;margin-top:16px">
+      <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
+        <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See what the full dashboard looks like first</a>
         <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
       </div>
     </div>
