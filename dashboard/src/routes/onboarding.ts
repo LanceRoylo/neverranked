@@ -95,8 +95,20 @@ export async function handleOnboarding(user: User, env: Env): Promise<Response> 
           </div>
         ` : ''}
 
-        <div style="padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;margin-bottom:32px;font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7">
-          Your first full report is ready. Weekly scans run every Monday at 6am UTC and results appear in your dashboard within the hour. You'll also get a weekly digest email with your score, changes, and top action items.
+        <!-- Next steps checklist -->
+        <div class="card" style="margin-bottom:24px;padding:24px">
+          <div class="label" style="margin-bottom:16px">Recommended next steps</div>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            ${nextStep("Review your AEO score", "See how your site performs across schema, content signals, and technical readiness.", "/", true)}
+            ${nextStep("Check your roadmap", "We auto-generated a prioritized action plan based on your scan results.", roadmapItems > 0 ? `/roadmap/${esc(user.client_slug || "")}` : "/roadmap", roadmapItems > 0)}
+            ${nextStep("Explore competitor data", "See how your AEO score stacks up against your industry.", compCount > 0 ? `/competitors/${esc(user.client_slug || "")}` : "/competitors", compCount > 0)}
+            ${nextStep("Connect Google Search Console", "Link GSC to see how AI-driven queries are affecting your organic traffic.", "/settings", false)}
+            ${nextStep("Set up citation tracking", "Monitor when AI engines mention your brand in their answers.", `/citations/${esc(user.client_slug || "")}`, false)}
+          </div>
+        </div>
+
+        <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;margin-bottom:32px;font-size:12px;color:var(--text-faint);line-height:1.7">
+          Weekly scans run every Monday at 6am UTC. Results appear within the hour, and you'll get a digest email with score changes and top action items. Need help? <a href="/support" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">Contact support</a>
         </div>
 
         <a href="/" class="btn">Go to dashboard</a>
@@ -335,4 +347,21 @@ export async function handleOnboardingSkip(user: User, env: Env): Promise<Respon
     await env.DB.prepare("UPDATE users SET onboarded = 1 WHERE id = ?").bind(user.id).run();
   }
   return redirect("/");
+}
+
+function nextStep(title: string, description: string, href: string, done: boolean): string {
+  const checkmark = done
+    ? '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--bg)">+</span>'
+    : '<span style="flex-shrink:0;width:22px;height:22px;border-radius:50%;border:1px solid var(--line);display:flex;align-items:center;justify-content:center"></span>';
+  const titleColor = done ? "var(--text-faint)" : "var(--text)";
+  const textDecoration = done ? "line-through" : "none";
+
+  return `
+    <a href="${href}" style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;background:var(--bg);border:1px solid var(--line);border-radius:4px;text-decoration:none;transition:border-color .2s">
+      ${checkmark}
+      <div>
+        <div style="font-size:13px;color:${titleColor};text-decoration:${textDecoration}">${esc(title)}</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:4px;line-height:1.5">${esc(description)}</div>
+      </div>
+    </a>`;
 }

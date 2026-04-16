@@ -440,6 +440,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     <!-- Quick actions -->
     <div style="display:flex;gap:12px;flex-wrap:wrap">
       <a href="/admin/manage" class="btn">Manage clients</a>
+      <a href="/admin/scans" class="btn btn-ghost">Scan health</a>
+      <a href="/admin/engagement" class="btn btn-ghost">Engagement</a>
       <a href="/admin/leads" class="btn btn-ghost">View leads</a>
     </div>
   `;

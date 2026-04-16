@@ -7,6 +7,7 @@ import { layout, html, esc, redirect, safeParse, shortDate, longDate, fullDate }
 import { generateNarrative } from "../narrative";
 import { scanDomain } from "../scanner";
 import { autoCompleteRoadmapItems } from "../auto-complete";
+import { canAccessClient } from "../agency";
 
 /** Build a getting-started checklist for new clients */
 async function buildGettingStarted(domain: Domain, user: User, env: Env): Promise<string> {
@@ -743,7 +744,7 @@ async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> 
 export async function handleScanCompare(domainId: number, user: User, env: Env, url: URL): Promise<Response> {
   const domain = await env.DB.prepare("SELECT * FROM domains WHERE id = ? AND active = 1").bind(domainId).first<Domain>();
   if (!domain) return html(layout("Not Found", '<div class="empty"><h3>Domain not found</h3></div>', user), 404);
-  if (user.role !== "admin" && user.client_slug !== domain.client_slug) {
+  if (!(await canAccessClient(env, user, domain.client_slug))) {
     return html(layout("Not Found", '<div class="empty"><h3>Domain not found</h3></div>', user), 404);
   }
 
@@ -945,8 +946,9 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     return html(layout("Not Found", `<div class="empty"><h3>Domain not found</h3></div>`, user), 404);
   }
 
-  // Auth check: client can only see own domains
-  if (user.role !== "admin" && user.client_slug !== domain.client_slug) {
+  // Auth check: admins see all, agency admins see their agency's clients,
+  // clients see only their own domains.
+  if (!(await canAccessClient(env, user, domain.client_slug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Domain not found</h3></div>`, user), 404);
   }
 
@@ -1395,7 +1397,7 @@ export async function handleClientRescan(domainId: number, user: User, env: Env)
   if (!domain) return redirect("/");
 
   // Auth check
-  if (user.role !== "admin" && user.client_slug !== domain.client_slug) {
+  if (!(await canAccessClient(env, user, domain.client_slug))) {
     return redirect("/");
   }
 

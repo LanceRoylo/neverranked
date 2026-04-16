@@ -7,6 +7,7 @@
 
 import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
 import { layout, html, esc, redirect, safeParse, shortDate } from "../render";
+import { canAccessClient } from "../agency";
 
 interface MonthBounds {
   label: string;       // "April 2026"
@@ -65,7 +66,7 @@ function statCard(label: string, value: string, delta: string, deltaColor: strin
 
 export async function handleReport(clientSlug: string, monthSlug: string, user: User, env: Env): Promise<Response> {
   // Auth
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", '<div class="empty"><h3>Page not found</h3></div>', user), 404);
   }
 
@@ -441,7 +442,7 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
 
 /** Available months that have data for the month picker */
 export async function handleReportIndex(clientSlug: string, user: User, env: Env): Promise<Response> {
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", '<div class="empty"><h3>Page not found</h3></div>', user), 404);
   }
 

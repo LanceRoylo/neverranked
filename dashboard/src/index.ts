@@ -12,7 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion } from "./routes/admin";
 import { handleCockpit } from "./routes/cockpit";
-import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage } from "./routes/competitors";
+import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
@@ -31,6 +31,13 @@ import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead } from "./ro
 import { handleLearn, handleLearnArticle } from "./routes/learn";
 import { handleReport, handleReportIndex, handleSendReport } from "./routes/report";
 import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRoadmap, handleDemoPost } from "./routes/demo";
+import { handleSupport, handleSupportSubmit } from "./routes/support";
+import { handleScanHealth } from "./routes/scan-health";
+import { handleEngagement } from "./routes/engagement";
+import { handleAgencyDashboard } from "./routes/agency";
+import { handleAgencySettingsGet, handleAgencySettingsPost, handleAgencyAsset } from "./routes/agency-settings";
+import { handleAgencyBillingGet, handleAgencyBillingActivate, handleAgencyBillingSuccess } from "./routes/agency-billing";
+import { getBrandingContext } from "./agency";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -121,6 +128,14 @@ export default {
       return handleInjectScript(injectMatch[1], env);
     }
 
+    // Agency assets (logos). Public on purpose -- these are what
+    // branded client pages render in the topbar. Path and filename
+    // patterns are locked down inside the handler.
+    const assetMatch = path.match(/^\/_assets\/agency\/([a-z0-9][a-z0-9-]*)\/([^/]+)$/);
+    if (assetMatch) {
+      return handleAgencyAsset(assetMatch[1], assetMatch[2], env);
+    }
+
     // --- Auth check ---
 
     const user = await getUser(request, env);
@@ -134,6 +149,17 @@ export default {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path, authed: false }, ipHash: hashIP(ip) }));
       return redirect("/login");
+    }
+
+    // Compute branding once per request. Route handlers don't need to
+    // thread it through layout() calls -- render.ts reads it off
+    // user._branding as a fallback. We scope the slug to the path we
+    // can trust (the user's own client_slug) so that an agency_admin
+    // viewing multiple clients always sees their own agency branding.
+    try {
+      user._branding = await getBrandingContext(env, user, user.client_slug);
+    } catch {
+      // Branding is cosmetic -- don't fail the request if the lookup errors.
     }
 
     // Track authenticated page view
@@ -189,6 +215,11 @@ export default {
 
     // Home -- single-domain clients skip straight to their report
     if (path === "/" || path === "") {
+      // Agency admins land on their own agency dashboard, not the
+      // direct-client home (which has no meaning for them).
+      if (user.role === "agency_admin") {
+        return redirect("/agency");
+      }
       if (user.role === "client" && user.client_slug) {
         const clientDomains = (await env.DB.prepare(
           "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1"
@@ -198,6 +229,26 @@ export default {
         }
       }
       return handleHome(user, env);
+    }
+
+    // Agency dashboard (agency_admin lands here; admin can preview via ?agency=slug)
+    if (path === "/agency" && method === "GET") {
+      return handleAgencyDashboard(user, env, url);
+    }
+    if (path === "/agency/settings" && method === "GET") {
+      return handleAgencySettingsGet(user, env, url);
+    }
+    if (path === "/agency/settings" && method === "POST") {
+      return handleAgencySettingsPost(request, user, env);
+    }
+    if (path === "/agency/billing" && method === "GET") {
+      return handleAgencyBillingGet(user, env, url);
+    }
+    if (path === "/agency/billing/activate" && method === "POST") {
+      return handleAgencyBillingActivate(request, user, env);
+    }
+    if (path === "/agency/billing/success" && method === "GET") {
+      return handleAgencyBillingSuccess(user, env, url);
     }
 
     // Domain detail
@@ -220,6 +271,12 @@ export default {
     }
     if (path === "/admin/manage" && method === "GET" && user.role === "admin") {
       return handleAdminHome(user, env);
+    }
+    if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
+      return handleScanHealth(user, env);
+    }
+    if (path === "/admin/engagement" && method === "GET" && user.role === "admin") {
+      return handleEngagement(user, env);
     }
     if (path === "/admin/alerts/read-all" && method === "POST" && user.role === "admin") {
       const now = Math.floor(Date.now() / 1000);
@@ -332,6 +389,10 @@ export default {
     const compRemoveMatch = path.match(/^\/competitors\/([^/]+)\/remove$/);
     if (compRemoveMatch && method === "POST") {
       return handleRemoveCompetitorFromPage(decodeURIComponent(compRemoveMatch[1]), request, user, env);
+    }
+    const compReorderMatch = path.match(/^\/competitors\/([^/]+)\/reorder$/);
+    if (compReorderMatch && method === "POST") {
+      return handleReorderCompetitors(decodeURIComponent(compReorderMatch[1]), request, user, env);
     }
     const compMatch = path.match(/^\/competitors\/([^/]+)$/);
     if (compMatch) {
@@ -471,6 +532,14 @@ export default {
     }
     if (path === "/settings/emails" && method === "POST") {
       return handleUpdateEmailPrefs(request, user, env);
+    }
+
+    // Support
+    if (path === "/support" && method === "GET") {
+      return handleSupport(user, env, url);
+    }
+    if (path === "/support" && method === "POST") {
+      return handleSupportSubmit(request, user, env);
     }
 
     // Knowledge base

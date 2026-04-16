@@ -15,6 +15,12 @@ import { layout, html, redirect } from "../render";
 import { createMagicLink } from "../auth";
 import { scanDomain } from "../scanner";
 import { autoGenerateRoadmap } from "../auto-provision";
+import {
+  handleAgencyCheckoutCompleted,
+  handleAgencySubscriptionDeleted,
+  handleAgencyInvoiceFailed,
+  resolveAgencyId,
+} from "../stripe-agency";
 
 // ---------- Plan config ----------
 
@@ -252,6 +258,32 @@ export async function handleStripeWebhook(
 
   const event = JSON.parse(payload);
   const now = Math.floor(Date.now() / 1000);
+
+  // ---------- Agency event dispatch ----------
+  //
+  // Agency subscriptions carry metadata.agency_id on both the Checkout
+  // Session and the Subscription. We resolve it up-front and peel off
+  // the relevant events before falling through to the direct-client
+  // path. This keeps the two billing stacks cleanly separated without
+  // duplicating webhook plumbing.
+  try {
+    const agencyId = await resolveAgencyId(event, env);
+    if (agencyId) {
+      switch (event.type) {
+        case "checkout.session.completed":
+          await handleAgencyCheckoutCompleted(event, env);
+          return new Response("OK", { status: 200 });
+        case "customer.subscription.deleted":
+          await handleAgencySubscriptionDeleted(event, env);
+          return new Response("OK", { status: 200 });
+        case "invoice.payment_failed":
+          await handleAgencyInvoiceFailed(event, env);
+          return new Response("OK", { status: 200 });
+      }
+    }
+  } catch (e) {
+    console.log(`Agency dispatch error (continuing as client event): ${e}`);
+  }
 
   switch (event.type) {
     case "checkout.session.completed": {

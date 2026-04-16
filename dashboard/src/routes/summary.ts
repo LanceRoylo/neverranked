@@ -8,13 +8,14 @@
 
 import type { Env, User, Domain, ScanResult, CitationSnapshot, GscSnapshot, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, esc, redirect } from "../render";
+import { canAccessClient } from "../agency";
 
 export async function handleSummary(
   slug: string,
   user: User,
   env: Env
 ): Promise<Response> {
-  if (user.role === "client" && user.client_slug !== slug) {
+  if (!(await canAccessClient(env, user, slug))) {
     return redirect("/");
   }
 

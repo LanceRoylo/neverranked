@@ -4,6 +4,7 @@
 
 import type { Env, User, Domain, ScanResult, GscSnapshot, CitationSnapshot } from "../types";
 import { layout, html, esc, safeParse } from "../render";
+import { getGoogleAuthUrl } from "../gsc";
 
 interface HomeGscData {
   clicks: number;
@@ -437,6 +438,20 @@ async function buildClientHealth(env: Env): Promise<string> {
   `;
 }
 
+function buildGscNudge(user: User, env: Env): string {
+  const authUrl = getGoogleAuthUrl(env, "https://app.neverranked.com");
+  const state = `client:${user.client_slug}`;
+  return `
+    <div style="margin-bottom:24px;padding:18px 20px;background:var(--bg-lift);border:1px solid var(--line-strong);border-radius:4px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:4px">See what people search to find you</div>
+        <div style="font-size:12px;color:var(--text-faint);line-height:1.5">Connect Google Search Console for clicks, top queries, and traffic trends alongside your AEO data. Read-only access, disconnect anytime.</div>
+      </div>
+      <a href="${esc(authUrl)}&state=${esc(state)}" class="btn" style="white-space:nowrap;flex-shrink:0">Connect Search Console</a>
+    </div>
+  `;
+}
+
 export async function handleHome(user: User, env: Env): Promise<Response> {
   const clientSlug = user.role === "admin" ? null : user.client_slug;
 
@@ -570,6 +585,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     </div>
 
     ${changeBanner}
+    ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
     ${user.role === "admin" ? await buildClientHealth(env) : await buildWeeklySummary(user, env)}
 
     ${domainCards.length > 0

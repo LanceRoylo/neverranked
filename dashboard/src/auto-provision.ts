@@ -11,6 +11,7 @@
  */
 
 import type { Env, ScanResult, Domain } from "./types";
+import { hasSchemaType } from "../../packages/aeo-analyzer/src";
 
 interface RoadmapSeed {
   title: string;
@@ -28,8 +29,13 @@ interface ScanContext {
   domain: string;
 }
 
+// Uses the shared schema.org hierarchy, so subtypes count as matching
+// parent types (e.g. ProfessionalService satisfies an Organization check).
+// schemaCoverage is also consulted in case a caller pre-computed it with
+// the same helper upstream.
 function hasSchema(ctx: ScanContext, type: string): boolean {
-  return ctx.schemaCoverage.some(c => c.type === type && c.present) || ctx.schemaTypes.includes(type);
+  if (ctx.schemaCoverage.some(c => c.type === type && c.present)) return true;
+  return hasSchemaType(ctx.schemaTypes, type);
 }
 
 // ---------------------------------------------------------------------------

@@ -22,6 +22,12 @@
       "id": "d95d981b0ee5482a8d49e1f56105670e"
     }
   ],
+  "r2_buckets": [
+    {
+      "binding": "AGENCY_ASSETS",
+      "bucket_name": "neverranked-agency-assets"
+    }
+  ],
   "routes": [
     { "pattern": "app.neverranked.com", "custom_domain": true }
   ],

@@ -9,6 +9,7 @@
 import type { Env, User, GscSnapshot } from "../types";
 import { html, layout, esc, redirect } from "../render";
 import { getGoogleAuthUrl, exchangeCodeForTokens, listSites, getValidToken, fetchAggregateTotals, fetchSearchAnalytics } from "../gsc";
+import { canAccessClient } from "../agency";
 
 // ---------------------------------------------------------------------------
 // OAuth callback
@@ -38,8 +39,9 @@ export async function handleGoogleCallback(
     return redirect(errorRedirect + "?error=no_code");
   }
 
-  // Client can only connect their own slug
-  if (isClientConnect && user.role === "client" && user.client_slug !== clientSlug) {
+  // Only allow connecting GSC for a client slug the user can access
+  // (admins: any slug; agency admins: their agency's clients; clients: own slug).
+  if (isClientConnect && clientSlug && !(await canAccessClient(env, user, clientSlug))) {
     return redirect("/settings");
   }
 
@@ -360,7 +362,7 @@ export async function handleSearchPerformance(
   env: Env,
   url?: URL
 ): Promise<Response> {
-  if (user.role === "client" && user.client_slug !== slug) {
+  if (!(await canAccessClient(env, user, slug))) {
     return redirect("/");
   }
 

@@ -118,6 +118,24 @@ img,svg{display:block;max-width:100%}
   letter-spacing:0;text-transform:none;
   line-height:1;
 }
+.nav-dropdown{position:relative}
+.nav-dropdown>.nav-links-item{cursor:pointer}
+.nav-dropdown-menu{
+  display:none;position:absolute;top:calc(100% + 8px);right:0;
+  background:var(--bg-lift);border:1px solid var(--line-strong);
+  min-width:180px;z-index:60;
+  box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.nav-dropdown:hover .nav-dropdown-menu{display:block}
+.nav-dropdown-menu a{
+  display:block;padding:10px 16px;
+  font-family:var(--label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-mute);transition:background .15s,color .15s;
+  border-bottom:1px solid var(--line);
+}
+.nav-dropdown-menu a:last-child{border-bottom:none}
+.nav-dropdown-menu a:hover{background:var(--gold-wash);color:var(--text)}
+.nav-dropdown-menu a::after{display:none}
 .topbar .user-info{
   font-family:var(--mono);font-size:12px;color:var(--text-faint);
   display:flex;align-items:center;gap:16px;
@@ -284,6 +302,15 @@ a.card:hover{border-color:var(--gold-dim)}
   background:var(--bg-lift);color:var(--text-soft);
 }
 .flash-error{border-left-color:var(--red);color:var(--red)}
+
+/* agency branding footer */
+.powered-by{
+  text-align:center;padding:40px 20px 30px;
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  letter-spacing:.08em;text-transform:uppercase;
+}
+.powered-by a{color:var(--text-faint);border-bottom:1px dotted var(--line)}
+.powered-by a:hover{color:var(--text-mute);border-bottom-color:var(--text-mute)}
 
 /* delta indicators */
 .delta{font-size:13px;margin-top:4px;display:inline-block;font-family:var(--mono)}

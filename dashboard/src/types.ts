@@ -5,11 +5,15 @@
 export interface Env {
   DB: D1Database;
   LEADS: KVNamespace;
+  AGENCY_ASSETS: R2Bucket;
   ADMIN_SECRET: string;
   ADMIN_EMAIL: string;
   RESEND_API_KEY?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_AGENCY_SIGNAL_PRICE_ID?: string;
+  STRIPE_AGENCY_AMPLIFY_PRICE_ID?: string;
+  STRIPE_AGENCY_INTRO_COUPON_ID?: string;
   DASHBOARD_ORIGIN?: string;
   PERPLEXITY_API_KEY?: string;
   OPENAI_API_KEY?: string;
@@ -53,12 +57,15 @@ export interface GscSnapshot {
   created_at: number;
 }
 
+export type UserRole = "client" | "admin" | "agency_admin";
+
 export interface User {
   id: number;
   email: string;
   name: string | null;
-  role: "client" | "admin";
+  role: UserRole;
   client_slug: string | null;
+  agency_id: number | null;
   onboarded: number;
   email_digest: number;
   email_alerts: number;
@@ -76,6 +83,8 @@ export interface User {
   // Runtime-only fields (not in DB)
   _alertCount?: number;
   _roadmapInProgress?: number;
+  _agency?: Agency;
+  _branding?: BrandingContext;
 }
 
 export interface Session {
@@ -85,6 +94,9 @@ export interface Session {
   created_at: number;
 }
 
+export type AgencyClientAccess = "internal" | "full";
+export type AgencyPlan = "signal" | "amplify";
+
 export interface Domain {
   id: number;
   client_slug: string;
@@ -92,8 +104,88 @@ export interface Domain {
   is_competitor: number;
   competitor_label: string | null;
   active: number;
+  agency_id: number | null;
+  plan: AgencyPlan | null;
+  client_access: AgencyClientAccess;
+  activated_at: number | null;
+  sort_order: number;
   created_at: number;
   updated_at: number;
+}
+
+export type AgencyStatus = "pending" | "active" | "paused" | "archived";
+
+export interface Agency {
+  id: number;
+  slug: string;
+  name: string;
+  contact_email: string;
+  logo_url: string | null;
+  primary_color: string;
+  status: AgencyStatus;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  signal_slot_item_id: string | null;
+  amplify_slot_item_id: string | null;
+  intro_discount_ends_at: number | null;
+  notes: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export type AgencyApplicationStatus = "pending" | "approved" | "rejected";
+
+export interface AgencyApplication {
+  id: number;
+  agency_name: string;
+  contact_name: string;
+  contact_email: string;
+  website: string | null;
+  estimated_clients: number | null;
+  notes: string | null;
+  status: AgencyApplicationStatus;
+  reviewed_by: number | null;
+  reviewed_at: number | null;
+  agency_id: number | null;
+  created_at: number;
+}
+
+export interface AgencyInvite {
+  id: number;
+  agency_id: number;
+  email: string;
+  role: "agency_admin" | "client";
+  client_slug: string | null;
+  token: string;
+  expires_at: number;
+  used_at: number | null;
+  invited_by: number | null;
+  created_at: number;
+}
+
+export type AgencySlotEventType = "activated" | "paused" | "resumed" | "removed";
+
+export interface AgencySlotEvent {
+  id: number;
+  agency_id: number;
+  domain_id: number;
+  plan: AgencyPlan;
+  event_type: AgencySlotEventType;
+  stripe_item_id: string | null;
+  quantity_before: number | null;
+  quantity_after: number | null;
+  prorated_amount: number | null;
+  note: string | null;
+  created_at: number;
+}
+
+/** Branding context for a request. Populated by middleware so the layout
+ *  can swap logo, primary color, and brand name when the viewer is part
+ *  of an agency (admin side) or a Mode-2 client of an agency. */
+export interface BrandingContext {
+  source: "neverranked" | "agency";
+  agency?: Agency;
+  showPoweredBy: boolean;
 }
 
 export interface ScanResult {

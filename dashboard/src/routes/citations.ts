@@ -13,6 +13,7 @@ import type { Env, User, CitationKeyword, CitationSnapshot, Domain, ScanResult }
 import { html, layout, esc, redirect } from "../render";
 import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
 import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
+import { canAccessClient } from "../agency";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -379,8 +380,9 @@ export async function handleCitations(
   user: User,
   env: Env
 ): Promise<Response> {
-  // Access check: client can only see their own slug
-  if (user.role === "client" && user.client_slug !== slug) {
+  // Access check: admins see all, agency admins see their agency's clients,
+  // clients see only their own slug.
+  if (!(await canAccessClient(env, user, slug))) {
     return redirect("/");
   }
 

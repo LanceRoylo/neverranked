@@ -9,6 +9,7 @@
 import type { Env, User, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { regenerateRoadmap } from "../auto-provision";
+import { canAccessClient } from "../agency";
 
 const CATEGORIES: Record<string, string> = {
   schema: "Schema Markup",
@@ -154,8 +155,9 @@ export async function checkPhaseCompletion(clientSlug: string, env: Env): Promis
 }
 
 export async function handleRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
-  // Access check: client can only see their own slug
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  // Access check: admins see all, agency admins see their agency's clients,
+  // clients see only their own slug.
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
   }
 
@@ -538,8 +540,9 @@ export async function handleAddRoadmapItem(clientSlug: string, request: Request,
 
 /** Update a roadmap item status or note */
 export async function handleUpdateRoadmapItem(clientSlug: string, itemId: number, request: Request, user: User, env: Env): Promise<Response> {
-  // Access check: client can only update their own slug
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  // Access check: admins see all, agency admins see their agency's clients,
+  // clients update only their own slug.
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return redirect("/roadmap");
   }
 
