@@ -168,8 +168,8 @@ export async function handleAgencyBillingGet(
       <div class="card">
         <div class="label" style="margin-bottom:12px">Activate your subscription</div>
         <p style="font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 16px">
-          Start with one Signal slot. You can add more slots after activation;
-          billing stays in sync automatically.
+          Start with one Signal slot. Add more after activation.
+          Billing stays in sync automatically.
           ${env.STRIPE_AGENCY_INTRO_COUPON_ID
             ? `Your first 3 months include a 10% intro credit.`
             : ""}
@@ -187,7 +187,7 @@ export async function handleAgencyBillingGet(
     <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div>
         <h1>Billing</h1>
-        <p class="section-sub">${esc(agency.name)} -- agency subscription</p>
+        <p class="section-sub">${esc(agency.name)} agency subscription</p>
       </div>
       <div style="display:flex;gap:8px">
         <a href="/agency" class="btn btn-ghost">Back to dashboard</a>
