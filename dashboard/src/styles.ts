@@ -126,6 +126,12 @@ img,svg{display:block;max-width:100%}
   min-width:180px;z-index:60;
   box-shadow:0 8px 24px rgba(0,0,0,.4);
 }
+/* Invisible hover bridge: fills the 8px gap between the nav link and the
+   menu so the mouse can traverse without losing :hover state. Without
+   this, the dropdown closes the instant the cursor leaves the link. */
+.nav-dropdown-menu::before{
+  content:'';position:absolute;left:0;right:0;top:-8px;height:8px;
+}
 .nav-dropdown:hover .nav-dropdown-menu{display:block}
 .nav-dropdown-menu a{
   display:block;padding:10px 16px;
