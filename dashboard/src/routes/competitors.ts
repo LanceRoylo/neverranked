@@ -8,6 +8,7 @@
 import type { Env, User, Domain, ScanResult, CitationSnapshot } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
+import { canAccessClient } from "../agency";
 
 interface ComparisonRow {
   domain: Domain;
@@ -55,14 +56,20 @@ function buildCompetitorNarrative(
 }
 
 export async function handleCompetitors(clientSlug: string, user: User, env: Env): Promise<Response> {
-  // Access check: client can only see their own slug
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  // Access check: admins see all, agency admins see their agency's clients,
+  // clients see only their own slug.
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
   }
 
-  // Get all domains for this client (primary + competitors)
+  // Get all domains for this client (primary + competitors).
+  // Order: primary first (is_competitor = 0), then competitors by the
+  // user's drag-and-drop order (sort_order), with domain as a tiebreaker
+  // for rows that haven't been explicitly reordered yet (new competitors
+  // land with sort_order = max + 1, so ties only happen for the initial
+  // seed or concurrent inserts).
   const domains = (await env.DB.prepare(
-    "SELECT * FROM domains WHERE client_slug = ? AND active = 1 ORDER BY is_competitor, domain"
+    "SELECT * FROM domains WHERE client_slug = ? AND active = 1 ORDER BY is_competitor, sort_order, domain"
   ).bind(clientSlug).all<Domain>()).results;
 
   if (domains.length === 0) {
@@ -125,7 +132,15 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
   const barColor = (score: number) =>
     score >= 80 ? "var(--green)" : score >= 60 ? "var(--yellow)" : "var(--red)";
 
-  // Score comparison chart
+  // Score comparison chart. The primary (YOU) row is pinned at the top
+  // and is NOT draggable. Competitor rows are reorderable via native
+  // HTML5 drag-and-drop; the handle (::) on the left owns the drag.
+  // On drop, the inline script POSTs the new order to /competitors/
+  // {slug}/reorder. If the POST fails the page is reloaded so the user
+  // sees the server-authoritative order instead of stale local state.
+  //
+  // Grid columns change between the primary and competitor rows so the
+  // drag handle lines up with (but does not displace) the domain text.
   const allRows = [...primary, ...competitors];
   const scoreChart = allRows.map(r => {
     const score = r.scan && !r.scan.error ? r.scan.aeo_score : 0;
@@ -137,8 +152,32 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       ? '<span style="font-family:var(--label);font-size:8px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--gold);border:1px solid var(--gold-dim);padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle">YOU</span>'
       : '<span style="font-family:var(--label);font-size:8px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--line);padding:1px 6px;border-radius:2px;margin-left:6px;vertical-align:middle">COMPETITOR</span>';
 
+    // Drag handle: only competitors get a functional grip. The primary
+    // row keeps a spacer cell so grid columns align across all rows.
+    // Using a 2x3 dot grid (standard "grip dots" pattern) in a 20px
+    // column so the handle is an obvious affordance and easy to grab
+    // without being visually loud. draggable="true" lives on the
+    // HANDLE only (not the row) so grabbing the score bar, domain
+    // label, or grade does not accidentally start a drag.
+    const handle = isPrimary
+      ? '<div style="width:20px" aria-hidden="true"></div>'
+      : '<div class="drag-handle" draggable="true" style="width:20px;display:grid;grid-template-columns:4px 4px;grid-auto-rows:4px;justify-content:center;align-content:center;gap:3px;color:var(--text-faint);cursor:grab;user-select:none;padding:4px 0;opacity:.55;transition:opacity .15s var(--ease)" title="Drag to reorder" aria-label="Drag to reorder">'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '<span style="width:4px;height:4px;border-radius:50%;background:currentColor"></span>'
+      + '</div>';
+
+    // data-domain-id stays on the row (the script reads it to build the
+    // reorder payload). draggable moved to the handle above.
+    const rowAttrs = isPrimary ? "" : ` data-domain-id="${r.domain.id}"`;
+    const rowClass = isPrimary ? "score-row score-row-primary" : "score-row score-row-competitor";
+
     return `
-      <div style="display:grid;grid-template-columns:260px 1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(251,248,239,.06)">
+      <div class="${rowClass}"${rowAttrs} style="display:grid;grid-template-columns:20px 240px 1fr auto;gap:16px;align-items:center;padding:12px 0;border-bottom:1px solid rgba(251,248,239,.06);transition:background .15s var(--ease)">
+        ${handle}
         <div style="font-size:13px;${isPrimary ? 'color:var(--gold);font-weight:400' : 'color:var(--text-faint)'};overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(label)}">${esc(label)}${tag}</div>
         <div style="position:relative;height:28px;background:rgba(251,248,239,.04);border-radius:3px;overflow:hidden">
           <div style="position:absolute;left:0;top:0;bottom:0;width:${pct}%;background:${isPrimary ? 'var(--gold-wash)' : 'rgba(251,248,239,.06)'};border-right:2px solid ${isPrimary ? 'var(--gold)' : barColor(score)};transition:width .3s var(--ease)"></div>
@@ -148,6 +187,121 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       </div>
     `;
   }).join("");
+
+  // Hint: only show the reorder hint when the user actually has
+  // multiple competitors -- single-competitor lists have nothing to
+  // reorder, and showing a hint there would be clutter.
+  const reorderHint = competitors.length >= 2
+    ? `<div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--text-faint);letter-spacing:.05em">
+         <span>Drag rows to reorder</span>
+       </div>`
+    : "";
+
+  // Inline reorder script. Native HTML5 DnD so there's no extra bundle.
+  // Drop indicator uses box-shadow (no layout shift) instead of
+  // border-top so rows don't jump as the user drags across them.
+  // Using dragenter for highlight + dragover only to preventDefault
+  // is more stable than driving highlight off dragover directly,
+  // which fires many times per second and can cause flicker.
+  //
+  // On drop we optimistically reorder in the DOM, POST the new order,
+  // and reload on failure so the user sees the server-authoritative
+  // order. Keyboard a11y (arrow keys on a focused row) is a TODO v2.
+  const reorderScript = competitors.length >= 2 ? `
+    <script>
+      (function() {
+        var container = document.querySelector('[data-reorder-container]');
+        if (!container) return;
+        var dragEl = null;
+        var DROP_BEFORE = 'inset 0 2px 0 0 var(--gold)';
+        var DROP_AFTER  = 'inset 0 -2px 0 0 var(--gold)';
+
+        function getRow(el) {
+          while (el && el !== container) {
+            if (el.classList && el.classList.contains('score-row-competitor')) return el;
+            el = el.parentNode;
+          }
+          return null;
+        }
+
+        function clearHighlights() {
+          container.querySelectorAll('.score-row-competitor').forEach(function(r) {
+            r.style.boxShadow = '';
+          });
+        }
+
+        container.addEventListener('dragstart', function(e) {
+          var row = getRow(e.target);
+          if (!row) return;
+          dragEl = row;
+          row.style.opacity = '0.45';
+          if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = 'move';
+            // Firefox requires setData() to actually start a drag.
+            try { e.dataTransfer.setData('text/plain', row.getAttribute('data-domain-id') || ''); } catch (_) {}
+          }
+        });
+
+        container.addEventListener('dragend', function() {
+          if (dragEl) dragEl.style.opacity = '';
+          clearHighlights();
+          dragEl = null;
+        });
+
+        // dragover must preventDefault for drop to fire. We also refresh
+        // the top/bottom highlight here so it tracks the cursor even if
+        // the mouse moves within a single row (top half -> bottom half).
+        container.addEventListener('dragover', function(e) {
+          if (!dragEl) return;
+          e.preventDefault();
+          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+          var target = getRow(e.target);
+          if (!target || target === dragEl) { clearHighlights(); return; }
+          var rect = target.getBoundingClientRect();
+          var before = e.clientY < rect.top + rect.height / 2;
+          clearHighlights();
+          target.style.boxShadow = before ? DROP_BEFORE : DROP_AFTER;
+        });
+
+        // dragleave only clears when we're leaving the container entirely
+        // (not when moving between rows inside it).
+        container.addEventListener('dragleave', function(e) {
+          if (e.target === container || !container.contains(e.relatedTarget)) {
+            clearHighlights();
+          }
+        });
+
+        container.addEventListener('drop', function(e) {
+          if (!dragEl) return;
+          e.preventDefault();
+          var target = getRow(e.target);
+          clearHighlights();
+          if (target && target !== dragEl) {
+            var rect = target.getBoundingClientRect();
+            var before = e.clientY < rect.top + rect.height / 2;
+            target.parentNode.insertBefore(dragEl, before ? target : target.nextSibling);
+            persistOrder();
+          }
+        });
+
+        function persistOrder() {
+          var ids = [];
+          container.querySelectorAll('.score-row-competitor').forEach(function(r) {
+            var id = r.getAttribute('data-domain-id');
+            if (id) ids.push(Number(id));
+          });
+          fetch(${JSON.stringify(`/competitors/${clientSlug}/reorder`)}, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ order: ids }),
+            credentials: 'same-origin'
+          }).then(function(res) {
+            if (!res.ok) window.location.reload();
+          }).catch(function() { window.location.reload(); });
+        }
+      })();
+    </script>
+  ` : "";
 
   // Win/loss summary
   const primaryScore = primary[0]?.scan?.aeo_score || 0;
@@ -295,10 +449,12 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     <!-- Score Comparison -->
     <div style="margin-bottom:48px">
       <div class="label" style="margin-bottom:16px">AEO Score Comparison</div>
-      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px 20px">
+      <div data-reorder-container style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:16px 20px">
         ${scoreChart}
       </div>
+      ${reorderHint}
     </div>
+    ${reorderScript}
 
     ${buildTrendChart(trendData)}
 
@@ -571,7 +727,7 @@ export async function handleAddCompetitorFromPage(
   env: Env
 ): Promise<Response> {
   // Access check
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return redirect("/competitors");
   }
 
@@ -592,10 +748,18 @@ export async function handleAddCompetitorFromPage(
   ).bind(domain, clientSlug).first();
 
   if (!existing) {
+    // Figure out the current max sort_order among this client's
+    // competitors so the new row lands at the bottom of the list
+    // instead of the top. Defensive coalesce to 0 for the first add.
+    const maxOrder = await env.DB.prepare(
+      "SELECT COALESCE(MAX(sort_order), 0) AS max_order FROM domains WHERE client_slug = ? AND is_competitor = 1"
+    ).bind(clientSlug).first<{ max_order: number }>();
+    const nextOrder = (maxOrder?.max_order || 0) + 1;
+
     // Add domain
     await env.DB.prepare(
-      "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, 1, ?, 1, ?, ?)"
-    ).bind(clientSlug, domain, label, now, now).run();
+      "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, sort_order, created_at, updated_at) VALUES (?, ?, 1, ?, 1, ?, ?, ?)"
+    ).bind(clientSlug, domain, label, nextOrder, now, now).run();
 
     // Record as suggestion for audit trail
     try {
@@ -622,6 +786,86 @@ export async function handleAddCompetitorFromPage(
   return redirect(`/competitors/${clientSlug}`);
 }
 
+/**
+ * Handle POST /competitors/:slug/reorder with JSON body { order: [id, id, ...] }.
+ *
+ * We accept the client's proposed order, but only apply sort_order to
+ * rows that actually match (client_slug AND is_competitor = 1 AND active
+ * = 1 AND id IN the payload). That means a malicious or stale payload
+ * can't touch rows from another client or bring a soft-deleted row
+ * back to life. Rows not in the payload keep their existing sort_order.
+ *
+ * Returns JSON { ok: true } on success so the client's fetch can
+ * distinguish real success from a 2xx-with-redirect auth bounce.
+ */
+export async function handleReorderCompetitors(
+  clientSlug: string,
+  request: Request,
+  user: User,
+  env: Env
+): Promise<Response> {
+  // Access check: same rules as the GET page. A user who can't see the
+  // comparison can't reorder it.
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return new Response(JSON.stringify({ ok: false, error: "forbidden" }), {
+      status: 403,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  let payload: { order?: unknown } = {};
+  try {
+    payload = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ ok: false, error: "invalid json" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  const raw = Array.isArray(payload.order) ? payload.order : [];
+  // Coerce and de-dupe. Anything non-numeric or <= 0 is dropped.
+  const seen = new Set<number>();
+  const ids: number[] = [];
+  for (const v of raw) {
+    const n = Number(v);
+    if (Number.isFinite(n) && n > 0 && !seen.has(n)) {
+      seen.add(n);
+      ids.push(n);
+    }
+  }
+  if (ids.length === 0) {
+    return new Response(JSON.stringify({ ok: false, error: "empty order" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Cap the payload so a pathological client can't DOS us. 200 competitors
+  // per client is already far beyond any real usage.
+  if (ids.length > 200) {
+    return new Response(JSON.stringify({ ok: false, error: "too many ids" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+
+  // Build a single batched update. Each statement scopes to client_slug
+  // AND is_competitor = 1 so cross-client or primary-row writes are
+  // impossible even if someone forges ids in the payload.
+  const stmts = ids.map((id, index) =>
+    env.DB.prepare(
+      "UPDATE domains SET sort_order = ?, updated_at = ? WHERE id = ? AND client_slug = ? AND is_competitor = 1 AND active = 1"
+    ).bind(index + 1, Math.floor(Date.now() / 1000), id, clientSlug)
+  );
+  await env.DB.batch(stmts);
+
+  return new Response(JSON.stringify({ ok: true, count: ids.length }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
 /** Handle POST to remove a competitor */
 export async function handleRemoveCompetitorFromPage(
   clientSlug: string,
@@ -630,7 +874,7 @@ export async function handleRemoveCompetitorFromPage(
   env: Env
 ): Promise<Response> {
   // Access check
-  if (user.role === "client" && user.client_slug !== clientSlug) {
+  if (!(await canAccessClient(env, user, clientSlug))) {
     return redirect("/competitors");
   }
 
