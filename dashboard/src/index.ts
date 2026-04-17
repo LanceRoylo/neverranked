@@ -100,9 +100,15 @@ export default {
       `);
     }
 
-    // Stripe webhook (no auth -- verified by signature)
-    if (path === "/stripe/webhook" && method === "POST") {
-      return handleStripeWebhook(request, env);
+    // Stripe webhook (no auth -- verified by signature). Non-POST methods
+    // return 405 explicitly so probes and health checks don't fall
+    // through to the auth middleware and get a confusing /login redirect.
+    if (path === "/stripe/webhook") {
+      if (method === "POST") return handleStripeWebhook(request, env);
+      return new Response("Method Not Allowed", {
+        status: 405,
+        headers: { "Allow": "POST", "Content-Type": "text/plain" },
+      });
     }
 
     // Demo mode (public, no auth)
@@ -131,9 +137,18 @@ export default {
     // Agency assets (logos). Public on purpose -- these are what
     // branded client pages render in the topbar. Path and filename
     // patterns are locked down inside the handler.
-    const assetMatch = path.match(/^\/_assets\/agency\/([a-z0-9][a-z0-9-]*)\/([^/]+)$/);
-    if (assetMatch) {
-      return handleAgencyAsset(assetMatch[1], assetMatch[2], env);
+    //
+    // We match the broader /_assets/agency/* prefix first so any path
+    // under it terminates at this route (returning 404 if the slug or
+    // filename doesn't fit our pattern) instead of falling through to
+    // the auth middleware and giving a misleading /login redirect on
+    // bad casing or bad filenames.
+    if (path.startsWith("/_assets/agency/")) {
+      const assetMatch = path.match(/^\/_assets\/agency\/([a-z0-9][a-z0-9-]*)\/([^/]+)$/);
+      if (assetMatch) {
+        return handleAgencyAsset(assetMatch[1], assetMatch[2], env);
+      }
+      return new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
     }
 
     // --- Auth check ---
