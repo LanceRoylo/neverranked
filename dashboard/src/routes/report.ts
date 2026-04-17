@@ -5,7 +5,7 @@
  * GSC trends, and red flag changes into a single printable page.
  */
 
-import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot } from "../types";
+import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot, Agency, BrandingContext } from "../types";
 import { layout, html, esc, redirect, safeParse, shortDate } from "../render";
 import { canAccessClient } from "../agency";
 
@@ -81,6 +81,37 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
   if (!domain) {
     return html(layout("Report", '<div class="empty"><h3>No domain found for this client</h3></div>', user, clientSlug));
   }
+
+  // Agency branding for this report.
+  //
+  // Unlike most dashboard pages where branding depends on who's viewing
+  // (admin always sees NeverRanked for ops clarity), the report page is
+  // special: it's a deliverable. If the client's primary domain has an
+  // agency attached and that agency is active, we render the report
+  // with the AGENCY's branding regardless of who clicks print. That way
+  // an admin generating a PDF to send onward still produces the right
+  // white-label output.
+  let brandedAgency: Agency | null = null;
+  if (domain.agency_id) {
+    const ag = await env.DB.prepare(
+      "SELECT * FROM agencies WHERE id = ?"
+    ).bind(domain.agency_id).first<Agency>();
+    if (ag && ag.status === "active") brandedAgency = ag;
+  }
+  // Defensive: primary_color might be null/empty in older rows. Clamp
+  // to NeverRanked gold so the CSS var override never ships an empty
+  // value that would break hex-color-dependent inline styles.
+  const accentColor = brandedAgency?.primary_color || "#c9a84c";
+  const brandName = brandedAgency?.name || "Never Ranked";
+
+  // Branding context for layout(). When an agency owns this client we
+  // want the full on-screen shell (topbar, logo, color) to match the
+  // print output so admin-viewers see exactly what their agency/client
+  // sees. Clients on Mode 2 would already get this via user._branding,
+  // but admin users override to agency here for consistency.
+  const reportBranding: BrandingContext | undefined = brandedAgency
+    ? { source: "agency", agency: brandedAgency, showPoweredBy: user.role === "client" }
+    : undefined;
 
   // ------------------------------------------------------------------
   // 1. AEO SCORE DATA
@@ -387,9 +418,25 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
 
   const printDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
+  // Per-report CSS var override: rewrite --gold so every SVG element,
+  // accent line, and inline ref that reads "var(--gold)" picks up the
+  // agency's color when branded. Scoped to the report page only (the
+  // <style> tag lives inside the page body so it doesn't leak to the
+  // broader admin shell).
+  const brandStyleOverride = brandedAgency
+    ? `<style>:root{--gold:${accentColor};--gold-dim:${accentColor}}</style>`
+    : "";
+
+  // Print-header swap: render the agency logo as an <img> when we have
+  // one, otherwise fall back to the agency (or NeverRanked) wordmark.
+  const printHeaderMark = brandedAgency && brandedAgency.logo_url
+    ? `<img src="${esc(brandedAgency.logo_url)}" alt="${esc(brandName)}" style="height:20px;max-width:180px;object-fit:contain;display:block" />`
+    : esc(brandName);
+
   const body = `
+    ${brandStyleOverride}
     <div class="print-header" style="display:none">
-      <div class="print-logo">Never Ranked</div>
+      <div class="print-logo">${printHeaderMark}</div>
       <div class="print-date">Monthly Report -- ${esc(clientSlug)} -- ${esc(bounds.label)}</div>
     </div>
 
@@ -437,7 +484,7 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
     ` : ''}
   `;
 
-  return html(layout(`Report: ${bounds.label}`, body, user, clientSlug));
+  return html(layout(`Report: ${bounds.label}`, body, user, clientSlug, reportBranding));
 }
 
 /** Available months that have data for the month picker */
