@@ -1,15 +1,20 @@
 /**
- * AEO Analyzer — Scoring and grading
+ * AEO Analyzer -- Scoring and grading
+ *
+ * Uses hasSchemaType() so subtypes count as matching parent types for
+ * scoring purposes (a ProfessionalService page earns the Organization
+ * points just like an Organization page does).
  */
 
 import type { Signals } from "./types";
+import { hasSchemaType } from "./hierarchy";
 
 export function calculateAeoScore(signals: Signals): number {
   let score = 0;
-  if (signals.schema_types.includes("Organization")) score += 20;
-  if (signals.schema_types.includes("WebSite")) score += 10;
-  if (signals.schema_types.includes("BreadcrumbList")) score += 10;
-  if (signals.schema_types.includes("FAQPage")) score += 10;
+  if (hasSchemaType(signals.schema_types, "Organization")) score += 20;
+  if (hasSchemaType(signals.schema_types, "WebSite")) score += 10;
+  if (hasSchemaType(signals.schema_types, "BreadcrumbList")) score += 10;
+  if (hasSchemaType(signals.schema_types, "FAQPage")) score += 10;
   if (signals.canonical) score += 10;
   if (signals.og_image) score += 5;
   if (signals.links_external >= 3) score += 15;
@@ -19,10 +24,22 @@ export function calculateAeoScore(signals: Signals): number {
   return score;
 }
 
+/**
+ * Grade bands tightened vs. academic grading (50% is not a C).
+ * AEO readiness is closer to binary — you either have the schema or
+ * you don't — so a passing grade should mean the site is actually
+ * AI-readable, not "almost there".
+ *
+ *   A  90-100  AI engines have everything they need to cite reliably
+ *   B  75-89   strong, minor gaps
+ *   C  60-74   meaningful gaps that cost citations
+ *   D  40-59   significant work needed
+ *   F   0-39   not AI-readable
+ */
 export function calculateGrade(score: number): string {
   if (score >= 90) return "A";
-  if (score >= 70) return "B";
-  if (score >= 50) return "C";
-  if (score >= 30) return "D";
+  if (score >= 75) return "B";
+  if (score >= 60) return "C";
+  if (score >= 40) return "D";
   return "F";
 }
