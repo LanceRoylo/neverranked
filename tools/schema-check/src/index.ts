@@ -1627,6 +1627,20 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     if(_sp.get(k)) _utm[k] = _sp.get(k);
   });
 
+  // Auto-scan via ?url= param. Used by outreach emails ("See the full scan
+  // yourself: https://check.neverranked.com/?url=agency.com") so the
+  // recipient lands on a pre-filled, auto-running scan and sees their real
+  // score without any click beyond the email link itself.
+  var _prefill = _sp.get('url');
+  if (_prefill) {
+    try {
+      input.value = _prefill;
+      // Defer one tick so the input is visually updated before the scan
+      // kicks off and the UI enters the loading state.
+      setTimeout(function(){ runCheckFinal(); }, 50);
+    } catch (e) { /* ignore */ }
+  }
+
   // Rebind
   async function runCheckFinal(){
     const url = normalizeUrl(input.value);
