@@ -181,13 +181,17 @@ interface DigestRow {
 }
 
 /**
- * Build and send the daily automation digest email. Skips when:
+ * Build and send the daily morning ops briefing. Includes:
+ *   - Automation actions in the last 24h (counts + top 10)
+ *   - Unread admin alerts (count + top 5)
+ *   - New free-scan leads from LEADS KV (count)
+ *   - Scan failures in last 24h (count)
+ *   - Active agency subscriptions + MRR
+ *
+ * Skips when:
  *   - The digest is disabled in settings.
  *   - We already sent one in the last 18 hours (dedupe).
- *   - There's nothing to report (zero automation actions in the window).
- *
- * Delivered to env.ADMIN_EMAIL via Resend. Logs locally if no Resend
- * key is configured so dev mode stays useful.
+ *   - There's genuinely nothing worth reporting (no actions AND no alerts).
  */
 export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const settings = await getAutomationSettings(env);
@@ -200,68 +204,188 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
 
   const since = now - 24 * 3600;
 
-  // Aggregate counts by kind
+  // --- Automation ----------------------------------------------------
   const counts = (await env.DB.prepare(
     `SELECT kind, COUNT(*) AS n FROM automation_log WHERE created_at > ? GROUP BY kind ORDER BY n DESC`
   ).bind(since).all<{ kind: string; n: number }>()).results;
-
-  if (counts.length === 0) return; // nothing to report -- don't spam
-
   const recent = (await env.DB.prepare(
     `SELECT kind, target_slug, reason, created_at FROM automation_log
-       WHERE created_at > ?
-       ORDER BY created_at DESC
-       LIMIT 15`
+       WHERE created_at > ? ORDER BY created_at DESC LIMIT 10`
   ).bind(since).all<DigestRow>()).results;
+  const automationTotal = counts.reduce((s, c) => s + c.n, 0);
 
-  const total = counts.reduce((s, c) => s + c.n, 0);
-  const subject = `Automation digest: ${total} action${total === 1 ? "" : "s"} in the last 24h`;
+  // --- Admin alerts (unread) -----------------------------------------
+  const unreadAlerts = (await env.DB.prepare(
+    `SELECT id, client_slug, type, title, created_at FROM admin_alerts
+       WHERE read_at IS NULL ORDER BY created_at DESC LIMIT 5`
+  ).all<{ id: number; client_slug: string; type: string; title: string; created_at: number }>()).results;
+  const unreadAlertCount = (await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM admin_alerts WHERE read_at IS NULL"
+  ).first<{ n: number }>())?.n ?? 0;
 
-  const countsLines = counts.map((c) => `  - ${c.kind.padEnd(28)} ${c.n}`).join("\n");
-  const recentLines = recent
-    .map((r) => {
+  // --- Scan failures -------------------------------------------------
+  const scanFailures = (await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM scan_results
+       WHERE error IS NOT NULL AND scanned_at > ?`
+  ).bind(since).first<{ n: number }>())?.n ?? 0;
+
+  // --- Free-scan leads (LEADS KV) ------------------------------------
+  // The KV is shared with the schema-check Worker; event keys are
+  // prefixed with event:scan: or event:capture:. List only, don't
+  // read each entry (expensive in KV).
+  let newLeads = 0;
+  let newCaptures = 0;
+  try {
+    const scanList = await env.LEADS.list({ prefix: "event:scan:", limit: 1000 });
+    const captureList = await env.LEADS.list({ prefix: "event:capture:", limit: 1000 });
+    // Event keys encode the timestamp like event:scan:<ts>:<rand>.
+    // We could parse the ts for exact 24h filtering but list.keys doesn't
+    // give us the metadata-only TTL; for MVP count all un-expired (KV TTL
+    // already culls >90d old events) and accept the inflation.
+    // TODO: store ts in metadata for exact filtering. Good-enough for now.
+    newLeads = scanList.keys.length;
+    newCaptures = captureList.keys.length;
+  } catch {
+    /* LEADS unavailable -- skip gracefully */
+  }
+
+  // --- Agency revenue snapshot ---------------------------------------
+  const activeAgencies = (await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM agencies WHERE status = 'active'"
+  ).first<{ n: number }>())?.n ?? 0;
+
+  const slotTotals = await env.DB.prepare(
+    `SELECT
+       SUM(CASE WHEN plan = 'signal' AND active = 1 THEN 1 ELSE 0 END) AS sig,
+       SUM(CASE WHEN plan = 'amplify' AND active = 1 THEN 1 ELSE 0 END) AS amp
+       FROM domains WHERE agency_id IS NOT NULL AND is_competitor = 0`
+  ).first<{ sig: number | null; amp: number | null }>();
+  const signalSlots = slotTotals?.sig || 0;
+  const amplifySlots = slotTotals?.amp || 0;
+  // MRR at Scenario B 1-9 tier rates (accurate enough for a daily snapshot).
+  // Exact MRR would require per-agency tier lookup; this is the floor estimate.
+  const estimatedMrrCents = signalSlots * 80000 + amplifySlots * 180000;
+
+  // --- Short-circuit if truly nothing to say -------------------------
+  if (automationTotal === 0 && unreadAlertCount === 0 && scanFailures === 0) {
+    return;
+  }
+
+  // --- Compose --------------------------------------------------------
+  const subject = `Briefing: ${automationTotal} auto-action${automationTotal === 1 ? "" : "s"}` +
+    (unreadAlertCount > 0 ? `, ${unreadAlertCount} alert${unreadAlertCount === 1 ? "" : "s"}` : "") +
+    (scanFailures > 0 ? `, ${scanFailures} scan fail${scanFailures === 1 ? "" : "s"}` : "");
+
+  const lines: string[] = [`NeverRanked morning briefing (last 24h).`, ``];
+
+  lines.push(`BUSINESS`);
+  lines.push(`  Active agency subscriptions: ${activeAgencies}`);
+  lines.push(`  Slots active:                ${signalSlots} Signal, ${amplifySlots} Amplify`);
+  lines.push(`  Estimated MRR (floor):       $${(estimatedMrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`);
+  lines.push(``);
+
+  lines.push(`TRAFFIC`);
+  lines.push(`  Free-scan events recorded:   ${newLeads}`);
+  lines.push(`  Email captures recorded:     ${newCaptures}`);
+  lines.push(``);
+
+  lines.push(`AUTOMATION (${automationTotal} action${automationTotal === 1 ? "" : "s"})`);
+  if (counts.length === 0) lines.push(`  (nothing auto-ran in this window)`);
+  else for (const c of counts) lines.push(`  - ${c.kind.padEnd(28)} ${c.n}`);
+  lines.push(``);
+
+  if (recent.length > 0) {
+    lines.push(`RECENT ACTIONS`);
+    for (const r of recent) {
       const ago = Math.floor((now - r.created_at) / 3600);
-      return `  [${ago}h ago] ${r.kind}${r.target_slug ? ` (${r.target_slug})` : ""}\n    ${r.reason}`;
-    })
-    .join("\n\n");
+      lines.push(`  [${ago}h ago] ${r.kind}${r.target_slug ? ` (${r.target_slug})` : ""}`);
+      lines.push(`    ${r.reason}`);
+    }
+    lines.push(``);
+  }
 
-  const text = [
-    `Your NeverRanked automation layer took ${total} action${total === 1 ? "" : "s"} in the last 24 hours.`,
-    ``,
-    `Counts by kind:`,
-    countsLines,
-    ``,
-    `Most recent ${recent.length}:`,
-    ``,
-    recentLines,
-    ``,
-    `---`,
-    `See the full log at https://app.neverranked.com/admin`,
-    `Disable this digest at /admin (toggle "Daily digest").`,
-  ].join("\n");
+  lines.push(`HEALTH`);
+  lines.push(`  Scan failures:               ${scanFailures}`);
+  lines.push(`  Unread admin alerts:         ${unreadAlertCount}`);
+  if (unreadAlerts.length > 0) {
+    for (const a of unreadAlerts) {
+      const ago = Math.floor((now - a.created_at) / 3600);
+      lines.push(`    [${ago}h] ${a.type.padEnd(14)} ${a.client_slug}: ${a.title}`);
+    }
+  }
+  lines.push(``);
 
-  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:14px;line-height:1.6;padding:0 20px">
-<p style="margin:0 0 16px;font-size:16px">Your NeverRanked automation layer took <strong>${total}</strong> action${total === 1 ? "" : "s"} in the last 24 hours.</p>
+  lines.push(`---`);
+  lines.push(`Cockpit: https://app.neverranked.com/admin`);
+  lines.push(`Toggle this briefing off at the cockpit "Digest on" button.`);
 
-<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Counts by kind</h3>
-<table style="width:100%;border-collapse:collapse;font-family:'SF Mono',Menlo,monospace;font-size:12px">
-${counts.map((c) => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">${escapeHtml(c.kind)}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${c.n}</td></tr>`).join("")}
-</table>
+  const text = lines.join("\n");
 
-<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Recent ${recent.length}</h3>
-<div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.6">
-${recent.map((r) => {
-  const ago = Math.floor((now - r.created_at) / 3600);
-  return `<div style="padding:8px 0;border-bottom:1px solid #eee"><span style="color:#c8a850">${escapeHtml(r.kind)}</span>${r.target_slug ? ` <span style="color:#999">${escapeHtml(r.target_slug)}</span>` : ""} <span style="color:#999;margin-left:6px">${ago}h ago</span><div style="color:#555;margin-top:4px">${escapeHtml(r.reason)}</div></div>`;
-}).join("")}
+  // HTML version -- same content, lightly styled
+  const countsTable = counts.length > 0
+    ? `<table style="width:100%;border-collapse:collapse;font-family:'SF Mono',Menlo,monospace;font-size:12px;margin:0 0 12px">
+        ${counts.map((c) => `<tr><td style="padding:4px 8px;border-bottom:1px solid #eee">${escapeHtml(c.kind)}</td><td style="padding:4px 8px;border-bottom:1px solid #eee;text-align:right;font-weight:600">${c.n}</td></tr>`).join("")}
+      </table>`
+    : `<p style="font-family:'SF Mono',Menlo,monospace;font-size:12px;color:#888;margin:0 0 12px">(nothing auto-ran in this window)</p>`;
+
+  const recentHtml = recent.length > 0
+    ? `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Recent actions</h3>
+       <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.6">
+         ${recent.map((r) => {
+           const ago = Math.floor((now - r.created_at) / 3600);
+           return `<div style="padding:8px 0;border-bottom:1px solid #eee"><span style="color:#c8a850">${escapeHtml(r.kind)}</span>${r.target_slug ? ` <span style="color:#999">${escapeHtml(r.target_slug)}</span>` : ""} <span style="color:#999;margin-left:6px">${ago}h ago</span><div style="color:#555;margin-top:4px">${escapeHtml(r.reason)}</div></div>`;
+         }).join("")}
+       </div>`
+    : "";
+
+  const alertsHtml = unreadAlerts.length > 0
+    ? `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Unread alerts (${unreadAlertCount} total)</h3>
+       <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.6">
+         ${unreadAlerts.map((a) => {
+           const ago = Math.floor((now - a.created_at) / 3600);
+           return `<div style="padding:6px 0;border-bottom:1px solid #eee"><span style="color:#f59e0b;font-weight:600">${escapeHtml(a.type)}</span> <span style="color:#999;margin-left:4px">${ago}h</span><div style="color:#333;margin-top:2px">${escapeHtml(a.client_slug)}: ${escapeHtml(a.title)}</div></div>`;
+         }).join("")}
+       </div>`
+    : "";
+
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:580px;margin:0 auto;color:#1a1a1a;font-size:14px;line-height:1.6;padding:0 20px">
+
+<h2 style="margin:0 0 6px;font-size:18px">NeverRanked morning briefing</h2>
+<p style="margin:0 0 20px;color:#888;font-size:12px">Last 24 hours &middot; ${new Date(now * 1000).toUTCString()}</p>
+
+<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Business</h3>
+<div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
+  <div>Active agency subs: <strong>${activeAgencies}</strong></div>
+  <div>Slots: <strong>${signalSlots}</strong> Signal, <strong>${amplifySlots}</strong> Amplify</div>
+  <div>MRR floor: <strong>$${(estimatedMrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}</strong></div>
 </div>
 
-<p style="margin:24px 0 6px;font-size:12px;color:#888"><a href="https://app.neverranked.com/admin" style="color:#1a1a1a">See the full log</a> or toggle this digest off at /admin.</p>
+<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Traffic (KV)</h3>
+<div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
+  <div>Free-scan events: <strong>${newLeads}</strong></div>
+  <div>Email captures: <strong>${newCaptures}</strong></div>
+</div>
+
+<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Automation (${automationTotal} action${automationTotal === 1 ? "" : "s"})</h3>
+${countsTable}
+
+${recentHtml}
+
+<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Health</h3>
+<div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
+  <div>Scan failures (24h): <strong>${scanFailures}</strong></div>
+  <div>Unread admin alerts: <strong>${unreadAlertCount}</strong></div>
+</div>
+
+${alertsHtml}
+
+<p style="margin:32px 0 6px;font-size:12px;color:#888"><a href="https://app.neverranked.com/admin" style="color:#1a1a1a">Cockpit</a> &middot; toggle this briefing off at the "Digest on/off" button.</p>
+
 </body></html>`;
 
   const to = env.ADMIN_EMAIL || "lance@neverranked.com";
   if (!env.RESEND_API_KEY) {
-    console.log(`[automation-digest] DEV: would send "${subject}" to ${to}\n${text.slice(0, 500)}...`);
+    console.log(`[automation-digest] DEV: would send "${subject}" to ${to}\n${text.slice(0, 600)}...`);
     return;
   }
 

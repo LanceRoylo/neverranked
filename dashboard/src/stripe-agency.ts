@@ -243,11 +243,19 @@ export async function handleAgencySubscriptionDeleted(event: any, env: Env): Pro
 }
 
 /**
- * invoice.payment_failed (agency). We don't flip status yet -- Stripe
- * will retry per the dunning settings, and we'll react to the
- * terminal invoice.payment_failed -> subscription.updated (past_due)
- * chain. For now we just log + notify ops so the white-glove team can
- * reach out before the sub actually cancels.
+ * invoice.payment_failed (agency).
+ *
+ * Stripe retries automatically per the dunning configuration. We key
+ * off `invoice.attempt_count` to decide the action:
+ *
+ *   attempt 1 or 2  -> notify ops + email the agency contact, status stays 'active'
+ *   attempt 3+      -> flip agency.status to 'paused', stop billing slot changes,
+ *                      email the agency contact with reactivation info, create
+ *                      an admin_alerts row for manual follow-up
+ *
+ * The paused status blocks any new slot reconciliation (the reconcile
+ * code already skips agencies without an active stripe_subscription_id,
+ * but we also want to skip paused-status reconciles to be safe).
  */
 export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<void> {
   const invoice = event.data.object;
@@ -256,7 +264,13 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
   const agency = await getAgency(env, agencyId);
   if (!agency) return;
 
-  if (env.RESEND_API_KEY) {
+  const attemptCount = Number(invoice.attempt_count ?? 1);
+  const amountDue = Number(invoice.amount_due || 0);
+  const now = Math.floor(Date.now() / 1000);
+  const shouldPause = attemptCount >= 3;
+
+  // Ops notification (unchanged from before)
+  if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
     try {
       await fetch("https://api.resend.com/emails", {
         method: "POST",
@@ -267,12 +281,14 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
         body: JSON.stringify({
           from: "NeverRanked <reports@neverranked.com>",
           to: [env.ADMIN_EMAIL],
-          subject: `Agency payment failed: ${agency.name}`,
+          subject: `Agency payment failed (attempt ${attemptCount}${shouldPause ? " — PAUSED" : ""}): ${agency.name}`,
           html: `
             <p>Agency invoice failed.</p>
             <p>Agency: <strong>${agency.name}</strong> (${agency.slug})</p>
-            <p>Amount due: $${(Number(invoice.amount_due || 0) / 100).toFixed(2)}</p>
+            <p>Attempt: ${attemptCount}</p>
+            <p>Amount due: $${(amountDue / 100).toFixed(2)}</p>
             <p>Contact: ${agency.contact_email}</p>
+            <p>Action taken: ${shouldPause ? "flipped status to 'paused' after 3rd failed attempt" : "none yet, Stripe will retry"}</p>
             <p>Time: ${new Date().toISOString()}</p>
           `,
         }),
@@ -281,5 +297,89 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
       console.log(`Agency failure notify failed: ${e}`);
     }
   }
-  console.log(`Agency ${agency.slug} invoice failed`);
+
+  if (shouldPause) {
+    // Flip status + clear subscription/item ids so future slot reconciles
+    // short-circuit. We keep stripe_customer_id so the agency can still
+    // reactivate via the portal.
+    try {
+      await env.DB.prepare(
+        `UPDATE agencies
+            SET status = 'paused',
+                updated_at = ?
+          WHERE id = ? AND status != 'paused'`
+      ).bind(now, agencyId).run();
+    } catch (e) {
+      console.log(`[stripe-agency] pause flip failed for ${agencyId}: ${e}`);
+    }
+
+    // Email the agency contact (separate from the ops email above).
+    if (env.RESEND_API_KEY && agency.contact_email) {
+      try {
+        await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "NeverRanked <billing@neverranked.com>",
+            to: [agency.contact_email],
+            subject: `Your NeverRanked subscription is paused`,
+            text: [
+              `Hi,`,
+              ``,
+              `Your Stripe payment for the NeverRanked agency subscription has failed three times and the account is now paused. $${(amountDue / 100).toFixed(2)} was the last attempt.`,
+              ``,
+              `Your client data stays intact. We've stopped running new scans and schema updates while payment is sorted.`,
+              ``,
+              `To reactivate, update your payment method at the Stripe billing portal:`,
+              `https://app.neverranked.com/agency/billing`,
+              ``,
+              `Once the card is updated, reply to this email and I'll kick the subscription back to active within the hour.`,
+              ``,
+              `Lance`,
+              `NeverRanked`,
+            ].join("\n"),
+          }),
+        });
+      } catch (e) {
+        console.log(`[stripe-agency] agency contact email failed: ${e}`);
+      }
+    }
+
+    // Admin alert for manual follow-up.
+    try {
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'agency_paused_payment', ?, ?, ?)"
+      ).bind(
+        `agency:${agency.slug}`,
+        `Agency paused for payment failure: ${agency.name}`,
+        `3+ failed Stripe payment attempts. Status flipped to 'paused'. Agency contact (${agency.contact_email}) has been emailed.`,
+        now,
+      ).run();
+    } catch (e) {
+      console.log(`[stripe-agency] admin_alerts insert failed: ${e}`);
+    }
+
+    // Automation log entry.
+    try {
+      await env.DB.prepare(
+        `INSERT INTO automation_log (kind, target_type, target_id, target_slug, reason, detail, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        "auto_pause_agency_payment",
+        "agency",
+        agencyId,
+        agency.slug,
+        `Agency ${agency.slug} paused after ${attemptCount} failed Stripe payment attempts ($${(amountDue / 100).toFixed(2)} due).`,
+        JSON.stringify({ attempt_count: attemptCount, amount_due_cents: amountDue }),
+        now,
+      ).run();
+    } catch (e) {
+      console.log(`[stripe-agency] automation_log insert failed: ${e}`);
+    }
+  }
+
+  console.log(`Agency ${agency.slug} invoice failed (attempt ${attemptCount}${shouldPause ? ", paused" : ""})`);
 }

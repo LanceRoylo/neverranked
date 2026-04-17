@@ -12,6 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency } from "./routes/admin";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
+import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
@@ -352,6 +353,23 @@ export default {
     }
     if (path === "/admin/automation/digest" && method === "POST" && user.role === "admin") {
       return handleAutomationDigestToggle(user, env);
+    }
+
+    // Curated admin inbox (Day 11 brick 2)
+    if (path === "/admin/inbox" && method === "GET" && user.role === "admin") {
+      return handleInbox(user, env);
+    }
+    const inboxAgencyAppMatch = path.match(/^\/admin\/inbox\/agency-app\/(\d+)\/(approve|deny)$/);
+    if (inboxAgencyAppMatch && method === "POST" && user.role === "admin") {
+      return handleInboxAgencyAppAction(Number(inboxAgencyAppMatch[1]), inboxAgencyAppMatch[2] as "approve" | "deny", user, env);
+    }
+    const inboxSuggestionMatch = path.match(/^\/admin\/inbox\/suggestion\/(\d+)\/(approve|deny)$/);
+    if (inboxSuggestionMatch && method === "POST" && user.role === "admin") {
+      return handleInboxSuggestionAction(Number(inboxSuggestionMatch[1]), inboxSuggestionMatch[2] as "approve" | "deny", user, env);
+    }
+    const inboxAlertMatch = path.match(/^\/admin\/inbox\/alert\/(\d+)\/dismiss$/);
+    if (inboxAlertMatch && method === "POST" && user.role === "admin") {
+      return handleInboxAlertDismiss(Number(inboxAlertMatch[1]), user, env);
     }
 
     // Leads (admin only)

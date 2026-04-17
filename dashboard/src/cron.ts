@@ -17,8 +17,9 @@ import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
 import { pullGscData } from "./gsc";
 import { detectSnippet } from "./snippet-detector";
-import { sendSnippetNudgeDay7, sendSnippetNudgeDay14 } from "./agency-emails";
+import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency } from "./agency";
+import { createAlertIfFresh } from "./admin-alerts";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
 
@@ -236,6 +237,9 @@ export async function runDailyTasks(env: Env): Promise<void> {
   await checkStaleRoadmapItems(env);
   await runSnippetSweep(env);
   await runMissingRoadmapSweep(env);
+  // Weekly drift sweep: only probes domains due (>7d since last check)
+  // so running it daily is fine -- the query self-throttles.
+  await runSchemaDriftSweep(env);
   // Digest runs LAST so it includes anything the earlier sweeps wrote.
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
@@ -441,6 +445,89 @@ export async function runSnippetSweep(env: Env): Promise<void> {
   );
 }
 
+// ---------------------------------------------------------------------------
+// Schema drift detection (M)
+// ---------------------------------------------------------------------------
+//
+// Pairs with the Day 9 snippet sweep. The sweep handles "snippet was
+// never installed" — this handles "snippet WAS installed but has now
+// disappeared" (webmaster deleted the tag, template regenerated, CDN
+// rewrote it out, CMS migration). Runs weekly (no need for daily since
+// drift is rare and we don't want to hammer client sites unnecessarily).
+//
+// Candidate: active agency-owned primary domain with snippet_last_detected_at
+// set AND last drift check older than 7 days. If the probe now returns
+// "not detected," that's drift — email the agency + create admin alert.
+//
+// We reuse snippet_last_checked_at as the "last drift check" timestamp.
+// This is the same column the install-sweep uses, so both operations
+// respect each other's probe cadence.
+
+export async function runSchemaDriftSweep(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const DAY = 86400;
+  const sevenDaysAgo = now - 7 * DAY;
+
+  const candidates = (await env.DB.prepare(`
+    SELECT * FROM domains
+      WHERE agency_id IS NOT NULL
+        AND active = 1
+        AND is_competitor = 0
+        AND snippet_last_detected_at IS NOT NULL
+        AND (snippet_last_checked_at IS NULL OR snippet_last_checked_at < ?)
+      ORDER BY snippet_last_checked_at NULLS FIRST
+      LIMIT 100
+  `).bind(sevenDaysAgo).all<Domain>()).results;
+
+  if (candidates.length === 0) return;
+
+  let stillLive = 0;
+  let drifted = 0;
+
+  for (const d of candidates) {
+    const isDetected = await detectSnippet(d.domain);
+
+    try {
+      await env.DB.prepare(
+        "UPDATE domains SET snippet_last_checked_at = ? WHERE id = ?"
+      ).bind(now, d.id).run();
+    } catch (e) {
+      console.log(`[drift-sweep] stamp failed for ${d.id}: ${e}`);
+      continue;
+    }
+
+    if (isDetected) {
+      stillLive++;
+      continue;
+    }
+
+    // Drift. Notify the agency + admin alert. Dedup at 7 days so we
+    // don't spam an agency whose client is actively sorting it out.
+    drifted++;
+    try {
+      const agency = await getAgency(env, d.agency_id!);
+      if (agency) {
+        await sendSnippetDriftAlert(env, { agency, domain: d });
+      }
+    } catch (e) {
+      console.log(`[drift-sweep] email failed for ${d.id}: ${e}`);
+    }
+    await createAlertIfFresh(env, {
+      clientSlug: d.client_slug,
+      type: "snippet_drift",
+      title: `Snippet disappeared from ${d.domain}`,
+      detail: `Was previously live (first detected ${d.snippet_last_detected_at ? new Date(d.snippet_last_detected_at * 1000).toISOString().slice(0, 10) : "unknown"}). Agency has been notified by email.`,
+      windowHours: 24 * 7,
+    });
+
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
+  console.log(
+    `[drift-sweep] checked ${candidates.length} previously-live domain(s): ${stillLive} still live, ${drifted} drifted`
+  );
+}
+
 /** Flag roadmap items stuck in "in_progress" for 14+ days */
 async function checkStaleRoadmapItems(env: Env): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
@@ -476,6 +563,7 @@ async function checkStaleRoadmapItems(env: Env): Promise<void> {
   const flaggedSlugs = new Set(recentlyFlagged.map(r => r.client_slug));
 
   let flagged = 0;
+  let agencyNudged = 0;
   for (const [slug, items] of byClient) {
     if (flaggedSlugs.has(slug)) continue; // Already alerted recently
 
@@ -494,7 +582,31 @@ async function checkStaleRoadmapItems(env: Env): Promise<void> {
     } catch (e) {
       console.log(`Failed to create stale alert for ${slug}: ${e}`);
     }
+
+    // L: if the client belongs to an agency, loop the agency in too.
+    // The admin alert still fires for our visibility, but the agency
+    // is the right party to actually unblock client-side work.
+    try {
+      const primary = await env.DB.prepare(
+        "SELECT agency_id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 AND agency_id IS NOT NULL LIMIT 1"
+      ).bind(slug).first<{ agency_id: number }>();
+      if (primary?.agency_id) {
+        const agency = await getAgency(env, primary.agency_id);
+        if (agency) {
+          await sendRoadmapStallNudge(env, {
+            agency,
+            clientSlug: slug,
+            stalledCount: items.length,
+            daysStale,
+            sampleTitles: items.map(i => i.title),
+          });
+          agencyNudged++;
+        }
+      }
+    } catch (e) {
+      console.log(`[stale-roadmap] agency nudge failed for ${slug}: ${e}`);
+    }
   }
 
-  if (flagged > 0) console.log(`Stale roadmap check: flagged ${flagged} client(s)`);
+  if (flagged > 0) console.log(`Stale roadmap check: flagged ${flagged} client(s), nudged ${agencyNudged} agency contact(s)`);
 }

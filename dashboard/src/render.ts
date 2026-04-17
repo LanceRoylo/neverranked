@@ -50,6 +50,7 @@ export function layout(
         <a href="/admin" class="nav-links-item${title.startsWith('Admin') || title === 'Inject' || title === 'Leads' || title === 'Scan Health' || title === 'Engagement' ? ' active' : ''}">Ops</a>
         <div class="nav-dropdown-menu">
           <a href="/admin">Cockpit</a>
+          <a href="/admin/inbox">Inbox</a>
           <a href="/admin/manage">Manage Clients</a>
           <a href="/admin/scans">Scan Health</a>
           <a href="/admin/engagement">Engagement</a>
