@@ -9,16 +9,14 @@ import { autoVerifyRoadmap } from "./auto-roadmap";
 
 const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36 NeverRanked-AEO-Monitor/1.0";
 
-export async function scanDomain(
-  domainId: number,
-  url: string,
-  scanType: "cron" | "manual" | "onboard",
-  env: Env
-): Promise<ScanResult | null> {
-  const now = Math.floor(Date.now() / 1000);
-  let report: Report | null = null;
-  let error: string | null = null;
+// Inline retry backoff for transient fetch failures. Most scan failures
+// are 5xx or temporary DNS blips -- retrying a few times with small waits
+// catches ~80% of them without needing a separate retry queue.
+// Hard timeout per attempt is still 10s, so worst-case three attempts =
+// ~50s including the waits.
+const SCAN_RETRY_WAITS_MS = [5_000, 15_000];
 
+async function attemptScan(url: string): Promise<{ report: Report | null; error: string | null }> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -33,17 +31,57 @@ export async function scanDomain(
     clearTimeout(timeout);
 
     if (!resp.ok) {
-      error = `HTTP ${resp.status}`;
-    } else {
-      const html = await resp.text();
-      report = buildReport(url, html);
+      return { report: null, error: `HTTP ${resp.status}` };
     }
+    const html = await resp.text();
+    return { report: buildReport(url, html), error: null };
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
-      error = "Timeout (10s)";
-    } else {
-      error = "Could not reach site";
+      return { report: null, error: "Timeout (10s)" };
     }
+    return { report: null, error: "Could not reach site" };
+  }
+}
+
+// Treat 5xx, timeouts, and "could not reach" as retryable. 4xx, robots.txt
+// blocks, and permanent issues are NOT retryable -- we'd just hammer them.
+function isRetryableError(error: string | null): boolean {
+  if (!error) return false;
+  if (error === "Timeout (10s)") return true;
+  if (error === "Could not reach site") return true;
+  const m = error.match(/^HTTP (\d+)$/);
+  if (m) {
+    const code = Number(m[1]);
+    return code >= 500 || code === 429; // server errors + rate-limit
+  }
+  return false;
+}
+
+export async function scanDomain(
+  domainId: number,
+  url: string,
+  scanType: "cron" | "manual" | "onboard",
+  env: Env
+): Promise<ScanResult | null> {
+  const now = Math.floor(Date.now() / 1000);
+  let report: Report | null = null;
+  let error: string | null = null;
+  let attempts = 0;
+
+  // First attempt + up to 2 retries on transient failures.
+  const maxAttempts = 1 + SCAN_RETRY_WAITS_MS.length;
+  for (let i = 0; i < maxAttempts; i++) {
+    attempts = i + 1;
+    const result = await attemptScan(url);
+    report = result.report;
+    error = result.error;
+    if (!error || !isRetryableError(error)) break;
+    if (i < SCAN_RETRY_WAITS_MS.length) {
+      await new Promise((r) => setTimeout(r, SCAN_RETRY_WAITS_MS[i]));
+    }
+  }
+  if (attempts > 1) {
+    console.log(`[scanner] ${url} settled after ${attempts} attempt(s)${error ? ` with error: ${error}` : " (succeeded on retry)"}`);
   }
 
   const result = {

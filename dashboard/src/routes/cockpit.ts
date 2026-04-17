@@ -8,7 +8,7 @@
 import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { getAnalyticsSummary } from "../analytics";
-import { getAutomationSettings, setAutomationPaused } from "../automation";
+import { getAutomationSettings, setAutomationPaused, setDailyDigestEnabled } from "../automation";
 
 interface ClientHealth {
   slug: string;
@@ -193,6 +193,11 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     <form method="POST" action="/admin/automation/toggle" style="margin:0">
       <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">
         ${automation.paused ? "Resume automation" : "Pause all automation"}
+      </button>
+    </form>
+    <form method="POST" action="/admin/automation/digest" style="margin:0" title="Toggle daily 9am digest email">
+      <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">
+        ${automation.dailyDigestEnabled ? "Digest on" : "Digest off"}
       </button>
     </form>
   `;
@@ -521,5 +526,12 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
 export async function handleAutomationToggle(user: User, env: Env): Promise<Response> {
   const current = await getAutomationSettings(env);
   await setAutomationPaused(env, !current.paused, current.paused ? null : "toggled via admin cockpit");
+  return redirect("/admin");
+}
+
+/** POST /admin/automation/digest — toggle the daily digest email on/off. */
+export async function handleAutomationDigestToggle(user: User, env: Env): Promise<Response> {
+  const current = await getAutomationSettings(env);
+  await setDailyDigestEnabled(env, !current.dailyDigestEnabled);
   return redirect("/admin");
 }

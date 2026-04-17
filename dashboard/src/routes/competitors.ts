@@ -9,6 +9,8 @@ import type { Env, User, Domain, ScanResult, CitationSnapshot } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
 import { canAccessClient } from "../agency";
+import { validateCompetitorSuggestion } from "../competitor-sanity";
+import { logAutomation } from "../automation";
 
 interface ComparisonRow {
   domain: Domain;
@@ -747,6 +749,28 @@ export async function handleAddCompetitorFromPage(
     "SELECT id FROM domains WHERE domain = ? AND client_slug = ? AND is_competitor = 1"
   ).bind(domain, clientSlug).first();
 
+  // Sanity-check the proposed competitor. If any gate fails, route the
+  // suggestion to status='pending' so the admin sees it in the cockpit
+  // instead of silently tracking garbage. Auto-approval only happens
+  // when every gate passes.
+  const sanity = await validateCompetitorSuggestion(env, clientSlug, domain);
+  if (!existing && !sanity.ok) {
+    try {
+      await env.DB.prepare(
+        "INSERT INTO competitor_suggestions (client_slug, suggested_by, domain, label, status, created_at) VALUES (?, ?, ?, ?, 'pending', ?)"
+      ).bind(clientSlug, user.id, domain, label, now).run();
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'needs_review', ?, ?, ?)"
+      ).bind(
+        clientSlug,
+        `Competitor suggestion needs review: ${domain}`,
+        `Auto-add blocked. Reason: ${sanity.reason}`,
+        now,
+      ).run();
+    } catch { /* duplicate suggestion is fine */ }
+    return redirect(`/competitors/${clientSlug}`);
+  }
+
   if (!existing) {
     // Figure out the current max sort_order among this client's
     // competitors so the new row lands at the bottom of the list
@@ -769,6 +793,19 @@ export async function handleAddCompetitorFromPage(
     } catch {
       // Duplicate suggestion, fine
     }
+
+    // Automation log: auto-approved competitor additions show up in the
+    // cockpit's automation log so admins can see what the system did
+    // without being asked to approve it each time.
+    try {
+      await logAutomation(env, {
+        kind: "auto_competitor_add",
+        targetType: "client",
+        targetSlug: clientSlug,
+        reason: `Auto-approved competitor suggestion: ${domain}${label ? " (" + label + ")" : ""}`,
+        detail: { domain, label, suggested_by: user.id },
+      });
+    } catch { /* non-fatal */ }
 
     // Trigger initial scan
     const newDomain = await env.DB.prepare(

@@ -19,6 +19,71 @@ import {
   SCHEMA_TYPES,
   type SchemaType,
 } from "../schema-generator";
+import { runAutomation, getAutomationSettings } from "../automation";
+
+// Schema types we trust to auto-approve. These are deterministic
+// templates filled from InjectionConfig fields we validate up front
+// (business name, URL, description). Types NOT in this list (e.g.
+// custom Article, manually-edited Product) still require admin
+// review.
+const AUTO_APPROVE_SCHEMA_TYPES = new Set<string>([
+  "Organization",
+  "LocalBusiness",
+  "WebSite",
+  "BreadcrumbList",
+]);
+
+// Daily per-client cap. Protects against an errant loop or bulk import
+// flooding the auto-approved queue. If a client legitimately needs
+// more than this in a day, the rest land as drafts for admin review.
+const AUTO_APPROVE_DAILY_CAP = 5;
+
+/**
+ * Decide whether a freshly-generated schema draft is safe to
+ * auto-approve. Returns ok:true with a reason string if it is,
+ * or ok:false with the failure reason for admin visibility.
+ */
+async function shouldAutoApproveSchema(
+  env: Env,
+  clientSlug: string,
+  schemaType: string,
+  generated: unknown,
+  config: InjectionConfig,
+): Promise<{ ok: true } | { ok: false; reason: string }> {
+  if (!AUTO_APPROVE_SCHEMA_TYPES.has(schemaType)) {
+    return { ok: false, reason: `schema type ${schemaType} not in auto-approve list` };
+  }
+
+  const validation = validateJsonLd(generated);
+  if (!validation.valid) {
+    return { ok: false, reason: `validation failed: ${validation.errors.join(", ")}` };
+  }
+
+  // Business-info gate: if the generated JSON-LD has empty strings where
+  // required fields should be, the template filled with garbage. We
+  // route this to admin review.
+  const data = generated as Record<string, unknown>;
+  if (data.name === "" || data.url === "") {
+    return { ok: false, reason: "generated JSON-LD has empty required fields" };
+  }
+
+  // Rate limit: no more than N auto-approvals for this client today.
+  const oneDayAgo = Math.floor(Date.now() / 1000) - 86400;
+  const recent = await env.DB.prepare(
+    "SELECT COUNT(*) AS n FROM automation_log WHERE kind = 'auto_schema_approve' AND target_slug = ? AND created_at > ?"
+  ).bind(clientSlug, oneDayAgo).first<{ n: number }>();
+  if ((recent?.n ?? 0) >= AUTO_APPROVE_DAILY_CAP) {
+    return { ok: false, reason: `daily auto-approve cap (${AUTO_APPROVE_DAILY_CAP}) reached for ${clientSlug}` };
+  }
+
+  // Global pause switch. When paused, everything lands as a draft.
+  const automation = await getAutomationSettings(env);
+  if (automation.paused) {
+    return { ok: false, reason: "automation is globally paused" };
+  }
+
+  return { ok: true };
+}
 
 function randomHex(bytes: number): string {
   const buf = new Uint8Array(bytes);
@@ -398,17 +463,54 @@ export async function handleInjectGenerate(
   }
 
   const jsonLd = JSON.stringify(generated);
-  const validation = validateJsonLd(generated);
 
   // Default target: all pages for Organization/WebSite, specific for others
   const allPageTypes = ["Organization", "WebSite", "LocalBusiness", "BreadcrumbList"];
   const targetPages = allPageTypes.includes(schemaType) ? "*" : "*";
 
-  await env.DB.prepare(
+  // Auto-approve gate. If all safety rails pass, the draft lands as
+  // 'approved' and shows up on the client's live injector immediately.
+  // Otherwise falls back to 'draft' for admin review (previous behavior).
+  const decision = await shouldAutoApproveSchema(env, slug, schemaType, generated, config);
+  const status = decision.ok ? "approved" : "draft";
+
+  const insert = await env.DB.prepare(
     "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
   )
-    .bind(slug, schemaType, jsonLd, targetPages, "draft", now, now)
+    .bind(slug, schemaType, jsonLd, targetPages, status, now, now)
     .run();
+  const newId = Number(insert.meta?.last_row_id ?? 0);
+
+  if (decision.ok) {
+    // Audit log (not guarded by runAutomation here since we're inside
+    // the admin flow already -- we just want the bookkeeping).
+    try {
+      await env.DB.prepare(
+        `INSERT INTO automation_log (kind, target_type, target_id, target_slug, reason, detail, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?)`
+      ).bind(
+        "auto_schema_approve",
+        "schema_injection",
+        newId,
+        slug,
+        `Auto-approved ${schemaType} draft (passed validation + rate limit).`,
+        JSON.stringify({ schema_type: schemaType, target_pages: targetPages }),
+        now,
+      ).run();
+    } catch { /* non-fatal */ }
+  } else {
+    // Not auto-approved -- flag for admin review so nothing sits unseen.
+    try {
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'needs_review', ?, ?, ?)"
+      ).bind(
+        slug,
+        `Schema draft needs review: ${schemaType}`,
+        `Auto-approve blocked. Reason: ${decision.reason}`,
+        now,
+      ).run();
+    } catch { /* non-fatal */ }
+  }
 
   return redirect(`/admin/inject/${slug}`);
 }

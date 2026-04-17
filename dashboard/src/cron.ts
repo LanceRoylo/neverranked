@@ -20,7 +20,7 @@ import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14 } from "./agency-emails";
 import { getAgency } from "./agency";
 import { autoGenerateRoadmap } from "./auto-provision";
-import { runAutomation } from "./automation";
+import { runAutomation, maybeSendAutomationDigest } from "./automation";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -229,13 +229,17 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
 }
 
-/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep + auto-provision missing roadmaps */
+/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep + auto-provision missing roadmaps + automation digest */
 export async function runDailyTasks(env: Env): Promise<void> {
   await sendOnboardingDripEmails(env);
   await sendNurtureDripEmails(env);
   await checkStaleRoadmapItems(env);
   await runSnippetSweep(env);
   await runMissingRoadmapSweep(env);
+  // Digest runs LAST so it includes anything the earlier sweeps wrote.
+  // The digest function self-guards: opt-in flag, 18h dedupe, skip if
+  // nothing to report.
+  await maybeSendAutomationDigest(env);
 }
 
 // ---------------------------------------------------------------------------

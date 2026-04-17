@@ -11,7 +11,7 @@ import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./r
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency } from "./routes/admin";
-import { handleCockpit, handleAutomationToggle } from "./routes/cockpit";
+import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
@@ -349,6 +349,9 @@ export default {
     }
     if (path === "/admin/automation/toggle" && method === "POST" && user.role === "admin") {
       return handleAutomationToggle(user, env);
+    }
+    if (path === "/admin/automation/digest" && method === "POST" && user.role === "admin") {
+      return handleAutomationDigestToggle(user, env);
     }
 
     // Leads (admin only)
