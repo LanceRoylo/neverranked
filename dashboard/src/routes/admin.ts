@@ -2,13 +2,15 @@
  * Dashboard — Admin routes
  */
 
-import type { Env, User, Domain, ScanResult } from "../types";
+import type { Env, User, Domain, ScanResult, Agency } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
 import { scanDomainPages } from "../pages";
 import { checkAndAlertRegression } from "../regression";
 import { autoGenerateRoadmap } from "../auto-provision";
 import { autoCompleteRoadmapItems } from "../auto-complete";
+import { reconcileAgencySlots } from "../agency-slots";
+import { countActiveSlots } from "../agency";
 
 /** Admin overview: list all clients and domains */
 export async function handleAdminHome(user: User, env: Env): Promise<Response> {
@@ -24,6 +26,19 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
   const suggestions = (await env.DB.prepare(
     "SELECT cs.*, u.email as suggested_by_email FROM competitor_suggestions cs JOIN users u ON cs.suggested_by = u.id WHERE cs.status = 'approved' ORDER BY cs.created_at DESC"
   ).all<{ id: number; client_slug: string; domain: string; label: string | null; suggested_by_email: string; created_at: number }>()).results;
+
+  // Agencies -- feeds the "Assign to agency" dropdown in the add-domain
+  // form and the manual slot-reconcile UI.
+  const agencies = (await env.DB.prepare(
+    "SELECT id, slug, name, status, stripe_subscription_id, amplify_slot_item_id FROM agencies ORDER BY status DESC, name"
+  ).all<Pick<Agency, "id" | "slug" | "name" | "status" | "stripe_subscription_id" | "amplify_slot_item_id">>()).results;
+
+  // Live slot counts for each agency (DB source of truth) -- shown next
+  // to the reconcile button so admins can spot drift at a glance.
+  const agencySlots = new Map<number, { signal: number; amplify: number }>();
+  for (const a of agencies) {
+    agencySlots.set(a.id, await countActiveSlots(env, a.id));
+  }
 
   // Group domains by client_slug
   const clientMap = new Map<string, Domain[]>();
@@ -73,11 +88,53 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
     clientSections = `<div class="empty"><h3>No clients yet</h3><p>Add your first client below.</p></div>`;
   }
 
+  // Build the agencies card. One row per agency with the DB-side slot
+  // counts and a "Reconcile slots" button so admins can push the
+  // numbers to Stripe on demand. Hidden entirely when there are no
+  // agencies to avoid clutter on a fresh install.
+  const agencyRows = agencies.map(a => {
+    const slots = agencySlots.get(a.id) || { signal: 0, amplify: 0 };
+    const statusColor = a.status === "active" ? "#4ade80" : a.status === "paused" ? "#f59e0b" : "var(--text-faint)";
+    const amplifyBadge = a.amplify_slot_item_id
+      ? `<span style="color:var(--text-faint);font-size:10px">item:${esc(String(a.amplify_slot_item_id).slice(-6))}</span>`
+      : `<span style="color:var(--text-faint);font-size:10px">(lazy)</span>`;
+    return `
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)">
+        <div style="min-width:0;flex:1">
+          <div style="font-size:13px;font-weight:500">${esc(a.name)}</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:2px">
+            ${esc(a.slug)} <span style="color:${statusColor}">&middot; ${esc(a.status)}</span>
+            ${a.stripe_subscription_id ? "" : ` <span style="color:var(--text-faint)">&middot; no sub</span>`}
+          </div>
+        </div>
+        <div style="text-align:right;font-family:var(--mono);font-size:11px;color:var(--text-mute);white-space:nowrap">
+          <div>Signal: <strong style="color:var(--text)">${slots.signal}</strong></div>
+          <div style="margin-top:2px">Amplify: <strong style="color:var(--text)">${slots.amplify}</strong> ${amplifyBadge}</div>
+        </div>
+        <form method="POST" action="/admin/agencies/${a.id}/reconcile" style="margin:0">
+          <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px" title="Push DB slot counts to Stripe">Reconcile slots</button>
+        </form>
+      </div>
+    `;
+  }).join("");
+
+  const agenciesSection = agencies.length > 0 ? `
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0;font-style:italic">Agencies</h3>
+        <span class="label" style="font-size:10px">${agencies.length} total</span>
+      </div>
+      ${agencyRows}
+    </div>
+  ` : "";
+
   const body = `
     <div style="margin-bottom:40px">
       <div class="label" style="margin-bottom:8px">Admin</div>
       <h1>Manage <em>clients</em></h1>
     </div>
+
+    ${agenciesSection}
 
     ${clientSections}
 
@@ -104,6 +161,32 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
             <label>Competitor label (optional)</label>
             <input type="text" name="competitor_label" placeholder="Main competitor">
           </div>
+
+          <div class="form-group">
+            <label>Agency (optional, primary clients only)</label>
+            <select name="agency_id" style="width:100%;max-width:400px;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:14px">
+              <option value="">-- none / direct client --</option>
+              ${agencies.map(a => `<option value="${a.id}">${esc(a.name)} (${esc(a.slug)}) -- ${esc(a.status)}</option>`).join('')}
+            </select>
+            <p style="font-size:11px;color:var(--text-faint);margin-top:6px;line-height:1.5">
+              If set, this client will count toward the agency's Stripe slot billing. Stripe quantities reconcile automatically on save.
+            </p>
+          </div>
+          <div class="form-group">
+            <label>Plan (agency clients only)</label>
+            <select name="plan" style="width:100%;max-width:400px;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:14px">
+              <option value="signal">Signal</option>
+              <option value="amplify">Amplify</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Client access (agency clients only)</label>
+            <select name="client_access" style="width:100%;max-width:400px;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:14px">
+              <option value="internal">Internal (agency-only view)</option>
+              <option value="full">Full (client portal access)</option>
+            </select>
+          </div>
+
           <button type="submit" class="btn">Add domain</button>
         </form>
       </div>
@@ -197,6 +280,16 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
   const isCompetitor = (form.get("is_competitor") as string) === "1" ? 1 : 0;
   const competitorLabel = (form.get("competitor_label") as string || "").trim() || null;
 
+  // Agency assignment -- only meaningful for primary (non-competitor)
+  // clients. Competitors are attributed via client_slug, not an agency
+  // relationship, and don't count against slot billing.
+  const rawAgencyId = (form.get("agency_id") as string || "").trim();
+  const agencyId = !isCompetitor && rawAgencyId ? Number(rawAgencyId) : null;
+  const rawPlan = (form.get("plan") as string || "").trim().toLowerCase();
+  const plan = agencyId && (rawPlan === "signal" || rawPlan === "amplify") ? rawPlan : null;
+  const rawAccess = (form.get("client_access") as string || "").trim().toLowerCase();
+  const clientAccess = agencyId && (rawAccess === "full" || rawAccess === "internal") ? rawAccess : (agencyId ? "internal" : null);
+
   if (!clientSlug || !domain) {
     return redirect("/admin/manage");
   }
@@ -205,11 +298,45 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
   let newDomainId: number | null = null;
   try {
     const result = await env.DB.prepare(
-      "INSERT INTO domains (client_slug, domain, is_competitor, competitor_label, active, created_at, updated_at) VALUES (?, ?, ?, ?, 1, ?, ?)"
-    ).bind(clientSlug, domain, isCompetitor, competitorLabel, now, now).run();
+      `INSERT INTO domains
+         (client_slug, domain, is_competitor, competitor_label, active,
+          agency_id, plan, client_access, activated_at, created_at, updated_at)
+       VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      clientSlug,
+      domain,
+      isCompetitor,
+      competitorLabel,
+      agencyId,
+      plan,
+      clientAccess,
+      agencyId ? now : null,
+      now,
+      now,
+    ).run();
     newDomainId = result.meta.last_row_id as number || null;
   } catch {
     // Likely unique constraint violation
+  }
+
+  // If this client is attached to an agency, sync Stripe slot quantities
+  // to match the DB (lazy-creates the Amplify subscription_item on the
+  // first Amplify client). We don't want to block the redirect on a
+  // Stripe hiccup, so we swallow errors and log them -- the admin can
+  // re-run reconcile from the cockpit if needed.
+  if (agencyId && newDomainId && !isCompetitor) {
+    try {
+      const result = await reconcileAgencySlots(env, agencyId);
+      if (result.signal.updated || result.amplify.updated) {
+        console.log(
+          `[agency-slots] reconciled agency ${agencyId} after domain ${domain} add: ` +
+          `signal ${result.signal.stripeQuantity}, amplify ${result.amplify.stripeQuantity}` +
+          (result.amplify.lazyCreated ? " (amplify lazy-created)" : "")
+        );
+      }
+    } catch (e) {
+      console.log(`[agency-slots] reconcile failed for agency ${agencyId}: ${e}`);
+    }
   }
 
   // Auto-provision for primary (non-competitor) domains
@@ -358,5 +485,52 @@ export async function handleRemoveSuggestion(suggestionId: number, user: User, e
     "UPDATE competitor_suggestions SET status = 'rejected' WHERE id = ?"
   ).bind(suggestionId).run();
 
+  return redirect("/admin/manage");
+}
+
+/**
+ * POST /admin/agencies/:id/reconcile
+ *
+ * Admin-triggered Stripe slot reconciliation. Pushes the DB's active
+ * client counts (by plan) into the agency's Stripe subscription
+ * quantities, lazy-creating the Amplify subscription_item if needed.
+ * Idempotent: running repeatedly with no drift is a no-op Stripe-side.
+ *
+ * Surfaces a success or error message via an admin_alerts row so the
+ * admin cockpit shows the outcome without needing a query-string flag.
+ */
+export async function handleReconcileAgency(agencyId: number, user: User, env: Env): Promise<Response> {
+  const now = Math.floor(Date.now() / 1000);
+  try {
+    const result = await reconcileAgencySlots(env, agencyId);
+    const skipNote = result.skipped === "no-subscription"
+      ? " (no Stripe subscription yet -- skipped)"
+      : result.skipped === "missing-env"
+      ? " (STRIPE_SECRET_KEY missing -- skipped)"
+      : "";
+    const signalNote = `Signal ${result.signal.stripeQuantity} (expected ${result.signal.expected})`;
+    const amplifyNote =
+      `Amplify ${result.amplify.stripeQuantity} (expected ${result.amplify.expected})` +
+      (result.amplify.lazyCreated ? ", item lazy-created" : "");
+    await env.DB.prepare(
+      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'slot_reconcile', ?, ?, ?)"
+    ).bind(
+      `agency:${agencyId}`,
+      `Slot reconcile run for agency ${agencyId}${skipNote}`,
+      `${signalNote}. ${amplifyNote}.`,
+      now,
+    ).run();
+  } catch (e: any) {
+    const msg = String(e?.message || e);
+    console.log(`[agency-slots] reconcile failed for agency ${agencyId}: ${msg}`);
+    await env.DB.prepare(
+      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'slot_reconcile_error', ?, ?, ?)"
+    ).bind(
+      `agency:${agencyId}`,
+      `Slot reconcile FAILED for agency ${agencyId}`,
+      msg,
+      now,
+    ).run();
+  }
   return redirect("/admin/manage");
 }

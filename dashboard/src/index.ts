@@ -10,7 +10,7 @@ import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion } from "./routes/admin";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency } from "./routes/admin";
 import { handleCockpit } from "./routes/cockpit";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
@@ -327,6 +327,10 @@ export default {
     const removeMatch = path.match(/^\/admin\/suggestion\/(\d+)\/remove$/);
     if (removeMatch && method === "POST" && user.role === "admin") {
       return handleRemoveSuggestion(Number(removeMatch[1]), user, env);
+    }
+    const reconcileMatch = path.match(/^\/admin\/agencies\/(\d+)\/reconcile$/);
+    if (reconcileMatch && method === "POST" && user.role === "admin") {
+      return handleReconcileAgency(Number(reconcileMatch[1]), user, env);
     }
 
     // Leads (admin only)
