@@ -19,6 +19,8 @@ import { pullGscData } from "./gsc";
 import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14 } from "./agency-emails";
 import { getAgency } from "./agency";
+import { autoGenerateRoadmap } from "./auto-provision";
+import { runAutomation } from "./automation";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -227,12 +229,77 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
 }
 
-/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep */
+/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep + auto-provision missing roadmaps */
 export async function runDailyTasks(env: Env): Promise<void> {
   await sendOnboardingDripEmails(env);
   await sendNurtureDripEmails(env);
   await checkStaleRoadmapItems(env);
   await runSnippetSweep(env);
+  await runMissingRoadmapSweep(env);
+}
+
+// ---------------------------------------------------------------------------
+// Auto-provision missing roadmaps (Day 11 first automation rule)
+// ---------------------------------------------------------------------------
+//
+// Bug we hit in testing: a client (neverranked.com itself) had a valid
+// scan but zero roadmap items because it was added manually, bypassing
+// the Stripe-checkout provision path that normally generates the
+// initial roadmap. Finding this required a manual "Regenerate" click --
+// the kind of thing the automation philosophy says the system should
+// handle itself.
+//
+// This sweep runs daily and finds every active primary client that has
+// at least one successful scan AND zero roadmap items. For each, it
+// generates the roadmap via the existing autoGenerateRoadmap() path and
+// logs the decision to automation_log. Idempotent: once the client has
+// any items, the query filter excludes them and the sweep skips.
+//
+// Each decision goes through runAutomation() so the global pause switch
+// controls it and every action leaves an audit row.
+
+export async function runMissingRoadmapSweep(env: Env): Promise<void> {
+  // Find active primary clients with >= 1 successful scan and 0 roadmap items.
+  // We use the client_slug as the grouping key (matches the roadmap schema).
+  const candidates = (await env.DB.prepare(`
+    SELECT DISTINCT d.client_slug
+      FROM domains d
+     WHERE d.active = 1
+       AND d.is_competitor = 0
+       AND EXISTS (
+         SELECT 1 FROM scan_results s
+          WHERE s.domain_id = d.id AND s.error IS NULL
+       )
+       AND NOT EXISTS (
+         SELECT 1 FROM roadmap_items r
+          WHERE r.client_slug = d.client_slug
+       )
+  `).all<{ client_slug: string }>()).results;
+
+  if (candidates.length === 0) return;
+
+  let provisioned = 0;
+  let skipped = 0;
+
+  for (const { client_slug } of candidates) {
+    const result = await runAutomation(env, {
+      kind: "auto_roadmap_provision",
+      targetType: "client",
+      targetSlug: client_slug,
+      reason: `Client ${client_slug} had scan data but zero roadmap items. Auto-provisioned the initial roadmap.`,
+      pausedAlertTitle: `Automation paused: skipped roadmap provision for ${client_slug}`,
+      action: async () => {
+        await autoGenerateRoadmap(client_slug, env);
+        return { client_slug };
+      },
+    });
+    if (result) provisioned++;
+    else skipped++;
+  }
+
+  console.log(
+    `[missing-roadmap-sweep] ${candidates.length} candidate(s): ${provisioned} provisioned, ${skipped} skipped (paused)`
+  );
 }
 
 // ---------------------------------------------------------------------------

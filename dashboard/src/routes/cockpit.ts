@@ -6,8 +6,9 @@
  */
 
 import type { Env, User, Domain, ScanResult } from "../types";
-import { layout, html, esc } from "../render";
+import { layout, html, esc, redirect } from "../render";
 import { getAnalyticsSummary } from "../analytics";
+import { getAutomationSettings, setAutomationPaused } from "../automation";
 
 interface ClientHealth {
   slug: string;
@@ -173,10 +174,68 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     return `<span style="color:${color};font-weight:500;text-transform:uppercase;font-size:10px;letter-spacing:.1em">${esc(plan)}</span>`;
   };
 
+  // Automation pause state -- rendered as a pill + toggle form on the
+  // header so Lance can kill all autonomous decisions in one click
+  // without leaving the cockpit. Recent automation_log entries render
+  // below for visibility into what the system actually did.
+  const automation = await getAutomationSettings(env);
+  const recentAutomationLog = (await env.DB.prepare(
+    `SELECT kind, target_slug, reason, created_at
+       FROM automation_log
+       ORDER BY id DESC
+       LIMIT 12`
+  ).all<{ kind: string; target_slug: string | null; reason: string; created_at: number }>()).results;
+
+  const automationBadge = automation.paused
+    ? `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid #ef4444;border-radius:999px;font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#ef4444"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#ef4444"></span> Automation paused</span>`
+    : `<span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--gold-dim);border-radius:999px;font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold)"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold)"></span> Automation live</span>`;
+  const automationToggleForm = `
+    <form method="POST" action="/admin/automation/toggle" style="margin:0">
+      <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">
+        ${automation.paused ? "Resume automation" : "Pause all automation"}
+      </button>
+    </form>
+  `;
+
+  const automationLogSection = recentAutomationLog.length > 0 ? `
+    <div class="card" style="margin-bottom:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0">Automation log</h3>
+        <span class="label" style="font-size:10px">Last ${recentAutomationLog.length}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${recentAutomationLog.map(r => {
+          const ago = (() => {
+            const diff = now - r.created_at;
+            if (diff < 3600) return Math.floor(diff / 60) + "m ago";
+            if (diff < 86400) return Math.floor(diff / 3600) + "h ago";
+            return Math.floor(diff / 86400) + "d ago";
+          })();
+          return `
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:8px 12px;background:var(--bg-edge);border-radius:4px;font-family:var(--mono);font-size:11px">
+              <div style="flex:1;min-width:0">
+                <span style="color:var(--gold);text-transform:uppercase;letter-spacing:.12em;font-size:10px">${esc(r.kind)}</span>
+                ${r.target_slug ? `<span style="color:var(--text-faint);margin-left:8px">${esc(r.target_slug)}</span>` : ""}
+                <div style="color:var(--text-soft);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(r.reason)}</div>
+              </div>
+              <div style="color:var(--text-faint);font-size:10px;white-space:nowrap">${ago}</div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  ` : "";
+
   const body = `
-    <div style="margin-bottom:40px">
-      <div class="label" style="margin-bottom:8px">Cockpit</div>
-      <h1>Good morning</h1>
+    <div style="margin-bottom:40px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+      <div>
+        <div class="label" style="margin-bottom:8px">Cockpit</div>
+        <h1>Good morning</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+        ${automationBadge}
+        ${automationToggleForm}
+      </div>
     </div>
 
     <!-- Pulse: traffic + activity -->
@@ -238,6 +297,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${leads7d} this week / ${leads30d} this month</div>
       </div>
     </div>
+
+    ${automationLogSection}
 
     <!-- Action queue -->
     ${(pendingAudits.length > 0 || regressions.length > 0 || neverLoggedIn.length > 0 || (pendingSuggestions?.count || 0) > 0) ? `
@@ -447,4 +508,18 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
   `;
 
   return html(layout("Admin", body, user));
+}
+
+/**
+ * POST /admin/automation/toggle
+ *
+ * Flips the global automation pause switch. Admin-only. No form body
+ * needed -- we just read the current state and flip it. Reason defaults
+ * to "toggled via admin cockpit" but could be extended later to accept
+ * a custom note.
+ */
+export async function handleAutomationToggle(user: User, env: Env): Promise<Response> {
+  const current = await getAutomationSettings(env);
+  await setAutomationPaused(env, !current.paused, current.paused ? null : "toggled via admin cockpit");
+  return redirect("/admin");
 }

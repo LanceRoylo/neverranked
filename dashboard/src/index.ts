@@ -11,7 +11,7 @@ import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./r
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency } from "./routes/admin";
-import { handleCockpit } from "./routes/cockpit";
+import { handleCockpit, handleAutomationToggle } from "./routes/cockpit";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
@@ -346,6 +346,9 @@ export default {
     const reconcileMatch = path.match(/^\/admin\/agencies\/(\d+)\/reconcile$/);
     if (reconcileMatch && method === "POST" && user.role === "admin") {
       return handleReconcileAgency(Number(reconcileMatch[1]), user, env);
+    }
+    if (path === "/admin/automation/toggle" && method === "POST" && user.role === "admin") {
+      return handleAutomationToggle(user, env);
     }
 
     // Leads (admin only)
