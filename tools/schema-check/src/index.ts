@@ -537,6 +537,65 @@ body::before{
 }
 
 /* email capture */
+/* Email gate: shown between the score and the full details. Converts
+   anonymous scans into known leads before revealing the breakdown. */
+.email-gate{
+  margin:32px 0;padding:32px 28px;
+  background:linear-gradient(180deg,var(--bg-lift),var(--bg-edge));
+  border:1px solid var(--gold-dim);border-radius:4px;text-align:center;
+  animation:fadeUp .5s var(--ease) .1s both;
+}
+.email-gate-head{
+  display:flex;align-items:baseline;justify-content:center;gap:12px;margin-bottom:4px;
+}
+.email-gate-count{
+  font-family:var(--serif);font-size:48px;font-style:italic;color:var(--gold);line-height:1;
+}
+.email-gate-title{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;color:var(--text-soft);
+}
+.email-gate-teaser{
+  margin:16px auto 20px;max-width:520px;text-align:left;
+}
+.email-gate-teaser ul{list-style:none;padding:0;margin:0}
+.email-gate-teaser li{
+  padding:10px 0;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:13px;color:var(--text-soft);
+}
+.email-gate-teaser li:last-child{border-bottom:none}
+.email-gate-teaser li::before{content:'\u00D7';color:var(--gold);margin-right:10px;font-weight:700}
+.email-gate-body{max-width:560px;margin:0 auto}
+.email-gate-body p{
+  font-family:var(--mono);font-size:13px;color:var(--text-soft);
+  line-height:1.7;margin:0 0 18px;
+}
+.email-gate-form{
+  display:flex;gap:10px;justify-content:center;max-width:440px;margin:0 auto 10px;flex-wrap:wrap;
+}
+.email-gate-form input{
+  flex:1;min-width:220px;padding:14px 16px;
+  background:var(--bg);border:1px solid var(--line-strong);border-radius:3px;
+  color:var(--text);font-family:var(--mono);font-size:14px;outline:none;
+  transition:border-color .2s var(--ease);
+}
+.email-gate-form input:focus{border-color:var(--gold)}
+.email-gate-form input::placeholder{color:var(--text-faint)}
+.email-gate-form button{
+  padding:14px 26px;background:var(--gold);color:var(--bg);border:0;border-radius:3px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:600;
+  cursor:pointer;transition:opacity .2s;white-space:nowrap;
+}
+.email-gate-form button:hover{opacity:.88}
+.email-gate-form button:disabled{opacity:.4;cursor:not-allowed}
+.email-gate-privacy{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:8px;
+}
+@media (max-width:640px){
+  .email-gate-head{flex-direction:column;gap:4px}
+  .email-gate-count{font-size:40px}
+  .email-gate-form input{width:100%}
+}
+
 .email-capture{
   margin:32px 0 0;
   padding:24px 28px;
@@ -959,6 +1018,26 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="grade-section" id="grade-section"></div>
     <div class="grade-insight" id="grade-insight"></div>
 
+    <!-- Email gate: teaser + capture. Hidden once email is captured. -->
+    <div class="email-gate" id="email-gate" style="display:none">
+      <div class="email-gate-head">
+        <div class="email-gate-count" id="email-gate-count">-</div>
+        <div class="email-gate-title">more issues detected</div>
+      </div>
+      <div class="email-gate-teaser" id="email-gate-teaser"></div>
+      <div class="email-gate-body">
+        <p>See every schema gap, technical signal, and priority fix. Delivered free to your inbox so you can share it with your team.</p>
+        <div class="email-gate-form">
+          <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
+          <button type="button" id="gate-email-btn">Unlock full report</button>
+        </div>
+        <div class="email-gate-privacy">We email you the full report. No spam. Unsubscribe anytime.</div>
+      </div>
+    </div>
+
+    <!-- Gated details: hidden until email captured -->
+    <div id="gated-details" style="display:none">
+
     <div class="section-label"><span class="num">01</span> Schema Coverage <span class="rule"></span></div>
     <div class="schema-grid" id="schema-grid"></div>
 
@@ -997,6 +1076,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         These are the highest-impact fixes based on your scan. A full audit covers content gaps, citation analysis across ChatGPT, Perplexity, and Gemini, and produces a 90-day action plan.
       </div>
     </div>
+
+    </div><!-- /#gated-details -->
 
     <!-- Dashboard preview -->
     <div class="dash-preview">
@@ -1431,7 +1512,112 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     emailBtn.textContent='Send';
     emailBtn.disabled=false;
     emailInput.value='';
+
+    // Email gate: show teaser + hidden-count, or auto-reveal if already captured
+    updateEmailGate(data);
   }
+
+  // ---------- Email gate: teaser + capture before full report is revealed ----------
+  var CAPTURED_EMAIL_KEY = 'nr_captured_email';
+  function getCapturedEmail(){
+    try { return localStorage.getItem(CAPTURED_EMAIL_KEY) || ''; } catch(e){ return ''; }
+  }
+  function setCapturedEmail(email){
+    try { localStorage.setItem(CAPTURED_EMAIL_KEY, email); } catch(e){}
+  }
+  var emailGateEl = document.getElementById('email-gate');
+  var gateEmailInput = document.getElementById('gate-email-input');
+  var gateEmailBtn = document.getElementById('gate-email-btn');
+  var gateCount = document.getElementById('email-gate-count');
+  var gateTeaser = document.getElementById('email-gate-teaser');
+  var gatedDetails = document.getElementById('gated-details');
+
+  function revealGatedDetails(){
+    if(gatedDetails) gatedDetails.style.display = 'block';
+    if(emailGateEl) emailGateEl.style.display = 'none';
+    // Bottom-of-page email form is redundant once they've unlocked — hide it
+    var bottomCapture = document.getElementById('email-capture');
+    if(bottomCapture) bottomCapture.style.display = 'none';
+  }
+
+  function updateEmailGate(data){
+    if(!emailGateEl || !gatedDetails) return;
+
+    // Count hidden issues: all red flags + missing critical schemas + failing tech signals
+    var flags = (data.red_flags || []).length;
+    var missingSchemas = ((data.schema_coverage || []).filter(function(s){ return !s.present; })).length;
+    var failingTech = ((data.technical_signals || []).filter(function(t){ return t.status === 'fail' || t.status === 'warn'; })).length;
+    var total = flags + missingSchemas + failingTech;
+
+    if(gateCount) gateCount.textContent = String(total || '');
+
+    // Teaser: top 2 red flags (or top missing schemas if no red flags)
+    var teaserItems = [];
+    if((data.red_flags || []).length > 0){
+      teaserItems = data.red_flags.slice(0, 2);
+    } else if(missingSchemas > 0){
+      teaserItems = (data.schema_coverage || [])
+        .filter(function(s){ return !s.present; })
+        .slice(0, 2)
+        .map(function(s){ return 'Missing ' + s.type + ' schema'; });
+    }
+
+    if(gateTeaser){
+      if(teaserItems.length > 0){
+        gateTeaser.innerHTML = '<ul>' + teaserItems.map(function(msg){
+          var safe = String(msg).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          return '<li>' + safe + '</li>';
+        }).join('') + '</ul>';
+      } else {
+        gateTeaser.innerHTML = '';
+      }
+    }
+
+    // If already captured before, skip the gate entirely
+    if(getCapturedEmail()){
+      revealGatedDetails();
+    } else {
+      emailGateEl.style.display = 'block';
+      gatedDetails.style.display = 'none';
+      if(gateEmailBtn){
+        gateEmailBtn.disabled = false;
+        gateEmailBtn.textContent = 'Unlock full report';
+      }
+      if(gateEmailInput) gateEmailInput.value = '';
+    }
+  }
+
+  async function submitGateEmail(){
+    if(!gateEmailInput || !gateEmailBtn) return;
+    var email = gateEmailInput.value.trim();
+    if(!email || !email.includes('@') || !email.includes('.')){ gateEmailInput.focus(); return; }
+    if(!lastReportData) return;
+
+    gateEmailBtn.disabled = true;
+    gateEmailBtn.textContent = 'Unlocking...';
+
+    try{
+      var resp = await fetch('/api/send-report', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({email: email, report: lastReportData})
+      });
+      if(!resp.ok) throw new Error('Failed');
+      setCapturedEmail(email);
+      revealGatedDetails();
+      // Retargeting events
+      if(typeof fbq === 'function') fbq('track', 'Lead');
+      if(typeof lintrk === 'function') lintrk('track', {conversion_id: 0});
+    } catch(e) {
+      gateEmailBtn.textContent = 'Try again';
+      gateEmailBtn.disabled = false;
+    }
+  }
+
+  if(gateEmailBtn) gateEmailBtn.addEventListener('click', submitGateEmail);
+  if(gateEmailInput) gateEmailInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter') submitGateEmail();
+  });
 
   // Capture referrer + UTM params on page load for attribution
   var _ref = document.referrer || '';
