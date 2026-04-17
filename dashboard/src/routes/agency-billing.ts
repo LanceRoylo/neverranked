@@ -123,15 +123,18 @@ function dollars(cents: number): string {
  * the single source of truth for actual billing is still Stripe.
  */
 function tierRate(kind: "signal" | "amplify", qty: number): number {
-  // Per-slot rate in cents at this quantity (volume mode: one rate for all units at this qty)
+  // Per-slot rate in cents at this quantity (volume mode: one rate for
+  // all units at this qty). Must match the tier amounts in
+  // scripts/setup-agency-stripe.ts; Stripe is the source of truth for
+  // actual billing, this function is only used for the estimate card.
   if (kind === "signal") {
-    if (qty <= 9) return 140000;
-    if (qty <= 24) return 130000;
-    return 120000;
+    if (qty <= 9) return 80000;   // $800/mo
+    if (qty <= 24) return 70000;  // $700/mo
+    return 60000;                 // $600/mo
   }
-  if (qty <= 9) return 315000;
-  if (qty <= 24) return 292500;
-  return 270000;
+  if (qty <= 9) return 180000;    // $1,800/mo
+  if (qty <= 24) return 160000;   // $1,600/mo
+  return 140000;                  // $1,400/mo
 }
 
 function buildSlotSummary(slots: { signal: number; amplify: number }): {
@@ -239,9 +242,9 @@ export async function handleAgencyBillingGet(
       <table class="data-table" style="margin:0">
         <thead><tr><th>Slots</th><th>Signal</th><th>Amplify</th></tr></thead>
         <tbody>
-          <tr><td>1 - 9</td><td>${dollars(140000)}/mo</td><td>${dollars(315000)}/mo</td></tr>
-          <tr><td>10 - 24</td><td>${dollars(130000)}/mo</td><td>${dollars(292500)}/mo</td></tr>
-          <tr><td>25+</td><td>${dollars(120000)}/mo</td><td>${dollars(270000)}/mo</td></tr>
+          <tr><td>1 - 9</td><td>${dollars(80000)}/mo</td><td>${dollars(180000)}/mo</td></tr>
+          <tr><td>10 - 24</td><td>${dollars(70000)}/mo</td><td>${dollars(160000)}/mo</td></tr>
+          <tr><td>25+</td><td>${dollars(60000)}/mo</td><td>${dollars(140000)}/mo</td></tr>
         </tbody>
       </table>
     </div>

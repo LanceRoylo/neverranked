@@ -9,10 +9,16 @@
  * will create duplicates, so you should only run it once per environment
  * (test, live) and paste the printed IDs into your wrangler secrets.
  *
- * Pricing model (confirmed):
- *   Signal  (volume):  1-9 @ $1,400/mo   10-24 @ $1,300/mo   25+ @ $1,200/mo
- *   Amplify (volume):  1-9 @ $3,150/mo   10-24 @ $2,925/mo   25+ @ $2,700/mo
+ * Pricing model (Scenario B, confirmed 2026-04-16):
+ *   Signal  (volume):  1-9 @ $800/mo    10-24 @ $700/mo    25+ @ $600/mo
+ *   Amplify (volume):  1-9 @ $1,800/mo  10-24 @ $1,600/mo  25+ @ $1,400/mo
  *   Intro coupon:      10% off for 3 months (applied at agency activation)
+ *
+ * Rationale: agency channel works on volume x margin. At $1,400 Signal
+ * wholesale we only left 30% margin to the agency at our direct retail
+ * ($2,000) -- below the "worth selling" threshold. Dropping wholesale
+ * to $800 gives agencies ~60% margin (their piece) and still leaves us
+ * 98%+ gross margin on every slot (AI API costs per slot are ~$10).
  *
  * Volume tiers mean the chosen tier's unit_amount applies to ALL units
  * at that quantity. So 10 Signal slots bill at 10 * $1,300 = $13,000/mo,
@@ -39,15 +45,15 @@ interface Tier {
 }
 
 const SIGNAL_TIERS: Tier[] = [
-  { up_to: 9,    unit_amount: 140000 }, // 1-9  slots: $1,400/mo each
-  { up_to: 24,   unit_amount: 130000 }, // 10-24 slots: $1,300/mo each
-  { up_to: "inf", unit_amount: 120000 }, // 25+  slots: $1,200/mo each
+  { up_to: 9,    unit_amount: 80000 },  // 1-9  slots: $800/mo each
+  { up_to: 24,   unit_amount: 70000 },  // 10-24 slots: $700/mo each
+  { up_to: "inf", unit_amount: 60000 }, // 25+  slots: $600/mo each
 ];
 
 const AMPLIFY_TIERS: Tier[] = [
-  { up_to: 9,    unit_amount: 315000 }, // 1-9  slots: $3,150/mo each
-  { up_to: 24,   unit_amount: 292500 }, // 10-24 slots: $2,925/mo each
-  { up_to: "inf", unit_amount: 270000 }, // 25+  slots: $2,700/mo each
+  { up_to: 9,    unit_amount: 180000 }, // 1-9  slots: $1,800/mo each
+  { up_to: 24,   unit_amount: 160000 }, // 10-24 slots: $1,600/mo each
+  { up_to: "inf", unit_amount: 140000 },// 25+  slots: $1,400/mo each
 ];
 
 async function stripePost(path: string, body: Record<string, string>): Promise<any> {
