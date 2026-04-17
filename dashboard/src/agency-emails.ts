@@ -153,3 +153,112 @@ export async function sendSnippetDeliveryEmail(
 
   return sendResend(env, to, subject, text, html);
 }
+
+// ---------------------------------------------------------------------------
+// Snippet-not-detected nudge emails (Day 7 + Day 14 tiers)
+// ---------------------------------------------------------------------------
+
+interface SnippetNudgeOpts {
+  agency: Agency;
+  domain: Domain;
+  daysSinceDelivery: number;
+}
+
+/**
+ * Day 7 nudge: polite reminder. Framing: "the snippet is the ONLY
+ * thing standing between your client and the schema fixes we've
+ * already built." Gives them the tag again so they don't have to
+ * dig up the original email.
+ */
+export async function sendSnippetNudgeDay7(
+  env: Env,
+  opts: SnippetNudgeOpts,
+): Promise<boolean> {
+  const { agency, domain, daysSinceDelivery } = opts;
+  const to = agency.contact_email;
+  if (!to) return false;
+
+  const tag = snippetTag(domain.client_slug);
+  const subject = `Snippet not detected on ${domain.domain} yet`;
+
+  const text = [
+    `Hi,`,
+    ``,
+    `Heads up: it has been ${daysSinceDelivery} days since I sent over the snippet for ${domain.domain}, and our scanner still doesn't see it on the site.`,
+    ``,
+    `Here's the tag again so you don't have to dig through your inbox:`,
+    ``,
+    tag,
+    ``,
+    `Paste inside the <head> of the site-wide layout template. Once it's live, we push schema updates automatically and the AEO score starts climbing within the week.`,
+    ``,
+    `If your client's webmaster is the right person to do this, feel free to forward them this email. Happy to explain what it does on a quick call if that helps.`,
+    ``,
+    `Lance`,
+    `NeverRanked`,
+  ].join("\n");
+
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi,</p>
+<p style="margin:0 0 20px">Heads up: it has been <strong>${daysSinceDelivery} days</strong> since I sent over the snippet for <strong>${escHtml(domain.domain)}</strong>, and our scanner still doesn't see it on the site.</p>
+<p style="margin:0 0 12px">Here's the tag again so you don't have to dig through your inbox:</p>
+<div style="margin:0 0 20px;padding:16px 20px;background:#0f0f0f;border-radius:4px;overflow-x:auto">
+  <code style="color:#e8c767;font-family:'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:13px;line-height:1.6;white-space:pre;word-break:normal">${escHtml(tag)}</code>
+</div>
+<p style="margin:0 0 14px">Paste inside the <code>&lt;head&gt;</code> of the site-wide layout template. Once it's live, we push schema updates automatically and the AEO score starts climbing within the week.</p>
+<p style="margin:0 0 20px">If your client's webmaster is the right person to do this, feel free to forward them this email. Happy to explain what it does on a quick call if that helps.</p>
+<p style="margin:0 0 6px">Lance</p>
+<p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
+</body></html>`;
+
+  return sendResend(env, to, subject, text, html);
+}
+
+/**
+ * Day 14 nudge: different angle. Acknowledges the hesitation,
+ * offers concierge help. Goal is to break the inertia without
+ * nagging.
+ */
+export async function sendSnippetNudgeDay14(
+  env: Env,
+  opts: SnippetNudgeOpts,
+): Promise<boolean> {
+  const { agency, domain, daysSinceDelivery } = opts;
+  const to = agency.contact_email;
+  if (!to) return false;
+
+  const subject = `Want me to help install ${domain.domain}'s snippet?`;
+
+  const text = [
+    `Hi,`,
+    ``,
+    `Still no snippet detected on ${domain.domain} (${daysSinceDelivery} days in). No judgment. This is the single most common place agency rollouts stall, usually because the client's webmaster is in the middle of something else.`,
+    ``,
+    `A few ways I can help:`,
+    ``,
+    `1. Send the client's webmaster a 90-second Loom showing exactly where the tag goes for their specific CMS.`,
+    `2. Hop on a 10-minute call with you or them and talk through it.`,
+    `3. If the site is on WordPress, Webflow, Squarespace, or Wix, just tell me which and I'll send the exact panel to paste into.`,
+    ``,
+    `Which works best? Just reply and we'll unblock it.`,
+    ``,
+    `Lance`,
+    `NeverRanked`,
+  ].join("\n");
+
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi,</p>
+<p style="margin:0 0 20px">Still no snippet detected on <strong>${escHtml(domain.domain)}</strong> (${daysSinceDelivery} days in). No judgment. This is the single most common place agency rollouts stall, usually because the client's webmaster is in the middle of something else.</p>
+<p style="margin:0 0 14px">A few ways I can help:</p>
+<ol style="margin:0 0 20px;padding-left:20px">
+  <li style="margin-bottom:8px">Send the client's webmaster a 90-second Loom showing exactly where the tag goes for their specific CMS.</li>
+  <li style="margin-bottom:8px">Hop on a 10-minute call with you or them and talk through it.</li>
+  <li style="margin-bottom:8px">If the site is on WordPress, Webflow, Squarespace, or Wix, just tell me which and I'll send the exact panel to paste into.</li>
+</ol>
+<p style="margin:0 0 20px">Which works best? Just reply and we'll unblock it.</p>
+<p style="margin:0 0 6px">Lance</p>
+<p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
+</body></html>`;
+
+  return sendResend(env, to, subject, text, html);
+}

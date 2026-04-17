@@ -16,6 +16,9 @@ import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
 import { pullGscData } from "./gsc";
+import { detectSnippet } from "./snippet-detector";
+import { sendSnippetNudgeDay7, sendSnippetNudgeDay14 } from "./agency-emails";
+import { getAgency } from "./agency";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -224,11 +227,147 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
 }
 
-/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check */
+/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep */
 export async function runDailyTasks(env: Env): Promise<void> {
   await sendOnboardingDripEmails(env);
   await sendNurtureDripEmails(env);
   await checkStaleRoadmapItems(env);
+  await runSnippetSweep(env);
+}
+
+// ---------------------------------------------------------------------------
+// Snippet-not-detected sweep (Day 9 Part 2)
+// ---------------------------------------------------------------------------
+//
+// Walks every active, agency-owned primary domain that has received
+// the initial snippet delivery email, probes the homepage for our
+// injector tag, and escalates through three tiers:
+//
+//   day 7  not detected  -> first nudge to the agency contact
+//   day 14 not detected  -> second nudge (concierge offer)
+//   day 30 not detected  -> admin_alerts row for ops to intervene
+//
+// Detection state is stamped on the domain row so we never re-nudge
+// after a tier has already fired. If a snippet is detected for the
+// first time, snippet_last_detected_at gets set and we stop probing
+// (well, we still probe weekly to catch regressions, but we never
+// send the "please install it" emails again).
+//
+// The checks run serially with small pauses so a batch of 20 domains
+// doesn't hammer our own Workers edge or the targets' servers.
+
+export async function runSnippetSweep(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const DAY = 86400;
+
+  // Candidates: agency-owned, active, primary (non-competitor), snippet
+  // delivery email has been sent, and either (a) snippet has never been
+  // detected OR (b) it's been >= 24h since the last check. We scan at
+  // most once per 24h per domain so repeated cron invocations are
+  // still-idempotent.
+  const yesterday = now - DAY;
+  const candidates = (await env.DB.prepare(`
+    SELECT * FROM domains
+      WHERE agency_id IS NOT NULL
+        AND active = 1
+        AND is_competitor = 0
+        AND snippet_email_sent_at IS NOT NULL
+        AND (snippet_last_checked_at IS NULL OR snippet_last_checked_at < ?)
+      ORDER BY snippet_email_sent_at
+      LIMIT 200
+  `).bind(yesterday).all<Domain>()).results;
+
+  if (candidates.length === 0) return;
+
+  let detected = 0;
+  let missing = 0;
+  let nudgesSent = 0;
+  let alertsCreated = 0;
+
+  for (const d of candidates) {
+    const agedAt = d.snippet_email_sent_at || d.activated_at || d.created_at || now;
+    const daysSinceDelivery = Math.floor((now - agedAt) / DAY);
+
+    const isDetected = await detectSnippet(d.domain);
+
+    // Always stamp the check timestamp, and record detection if found.
+    try {
+      if (isDetected) {
+        await env.DB.prepare(
+          "UPDATE domains SET snippet_last_checked_at = ?, snippet_last_detected_at = COALESCE(snippet_last_detected_at, ?) WHERE id = ?"
+        ).bind(now, now, d.id).run();
+        detected++;
+      } else {
+        await env.DB.prepare(
+          "UPDATE domains SET snippet_last_checked_at = ? WHERE id = ?"
+        ).bind(now, d.id).run();
+        missing++;
+      }
+    } catch (e) {
+      console.log(`[snippet-sweep] stamp failed for domain ${d.id}: ${e}`);
+      continue;
+    }
+
+    // If it's detected now, we're done for this domain. No nudges ever
+    // again even if it disappears later (snippet_last_detected_at stays
+    // set). Regression tracking is a separate future feature.
+    if (isDetected || d.snippet_last_detected_at) continue;
+
+    // Tiered escalation. Each tier guards on its own timestamp column
+    // so we never fire the same tier twice.
+    try {
+      if (daysSinceDelivery >= 30) {
+        // Day 30+: escalate to admin. Only insert if we haven't
+        // already alerted for this domain in the last 30 days.
+        const existing = await env.DB.prepare(
+          "SELECT id FROM admin_alerts WHERE client_slug = ? AND type = 'snippet_stalled' AND created_at > ? LIMIT 1"
+        ).bind(d.client_slug, now - 30 * DAY).first<{ id: number }>();
+        if (!existing) {
+          await env.DB.prepare(
+            "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'snippet_stalled', ?, ?, ?)"
+          ).bind(
+            d.client_slug,
+            `Snippet still not installed on ${d.domain} after ${daysSinceDelivery} days`,
+            `Agency has been nudged twice. Manual intervention likely needed. Domain id ${d.id}, agency id ${d.agency_id}.`,
+            now,
+          ).run();
+          alertsCreated++;
+        }
+      } else if (daysSinceDelivery >= 14 && !d.snippet_nudge_day14_at) {
+        const agency = await getAgency(env, d.agency_id!);
+        if (agency) {
+          const sent = await sendSnippetNudgeDay14(env, { agency, domain: d, daysSinceDelivery });
+          if (sent) {
+            await env.DB.prepare(
+              "UPDATE domains SET snippet_nudge_day14_at = ? WHERE id = ?"
+            ).bind(now, d.id).run();
+            nudgesSent++;
+          }
+        }
+      } else if (daysSinceDelivery >= 7 && !d.snippet_nudge_day7_at) {
+        const agency = await getAgency(env, d.agency_id!);
+        if (agency) {
+          const sent = await sendSnippetNudgeDay7(env, { agency, domain: d, daysSinceDelivery });
+          if (sent) {
+            await env.DB.prepare(
+              "UPDATE domains SET snippet_nudge_day7_at = ? WHERE id = ?"
+            ).bind(now, d.id).run();
+            nudgesSent++;
+          }
+        }
+      }
+    } catch (e) {
+      console.log(`[snippet-sweep] nudge failed for domain ${d.id}: ${e}`);
+    }
+
+    // Courtesy pause between fetches so we're not hammering anyone.
+    await new Promise((r) => setTimeout(r, 250));
+  }
+
+  console.log(
+    `[snippet-sweep] checked ${candidates.length} domain(s): ` +
+    `${detected} detected, ${missing} missing, ${nudgesSent} nudge(s) sent, ${alertsCreated} admin alert(s)`
+  );
 }
 
 /** Flag roadmap items stuck in "in_progress" for 14+ days */
