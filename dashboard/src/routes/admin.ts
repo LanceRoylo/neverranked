@@ -10,7 +10,8 @@ import { checkAndAlertRegression } from "../regression";
 import { autoGenerateRoadmap } from "../auto-provision";
 import { autoCompleteRoadmapItems } from "../auto-complete";
 import { reconcileAgencySlots } from "../agency-slots";
-import { countActiveSlots } from "../agency";
+import { countActiveSlots, getAgency } from "../agency";
+import { sendSnippetDeliveryEmail } from "../agency-emails";
 
 /** Admin overview: list all clients and domains */
 export async function handleAdminHome(user: User, env: Env): Promise<Response> {
@@ -336,6 +337,29 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
       }
     } catch (e) {
       console.log(`[agency-slots] reconcile failed for agency ${agencyId}: ${e}`);
+    }
+
+    // Snippet delivery email: send ONCE per domain, the moment the
+    // agency provisions the client. Guards on snippet_email_sent_at
+    // so retries (race, 2nd submit) don't double-send.
+    try {
+      const agencyRow = await getAgency(env, agencyId);
+      const domainRow = await env.DB.prepare(
+        "SELECT * FROM domains WHERE id = ?"
+      ).bind(newDomainId).first<Domain>();
+      if (agencyRow && domainRow && !domainRow.snippet_email_sent_at) {
+        const sent = await sendSnippetDeliveryEmail(env, { agency: agencyRow, domain: domainRow });
+        if (sent) {
+          await env.DB.prepare(
+            "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+          ).bind(now, newDomainId).run();
+          console.log(
+            `[agency-emails] snippet email sent to ${agencyRow.contact_email} for ${domain}`
+          );
+        }
+      }
+    } catch (e) {
+      console.log(`[agency-emails] snippet email failed for domain ${domain}: ${e}`);
     }
   }
 

@@ -109,6 +109,13 @@ export interface Domain {
   client_access: AgencyClientAccess;
   activated_at: number | null;
   sort_order: number;
+  // Snippet lifecycle tracking (added by migration 0022). All nullable:
+  // null means the event hasn't fired yet for this domain.
+  snippet_email_sent_at: number | null;
+  snippet_last_checked_at: number | null;
+  snippet_last_detected_at: number | null;
+  snippet_nudge_day7_at: number | null;
+  snippet_nudge_day14_at: number | null;
   created_at: number;
   updated_at: number;
 }
