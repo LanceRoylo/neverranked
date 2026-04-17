@@ -38,6 +38,77 @@ function gradeColor(grade: string): string {
   return "#c0392b";
 }
 
+/**
+ * GET /api/admin/leads.json
+ *
+ * Machine-readable version of the leads page for the outreach repo to
+ * pull as warm-fuel. Auth via ADMIN_SECRET in the `X-Admin-Secret`
+ * header (the same secret used by /api/admin/referrers on the schema
+ * check worker). Returns every lead:* entry from the shared LEADS KV
+ * with basic fields the outreach script can import as prospects.
+ *
+ * Optional filters:
+ *   ?since=<unix_ts>          only leads created after this ts
+ *   ?not_converted=1          only leads where converted !== true
+ */
+export async function handleLeadsJson(request: Request, env: Env): Promise<Response> {
+  const provided = request.headers.get("x-admin-secret") || "";
+  if (!env.ADMIN_SECRET || provided !== env.ADMIN_SECRET) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const url = new URL(request.url);
+  const sinceRaw = url.searchParams.get("since");
+  const sinceMs = sinceRaw ? Number(sinceRaw) * 1000 : 0;
+  const onlyUnconverted = url.searchParams.get("not_converted") === "1";
+
+  const list = await env.LEADS.list({ prefix: "lead:", limit: 1000 });
+  const out: Array<{
+    email: string;
+    latest_domain: string | null;
+    latest_score: number | null;
+    latest_grade: string | null;
+    created_at: number;
+    last_scan_at: number | null;
+    scan_count: number;
+    converted: boolean;
+  }> = [];
+
+  for (const key of list.keys) {
+    const raw = await env.LEADS.get(key.name);
+    if (!raw) continue;
+    try {
+      const d = JSON.parse(raw) as LeadData;
+      const createdMs = Date.parse(d.created || "");
+      if (Number.isNaN(createdMs)) continue;
+      if (sinceMs > 0 && createdMs < sinceMs) continue;
+      if (onlyUnconverted && d.converted === true) continue;
+      const latest = (d.scans || [])[d.scans?.length - 1] || null;
+      out.push({
+        email: d.email,
+        latest_domain: latest?.domain ?? null,
+        latest_score: typeof latest?.score === "number" ? latest.score : null,
+        latest_grade: latest?.grade ?? null,
+        created_at: Math.floor(createdMs / 1000),
+        last_scan_at: d.lastScan ? Math.floor(Date.parse(d.lastScan) / 1000) : null,
+        scan_count: d.scans?.length ?? 0,
+        converted: d.converted === true,
+      });
+    } catch {
+      // corrupt KV row — skip
+    }
+  }
+
+  // Newest first
+  out.sort((a, b) => b.created_at - a.created_at);
+
+  return Response.json({
+    count: out.length,
+    leads: out,
+    as_of: Math.floor(Date.now() / 1000),
+  });
+}
+
 export async function handleLeads(user: User, env: Env): Promise<Response> {
   // Fetch all leads from KV
   const list = await env.LEADS.list({ prefix: "lead:" });

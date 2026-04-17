@@ -18,7 +18,7 @@ import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAdd
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
-import { handleLeads } from "./routes/leads";
+import { handleLeads, handleLeadsJson } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks } from "./cron";
@@ -133,6 +133,13 @@ export default {
     const injectMatch = path.match(/^\/inject\/([a-z0-9_-]+)\.js$/);
     if (injectMatch) {
       return handleInjectScript(injectMatch[1], env);
+    }
+
+    // Admin API: leads JSON for the outreach repo to pull warm-fuel.
+    // Auth via X-Admin-Secret header so we can call this from the
+    // localhost outreach tool without a browser session.
+    if (path === "/api/admin/leads.json" && method === "GET") {
+      return handleLeadsJson(request, env);
     }
 
     // Agency assets (logos). Public on purpose -- these are what
