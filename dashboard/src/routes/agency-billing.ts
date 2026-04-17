@@ -11,10 +11,93 @@
  * (POST /billing/portal, already implemented in routes/checkout.ts).
  */
 
-import type { Env, User } from "../types";
-import { layout, html, esc, redirect, longDate } from "../render";
+import type { Env, User, Domain } from "../types";
+import { layout, html, esc, redirect, longDate, shortDate } from "../render";
 import { getAgency, countActiveSlots } from "../agency";
 import { createAgencyCheckoutSession, stripeRequest } from "../stripe-agency";
+
+// ---------------------------------------------------------------------------
+// Stripe live-data helpers (scoped to this page; kept inline to avoid
+// bloating stripe-agency.ts with render-layer concerns)
+// ---------------------------------------------------------------------------
+
+interface UpcomingInvoice {
+  amountDue: number;      // cents
+  currency: string;
+  periodEnd: number | null; // unix ts
+  invoiceNumber: string | null;
+}
+
+interface PaymentMethodSummary {
+  brand: string;          // "visa", "mastercard", etc
+  last4: string;
+  expMonth: number | null;
+  expYear: number | null;
+}
+
+/**
+ * Fetch the upcoming invoice for a subscription. Returns null if Stripe
+ * has nothing queued (rare; active subs always have an upcoming). Any
+ * error is swallowed -- billing page must render even if Stripe is
+ * momentarily flaky.
+ */
+async function fetchUpcomingInvoice(
+  subscriptionId: string,
+  apiKey: string,
+): Promise<UpcomingInvoice | null> {
+  try {
+    const inv = await stripeRequest(
+      `/invoices/upcoming?subscription=${encodeURIComponent(subscriptionId)}`,
+      apiKey,
+    );
+    if (!inv || inv.error) return null;
+    return {
+      amountDue: Number(inv.amount_due ?? 0),
+      currency: String(inv.currency || "usd"),
+      periodEnd: inv.period_end ? Number(inv.period_end) : null,
+      invoiceNumber: inv.number || null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch the default payment method on the Stripe customer so we can
+ * display "Visa ending 4242" as reassurance. Same error-swallow policy.
+ */
+async function fetchDefaultPaymentMethod(
+  customerId: string,
+  apiKey: string,
+): Promise<PaymentMethodSummary | null> {
+  try {
+    const cust = await stripeRequest(
+      `/customers/${encodeURIComponent(customerId)}?expand[]=invoice_settings.default_payment_method`,
+      apiKey,
+    );
+    if (!cust || cust.error) return null;
+    const pm = cust.invoice_settings?.default_payment_method;
+    if (!pm || !pm.card) return null;
+    return {
+      brand: String(pm.card.brand || "card"),
+      last4: String(pm.card.last4 || "????"),
+      expMonth: pm.card.exp_month ? Number(pm.card.exp_month) : null,
+      expYear: pm.card.exp_year ? Number(pm.card.exp_year) : null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/** Fetch active clients (primary domains) attached to the agency, by plan. */
+async function fetchAgencyClients(env: Env, agencyId: number): Promise<Domain[]> {
+  const rows = await env.DB.prepare(
+    `SELECT * FROM domains
+       WHERE agency_id = ? AND is_competitor = 0 AND active = 1
+       ORDER BY plan, client_slug`
+  ).bind(agencyId).all<Domain>();
+  return rows.results || [];
+}
 
 /** Gate: only agency admins with an agency_id pass. Returns a redirect
  *  Response to send downstream, or null if the user is allowed. */
@@ -94,6 +177,19 @@ export async function handleAgencyBillingGet(
 
   const hasSub = !!agency.stripe_subscription_id;
 
+  // Live Stripe data and client breakdown. These calls fan out in
+  // parallel so the page load doesn't serialize three round-trips.
+  // Every helper swallows its own errors so we never break the page.
+  const [upcomingInvoice, paymentMethod, clients] = await Promise.all([
+    hasSub && env.STRIPE_SECRET_KEY
+      ? fetchUpcomingInvoice(agency.stripe_subscription_id!, env.STRIPE_SECRET_KEY)
+      : Promise.resolve(null),
+    hasSub && agency.stripe_customer_id && env.STRIPE_SECRET_KEY
+      ? fetchDefaultPaymentMethod(agency.stripe_customer_id, env.STRIPE_SECRET_KEY)
+      : Promise.resolve(null),
+    fetchAgencyClients(env, agency.id),
+  ]);
+
   const flashOk = url.searchParams.get("activated") === "1"
     ? `<div class="flash">Subscription activated. Stripe has you covered from here.</div>`
     : "";
@@ -151,7 +247,144 @@ export async function handleAgencyBillingGet(
     </div>
   `;
 
-  const ctaCard = hasSub
+  // ---- Next invoice card (live Stripe data) -----------------------------
+  // Only rendered when hasSub + upcomingInvoice resolved. The amount here
+  // reflects Stripe's real math: slot quantities, volume tier rates, and
+  // any intro credit still in effect. It will NOT match our in-page
+  // estimate exactly when the intro credit is active, which is the point
+  // -- the agency sees their actual next charge.
+  const nextInvoiceCard = hasSub && upcomingInvoice ? `
+    <div class="card">
+      <div class="label" style="margin-bottom:8px">Next invoice</div>
+      <div style="font-family:var(--serif);font-size:32px;line-height:1.1;margin-bottom:4px">
+        ${dollars(upcomingInvoice.amountDue)}
+      </div>
+      <div style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">
+        ${upcomingInvoice.periodEnd ? "Bills " + esc(longDate(upcomingInvoice.periodEnd)) : "Billing date pending"}
+        ${upcomingInvoice.invoiceNumber ? " &middot; " + esc(upcomingInvoice.invoiceNumber) : ""}
+      </div>
+      ${paymentMethod ? `
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:12px;color:var(--text-soft)">
+          Billing via ${esc(paymentMethod.brand)} ending ${esc(paymentMethod.last4)}
+          ${paymentMethod.expMonth && paymentMethod.expYear
+            ? ` <span style="color:var(--text-faint)">&middot; exp ${String(paymentMethod.expMonth).padStart(2, "0")}/${String(paymentMethod.expYear).slice(-2)}</span>`
+            : ""}
+        </div>
+      ` : ""}
+    </div>
+  ` : "";
+
+  // ---- Active clients breakdown -----------------------------------------
+  // Sources from the domains table directly. Shows every client the
+  // agency is currently billing for, grouped by plan, with the per-slot
+  // rate at their current tier. If there are no clients we skip the
+  // card entirely so the page doesn't look empty.
+  const signalClients = clients.filter(c => c.plan === "signal");
+  const amplifyClients = clients.filter(c => c.plan === "amplify");
+  const unassignedClients = clients.filter(c => c.plan !== "signal" && c.plan !== "amplify");
+
+  const clientRow = (d: Domain, rate: number) => `
+    <tr>
+      <td style="padding:8px 0;font-size:13px">
+        <div style="font-weight:500">${esc(d.client_slug)}</div>
+        <div style="color:var(--text-faint);font-size:11px;font-family:var(--mono)">${esc(d.domain)}</div>
+      </td>
+      <td style="padding:8px 0;font-family:var(--mono);font-size:12px;color:var(--text-soft);text-align:right;white-space:nowrap">
+        ${dollars(rate)}/mo
+      </td>
+    </tr>
+  `;
+
+  const clientsCard = clients.length > 0 ? `
+    <div class="card">
+      <div class="label" style="margin-bottom:12px">Active clients (${clients.length})</div>
+      ${signalClients.length > 0 ? `
+        <div style="margin-bottom:12px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">
+            Signal &middot; ${signalClients.length} &middot; ${dollars(summary.signalRate)}/mo each
+          </div>
+          <table style="width:100%;border-collapse:collapse">${signalClients.map(d => clientRow(d, summary.signalRate)).join("")}</table>
+        </div>
+      ` : ""}
+      ${amplifyClients.length > 0 ? `
+        <div style="margin-bottom:12px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">
+            Amplify &middot; ${amplifyClients.length} &middot; ${dollars(summary.amplifyRate)}/mo each
+          </div>
+          <table style="width:100%;border-collapse:collapse">${amplifyClients.map(d => clientRow(d, summary.amplifyRate)).join("")}</table>
+        </div>
+      ` : ""}
+      ${unassignedClients.length > 0 ? `
+        <div style="padding:10px 12px;background:var(--bg-edge);border-radius:4px;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
+          ${unassignedClients.length} client${unassignedClients.length === 1 ? "" : "s"} without a plan assigned. Ask your rep to set Signal or Amplify so these count correctly.
+        </div>
+      ` : ""}
+    </div>
+  ` : "";
+
+  // ---- Margin math callout ----------------------------------------------
+  // Motivational resale math, only when it makes sense (has at least 1
+  // client). Numbers are rounded for readability. We use conservative
+  // midpoint retail prices ($325 Signal, $750 Amplify) to avoid looking
+  // like we over-promise. Profit is their real cost subtracted.
+  const SIGNAL_RETAIL = 32500; // $325/mo midpoint
+  const AMPLIFY_RETAIL = 75000; // $750/mo midpoint
+  const signalRevenue = SIGNAL_RETAIL * slots.signal;
+  const amplifyRevenue = AMPLIFY_RETAIL * slots.amplify;
+  const totalRevenue = signalRevenue + amplifyRevenue;
+  const profit = totalRevenue - summary.monthlyTotal;
+  const marginPct = totalRevenue > 0 ? Math.round((profit / totalRevenue) * 100) : 0;
+
+  const marginCard = clients.length > 0 && slots.signal + slots.amplify > 0 ? `
+    <div class="card" style="border-color:var(--gold-dim)">
+      <div class="label" style="margin-bottom:12px;color:var(--gold)">Resale potential</div>
+      <p style="font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 16px">
+        At midpoint retail pricing, your current client count could be worth:
+      </p>
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:12px">
+        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
+          <div class="label" style="font-size:10px">Revenue</div>
+          <div style="font-family:var(--serif);font-size:22px;margin-top:4px">${dollars(totalRevenue)}</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
+          <div class="label" style="font-size:10px">Your cost</div>
+          <div style="font-family:var(--serif);font-size:22px;margin-top:4px;color:var(--text-faint)">${dollars(summary.monthlyTotal)}</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg-edge);border-radius:4px">
+          <div class="label" style="font-size:10px;color:var(--gold)">Profit</div>
+          <div style="font-family:var(--serif);font-size:22px;margin-top:4px;color:var(--gold)">${dollars(profit)}
+            <span style="font-size:12px;color:var(--text-faint);margin-left:4px">${marginPct}%</span>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text-faint);line-height:1.6;margin:0;font-family:var(--mono)">
+        Based on $${(SIGNAL_RETAIL/100).toFixed(0)}/mo retail for Signal, $${(AMPLIFY_RETAIL/100).toFixed(0)}/mo for Amplify. Adjust up or down to fit your market.
+      </p>
+    </div>
+  ` : "";
+
+  // Status-aware CTA. Three shapes: active sub (manage portal), paused
+  // sub (churned, reactivate copy), pending/no sub (activate flow).
+  const ctaCardPaused = `
+    <div class="card" style="border-color:var(--yellow)">
+      <div class="label" style="margin-bottom:12px">Subscription paused</div>
+      <p style="font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 16px">
+        Your Stripe subscription was cancelled. Your clients are still
+        in the dashboard, but no new scans or schema updates will run
+        until you reactivate.
+      </p>
+      <form method="POST" action="/agency/billing/activate" style="margin:0">
+        <button type="submit" class="btn">Reactivate subscription</button>
+      </form>
+      <p style="font-size:11px;color:var(--text-faint);margin-top:12px;font-family:var(--mono)">
+        Any outstanding client data stays intact. Reactivating restores billing from today.
+      </p>
+    </div>
+  `;
+
+  const ctaCard = agency.status === "paused" && !hasSub
+    ? ctaCardPaused
+    : hasSub
     ? `
       <div class="card">
         <div class="label" style="margin-bottom:12px">Manage billing</div>
@@ -198,10 +431,26 @@ export async function handleAgencyBillingGet(
     ${flashErr}
     ${statRow}
 
-    <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start">
-      ${tierCard}
-      ${ctaCard}
-    </div>
+    ${nextInvoiceCard ? `
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px">
+        ${nextInvoiceCard}
+        ${ctaCard}
+      </div>
+    ` : `
+      <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px">
+        ${tierCard}
+        ${ctaCard}
+      </div>
+    `}
+
+    ${marginCard || clientsCard ? `
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px;align-items:start;margin-bottom:24px">
+        ${clientsCard}
+        ${marginCard}
+      </div>
+    ` : ""}
+
+    ${nextInvoiceCard ? tierCard : ""}
   `;
 
   return html(layout("Agency Billing", body, user));
