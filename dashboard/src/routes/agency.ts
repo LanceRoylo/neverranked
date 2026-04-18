@@ -162,7 +162,16 @@ export async function handleAgencyDashboard(
               <td>${esc(planLabel(domain.plan))}</td>
               <td>${esc(accessLabel(domain.client_access))}</td>
               <td>${statusPill(domain.active === 1 ? "active" : "paused")}</td>
-              <td>${snippetStatusPill(domain)}</td>
+              <td style="white-space:nowrap">
+                ${snippetStatusPill(domain)}
+                ${!domain.snippet_last_detected_at && domain.snippet_email_sent_at ? `
+                  <form method="POST" action="/agency/clients/${domain.id}/resend-snippet" style="display:inline;margin:0;margin-left:6px"
+                        onsubmit="return confirm('Resend snippet install email to your contact email?');">
+                    <button type="submit" class="btn btn-ghost" style="padding:2px 8px;font-size:10px"
+                            title="Re-send the install instructions to your agency contact email and reset the nudge timer">Resend</button>
+                  </form>
+                ` : ""}
+              </td>
               <td>${scoreCell(latestScan)}</td>
               <td style="color:var(--text-faint);font-size:12px">
                 ${domain.activated_at ? esc(shortDate(domain.activated_at)) : "--"}

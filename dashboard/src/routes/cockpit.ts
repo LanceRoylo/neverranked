@@ -202,6 +202,107 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     </form>
   `;
 
+  // Cross-agency activity feed: applications, slot changes, invites
+  // (sent + accepted), regression alerts, support tickets. Pulls last
+  // 30 days, sorts newest, caps at 15. Complements the automation log
+  // (which is system-driven) with human-driven events across every
+  // agency. Cheap queries, all bound by indexed created_at columns.
+  type AdminActivity = { ts: number; kind: string; html: string };
+  const ACTIVITY_LIMIT = 15;
+  const activitySinceTs = now - 30 * 86400;
+  const adminActivity: AdminActivity[] = [];
+
+  const recentApplications = (await env.DB.prepare(
+    `SELECT agency_name, contact_email, status, created_at
+       FROM agency_applications
+      WHERE created_at > ?
+      ORDER BY created_at DESC LIMIT ?`
+  ).bind(activitySinceTs, ACTIVITY_LIMIT).all<{
+    agency_name: string; contact_email: string; status: string; created_at: number;
+  }>()).results;
+  for (const r of recentApplications) {
+    adminActivity.push({
+      ts: r.created_at,
+      kind: "application",
+      html: `<strong>Application</strong> ${esc(r.agency_name)} <span class="muted">&middot; ${esc(r.contact_email)} &middot; ${esc(r.status)}</span>`,
+    });
+  }
+
+  const recentSlotEvents = (await env.DB.prepare(
+    `SELECT s.event_type, s.plan, s.quantity_before, s.quantity_after, s.created_at,
+            d.client_slug, a.name AS agency_name
+       FROM agency_slot_events s
+       LEFT JOIN domains d ON d.id = s.domain_id
+       LEFT JOIN agencies a ON a.id = s.agency_id
+      WHERE s.created_at > ?
+      ORDER BY s.created_at DESC LIMIT ?`
+  ).bind(activitySinceTs, ACTIVITY_LIMIT).all<{
+    event_type: string; plan: string; quantity_before: number | null; quantity_after: number | null;
+    created_at: number; client_slug: string | null; agency_name: string | null;
+  }>()).results;
+  for (const r of recentSlotEvents) {
+    const verb = r.event_type.charAt(0).toUpperCase() + r.event_type.slice(1);
+    const slotChange = r.quantity_before !== null && r.quantity_after !== null
+      ? ` ${r.quantity_before}&rarr;${r.quantity_after}`
+      : "";
+    adminActivity.push({
+      ts: r.created_at,
+      kind: "slot",
+      html: `<strong>${verb}</strong> ${esc(r.client_slug || "client")} <span class="muted">&middot; ${esc(r.agency_name || "agency")} &middot; ${esc(r.plan)}${slotChange}</span>`,
+    });
+  }
+
+  const recentInvites = (await env.DB.prepare(
+    `SELECT i.email, i.role, i.client_slug, i.used_at, i.created_at, a.name AS agency_name
+       FROM agency_invites i
+       LEFT JOIN agencies a ON a.id = i.agency_id
+      WHERE i.created_at > ?
+      ORDER BY i.created_at DESC LIMIT ?`
+  ).bind(activitySinceTs, ACTIVITY_LIMIT).all<{
+    email: string; role: string; client_slug: string | null; used_at: number | null;
+    created_at: number; agency_name: string | null;
+  }>()).results;
+  for (const r of recentInvites) {
+    const target = r.role === "client" ? `to ${esc(r.client_slug || "?")}` : "as teammate";
+    adminActivity.push({
+      ts: r.created_at,
+      kind: "invite",
+      html: `<strong>Invite</strong> ${esc(r.email)} ${target} <span class="muted">&middot; ${esc(r.agency_name || "agency")}</span>`,
+    });
+    if (r.used_at) {
+      adminActivity.push({
+        ts: r.used_at,
+        kind: "invite_accept",
+        html: `<strong>Accepted</strong> ${esc(r.email)} <span class="muted">&middot; ${esc(r.agency_name || "agency")}</span>`,
+      });
+    }
+  }
+
+  adminActivity.sort((a, b) => b.ts - a.ts);
+  const adminActivitySection = adminActivity.length === 0 ? "" : `
+    <div class="card" style="margin-bottom:32px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <h3 style="margin:0">Recent activity</h3>
+        <span class="label" style="font-size:10px">Last ${Math.min(adminActivity.length, ACTIVITY_LIMIT)}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        ${adminActivity.slice(0, ACTIVITY_LIMIT).map(r => {
+          const diff = now - r.ts;
+          const ago = diff < 60 ? "just now"
+            : diff < 3600 ? `${Math.floor(diff/60)}m ago`
+            : diff < 86400 ? `${Math.floor(diff/3600)}h ago`
+            : `${Math.floor(diff/86400)}d ago`;
+          return `
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">
+              <span>${r.html}</span>
+              <span class="muted" style="white-space:nowrap;font-size:12px">${ago}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+
   const automationLogSection = recentAutomationLog.length > 0 ? `
     <div class="card" style="margin-bottom:32px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -302,6 +403,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${leads7d} this week / ${leads30d} this month</div>
       </div>
     </div>
+
+    ${adminActivitySection}
 
     ${automationLogSection}
 

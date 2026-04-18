@@ -47,7 +47,7 @@ import {
   handleInviteRevoke,
   handleInviteAccept,
 } from "./routes/agency-invites";
-import { handleAgencyPauseClient, handleAgencyResumeClient } from "./routes/agency-clients";
+import { handleAgencyPauseClient, handleAgencyResumeClient, handleAgencyResendSnippet } from "./routes/agency-clients";
 import { getBrandingContext } from "./agency";
 
 export default {
@@ -323,6 +323,10 @@ export default {
     const clientResumeMatch = /^\/agency\/clients\/(\d+)\/resume$/.exec(path);
     if (clientResumeMatch && method === "POST") {
       return handleAgencyResumeClient(Number(clientResumeMatch[1]), user, env);
+    }
+    const resendSnippetMatch = /^\/agency\/clients\/(\d+)\/resend-snippet$/.exec(path);
+    if (resendSnippetMatch && method === "POST") {
+      return handleAgencyResendSnippet(Number(resendSnippetMatch[1]), user, env);
     }
 
     // Domain detail
