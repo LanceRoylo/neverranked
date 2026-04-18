@@ -36,8 +36,9 @@ function randomHex(bytes: number): string {
   return Array.from(buf, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
-function inviteUrl(token: string): string {
-  return `https://app.neverranked.com/auth/invite?token=${token}`;
+function inviteUrl(token: string, env: Env): string {
+  const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  return `${origin}/auth/invite?token=${token}`;
 }
 
 interface InviteRow {
@@ -116,7 +117,7 @@ export async function handleAgencyInvitesGet(user: User | null, env: Env, url: U
       ? `Client (${esc(r.client_slug || "?")})`
       : "Teammate";
 
-    const link = `https://app.neverranked.com/auth/invite?token=${r.token}`;
+    const link = inviteUrl(r.token, env);
     const actions = r.used_at
       ? ""
       : `
@@ -323,7 +324,7 @@ export async function handleInviteTeammate(request: Request, user: User | null, 
   const { token } = await createInvite(env, agency, user!, {
     email, name, role: "agency_admin", clientSlug: null,
   });
-  await sendInviteEmail(email, inviteUrl(token), env, {
+  await sendInviteEmail(email, inviteUrl(token, env), env, {
     agency, role: "agency_admin", inviterName: user!.name, clientSlug: null,
   });
 
@@ -355,7 +356,7 @@ export async function handleInviteClient(request: Request, user: User | null, en
   const { token } = await createInvite(env, agency, user!, {
     email, name, role: "client", clientSlug,
   });
-  await sendInviteEmail(email, inviteUrl(token), env, {
+  await sendInviteEmail(email, inviteUrl(token, env), env, {
     agency, role: "client", inviterName: user!.name, clientSlug,
   });
 
@@ -385,7 +386,7 @@ export async function handleInviteResend(inviteId: number, user: User | null, en
     "UPDATE agency_invites SET token = ?, expires_at = ?, created_at = ? WHERE id = ?"
   ).bind(newToken, newExpires, now, inviteId).run();
 
-  await sendInviteEmail(invite.email, inviteUrl(newToken), env, {
+  await sendInviteEmail(invite.email, inviteUrl(newToken, env), env, {
     agency, role: invite.role, inviterName: user!.name, clientSlug: invite.client_slug,
   });
 

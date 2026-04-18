@@ -133,6 +133,32 @@ export async function handleEmailTestGet(user: User | null, env: Env, url: URL):
 export async function handleEmailTestPost(request: Request, user: User | null, env: Env): Promise<Response> {
   if (!user || user.role !== "admin") return new Response("Forbidden", { status: 403 });
 
+  // CSRF defense: this endpoint can fire emails to arbitrary recipients,
+  // so reject any cross-origin POST. SameSite=Lax cookies already block
+  // most cross-origin attacks, but the explicit Origin/Referer check is
+  // belt-and-suspenders for the few user-agents or scenarios where
+  // SameSite enforcement is weak.
+  const allowedOrigins = new Set([
+    env.DASHBOARD_ORIGIN || "https://app.neverranked.com",
+    "https://app.neverranked.com",
+    "https://neverranked-dashboard.lanceroylo.workers.dev",
+  ]);
+  const origin = request.headers.get("Origin");
+  const referer = request.headers.get("Referer");
+  let sameOrigin = false;
+  if (origin && allowedOrigins.has(origin)) sameOrigin = true;
+  if (referer) {
+    try {
+      const refOrigin = new URL(referer).origin;
+      if (allowedOrigins.has(refOrigin)) sameOrigin = true;
+    } catch {
+      // bad referer header -> treat as cross-origin
+    }
+  }
+  if (!sameOrigin) {
+    return new Response("Cross-origin POST rejected", { status: 403 });
+  }
+
   const form = await request.formData();
   const type = (form.get("type") as string || "") as EmailType;
   const recipient = (form.get("recipient") as string || "").trim().toLowerCase();
@@ -216,7 +242,8 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
           break;
         }
         const token = randomHex(32);
-        const inviteUrl = `https://app.neverranked.com/auth/invite?token=${token}`;
+        const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+        const inviteUrl = `${origin}/auth/invite?token=${token}`;
         const ok = await sendInviteEmail(recipient, inviteUrl, env, {
           agency, role: "agency_admin", inviterName: user.name, clientSlug: null,
         });
