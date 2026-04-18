@@ -321,6 +321,161 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 export { REGRESSION_THRESHOLD };
 
 // ---------------------------------------------------------------------------
+// Monthly recap
+// ---------------------------------------------------------------------------
+
+export interface MonthlyRecapData {
+  domain: string;
+  clientSlug: string;
+  monthLabel: string;          // e.g., "March 2026"
+  scoreNow: number | null;
+  scoreThen: number | null;    // ~30d ago, null if no prior scan
+  scoreDelta: number | null;
+  citationShareNow: number | null;
+  citationShareThen: number | null;
+  citationsGainedThisMonth: number;  // newly cited keywords (rough)
+  roadmapCompleted: number;
+  schemaFixesShipped: number;
+  newCitationKeywordsCount: number;  // cumulative citation queries we now hit
+}
+
+export async function sendMonthlyRecapEmail(
+  to: string,
+  userName: string | null,
+  data: MonthlyRecapData,
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Monthly recap for ${to}: ${data.domain} ${data.monthLabel}`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = data.scoreDelta && data.scoreDelta > 0
+    ? `${data.domain}: AEO recap for ${data.monthLabel} (+${data.scoreDelta} pts)`
+    : `${data.domain}: AEO recap for ${data.monthLabel}`;
+
+  const headerHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
+
+  const scoreLine = data.scoreNow !== null
+    ? (data.scoreDelta !== null
+        ? `${data.scoreNow}/100 (${data.scoreDelta > 0 ? "+" : ""}${data.scoreDelta} from last month's ${data.scoreThen})`
+        : `${data.scoreNow}/100 (first month, no comparison yet)`)
+    : "no scan recorded this month";
+
+  const citationLine = data.citationShareNow !== null
+    ? `${(data.citationShareNow * 100).toFixed(0)}% citation share`
+      + (data.citationShareThen !== null
+        ? ` (was ${(data.citationShareThen * 100).toFixed(0)}% last month)`
+        : ` (first month tracked)`)
+    : "no citation data yet";
+
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Here's the ${data.monthLabel} recap for ${data.domain}.`,
+    ``,
+    `AEO score: ${scoreLine}`,
+    `Citation share: ${citationLine}`,
+    `Roadmap items completed this month: ${data.roadmapCompleted}`,
+    `Schema fixes pushed live by NeverRanked: ${data.schemaFixesShipped}`,
+    ``,
+    `Full breakdown and historical chart:`,
+    `https://app.neverranked.com/domain/${data.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${brand.name} <reports@neverranked.com>`,
+        to: [to],
+        subject,
+        text,
+        html: `
+<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212"><tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>${headerHtml}<td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888">Monthly recap</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:32px 0 24px">
+    <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:8px">Hey ${escEmail(greeting)},</div>
+    <div style="font-family:Georgia,serif;font-size:14px;color:#888888;line-height:1.6">Here's the <strong style="color:#fbf8ef">${escEmail(data.monthLabel)}</strong> recap for <strong style="color:#fbf8ef">${escEmail(data.domain)}</strong>.</div>
+  </td></tr>
+
+  <tr><td style="padding:0 0 16px">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0 8px">
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">AEO Score</div>
+        <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef">${escEmail(scoreLine)}</div>
+      </td></tr>
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">Citation share</div>
+        <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef">${escEmail(citationLine)}</div>
+      </td></tr>
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">Work shipped</div>
+        <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">
+          <strong style="color:#fbf8ef">${data.roadmapCompleted}</strong> roadmap item${data.roadmapCompleted === 1 ? "" : "s"} completed<br>
+          <strong style="color:#fbf8ef">${data.schemaFixesShipped}</strong> schema fix${data.schemaFixesShipped === 1 ? "" : "es"} pushed live by NeverRanked
+        </div>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td align="center" style="padding:24px 0 32px">
+    <a href="https://app.neverranked.com/domain/${escEmail(data.clientSlug)}" style="display:inline-block;padding:14px 32px;background:${brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Full dashboard</a>
+  </td></tr>
+
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555;line-height:1.6">
+      ${footerLine}<br>
+      Sent on the 1st of every month. Reply to opt out.
+    </div>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`Monthly recap to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "monthly_recap", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    console.log(`Monthly recap sent to ${to} for ${data.clientSlug}`);
+    await logEmailDelivery(env, { email: to, type: "monthly_recap", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    console.log(`Monthly recap to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "monthly_recap", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // First-citation celebration
 // ---------------------------------------------------------------------------
 

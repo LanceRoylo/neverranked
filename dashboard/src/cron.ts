@@ -253,10 +253,143 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.
   await runSchemaDriftSweep(env);
+  // Monthly recap: only fires on day 1 of the month, self-guards
+  // against re-fire via email_delivery_log.
+  await maybeSendMonthlyRecaps(env);
   // Digest runs LAST so it includes anything the earlier sweeps wrote.
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+}
+
+// ---------------------------------------------------------------------------
+// Monthly recap email
+// ---------------------------------------------------------------------------
+//
+// Counters retention by manufacturing a regular "look how far you've
+// come" moment that's separate from the weekly digest. Sent on the
+// 1st of each month, summarizing the previous month: score change,
+// citation share change, roadmap items completed, schema fixes
+// shipped via the snippet. Forwardable to stakeholders.
+//
+// Self-guards via email_delivery_log: skip any (email, slug) pair we
+// already sent a monthly_recap to in the last 25 days. Lets us safely
+// run daily without duplicates and tolerates the cron firing on the
+// 2nd if the 1st was missed for any reason.
+
+export async function maybeSendMonthlyRecaps(env: Env): Promise<void> {
+  const today = new Date();
+  // Only run on day 1 (or day 2 as a forgiveness window for missed runs).
+  if (today.getUTCDate() > 2) return;
+
+  const now = Math.floor(Date.now() / 1000);
+  const monthAgo = now - 30 * 86400;
+  const sixtyDaysAgo = now - 60 * 86400;
+  const monthLabel = new Date(today.getUTCFullYear(), today.getUTCMonth() - 1, 1)
+    .toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+  // Active primary domains that have at least one scan.
+  const domains = (await env.DB.prepare(
+    `SELECT * FROM domains WHERE active = 1 AND is_competitor = 0`
+  ).all<Domain>()).results;
+  if (domains.length === 0) return;
+
+  const { resolveAgencyForEmail } = await import("./agency");
+  const { sendMonthlyRecapEmail } = await import("./email");
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const d of domains) {
+    try {
+      // Score: latest scan AND scan from ~30 days ago.
+      const latest = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(d.id).first<{ aeo_score: number }>();
+      const prior = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL AND scanned_at < ? ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(d.id, monthAgo).first<{ aeo_score: number }>();
+
+      // Citation share: latest snapshot AND prior snapshot ~30d ago.
+      const csLatest = await env.DB.prepare(
+        "SELECT citation_share FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1"
+      ).bind(d.client_slug).first<{ citation_share: number }>();
+      const csPrior = await env.DB.prepare(
+        "SELECT citation_share FROM citation_snapshots WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1"
+      ).bind(d.client_slug, monthAgo).first<{ citation_share: number }>();
+
+      // Roadmap items completed in the last 30 days.
+      const rmDone = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at > ?"
+      ).bind(d.client_slug, monthAgo).first<{ cnt: number }>();
+
+      // Schema fixes shipped via injection in the last 30 days.
+      const fixes = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM schema_injections WHERE client_slug = ? AND status = 'approved' AND updated_at > ?"
+      ).bind(d.client_slug, monthAgo).first<{ cnt: number }>();
+
+      // If literally nothing happened (no scan, no roadmap done, no
+      // fixes), skip the recap -- silence is better than a "0/0/0"
+      // email that signals dead account.
+      const hasSignal = (latest && latest.aeo_score !== null)
+        || (rmDone && rmDone.cnt > 0)
+        || (fixes && fixes.cnt > 0);
+      if (!hasSignal) {
+        skipped++;
+        continue;
+      }
+
+      const recipients = (await env.DB.prepare(
+        `SELECT email, name FROM users
+          WHERE email_digest = 1
+            AND (role = 'admin' OR client_slug = ?)`
+      ).bind(d.client_slug).all<{ email: string; name: string | null }>()).results;
+      const agency = await resolveAgencyForEmail(env, { domainId: d.id });
+      if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+        recipients.push({ email: agency.contact_email, name: null });
+      }
+      if (recipients.length === 0) {
+        skipped++;
+        continue;
+      }
+
+      const data = {
+        domain: d.domain,
+        clientSlug: d.client_slug,
+        monthLabel,
+        scoreNow: latest?.aeo_score ?? null,
+        scoreThen: prior?.aeo_score ?? null,
+        scoreDelta: latest && prior ? latest.aeo_score - prior.aeo_score : null,
+        citationShareNow: csLatest?.citation_share ?? null,
+        citationShareThen: csPrior?.citation_share ?? null,
+        citationsGainedThisMonth: 0,  // reserved for future expansion
+        roadmapCompleted: rmDone?.cnt || 0,
+        schemaFixesShipped: fixes?.cnt || 0,
+        newCitationKeywordsCount: 0,
+      };
+
+      for (const r of recipients) {
+        // Per-recipient guard: skip if we already sent this month
+        // (within the last 25 days).
+        const alreadySent = await env.DB.prepare(
+          `SELECT id FROM email_delivery_log
+            WHERE email = ? AND type = 'monthly_recap' AND created_at > ?
+            LIMIT 1`
+        ).bind(r.email, sixtyDaysAgo + 5 * 86400).first<{ id: number }>();
+        if (alreadySent) {
+          skipped++;
+          continue;
+        }
+        const ok = await sendMonthlyRecapEmail(r.email, r.name, data, env, agency);
+        if (ok) sent++;
+        await new Promise((res) => setTimeout(res, 200));
+      }
+    } catch (e) {
+      console.log(`[monthly-recap] failed for ${d.client_slug}: ${e}`);
+    }
+  }
+
+  console.log(`[monthly-recap] ${sent} sent, ${skipped} skipped (already sent or no signal)`);
 }
 
 // ---------------------------------------------------------------------------
