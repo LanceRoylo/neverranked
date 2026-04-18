@@ -7,6 +7,7 @@
 
 import type { Env, Domain, User, ScanResult } from "./types";
 import { sendRegressionAlert, REGRESSION_THRESHOLD } from "./email";
+import { resolveAgencyForEmail } from "./agency";
 
 /** Check if a domain's latest scan shows a significant regression, and alert users */
 export async function checkAndAlertRegression(domain: Domain, env: Env): Promise<void> {
@@ -33,6 +34,10 @@ export async function checkAndAlertRegression(domain: Domain, env: Env): Promise
     "SELECT * FROM users WHERE (email_regression = 1 OR email_regression IS NULL) AND (role = 'admin' OR client_slug = ?)"
   ).bind(domain.client_slug).all<User>()).results;
 
+  // Domain-scoped lookup: every recipient of an alert about this domain
+  // should see the same agency branding (or NeverRanked if unaffiliated).
+  const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
   let sent = 0;
   for (const user of users) {
     const ok = await sendRegressionAlert(
@@ -44,7 +49,8 @@ export async function checkAndAlertRegression(domain: Domain, env: Env): Promise
       previous.aeo_score,
       latest.grade,
       latest,
-      env
+      env,
+      agency
     );
     if (ok) sent++;
 

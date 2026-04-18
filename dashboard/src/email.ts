@@ -4,9 +4,31 @@
  * Magic link auth emails + weekly AEO digest emails.
  */
 
-import type { Env, ScanResult, GscSnapshot } from "./types";
+import type { Agency, Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
+
+// Default brand visuals used when no agency override is supplied.
+const NR_BRAND_NAME = "Never Ranked";
+const NR_PRIMARY = "#e8c767";
+
+/** Resolve display name + accent color for an email, falling back to NeverRanked. */
+function brandFor(agency: Agency | null | undefined): { name: string; color: string; logo: string | null } {
+  if (agency && agency.status === "active") {
+    return {
+      name: agency.name || NR_BRAND_NAME,
+      color: agency.primary_color || NR_PRIMARY,
+      logo: agency.logo_url || null,
+    };
+  }
+  return { name: NR_BRAND_NAME, color: NR_PRIMARY, logo: null };
+}
+
+/** "Powered by NeverRanked" footer block, only included when agency-branded. */
+function poweredByBlock(agency: Agency | null | undefined): string {
+  if (!agency || agency.status !== "active") return "";
+  return `<p style="margin:24px 0 0;font-size:11px;color:#aaa;text-align:center">Powered by Never Ranked</p>`;
+}
 
 export interface DigestData {
   domain: string;
@@ -31,9 +53,14 @@ export interface GscDigestData {
 export async function sendMagicLinkEmail(
   email: string,
   token: string,
-  env: Env
+  env: Env,
+  agency?: Agency | null
 ): Promise<boolean> {
   const loginUrl = `https://app.neverranked.com/auth/verify?token=${token}`;
+  const brand = brandFor(agency);
+  const headerHtml = brand.logo
+    ? `<p style="margin:0 0 24px"><img src="${brand.logo}" alt="${brand.name}" style="max-height:32px;max-width:240px"></p>`
+    : `<p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">${brand.name}</p>`;
 
   // If no Resend key, log to console (dev mode)
   if (!env.RESEND_API_KEY) {
@@ -49,16 +76,17 @@ export async function sendMagicLinkEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "Never Ranked <login@neverranked.com>",
+        from: `${brand.name} <login@neverranked.com>`,
         to: [email],
-        subject: "Sign in to Never Ranked",
-        text: `Click to sign in:\n\n${loginUrl}\n\nThis link expires in 15 minutes.\n\n— Never Ranked`,
+        subject: `Sign in to ${brand.name}`,
+        text: `Click to sign in:\n\n${loginUrl}\n\nThis link expires in 15 minutes.\n\n— ${brand.name}`,
         html: `
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
-            <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">Never Ranked</p>
+            ${headerHtml}
             <p style="margin:0 0 24px">Click the button below to sign in to your dashboard.</p>
-            <a href="${loginUrl}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Sign in</a>
+            <a href="${loginUrl}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:${brand.color};font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Sign in</a>
             <p style="margin:24px 0 0;font-size:12px;color:#888">This link expires in 15 minutes. If you did not request this, ignore this email.</p>
+            ${poweredByBlock(agency)}
           </div>
         `,
       }),
@@ -99,7 +127,8 @@ export async function sendDigestEmail(
   citationData?: Map<string, CitationDigestData>,
   gscData?: Map<string, GscDigestData>,
   roadmapData?: Map<string, RoadmapDigestData>,
-  unsubToken?: string
+  unsubToken?: string,
+  agency?: Agency | null
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -108,11 +137,12 @@ export async function sendDigestEmail(
 
   if (digests.length === 0) return false;
 
+  const brand = brandFor(agency);
   const subject = digests.length === 1
     ? buildSubjectSingle(digests[0])
     : `Weekly AEO Report -- ${digests.length} domains scanned`;
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -122,7 +152,7 @@ export async function sendDigestEmail(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "NeverRanked <reports@neverranked.com>",
+        from: `${brand.name} <reports@neverranked.com>`,
         to: [to],
         subject,
         html: emailHtml,
@@ -174,7 +204,8 @@ export async function sendRegressionAlert(
   oldScore: number,
   newGrade: string,
   latest: ScanResult,
-  env: Env
+  env: Env,
+  agency?: Agency | null
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Regression alert for ${to}: ${domain} ${oldScore} -> ${newScore}`);
@@ -182,8 +213,9 @@ export async function sendRegressionAlert(
   }
 
   const drop = oldScore - newScore;
+  const brand = brandFor(agency);
   const subject = `Alert: ${domain} AEO score dropped ${drop} pts (${newScore}/100)`;
-  const emailHtml = buildRegressionHtml(userName, domain, domainId, newScore, oldScore, newGrade, latest);
+  const emailHtml = buildRegressionHtml(userName, domain, domainId, newScore, oldScore, newGrade, latest, agency);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -193,7 +225,7 @@ export async function sendRegressionAlert(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "NeverRanked <alerts@neverranked.com>",
+        from: `${brand.name} <alerts@neverranked.com>`,
         to: [to],
         subject,
         html: emailHtml,
@@ -221,7 +253,8 @@ function buildRegressionHtml(
   newScore: number,
   oldScore: number,
   newGrade: string,
-  latest: ScanResult
+  latest: ScanResult,
+  agency?: Agency | null
 ): string {
   const greeting = userName ? userName.split(" ")[0] : "there";
   const drop = oldScore - newScore;
@@ -229,6 +262,17 @@ function buildRegressionHtml(
   const topAction = narrative.actions[0] || null;
   const redFlags: string[] = JSON.parse(latest.red_flags);
   const newRedFlags = redFlags.slice(0, 3);
+
+  const brand = brandFor(agency);
+  const headerCellHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const teamLine = agency
+    ? `Your ${escEmail(brand.name)} team is monitoring this.`
+    : `Your NeverRanked team is monitoring this.`;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
 
   const gradeColor = newGrade === "A" ? "#27ae60"
     : newGrade === "B" ? "#e8c767"
@@ -255,7 +299,7 @@ function buildRegressionHtml(
           <td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+                ${headerCellHtml}
                 <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#c0392b">Score Alert</td>
               </tr>
             </table>
@@ -321,7 +365,7 @@ function buildRegressionHtml(
         <!-- CTA -->
         <tr>
           <td align="center" style="padding:8px 0 32px">
-            <a href="https://app.neverranked.com/domain/${domainId}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View full report</a>
+            <a href="https://app.neverranked.com/domain/${domainId}" style="display:inline-block;padding:14px 32px;background:${brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View full report</a>
           </td>
         </tr>
 
@@ -330,7 +374,7 @@ function buildRegressionHtml(
           <td style="padding:0 0 32px">
             <div style="font-family:Georgia,serif;font-size:13px;color:#888888;line-height:1.7;text-align:center">
               Score fluctuations happen as AI models retrain and sites change.<br>
-              Your NeverRanked team is monitoring this.
+              ${teamLine}
             </div>
           </td>
         </tr>
@@ -341,7 +385,7 @@ function buildRegressionHtml(
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-                  Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+                  ${footerLine}<br>
                   You received this because your AEO score changed significantly.
                 </td>
               </tr>
@@ -518,7 +562,15 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string): string {
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null): string {
+  const brand = brandFor(agency);
+  const headerCellHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const ctaColor = brand.color;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
   const greeting = userName ? userName.split(" ")[0] : "there";
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -617,7 +669,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
           <td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
-                <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
+                ${headerCellHtml}
                 <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Weekly Digest</td>
               </tr>
             </table>
@@ -684,7 +736,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
         <!-- CTA -->
         <tr>
           <td align="center" style="padding:16px 0 32px">
-            <a href="https://app.neverranked.com" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View dashboard</a>
+            <a href="https://app.neverranked.com" style="display:inline-block;padding:14px 32px;background:${ctaColor};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View dashboard</a>
           </td>
         </tr>
 
@@ -694,7 +746,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-                  Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
+                  ${footerLine}<br>
                   Scans run weekly. Scores reflect AI search engine readiness.${unsubToken ? `<br><a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:#555555;text-decoration:underline">Unsubscribe from weekly digests</a>` : ""}
                 </td>
               </tr>

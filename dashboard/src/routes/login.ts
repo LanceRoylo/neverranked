@@ -6,6 +6,7 @@ import type { Env, User } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { createMagicLink, verifyMagicLink, deleteSession, sessionCookie, clearCookie } from "../auth";
 import { sendMagicLinkEmail } from "../email";
+import { resolveAgencyForEmail } from "../agency";
 
 function loginPage(error?: string): string {
   return layout("Sign in", `
@@ -74,7 +75,9 @@ export async function handlePostLogin(request: Request, env: Env): Promise<Respo
   // Always show "check email" page (no user enumeration)
   const token = await createMagicLink(email, env);
   if (token) {
-    const sent = await sendMagicLinkEmail(email, token, env);
+    // Resolve agency for white-label branding (returns null for direct/admin users).
+    const agency = await resolveAgencyForEmail(env, { email });
+    const sent = await sendMagicLinkEmail(email, token, env, agency);
     if (!sent) {
       console.log(`Magic link send returned false for ${email} (token created in DB but email did not deliver)`);
     }

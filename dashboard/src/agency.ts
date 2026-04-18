@@ -118,6 +118,66 @@ export async function getBrandingContext(env: Env, user: User | null, clientSlug
 }
 
 /**
+ * Resolve the agency to use for branding an email to a recipient.
+ * Returns the agency only if (a) active and (b) the recipient is a Mode-2
+ * (client_access='full') client of one of the agency's domains, OR an
+ * agency_admin of that agency. Otherwise null.
+ *
+ * Two lookup paths supported:
+ *   - by email   -> users.email -> client_slug or agency_id -> agency
+ *   - by domainId -> domains.agency_id -> agency
+ *
+ * Used by transactional email senders (magic link, digest, regression
+ * alerts) so a Mode-2 client receives mail with their agency's name and
+ * color instead of NeverRanked. The technical From: domain stays
+ * @neverranked.com because Resend only authenticates verified domains;
+ * what changes is the display name and template visual.
+ */
+export async function resolveAgencyForEmail(
+  env: Env,
+  opts: { email?: string; domainId?: number }
+): Promise<Agency | null> {
+  // Path 1: lookup by domain
+  if (opts.domainId !== undefined) {
+    const domain = await env.DB.prepare(
+      "SELECT * FROM domains WHERE id = ?"
+    ).bind(opts.domainId).first<Domain>();
+    if (!domain || !domain.agency_id) return null;
+    if (domain.client_access !== "full") return null;
+    const agency = await getAgency(env, domain.agency_id);
+    if (!agency || agency.status !== "active") return null;
+    return agency;
+  }
+
+  // Path 2: lookup by email
+  if (opts.email) {
+    const user = await env.DB.prepare(
+      "SELECT * FROM users WHERE email = ?"
+    ).bind(opts.email).first<User>();
+    if (!user) return null;
+
+    // Agency admins always get agency branding for their own agency.
+    if (user.role === "agency_admin" && user.agency_id) {
+      const agency = await getAgency(env, user.agency_id);
+      if (agency && agency.status === "active") return agency;
+      return null;
+    }
+
+    // Clients only get agency branding if their domain is Mode 2.
+    if (user.role === "client" && user.client_slug) {
+      const domain = await getDomainBySlug(env, user.client_slug);
+      if (!domain || !domain.agency_id) return null;
+      if (domain.client_access !== "full") return null;
+      const agency = await getAgency(env, domain.agency_id);
+      if (!agency || agency.status !== "active") return null;
+      return agency;
+    }
+  }
+
+  return null;
+}
+
+/**
  * List the clients (primary domains) owned by an agency, active first.
  * Used for the /agency dashboard.
  */

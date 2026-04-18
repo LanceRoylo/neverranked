@@ -18,7 +18,7 @@ import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } fr
 import { pullGscData } from "./gsc";
 import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
-import { getAgency } from "./agency";
+import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
@@ -217,7 +217,10 @@ async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
     // Generate a simple unsub token (base64 of user id + email)
     const unsubToken = btoa(`${user.id}:${user.email}`).replace(/=/g, "");
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken);
+    // White-label branding: agency for Mode-2 clients, null otherwise.
+    const agency = await resolveAgencyForEmail(env, { email: user.email });
+
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency);
     if (ok) {
       sent++;
       // Log to email_log
