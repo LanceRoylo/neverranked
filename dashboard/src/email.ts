@@ -107,6 +107,81 @@ export async function sendMagicLinkEmail(
 }
 
 // ---------------------------------------------------------------------------
+// Agency invites (teammate or client)
+// ---------------------------------------------------------------------------
+
+export async function sendInviteEmail(
+  email: string,
+  inviteUrl: string,
+  env: Env,
+  opts: {
+    agency: Agency;
+    role: "agency_admin" | "client";
+    inviterName: string | null;
+    clientSlug: string | null;
+  }
+): Promise<boolean> {
+  const brand = brandFor(opts.agency);
+  const isTeammate = opts.role === "agency_admin";
+  const inviterLabel = opts.inviterName ? opts.inviterName : "Someone";
+  const subject = isTeammate
+    ? `${inviterLabel} invited you to ${brand.name} on Never Ranked`
+    : `${brand.name} invited you to your AEO dashboard`;
+  const heading = isTeammate
+    ? `You're invited to join ${brand.name}`
+    : `Welcome to your dashboard`;
+  const sub = isTeammate
+    ? `${inviterLabel} added you as a teammate. You'll be able to manage every client on the ${brand.name} account.`
+    : `${brand.name} set up an AEO dashboard for you. Click below to sign in -- this link is good for 7 days.`;
+
+  const headerHtml = brand.logo
+    ? `<p style="margin:0 0 24px"><img src="${brand.logo}" alt="${brand.name}" style="max-height:32px;max-width:240px"></p>`
+    : `<p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">${brand.name}</p>`;
+
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Invite for ${email}: ${inviteUrl}`);
+    return true;
+  }
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${brand.name} <login@neverranked.com>`,
+        to: [email],
+        subject,
+        text: `${heading}\n\n${sub}\n\nAccept invite: ${inviteUrl}\n\nThis link is good for 7 days.`,
+        html: `
+          <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
+            ${headerHtml}
+            <p style="margin:0 0 12px;font-family:Georgia,serif;font-size:20px;color:#1a1a1a">${heading}</p>
+            <p style="margin:0 0 24px;line-height:1.6">${sub}</p>
+            <a href="${inviteUrl}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:${brand.color};font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Accept invite</a>
+            <p style="margin:24px 0 0;font-size:12px;color:#888">This link is good for 7 days. If you weren't expecting it, ignore this email.</p>
+            ${poweredByBlock(opts.agency)}
+          </div>
+        `,
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`Invite to ${email} failed: ${resp.status} ${errBody}`);
+      return false;
+    }
+    console.log(`Invite sent to ${email}`);
+    return true;
+  } catch (err) {
+    console.error(`Invite to ${email} error:`, err);
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Weekly AEO digest
 // ---------------------------------------------------------------------------
 

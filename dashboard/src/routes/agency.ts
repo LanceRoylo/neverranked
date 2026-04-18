@@ -164,6 +164,7 @@ export async function handleAgencyDashboard(
         <p class="section-sub">Agency dashboard. All clients you manage in one view.</p>
       </div>
       <div style="display:flex;gap:8px">
+        <a href="/agency/invites" class="btn btn-ghost">Invites</a>
         <a href="/agency/settings" class="btn btn-ghost">Settings</a>
         <a href="/agency/billing" class="btn btn-ghost">Billing</a>
       </div>

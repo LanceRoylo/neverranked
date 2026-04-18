@@ -22,6 +22,7 @@ import { handleLeads, handleLeadsJson } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks } from "./cron";
+import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript } from "./routes/inject";
 import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
@@ -38,6 +39,14 @@ import { handleEngagement } from "./routes/engagement";
 import { handleAgencyDashboard } from "./routes/agency";
 import { handleAgencySettingsGet, handleAgencySettingsPost, handleAgencyAsset } from "./routes/agency-settings";
 import { handleAgencyBillingGet, handleAgencyBillingActivate, handleAgencyBillingSuccess } from "./routes/agency-billing";
+import {
+  handleAgencyInvitesGet,
+  handleInviteTeammate,
+  handleInviteClient,
+  handleInviteResend,
+  handleInviteRevoke,
+  handleInviteAccept,
+} from "./routes/agency-invites";
 import { getBrandingContext } from "./agency";
 
 export default {
@@ -56,6 +65,9 @@ export default {
     }
     if (path === "/auth/verify" && method === "GET") {
       return handleVerify(request, env);
+    }
+    if (path === "/auth/invite" && method === "GET") {
+      return handleInviteAccept(request, env);
     }
 
     // Public shared report (no auth)
@@ -157,6 +169,17 @@ export default {
         return handleAgencyAsset(assetMatch[1], assetMatch[2], env);
       }
       return new Response("Not found", { status: 404, headers: { "Content-Type": "text/plain" } });
+    }
+
+    // Public agency application (no auth). Prospects land here from
+    // outreach replies or from neverranked.com.
+    if (path === "/agency/apply" && method === "GET") {
+      const { handleAgencyApplyGet } = await import("./routes/agency-apply");
+      return handleAgencyApplyGet();
+    }
+    if (path === "/agency/apply" && method === "POST") {
+      const { handleAgencyApplyPost } = await import("./routes/agency-apply");
+      return handleAgencyApplyPost(request, env);
     }
 
     // --- Auth check ---
@@ -272,6 +295,25 @@ export default {
     }
     if (path === "/agency/billing/success" && method === "GET") {
       return handleAgencyBillingSuccess(user, env, url);
+    }
+
+    // Agency invites (teammate / client)
+    if (path === "/agency/invites" && method === "GET") {
+      return handleAgencyInvitesGet(user, env, url);
+    }
+    if (path === "/agency/invites/teammate" && method === "POST") {
+      return handleInviteTeammate(request, user, env);
+    }
+    if (path === "/agency/invites/client" && method === "POST") {
+      return handleInviteClient(request, user, env);
+    }
+    const inviteResendMatch = /^\/agency\/invites\/(\d+)\/resend$/.exec(path);
+    if (inviteResendMatch && method === "POST") {
+      return handleInviteResend(Number(inviteResendMatch[1]), user, env);
+    }
+    const inviteRevokeMatch = /^\/agency\/invites\/(\d+)\/revoke$/.exec(path);
+    if (inviteRevokeMatch && method === "POST") {
+      return handleInviteRevoke(Number(inviteRevokeMatch[1]), user, env);
     }
 
     // Domain detail
@@ -654,6 +696,7 @@ export default {
     const day = new Date().getUTCDay(); // 0=Sun, 1=Mon
     if (day === 1) {
       ctx.waitUntil(runWeeklyScans(env));
+      ctx.waitUntil(runWeeklyBackup(env));
     }
   },
 };
