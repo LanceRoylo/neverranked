@@ -57,11 +57,21 @@ function statusPill(status: string): string {
  *   snippet_last_detected_at   -> first time we saw the snippet live
  *   snippet_nudge_day7_at      -> day-7 nudge fired
  *   snippet_nudge_day14_at     -> day-14 nudge fired
+ *
+ * driftedAt is sourced separately from admin_alerts (type='snippet_drift')
+ * because there's no snippet_drift_at column on domains.
  */
-function snippetStatusPill(d: Domain): string {
+function snippetStatusPill(d: Domain, driftedAt?: number | null): string {
   const now = Math.floor(Date.now() / 1000);
   const DAY = 86400;
 
+  // Drift is a special case: the snippet WAS live (snippet_last_detected_at
+  // is set) but a recent probe failed to find it. Surfaced ahead of the
+  // "Installed" branch so the agency sees the regression.
+  if (driftedAt && d.snippet_last_detected_at) {
+    const driftDays = Math.max(0, Math.floor((now - driftedAt) / DAY));
+    return `<span class="status" style="background:#3a1f1f;color:#ef9999;border-color:#7a3f3f" title="Snippet was previously live but a recent probe didn't find it. The agency contact has been emailed.">Drifted (${driftDays}d)</span>`;
+  }
   if (d.snippet_last_detected_at) {
     return `<span class="status status-complete" title="Snippet detected on the homepage. Daily drift checks are on.">Installed</span>`;
   }
@@ -129,6 +139,45 @@ export async function handleAgencyDashboard(
     }
   }
 
+  // Drift alerts: any open snippet_drift admin_alert for these client_slugs
+  // in the last 30 days. We use admin_alerts as the source because there's
+  // no snippet_drift_at column on domains.
+  const driftBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = Array.from(new Set(clients.map((c) => c.client_slug)));
+    const placeholders = slugs.map(() => "?").join(",");
+    const cutoff = Math.floor(Date.now() / 1000) - 30 * 86400;
+    const driftRows = await env.DB.prepare(
+      `SELECT client_slug, MAX(created_at) AS ts
+         FROM admin_alerts
+        WHERE type = 'snippet_drift' AND client_slug IN (${placeholders}) AND created_at > ?
+        GROUP BY client_slug`
+    ).bind(...slugs, cutoff).all<{ client_slug: string; ts: number }>();
+    for (const r of driftRows.results || []) {
+      driftBySlug.set(r.client_slug, r.ts);
+    }
+  }
+
+  // Last-login per Mode-2 client. We pull the most recent login among
+  // any client-role users bound to this client_slug. Mode 1 (internal)
+  // has no client users so the map stays empty for those slugs.
+  const lastLoginBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = clients.filter((c) => c.client_access === "full").map((c) => c.client_slug);
+    if (slugs.length > 0) {
+      const placeholders = slugs.map(() => "?").join(",");
+      const loginRows = await env.DB.prepare(
+        `SELECT client_slug, MAX(last_login_at) AS ts
+           FROM users
+          WHERE role = 'client' AND client_slug IN (${placeholders}) AND last_login_at IS NOT NULL
+          GROUP BY client_slug`
+      ).bind(...slugs).all<{ client_slug: string; ts: number }>();
+      for (const r of loginRows.results || []) {
+        if (r.ts) lastLoginBySlug.set(r.client_slug, r.ts);
+      }
+    }
+  }
+
   const clientRows: ClientRow[] = clients.map((d) => ({
     domain: d,
     latestScan: scansByDomain.get(d.id) || null,
@@ -149,6 +198,7 @@ export async function handleAgencyDashboard(
             <th>Status</th>
             <th>Snippet</th>
             <th>AEO</th>
+            <th>Last login</th>
             <th>Activated</th>
             <th></th>
           </tr>
@@ -164,7 +214,7 @@ export async function handleAgencyDashboard(
               <td>${esc(accessLabel(domain.client_access))}</td>
               <td>${statusPill(domain.active === 1 ? "active" : "paused")}</td>
               <td style="white-space:nowrap">
-                ${snippetStatusPill(domain)}
+                ${snippetStatusPill(domain, driftBySlug.get(domain.client_slug))}
                 <button type="button" class="btn btn-ghost copy-snippet-btn"
                         data-snippet="${esc(snippetTag(domain.client_slug))}"
                         style="padding:2px 8px;font-size:10px;margin-left:6px"
@@ -178,6 +228,17 @@ export async function handleAgencyDashboard(
                 ` : ""}
               </td>
               <td>${scoreCell(latestScan)}</td>
+              <td style="color:var(--text-faint);font-size:12px;white-space:nowrap">
+                ${(() => {
+                  if (domain.client_access !== "full") return `<span title="Mode 1 (internal): clients don't log in">--</span>`;
+                  const ts = lastLoginBySlug.get(domain.client_slug);
+                  if (!ts) return `<span title="No client has logged in yet">never</span>`;
+                  const diff = Math.floor(Date.now() / 1000) - ts;
+                  if (diff < 3600) return `${Math.floor(diff/60)}m ago`;
+                  if (diff < 86400) return `${Math.floor(diff/3600)}h ago`;
+                  return `${Math.floor(diff/86400)}d ago`;
+                })()}
+              </td>
               <td style="color:var(--text-faint);font-size:12px">
                 ${domain.activated_at ? esc(shortDate(domain.activated_at)) : "--"}
               </td>
@@ -378,7 +439,8 @@ export async function handleAgencyDashboard(
           ${agency.contact_email ? `<br><span class="muted" style="font-size:12px">Contact email: <strong>${esc(agency.contact_email)}</strong> &middot; snippet emails and invoices land here.</span>` : ""}
         </p>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <a href="/agency/clients.csv" class="btn btn-ghost" title="Download client list as CSV">CSV</a>
         <a href="/agency/invites" class="btn btn-ghost">Invites</a>
         <a href="/agency/settings" class="btn btn-ghost">Settings</a>
         <a href="/agency/billing" class="btn btn-ghost">Billing</a>
@@ -433,4 +495,143 @@ export async function handleAgencyDashboard(
   `;
 
   return html(layout(agency.name + " -- Agency", body, user));
+}
+
+// ---------------------------------------------------------------------------
+// CSV export of agency clients
+// ---------------------------------------------------------------------------
+
+function csvEscape(s: string | number | null | undefined): string {
+  if (s === null || s === undefined) return "";
+  const str = String(s);
+  // Quote if contains comma, quote, or newline. Double internal quotes.
+  if (/[",\n]/.test(str)) return `"${str.replace(/"/g, '""')}"`;
+  return str;
+}
+
+function snippetStatusText(d: Domain, driftedAt?: number | null): string {
+  const now = Math.floor(Date.now() / 1000);
+  const DAY = 86400;
+  if (driftedAt && d.snippet_last_detected_at) return "drifted";
+  if (d.snippet_last_detected_at) return "installed";
+  if (!d.snippet_email_sent_at) return "not_delivered";
+  const ageDays = Math.floor((now - d.snippet_email_sent_at) / DAY);
+  if (ageDays >= 30) return `stalled_${ageDays}d`;
+  if (ageDays >= 7) return `nudged_${ageDays}d`;
+  return `pending_${ageDays}d`;
+}
+
+/**
+ * GET /agency/clients.csv
+ *
+ * Downloads the agency's client list as CSV with the same data the
+ * dashboard table shows: slug, domain, plan, access mode, status,
+ * snippet status, AEO score + grade, last login (ISO), activated_at
+ * (ISO). Useful for monthly reporting or pasting into the agency's
+ * own CRM.
+ */
+export async function handleAgencyClientsCsv(
+  user: User,
+  env: Env,
+  url: URL
+): Promise<Response> {
+  let agency: Agency | null = null;
+  if (user.role === "agency_admin") {
+    if (!user.agency_id) return new Response("Forbidden", { status: 403 });
+    agency = await getAgency(env, user.agency_id);
+  } else if (user.role === "admin") {
+    const slug = url.searchParams.get("agency");
+    if (!slug) return new Response("agency query param required for admin", { status: 400 });
+    agency = await getAgencyBySlug(env, slug);
+  } else {
+    return new Response("Forbidden", { status: 403 });
+  }
+  if (!agency) return new Response("Agency not found", { status: 404 });
+
+  const clients = await listAgencyClients(env, agency.id);
+
+  // Latest scan per client (single query, mirrors the dashboard).
+  const scansByDomain = new Map<number, ScanResult>();
+  if (clients.length > 0) {
+    const ids = clients.map((c) => c.id);
+    const placeholders = ids.map(() => "?").join(",");
+    const rows = await env.DB.prepare(
+      `SELECT s.* FROM scan_results s
+         INNER JOIN (
+           SELECT domain_id, MAX(scanned_at) AS max_ts
+             FROM scan_results WHERE domain_id IN (${placeholders})
+            GROUP BY domain_id
+         ) latest ON latest.domain_id = s.domain_id AND latest.max_ts = s.scanned_at`
+    ).bind(...ids).all<ScanResult>();
+    for (const r of rows.results || []) scansByDomain.set(r.domain_id, r);
+  }
+
+  // Drift alerts.
+  const driftBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = Array.from(new Set(clients.map((c) => c.client_slug)));
+    const placeholders = slugs.map(() => "?").join(",");
+    const cutoff = Math.floor(Date.now() / 1000) - 30 * 86400;
+    const driftRows = await env.DB.prepare(
+      `SELECT client_slug, MAX(created_at) AS ts
+         FROM admin_alerts
+        WHERE type = 'snippet_drift' AND client_slug IN (${placeholders}) AND created_at > ?
+        GROUP BY client_slug`
+    ).bind(...slugs, cutoff).all<{ client_slug: string; ts: number }>();
+    for (const r of driftRows.results || []) driftBySlug.set(r.client_slug, r.ts);
+  }
+
+  // Last login per Mode-2 client.
+  const lastLoginBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = clients.filter((c) => c.client_access === "full").map((c) => c.client_slug);
+    if (slugs.length > 0) {
+      const placeholders = slugs.map(() => "?").join(",");
+      const loginRows = await env.DB.prepare(
+        `SELECT client_slug, MAX(last_login_at) AS ts
+           FROM users
+          WHERE role = 'client' AND client_slug IN (${placeholders}) AND last_login_at IS NOT NULL
+          GROUP BY client_slug`
+      ).bind(...slugs).all<{ client_slug: string; ts: number }>();
+      for (const r of loginRows.results || []) {
+        if (r.ts) lastLoginBySlug.set(r.client_slug, r.ts);
+      }
+    }
+  }
+
+  const isoOrEmpty = (ts: number | null | undefined): string =>
+    ts ? new Date(ts * 1000).toISOString().slice(0, 10) : "";
+
+  const headers = [
+    "client_slug", "domain", "plan", "access", "status",
+    "snippet_status", "aeo_score", "grade", "last_login", "activated_at",
+  ];
+  const rows = clients.map((d) => {
+    const scan = scansByDomain.get(d.id);
+    return [
+      d.client_slug,
+      d.domain,
+      d.plan || "",
+      d.client_access || "",
+      d.active === 1 ? "active" : "paused",
+      snippetStatusText(d, driftBySlug.get(d.client_slug)),
+      scan?.aeo_score ?? "",
+      scan?.grade ?? "",
+      d.client_access === "full" ? isoOrEmpty(lastLoginBySlug.get(d.client_slug)) : "",
+      isoOrEmpty(d.activated_at),
+    ];
+  });
+
+  const csv = [headers, ...rows]
+    .map((row) => row.map(csvEscape).join(","))
+    .join("\n") + "\n";
+
+  const filename = `${agency.slug}-clients-${new Date().toISOString().slice(0, 10)}.csv`;
+  return new Response(csv, {
+    headers: {
+      "Content-Type": "text/csv;charset=utf-8",
+      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Cache-Control": "no-store",
+    },
+  });
 }
