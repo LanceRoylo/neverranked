@@ -73,7 +73,11 @@ function snippetStatusPill(d: Domain, driftedAt?: number | null): string {
     return `<span class="status" style="background:#3a1f1f;color:#ef9999;border-color:#7a3f3f" title="Snippet was previously live but a recent probe didn't find it. The agency contact has been emailed.">Drifted (${driftDays}d)</span>`;
   }
   if (d.snippet_last_detected_at) {
-    return `<span class="status status-complete" title="Snippet detected on the homepage. Daily drift checks are on.">Installed</span>`;
+    const days = Math.floor((now - d.snippet_last_detected_at) / DAY);
+    const ageLabel = days < 1 ? "today"
+      : days === 1 ? "1d ago"
+      : `${days}d ago`;
+    return `<span class="status status-complete" title="Snippet first detected ${ageLabel}. Daily drift checks are on.">Installed</span>`;
   }
   if (!d.snippet_email_sent_at) {
     return `<span class="status status-pending" title="Install instructions have not been sent yet.">Not delivered</span>`;

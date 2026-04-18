@@ -173,6 +173,17 @@ export async function handleAgencyResendSnippet(
     ));
   }
 
+  // Rate limit: 1 resend per hour per domain. Prevents accidental
+  // double-clicks and discourages spamming the agency contact.
+  const now = Math.floor(Date.now() / 1000);
+  const HOUR = 3600;
+  if (domain.snippet_email_sent_at && now - domain.snippet_email_sent_at < HOUR) {
+    const minsLeft = Math.ceil((HOUR - (now - domain.snippet_email_sent_at)) / 60);
+    return redirect("/agency?error=" + encodeURIComponent(
+      `Snippet email for ${domain.client_slug} was just sent. Try again in ${minsLeft} min.`
+    ));
+  }
+
   const sent = await sendSnippetDeliveryEmail(env, { agency, domain });
   if (!sent) {
     return redirect("/agency?error=" + encodeURIComponent(
@@ -180,7 +191,6 @@ export async function handleAgencyResendSnippet(
     ));
   }
 
-  const now = Math.floor(Date.now() / 1000);
   // Reset the delivery timestamp so the nudge cron treats this as a
   // fresh start. Also clear the day-7 / day-14 nudge guards so the
   // tiered escalation can fire again from this new baseline.

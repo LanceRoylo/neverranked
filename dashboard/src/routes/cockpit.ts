@@ -540,12 +540,22 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
 
     <!-- Client health -->
     <div class="card" style="margin-bottom:32px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:16px;flex-wrap:wrap">
         <h3>Client <em>health</em></h3>
-        <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${clientHealthData.length} domains</span>
+        <div style="display:flex;align-items:center;gap:12px">
+          <input id="client-health-search" type="search" placeholder="Filter by slug, domain, plan..."
+                 style="background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:5px 10px;font-family:var(--mono);font-size:12px;width:220px"
+                 oninput="(function(q){
+                   q=q.toLowerCase();
+                   document.querySelectorAll('#client-health-table tbody tr').forEach(function(row){
+                     row.style.display = !q || row.textContent.toLowerCase().indexOf(q) !== -1 ? '' : 'none';
+                   });
+                 })(this.value)" />
+          <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${clientHealthData.length} domains</span>
+        </div>
       </div>
       ${clientHealthData.length > 0 ? `
-      <table class="data-table">
+      <table class="data-table" id="client-health-table">
         <thead>
           <tr>
             <th>Client</th>
