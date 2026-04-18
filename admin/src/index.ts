@@ -17,6 +17,7 @@ import {
   handleIntakeStatus,
 } from "./routes/intake";
 import { handleApiIntake } from "./routes/api-intake";
+import { showBilling } from "./routes/billing";
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
@@ -69,6 +70,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   // ---------- protected routes ----------
   if (path === "/" && method === "GET") {
     return showHome(request, env);
+  }
+
+  if (path === "/billing" && method === "GET") {
+    return showBilling(request, env);
   }
 
   if (path === "/clients") {

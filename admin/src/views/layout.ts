@@ -4,7 +4,7 @@ import { esc, raw, trust } from "../render";
 import type { SafeString } from "../render";
 import { CSS } from "../styles";
 
-export type NavKey = "home" | "clients" | "intake" | "login";
+export type NavKey = "home" | "clients" | "intake" | "billing" | "login";
 
 export interface LayoutOpts {
   title: string;
@@ -40,6 +40,7 @@ export function layout(opts: LayoutOpts): string {
       <a href="/" class="${nav === "home" ? "active" : ""}">Dashboard</a>
       <a href="/clients" class="${nav === "clients" ? "active" : ""}">Clients</a>
       <a href="/intake" class="${nav === "intake" ? "active" : ""}">Intake</a>
+      <a href="/billing" class="${nav === "billing" ? "active" : ""}">Billing</a>
     </nav>
     <div class="session">
       § Signed in

@@ -4,6 +4,7 @@ export interface Env {
   DB: D1Database;
   ADMIN_PASSWORD: string;
   ADMIN_SECRET: string;
+  STRIPE_SECRET_KEY: string;
 }
 
 export interface Client {
