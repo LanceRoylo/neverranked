@@ -199,6 +199,106 @@ export async function handleAgencyDashboard(
       <div style="font-family:var(--serif);font-size:32px;margin-top:6px">${value}</div>
     </div>`;
 
+  // Recent activity: interleave slot events + invite events from the
+  // last 30 days, newest first, capped at 10 entries. Useful for
+  // "what changed lately?" without diving into the DB. The two queries
+  // are cheap (indexed on agency_id + created_at) so we run them
+  // in parallel and merge in JS.
+  const ACTIVITY_LIMIT = 10;
+  const activitySinceTs = Math.floor(Date.now() / 1000) - 30 * 86400;
+  type ActivityRow = { ts: number; html: string };
+  const activityRows: ActivityRow[] = [];
+
+  const slotEvents = (await env.DB.prepare(
+    `SELECT s.event_type, s.plan, s.quantity_before, s.quantity_after, s.created_at,
+            d.client_slug, d.domain
+       FROM agency_slot_events s
+       LEFT JOIN domains d ON d.id = s.domain_id
+      WHERE s.agency_id = ? AND s.created_at > ?
+      ORDER BY s.created_at DESC
+      LIMIT ?`
+  ).bind(agency.id, activitySinceTs, ACTIVITY_LIMIT).all<{
+    event_type: string;
+    plan: string;
+    quantity_before: number | null;
+    quantity_after: number | null;
+    created_at: number;
+    client_slug: string | null;
+    domain: string | null;
+  }>()).results;
+
+  for (const e of slotEvents) {
+    const verb = e.event_type === "paused" ? "Paused"
+      : e.event_type === "resumed" ? "Resumed"
+      : e.event_type === "activated" ? "Activated"
+      : e.event_type === "removed" ? "Removed"
+      : e.event_type;
+    const target = e.client_slug ? esc(e.client_slug) : "client";
+    const slotChange = e.quantity_before !== null && e.quantity_after !== null
+      ? ` &middot; ${esc(planLabel(e.plan))} slots ${e.quantity_before} &rarr; ${e.quantity_after}`
+      : "";
+    activityRows.push({
+      ts: e.created_at,
+      html: `<strong>${verb}</strong> ${target}<span class="muted">${slotChange}</span>`,
+    });
+  }
+
+  const inviteEvents = (await env.DB.prepare(
+    `SELECT email, role, client_slug, used_at, created_at
+       FROM agency_invites
+      WHERE agency_id = ? AND created_at > ?
+      ORDER BY created_at DESC
+      LIMIT ?`
+  ).bind(agency.id, activitySinceTs, ACTIVITY_LIMIT).all<{
+    email: string;
+    role: string;
+    client_slug: string | null;
+    used_at: number | null;
+    created_at: number;
+  }>()).results;
+
+  for (const i of inviteEvents) {
+    const target = i.role === "client"
+      ? `${esc(i.email)} <span class="muted">to ${esc(i.client_slug || "?")}</span>`
+      : `${esc(i.email)} <span class="muted">as teammate</span>`;
+    activityRows.push({
+      ts: i.created_at,
+      html: `<strong>Invited</strong> ${target}`,
+    });
+    if (i.used_at) {
+      activityRows.push({
+        ts: i.used_at,
+        html: `<strong>Accepted</strong> ${esc(i.email)}`,
+      });
+    }
+  }
+
+  activityRows.sort((a, b) => b.ts - a.ts);
+  const activitySection = activityRows.length === 0 ? "" : `
+    <div class="card" style="margin-top:24px">
+      <div class="section-header" style="margin-bottom:12px">
+        <h2 style="margin:0">Recent activity</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${activityRows.slice(0, ACTIVITY_LIMIT).map(r => {
+          const ago = (() => {
+            const diff = Math.floor(Date.now() / 1000) - r.ts;
+            if (diff < 60) return "just now";
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return `${Math.floor(diff / 86400)}d ago`;
+          })();
+          return `
+            <div style="display:flex;justify-content:space-between;gap:16px;padding:6px 0;border-bottom:1px solid var(--line);font-size:13px">
+              <span>${r.html}</span>
+              <span class="muted" style="white-space:nowrap;font-size:12px">${ago}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+
   // First-run checklist. Shown until all required steps are done. The
   // checks read live from the database; once each is complete the row
   // disappears, and once everything is done the whole card vanishes
@@ -281,6 +381,7 @@ export async function handleAgencyDashboard(
       </div>
       ${clientsTable}
     </div>
+    ${activitySection}
   `;
 
   return html(layout(agency.name + " -- Agency", body, user));

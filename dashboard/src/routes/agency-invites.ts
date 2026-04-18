@@ -116,10 +116,15 @@ export async function handleAgencyInvitesGet(user: User | null, env: Env, url: U
       ? `Client (${esc(r.client_slug || "?")})`
       : "Teammate";
 
+    const link = `https://app.neverranked.com/auth/invite?token=${r.token}`;
     const actions = r.used_at
       ? ""
       : `
-        <form method="POST" action="/agency/invites/${r.id}/resend" style="display:inline;margin:0">
+        <button type="button" class="btn btn-ghost copy-link-btn"
+                data-link="${esc(link)}"
+                style="padding:4px 10px;font-size:11px"
+                title="Copy invite link to clipboard">Copy link</button>
+        <form method="POST" action="/agency/invites/${r.id}/resend" style="display:inline;margin:0;margin-left:6px">
           <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Resend</button>
         </form>
         <form method="POST" action="/agency/invites/${r.id}/revoke" style="display:inline;margin:0;margin-left:6px"
@@ -233,6 +238,37 @@ export async function handleAgencyInvitesGet(user: User | null, env: Env, url: U
     <h3 style="margin-bottom:12px">Pending invites</h3>
     ${pendingTable}
     ${acceptedTable}
+
+    <script>
+      // Copy invite link to clipboard. Falls back to a temporary
+      // textarea + execCommand for browsers without secure clipboard
+      // access (HTTP, ancient browsers).
+      document.querySelectorAll('.copy-link-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var link = btn.getAttribute('data-link');
+          if (!link) return;
+          var done = function(){
+            var orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function(){ btn.textContent = orig; }, 1500);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(link).then(done).catch(function(){
+              window.prompt('Copy this invite link:', link);
+            });
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = link;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch(e) {
+              window.prompt('Copy this invite link:', link);
+            }
+            document.body.removeChild(ta);
+          }
+        });
+      });
+    </script>
   `;
 
   return html(layout("Invites", body, user));
