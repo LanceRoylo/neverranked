@@ -164,6 +164,22 @@ ${user ? `<header class="topbar">
   ${userInfo}
 </header>` : ''}
 
+${isAgencyAdmin && activeSlug ? `
+<div style="background:var(--bg-edge);border-bottom:1px solid var(--gold-dim);padding:8px 24px;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
+  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <span style="color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px">Viewing client</span>
+    <strong style="color:var(--text)">${esc(activeSlug)}</strong>
+    <span class="muted" style="font-size:11px">&middot;</span>
+    <a href="/roadmap/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Roadmap</a>
+    <a href="/citations/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Citations</a>
+    <a href="/search/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Search</a>
+    <a href="/competitors/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Competitors</a>
+    <a href="/report/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Report</a>
+  </div>
+  <a href="/agency" style="color:var(--gold);text-decoration:none;font-size:11px">&larr; Back to agency dashboard</a>
+</div>
+` : ""}
+
 <main class="page">
 ${body}
 </main>
