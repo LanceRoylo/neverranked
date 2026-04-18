@@ -74,7 +74,12 @@ export async function handlePostLogin(request: Request, env: Env): Promise<Respo
   // Always show "check email" page (no user enumeration)
   const token = await createMagicLink(email, env);
   if (token) {
-    await sendMagicLinkEmail(email, token, env);
+    const sent = await sendMagicLinkEmail(email, token, env);
+    if (!sent) {
+      console.log(`Magic link send returned false for ${email} (token created in DB but email did not deliver)`);
+    }
+  } else {
+    console.log(`Magic link not created for ${email} (user not found or rate limited)`);
   }
 
   return html(checkEmailPage());

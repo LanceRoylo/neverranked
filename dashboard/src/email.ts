@@ -64,9 +64,16 @@ export async function sendMagicLinkEmail(
       }),
     });
 
-    return resp.ok;
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`Magic link to ${email} failed: ${resp.status} ${errBody}`);
+      return false;
+    }
+
+    console.log(`Magic link sent to ${email}`);
+    return true;
   } catch (err) {
-    console.error("Email send failed:", err);
+    console.error(`Magic link to ${email} error:`, err);
     return false;
   }
 }
