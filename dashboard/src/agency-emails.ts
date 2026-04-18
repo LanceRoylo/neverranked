@@ -15,6 +15,43 @@ import { logEmailDelivery } from "./email";
 
 const BRAND_FROM = "NeverRanked <hello@neverranked.com>";
 
+/**
+ * Build the "Need help installing?" platform picker shown in snippet
+ * emails. Links go straight to the per-platform guide with the
+ * snippet pre-filled via ?slug=. Six most-common platforms inline,
+ * plus a "see all" link to /install for the long tail.
+ */
+const TOP_INSTALL_PLATFORMS: Array<{ slug: string; name: string }> = [
+  { slug: "wordpress", name: "WordPress" },
+  { slug: "shopify", name: "Shopify" },
+  { slug: "squarespace", name: "Squarespace" },
+  { slug: "wix", name: "Wix" },
+  { slug: "webflow", name: "Webflow" },
+  { slug: "google-tag-manager", name: "Google Tag Manager" },
+];
+
+function installHelpHtml(env: Env, clientSlug: string): string {
+  const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  const links = TOP_INSTALL_PLATFORMS.map((p) =>
+    `<a href="${origin}/install/${p.slug}?slug=${encodeURIComponent(clientSlug)}" style="display:inline-block;padding:6px 12px;margin:0 6px 6px 0;background:#fbf8ef;color:#1a1a1a;border:1px solid #e0ddd6;text-decoration:none;font-size:12px;border-radius:3px">${escHtml(p.name)}</a>`
+  ).join("");
+  return `
+<div style="margin:24px 0;padding:18px 20px;background:#fafaf7;border-left:3px solid #e8c767;border-radius:0 4px 4px 0">
+  <p style="margin:0 0 10px;font-size:14px;color:#1a1a1a"><strong>Need help installing?</strong> Pick the platform the site runs on:</p>
+  <div style="line-height:1.9">${links}</div>
+  <p style="margin:10px 0 0;font-size:12px;color:#666"><a href="${origin}/install?slug=${encodeURIComponent(clientSlug)}" style="color:#1a1a1a">See all platforms &rarr;</a></p>
+</div>
+  `.trim();
+}
+
+function installHelpText(env: Env, clientSlug: string): string {
+  const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  const lines = TOP_INSTALL_PLATFORMS.map((p) =>
+    `  ${p.name}: ${origin}/install/${p.slug}?slug=${encodeURIComponent(clientSlug)}`
+  ).join("\n");
+  return `Need help installing? Pick the platform the site runs on:\n\n${lines}\n\nSee all platforms: ${origin}/install?slug=${encodeURIComponent(clientSlug)}`;
+}
+
 function escHtml(s: string): string {
   return String(s || "")
     .replace(/&/g, "&amp;")
@@ -120,6 +157,8 @@ export async function sendSnippetDeliveryEmail(
     ``,
     `Where to paste: in the <head> of every page (or the site-wide layout template). Most CMS platforms have a "Custom Header HTML" field for exactly this.`,
     ``,
+    installHelpText(env, domain.client_slug),
+    ``,
     `Why it matters: once installed, we push schema updates to ${domain.domain} automatically. No dev work needed going forward. When the weekly scan finds new gaps we can fix with schema, the fix lands on the live site within the hour.`,
     ``,
     `How to verify: view the source of ${domain.domain} and search for "neverranked.com/inject". You should see the tag. Or run a scan here:`,
@@ -142,6 +181,8 @@ export async function sendSnippetDeliveryEmail(
 </div>
 
 <p style="margin:0 0 14px"><strong>Where to paste:</strong> in the <code>&lt;head&gt;</code> of every page (or the site-wide layout template). Most CMS platforms have a "Custom Header HTML" field for exactly this.</p>
+
+${installHelpHtml(env, domain.client_slug)}
 
 <p style="margin:0 0 14px"><strong>Why it matters:</strong> once installed, we push schema updates to the site automatically. No dev work needed going forward. When the weekly scan finds new gaps we can fix with schema, the fix lands on the live site within the hour.</p>
 
@@ -197,6 +238,8 @@ export async function sendSnippetNudgeDay7(
     ``,
     `Paste inside the <head> of the site-wide layout template. Once it's live, we push schema updates automatically and the AEO score starts climbing within the week.`,
     ``,
+    installHelpText(env, domain.client_slug),
+    ``,
     `If your client's webmaster is the right person to do this, feel free to forward them this email. Happy to explain what it does on a quick call if that helps.`,
     ``,
     `Lance`,
@@ -211,6 +254,7 @@ export async function sendSnippetNudgeDay7(
   <code style="color:#e8c767;font-family:'SF Mono',Menlo,Monaco,Consolas,monospace;font-size:13px;line-height:1.6;white-space:pre;word-break:normal">${escHtml(tag)}</code>
 </div>
 <p style="margin:0 0 14px">Paste inside the <code>&lt;head&gt;</code> of the site-wide layout template. Once it's live, we push schema updates automatically and the AEO score starts climbing within the week.</p>
+${installHelpHtml(env, domain.client_slug)}
 <p style="margin:0 0 20px">If your client's webmaster is the right person to do this, feel free to forward them this email. Happy to explain what it does on a quick call if that helps.</p>
 <p style="margin:0 0 6px">Lance</p>
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
@@ -351,6 +395,8 @@ export async function sendSnippetNudgeDay14(
     ``,
     `Which works best? Just reply and we'll unblock it.`,
     ``,
+    installHelpText(env, domain.client_slug),
+    ``,
     `Lance`,
     `NeverRanked`,
   ].join("\n");
@@ -365,6 +411,7 @@ export async function sendSnippetNudgeDay14(
   <li style="margin-bottom:8px">If the site is on WordPress, Webflow, Squarespace, or Wix, just tell me which and I'll send the exact panel to paste into.</li>
 </ol>
 <p style="margin:0 0 20px">Which works best? Just reply and we'll unblock it.</p>
+${installHelpHtml(env, domain.client_slug)}
 <p style="margin:0 0 6px">Lance</p>
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
 </body></html>`;
