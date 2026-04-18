@@ -320,6 +320,165 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 
 export { REGRESSION_THRESHOLD };
 
+// ---------------------------------------------------------------------------
+// First-citation celebration
+// ---------------------------------------------------------------------------
+
+/**
+ * The first time the citation tracker detects ANY AI engine citing
+ * this client for ANY tracked keyword, fire a celebration email.
+ * This is the dopamine-hit moment that anchors NeverRanked's value
+ * for the user. Without it the win arrives silently inside a weekly
+ * snapshot and never registers as a thing to remember.
+ *
+ * Sent to all client-role + admin-role users bound to this client_slug,
+ * plus the agency contact when agency-owned. Branded as the agency
+ * if Mode-2 client_access; otherwise NeverRanked.
+ */
+export async function sendFirstCitationEmail(
+  to: string,
+  userName: string | null,
+  opts: {
+    domain: string;
+    clientSlug: string;
+    engineName: string;       // e.g., "ChatGPT"
+    keyword: string;
+    citationsThisRun: number;
+    totalQueries: number;
+  },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] First-citation for ${to}: ${opts.domain} cited by ${opts.engineName} for "${opts.keyword}"`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain} just got cited by ${opts.engineName} for the first time`;
+
+  const headerHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
+
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Real signal moment to share: ${opts.domain} just got cited by an AI engine for the first time.`,
+    ``,
+    `What we detected:`,
+    `  Engine: ${opts.engineName}`,
+    `  Query:  "${opts.keyword}"`,
+    `  This week's cited / total queries: ${opts.citationsThisRun} / ${opts.totalQueries}`,
+    ``,
+    `This is the thing that's hard to fake and hard to engineer. It only happens when AI engines decide -- on their own -- that ${opts.domain} is a credible source for that question. The schema work, the content work, the technical work -- this is what it adds up to.`,
+    ``,
+    `You can see the full citation breakdown and which engines are picking you up here:`,
+    `https://app.neverranked.com/citations/${opts.clientSlug}`,
+    ``,
+    `Now we double down. The more queries you're cited for, the more compounding momentum.`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${brand.name} <alerts@neverranked.com>`,
+        to: [to],
+        subject,
+        text,
+        html: `
+<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
+  <tr><td align="center" style="padding:32px 16px">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+      <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr>
+            ${headerHtml}
+            <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#27ae60">First citation</td>
+          </tr>
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:36px 0 12px">
+        <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:14px">Hey ${escEmail(greeting)},</div>
+        <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef;line-height:1.5;margin-bottom:8px">
+          <strong style="color:${brand.color}">${escEmail(opts.domain)}</strong> just got cited by <strong style="color:#fbf8ef">${escEmail(opts.engineName)}</strong> for the first time.
+        </div>
+      </td></tr>
+
+      <tr><td style="padding:0 0 24px">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+          <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #27ae60;border-radius:4px">
+            <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:14px">What we detected</div>
+            <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.7">
+              <div><strong style="color:#fbf8ef">Engine:</strong> ${escEmail(opts.engineName)}</div>
+              <div><strong style="color:#fbf8ef">Query:</strong> "${escEmail(opts.keyword)}"</div>
+              <div><strong style="color:#fbf8ef">This week:</strong> ${opts.citationsThisRun} cited of ${opts.totalQueries} queries</div>
+            </div>
+          </td></tr>
+        </table>
+      </td></tr>
+
+      <tr><td style="padding:0 0 24px">
+        <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">
+          This is the thing that's hard to fake and hard to engineer. It only happens when AI engines decide -- on their own -- that ${escEmail(opts.domain)} is a credible source for that question. The schema work, the content work, the technical work -- this is what it adds up to.
+        </div>
+      </td></tr>
+
+      <tr><td align="center" style="padding:8px 0 32px">
+        <a href="https://app.neverranked.com/citations/${escEmail(opts.clientSlug)}" style="display:inline-block;padding:14px 32px;background:${brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">See full citation breakdown</a>
+      </td></tr>
+
+      <tr><td style="padding:0 0 32px">
+        <div style="font-family:Georgia,serif;font-size:13px;color:#888888;line-height:1.7;text-align:center">
+          Now we double down. The more queries you're cited for, the more compounding momentum.
+        </div>
+      </td></tr>
+
+      <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
+        <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
+          ${footerLine}<br>
+          You received this because we detected your site's first AI citation.
+        </div>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`First-citation email to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "first_citation", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    console.log(`First-citation email sent to ${to} for ${opts.clientSlug}`);
+    await logEmailDelivery(env, { email: to, type: "first_citation", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    console.log(`First-citation email to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "first_citation", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
 /** Send a regression alert for a single domain */
 export async function sendRegressionAlert(
   to: string,

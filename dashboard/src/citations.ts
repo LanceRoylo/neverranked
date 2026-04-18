@@ -680,6 +680,79 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
       `Citations for ${clientSlug}: ${clientCitations}/${totalQueries} queries cited (${(citationShare * 100).toFixed(1)}%), ${topCompetitors.length} competitors tracked`
     );
 
+    // First-citation celebration: if this run is the first time we
+    // detected a cite for this client (any engine, any keyword), fire
+    // the dopamine-hit email + create a milestone admin_alert. Use
+    // admin_alerts as the persistent "we already celebrated" guard so
+    // we never re-fire even after months of additional citations.
+    try {
+      if (clientCitations > 0 && domain) {
+        const alreadyCelebrated = await env.DB.prepare(
+          "SELECT id FROM admin_alerts WHERE client_slug = ? AND type = 'first_citation' LIMIT 1"
+        ).bind(clientSlug).first<{ id: number }>();
+
+        if (!alreadyCelebrated) {
+          // Find the first cited result this run for the email content.
+          const firstCited = keywordResults.find((r) => r.cited);
+          const engineName = firstCited?.engines[0]
+            ? (firstCited.engines[0] === "openai" ? "ChatGPT"
+              : firstCited.engines[0] === "perplexity" ? "Perplexity"
+              : firstCited.engines[0] === "google_aio" ? "Google AI Overviews"
+              : firstCited.engines[0] === "gemini" ? "Gemini"
+              : firstCited.engines[0])
+            : "an AI engine";
+          const keyword = firstCited?.keyword || "your tracked keywords";
+
+          // Resolve agency for branding (domain-scoped).
+          const { resolveAgencyForEmail } = await import("./agency");
+          const { sendFirstCitationEmail } = await import("./email");
+          const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
+          // Recipients: client-role users for this slug + the agency
+          // contact when agency-owned. Same audience as regression alerts.
+          const recipients = (await env.DB.prepare(
+            `SELECT email, name FROM users
+              WHERE (role = 'client' AND client_slug = ?)
+                 OR role = 'admin'`
+          ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
+          if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+            recipients.push({ email: agency.contact_email, name: null });
+          }
+
+          let sent = 0;
+          for (const r of recipients) {
+            const ok = await sendFirstCitationEmail(r.email, r.name, {
+              domain: domain.domain,
+              clientSlug,
+              engineName,
+              keyword,
+              citationsThisRun: clientCitations,
+              totalQueries,
+            }, env, agency);
+            if (ok) sent++;
+            await new Promise((res) => setTimeout(res, 200));
+          }
+
+          // Persistent guard: this admin_alert serves dual purpose --
+          // visibility for ops AND prevents re-celebration on future
+          // weekly runs.
+          await env.DB.prepare(
+            `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+             VALUES (?, 'first_citation', ?, ?, ?)`
+          ).bind(
+            clientSlug,
+            `First AI citation: ${domain.domain} cited by ${engineName}`,
+            `${clientCitations} of ${totalQueries} tracked queries cited this week. ${sent} of ${recipients.length} celebration emails sent.`,
+            now,
+          ).run();
+
+          console.log(`[first-citation] celebrated ${clientSlug} -- ${sent}/${recipients.length} emails sent`);
+        }
+      }
+    } catch (e) {
+      console.log(`[first-citation] check failed for ${clientSlug}: ${e}`);
+    }
+
     // Delay between clients
     await new Promise((r) => setTimeout(r, 500));
   }
