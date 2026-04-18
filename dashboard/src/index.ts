@@ -47,6 +47,7 @@ import {
   handleInviteRevoke,
   handleInviteAccept,
 } from "./routes/agency-invites";
+import { handleAgencyPauseClient, handleAgencyResumeClient } from "./routes/agency-clients";
 import { getBrandingContext } from "./agency";
 
 export default {
@@ -314,6 +315,14 @@ export default {
     const inviteRevokeMatch = /^\/agency\/invites\/(\d+)\/revoke$/.exec(path);
     if (inviteRevokeMatch && method === "POST") {
       return handleInviteRevoke(Number(inviteRevokeMatch[1]), user, env);
+    }
+    const clientPauseMatch = /^\/agency\/clients\/(\d+)\/pause$/.exec(path);
+    if (clientPauseMatch && method === "POST") {
+      return handleAgencyPauseClient(Number(clientPauseMatch[1]), user, env);
+    }
+    const clientResumeMatch = /^\/agency\/clients\/(\d+)\/resume$/.exec(path);
+    if (clientResumeMatch && method === "POST") {
+      return handleAgencyResumeClient(Number(clientResumeMatch[1]), user, env);
     }
 
     // Domain detail

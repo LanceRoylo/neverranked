@@ -133,8 +133,17 @@ export async function handleAgencyDashboard(
               <td style="color:var(--text-faint);font-size:12px">
                 ${domain.activated_at ? esc(shortDate(domain.activated_at)) : "--"}
               </td>
-              <td style="text-align:right">
-                <a href="/domain/${domain.id}" class="btn btn-ghost">Open</a>
+              <td style="text-align:right;white-space:nowrap">
+                ${domain.active === 1
+                  ? `<form method="POST" action="/agency/clients/${domain.id}/pause" style="display:inline;margin:0"
+                          onsubmit="return confirm('Pause ${esc(domain.client_slug).replace(/'/g, "\\'")}?\\n\\nThis will reduce your ${esc(planLabel(domain.plan)).replace(/'/g, "\\'")} slot count by 1. Your next invoice will be prorated.');">
+                      <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Pause</button>
+                    </form>`
+                  : `<form method="POST" action="/agency/clients/${domain.id}/resume" style="display:inline;margin:0"
+                          onsubmit="return confirm('Resume ${esc(domain.client_slug).replace(/'/g, "\\'")}?\\n\\nThis will add 1 ${esc(planLabel(domain.plan)).replace(/'/g, "\\'")} slot. Your next invoice will be prorated.');">
+                      <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:11px">Resume</button>
+                    </form>`}
+                <a href="/domain/${domain.id}" class="btn btn-ghost" style="margin-left:6px">Open</a>
               </td>
             </tr>
           `).join("")}
@@ -156,8 +165,17 @@ export async function handleAgencyDashboard(
       <div style="font-family:var(--serif);font-size:32px;margin-top:6px">${value}</div>
     </div>`;
 
+  const flash = url.searchParams.get("flash");
+  const flashError = url.searchParams.get("error");
+  const flashBlock = flash
+    ? `<div class="flash">${esc(flash)}</div>`
+    : flashError
+    ? `<div class="flash flash-error">${esc(flashError)}</div>`
+    : "";
+
   const body = `
     ${adminPreview}
+    ${flashBlock}
     <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div>
         <h1>${esc(agency.name)}</h1>
