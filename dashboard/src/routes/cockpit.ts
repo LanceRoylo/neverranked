@@ -358,6 +358,7 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
         ${agencyPickerHtml}
         <a href="/admin/email-test" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Email test</a>
+        <a href="/admin/email-log" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Email log</a>
         ${automationBadge}
         ${automationToggleForm}
       </div>

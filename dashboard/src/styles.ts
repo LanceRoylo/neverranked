@@ -308,6 +308,7 @@ a.card:hover{border-color:var(--gold-dim)}
   background:var(--bg-lift);color:var(--text-soft);
 }
 .flash-error{border-left-color:var(--red);color:var(--red)}
+.flash-warning{border-left-color:var(--yellow);color:var(--yellow)}
 
 /* agency branding footer */
 .powered-by{
@@ -418,8 +419,19 @@ a.card:hover{border-color:var(--gold-dim)}
 
 /* ---------- print ---------- */
 @media print{
+  :root{
+    --text:#111 !important;
+    --text-soft:#222 !important;
+    --text-mute:#444 !important;
+    --text-faint:#666 !important;
+    --line:#ddd !important;
+    --bg:#fff !important;
+    --bg-lift:#f5f5f5 !important;
+    --bg-edge:#eee !important;
+  }
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
   body{background:#fff !important;color:#111 !important;font-size:11px !important}
+  th,td{color:#222 !important}
   .grain,.topbar,.hamburger,.no-print{display:none !important}
   body::before{display:none !important}
   .page{padding:0 !important;max-width:100% !important}
@@ -448,6 +460,11 @@ a.card:hover{border-color:var(--gold-dim)}
   .print-header{display:flex !important;justify-content:space-between;align-items:center;padding-bottom:16px;margin-bottom:24px;border-bottom:2px solid #111}
   .print-header .print-logo{font-family:var(--serif);font-style:italic;font-size:18px;color:#111}
   .print-header .print-date{font-family:var(--mono);font-size:10px;color:#777}
+  /* prevent orphan section headings -- keep heading with following content */
+  h1,h2,h3,.section-title{break-after:avoid-page;page-break-after:avoid}
+  .card,.data-table,table,tr,li{break-inside:avoid;page-break-inside:avoid}
+  /* tighten the spaced-letter crumb labels so they don't look weird on paper */
+  .label{letter-spacing:.08em !important}
   @page{margin:0.6in;size:letter}
 }
 `;

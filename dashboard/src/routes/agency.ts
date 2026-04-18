@@ -143,9 +143,12 @@ export async function handleAgencyDashboard(
     }
   }
 
-  // Drift alerts: any open snippet_drift admin_alert for these client_slugs
-  // in the last 30 days. We use admin_alerts as the source because there's
-  // no snippet_drift_at column on domains.
+  // Drift alerts: most-recent snippet_drift admin_alert per client_slug
+  // in the last 30 days. We then filter out any drift alert where the
+  // domain's snippet_last_detected_at is AFTER the alert (meaning the
+  // snippet has been re-detected since the drift fired -- the issue is
+  // resolved). Without this filter, the dashboard would keep showing
+  // "Drifted" for up to 30 days even after the snippet is back.
   const driftBySlug = new Map<string, number>();
   if (clients.length > 0) {
     const slugs = Array.from(new Set(clients.map((c) => c.client_slug)));
@@ -157,7 +160,15 @@ export async function handleAgencyDashboard(
         WHERE type = 'snippet_drift' AND client_slug IN (${placeholders}) AND created_at > ?
         GROUP BY client_slug`
     ).bind(...slugs, cutoff).all<{ client_slug: string; ts: number }>();
+    const lastDetectedBySlug = new Map<string, number>();
+    for (const c of clients) {
+      if (c.snippet_last_detected_at) lastDetectedBySlug.set(c.client_slug, c.snippet_last_detected_at);
+    }
     for (const r of driftRows.results || []) {
+      const lastDetected = lastDetectedBySlug.get(r.client_slug);
+      // Drift is resolved if the snippet has been seen live AFTER the
+      // drift alert fired.
+      if (lastDetected && lastDetected > r.ts) continue;
       driftBySlug.set(r.client_slug, r.ts);
     }
   }
@@ -570,7 +581,8 @@ export async function handleAgencyClientsCsv(
     for (const r of rows.results || []) scansByDomain.set(r.domain_id, r);
   }
 
-  // Drift alerts.
+  // Drift alerts -- only retain rows where the snippet has NOT been
+  // re-detected since the alert (otherwise drift is resolved).
   const driftBySlug = new Map<string, number>();
   if (clients.length > 0) {
     const slugs = Array.from(new Set(clients.map((c) => c.client_slug)));
@@ -582,7 +594,15 @@ export async function handleAgencyClientsCsv(
         WHERE type = 'snippet_drift' AND client_slug IN (${placeholders}) AND created_at > ?
         GROUP BY client_slug`
     ).bind(...slugs, cutoff).all<{ client_slug: string; ts: number }>();
-    for (const r of driftRows.results || []) driftBySlug.set(r.client_slug, r.ts);
+    const lastDetectedBySlug = new Map<string, number>();
+    for (const c of clients) {
+      if (c.snippet_last_detected_at) lastDetectedBySlug.set(c.client_slug, c.snippet_last_detected_at);
+    }
+    for (const r of driftRows.results || []) {
+      const lastDetected = lastDetectedBySlug.get(r.client_slug);
+      if (lastDetected && lastDetected > r.ts) continue;
+      driftBySlug.set(r.client_slug, r.ts);
+    }
   }
 
   // Last login per Mode-2 client.

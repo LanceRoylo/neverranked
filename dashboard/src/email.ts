@@ -30,6 +30,48 @@ function poweredByBlock(agency: Agency | null | undefined): string {
   return `<p style="margin:24px 0 0;font-size:11px;color:#aaa;text-align:center">Powered by Never Ranked</p>`;
 }
 
+/**
+ * Record one transactional email send attempt to email_delivery_log.
+ * Closes the observability gap that bit us debugging the magic-link
+ * issue: previously failures only printed to console.log and were
+ * invisible without an active wrangler tail session.
+ *
+ * Best-effort: a logging failure must NEVER break the send flow, so
+ * the catch swallows everything.
+ */
+export async function logEmailDelivery(
+  env: Env,
+  opts: {
+    email: string;
+    type: string;
+    status: "queued" | "failed";
+    statusCode?: number | null;
+    errorMessage?: string | null;
+    agencyId?: number | null;
+    targetId?: number | null;
+  }
+): Promise<void> {
+  try {
+    await env.DB.prepare(
+      `INSERT INTO email_delivery_log
+         (email, type, status, status_code, error_message, agency_id, target_id, created_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(
+      opts.email,
+      opts.type,
+      opts.status,
+      opts.statusCode ?? null,
+      opts.errorMessage ? String(opts.errorMessage).slice(0, 500) : null,
+      opts.agencyId ?? null,
+      opts.targetId ?? null,
+      Math.floor(Date.now() / 1000),
+    ).run();
+  } catch {
+    // Logging is observability, not core. A failure here cannot block
+    // the send pipeline.
+  }
+}
+
 export interface DigestData {
   domain: string;
   domainId: number;
@@ -95,13 +137,16 @@ export async function sendMagicLinkEmail(
     if (!resp.ok) {
       const errBody = await resp.text();
       console.log(`Magic link to ${email} failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email, type: "magic_link", status: "failed", statusCode: resp.status, errorMessage: errBody, agencyId: agency?.id });
       return false;
     }
 
     console.log(`Magic link sent to ${email}`);
+    await logEmailDelivery(env, { email, type: "magic_link", status: "queued", statusCode: resp.status, agencyId: agency?.id });
     return true;
   } catch (err) {
     console.error(`Magic link to ${email} error:`, err);
+    await logEmailDelivery(env, { email, type: "magic_link", status: "failed", errorMessage: String(err), agencyId: agency?.id });
     return false;
   }
 }
@@ -171,12 +216,15 @@ export async function sendInviteEmail(
     if (!resp.ok) {
       const errBody = await resp.text();
       console.log(`Invite to ${email} failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email, type: "invite", status: "failed", statusCode: resp.status, errorMessage: errBody, agencyId: opts.agency.id });
       return false;
     }
     console.log(`Invite sent to ${email}`);
+    await logEmailDelivery(env, { email, type: "invite", status: "queued", statusCode: resp.status, agencyId: opts.agency.id });
     return true;
   } catch (err) {
     console.error(`Invite to ${email} error:`, err);
+    await logEmailDelivery(env, { email, type: "invite", status: "failed", errorMessage: String(err), agencyId: opts.agency.id });
     return false;
   }
 }
@@ -237,13 +285,16 @@ export async function sendDigestEmail(
     if (!res.ok) {
       const err = await res.text();
       console.log(`Digest to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "digest", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
       return false;
     }
 
     console.log(`Digest sent to ${to}`);
+    await logEmailDelivery(env, { email: to, type: "digest", status: "queued", statusCode: res.status, agencyId: agency?.id });
     return true;
   } catch (e) {
     console.log(`Digest to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: String(e), agencyId: agency?.id });
     return false;
   }
 }
@@ -310,13 +361,16 @@ export async function sendRegressionAlert(
     if (!res.ok) {
       const err = await res.text();
       console.log(`Regression alert to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "regression", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id, targetId: domainId });
       return false;
     }
 
     console.log(`Regression alert sent to ${to}: ${domain} dropped ${drop} pts`);
+    await logEmailDelivery(env, { email: to, type: "regression", status: "queued", statusCode: res.status, agencyId: agency?.id, targetId: domainId });
     return true;
   } catch (e) {
     console.log(`Regression alert to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "regression", status: "failed", errorMessage: String(e), agencyId: agency?.id, targetId: domainId });
     return false;
   }
 }

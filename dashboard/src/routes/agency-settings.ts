@@ -71,11 +71,13 @@ export async function handleAgencyAsset(
 function renderSettingsPage(
   agency: Agency,
   user: User,
-  flash: { ok?: string; error?: string } = {}
+  flash: { ok?: string; warning?: string; error?: string } = {}
 ): Response {
   const color = agency.primary_color || "#c9a84c";
   const flashBlock = flash.ok
     ? `<div class="flash">${esc(flash.ok)}</div>`
+    : flash.warning
+    ? `<div class="flash flash-warning">${esc(flash.warning)}</div>`
     : flash.error
     ? `<div class="flash flash-error">${esc(flash.error)}</div>`
     : "";
@@ -185,8 +187,10 @@ export async function handleAgencySettingsGet(
   const agency = await getAgency(env, user.agency_id);
   if (!agency) return redirect("/");
 
-  const flash: { ok?: string; error?: string } = {};
+  const flash: { ok?: string; warning?: string; error?: string } = {};
   if (url.searchParams.get("saved") === "1") flash.ok = "Settings saved.";
+  const warning = url.searchParams.get("warning");
+  if (warning) flash.warning = warning;
   const err = url.searchParams.get("error");
   if (err) flash.error = err;
 
@@ -308,8 +312,8 @@ export async function handleAgencySettingsPost(
   if (color) {
     const ratio = contrastRatio(color, "#080808");
     if (ratio < 3.0) {
-      const msg = `Saved, but heads up: your color (${color}) has only ${ratio.toFixed(1)}:1 contrast against button text. CTAs may be hard to read. Pick a lighter shade for best legibility.`;
-      return redirect("/agency/settings?error=" + encodeURIComponent(msg));
+      const msg = `Saved. Heads up: your color (${color}) has only ${ratio.toFixed(1)}:1 contrast against button text. CTAs may be hard to read. Pick a lighter shade for best legibility.`;
+      return redirect("/agency/settings?warning=" + encodeURIComponent(msg));
     }
   }
 

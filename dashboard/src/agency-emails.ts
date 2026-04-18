@@ -11,6 +11,7 @@
  */
 
 import type { Env, Agency, Domain } from "./types";
+import { logEmailDelivery } from "./email";
 
 const BRAND_FROM = "NeverRanked <hello@neverranked.com>";
 
@@ -29,6 +30,7 @@ async function sendResend(
   text: string,
   html: string,
   replyTo?: string,
+  meta?: { type: string; agencyId?: number | null; targetId?: number | null },
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Would send "${subject}" to ${to}`);
@@ -53,11 +55,14 @@ async function sendResend(
     if (!resp.ok) {
       const err = await resp.text().catch(() => "");
       console.log(`[agency-emails] Resend HTTP ${resp.status} for ${to}: ${err.slice(0, 200)}`);
+      if (meta) await logEmailDelivery(env, { email: to, type: meta.type, status: "failed", statusCode: resp.status, errorMessage: err, agencyId: meta.agencyId, targetId: meta.targetId });
       return false;
     }
+    if (meta) await logEmailDelivery(env, { email: to, type: meta.type, status: "queued", statusCode: resp.status, agencyId: meta.agencyId, targetId: meta.targetId });
     return true;
   } catch (e) {
     console.log(`[agency-emails] send failed for ${to}: ${e}`);
+    if (meta) await logEmailDelivery(env, { email: to, type: meta.type, status: "failed", errorMessage: String(e), agencyId: meta.agencyId, targetId: meta.targetId });
     return false;
   }
 }
@@ -151,7 +156,7 @@ export async function sendSnippetDeliveryEmail(
 
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_delivery", agencyId: agency.id, targetId: domain.id });
 }
 
 // ---------------------------------------------------------------------------
@@ -211,7 +216,7 @@ export async function sendSnippetNudgeDay7(
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_nudge_day7", agencyId: agency.id, targetId: domain.id });
 }
 
 /**
@@ -262,7 +267,7 @@ export async function sendSnippetDriftAlert(
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_drift", agencyId: agency.id, targetId: domain.id });
 }
 
 /**
@@ -315,7 +320,7 @@ ${sampleTitles.slice(0, 3).map((t) => `<li style="margin-bottom:4px">${escHtml(t
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "roadmap_stall", agencyId: agency.id });
 }
 
 /**
@@ -364,7 +369,7 @@ export async function sendSnippetNudgeDay14(
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_nudge_day14", agencyId: agency.id, targetId: domain.id });
 }
 
 /**
@@ -425,5 +430,5 @@ export async function sendAgencyOnboardingEmail(
 </div>
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html);
+  return sendResend(env, to, subject, text, html, undefined, { type: "agency_onboarding" });
 }
