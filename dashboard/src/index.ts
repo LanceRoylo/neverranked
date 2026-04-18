@@ -14,6 +14,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
+import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
@@ -71,6 +72,15 @@ export default {
     }
     if (path === "/auth/invite" && method === "GET") {
       return handleInviteAccept(request, env);
+    }
+
+    // Public install guides -- forwardable, indexable for SEO
+    if (path === "/install" && method === "GET") {
+      return handleInstallIndex(request, env);
+    }
+    const installMatch = /^\/install\/([a-z0-9-]+)$/.exec(path);
+    if (installMatch && method === "GET") {
+      return handleInstallGuide(installMatch[1], request, env);
     }
 
     // Public shared report (no auth)

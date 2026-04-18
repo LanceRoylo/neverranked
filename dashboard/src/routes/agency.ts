@@ -234,6 +234,10 @@ export async function handleAgencyDashboard(
                         data-snippet="${esc(snippetTag(domain.client_slug))}"
                         style="padding:2px 8px;font-size:10px;margin-left:6px"
                         title="Copy the install snippet for ${esc(domain.domain)}">Copy</button>
+                <a href="/install?slug=${esc(domain.client_slug)}" target="_blank" rel="noopener"
+                   class="btn btn-ghost"
+                   style="padding:2px 8px;font-size:10px;margin-left:4px"
+                   title="Open install guides (WordPress, Shopify, etc.) with the snippet pre-filled. Forwardable to your client.">Guide</a>
                 ${!domain.snippet_last_detected_at && domain.snippet_email_sent_at ? `
                   <form method="POST" action="/agency/clients/${domain.id}/resend-snippet" style="display:inline;margin:0;margin-left:6px"
                         onsubmit="return confirm('Resend snippet install email to your contact email?');">
