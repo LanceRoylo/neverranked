@@ -639,3 +639,112 @@ export async function handleAgencyClientsCsv(
     },
   });
 }
+
+/**
+ * GET /agency/clients.json
+ *
+ * JSON mirror of /agency/clients.csv. Same data, structured for
+ * programmatic consumption (agency CRM imports, custom dashboards,
+ * Zapier-style integrations). Mode 1 / Mode 2 distinction preserved
+ * via the access field; last_login is null for Mode 1.
+ */
+export async function handleAgencyClientsJson(
+  user: User,
+  env: Env,
+  url: URL
+): Promise<Response> {
+  let agency: Agency | null = null;
+  if (user.role === "agency_admin") {
+    if (!user.agency_id) return new Response("Forbidden", { status: 403 });
+    agency = await getAgency(env, user.agency_id);
+  } else if (user.role === "admin") {
+    const slug = url.searchParams.get("agency");
+    if (!slug) return new Response(JSON.stringify({ error: "agency query param required" }), {
+      status: 400, headers: { "Content-Type": "application/json" },
+    });
+    agency = await getAgencyBySlug(env, slug);
+  } else {
+    return new Response("Forbidden", { status: 403 });
+  }
+  if (!agency) return new Response(JSON.stringify({ error: "Agency not found" }), {
+    status: 404, headers: { "Content-Type": "application/json" },
+  });
+
+  const clients = await listAgencyClients(env, agency.id);
+
+  const scansByDomain = new Map<number, ScanResult>();
+  if (clients.length > 0) {
+    const ids = clients.map((c) => c.id);
+    const placeholders = ids.map(() => "?").join(",");
+    const rows = await env.DB.prepare(
+      `SELECT s.* FROM scan_results s
+         INNER JOIN (
+           SELECT domain_id, MAX(scanned_at) AS max_ts
+             FROM scan_results WHERE domain_id IN (${placeholders})
+            GROUP BY domain_id
+         ) latest ON latest.domain_id = s.domain_id AND latest.max_ts = s.scanned_at`
+    ).bind(...ids).all<ScanResult>();
+    for (const r of rows.results || []) scansByDomain.set(r.domain_id, r);
+  }
+
+  const driftBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = Array.from(new Set(clients.map((c) => c.client_slug)));
+    const placeholders = slugs.map(() => "?").join(",");
+    const cutoff = Math.floor(Date.now() / 1000) - 30 * 86400;
+    const driftRows = await env.DB.prepare(
+      `SELECT client_slug, MAX(created_at) AS ts
+         FROM admin_alerts
+        WHERE type = 'snippet_drift' AND client_slug IN (${placeholders}) AND created_at > ?
+        GROUP BY client_slug`
+    ).bind(...slugs, cutoff).all<{ client_slug: string; ts: number }>();
+    for (const r of driftRows.results || []) driftBySlug.set(r.client_slug, r.ts);
+  }
+
+  const lastLoginBySlug = new Map<string, number>();
+  if (clients.length > 0) {
+    const slugs = clients.filter((c) => c.client_access === "full").map((c) => c.client_slug);
+    if (slugs.length > 0) {
+      const placeholders = slugs.map(() => "?").join(",");
+      const loginRows = await env.DB.prepare(
+        `SELECT client_slug, MAX(last_login_at) AS ts
+           FROM users
+          WHERE role = 'client' AND client_slug IN (${placeholders}) AND last_login_at IS NOT NULL
+          GROUP BY client_slug`
+      ).bind(...slugs).all<{ client_slug: string; ts: number }>();
+      for (const r of loginRows.results || []) {
+        if (r.ts) lastLoginBySlug.set(r.client_slug, r.ts);
+      }
+    }
+  }
+
+  const isoOrNull = (ts: number | null | undefined): string | null =>
+    ts ? new Date(ts * 1000).toISOString() : null;
+
+  const data = clients.map((d) => {
+    const scan = scansByDomain.get(d.id);
+    return {
+      client_slug: d.client_slug,
+      domain: d.domain,
+      plan: d.plan,
+      access: d.client_access,
+      status: d.active === 1 ? "active" : "paused",
+      snippet_status: snippetStatusText(d, driftBySlug.get(d.client_slug)),
+      aeo_score: scan?.aeo_score ?? null,
+      grade: scan?.grade ?? null,
+      last_login: d.client_access === "full" ? isoOrNull(lastLoginBySlug.get(d.client_slug)) : null,
+      activated_at: isoOrNull(d.activated_at),
+    };
+  });
+
+  return new Response(JSON.stringify({
+    agency: { slug: agency.slug, name: agency.name },
+    generated_at: new Date().toISOString(),
+    clients: data,
+  }, null, 2), {
+    headers: {
+      "Content-Type": "application/json;charset=utf-8",
+      "Cache-Control": "no-store",
+    },
+  });
+}

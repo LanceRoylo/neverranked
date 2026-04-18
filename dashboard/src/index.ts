@@ -37,7 +37,7 @@ import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRo
 import { handleSupport, handleSupportSubmit } from "./routes/support";
 import { handleScanHealth } from "./routes/scan-health";
 import { handleEngagement } from "./routes/engagement";
-import { handleAgencyDashboard, handleAgencyClientsCsv } from "./routes/agency";
+import { handleAgencyDashboard, handleAgencyClientsCsv, handleAgencyClientsJson } from "./routes/agency";
 import { handleAgencySettingsGet, handleAgencySettingsPost, handleAgencyAsset } from "./routes/agency-settings";
 import { handleAgencyBillingGet, handleAgencyBillingActivate, handleAgencyBillingSuccess } from "./routes/agency-billing";
 import {
@@ -285,6 +285,9 @@ export default {
     }
     if (path === "/agency/clients.csv" && method === "GET") {
       return handleAgencyClientsCsv(user, env, url);
+    }
+    if (path === "/agency/clients.json" && method === "GET") {
+      return handleAgencyClientsJson(user, env, url);
     }
     if (path === "/agency/settings" && method === "GET") {
       return handleAgencySettingsGet(user, env, url);

@@ -43,6 +43,7 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     pendingSuggestions,
     unreadAlerts,
     pulse,
+    pendingApps,
   ] = await Promise.all([
     env.DB.prepare(
       "SELECT id, email, name, role, client_slug, plan, onboarded, stripe_subscription_id, onboarding_drip_start, onboarding_drip_day3, onboarding_drip_day7, last_login_at, created_at FROM users ORDER BY created_at DESC"
@@ -60,6 +61,9 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
       "SELECT * FROM admin_alerts WHERE read_at IS NULL ORDER BY created_at DESC LIMIT 50"
     ).all<{ id: number; client_slug: string; type: string; title: string; detail: string | null; roadmap_item_id: number | null; created_at: number }>(),
     getAnalyticsSummary(env),
+    env.DB.prepare(
+      "SELECT COUNT(*) as count FROM agency_applications WHERE status = 'pending'"
+    ).first<{ count: number }>(),
   ]);
 
   const users = allUsers.results;
@@ -398,7 +402,7 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     </div>
 
     <!-- Revenue pulse -->
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:32px">
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:16px;margin-bottom:32px">
       <div class="card" style="text-align:center">
         <div class="label" style="margin-bottom:8px">MRR</div>
         <div style="font-size:28px;font-weight:600;color:var(--gold)">$${mrr.toLocaleString()}</div>
@@ -411,6 +415,11 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
       <div class="card" style="text-align:center">
         <div class="label" style="margin-bottom:8px">New (7d)</div>
         <div style="font-size:28px;font-weight:600">${purchases7d.length}</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="label" style="margin-bottom:8px">Pending apps</div>
+        <div style="font-size:28px;font-weight:600;${(pendingApps?.count || 0) > 0 ? "color:var(--gold)" : "color:var(--text-faint)"}">${pendingApps?.count || 0}</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${(pendingApps?.count || 0) > 0 ? `<a href="/admin/inbox" style="color:var(--gold)">Review &rarr;</a>` : "&nbsp;"}</div>
       </div>
       <div class="card" style="text-align:center">
         <div class="label" style="margin-bottom:8px">Free leads</div>
