@@ -116,6 +116,8 @@ export interface Domain {
   snippet_last_detected_at: number | null;
   snippet_nudge_day7_at: number | null;
   snippet_nudge_day14_at: number | null;
+  snippet_nudge_day21_at: number | null;
+  snippet_pause_check_at: number | null;
   created_at: number;
   updated_at: number;
 }

@@ -17,7 +17,7 @@ import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
 import { pullGscData } from "./gsc";
 import { detectSnippet } from "./snippet-detector";
-import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
+import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, sendSnippetPauseCheckIn, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { autoGenerateRoadmap } from "./auto-provision";
@@ -402,8 +402,24 @@ export async function runSnippetSweep(env: Env): Promise<void> {
     if (isDetected || d.snippet_last_detected_at) continue;
 
     // Tiered escalation. Each tier guards on its own timestamp column
-    // so we never fire the same tier twice.
+    // so we never fire the same tier twice. Order is highest threshold
+    // first because a domain crossing 90+ days could in theory be hitting
+    // every guard for the first time on this scan; we want the most
+    // important message to land. The lower-tier guards prevent re-fire.
     try {
+      // Day 90+: pause check-in. Honest reset.
+      if (daysSinceDelivery >= 90 && !d.snippet_pause_check_at) {
+        const agency = await getAgency(env, d.agency_id!);
+        if (agency) {
+          const sent = await sendSnippetPauseCheckIn(env, { agency, domain: d, daysSinceDelivery });
+          if (sent) {
+            await env.DB.prepare(
+              "UPDATE domains SET snippet_pause_check_at = ? WHERE id = ?"
+            ).bind(now, d.id).run();
+            nudgesSent++;
+          }
+        }
+      }
       if (daysSinceDelivery >= 30) {
         // Day 30+: escalate to admin. Only insert if we haven't
         // already alerted for this domain in the last 30 days.
@@ -416,12 +432,34 @@ export async function runSnippetSweep(env: Env): Promise<void> {
           ).bind(
             d.client_slug,
             `Snippet still not installed on ${d.domain} after ${daysSinceDelivery} days`,
-            `Agency has been nudged twice. Manual intervention likely needed. Domain id ${d.id}, agency id ${d.agency_id}.`,
+            `Agency has been nudged twice + day-21 reframed. Manual intervention likely needed. Domain id ${d.id}, agency id ${d.agency_id}.`,
             now,
           ).run();
           alertsCreated++;
         }
-      } else if (daysSinceDelivery >= 14 && !d.snippet_nudge_day14_at) {
+      }
+      // Day 21: reframe email. Different angle from the install nudges.
+      if (daysSinceDelivery >= 21 && !d.snippet_nudge_day21_at) {
+        const agency = await getAgency(env, d.agency_id!);
+        if (agency) {
+          // Count pending roadmap items so the reframe can name a specific
+          // number ("the 12 schema items in the roadmap that we'd push").
+          const pending = await env.DB.prepare(
+            "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND category = 'schema' AND status != 'done'"
+          ).bind(d.client_slug).first<{ cnt: number }>();
+          const sent = await sendSnippetDay21Reframe(env, {
+            agency, domain: d, daysSinceDelivery,
+            pendingRoadmapCount: pending?.cnt || 0,
+          });
+          if (sent) {
+            await env.DB.prepare(
+              "UPDATE domains SET snippet_nudge_day21_at = ? WHERE id = ?"
+            ).bind(now, d.id).run();
+            nudgesSent++;
+          }
+        }
+      }
+      if (daysSinceDelivery >= 14 && !d.snippet_nudge_day14_at) {
         const agency = await getAgency(env, d.agency_id!);
         if (agency) {
           const sent = await sendSnippetNudgeDay14(env, { agency, domain: d, daysSinceDelivery });
@@ -432,7 +470,8 @@ export async function runSnippetSweep(env: Env): Promise<void> {
             nudgesSent++;
           }
         }
-      } else if (daysSinceDelivery >= 7 && !d.snippet_nudge_day7_at) {
+      }
+      if (daysSinceDelivery >= 7 && !d.snippet_nudge_day7_at) {
         const agency = await getAgency(env, d.agency_id!);
         if (agency) {
           const sent = await sendSnippetNudgeDay7(env, { agency, domain: d, daysSinceDelivery });

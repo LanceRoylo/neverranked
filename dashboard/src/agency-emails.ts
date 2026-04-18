@@ -368,6 +368,151 @@ ${sampleTitles.slice(0, 3).map((t) => `<li style="margin-bottom:4px">${escHtml(t
 }
 
 /**
+ * Day 21 reframe: stop asking for the install, start showing what
+ * the user IS getting (measurement, citation tracking, GSC data)
+ * AND what they'd unlock with the snippet (autonomous schema fixes,
+ * compounding score gains). This is the "honest reset" tier between
+ * the nudges and the admin-escalation. Often the email that
+ * actually converts because it stops feeling like a guilt trip.
+ */
+export async function sendSnippetDay21Reframe(
+  env: Env,
+  opts: { agency: Agency; domain: Domain; daysSinceDelivery: number; pendingRoadmapCount: number },
+): Promise<boolean> {
+  const { agency, domain, daysSinceDelivery, pendingRoadmapCount } = opts;
+  const to = agency.contact_email;
+  if (!to) return false;
+
+  const subject = `${domain.domain}: what NeverRanked is doing for you so far`;
+  const helpfulInstall = installHelpText(env, domain.client_slug);
+
+  const text = [
+    `Hi,`,
+    ``,
+    `Quick check on ${domain.domain}. The snippet hasn't been installed yet (${daysSinceDelivery} days in), so I want to be straight with you about what NeverRanked is actually doing for the account today and what's still on the table.`,
+    ``,
+    `What you ARE getting:`,
+    `  - Weekly AEO scoring and grading`,
+    `  - Citation tracking across ChatGPT, Perplexity, Gemini, and Google AI Overviews`,
+    `  - Google Search Console data blended into the dashboard (if connected)`,
+    `  - Score regression alerts the moment we detect a drop`,
+    `  - Auto-completion of any roadmap items the scanner verifies`,
+    `  - PDF reports and shareable links for stakeholders`,
+    ``,
+    `What's NOT happening (because the snippet isn't installed):`,
+    pendingRoadmapCount > 0
+      ? `  - The ${pendingRoadmapCount} schema items in the roadmap that we'd push to the live site for you. Right now those are sitting as "your dev needs to do this" tasks.`
+      : `  - We can't push schema fixes to the site for you. Whatever schema gaps the scanner finds become tasks for your dev.`,
+    `  - The score is unlikely to climb meaningfully until the install happens or your dev ships the roadmap manually`,
+    ``,
+    `If installing is genuinely blocked (no CMS access, dev backlog, internal politics) -- reply and tell me. Most likely path forward is a 10-minute Loom from me showing the exact panel to paste into. Or here are step-by-step guides for every common platform with the snippet pre-filled:`,
+    ``,
+    helpfulInstall,
+    ``,
+    `Lance`,
+    `NeverRanked`,
+  ].join("\n");
+
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi,</p>
+<p style="margin:0 0 20px">Quick check on <strong>${escHtml(domain.domain)}</strong>. The snippet hasn't been installed yet (${daysSinceDelivery} days in), so I want to be straight with you about what NeverRanked is actually doing for the account today and what's still on the table.</p>
+
+<p style="margin:0 0 8px"><strong>What you ARE getting:</strong></p>
+<ul style="margin:0 0 20px;padding-left:20px;color:#333">
+  <li style="margin-bottom:4px">Weekly AEO scoring and grading</li>
+  <li style="margin-bottom:4px">Citation tracking across ChatGPT, Perplexity, Gemini, and Google AI Overviews</li>
+  <li style="margin-bottom:4px">Google Search Console data blended into the dashboard (if connected)</li>
+  <li style="margin-bottom:4px">Score regression alerts the moment we detect a drop</li>
+  <li style="margin-bottom:4px">Auto-completion of any roadmap items the scanner verifies</li>
+  <li style="margin-bottom:4px">PDF reports and shareable links for stakeholders</li>
+</ul>
+
+<p style="margin:0 0 8px"><strong>What's NOT happening (because the snippet isn't installed):</strong></p>
+<ul style="margin:0 0 20px;padding-left:20px;color:#333">
+  ${pendingRoadmapCount > 0
+    ? `<li style="margin-bottom:4px">The <strong>${pendingRoadmapCount} schema items</strong> in the roadmap that we'd push to the live site for you. Right now those are sitting as "your dev needs to do this" tasks.</li>`
+    : `<li style="margin-bottom:4px">We can't push schema fixes to the site for you. Whatever schema gaps the scanner finds become tasks for your dev.</li>`}
+  <li style="margin-bottom:4px">The score is unlikely to climb meaningfully until the install happens or your dev ships the roadmap manually</li>
+</ul>
+
+<p style="margin:0 0 20px">If installing is genuinely blocked (no CMS access, dev backlog, internal politics) -- reply and tell me. Most likely path forward is a 10-minute Loom from me showing the exact panel to paste into. Or here are step-by-step guides for every common platform with the snippet pre-filled:</p>
+
+${installHelpHtml(env, domain.client_slug)}
+
+<p style="margin:0 0 6px">Lance</p>
+<p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
+</body></html>`;
+
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_day21_reframe", agencyId: agency.id, targetId: domain.id });
+}
+
+/**
+ * Day 90 pause check-in: the honest reset. After 90 days with no
+ * snippet detected, we explicitly offer install / pause / cancel
+ * with one-word replies. Loses some revenue today vs the alternative
+ * (silent quarterly auto-renewal followed by an angry chargeback)
+ * but converts the cancellation conversation from blame to choice.
+ *
+ * Sent only once per domain (snippet_pause_check_at guards). If the
+ * agency installs after this fires, the timer never re-fires; if
+ * they don't reply, ops follow up manually via the existing
+ * snippet_stalled admin_alert.
+ */
+export async function sendSnippetPauseCheckIn(
+  env: Env,
+  opts: { agency: Agency; domain: Domain; daysSinceDelivery: number },
+): Promise<boolean> {
+  const { agency, domain, daysSinceDelivery } = opts;
+  const to = agency.contact_email;
+  if (!to) return false;
+
+  const subject = `${domain.domain}: install, pause, or cancel? (90-day check-in)`;
+
+  const text = [
+    `Hi,`,
+    ``,
+    `${daysSinceDelivery} days in on ${domain.domain} and the snippet still isn't installed. NeverRanked without the snippet is mostly measurement -- which has value, but it's not the headline reason most agencies sign up. I'd rather be straight with you than keep charging on autopilot.`,
+    ``,
+    `Three ways forward. Reply with one word:`,
+    ``,
+    `  INSTALL -- I'll send a Loom showing exactly where the tag goes for the platform the site runs on. We get unblocked together.`,
+    ``,
+    `  PAUSE   -- I pause the subscription. No charges until you tell me to resume. The dashboard stays accessible read-only so historical data isn't lost.`,
+    ``,
+    `  CANCEL  -- I cancel cleanly, prorate any unused days back, and we keep the door open for whenever the timing is better.`,
+    ``,
+    `No wrong answer. The platform compounds when the snippet is live; without it, you're paying for measurement you can mostly get cheaper elsewhere. Which is it?`,
+    ``,
+    `Lance`,
+    `NeverRanked`,
+  ].join("\n");
+
+  const html = `<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi,</p>
+<p style="margin:0 0 20px"><strong>${daysSinceDelivery} days in</strong> on <strong>${escHtml(domain.domain)}</strong> and the snippet still isn't installed. NeverRanked without the snippet is mostly measurement -- which has value, but it's not the headline reason most agencies sign up. I'd rather be straight with you than keep charging on autopilot.</p>
+
+<p style="margin:0 0 14px"><strong>Three ways forward. Reply with one word:</strong></p>
+
+<div style="margin:0 0 16px;padding:14px 18px;background:#f5f9f3;border-left:3px solid #4ade80;border-radius:0 4px 4px 0">
+  <strong style="color:#15803d">INSTALL</strong> &mdash; I'll send a Loom showing exactly where the tag goes for the platform the site runs on. We get unblocked together.
+</div>
+<div style="margin:0 0 16px;padding:14px 18px;background:#fbf8ef;border-left:3px solid #e8c767;border-radius:0 4px 4px 0">
+  <strong style="color:#a16207">PAUSE</strong> &mdash; I pause the subscription. No charges until you tell me to resume. The dashboard stays accessible read-only so historical data isn't lost.
+</div>
+<div style="margin:0 0 20px;padding:14px 18px;background:#fafafa;border-left:3px solid #999;border-radius:0 4px 4px 0">
+  <strong>CANCEL</strong> &mdash; I cancel cleanly, prorate any unused days back, and we keep the door open for whenever the timing is better.
+</div>
+
+<p style="margin:0 0 20px">No wrong answer. The platform compounds when the snippet is live; without it, you're paying for measurement you can mostly get cheaper elsewhere. Which is it?</p>
+
+<p style="margin:0 0 6px">Lance</p>
+<p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
+</body></html>`;
+
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_pause_check_in", agencyId: agency.id, targetId: domain.id });
+}
+
+/**
  * Day 14 nudge: different angle. Acknowledges the hesitation,
  * offers concierge help. Goal is to break the inertia without
  * nagging.
