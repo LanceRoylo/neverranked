@@ -13,6 +13,7 @@
 import type { Env, User, Domain, ScanResult, Agency } from "../types";
 import { layout, html, esc, redirect, shortDate } from "../render";
 import { getAgency, getAgencyBySlug, listAgencyClients, countActiveSlots } from "../agency";
+import { snippetTag } from "../agency-emails";
 
 interface ClientRow {
   domain: Domain;
@@ -164,6 +165,10 @@ export async function handleAgencyDashboard(
               <td>${statusPill(domain.active === 1 ? "active" : "paused")}</td>
               <td style="white-space:nowrap">
                 ${snippetStatusPill(domain)}
+                <button type="button" class="btn btn-ghost copy-snippet-btn"
+                        data-snippet="${esc(snippetTag(domain.client_slug))}"
+                        style="padding:2px 8px;font-size:10px;margin-left:6px"
+                        title="Copy the install snippet for ${esc(domain.domain)}">Copy</button>
                 ${!domain.snippet_last_detected_at && domain.snippet_email_sent_at ? `
                   <form method="POST" action="/agency/clients/${domain.id}/resend-snippet" style="display:inline;margin:0;margin-left:6px"
                         onsubmit="return confirm('Resend snippet install email to your contact email?');">
@@ -368,7 +373,10 @@ export async function handleAgencyDashboard(
     <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div>
         <h1>${esc(agency.name)}</h1>
-        <p class="section-sub">Agency dashboard. All clients you manage in one view.</p>
+        <p class="section-sub">
+          Agency dashboard. All clients you manage in one view.
+          ${agency.contact_email ? `<br><span class="muted" style="font-size:12px">Contact email: <strong>${esc(agency.contact_email)}</strong> &middot; snippet emails and invoices land here.</span>` : ""}
+        </p>
       </div>
       <div style="display:flex;gap:8px">
         <a href="/agency/invites" class="btn btn-ghost">Invites</a>
@@ -391,6 +399,37 @@ export async function handleAgencyDashboard(
       ${clientsTable}
     </div>
     ${activitySection}
+
+    <script>
+      // Copy the install snippet for one client to the clipboard.
+      // Same pattern as the invite-link copy: clipboard API with
+      // textarea fallback for older browsers.
+      document.querySelectorAll('.copy-snippet-btn').forEach(function(btn){
+        btn.addEventListener('click', function(){
+          var snippet = btn.getAttribute('data-snippet');
+          if (!snippet) return;
+          var done = function(){
+            var orig = btn.textContent;
+            btn.textContent = 'Copied!';
+            setTimeout(function(){ btn.textContent = orig; }, 1500);
+          };
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(snippet).then(done).catch(function(){
+              window.prompt('Copy this snippet:', snippet);
+            });
+          } else {
+            var ta = document.createElement('textarea');
+            ta.value = snippet;
+            document.body.appendChild(ta);
+            ta.select();
+            try { document.execCommand('copy'); done(); } catch(e) {
+              window.prompt('Copy this snippet:', snippet);
+            }
+            document.body.removeChild(ta);
+          }
+        });
+      });
+    </script>
   `;
 
   return html(layout(agency.name + " -- Agency", body, user));

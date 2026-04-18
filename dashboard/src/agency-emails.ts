@@ -71,7 +71,7 @@ async function sendResend(
  * client's site. This is the single source of truth for the URL
  * shape -- if we ever change the injector route, update it here.
  */
-function snippetTag(clientSlug: string): string {
+export function snippetTag(clientSlug: string): string {
   return `<script async src="https://app.neverranked.com/inject/${clientSlug}.js"></script>`;
 }
 
@@ -362,6 +362,67 @@ export async function sendSnippetNudgeDay14(
 <p style="margin:0 0 20px">Which works best? Just reply and we'll unblock it.</p>
 <p style="margin:0 0 6px">Lance</p>
 <p style="margin:0;color:#888;font-size:13px">NeverRanked</p>
+</body></html>`;
+
+  return sendResend(env, to, subject, text, html);
+}
+
+/**
+ * sendAgencyOnboardingEmail
+ *
+ * Fires when Lance clicks "Approve" on a pending agency application
+ * in /admin/inbox. The email gives the new agency admin a magic-link
+ * login URL plus a short checklist:
+ *   1. Log in (magic link)
+ *   2. Configure agency settings (name, color, logo)
+ *   3. Activate the subscription via Stripe (unlocks client provisioning)
+ *   4. Add their first client
+ *
+ * Magic link expires in 7 days. If it lapses the agency_admin can
+ * re-request one from /login normally.
+ */
+export async function sendAgencyOnboardingEmail(
+  env: Env,
+  args: { to: string; contactName: string; agencyName: string; magicLinkToken: string },
+): Promise<void> {
+  const { to, contactName, agencyName, magicLinkToken } = args;
+  const origin = (env as any).DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  const loginUrl = `${origin}/auth/verify?token=${magicLinkToken}`;
+  const firstName = (contactName || "").split(" ")[0] || "there";
+
+  const subject = `Welcome to NeverRanked, ${escHtml(agencyName)}`;
+  const text = `Hi ${firstName},\n\nYour application for ${agencyName} was approved. Here's your login link (valid for 7 days):\n\n${loginUrl}\n\nOnce you're in:\n\n1. Check your agency settings (name, brand color, logo) -- /agency/settings\n2. Activate your subscription via Stripe so you can start provisioning clients -- /agency/billing\n3. Add your first client domain from the agency dashboard\n\nWholesale pricing is Signal $800/slot and Amplify $1,800/slot with volume breaks at 10 and 25 slots. You bill your clients whatever you want on top -- most agencies mark up 2-3x and keep the difference.\n\nReply to this email if anything is unclear. Happy to jump on a 20-minute call to walk through the dashboard and answer questions.\n\nLance\nNeverRanked`;
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#f6f5f1;font-family:Georgia,serif;color:#1a1a1a">
+<div style="max-width:560px;margin:0 auto;padding:40px 24px">
+  <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:24px">NeverRanked Partner Onboarding</div>
+  <h1 style="font-size:22px;font-weight:400;margin:0 0 12px">Welcome to NeverRanked, <em>${escHtml(agencyName)}</em>.</h1>
+  <p style="font-size:15px;line-height:1.7;color:#333;margin:16px 0 24px">
+    Hi ${escHtml(firstName)},
+  </p>
+  <p style="font-size:15px;line-height:1.7;color:#333;margin:0 0 24px">
+    Your application was approved. Here's your login link (valid for 7 days):
+  </p>
+  <div style="margin:28px 0">
+    <a href="${loginUrl}" style="display:inline-block;padding:14px 32px;background:#1a1a1a;color:#fff;text-decoration:none;font-size:14px;letter-spacing:1px;border-radius:2px">Log in to your dashboard</a>
+  </div>
+  <h3 style="font-size:14px;font-weight:500;margin:32px 0 12px;color:#1a1a1a">Once you're in</h3>
+  <ol style="font-size:14px;line-height:1.8;color:#333;padding-left:20px;margin:0 0 24px">
+    <li>Check your agency settings (name, brand color, logo)</li>
+    <li>Activate your subscription via Stripe so you can start provisioning clients</li>
+    <li>Add your first client domain from the agency dashboard</li>
+  </ol>
+  <p style="font-size:14px;line-height:1.7;color:#333;margin:0 0 24px">
+    Wholesale pricing is Signal $800 per slot and Amplify $1,800 per slot, with volume breaks at 10 and 25 slots. You bill your clients whatever you want on top. Most agencies mark up 2-3x and keep the difference.
+  </p>
+  <p style="font-size:14px;line-height:1.7;color:#333;margin:0 0 24px">
+    Reply to this email if anything is unclear. Happy to jump on a 20-minute call to walk through the dashboard and answer questions.
+  </p>
+  <hr style="border:none;border-top:1px solid #e0ddd6;margin:32px 0">
+  <p style="margin:0;color:#555;font-size:13px">Lance</p>
+  <p style="margin:4px 0 0;color:#888;font-size:12px">NeverRanked</p>
+</div>
 </body></html>`;
 
   return sendResend(env, to, subject, text, html);

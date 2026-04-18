@@ -303,6 +303,19 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     </div>
   `;
 
+  // Agency picker for "preview as agency" — saves typing
+  // ?agency=slug into the URL bar.
+  const allAgencies = (await env.DB.prepare(
+    "SELECT slug, name, status FROM agencies ORDER BY name"
+  ).all<{ slug: string; name: string; status: string }>()).results;
+  const agencyPickerHtml = allAgencies.length === 0 ? "" : `
+    <select onchange="if(this.value)window.location.href='/agency?agency='+encodeURIComponent(this.value)"
+            style="background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:5px 10px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase">
+      <option value="">Preview agency...</option>
+      ${allAgencies.map(a => `<option value="${esc(a.slug)}">${esc(a.name)} (${esc(a.status)})</option>`).join("")}
+    </select>
+  `;
+
   const automationLogSection = recentAutomationLog.length > 0 ? `
     <div class="card" style="margin-bottom:32px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
@@ -338,7 +351,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         <div class="label" style="margin-bottom:8px">Cockpit</div>
         <h1>Good morning</h1>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:8px">
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;flex-wrap:wrap">
+        ${agencyPickerHtml}
         ${automationBadge}
         ${automationToggleForm}
       </div>
