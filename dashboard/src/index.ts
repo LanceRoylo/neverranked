@@ -12,6 +12,7 @@ import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency } from "./routes/admin";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
+import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
@@ -415,6 +416,12 @@ export default {
     }
     if (path === "/admin/automation/toggle" && method === "POST" && user.role === "admin") {
       return handleAutomationToggle(user, env);
+    }
+    if (path === "/admin/email-test" && method === "GET" && user.role === "admin") {
+      return handleEmailTestGet(user, env, url);
+    }
+    if (path === "/admin/email-test" && method === "POST" && user.role === "admin") {
+      return handleEmailTestPost(request, user, env);
     }
     if (path === "/admin/automation/digest" && method === "POST" && user.role === "admin") {
       return handleAutomationDigestToggle(user, env);
