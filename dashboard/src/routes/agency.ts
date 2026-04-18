@@ -48,6 +48,38 @@ function statusPill(status: string): string {
   return `<span class="${cls}">${esc(status)}</span>`;
 }
 
+/**
+ * Render a snippet install status pill for one client domain.
+ * Sources of truth on the domains row:
+ *   snippet_email_sent_at      -> we sent the install instructions
+ *   snippet_last_checked_at    -> last cron probe
+ *   snippet_last_detected_at   -> first time we saw the snippet live
+ *   snippet_nudge_day7_at      -> day-7 nudge fired
+ *   snippet_nudge_day14_at     -> day-14 nudge fired
+ */
+function snippetStatusPill(d: Domain): string {
+  const now = Math.floor(Date.now() / 1000);
+  const DAY = 86400;
+
+  if (d.snippet_last_detected_at) {
+    return `<span class="status status-complete" title="Snippet detected on the homepage. Daily drift checks are on.">Installed</span>`;
+  }
+  if (!d.snippet_email_sent_at) {
+    return `<span class="status status-pending" title="Install instructions have not been sent yet.">Not delivered</span>`;
+  }
+  const ageDays = Math.floor((now - d.snippet_email_sent_at) / DAY);
+  if (ageDays >= 30) {
+    return `<span class="status" style="background:#3a1f1f;color:#ef9999;border-color:#7a3f3f" title="No install detected after 30+ days. Ops has been alerted.">Stalled (${ageDays}d)</span>`;
+  }
+  if (ageDays >= 14) {
+    return `<span class="status status-in_progress" title="Two nudges sent. Concierge install offered.">Nudged (${ageDays}d)</span>`;
+  }
+  if (ageDays >= 7) {
+    return `<span class="status status-in_progress" title="First nudge sent. Probing daily.">Nudged (${ageDays}d)</span>`;
+  }
+  return `<span class="status status-pending" title="Email delivered. We re-check daily for ~7 days before the first nudge.">Pending (${ageDays}d)</span>`;
+}
+
 export async function handleAgencyDashboard(
   user: User,
   env: Env,
@@ -114,6 +146,7 @@ export async function handleAgencyDashboard(
             <th>Plan</th>
             <th>Access</th>
             <th>Status</th>
+            <th>Snippet</th>
             <th>AEO</th>
             <th>Activated</th>
             <th></th>
@@ -129,6 +162,7 @@ export async function handleAgencyDashboard(
               <td>${esc(planLabel(domain.plan))}</td>
               <td>${esc(accessLabel(domain.client_access))}</td>
               <td>${statusPill(domain.active === 1 ? "active" : "paused")}</td>
+              <td>${snippetStatusPill(domain)}</td>
               <td>${scoreCell(latestScan)}</td>
               <td style="color:var(--text-faint);font-size:12px">
                 ${domain.activated_at ? esc(shortDate(domain.activated_at)) : "--"}
@@ -165,6 +199,51 @@ export async function handleAgencyDashboard(
       <div style="font-family:var(--serif);font-size:32px;margin-top:6px">${value}</div>
     </div>`;
 
+  // First-run checklist. Shown until all required steps are done. The
+  // checks read live from the database; once each is complete the row
+  // disappears, and once everything is done the whole card vanishes
+  // automatically -- no dismiss state to track.
+  const hasInvitedTeammate = !!(await env.DB.prepare(
+    "SELECT 1 FROM agency_invites WHERE agency_id = ? AND role = 'agency_admin' LIMIT 1"
+  ).bind(agency.id).first());
+  const hasInvitedClient = !!(await env.DB.prepare(
+    "SELECT 1 FROM agency_invites WHERE agency_id = ? AND role = 'client' LIMIT 1"
+  ).bind(agency.id).first());
+  const hasBranding = !!(agency.logo_url || (agency.primary_color && agency.primary_color !== "#c9a84c"));
+  const hasBilling = agency.status === "active" && !!agency.stripe_subscription_id;
+  const hasClient = clients.length > 0;
+  const hasTeamOrClient = hasInvitedTeammate || hasInvitedClient;
+
+  const checklistSteps: { label: string; done: boolean; href: string; cta: string }[] = [
+    { label: "Set your branding (logo + color)", done: hasBranding, href: "/agency/settings", cta: "Open settings" },
+    { label: "Activate your subscription", done: hasBilling, href: "/agency/billing", cta: "Activate billing" },
+    { label: "Add your first client", done: hasClient, href: "mailto:hello@neverranked.com?subject=Add+a+client", cta: "Email ops to add" },
+    { label: "Invite a teammate or client", done: hasTeamOrClient, href: "/agency/invites", cta: "Send invites" },
+  ];
+  const stepsDone = checklistSteps.filter((s) => s.done).length;
+  const stepsTotal = checklistSteps.length;
+  const checklistBlock = stepsDone < stepsTotal && user.role === "agency_admin"
+    ? `
+      <div class="card" style="margin-bottom:24px;border-color:var(--gold-dim)">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
+          <h3 style="margin:0">Get set up</h3>
+          <span class="label" style="font-size:11px">${stepsDone} of ${stepsTotal} done</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${checklistSteps.map((s) => `
+            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
+              <span style="font-family:var(--mono);width:18px;color:${s.done ? 'var(--green)' : 'var(--text-faint)'}">
+                ${s.done ? '&check;' : '&middot;'}
+              </span>
+              <span style="flex:1;${s.done ? 'color:var(--text-faint);text-decoration:line-through' : ''}">${esc(s.label)}</span>
+              ${s.done ? '' : `<a href="${esc(s.href)}" class="btn btn-ghost" style="padding:4px 10px;font-size:11px">${esc(s.cta)}</a>`}
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `
+    : "";
+
   const flash = url.searchParams.get("flash");
   const flashError = url.searchParams.get("error");
   const flashBlock = flash
@@ -176,6 +255,7 @@ export async function handleAgencyDashboard(
   const body = `
     ${adminPreview}
     ${flashBlock}
+    ${checklistBlock}
     <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div>
         <h1>${esc(agency.name)}</h1>

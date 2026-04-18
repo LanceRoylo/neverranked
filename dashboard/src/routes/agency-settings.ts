@@ -203,6 +203,29 @@ function sanitizeColor(raw: string): string | null {
   return "#" + m[1].toLowerCase();
 }
 
+/**
+ * WCAG contrast ratio between two hex colors. Used to warn agencies
+ * when their primary_color is too dark to read against the near-black
+ * (#080808) text we use on CTA buttons. Returns the ratio (>= 1.0).
+ */
+function contrastRatio(hexA: string, hexB: string): number {
+  const lum = (hex: string): number => {
+    const m = /^#([0-9a-f]{6})/i.exec(hex);
+    if (!m) return 0;
+    const v = m[1];
+    const r = parseInt(v.slice(0, 2), 16) / 255;
+    const g = parseInt(v.slice(2, 4), 16) / 255;
+    const b = parseInt(v.slice(4, 6), 16) / 255;
+    const lin = (c: number) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+  };
+  const a = lum(hexA);
+  const b = lum(hexB);
+  const lighter = Math.max(a, b);
+  const darker = Math.min(a, b);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 function sanitizeEmail(raw: string): string | null {
   const v = raw.trim();
   if (v.length === 0 || v.length > 200) return null;
@@ -276,6 +299,19 @@ export async function handleAgencySettingsPost(
         SET name = ?, contact_email = ?, primary_color = ?, logo_url = ?, updated_at = ?
       WHERE id = ?`
   ).bind(name, email, color, nextLogoUrl, now, agency.id).run();
+
+  // Save succeeded. If the primary_color has poor contrast against the
+  // CTA button text (#080808), warn so the agency knows their buttons
+  // are unreadable. We don't block the save -- they may have visual
+  // reasons to pick a low-contrast color. WCAG AA wants >= 4.5:1 for
+  // normal text and >= 3:1 for large text / UI components.
+  if (color) {
+    const ratio = contrastRatio(color, "#080808");
+    if (ratio < 3.0) {
+      const msg = `Saved, but heads up: your color (${color}) has only ${ratio.toFixed(1)}:1 contrast against button text. CTAs may be hard to read. Pick a lighter shade for best legibility.`;
+      return redirect("/agency/settings?error=" + encodeURIComponent(msg));
+    }
+  }
 
   return redirect("/agency/settings?saved=1");
 }
