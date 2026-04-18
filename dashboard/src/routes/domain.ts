@@ -88,7 +88,7 @@ async function buildGettingStarted(domain: Domain, user: User, env: Env): Promis
   `).join("");
 
   return `
-    <div style="margin-bottom:48px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px">
+    <div class="no-print" style="margin-bottom:48px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
         <div>
           <div class="label" style="color:var(--gold);margin-bottom:4px">Getting Started</div>
@@ -636,6 +636,139 @@ interface TimelineEvent {
   title: string;
   detail: string;
   type: string;
+}
+
+/**
+ * Build the "what's happening / what's next" panel that sits just above
+ * the activity timeline.
+ *
+ * This exists because the activity timeline only logs STATE CHANGES, so
+ * the dashboard goes visually dead between the Monday weekly scan and
+ * the next Monday. To a paying client that looks like nothing's
+ * happening. This panel sets expectations forward (next scan date) and
+ * gives proof of life (status pill + last scan timestamp), and the
+ * collapsible "how it works" section explains the cadence so new users
+ * understand what they're paying for.
+ *
+ * Three blocks:
+ *   1. Status pill (Active + last scan + next scan + daily-check note)
+ *   2. Cadence card listing what runs and when
+ *   3. <details> "How NeverRanked works" expandable
+ */
+async function buildSchedulePanel(domain: Domain, env: Env): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+
+  // Next Monday at 6am UTC. Same cadence the cron triggers on
+  // (wrangler.jsonc: "0 6 * * *" weekly).
+  const nowDate = new Date(now * 1000);
+  const next = new Date(Date.UTC(nowDate.getUTCFullYear(), nowDate.getUTCMonth(), nowDate.getUTCDate(), 6, 0, 0));
+  // Walk forward day-by-day until we hit Monday (1) and the time hasn't
+  // already passed today.
+  while (next.getUTCDay() !== 1 || next.getTime() <= now * 1000) {
+    next.setUTCDate(next.getUTCDate() + 1);
+  }
+  const nextScanTs = Math.floor(next.getTime() / 1000);
+  const daysUntil = Math.max(1, Math.ceil((nextScanTs - now) / 86400));
+  const nextScanLabel = next.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+
+  // Last successful scan timestamp.
+  const lastScan = await env.DB.prepare(
+    "SELECT scanned_at FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
+  ).bind(domain.id).first<{ scanned_at: number }>();
+  const lastLabel = lastScan ? formatRelativeTime(now - lastScan.scanned_at) : "no scans yet";
+
+  // Daily snippet checks only run for agency-owned domains where the
+  // snippet email has been delivered. For everyone else, the daily
+  // cron runs but doesn't probe THIS domain's site -- so it's honest
+  // to omit the daily-check line for non-snippet clients.
+  const hasDailySnippetCheck = !!(domain.agency_id && domain.snippet_email_sent_at);
+  const lastSnippetCheck = hasDailySnippetCheck && domain.snippet_last_checked_at
+    ? formatRelativeTime(now - domain.snippet_last_checked_at)
+    : null;
+
+  // Cadence rows -- only include rows that actually apply to this domain.
+  const cadenceRows: { label: string; when: string }[] = [
+    { label: "Full AEO scan", when: "Every Monday, 6am UTC" },
+    { label: "Citation tracking across AI engines", when: "Mondays, with the scan" },
+    { label: "Google Search data pull", when: "Mondays (if connected)" },
+    { label: "Score regression alerts", when: "Immediate when detected" },
+    { label: "Roadmap auto-completion check", when: "After every scan" },
+  ];
+  if (hasDailySnippetCheck) {
+    cadenceRows.unshift({ label: "Snippet drift check", when: "Daily, around 6am UTC" });
+  }
+
+  const statusPill = `
+    <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border:1px solid var(--green);border-radius:999px;font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--green)">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green)"></span>
+      Active
+    </div>
+  `;
+
+  const summaryLine = `
+    <div style="display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:14px;font-size:13px;color:var(--text-faint)">
+      <div>Last scan: <strong style="color:var(--text)">${esc(lastLabel)}</strong></div>
+      <div style="color:var(--line)">|</div>
+      <div>Next scan: <strong style="color:var(--text)">${esc(nextScanLabel)}</strong> (in ${daysUntil}d)</div>
+      ${lastSnippetCheck ? `<div style="color:var(--line)">|</div><div>Snippet checked: <strong style="color:var(--text)">${esc(lastSnippetCheck)}</strong></div>` : ""}
+    </div>
+  `;
+
+  const cadenceList = cadenceRows.map(r => `
+    <div style="display:flex;justify-content:space-between;gap:16px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px">
+      <span style="color:var(--text)">${esc(r.label)}</span>
+      <span style="color:var(--text-faint);white-space:nowrap">${esc(r.when)}</span>
+    </div>
+  `).join("");
+
+  return `
+    <div style="margin-bottom:32px">
+      <div class="label" style="margin-bottom:16px">What's happening</div>
+      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px 24px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+          <div>
+            ${statusPill}
+            ${summaryLine}
+          </div>
+        </div>
+
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--line)">
+          <div class="label" style="margin-bottom:10px;font-size:10px">Your monitoring schedule</div>
+          ${cadenceList}
+        </div>
+
+        <details style="margin-top:20px">
+          <summary style="cursor:pointer;font-size:12px;color:var(--gold);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">How NeverRanked works</summary>
+          <div style="margin-top:16px;font-size:13px;color:var(--text-faint);line-height:1.7">
+            <p style="margin:0 0 12px">
+              NeverRanked watches your site for the things AI engines (ChatGPT, Perplexity, Google AI Overviews) need to find and cite you. The work happens in two layers:
+            </p>
+            <p style="margin:0 0 12px">
+              <strong style="color:var(--text)">Weekly deep work.</strong> Every Monday morning we run a full scan: parse your schema, check technical signals, ask AI engines about your tracked keywords, pull Google Search Console data, and update your roadmap based on what changed. This is the moment new findings and new roadmap items appear.
+            </p>
+            ${hasDailySnippetCheck ? `
+            <p style="margin:0 0 12px">
+              <strong style="color:var(--text)">Daily monitoring.</strong> Because your install snippet is in place, we probe your homepage daily to make sure it's still firing. If it disappears (CMS migration, theme update, webmaster cleanup) we email you immediately.
+            </p>` : `
+            <p style="margin:0 0 12px">
+              <strong style="color:var(--text)">Daily monitoring.</strong> We watch for score regressions and surface them as alerts the moment they're detected -- you don't have to wait for the next Monday.
+            </p>`}
+            <p style="margin:0">
+              Between Mondays your dashboard may look quiet. That's normal -- the activity feed only logs <em>changes</em>. The status pill above and the next-scan date are how you know we're still watching.
+            </p>
+          </div>
+        </details>
+      </div>
+    </div>
+  `;
+}
+
+function formatRelativeTime(deltaSec: number): string {
+  if (deltaSec < 60) return "just now";
+  if (deltaSec < 3600) return `${Math.floor(deltaSec / 60)}m ago`;
+  if (deltaSec < 86400) return `${Math.floor(deltaSec / 3600)}h ago`;
+  if (deltaSec < 86400 * 7) return `${Math.floor(deltaSec / 86400)}d ago`;
+  return `${Math.floor(deltaSec / 86400)}d ago`;
 }
 
 async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> {
@@ -1336,9 +1469,24 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
   ` : "";
 
   const printDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+
+  // Resolve agency branding for this specific domain. We brand by the
+  // DOMAIN's agency_id (not the viewer's) so an admin viewing a pilot
+  // client's report still sees the pilot agency's wordmark + color in
+  // the printable header. Only applies when the agency is active.
+  let reportBranding: import("../types").BrandingContext | undefined = undefined;
+  let reportBrandName = "Never Ranked";
+  if (domain.agency_id) {
+    const ag = await env.DB.prepare("SELECT * FROM agencies WHERE id = ?").bind(domain.agency_id).first<any>();
+    if (ag && ag.status === "active") {
+      reportBranding = { source: "agency", agency: ag, showPoweredBy: user.role === "client" };
+      reportBrandName = ag.name;
+    }
+  }
+
   const body = `
     <div class="print-header" style="display:none">
-      <div class="print-logo">Never Ranked</div>
+      <div class="print-logo">${esc(reportBrandName)}</div>
       <div class="print-date">AEO Report -- ${esc(domain.domain)} -- ${printDate}</div>
     </div>
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
@@ -1377,6 +1525,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${reportSection}
     ${trendSection}
     ${latest && !latest.error ? await buildScoreProjection(domain.client_slug, latest.aeo_score, env) : ''}
+    ${await buildSchedulePanel(domain, env)}
     ${await buildActivityTimeline(domain, env)}
     ${await buildProgressTimeline(domain.client_slug, env)}
     ${coverageSection}
@@ -1385,7 +1534,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${historySection}
   `;
 
-  return html(layout(domain.domain, body, user, domain.client_slug));
+  return html(layout(domain.domain, body, user, domain.client_slug, reportBranding));
 }
 
 /** Handle client-initiated rescan (rate-limited to once per 24h) */
