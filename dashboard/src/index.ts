@@ -539,7 +539,7 @@ export default {
     }
     const roadmapMatch = path.match(/^\/roadmap\/([^/]+)$/);
     if (roadmapMatch && method === "GET") {
-      return handleRoadmap(decodeURIComponent(roadmapMatch[1]), user, env);
+      return handleRoadmap(decodeURIComponent(roadmapMatch[1]), user, env, url);
     }
     const roadmapAddMatch = path.match(/^\/roadmap\/([^/]+)\/add$/);
     if (roadmapAddMatch && method === "POST" && user.role === "admin") {

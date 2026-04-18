@@ -154,7 +154,7 @@ export async function checkPhaseCompletion(clientSlug: string, env: Env): Promis
   }
 }
 
-export async function handleRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+export async function handleRoadmap(clientSlug: string, user: User, env: Env, url?: URL): Promise<Response> {
   // Access check: admins see all, agency admins see their agency's clients,
   // clients see only their own slug.
   if (!(await canAccessClient(env, user, clientSlug))) {
@@ -298,9 +298,17 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
     </div>
   `;
 
-  // Admin: add item form (scoped to active phase)
+  // Admin: add item form (scoped to active phase). The auto-generator
+  // (autoGenerateRoadmap, runMissingRoadmapSweep, Regenerate button)
+  // covers the happy path -- new clients get a roadmap without anyone
+  // touching this form. Manual add is reserved for the rare edge cases:
+  // off-site work the scanner can't see (backlinks, press), client
+  // requests for page-specific items, or custom service work an agency
+  // wants tracked. To keep the page clean by default, the form only
+  // renders when ?advanced=1 is in the URL.
+  const advancedMode = url?.searchParams.get("advanced") === "1";
   const activePhase = updatedPhases.find(p => p.status === "active");
-  const addForm = user.role === "admin" ? `
+  const addForm = user.role === "admin" && advancedMode ? `
     <div class="card" style="margin-top:32px">
       <h3 style="margin-bottom:20px">Add roadmap <em>item</em></h3>
       <form method="POST" action="/roadmap/${clientSlug}/add">
@@ -394,6 +402,13 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
     ${phaseSections}
     ${movingTargetCallout}
     ${addForm}
+    ${user.role === "admin" ? `
+      <div style="margin-top:24px;text-align:right">
+        ${advancedMode
+          ? `<a href="/roadmap/${esc(clientSlug)}" style="font-size:11px;color:var(--text-faint);text-decoration:none">Hide advanced</a>`
+          : `<a href="/roadmap/${esc(clientSlug)}?advanced=1" style="font-size:11px;color:var(--text-faint);text-decoration:none" title="Adds a form to manually create custom roadmap items or phases. Rarely needed -- the auto-generator handles the normal path.">Show advanced (manual add)</a>`}
+      </div>
+    ` : ""}
   `;
 
   return html(layout("Roadmap", body, user, clientSlug));
