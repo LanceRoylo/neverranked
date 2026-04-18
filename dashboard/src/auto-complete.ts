@@ -51,10 +51,11 @@ export async function autoCompleteRoadmapItems(
 
   if (completed.length === 0) return 0;
 
-  // Batch update all completed items
+  // Batch update all completed items. completed_by='scan' so the UI
+  // can show "verified by scan" provenance separately from manual marks.
   const stmts = completed.map(item =>
     env.DB.prepare(
-      "UPDATE roadmap_items SET status = 'done', completed_at = ?, updated_at = ? WHERE id = ?"
+      "UPDATE roadmap_items SET status = 'done', completed_at = ?, updated_at = ?, completed_by = 'scan' WHERE id = ?"
     ).bind(now, now, item.id)
   );
 

@@ -176,6 +176,18 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
     "SELECT * FROM roadmap_items WHERE client_slug = ? ORDER BY sort_order, created_at"
   ).bind(clientSlug).all<RoadmapItem>()).results;
 
+  // Map roadmap_item_id -> schema_injection. When present, the item is
+  // "handled by NeverRanked" -- we ship the fix via the snippet rather
+  // than asking the user to do anything. Drives the autonomous-vs-action
+  // visual split below.
+  const injectionByItemId = new Map<number, { status: string }>();
+  const injectionRows = (await env.DB.prepare(
+    "SELECT roadmap_item_id, status FROM schema_injections WHERE client_slug = ? AND roadmap_item_id IS NOT NULL"
+  ).bind(clientSlug).all<{ roadmap_item_id: number; status: string }>()).results;
+  for (const r of injectionRows) {
+    injectionByItemId.set(r.roadmap_item_id, { status: r.status });
+  }
+
   const now = Math.floor(Date.now() / 1000);
 
   // Overall progress across all phases
@@ -250,7 +262,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env): P
             </div>
           </div>
 
-          ${buildItemList(phaseItems, clientSlug, user, now)}
+          ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId)}
         </div>
       `;
     } else {
@@ -429,7 +441,55 @@ function buildPhaseJourney(phases: RoadmapPhase[]): string {
 }
 
 /** Build item list grouped by category */
-function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number): string {
+/**
+ * Determine an item's "verification mode" -- the actor responsible
+ * for getting it done and the way completion is confirmed. Drives
+ * how the item renders in the list:
+ *
+ *   system     -> NeverRanked ships this via the snippet. NO checkbox.
+ *                 Status pill shows "Live" or "Pending publish".
+ *   auto       -> User does the work, scanner confirms on next Monday.
+ *                 Checkbox is optional ("mark complete or wait for scan").
+ *   manual     -> Honor system. User does the work and marks it themselves.
+ */
+type VerificationMode = "system" | "auto" | "manual";
+
+function getVerificationMode(item: RoadmapItem, injection?: { status: string }): VerificationMode {
+  if (injection) return "system";
+  // The scanner can verify schema, content, and technical fixes by re-reading
+  // the page on the next scan. Authority and custom-category work isn't
+  // automatically detectable.
+  if (item.category === "schema" || item.category === "content" || item.category === "technical") {
+    return "auto";
+  }
+  return "manual";
+}
+
+function modeBadge(mode: VerificationMode, injectionStatus?: string): string {
+  if (mode === "system") {
+    const live = injectionStatus === "approved";
+    const color = live ? "var(--green)" : "var(--gold)";
+    const label = live ? "Live -- handled by NeverRanked" : "Pending publish";
+    return `<span style="display:inline-block;padding:2px 8px;border:1px solid ${color};border-radius:999px;font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${color}">${label}</span>`;
+  }
+  if (mode === "auto") {
+    return `<span style="display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)" title="The scanner will verify this on Monday's scan. You can also mark it complete yourself.">Auto-verified</span>`;
+  }
+  return `<span style="display:inline-block;padding:2px 8px;border:1px solid var(--line);border-radius:999px;font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)" title="Honor system. Mark complete when you (or your team) have actually done the work.">Self-reported</span>`;
+}
+
+function completionSourceLabel(item: RoadmapItem): string {
+  if (item.status !== "done") return "";
+  const when = item.completed_at
+    ? new Date(item.completed_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+    : "";
+  if (item.completed_by === "scan") return `Verified by scan${when ? ` on ${when}` : ""}`;
+  if (item.completed_by === "admin") return `Marked by ops${when ? ` on ${when}` : ""}`;
+  if (item.completed_by === "user") return `Marked complete${when ? ` on ${when}` : ""}`;
+  return when ? `Completed ${when}` : "Completed";
+}
+
+function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number, injectionByItemId: Map<number, { status: string }>): string {
   if (items.length === 0) {
     return `
       <div class="empty" style="padding:24px">
@@ -438,78 +498,146 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
     `;
   }
 
-  const grouped = new Map<string, RoadmapItem[]>();
+  // Bucket items into "system handles this" vs "someone needs to do
+  // this" so each renders with the right affordances and we never
+  // confuse a checkbox-as-action with a checkbox-as-status.
+  const systemItems: RoadmapItem[] = [];
+  const actionItems: RoadmapItem[] = [];
   for (const item of items) {
-    const arr = grouped.get(item.category) || [];
-    arr.push(item);
-    grouped.set(item.category, arr);
+    const mode = getVerificationMode(item, injectionByItemId.get(item.id));
+    if (mode === "system") systemItems.push(item);
+    else actionItems.push(item);
   }
 
-  let sections = "";
-  for (const [cat, catItems] of grouped) {
-    const catLabel = CATEGORIES[cat] || cat;
-    sections += `
-      <div style="margin-bottom:20px">
-        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">${esc(catLabel)}</div>
-        <div style="display:flex;flex-direction:column;gap:6px">
-          ${catItems.map(item => {
-            const st = STATUSES[item.status] || STATUSES.pending;
-            const dueStr = item.due_date
-              ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-              : null;
-            const overdue = item.due_date && item.due_date < now && item.status !== "done";
-            const hasNote = item.client_note && item.client_note.trim();
+  const renderSystemItem = (item: RoadmapItem): string => {
+    const injection = injectionByItemId.get(item.id);
+    const isLive = injection?.status === "approved";
+    return `
+      <div style="padding:12px 16px;background:var(--bg-edge);border-left:3px solid ${isLive ? 'var(--green)' : 'var(--gold)'};border-radius:0 4px 4px 0">
+        <div style="display:flex;align-items:center;gap:14px">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="font-size:13px;color:var(--text)">${esc(item.title)}</div>
+              ${modeBadge("system", injection?.status)}
+            </div>
+            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px">${esc(item.description)}</div>` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+  };
 
-            return `
-              <div style="padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
-                <div style="display:flex;align-items:center;gap:14px">
-                  ${item.status !== "done" && (user.role === "client" || user.role === "admin") ? `
-                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;flex-shrink:0">
-                      <button type="submit" name="status" value="done" style="width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s" title="Mark done" onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--gold-wash)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='none'"></button>
-                    </form>
-                  ` : `
-                    <div style="width:20px;height:20px;border-radius:4px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;color:#080808;flex-shrink:0">&#10003;</div>
-                  `}
-                  <div style="flex:1;min-width:0">
-                    <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
-                    ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
-                  </div>
-                  <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
-                    ${dueStr ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-                    ${user.role === "admin" ? `
-                      <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
-                        ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
-                        ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
-                        ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
-                      </form>
-                    ` : `
-                      <span class="status status-${item.status === 'in_progress' ? 'in_progress' : item.status === 'done' ? 'done' : 'pending'}" style="font-size:9px">${st.label}</span>
-                    `}
-                  </div>
-                </div>
-                ${hasNote ? `
-                  <div style="margin-top:8px;margin-left:34px;padding:8px 12px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);font-size:11px;color:var(--text-faint);line-height:1.5;border-radius:0 2px 2px 0">
-                    ${esc(item.client_note!)}
-                  </div>
-                ` : ''}
-                ${item.status !== "done" ? `
-                  <details style="margin-top:6px;margin-left:34px">
-                    <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">${hasNote ? 'Edit note' : 'Add note'}</summary>
-                    <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="margin-top:6px;display:flex;gap:6px">
-                      <input type="text" name="client_note" value="${hasNote ? esc(item.client_note!) : ''}" placeholder="Leave a note (e.g., done on our end, waiting on dev, need help)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px">
-                      <button type="submit" class="btn" style="padding:6px 12px;font-size:9px">Save</button>
-                    </form>
-                  </details>
-                ` : ''}
-              </div>
-            `;
-          }).join("")}
+  const renderActionItem = (item: RoadmapItem): string => {
+    const mode = getVerificationMode(item, injectionByItemId.get(item.id));
+    const st = STATUSES[item.status] || STATUSES.pending;
+    const dueStr = item.due_date
+      ? new Date(item.due_date * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+      : null;
+    const overdue = item.due_date && item.due_date < now && item.status !== "done";
+    const hasNote = item.client_note && item.client_note.trim();
+    const sourceLabel = completionSourceLabel(item);
+    const checkboxTitle = mode === "auto"
+      ? "Mark complete. The next Monday scan will also auto-verify this if you'd rather wait."
+      : "Mark complete. Honor system -- only check when you've actually done the work.";
+
+    return `
+      <div style="padding:12px 16px;background:var(--bg-edge);border-radius:4px;${item.status === 'done' ? 'opacity:.6' : ''}">
+        <div style="display:flex;align-items:center;gap:14px">
+          ${item.status !== "done" && (user.role === "client" || user.role === "admin" || user.role === "agency_admin") ? `
+            <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;flex-shrink:0">
+              <button type="submit" name="status" value="done" style="width:20px;height:20px;border-radius:4px;border:1.5px solid var(--line);background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color .2s,background .2s" title="${checkboxTitle}" onmouseover="this.style.borderColor='var(--gold)';this.style.background='var(--gold-wash)'" onmouseout="this.style.borderColor='var(--line)';this.style.background='none'"></button>
+            </form>
+          ` : item.status === "done" ? `
+            <div style="width:20px;height:20px;border-radius:4px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;color:#080808;flex-shrink:0" title="${esc(sourceLabel)}">&#10003;</div>
+          ` : `<div style="width:20px;height:20px;flex-shrink:0"></div>`}
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
+              ${item.status !== "done" ? modeBadge(mode) : ""}
+            </div>
+            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
+            ${item.status === "done" && sourceLabel ? `<div style="font-size:10px;color:var(--text-faint);margin-top:4px;font-family:var(--label);letter-spacing:.06em">${esc(sourceLabel)}</div>` : ""}
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
+            ${dueStr && item.status !== "done" ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
+            ${user.role === "admin" ? `
+              <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
+                ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
+                ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
+                ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
+              </form>
+            ` : item.status !== "done" ? `
+              <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px">${st.label}</span>
+            ` : ""}
+          </div>
+        </div>
+        ${hasNote ? `
+          <div style="margin-top:8px;margin-left:34px;padding:8px 12px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);font-size:11px;color:var(--text-faint);line-height:1.5;border-radius:0 2px 2px 0">
+            ${esc(item.client_note!)}
+          </div>
+        ` : ''}
+        ${item.status !== "done" ? `
+          <details style="margin-top:6px;margin-left:34px">
+            <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">${hasNote ? 'Edit note' : 'Add note'}</summary>
+            <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="margin-top:6px;display:flex;gap:6px">
+              <input type="text" name="client_note" value="${hasNote ? esc(item.client_note!) : ''}" placeholder="Leave a note (e.g., done on our end, waiting on dev, need help)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px">
+              <button type="submit" class="btn" style="padding:6px 12px;font-size:9px">Save</button>
+            </form>
+          </details>
+        ` : ''}
+      </div>
+    `;
+  };
+
+  // Render system section first if there are any. The visual frame
+  // (different border, tagline) is what makes "no action needed"
+  // unmissable.
+  let html = "";
+  if (systemItems.length > 0) {
+    html += `
+      <div style="margin-bottom:24px;padding:16px 20px;background:rgba(74,222,128,.04);border:1px solid rgba(74,222,128,.18);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:16px;flex-wrap:wrap">
+          <div>
+            <div style="font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:4px">Handled by NeverRanked</div>
+            <div style="font-size:12px;color:var(--text-faint)">These run on autopilot via your installed snippet. No action needed from you.</div>
+          </div>
+          <span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">${systemItems.length} item${systemItems.length === 1 ? "" : "s"}</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${systemItems.map(renderSystemItem).join("")}
         </div>
       </div>
     `;
   }
 
-  return sections;
+  // Group action items by category for the existing layout convention.
+  const grouped = new Map<string, RoadmapItem[]>();
+  for (const item of actionItems) {
+    const arr = grouped.get(item.category) || [];
+    arr.push(item);
+    grouped.set(item.category, arr);
+  }
+
+  if (actionItems.length > 0) {
+    html += `
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">For you (or your agency) to complete</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:14px">Each item shows whether the scanner can verify completion automatically (auto-verified) or if you need to mark it done yourself (self-reported). Clicking the checkbox does not trigger any work.</div>
+    `;
+  }
+
+  for (const [cat, catItems] of grouped) {
+    const catLabel = CATEGORIES[cat] || cat;
+    html += `
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:10px">${esc(catLabel)}</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          ${catItems.map(renderActionItem).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  return html;
 }
 
 /** Add a roadmap item (admin only) */
@@ -560,9 +688,13 @@ export async function handleUpdateRoadmapItem(clientSlug: string, itemId: number
 
   if (status) {
     const completedAt = status === "done" ? now : null;
+    // Stamp who completed it so the UI can show provenance: 'admin' for
+    // ops actions, 'user' for client + agency_admin actions. Cleared
+    // back to NULL when the item is reopened.
+    const completedBy = status === "done" ? (user.role === "admin" ? "admin" : "user") : null;
     await env.DB.prepare(
-      "UPDATE roadmap_items SET status = ?, completed_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
-    ).bind(status, completedAt, now, itemId, clientSlug).run();
+      "UPDATE roadmap_items SET status = ?, completed_at = ?, updated_at = ?, completed_by = ? WHERE id = ? AND client_slug = ?"
+    ).bind(status, completedAt, now, completedBy, itemId, clientSlug).run();
 
     // Check if this completes the phase
     await checkPhaseCompletion(clientSlug, env);

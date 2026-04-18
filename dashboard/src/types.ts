@@ -235,6 +235,7 @@ export interface RoadmapItem {
   sort_order: number;
   due_date: number | null;
   completed_at: number | null;
+  completed_by: "scan" | "user" | "admin" | null;
   client_note: string | null;
   created_at: number;
   updated_at: number;
