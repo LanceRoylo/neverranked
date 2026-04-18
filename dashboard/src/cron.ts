@@ -22,6 +22,7 @@ import { getAgency } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
+import { runWeeklyBackup } from "./backup";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -80,6 +81,15 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   // --- Phase 3: Send digest emails ---
 
   await sendWeeklyDigests(domains, env);
+
+  // --- Phase 4: Snapshot D1 to R2 for offline-restorable backup ---
+  // Runs after digests so any state changes from the run are captured.
+  // Self-contained: errors are logged + alerted, never fail the cron.
+  try {
+    await runWeeklyBackup(env);
+  } catch (e) {
+    console.log(`[cron] runWeeklyBackup threw: ${e}`);
+  }
 }
 
 /** Send digest emails to all opted-in users */
