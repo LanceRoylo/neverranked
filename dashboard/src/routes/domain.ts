@@ -10,6 +10,67 @@ import { autoCompleteRoadmapItems } from "../auto-complete";
 import { canAccessClient } from "../agency";
 
 /** Build a getting-started checklist for new clients */
+/**
+ * Persistent banner shown when the snippet still isn't installed.
+ * Most acute churn risk: user pays, never installs, score doesn't move
+ * because we can't push fixes, they conclude "this isn't working,"
+ * they cancel. The banner reframes the situation honestly: "you're in
+ * measurement mode -- here's what's running, here's what installation
+ * unlocks." Plus a "give this to your dev" mailto so they have a one-
+ * click forward instead of digging through their inbox.
+ *
+ * Hides for: admin role (this is for clients/agencies), competitor
+ * domains, and anything where the snippet is detected.
+ */
+function buildMeasurementModeBanner(domain: Domain, env: Env): string {
+  if (domain.snippet_last_detected_at) return "";
+  if (domain.is_competitor) return "";
+
+  const origin = (env as { DASHBOARD_ORIGIN?: string }).DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  const snippetTagText = `<script async src="${origin}/inject/${domain.client_slug}.js"></script>`;
+  const installUrl = `${origin}/install?slug=${encodeURIComponent(domain.client_slug)}`;
+
+  // Pre-fill an email the user can forward to their dev.
+  const subject = encodeURIComponent(`Install snippet on ${domain.domain} (NeverRanked)`);
+  const body = encodeURIComponent(
+    `Hi,\n\n` +
+    `Quick favor. We use NeverRanked to score how visible ${domain.domain} ` +
+    `is to AI engines (ChatGPT, Perplexity, Google AI Overviews). To turn ` +
+    `on the auto-fix part of the platform, we need to add one line of ` +
+    `JavaScript to the site's <head> tag.\n\n` +
+    `Snippet:\n\n${snippetTagText}\n\n` +
+    `Where it goes: inside the <head> on every page (or in the site-wide ` +
+    `layout template). Most CMS platforms have a "Custom Header HTML" field.\n\n` +
+    `Step-by-step guides for every common platform are here, with the ` +
+    `snippet pre-filled for our account:\n\n${installUrl}\n\n` +
+    `Once it's live, NeverRanked pushes schema fixes to the site automatically ` +
+    `every week. No more dev tickets going forward.\n\n` +
+    `Questions? Reply here. Thanks.`
+  );
+  const mailto = `mailto:?subject=${subject}&body=${body}`;
+
+  return `
+    <div style="margin-bottom:32px;padding:18px 22px;background:rgba(232,199,103,.06);border:1px solid var(--gold-dim);border-radius:4px">
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="flex:1;min-width:240px">
+          <div class="label" style="margin-bottom:6px;color:var(--gold)">Measurement mode</div>
+          <div style="font-size:14px;color:var(--text);line-height:1.6;margin-bottom:6px">
+            We're scoring <strong>${esc(domain.domain)}</strong> and tracking AI citations every week.
+            Install the snippet to also unlock <strong>autonomous schema fixes</strong> -- we push the fixes for you instead of waiting on your dev.
+          </div>
+          <div style="font-size:12px;color:var(--text-faint)">
+            One paste in your site header. Five minutes on most platforms.
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0">
+          <a href="${esc(installUrl)}" target="_blank" rel="noopener" class="btn" style="padding:8px 14px;font-size:11px">Install guide &rarr;</a>
+          <a href="${esc(mailto)}" class="btn btn-ghost" style="padding:8px 14px;font-size:11px" title="Opens your email client with the install instructions pre-filled. Forward to whoever manages your site.">Email to dev</a>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 async function buildGettingStarted(domain: Domain, user: User, env: Env): Promise<string> {
   // Only show for clients, not admins
   if (user.role === "admin") return "";
@@ -1521,6 +1582,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     </div>
 
     ${shareFlash}
+    ${user.role !== "admin" ? buildMeasurementModeBanner(domain, env) : ""}
     ${await buildGettingStarted(domain, user, env)}
     ${reportSection}
     ${trendSection}
