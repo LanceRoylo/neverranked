@@ -35,7 +35,23 @@ export function layout(
   const roadHref = slug ? `/roadmap/${slug}` : '/roadmap';
   const searchHref = slug ? `/search/${slug}` : '/search';
   const summaryHref = slug ? `/summary/${slug}` : '/summary';
-  const navLinks = user
+  // Agency admins get a different nav: their lens is the agency, not a
+  // single client. Slug-bound client nav doesn't apply to them (they
+  // manage many clients). This collapses the topbar to the agency
+  // surfaces and the agency dropdown.
+  const isAgencyAdmin = user?.role === 'agency_admin';
+  const agencyNav = isAgencyAdmin
+    ? `
+      <a href="/agency" class="nav-links-item${title.includes('-- Agency') ? ' active' : ''}">Agency</a>
+      <a href="/agency/invites" class="nav-links-item${title === 'Invites' ? ' active' : ''}">Invites</a>
+      <a href="/agency/settings" class="nav-links-item${title === 'Agency Settings' ? ' active' : ''}">Settings</a>
+      <a href="/agency/billing" class="nav-links-item${title.includes('Agency Billing') ? ' active' : ''}">Billing</a>
+      <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
+    `
+    : '';
+  const navLinks = user && isAgencyAdmin
+    ? agencyNav
+    : user
     ? `
       <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
       <a href="/alerts" class="nav-links-item${title === 'Alerts' ? ' active' : ''}">${badges.alerts ? '<span class="nav-badge">' + (badges.alerts > 9 ? '9+' : badges.alerts) + '</span>' : ''}Alerts</a>
@@ -81,11 +97,26 @@ export function layout(
   const pageTitle = `${esc(title)} — ${esc(brandName)}`;
   const primaryColor = safeColor(agency?.primary_color, "#c9a84c");
   const primaryDim = primaryColor; // single value; opacity is handled via alpha channels elsewhere
+  // Derive an rgba() tint of the brand color for the "wash" variable
+  // used on hover states and soft card backgrounds. Keep alpha=.10 to
+  // match the original --gold-wash intensity.
+  const primaryRgb = (() => {
+    const hex = primaryColor.replace("#", "");
+    const full = hex.length === 3
+      ? hex.split("").map(c => c + c).join("")
+      : hex.padEnd(6, "0").slice(0, 6);
+    const r = parseInt(full.slice(0, 2), 16) || 0;
+    const g = parseInt(full.slice(2, 4), 16) || 0;
+    const b = parseInt(full.slice(4, 6), 16) || 0;
+    return `${r}, ${g}, ${b}`;
+  })();
 
   // CSS custom property override. Only emitted when agency-branded so
   // direct clients keep the original NeverRanked gold untouched.
+  // Override all gold-derived variables so hover/wash/border surfaces
+  // pick up the agency color too, not just the core --gold swatch.
   const brandStyleOverride = isAgencyBranded
-    ? `<style>:root{--gold:${primaryColor};--gold-dim:${primaryDim}}</style>`
+    ? `<style>:root{--gold:${primaryColor};--gold-dim:${primaryDim};--gold-wash:rgba(${primaryRgb},.10)}</style>`
     : "";
 
   // Topbar mark. For agency-branded pages with a logo URL we render an
