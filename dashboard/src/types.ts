@@ -78,6 +78,10 @@ export interface User {
   onboarding_drip_day7: number | null;
   nurture_day14_sent: number | null;
   nurture_day30_sent: number | null;
+  totp_secret: string | null;
+  totp_enabled_at: number | null;
+  totp_recovery_codes: string | null;
+  totp_verified?: number; // joined from session row in getUser()
   created_at: number;
   last_login_at: number | null;
   // Runtime-only fields (not in DB)

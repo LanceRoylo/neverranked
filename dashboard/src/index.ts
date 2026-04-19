@@ -19,6 +19,14 @@ import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow"
 import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
 import { handleChangelog } from "./routes/changelog";
+import {
+  handle2faSettingsGet,
+  handle2faEnrollPost,
+  handle2faVerifyPost,
+  handle2faDisablePost,
+  handle2faChallengeGet,
+  handle2faChallengePost,
+} from "./routes/two-factor";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
@@ -78,6 +86,9 @@ export default {
     if (path === "/auth/invite" && method === "GET") {
       return handleInviteAccept(request, env);
     }
+
+    // 2FA routes (the gate above lets these through even when 2FA is required)
+    // Note: GET 2fa-challenge needs auth; covered after the auth check below.
 
     // Public install guides -- forwardable, indexable for SEO
     if (path === "/install" && method === "GET") {
@@ -217,6 +228,25 @@ export default {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       ctx.waitUntil(logEvent(env, { type: "page_view", detail: { path, authed: false }, ipHash: hashIP(ip) }));
       return redirect("/login");
+    }
+
+    // 2FA gate. Two enforcement modes:
+    //   1. User has 2FA enabled -> require totp_verified=1 on session
+    //      before reaching anything except /auth/2fa-challenge or /logout
+    //   2. User has admin role but hasn't enrolled -> force them to
+    //      /settings/2fa to enroll. Admin-protected routes also check
+    //      this so a partially-enrolled admin can't bypass.
+    const is2faPath = path === "/auth/2fa-challenge"
+      || path === "/settings/2fa"
+      || path.startsWith("/settings/2fa/")
+      || path === "/logout";
+    if (!is2faPath) {
+      if (user.totp_enabled_at && !user.totp_verified) {
+        return redirect("/auth/2fa-challenge?next=" + encodeURIComponent(path));
+      }
+      if (user.role === "admin" && !user.totp_enabled_at) {
+        return redirect("/settings/2fa");
+      }
     }
 
     // Compute branding once per request. Route handlers don't need to
@@ -737,6 +767,27 @@ export default {
     // Billing portal
     if (path === "/billing/portal" && method === "POST") {
       return handleBillingPortal(user, request, env);
+    }
+
+    // 2FA settings + enrollment + challenge -- accessible even when
+    // 2FA is required (the gate above lets these through).
+    if (path === "/settings/2fa" && method === "GET") {
+      return handle2faSettingsGet(user, env, url);
+    }
+    if (path === "/settings/2fa/enroll" && method === "POST") {
+      return handle2faEnrollPost(user, env);
+    }
+    if (path === "/settings/2fa/verify" && method === "POST") {
+      return handle2faVerifyPost(request, user, env);
+    }
+    if (path === "/settings/2fa/disable" && method === "POST") {
+      return handle2faDisablePost(request, user, env);
+    }
+    if (path === "/auth/2fa-challenge" && method === "GET") {
+      return handle2faChallengeGet(user, env, url);
+    }
+    if (path === "/auth/2fa-challenge" && method === "POST") {
+      return handle2faChallengePost(request, user, env);
     }
     if (path === "/settings/cancel" && method === "GET") {
       return handleCancelFlowGet(user, env, url);

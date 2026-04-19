@@ -27,10 +27,12 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
   const now = Math.floor(Date.now() / 1000);
 
   const row = await env.DB.prepare(
-    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.agency_id, u.onboarded, u.email_digest, u.stripe_customer_id, u.stripe_subscription_id, u.plan, u.onboarding_drip_start, u.onboarding_drip_day3, u.onboarding_drip_day7, u.created_at, u.last_login_at
+    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.agency_id, u.onboarded, u.email_digest, u.stripe_customer_id, u.stripe_subscription_id, u.plan, u.onboarding_drip_start, u.onboarding_drip_day3, u.onboarding_drip_day7, u.created_at, u.last_login_at,
+            u.totp_secret, u.totp_enabled_at, u.totp_recovery_codes,
+            s.totp_verified
      FROM sessions s JOIN users u ON s.user_id = u.id
      WHERE s.id = ? AND s.expires_at > ?`
-  ).bind(token, now).first<User>();
+  ).bind(token, now).first<User & { totp_verified?: number }>();
 
   return row || null;
 }
