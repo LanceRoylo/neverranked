@@ -1,5 +1,5 @@
 /**
- * AEO Analyzer — Shared analysis module
+ * AEO Analyzer -- Shared analysis module
  *
  * Used by both the free health check tool (check.neverranked.com)
  * and the client dashboard (app.neverranked.com).
@@ -19,6 +19,16 @@ export { generateRedFlags } from "./flags";
 
 // Technical signals
 export { CRITICAL_SCHEMAS, generateTechnicalSignals } from "./signals";
+
+// Schema hierarchy
+export {
+  normalizeType,
+  getAncestors,
+  isSubtypeOf,
+  hasSchemaType,
+  getUnknownTypes,
+  getKnownTypes,
+} from "./hierarchy";
 
 // Full report builder
 export { buildReport } from "./report";

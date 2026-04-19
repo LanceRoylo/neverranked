@@ -1,5 +1,10 @@
 /**
- * AEO Analyzer — Report builder (composes all modules)
+ * AEO Analyzer -- Report builder (composes all modules)
+ *
+ * Schema coverage now uses the shared hierarchy helper so subtypes count
+ * as matching parent types. Also surfaces any schema types found on the
+ * page that aren't in our hierarchy map -- this is our early warning for
+ * blind spots so we know when to extend hierarchy.ts.
  */
 
 import type { Report } from "./types";
@@ -7,6 +12,7 @@ import { extractMeta } from "./extract";
 import { generateRedFlags } from "./flags";
 import { calculateAeoScore, calculateGrade } from "./score";
 import { generateTechnicalSignals, CRITICAL_SCHEMAS } from "./signals";
+import { hasSchemaType, getUnknownTypes } from "./hierarchy";
 
 export function buildReport(url: string, html: string): Report {
   let domain: string;
@@ -23,10 +29,17 @@ export function buildReport(url: string, html: string): Report {
 
   const schemaCoverage = CRITICAL_SCHEMAS.map((type) => ({
     type,
-    present: signals.schema_types.some((t) => t === type || (type === "Article" && t === "BlogPosting") || (type === "BlogPosting" && t === "Article")),
+    present: hasSchemaType(signals.schema_types, type),
   }));
 
   const technicalSignals = generateTechnicalSignals(signals);
+
+  // Early-warning log: surface any schema types we didn't recognize so we
+  // know when schema.org has grown past our hierarchy map.
+  const unknown = getUnknownTypes(signals.schema_types);
+  if (unknown.length > 0) {
+    console.log(`[analyzer] unknown schema types on ${domain}: ${unknown.join(", ")}`);
+  }
 
   return {
     url,
