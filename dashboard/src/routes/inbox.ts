@@ -252,10 +252,122 @@ export async function handleInboxAgencyAppAction(
   env: Env,
 ): Promise<Response> {
   const now = Math.floor(Date.now() / 1000);
-  const nextStatus = action === "approve" ? "approved" : "rejected";
+
+  // Load the application. If it's missing or already reviewed, quietly
+  // redirect rather than surfacing an error -- a double-click on the
+  // button should be idempotent.
+  const app = await env.DB.prepare(
+    "SELECT * FROM agency_applications WHERE id = ? AND status = 'pending'"
+  ).bind(id).first<{
+    id: number;
+    agency_name: string;
+    contact_name: string;
+    contact_email: string;
+    website: string | null;
+    estimated_clients: number | null;
+    notes: string | null;
+  }>();
+  if (!app) return redirect("/admin/inbox");
+
+  if (action === "deny") {
+    await env.DB.prepare(
+      "UPDATE agency_applications SET status = 'rejected', reviewed_by = ?, reviewed_at = ? WHERE id = ?"
+    ).bind(user.id, now, id).run();
+    return redirect("/admin/inbox");
+  }
+
+  // Approve path. Provision the full stack:
+  //   1. Create agencies row (status='pending' so branding stays off
+  //      until Stripe checkout completes -- agency admin sees the app
+  //      but it doesn't start white-labeling client reports yet).
+  //   2. Create the agency_admin user. Deduplicate on email so a repeat
+  //      application from the same address just attaches the existing user.
+  //   3. Generate a magic-link token so the welcome email can deep-link
+  //      them straight into the dashboard.
+  //   4. Send the onboarding email (magic link + next steps).
+  //
+  // We wrap the DB work carefully so a partial failure (e.g. Resend is
+  // down) still leaves a consistent state: the agency + user rows are
+  // created, the application is marked approved, and Lance can resend
+  // the welcome email manually if Resend hiccuped.
+
+  // Derive a slug from the agency name. Fall back to "agency-<id>" if
+  // the normalized name is empty or already taken.
+  const baseSlug = app.agency_name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  let slug = baseSlug || `agency-${id}`;
+  // Collision check -- append a numeric suffix until we find a free slug.
+  for (let i = 1; i < 20; i++) {
+    const taken = await env.DB.prepare("SELECT id FROM agencies WHERE slug = ?").bind(slug).first();
+    if (!taken) break;
+    slug = `${baseSlug || `agency-${id}`}-${i + 1}`;
+  }
+
+  // 1. Create agency row (status='pending' -- flips to 'active' on
+  //    successful Stripe checkout via the billing/activate handler).
+  const agencyInsert = await env.DB.prepare(
+    `INSERT INTO agencies (slug, name, contact_email, primary_color, status, created_at, updated_at)
+       VALUES (?, ?, ?, '#c9a84c', 'pending', ?, ?)`
+  ).bind(slug, app.agency_name, app.contact_email, now, now).run();
+  const agencyId = agencyInsert.meta.last_row_id as number;
+
+  // 2. Create or attach the agency_admin user.
+  let userId: number;
+  const existingUser = await env.DB.prepare(
+    "SELECT id FROM users WHERE email = ?"
+  ).bind(app.contact_email).first<{ id: number }>();
+  if (existingUser) {
+    // Attach the existing user to this agency and promote their role.
+    await env.DB.prepare(
+      "UPDATE users SET role = 'agency_admin', agency_id = ?, name = COALESCE(name, ?) WHERE id = ?"
+    ).bind(agencyId, app.contact_name, existingUser.id).run();
+    userId = existingUser.id;
+  } else {
+    const userInsert = await env.DB.prepare(
+      `INSERT INTO users (email, name, role, agency_id, created_at)
+         VALUES (?, ?, 'agency_admin', ?, ?)`
+    ).bind(app.contact_email, app.contact_name, agencyId, now).run();
+    userId = userInsert.meta.last_row_id as number;
+  }
+
+  // 3. Update the application row with agency_id and reviewer info.
   await env.DB.prepare(
-    "UPDATE agency_applications SET status = ?, reviewed_by = ?, reviewed_at = ? WHERE id = ? AND status = 'pending'"
-  ).bind(nextStatus, user.id, now, id).run().catch(() => {});
+    "UPDATE agency_applications SET status = 'approved', reviewed_by = ?, reviewed_at = ?, agency_id = ? WHERE id = ?"
+  ).bind(user.id, now, agencyId, id).run();
+
+  // 4. Generate magic-link token + send onboarding email. We import
+  //    lazily because the mail module pulls in config that isn't needed
+  //    on the hot path for most routes.
+  try {
+    const { sendAgencyOnboardingEmail } = await import("../agency-emails");
+    const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    const expires = now + 86400 * 7; // 7-day link for first login
+    await env.DB.prepare(
+      "INSERT INTO magic_links (email, token, expires_at, used, created_at) VALUES (?, ?, ?, 0, ?)"
+    ).bind(app.contact_email, token, expires, now).run();
+
+    await sendAgencyOnboardingEmail(env, {
+      to: app.contact_email,
+      contactName: app.contact_name,
+      agencyName: app.agency_name,
+      magicLinkToken: token,
+    });
+  } catch (e) {
+    // Mail failure is not fatal -- the agency row exists, Lance can
+    // resend manually. Log via admin_alerts so it surfaces in the inbox.
+    await env.DB.prepare(
+      "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES ('_system', 'email_failure', ?, ?, ?)"
+    ).bind(
+      `Onboarding email failed for ${app.agency_name}`,
+      `Agency ${agencyId} (${app.contact_email}) was provisioned but the welcome email did not send: ${String(e).slice(0, 200)}`,
+      now,
+    ).run();
+  }
+
   return redirect("/admin/inbox");
 }
 

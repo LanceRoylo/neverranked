@@ -136,7 +136,7 @@ export async function handleOnboarding(user: User, env: Env): Promise<Response> 
   const body = `
     <div style="max-width:600px;margin:0 auto">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div class="label">Welcome to NeverRanked</div>
+        <div class="label">Welcome to ${esc(user._branding?.source === 'agency' && user._branding.agency ? user._branding.agency.name : 'NeverRanked')}</div>
         <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint)">${stepLabel}</div>
       </div>
       <h1 style="margin-bottom:12px">Let's set up your <em>dashboard</em></h1>

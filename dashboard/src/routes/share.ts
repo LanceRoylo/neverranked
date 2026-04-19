@@ -45,6 +45,24 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
     return new Response(expiredPage(), { status: 404, headers: { "Content-Type": "text/html;charset=utf-8" } });
   }
 
+  // Resolve agency branding for the shared-report page. We white-label
+  // the wordmark + primary color when the domain belongs to an active
+  // agency, and hide the generic "Get started" marketing CTA (which
+  // would drive the agency's prospect to our direct-signup funnel and
+  // undercut the agency relationship). A small "Powered by" disclosure
+  // stays in the footer either way.
+  let shareBrandName = "Never Ranked";
+  let shareAccent = "#c9a84c";
+  let shareIsAgencyBranded = false;
+  if (domain.agency_id) {
+    const ag = await env.DB.prepare("SELECT * FROM agencies WHERE id = ?").bind(domain.agency_id).first<any>();
+    if (ag && ag.status === "active") {
+      shareBrandName = ag.name;
+      shareAccent = ag.primary_color || "#c9a84c";
+      shareIsAgencyBranded = true;
+    }
+  }
+
   // Get latest + previous scan
   const recentScans = (await env.DB.prepare(
     "SELECT * FROM scan_results WHERE domain_id = ? ORDER BY scanned_at DESC LIMIT 2"
@@ -158,7 +176,8 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta name="theme-color" content="#121212">
-    <title>AEO Report: ${esc(domain.domain)} — Never Ranked</title>
+    <title>AEO Report: ${esc(domain.domain)} — ${esc(shareBrandName)}</title>
+    ${shareIsAgencyBranded ? `<style>:root{--gold:${shareAccent};--gold-dim:${shareAccent}}</style>` : ''}
     <meta name="robots" content="noindex, nofollow">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -207,7 +226,7 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
     <!-- Header -->
     <div style="border-bottom:1px solid var(--line);padding:16px var(--gutter)">
       <div style="max-width:var(--max);margin:0 auto;display:flex;align-items:center;justify-content:space-between">
-        <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--gold)">Never Ranked</div>
+        <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--gold)">${esc(shareBrandName)}</div>
         <div style="display:flex;align-items:center;gap:16px">
           <span style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--text-faint)">AEO Report</span>
           <button onclick="window.print()" class="no-print" style="padding:6px 14px;background:none;border:1px solid var(--line);color:var(--text-faint);font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">Print report</button>
@@ -467,9 +486,14 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
         ${roadmapTotal > 0 ? `
         <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text);margin-bottom:12px">Questions about your report?</div>
         <p style="color:var(--text-faint);font-size:14px;max-width:480px;margin:0 auto 24px;line-height:1.7">
-          Your NeverRanked team is actively working on the action items above. Log in to your dashboard for real-time updates, competitive benchmarking, and full scan history.
+          Your ${esc(shareIsAgencyBranded ? shareBrandName : 'NeverRanked')} team is actively working on the action items above. Log in to your dashboard for real-time updates, competitive benchmarking, and full scan history.
         </p>
         <a href="https://app.neverranked.com/login" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);font-size:12px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;text-decoration:none;border-radius:2px">Go to dashboard</a>
+        ` : shareIsAgencyBranded ? `
+        <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text);margin-bottom:12px">Want to improve this score?</div>
+        <p style="color:var(--text-faint);font-size:14px;max-width:480px;margin:0 auto 24px;line-height:1.7">
+          Reach out to ${esc(shareBrandName)} to put together a plan. They monitor AI search visibility, track scores over time, and build a roadmap to get you cited where it matters.
+        </p>
         ` : `
         <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--text);margin-bottom:12px">Ready to improve your AEO score?</div>
         <p style="color:var(--text-faint);font-size:14px;max-width:480px;margin:0 auto 24px;line-height:1.7">

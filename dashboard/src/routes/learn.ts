@@ -226,7 +226,7 @@ const ARTICLES: Article[] = [
     summary: "AI citations measure how often AI engines mention or reference your business when answering questions in your industry.",
     body: `
       <p>When someone asks ChatGPT, Perplexity, or Google's AI Overview a question related to your business, the AI generates an answer by synthesizing information from its training data and live web content. If it mentions your business by name, links to your site, or references your content, that is a citation.</p>
-      <p>NeverRanked tracks citations by running your industry keywords through multiple AI engines and recording which businesses get mentioned. This gives you:</p>
+      <p>The platform tracks citations by running your industry keywords through multiple AI engines and recording which businesses get mentioned. This gives you:</p>
       <ul>
         <li><strong>Citation share</strong> -- What percentage of relevant queries result in your business being mentioned</li>
         <li><strong>Competitive citation comparison</strong> -- How your citation rate compares to competitors</li>
@@ -311,7 +311,7 @@ const ARTICLES: Article[] = [
       <h4>Categories</h4>
       <p>Each task belongs to a category: schema, content, technical, or authority. This helps you route work to the right team members or service providers.</p>
       <h4>Status</h4>
-      <p>Tasks move through pending, in progress, and done. You can mark tasks as done directly from the dashboard. Your team at NeverRanked may also update task status as they implement changes.</p>
+      <p>Tasks move through pending, in progress, and done. You can mark tasks as done directly from the dashboard. Your account team may also update task status as they implement changes.</p>
       <h4>Notes</h4>
       <p>You can leave notes on any task. Use this to flag questions, provide context, or share progress updates with your team.</p>
     `,

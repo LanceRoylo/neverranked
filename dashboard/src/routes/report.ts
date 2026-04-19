@@ -532,9 +532,26 @@ export async function handleSendReport(clientSlug: string, monthSlug: string, us
   const scoreText = latestScan ? `Your AEO score is ${latestScan.aeo_score}/100 (Grade ${latestScan.grade}).` : "";
   const roadmapText = completedCount && completedCount.cnt > 0 ? `${completedCount.cnt} roadmap item${completedCount.cnt !== 1 ? "s were" : " was"} completed this month.` : "";
 
+  // Resolve agency branding so agency-owned clients receive a
+  // white-labeled email rather than a NeverRanked-branded one. We look
+  // up the FULL domain row (not just the domain string) so we can
+  // read agency_id, primary_color, etc.
+  const domainRow = await env.DB.prepare(
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<any>();
+  let brandName = "NeverRanked";
+  let accentColor = "#1a1a1a";
+  if (domainRow?.agency_id) {
+    const ag = await env.DB.prepare("SELECT * FROM agencies WHERE id = ?").bind(domainRow.agency_id).first<any>();
+    if (ag && ag.status === "active") {
+      brandName = ag.name;
+      accentColor = ag.primary_color || "#1a1a1a";
+    }
+  }
+
   const emailHtml = `
     <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;padding:40px 20px;color:#1a1a1a">
-      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:24px">NeverRanked Monthly Report</div>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:24px">${esc(brandName)} Monthly Report</div>
       <h1 style="font-size:24px;font-weight:400;margin-bottom:8px">${bounds.label}</h1>
       <p style="color:#666;font-size:14px;margin-bottom:32px">${domain ? domain.domain : clientSlug}</p>
       <p style="font-size:15px;line-height:1.7;color:#333">
@@ -542,17 +559,21 @@ export async function handleSendReport(clientSlug: string, monthSlug: string, us
         ${scoreText} ${roadmapText}
       </p>
       <div style="margin:32px 0">
-        <a href="${reportUrl}" style="display:inline-block;padding:14px 32px;background:#1a1a1a;color:#fff;text-decoration:none;font-size:14px;letter-spacing:1px;border-radius:2px">View Full Report</a>
+        <a href="${reportUrl}" style="display:inline-block;padding:14px 32px;background:${accentColor};color:#fff;text-decoration:none;font-size:14px;letter-spacing:1px;border-radius:2px">View Full Report</a>
       </div>
       <p style="font-size:13px;color:#888;line-height:1.6">
         Log in to your dashboard to see the complete breakdown including score changes, schema updates, citation tracking, and your roadmap progress.
       </p>
       <hr style="border:none;border-top:1px solid #eee;margin:32px 0">
-      <p style="font-size:11px;color:#aaa">NeverRanked -- AI Engine Optimization</p>
+      <p style="font-size:11px;color:#aaa">${esc(brandName)} -- AI Engine Optimization</p>
+      ${brandName !== "NeverRanked" ? `<p style="font-size:10px;color:#ccc;margin-top:8px">Powered by <a href="https://neverranked.com" style="color:#bbb;text-decoration:none">NeverRanked</a></p>` : ""}
     </div>
   `;
 
-  // Send to all client users
+  // Send to all client users. The From address stays on reports@neverranked.com
+  // because DKIM/SPF is set up there; the visible brand name swaps to the
+  // agency's so the client sees the agency's brand first.
+  const fromLine = `${brandName} <reports@neverranked.com>`;
   for (const client of clients) {
     try {
       await fetch("https://api.resend.com/emails", {
@@ -562,7 +583,7 @@ export async function handleSendReport(clientSlug: string, monthSlug: string, us
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          from: "NeverRanked <reports@neverranked.com>",
+          from: fromLine,
           to: [client.email],
           subject: `Your ${bounds.label} AEO Report -- ${domain?.domain || clientSlug}`,
           html: emailHtml,
