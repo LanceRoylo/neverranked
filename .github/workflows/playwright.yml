@@ -1,0 +1,63 @@
+name: Playwright
+
+# Runs the E2E test suite against the live app.neverranked.com on:
+#   - every push to main (post-deploy regression catch)
+#   - every PR (catches changes before they merge)
+#   - manual dispatch (run on demand)
+#
+# Tests are read-only: they navigate and assert visible content. None
+# mutate state. Safe to run against production. If we ever add tests
+# that POST forms or create real records, gate them with a check on
+# branch / env so they only fire against a staging deploy.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Cancel any in-flight run when a new commit lands so we don't queue
+# stale runs on rapid pushes.
+concurrency:
+  group: playwright-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    name: E2E (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        # --with-deps installs the Linux system libs Chromium needs.
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload trace bundles on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces-${{ github.run_id }}
+          path: test-results/
+          retention-days: 14
