@@ -321,6 +321,158 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 export { REGRESSION_THRESHOLD };
 
 // ---------------------------------------------------------------------------
+// Annual recap (year in review)
+// ---------------------------------------------------------------------------
+
+export interface AnnualRecapData {
+  domain: string;
+  clientSlug: string;
+  yearLabel: string;             // e.g., "2025"
+  scoreNow: number | null;
+  scoreYearAgo: number | null;
+  scoreDelta: number | null;
+  citationShareNow: number | null;
+  citationShareYearAgo: number | null;
+  roadmapCompleted: number;
+  schemaFixesShipped: number;
+  bestMonth: string | null;       // e.g., "August" - month with biggest score gain
+  bestMonthGain: number | null;
+  totalScans: number;
+}
+
+export async function sendAnnualRecapEmail(
+  to: string,
+  userName: string | null,
+  data: AnnualRecapData,
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Annual recap for ${to}: ${data.domain} ${data.yearLabel}`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = data.scoreDelta && data.scoreDelta > 0
+    ? `${data.domain}: ${data.yearLabel} year in review (+${data.scoreDelta} pts)`
+    : `${data.domain}: ${data.yearLabel} year in review`;
+
+  const headerHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
+
+  const scoreLine = data.scoreNow !== null && data.scoreYearAgo !== null
+    ? `${data.scoreNow}/100 (${data.scoreDelta && data.scoreDelta > 0 ? "+" : ""}${data.scoreDelta} pts on the year, started at ${data.scoreYearAgo})`
+    : data.scoreNow !== null ? `${data.scoreNow}/100 (no full-year baseline yet)` : "no scan recorded";
+
+  const citationLine = data.citationShareNow !== null && data.citationShareYearAgo !== null
+    ? `${(data.citationShareNow * 100).toFixed(0)}% share now, was ${(data.citationShareYearAgo * 100).toFixed(0)}% a year ago`
+    : data.citationShareNow !== null ? `${(data.citationShareNow * 100).toFixed(0)}% share` : "not yet tracked";
+
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Here's the ${data.yearLabel} year-in-review for ${data.domain}.`,
+    ``,
+    `AEO score: ${scoreLine}`,
+    `Citation share: ${citationLine}`,
+    `Roadmap items completed: ${data.roadmapCompleted}`,
+    `Schema fixes pushed live: ${data.schemaFixesShipped}`,
+    `Total weekly scans: ${data.totalScans}`,
+    data.bestMonth ? `Best month: ${data.bestMonth} (+${data.bestMonthGain} pts)` : ``,
+    ``,
+    `Compounding work, made visible. Onward to the next year.`,
+    ``,
+    `Full historical chart:`,
+    `https://app.neverranked.com/domain/${data.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <reports@neverranked.com>`,
+        to: [to], subject, text,
+        html: `
+<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212"><tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>${headerHtml}<td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${brand.color}">${escEmail(data.yearLabel)} in review</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:36px 0 24px">
+    <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:14px">Hey ${escEmail(greeting)},</div>
+    <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;line-height:1.4">
+      <strong style="color:${brand.color}">${escEmail(data.domain)}</strong> in <strong>${escEmail(data.yearLabel)}</strong>.
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 0 16px">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:0 8px">
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">AEO Score</div>
+        <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef">${escEmail(scoreLine)}</div>
+      </td></tr>
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">Citation share</div>
+        <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef">${escEmail(citationLine)}</div>
+      </td></tr>
+      <tr><td style="padding:18px 22px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
+        <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:6px">Work shipped</div>
+        <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">
+          <strong style="color:#fbf8ef">${data.roadmapCompleted}</strong> roadmap items completed<br>
+          <strong style="color:#fbf8ef">${data.schemaFixesShipped}</strong> schema fixes pushed live by ${escEmail(brand.name)}<br>
+          <strong style="color:#fbf8ef">${data.totalScans}</strong> weekly scans${data.bestMonth ? `<br>Best month: <strong style="color:#fbf8ef">${escEmail(data.bestMonth)}</strong> (+${data.bestMonthGain} pts)` : ""}
+        </div>
+      </td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:8px 0 24px">
+    <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.7;font-style:italic">
+      Compounding work, made visible. Onward to the next year.
+    </div>
+  </td></tr>
+
+  <tr><td align="center" style="padding:0 0 32px">
+    <a href="https://app.neverranked.com/domain/${escEmail(data.clientSlug)}" style="display:inline-block;padding:14px 32px;background:${brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Full historical chart</a>
+  </td></tr>
+
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555;line-height:1.6">${footerLine}<br>Sent once a year, on January 1st.</div>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "annual_recap", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "annual_recap", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "annual_recap", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Dormancy check-in (engagement-decline churn defense)
 // ---------------------------------------------------------------------------
 

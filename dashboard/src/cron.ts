@@ -264,6 +264,8 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Monthly recap: only fires on day 1 of the month, self-guards
   // against re-fire via email_delivery_log.
   await maybeSendMonthlyRecaps(env);
+  // Annual recap: only fires in early January, summarizes prior year.
+  await maybeSendAnnualRecaps(env);
   // Expiring card check: warns customers 30 days before their card on
   // file expires. Self-guards via email_delivery_log so it only nags
   // each customer once per (card, month).
@@ -275,6 +277,153 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+}
+
+// ---------------------------------------------------------------------------
+// Annual recap (calendar year in review)
+// ---------------------------------------------------------------------------
+//
+// Fires in the first three days of January, summarizing the previous
+// calendar year. Same email_delivery_log dedupe pattern as the monthly
+// recap so a Jan 1 + Jan 2 double-firing won't duplicate.
+//
+// Why January 1st: clean calendar boundary that customers ALSO experience
+// elsewhere (year in reviews from Spotify, banks, etc.) so the format is
+// familiar. Reinforces that this is annual reflection, not just another
+// monthly digest.
+
+export async function maybeSendAnnualRecaps(env: Env): Promise<void> {
+  const today = new Date();
+  if (today.getUTCMonth() !== 0) return;            // January only
+  if (today.getUTCDate() > 3) return;               // first 3 days only
+
+  const now = Math.floor(Date.now() / 1000);
+  const prevYear = today.getUTCFullYear() - 1;
+  const yearLabel = String(prevYear);
+  const yearStartTs = Math.floor(Date.UTC(prevYear, 0, 1) / 1000);
+  const yearEndTs = Math.floor(Date.UTC(prevYear + 1, 0, 1) / 1000);
+  const yearAgoCutoff = yearStartTs;
+
+  const domains = (await env.DB.prepare(
+    `SELECT * FROM domains WHERE active = 1 AND is_competitor = 0`
+  ).all<Domain>()).results;
+  if (domains.length === 0) return;
+
+  const { resolveAgencyForEmail } = await import("./agency");
+  const { sendAnnualRecapEmail } = await import("./email");
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const d of domains) {
+    try {
+      // Score: latest scan AND ~1 year ago.
+      const latest = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(d.id).first<{ aeo_score: number }>();
+      const yearAgo = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL AND scanned_at < ? ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(d.id, yearAgoCutoff).first<{ aeo_score: number }>();
+
+      // Citation share: latest snapshot AND ~1 year ago.
+      const csLatest = await env.DB.prepare(
+        "SELECT citation_share FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1"
+      ).bind(d.client_slug).first<{ citation_share: number }>();
+      const csYearAgo = await env.DB.prepare(
+        "SELECT citation_share FROM citation_snapshots WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1"
+      ).bind(d.client_slug, yearAgoCutoff).first<{ citation_share: number }>();
+
+      // Roadmap items completed in the previous year.
+      const rmDone = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at >= ? AND completed_at < ?"
+      ).bind(d.client_slug, yearStartTs, yearEndTs).first<{ cnt: number }>();
+
+      // Schema fixes shipped in the previous year.
+      const fixes = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM schema_injections WHERE client_slug = ? AND status = 'approved' AND updated_at >= ? AND updated_at < ?"
+      ).bind(d.client_slug, yearStartTs, yearEndTs).first<{ cnt: number }>();
+
+      // Total scans in the year.
+      const scanCount = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM scan_results WHERE domain_id = ? AND error IS NULL AND scanned_at >= ? AND scanned_at < ?"
+      ).bind(d.id, yearStartTs, yearEndTs).first<{ cnt: number }>();
+
+      // Best month: month with biggest score gain.
+      const monthlyScans = (await env.DB.prepare(
+        `SELECT scanned_at, aeo_score FROM scan_results
+           WHERE domain_id = ? AND error IS NULL AND scanned_at >= ? AND scanned_at < ?
+           ORDER BY scanned_at`
+      ).bind(d.id, yearStartTs, yearEndTs).all<{ scanned_at: number; aeo_score: number }>()).results;
+      let bestMonth: string | null = null;
+      let bestMonthGain: number | null = null;
+      if (monthlyScans.length > 1) {
+        const byMonth = new Map<number, { first: number; last: number }>();
+        for (const s of monthlyScans) {
+          const m = new Date(s.scanned_at * 1000).getUTCMonth();
+          const cur = byMonth.get(m);
+          if (!cur) byMonth.set(m, { first: s.aeo_score, last: s.aeo_score });
+          else cur.last = s.aeo_score;
+        }
+        let best = -Infinity;
+        let bestM = -1;
+        for (const [m, { first, last }] of byMonth) {
+          const gain = last - first;
+          if (gain > best) { best = gain; bestM = m; }
+        }
+        if (bestM >= 0 && best > 0) {
+          bestMonth = new Date(Date.UTC(prevYear, bestM, 1)).toLocaleDateString("en-US", { month: "long" });
+          bestMonthGain = best;
+        }
+      }
+
+      // Skip clients with NO real signal (didn't have any scans in
+      // the previous year). No point sending a "0/0" recap.
+      if ((scanCount?.cnt || 0) === 0) { skipped++; continue; }
+
+      const recipients = (await env.DB.prepare(
+        `SELECT email, name FROM users
+          WHERE email_digest = 1
+            AND (role = 'admin' OR client_slug = ?)`
+      ).bind(d.client_slug).all<{ email: string; name: string | null }>()).results;
+      const agency = await resolveAgencyForEmail(env, { domainId: d.id });
+      if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+        recipients.push({ email: agency.contact_email, name: null });
+      }
+      if (recipients.length === 0) { skipped++; continue; }
+
+      const data = {
+        domain: d.domain,
+        clientSlug: d.client_slug,
+        yearLabel,
+        scoreNow: latest?.aeo_score ?? null,
+        scoreYearAgo: yearAgo?.aeo_score ?? null,
+        scoreDelta: latest && yearAgo ? latest.aeo_score - yearAgo.aeo_score : null,
+        citationShareNow: csLatest?.citation_share ?? null,
+        citationShareYearAgo: csYearAgo?.citation_share ?? null,
+        roadmapCompleted: rmDone?.cnt || 0,
+        schemaFixesShipped: fixes?.cnt || 0,
+        bestMonth,
+        bestMonthGain,
+        totalScans: scanCount?.cnt || 0,
+      };
+
+      for (const r of recipients) {
+        const recent = await env.DB.prepare(
+          `SELECT id FROM email_delivery_log
+            WHERE email = ? AND type = 'annual_recap' AND created_at > ?
+            LIMIT 1`
+        ).bind(r.email, now - 60 * 86400).first<{ id: number }>();
+        if (recent) { skipped++; continue; }
+        const ok = await sendAnnualRecapEmail(r.email, r.name, data, env, agency);
+        if (ok) sent++;
+        await new Promise((res) => setTimeout(res, 200));
+      }
+    } catch (e) {
+      console.log(`[annual-recap] failed for ${d.client_slug}: ${e}`);
+    }
+  }
+
+  console.log(`[annual-recap] ${sent} sent, ${skipped} skipped (no signal or already sent)`);
 }
 
 // ---------------------------------------------------------------------------
