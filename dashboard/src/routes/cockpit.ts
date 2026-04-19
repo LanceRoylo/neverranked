@@ -359,6 +359,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         ${agencyPickerHtml}
         <a href="/admin/email-test" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Email test</a>
         <a href="/admin/email-log" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Email log</a>
+        <a href="/admin/nps" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">NPS</a>
+        <a href="/admin/exit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Exit signal</a>
         ${automationBadge}
         ${automationToggleForm}
       </div>

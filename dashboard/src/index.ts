@@ -14,6 +14,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
+import { handleAdminNpsGet, handleAdminExitGet } from "./routes/admin-signals";
 import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow";
 import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
@@ -448,6 +449,12 @@ export default {
     }
     if (path === "/admin/email-log" && method === "GET" && user.role === "admin") {
       return handleAdminEmailLogGet(user, env, url);
+    }
+    if (path === "/admin/nps" && method === "GET" && user.role === "admin") {
+      return handleAdminNpsGet(user, env);
+    }
+    if (path === "/admin/exit" && method === "GET" && user.role === "admin") {
+      return handleAdminExitGet(user, env);
     }
     if (path === "/admin/automation/digest" && method === "POST" && user.role === "admin") {
       return handleAutomationDigestToggle(user, env);
