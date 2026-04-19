@@ -268,10 +268,115 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // file expires. Self-guards via email_delivery_log so it only nags
   // each customer once per (card, month).
   await runExpiringCardCheck(env);
+  // Dormancy check-in: paying user hasn't logged in in 21+ days. Send
+  // a "what changed while you were away" email to re-engage.
+  await runDormancyCheckIn(env);
   // Digest runs LAST so it includes anything the earlier sweeps wrote.
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+}
+
+// ---------------------------------------------------------------------------
+// Dormancy check-in (engagement-decline churn defense)
+// ---------------------------------------------------------------------------
+//
+// Paying user (or agency_admin) hasn't logged in for 21-35 days. Send a
+// friendly "here's what changed while you were away" email with a real
+// recap (score delta, work shipped). The 21-35 window means we catch
+// them at the inflection point before disengagement hardens into churn.
+// Self-guards via email_delivery_log so each user gets at most one
+// dormancy email per ~30-day window.
+
+export async function runDormancyCheckIn(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const DAY = 86400;
+
+  // Paying users (or agency_admins) who logged in 21-35 days ago.
+  // The window prevents us nagging brand-new users who haven't gotten
+  // started yet AND prevents nagging users who already churned silently.
+  const users = (await env.DB.prepare(
+    `SELECT u.id, u.email, u.name, u.role, u.client_slug, u.last_login_at, u.agency_id
+       FROM users u
+      WHERE u.last_login_at IS NOT NULL
+        AND u.last_login_at < ?
+        AND u.last_login_at > ?
+        AND (u.role = 'agency_admin'
+             OR (u.role = 'client' AND u.plan IS NOT NULL AND u.plan != 'churned' AND u.plan != 'none'))`
+  ).bind(now - 21 * DAY, now - 35 * DAY).all<{
+    id: number; email: string; name: string | null; role: string;
+    client_slug: string | null; last_login_at: number; agency_id: number | null;
+  }>()).results;
+
+  if (users.length === 0) return;
+
+  const { resolveAgencyForEmail } = await import("./agency");
+  const { sendDormancyCheckInEmail } = await import("./email");
+
+  let sent = 0;
+  let skipped = 0;
+
+  for (const u of users) {
+    try {
+      // Skip if we already sent a dormancy email in the last 30 days.
+      const recent = await env.DB.prepare(
+        "SELECT id FROM email_delivery_log WHERE email = ? AND type = 'dormancy_check_in' AND created_at > ? LIMIT 1"
+      ).bind(u.email, now - 30 * DAY).first<{ id: number }>();
+      if (recent) { skipped++; continue; }
+
+      // Pick a domain to recap: their own client_slug for clients,
+      // first active client for agency_admins.
+      let domain;
+      if (u.role === "client" && u.client_slug) {
+        domain = await env.DB.prepare(
+          "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+        ).bind(u.client_slug).first<Domain>();
+      } else if (u.role === "agency_admin" && u.agency_id) {
+        domain = await env.DB.prepare(
+          "SELECT * FROM domains WHERE agency_id = ? AND is_competitor = 0 AND active = 1 ORDER BY created_at DESC LIMIT 1"
+        ).bind(u.agency_id).first<Domain>();
+      }
+      if (!domain) { skipped++; continue; }
+
+      // Score now vs. score at last login.
+      const scoreNow = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(domain.id).first<{ aeo_score: number }>();
+      const scoreThen = await env.DB.prepare(
+        "SELECT aeo_score FROM scan_results WHERE domain_id = ? AND error IS NULL AND scanned_at <= ? ORDER BY scanned_at DESC LIMIT 1"
+      ).bind(domain.id, u.last_login_at).first<{ aeo_score: number }>();
+
+      // Roadmap items completed since last login.
+      const roadmapDone = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at > ?"
+      ).bind(domain.client_slug, u.last_login_at).first<{ cnt: number }>();
+
+      // Schema fixes pushed via injection since last login.
+      const fixes = await env.DB.prepare(
+        "SELECT COUNT(*) AS cnt FROM schema_injections WHERE client_slug = ? AND status = 'approved' AND updated_at > ?"
+      ).bind(domain.client_slug, u.last_login_at).first<{ cnt: number }>();
+
+      const daysSinceLogin = Math.floor((now - u.last_login_at) / DAY);
+      const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
+      const ok = await sendDormancyCheckInEmail(u.email, u.name, {
+        domain: domain.domain,
+        clientSlug: domain.client_slug,
+        daysSinceLogin,
+        scoreNow: scoreNow?.aeo_score ?? null,
+        scoreThen: scoreThen?.aeo_score ?? null,
+        roadmapDoneSinceLogin: roadmapDone?.cnt || 0,
+        fixesShippedSinceLogin: fixes?.cnt || 0,
+      }, env, agency);
+      if (ok) sent++;
+      await new Promise((r) => setTimeout(r, 200));
+    } catch (e) {
+      console.log(`[dormancy] failed for user ${u.id}: ${e}`);
+      skipped++;
+    }
+  }
+
+  console.log(`[dormancy] ${sent} sent, ${skipped} skipped (already sent or no signal)`);
 }
 
 // ---------------------------------------------------------------------------

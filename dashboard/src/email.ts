@@ -321,6 +321,95 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 export { REGRESSION_THRESHOLD };
 
 // ---------------------------------------------------------------------------
+// Dormancy check-in (engagement-decline churn defense)
+// ---------------------------------------------------------------------------
+
+export async function sendDormancyCheckInEmail(
+  to: string,
+  userName: string | null,
+  opts: {
+    domain: string;
+    clientSlug: string;
+    daysSinceLogin: number;
+    scoreNow: number | null;
+    scoreThen: number | null;
+    roadmapDoneSinceLogin: number;
+    fixesShippedSinceLogin: number;
+  },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Dormancy check-in for ${to}: ${opts.domain} (${opts.daysSinceLogin}d)`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain}: what changed while you were away`;
+  const scoreLine = opts.scoreNow !== null && opts.scoreThen !== null
+    ? (opts.scoreNow > opts.scoreThen
+        ? `Score went up ${opts.scoreNow - opts.scoreThen} pts (${opts.scoreThen} -> ${opts.scoreNow})`
+        : opts.scoreNow < opts.scoreThen
+        ? `Score moved ${opts.scoreNow - opts.scoreThen} pts (${opts.scoreThen} -> ${opts.scoreNow})`
+        : `Score steady at ${opts.scoreNow}`)
+    : opts.scoreNow !== null ? `Latest score: ${opts.scoreNow}/100` : "No new scan since last login";
+
+  const text = [
+    `Hi ${greeting},`,
+    ``,
+    `Noticed you haven't been by the dashboard in ${opts.daysSinceLogin} days. Quick recap of what NeverRanked did for ${opts.domain} while you were away:`,
+    ``,
+    `  ${scoreLine}`,
+    `  ${opts.roadmapDoneSinceLogin} roadmap item${opts.roadmapDoneSinceLogin === 1 ? "" : "s"} completed`,
+    `  ${opts.fixesShippedSinceLogin} schema fix${opts.fixesShippedSinceLogin === 1 ? "" : "es"} pushed live`,
+    ``,
+    `Worth a look:`,
+    `https://app.neverranked.com/domain/${opts.clientSlug}`,
+    ``,
+    `If something is broken or you don't want these check-ins, just reply.`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <reports@neverranked.com>`,
+        to: [to], subject, text,
+        html: `
+<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi ${escEmail(greeting)},</p>
+<p style="margin:0 0 20px">Noticed you haven't been by the dashboard in <strong>${opts.daysSinceLogin} days</strong>. Quick recap of what ${escEmail(brand.name)} did for <strong>${escEmail(opts.domain)}</strong> while you were away:</p>
+<ul style="margin:0 0 20px;padding-left:20px;color:#333">
+  <li style="margin-bottom:6px">${escEmail(scoreLine)}</li>
+  <li style="margin-bottom:6px"><strong>${opts.roadmapDoneSinceLogin}</strong> roadmap item${opts.roadmapDoneSinceLogin === 1 ? "" : "s"} completed</li>
+  <li style="margin-bottom:6px"><strong>${opts.fixesShippedSinceLogin}</strong> schema fix${opts.fixesShippedSinceLogin === 1 ? "" : "es"} pushed live</li>
+</ul>
+<div style="margin:24px 0">
+  <a href="https://app.neverranked.com/domain/${escEmail(opts.clientSlug)}" style="display:inline-block;padding:12px 24px;background:#1a1a1a;color:${brand.color};font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Open dashboard &rarr;</a>
+</div>
+<p style="margin:0 0 6px;color:#888;font-size:13px">If something is broken or you don't want these check-ins, just reply.</p>
+<p style="margin:8px 0 0;color:#888;font-size:13px">${escEmail(brand.name)}</p>
+</body></html>`,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "dormancy_check_in", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "dormancy_check_in", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "dormancy_check_in", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Activation milestones (the moments worth celebrating)
 // ---------------------------------------------------------------------------
 //
