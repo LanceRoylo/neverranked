@@ -66,7 +66,7 @@ import {
 } from "./routes/agency-invites";
 import { handleAgencyPauseClient, handleAgencyResumeClient, handleAgencyResendSnippet } from "./routes/agency-clients";
 import { handleAgencyAddClientGet, handleAgencyAddClientPost } from "./routes/agency-add-client";
-import { getBrandingContext } from "./agency";
+import { getBrandingContext, getAgency } from "./agency";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -328,8 +328,16 @@ export default {
     // Home -- single-domain clients skip straight to their report
     if (path === "/" || path === "") {
       // Agency admins land on their own agency dashboard, not the
-      // direct-client home (which has no meaning for them).
+      // direct-client home (which has no meaning for them). Pending
+      // agencies without a subscription get pushed straight to billing
+      // so the first session after approval lands on the activation CTA.
       if (user.role === "agency_admin") {
+        if (user.agency_id) {
+          const agency = await getAgency(env, user.agency_id);
+          if (agency && agency.status === "pending" && !agency.stripe_subscription_id) {
+            return redirect("/agency/billing");
+          }
+        }
         return redirect("/agency");
       }
       if (user.role === "client" && user.client_slug) {
