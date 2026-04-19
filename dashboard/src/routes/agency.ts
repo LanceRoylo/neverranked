@@ -202,7 +202,11 @@ export async function handleAgencyDashboard(
   const totalPaused = clients.filter((c) => c.active === 0).length;
 
   const clientsTable = clientRows.length === 0
-    ? `<div class="empty"><h3>No clients yet</h3><p>Add your first client to get started. Each active client counts as one slot on your agency plan.</p></div>`
+    ? `<div class="empty">
+         <h3>No clients yet</h3>
+         <p>Add your first client to get started. Each active client counts as one slot on your agency plan.</p>
+         ${user.role === "agency_admin" ? `<p style="margin-top:18px"><a href="/agency/clients/new" class="btn">Add a client</a></p>` : ""}
+       </div>`
     : `
       <table class="data-table">
         <thead>
@@ -411,7 +415,7 @@ export async function handleAgencyDashboard(
   const checklistSteps: { label: string; done: boolean; href: string; cta: string }[] = [
     { label: "Set your branding (logo + color)", done: hasBranding, href: "/agency/settings", cta: "Open settings" },
     { label: "Activate your subscription", done: hasBilling, href: "/agency/billing", cta: "Activate billing" },
-    { label: "Add your first client", done: hasClient, href: "mailto:hello@neverranked.com?subject=Add+a+client", cta: "Email ops to add" },
+    { label: "Add your first client", done: hasClient, href: "/agency/clients/new", cta: "Add now" },
     { label: "Invite a teammate or client", done: hasTeamOrClient, href: "/agency/invites", cta: "Send invites" },
   ];
   const stepsDone = checklistSteps.filter((s) => s.done).length;
@@ -459,6 +463,7 @@ export async function handleAgencyDashboard(
         </p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
+        ${user.role === "agency_admin" ? `<a href="/agency/clients/new" class="btn">Add a client</a>` : ""}
         <a href="/agency/clients.csv" class="btn btn-ghost" title="Download client list as CSV">CSV</a>
         <a href="/agency/invites" class="btn btn-ghost">Invites</a>
         <a href="/agency/settings" class="btn btn-ghost">Settings</a>

@@ -53,6 +53,7 @@ import {
   handleInviteAccept,
 } from "./routes/agency-invites";
 import { handleAgencyPauseClient, handleAgencyResumeClient, handleAgencyResendSnippet } from "./routes/agency-clients";
+import { handleAgencyAddClientGet, handleAgencyAddClientPost } from "./routes/agency-add-client";
 import { getBrandingContext } from "./agency";
 
 export default {
@@ -301,6 +302,12 @@ export default {
     }
     if (path === "/agency/clients.json" && method === "GET") {
       return handleAgencyClientsJson(user, env, url);
+    }
+    if (path === "/agency/clients/new" && method === "GET") {
+      return handleAgencyAddClientGet(user, env, url);
+    }
+    if (path === "/agency/clients/new" && method === "POST") {
+      return handleAgencyAddClientPost(request, user, env);
     }
     if (path === "/agency/settings" && method === "GET") {
       return handleAgencySettingsGet(user, env, url);
