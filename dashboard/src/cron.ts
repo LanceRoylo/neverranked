@@ -270,6 +270,9 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // file expires. Self-guards via email_delivery_log so it only nags
   // each customer once per (card, month).
   await runExpiringCardCheck(env);
+  // Recompute the score benchmark for the free check tool's "where
+  // you fall" comparison. Median + grade distribution from real scans.
+  await runBenchmarkCalc(env);
   // Dormancy check-in: paying user hasn't logged in in 21+ days. Send
   // a "what changed while you were away" email to re-engage.
   await runDormancyCheckIn(env);
@@ -526,6 +529,82 @@ export async function runDormancyCheckIn(env: Env): Promise<void> {
   }
 
   console.log(`[dormancy] ${sent} sent, ${skipped} skipped (already sent or no signal)`);
+}
+
+// ---------------------------------------------------------------------------
+// Score benchmark recompute (powers the free check tool comparison)
+// ---------------------------------------------------------------------------
+//
+// The free check tool at check.neverranked.com shows a "Where you fall"
+// section comparing the visitor's score to "AI-cited sites" + a grade
+// distribution. Previously both were hardcoded fake numbers ("78%",
+// "8/18/38/28/8"). This computes them from REAL scan_results so the
+// comparison is honest. Stored in the shared LEADS KV so the
+// schema-check Worker can read it without a D1 binding.
+//
+// Sample window: last 90 days, error IS NULL, primary domains only
+// (not competitors -- those skew the distribution because they're
+// often higher-quality sites by definition).
+//
+// Updated daily; LEADS KV TTL set generously so the check tool always
+// has SOMETHING to render even if a recompute fails.
+
+export async function runBenchmarkCalc(env: Env): Promise<void> {
+  const LEADS = (env as { LEADS?: KVNamespace }).LEADS;
+  if (!LEADS) return;
+
+  const now = Math.floor(Date.now() / 1000);
+  const ninetyDaysAgo = now - 90 * 86400;
+
+  // Pull scores in one shot. At small scale this is cheap; at large
+  // scale we'd subsample, but D1 row counts for our scan history
+  // remain trivial for years.
+  const scans = (await env.DB.prepare(
+    `SELECT s.aeo_score, s.grade
+       FROM scan_results s
+       JOIN domains d ON d.id = s.domain_id
+      WHERE s.error IS NULL
+        AND s.scanned_at > ?
+        AND d.is_competitor = 0`
+  ).bind(ninetyDaysAgo).all<{ aeo_score: number; grade: string }>()).results;
+
+  if (scans.length < 10) {
+    // Not enough data to publish honest benchmarks. Don't overwrite
+    // whatever's in KV; let it age until we have real signal.
+    console.log(`[benchmark] only ${scans.length} eligible scans, skipping recompute`);
+    return;
+  }
+
+  // Score percentiles.
+  const scores = scans.map((s) => s.aeo_score).sort((a, b) => a - b);
+  const pct = (p: number) => scores[Math.min(scores.length - 1, Math.floor(scores.length * p))];
+
+  // Grade distribution.
+  const gradeCounts: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, F: 0 };
+  for (const s of scans) {
+    if (gradeCounts[s.grade] !== undefined) gradeCounts[s.grade]++;
+  }
+  const gradeDist = (["A", "B", "C", "D", "F"] as const).map((g) => ({
+    label: g,
+    pct: Math.round((gradeCounts[g] / scans.length) * 100),
+  }));
+
+  const benchmark = {
+    median: pct(0.5),
+    p75: pct(0.75),
+    p90: pct(0.9),
+    gradeDistribution: gradeDist,
+    sampleSize: scans.length,
+    computedAt: now,
+  };
+
+  await LEADS.put("benchmark:aeo_score", JSON.stringify(benchmark), {
+    // Long TTL is safe -- daily recompute keeps it fresh; if cron
+    // fails for a week the data is just slightly stale.
+    expirationTtl: 60 * 86400,
+  });
+
+  console.log(`[benchmark] recomputed from ${scans.length} scans: median=${benchmark.median}, p75=${benchmark.p75}`);
 }
 
 // ---------------------------------------------------------------------------

@@ -1067,9 +1067,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="comp-bar-score" id="comp-score-you"></div>
           </div>
           <div class="comp-bar">
-            <div class="comp-bar-label" style="color:var(--text-faint)">AI-cited sites</div>
-            <div class="comp-bar-track"><div class="comp-bar-fill" style="background:var(--gold-dim);width:78%;opacity:.5"></div></div>
-            <div class="comp-bar-score" style="color:var(--text-faint)">78+</div>
+            <div class="comp-bar-label" style="color:var(--text-faint)" id="comp-bar-bench-label">AI-cited sites</div>
+            <div class="comp-bar-track"><div class="comp-bar-fill" id="comp-bar-bench-fill" style="background:var(--gold-dim);width:78%;opacity:.5"></div></div>
+            <div class="comp-bar-score" style="color:var(--text-faint)" id="comp-bar-bench-score">78+</div>
           </div>
         </div>
         <div class="grade-dist" id="grade-dist"></div>
@@ -1291,15 +1291,40 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       flagsLabel.style.display='none';
     }
 
-    // Grade distribution
+    // Update the "AI-cited sites" benchmark bar with real percentile
+    // data when window.NR_BENCHMARK is available (computed daily from
+    // actual scan_results). Falls back to the original hardcoded
+    // numbers if not available.
+    if (window.NR_BENCHMARK && window.NR_BENCHMARK.p75) {
+      var bench = window.NR_BENCHMARK;
+      var benchLabel = document.getElementById('comp-bar-bench-label');
+      var benchFill = document.getElementById('comp-bar-bench-fill');
+      var benchScore = document.getElementById('comp-bar-bench-score');
+      if (benchLabel) benchLabel.textContent = 'Top 25% (live data)';
+      if (benchFill) benchFill.style.width = bench.p75 + '%';
+      if (benchScore) benchScore.textContent = bench.p75 + '+';
+    }
+
+    // Grade distribution. Real percentages from NR_BENCHMARK when
+    // available; otherwise the historical defaults (which are close
+    // enough to a normal distribution to not actively mislead).
     var distEl = document.getElementById('grade-dist');
-    var grades = [
+    var defaultGrades = [
       {label:'A',pct:8,color:'var(--gold)'},
       {label:'B',pct:18,color:'var(--gold-dim)'},
       {label:'C',pct:38,color:'var(--text-faint)'},
       {label:'D',pct:28,color:'rgba(200,80,80,.6)'},
       {label:'F',pct:8,color:'rgba(200,80,80,.4)'}
     ];
+    var gradeColors = {
+      'A':'var(--gold)','B':'var(--gold-dim)','C':'var(--text-faint)',
+      'D':'rgba(200,80,80,.6)','F':'rgba(200,80,80,.4)'
+    };
+    var grades = (window.NR_BENCHMARK && window.NR_BENCHMARK.gradeDistribution)
+      ? window.NR_BENCHMARK.gradeDistribution.map(function(g){
+          return { label: g.label, pct: g.pct, color: gradeColors[g.label] || 'var(--text-faint)' };
+        })
+      : defaultGrades;
     var distHtml = '';
     grades.forEach(function(g){
       var isYou = (data.grade === g.label);
@@ -2276,11 +2301,26 @@ export default {
       }
     }
 
-    // Serve HTML UI
-    return new Response(HTML_PAGE, {
+    // Serve HTML UI -- inject the latest benchmark so client-side JS
+    // can render real percentile / grade-distribution comparisons
+    // instead of hardcoded fake numbers. Falls back to defaults if
+    // the dashboard cron hasn't computed them yet.
+    let benchmarkJson = "null";
+    try {
+      const raw = await env.LEADS.get("benchmark:aeo_score");
+      if (raw) benchmarkJson = raw;
+    } catch (e) {
+      console.log(`[check] benchmark KV read failed: ${e}`);
+    }
+    const benchmarkScript = `<script>window.NR_BENCHMARK = ${benchmarkJson};</script>`;
+    const html = HTML_PAGE.replace("</head>", `${benchmarkScript}</head>`);
+
+    return new Response(html, {
       headers: {
         "Content-Type": "text/html;charset=utf-8",
-        "Cache-Control": "public, max-age=3600",
+        // Shorter cache so freshly-computed benchmarks reach users within
+        // a few minutes instead of an hour.
+        "Cache-Control": "public, max-age=300",
         ...corsHeaders,
       },
     });
