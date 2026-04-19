@@ -10,7 +10,7 @@ import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
-import { checkAndAlertRegression } from "./regression";
+import { checkAndAlertRegression, checkAndCelebrateGradeUp } from "./regression";
 import { autoCompleteRoadmapItems } from "./auto-complete";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
@@ -58,6 +58,14 @@ export async function runWeeklyScans(env: Env): Promise<void> {
 
       // Check for score regression and alert if needed
       await checkAndAlertRegression(d, env);
+      // Check for grade improvement and celebrate (mirror of regression)
+      if (!d.is_competitor) {
+        try {
+          await checkAndCelebrateGradeUp(d, env);
+        } catch (e) {
+          console.log(`[grade-up] check failed for ${d.client_slug}: ${e}`);
+        }
+      }
     } catch {
       errors++;
     }
@@ -603,12 +611,43 @@ export async function runSnippetSweep(env: Env): Promise<void> {
     const isDetected = await detectSnippet(d.domain);
 
     // Always stamp the check timestamp, and record detection if found.
+    // First-time detection -> celebration email + admin alert (the
+    // milestone the user has been working toward).
+    const wasNeverDetectedBefore = !d.snippet_last_detected_at;
     try {
       if (isDetected) {
         await env.DB.prepare(
           "UPDATE domains SET snippet_last_checked_at = ?, snippet_last_detected_at = COALESCE(snippet_last_detected_at, ?) WHERE id = ?"
         ).bind(now, now, d.id).run();
         detected++;
+        if (wasNeverDetectedBefore) {
+          try {
+            const { resolveAgencyForEmail } = await import("./agency");
+            const { sendSnippetDetectedEmail } = await import("./email");
+            const agencyForBrand = await resolveAgencyForEmail(env, { domainId: d.id });
+            const recipients = (await env.DB.prepare(
+              `SELECT email, name FROM users
+                WHERE (role = 'client' AND client_slug = ?) OR role = 'admin'`
+            ).bind(d.client_slug).all<{ email: string; name: string | null }>()).results;
+            const agencyRow = await getAgency(env, d.agency_id!);
+            if (agencyRow?.contact_email && !recipients.some((r) => r.email === agencyRow.contact_email)) {
+              recipients.push({ email: agencyRow.contact_email, name: null });
+            }
+            const daysSinceDelivery = d.snippet_email_sent_at
+              ? Math.floor((now - d.snippet_email_sent_at) / 86400) : 0;
+            for (const r of recipients) {
+              await sendSnippetDetectedEmail(r.email, r.name, {
+                domain: d.domain, clientSlug: d.client_slug, daysSinceDelivery,
+              }, env, agencyForBrand);
+              await new Promise((res) => setTimeout(res, 200));
+            }
+            await env.DB.prepare(
+              "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'snippet_detected', ?, ?, ?)"
+            ).bind(d.client_slug, `Snippet went live on ${d.domain}`, `${recipients.length} celebration emails sent. Took ${daysSinceDelivery} days from delivery.`, now).run();
+          } catch (e) {
+            console.log(`[snippet-sweep] celebration failed for ${d.id}: ${e}`);
+          }
+        }
       } else {
         await env.DB.prepare(
           "UPDATE domains SET snippet_last_checked_at = ? WHERE id = ?"

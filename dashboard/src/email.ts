@@ -321,6 +321,238 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 export { REGRESSION_THRESHOLD };
 
 // ---------------------------------------------------------------------------
+// Activation milestones (the moments worth celebrating)
+// ---------------------------------------------------------------------------
+//
+// Three separate emails for three distinct user-visible wins:
+//   1. Snippet detected for the first time          (activation unlocks)
+//   2. AEO grade improved                           (visible quality win)
+//   3. Roadmap phase completed                      (cumulative effort win)
+//
+// All three follow the same shape: short, celebratory but not corny,
+// agency-branded for Mode-2 clients, link straight to the relevant
+// dashboard page. Each fires at most once per (client, milestone)
+// guarded by an admin_alerts row.
+
+function milestoneEmailHtml(opts: {
+  brand: { name: string; color: string; logo: string | null };
+  greeting: string;
+  tag: string;             // e.g., "Snippet detected"
+  tagColor: string;        // e.g., "#27ae60"
+  headline: string;        // big title line
+  body: string;            // body paragraph(s)
+  ctaLabel: string;
+  ctaUrl: string;
+  footerLine: string;
+}): string {
+  const headerHtml = opts.brand.logo
+    ? `<td><img src="${opts.brand.logo}" alt="${escEmail(opts.brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${opts.brand.color}">${escEmail(opts.brand.name)}</td>`;
+  return `
+<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212"><tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>${headerHtml}<td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:${opts.tagColor}">${opts.tag}</td></tr>
+    </table>
+  </td></tr>
+  <tr><td style="padding:36px 0 24px">
+    <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:14px">Hey ${escEmail(opts.greeting)},</div>
+    <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef;line-height:1.5;margin-bottom:18px">${opts.headline}</div>
+    <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">${opts.body}</div>
+  </td></tr>
+  <tr><td align="center" style="padding:8px 0 32px">
+    <a href="${escEmail(opts.ctaUrl)}" style="display:inline-block;padding:14px 32px;background:${opts.brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">${escEmail(opts.ctaLabel)}</a>
+  </td></tr>
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555;line-height:1.6">${opts.footerLine}</div>
+  </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
+}
+
+export async function sendSnippetDetectedEmail(
+  to: string,
+  userName: string | null,
+  opts: { domain: string; clientSlug: string; daysSinceDelivery: number },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Snippet-detected email for ${to}: ${opts.domain}`);
+    return true;
+  }
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain}: snippet is live -- autonomous fixes are turned on`;
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Just detected the NeverRanked snippet on ${opts.domain}. The autonomous side of the platform is now turned on.`,
+    ``,
+    `What changes from here:`,
+    `  - Schema fixes the scanner finds will be pushed to ${opts.domain} automatically every week`,
+    `  - The roadmap items in the "Handled by NeverRanked" section will now ship without you doing anything`,
+    `  - Daily drift checks will alert you if the snippet ever disappears from the site`,
+    ``,
+    `${opts.daysSinceDelivery > 7 ? `(Took ${opts.daysSinceDelivery} days from when we sent the install instructions -- thanks for getting it across the line.)` : ""}`,
+    ``,
+    `Dashboard:`,
+    `https://app.neverranked.com/domain/${opts.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].filter(Boolean).join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <alerts@neverranked.com>`,
+        to: [to], subject, text,
+        html: milestoneEmailHtml({
+          brand, greeting,
+          tag: "Snippet live", tagColor: "#27ae60",
+          headline: `The snippet is live on <strong style="color:${brand.color}">${escEmail(opts.domain)}</strong>. Autonomous fixes are now turned on.`,
+          body: `From here, schema fixes the scanner finds will be pushed to ${escEmail(opts.domain)} automatically every week. Roadmap items in the "Handled by NeverRanked" section will ship without you doing anything. Daily drift checks will catch it if the snippet ever disappears.${opts.daysSinceDelivery > 7 ? `<br><br><em style="color:#888">Took ${opts.daysSinceDelivery} days from delivery -- thanks for getting it across the line.</em>` : ""}`,
+          ctaLabel: "Open dashboard", ctaUrl: `https://app.neverranked.com/domain/${opts.clientSlug}`,
+          footerLine: `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">${agency ? "Never Ranked" : "NeverRanked"}</a><br>You received this because we detected your install for the first time.`,
+        }),
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "snippet_detected", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "snippet_detected", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "snippet_detected", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+export async function sendGradeUpEmail(
+  to: string,
+  userName: string | null,
+  opts: { domain: string; clientSlug: string; newGrade: string; previousGrade: string; newScore: number },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Grade-up email for ${to}: ${opts.domain} ${opts.previousGrade}->${opts.newGrade}`);
+    return true;
+  }
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain} just hit grade ${opts.newGrade}`;
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `${opts.domain} just moved from grade ${opts.previousGrade} to grade ${opts.newGrade} (${opts.newScore}/100).`,
+    ``,
+    `That's a real category jump in how AI engines perceive the site's authority. Grades aren't fine-grained -- they only move when something material shifts.`,
+    ``,
+    `Dashboard:`,
+    `https://app.neverranked.com/domain/${opts.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <alerts@neverranked.com>`,
+        to: [to], subject, text,
+        html: milestoneEmailHtml({
+          brand, greeting,
+          tag: `Grade ${opts.newGrade}`, tagColor: "#27ae60",
+          headline: `<strong style="color:${brand.color}">${escEmail(opts.domain)}</strong> just hit grade <strong style="color:#fbf8ef">${escEmail(opts.newGrade)}</strong>.`,
+          body: `Up from grade ${escEmail(opts.previousGrade)}. Latest score: <strong style="color:#fbf8ef">${opts.newScore}/100</strong>.<br><br>That's a real category jump in how AI engines perceive the site's authority. Grades only move when something material shifts.`,
+          ctaLabel: "Open dashboard", ctaUrl: `https://app.neverranked.com/domain/${opts.clientSlug}`,
+          footerLine: `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">${agency ? "Never Ranked" : "NeverRanked"}</a><br>You received this because your grade improved.`,
+        }),
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "grade_up", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "grade_up", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "grade_up", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+export async function sendPhaseCompleteEmail(
+  to: string,
+  userName: string | null,
+  opts: { domain: string; clientSlug: string; phaseTitle: string; phaseNumber: number; itemsCompleted: number; nextPhaseTitle: string | null },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Phase-complete email for ${to}: ${opts.domain} phase ${opts.phaseNumber}`);
+    return true;
+  }
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain}: Phase ${opts.phaseNumber} (${opts.phaseTitle}) is complete`;
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Phase ${opts.phaseNumber} (${opts.phaseTitle}) is now complete on ${opts.domain}. ${opts.itemsCompleted} item${opts.itemsCompleted === 1 ? "" : "s"} delivered.`,
+    ``,
+    opts.nextPhaseTitle
+      ? `Phase ${opts.phaseNumber + 1} (${opts.nextPhaseTitle}) is unlocked and ready.`
+      : `That's the full roadmap. We'll keep monitoring and surface new opportunities as AI engines evolve.`,
+    ``,
+    `Dashboard:`,
+    `https://app.neverranked.com/roadmap/${opts.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <alerts@neverranked.com>`,
+        to: [to], subject, text,
+        html: milestoneEmailHtml({
+          brand, greeting,
+          tag: `Phase ${opts.phaseNumber} complete`, tagColor: brand.color,
+          headline: `Phase ${opts.phaseNumber} (<em>${escEmail(opts.phaseTitle)}</em>) is complete on <strong style="color:${brand.color}">${escEmail(opts.domain)}</strong>.`,
+          body: `${opts.itemsCompleted} item${opts.itemsCompleted === 1 ? "" : "s"} delivered.<br><br>${opts.nextPhaseTitle ? `Phase ${opts.phaseNumber + 1} (<em>${escEmail(opts.nextPhaseTitle)}</em>) is unlocked and ready.` : `That's the full roadmap. We'll keep monitoring and surface new opportunities as AI engines evolve.`}`,
+          ctaLabel: "Open roadmap", ctaUrl: `https://app.neverranked.com/roadmap/${opts.clientSlug}`,
+          footerLine: `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">${agency ? "Never Ranked" : "NeverRanked"}</a><br>You received this because a roadmap phase completed.`,
+        }),
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "phase_complete", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "phase_complete", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "phase_complete", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Billing notifications (involuntary churn defense)
 // ---------------------------------------------------------------------------
 
