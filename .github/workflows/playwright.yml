@@ -45,6 +45,11 @@ jobs:
 
       - name: Run Playwright tests
         run: npx playwright test
+        env:
+          # Long-lived session for the e2e-tests user, seeded by
+          # dashboard/scripts/seed-e2e-test-session.sql. Set as a GitHub
+          # Secret. If unset, tests in 11-authenticated-flows auto-skip.
+          PLAYWRIGHT_SESSION_TOKEN: ${{ secrets.PLAYWRIGHT_SESSION_TOKEN }}
 
       - name: Upload HTML report
         if: always()

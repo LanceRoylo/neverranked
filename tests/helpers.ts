@@ -10,8 +10,23 @@ import { BrowserContext } from "@playwright/test";
 
 const DASHBOARD_DIR = "/Users/lanceroylo/Desktop/neverranked/dashboard";
 
-/** Get a valid session token for a user by email */
+/**
+ * Get a valid session token for a user by email.
+ *
+ * Resolution order:
+ *   1. PLAYWRIGHT_SESSION_TOKEN env var -- used in CI (no D1 access).
+ *      The CI test user is e2e-tests@neverranked.com (an agency_admin)
+ *      seeded by dashboard/scripts/seed-e2e-test-session.sql. The token
+ *      is stored as a GitHub Secret and exported into the workflow.
+ *   2. Wrangler D1 query -- used locally. Looks up the most recent
+ *      unexpired session for the requested email.
+ */
 export function getSessionForUser(email: string): string | null {
+  // CI path: a single test user, single token.
+  if (process.env.PLAYWRIGHT_SESSION_TOKEN && email === E2E_TEST_AGENCY_ADMIN_EMAIL) {
+    return process.env.PLAYWRIGHT_SESSION_TOKEN;
+  }
+  // Local path: query D1 via wrangler.
   try {
     const result = execSync(
       `cd "${DASHBOARD_DIR}" && npx wrangler d1 execute neverranked-app --remote --command="SELECT s.id FROM sessions s JOIN users u ON s.user_id = u.id WHERE u.email = '${email}' AND s.expires_at > ${Math.floor(Date.now() / 1000)} ORDER BY s.created_at DESC LIMIT 1" --json 2>/dev/null`,
@@ -68,3 +83,7 @@ export const URLS = {
 
 export const TEST_ADMIN_EMAIL = "lanceroylo@gmail.com";
 export const TEST_CLIENT_EMAIL = "testclient@example.com";
+/** Dedicated test user seeded by dashboard/scripts/seed-e2e-test-session.sql.
+ *  Used by CI to drive authenticated browsing without D1 access. */
+export const E2E_TEST_AGENCY_ADMIN_EMAIL = "e2e-tests@neverranked.com";
+export const E2E_TEST_AGENCY_SLUG = "e2e-test-agency";
