@@ -18,6 +18,7 @@ import { handleAdminNpsGet, handleAdminExitGet } from "./routes/admin-signals";
 import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow";
 import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
+import { handleChangelog } from "./routes/changelog";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
@@ -81,6 +82,10 @@ export default {
     // Public install guides -- forwardable, indexable for SEO
     if (path === "/install" && method === "GET") {
       return handleInstallIndex(request, env);
+    }
+    // Public changelog -- trust signal, indexable
+    if (path === "/changelog" && method === "GET") {
+      return handleChangelog(request, env);
     }
     const installMatch = /^\/install\/([a-z0-9-]+)$/.exec(path);
     if (installMatch && method === "GET") {

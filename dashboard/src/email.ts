@@ -956,6 +956,148 @@ export async function sendCardExpiringEmail(
 }
 
 // ---------------------------------------------------------------------------
+// Citation lost (mirror of first-citation -- the warning side)
+// ---------------------------------------------------------------------------
+
+/**
+ * Sent when a client who had AI citations last week suddenly has zero
+ * this week. The compounding work the platform sells depends on
+ * citations holding -- losing them is a real business signal worth
+ * flagging immediately, not waiting for the weekly digest.
+ *
+ * Different tone from regression alert (which is about score). This
+ * one is about the AI engines forgetting you. Frames the drop as
+ * something to investigate, not catastrophize.
+ */
+export async function sendCitationLostEmail(
+  to: string,
+  userName: string | null,
+  opts: {
+    domain: string;
+    clientSlug: string;
+    previousCitations: number;
+    previousQueries: number;
+    daysBetween: number;
+  },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Citation-lost email for ${to}: ${opts.domain}`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const subject = `${opts.domain}: AI citations dropped to zero this week`;
+
+  const text = [
+    `Hey ${greeting},`,
+    ``,
+    `Heads up: ${opts.domain} had ${opts.previousCitations} AI engine citations last week (out of ${opts.previousQueries} tracked queries) but zero this week.`,
+    ``,
+    `What this usually means:`,
+    `  - The page that was being cited changed substantially (new copy, new layout, removed schema)`,
+    `  - A competitor moved up and is now being cited instead`,
+    `  - The AI engines retrained and the new model has a different preference`,
+    `  - Less commonly: a technical issue (snippet removed, page returning errors, robots.txt change)`,
+    ``,
+    `What to do:`,
+    `  1. Check the citation page in the dashboard to see which keywords lost their cites`,
+    `  2. Re-run a scan to confirm the page is still healthy from a technical standpoint`,
+    `  3. If the page hasn't changed but citations dropped, this is competitive movement -- ` +
+      `look at what cited competitors are doing differently`,
+    ``,
+    `Citations dashboard:`,
+    `https://app.neverranked.com/citations/${opts.clientSlug}`,
+    ``,
+    `Domain dashboard:`,
+    `https://app.neverranked.com/domain/${opts.clientSlug}`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  const headerHtml = brand.logo
+    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
+    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
+  const footerLine = agency
+    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
+    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from: `${brand.name} <alerts@neverranked.com>`,
+        to: [to],
+        subject,
+        text,
+        html: `
+<!doctype html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212"><tr><td align="center" style="padding:32px 16px">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+
+  <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
+    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+      <tr>${headerHtml}<td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#c0392b">Citations dropped</td></tr>
+    </table>
+  </td></tr>
+
+  <tr><td style="padding:32px 0 24px">
+    <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:14px">Hey ${escEmail(greeting)},</div>
+    <div style="font-family:Georgia,serif;font-size:18px;color:#fbf8ef;line-height:1.5;margin-bottom:8px">
+      <strong style="color:${brand.color}">${escEmail(opts.domain)}</strong> had <strong>${opts.previousCitations}</strong> AI engine citation${opts.previousCitations === 1 ? "" : "s"} last week. This week: <strong style="color:#c0392b">zero</strong>.
+    </div>
+  </td></tr>
+
+  <tr><td style="padding:0 0 16px">
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:10px">What this usually means</div>
+    <ul style="margin:0 0 16px;padding-left:20px;font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">
+      <li>The page that was being cited changed substantially (new copy, layout, removed schema)</li>
+      <li>A competitor moved up and is now being cited instead</li>
+      <li>AI engines retrained and the new model has different preferences</li>
+      <li>Less commonly: a technical issue (snippet removed, errors, robots.txt change)</li>
+    </ul>
+  </td></tr>
+
+  <tr><td style="padding:0 0 16px">
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888;margin-bottom:10px">What to do</div>
+    <ol style="margin:0 0 16px;padding-left:20px;font-family:Georgia,serif;font-size:14px;color:#b0b0a8;line-height:1.8">
+      <li>Check which keywords lost their cites in the citations dashboard</li>
+      <li>Re-run a scan to confirm the page is still healthy</li>
+      <li>If the page hasn't changed, this is competitive movement -- look at what cited competitors are doing differently</li>
+    </ol>
+  </td></tr>
+
+  <tr><td align="center" style="padding:8px 0 32px">
+    <a href="https://app.neverranked.com/citations/${escEmail(opts.clientSlug)}" style="display:inline-block;padding:14px 32px;background:${brand.color};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Open citations</a>
+  </td></tr>
+
+  <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a">
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555;line-height:1.6">${footerLine}<br>You received this because we detected a citation drop on a domain you follow.</div>
+  </td></tr>
+
+</table>
+</td></tr></table>
+</body></html>`,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      await logEmailDelivery(env, { email: to, type: "citation_lost", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "citation_lost", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    await logEmailDelivery(env, { email: to, type: "citation_lost", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Monthly recap
 // ---------------------------------------------------------------------------
 

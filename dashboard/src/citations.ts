@@ -680,6 +680,70 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
       `Citations for ${clientSlug}: ${clientCitations}/${totalQueries} queries cited (${(citationShare * 100).toFixed(1)}%), ${topCompetitors.length} competitors tracked`
     );
 
+    // Citation-lost alert: mirror of first-citation. If this client had
+    // citations in the previous snapshot but ZERO this week, fire a
+    // warning email. Real business signal -- losing AI citations now
+    // means future traffic loss. Cooldown: 30 days, so a flapping
+    // client doesn't get spammed if citations bounce back.
+    try {
+      if (clientCitations === 0 && domain) {
+        const previousSnapshot = await env.DB.prepare(
+          `SELECT client_citations, total_queries, created_at FROM citation_snapshots
+            WHERE client_slug = ? AND created_at < ?
+            ORDER BY created_at DESC LIMIT 1`
+        ).bind(clientSlug, now - 60).first<{ client_citations: number; total_queries: number; created_at: number }>();
+
+        if (previousSnapshot && previousSnapshot.client_citations > 0) {
+          // Cooldown: don't re-fire if we already alerted in last 30 days.
+          const recentAlert = await env.DB.prepare(
+            "SELECT id FROM admin_alerts WHERE client_slug = ? AND type = 'citation_lost' AND created_at > ? LIMIT 1"
+          ).bind(clientSlug, now - 30 * 86400).first<{ id: number }>();
+
+          if (!recentAlert) {
+            const { resolveAgencyForEmail } = await import("./agency");
+            const { sendCitationLostEmail } = await import("./email");
+            const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
+            const recipients = (await env.DB.prepare(
+              `SELECT email, name FROM users
+                WHERE (email_regression = 1 OR email_regression IS NULL)
+                  AND ((role = 'client' AND client_slug = ?) OR role = 'admin')`
+            ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
+            if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+              recipients.push({ email: agency.contact_email, name: null });
+            }
+
+            const daysBetween = Math.max(1, Math.floor((now - previousSnapshot.created_at) / 86400));
+            let sent = 0;
+            for (const r of recipients) {
+              const ok = await sendCitationLostEmail(r.email, r.name, {
+                domain: domain.domain,
+                clientSlug,
+                previousCitations: previousSnapshot.client_citations,
+                previousQueries: previousSnapshot.total_queries,
+                daysBetween,
+              }, env, agency);
+              if (ok) sent++;
+              await new Promise((res) => setTimeout(res, 200));
+            }
+
+            await env.DB.prepare(
+              `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+                 VALUES (?, 'citation_lost', ?, ?, ?)`
+            ).bind(
+              clientSlug,
+              `Citations dropped to zero on ${domain.domain}`,
+              `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. ${sent}/${recipients.length} alert emails sent.`,
+              now,
+            ).run();
+            console.log(`[citation-lost] alerted ${clientSlug} -- ${sent}/${recipients.length} emails`);
+          }
+        }
+      }
+    } catch (e) {
+      console.log(`[citation-lost] check failed for ${clientSlug}: ${e}`);
+    }
+
     // First-citation celebration: if this run is the first time we
     // detected a cite for this client (any engine, any keyword), fire
     // the dopamine-hit email + create a milestone admin_alert. Use
