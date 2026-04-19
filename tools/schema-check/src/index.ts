@@ -1005,6 +1005,15 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
       <button id="run-btn" type="button">Run check</button>
     </div>
+    <!-- Trust + price-discovery in the hero. Was buried below the fold; now visible
+         the moment users decide whether to engage. -->
+    <div class="hero-trust" style="margin-top:18px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
+      <span><strong style="color:var(--text)">2,400+</strong> sites scanned</span>
+      <span style="opacity:.4">&middot;</span>
+      <span><strong style="color:var(--text)">4</strong> AI engines tracked</span>
+      <span style="opacity:.4">&middot;</span>
+      <a href="https://neverranked.com/#pricing" id="hero-pricing-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See pricing &rarr;</a>
+    </div>
   </section>
 
   <div class="loading" id="loading">
@@ -1165,22 +1174,19 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
     </div>
 
-    <!-- Email capture (after CTA) -->
-    <div class="email-capture" id="email-capture">
+    <!-- Post-capture confirmation: this used to be a SECOND email capture
+         form (redundant with the gate above). Removed the duplicate form;
+         this block now only carries the post-send "we got it" message and
+         the email-input/btn ids the gate's JS still references. The hidden
+         input + button keep the existing event wiring intact. -->
+    <div class="email-capture" id="email-capture" style="display:none">
       <div class="email-capture-inner">
-        <div class="email-capture-icon">&#9993;</div>
-        <div>
-          <div class="email-capture-title">Email me this report</div>
-          <div class="email-capture-sub">Get your score card with a breakdown of every signal. No spam.</div>
-        </div>
-        <div class="email-capture-form" id="email-form">
-          <input type="email" id="email-input" placeholder="you@company.com" autocomplete="email">
-          <button type="button" id="email-btn">Send</button>
-        </div>
+        <input type="email" id="email-input" placeholder="" autocomplete="email" hidden>
+        <button type="button" id="email-btn" hidden>Send</button>
       </div>
       <div class="email-success" id="email-success" style="display:none">
         <span style="color:var(--gold)">Sent.</span> Check your inbox for the full report.<br>
-        <span style="font-size:12px;color:var(--text-faint)">In 3 days we will send you a competitor comparison. In 7 days, a re-scan check-in.</span>
+        <span style="font-size:12px;color:var(--text-faint)">We'll follow up in 3 days with a competitor comparison and again in 7 days with a re-scan check-in.</span>
       </div>
     </div>
   </section>
@@ -1448,7 +1454,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   async function sendReport(){
     const email = emailInput.value.trim();
-    if(!email || !email.includes('@')){emailInput.focus();return;}
+    // Strict email format check -- prevents bad addresses bouncing in
+    // the drip sequence and seeding garbage into LEADS KV.
+    if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)){emailInput.focus();return;}
     if(!lastReportData) return;
 
     emailBtn.disabled=true;
@@ -2165,8 +2173,9 @@ export default {
       const email = body.email?.trim().toLowerCase();
       const report = body.report;
 
-      if (!email || !email.includes("@") || !report) {
-        return Response.json({ error: "Email and report required." }, { status: 400, headers: corsHeaders });
+      // Server-side check mirrors client validation -- belt and suspenders.
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !report) {
+        return Response.json({ error: "Valid email and report required." }, { status: 400, headers: corsHeaders });
       }
 
       // Store lead in KV
