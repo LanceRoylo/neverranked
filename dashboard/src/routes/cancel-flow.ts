@@ -152,14 +152,31 @@ export async function handleCancelFlowPost(request: Request, user: User, env: En
     ).run();
   } catch {}
 
+  // Resolve which Stripe customer + subscription to act on. For
+  // agency_admins, the subscription lives on the agencies row, not on
+  // the user. Direct customers have everything on user.*.
+  let stripeCustomerId: string | null = user.stripe_customer_id || null;
+  let stripeSubscriptionId: string | null = user.stripe_subscription_id || null;
+  let returnPath = "/settings";
+  if (user.role === "agency_admin" && user.agency_id) {
+    const agency = await env.DB.prepare(
+      "SELECT stripe_customer_id, stripe_subscription_id FROM agencies WHERE id = ?"
+    ).bind(user.agency_id).first<{ stripe_customer_id: string | null; stripe_subscription_id: string | null }>();
+    if (agency) {
+      stripeCustomerId = agency.stripe_customer_id;
+      stripeSubscriptionId = agency.stripe_subscription_id;
+      returnPath = "/agency/billing";
+    }
+  }
+
   // Dispatch by outcome.
   switch (outcome) {
     case "paused_instead": {
       // Set cancel_at_period_end via Stripe so the user keeps access
       // until the end of the period and we don't double-charge.
-      if (env.STRIPE_SECRET_KEY && user.stripe_subscription_id) {
+      if (env.STRIPE_SECRET_KEY && stripeSubscriptionId) {
         try {
-          await fetch(`https://api.stripe.com/v1/subscriptions/${user.stripe_subscription_id}`, {
+          await fetch(`https://api.stripe.com/v1/subscriptions/${stripeSubscriptionId}`, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}`,
@@ -171,7 +188,7 @@ export async function handleCancelFlowPost(request: Request, user: User, env: En
           console.log(`[cancel-flow] Stripe pause failed: ${e}`);
         }
       }
-      return redirect("/settings?flash=" + encodeURIComponent(
+      return redirect(returnPath + "?flash=" + encodeURIComponent(
         "Paused. Your subscription will end at the close of the current billing period. You can resume anytime by reopening the Stripe portal."
       ));
     }
@@ -195,7 +212,7 @@ export async function handleCancelFlowPost(request: Request, user: User, env: En
       // Both go to Stripe portal. Difference: "proceeded_to_cancel"
       // has a real reason recorded; "abandoned" was the
       // update-payment intent and the survey row reflects that.
-      if (env.STRIPE_SECRET_KEY && user.stripe_customer_id) {
+      if (env.STRIPE_SECRET_KEY && stripeCustomerId) {
         try {
           const origin = new URL(request.url).origin;
           const session = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
@@ -205,8 +222,8 @@ export async function handleCancelFlowPost(request: Request, user: User, env: En
               "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
-              customer: user.stripe_customer_id,
-              return_url: `${origin}/settings`,
+              customer: stripeCustomerId,
+              return_url: `${origin}${returnPath}`,
             }).toString(),
           }).then((r) => r.json() as Promise<{ url?: string; error?: { message: string } }>);
           if (session.url) return redirect(session.url);
@@ -215,7 +232,7 @@ export async function handleCancelFlowPost(request: Request, user: User, env: En
           console.log(`[cancel-flow] Stripe portal threw: ${e}`);
         }
       }
-      return redirect("/settings?error=" + encodeURIComponent("Could not open billing portal. Email hello@neverranked.com."));
+      return redirect(returnPath + "?error=" + encodeURIComponent("Could not open billing portal. Email hello@neverranked.com."));
     }
   }
 }

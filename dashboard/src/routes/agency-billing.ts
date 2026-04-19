@@ -392,12 +392,15 @@ export async function handleAgencyBillingGet(
       <div class="card">
         <div class="label" style="margin-bottom:12px">Manage billing</div>
         <p style="font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 16px">
-          Update payment method, download invoices, or cancel from the
-          Stripe billing portal.
+          Update payment method or download invoices from the Stripe
+          billing portal.
         </p>
-        <form method="POST" action="/billing/portal" style="margin:0">
-          <button type="submit" class="btn">Open billing portal</button>
-        </form>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <form method="POST" action="/billing/portal" style="margin:0">
+            <button type="submit" class="btn">Open billing portal</button>
+          </form>
+          <a href="/settings/cancel" style="font-size:12px;color:var(--text-faint);border-bottom:1px solid var(--line)">Need to cancel or pause?</a>
+        </div>
       </div>
     `
     : `

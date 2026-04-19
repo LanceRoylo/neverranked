@@ -468,11 +468,20 @@ export async function handleStripeWebhook(
       // Notify admin of failed payment
       if (env.RESEND_API_KEY) {
         try {
+          // Check both attribution paths: direct customer (user) and
+          // agency subscription (agency.stripe_customer_id). Either may
+          // hit, never both.
           const user = await env.DB.prepare(
             "SELECT email, name FROM users WHERE stripe_customer_id = ?"
           ).bind(customerId).first<{ email: string; name: string | null }>();
+          const agencyRow = !user
+            ? await env.DB.prepare(
+                "SELECT id, name, contact_email FROM agencies WHERE stripe_customer_id = ?"
+              ).bind(customerId).first<{ id: number; name: string; contact_email: string | null }>()
+            : null;
 
-          // Admin alert (existing behavior)
+          // Admin alert (existing behavior, names whichever attribution we found)
+          const adminLabel = user?.email || agencyRow?.contact_email || customerId;
           await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -482,23 +491,33 @@ export async function handleStripeWebhook(
             body: JSON.stringify({
               from: "NeverRanked <reports@neverranked.com>",
               to: [env.ADMIN_EMAIL],
-              subject: `Payment failed: ${user?.email || customerId}`,
-              html: `<p>Invoice payment failed.</p><p>Customer: <strong>${user?.email || 'unknown'}</strong></p><p>Amount: $${(invoice.amount_due / 100).toFixed(2)}</p><p>Time: ${new Date().toISOString()}</p>`,
+              subject: `Payment failed: ${adminLabel}${agencyRow ? " (agency)" : ""}`,
+              html: `<p>Invoice payment failed.</p><p>${agencyRow ? "Agency" : "Customer"}: <strong>${adminLabel}</strong></p><p>Amount: $${(invoice.amount_due / 100).toFixed(2)}</p><p>Time: ${new Date().toISOString()}</p>`,
             }),
           });
 
-          // CUSTOMER notification (new): the actual leverage move. Stripe
-          // retries automatically but the customer needs to know NOW so
-          // they can update the card before the auto-cancel kicks in.
+          // CUSTOMER / agency notification: the actual leverage move.
+          // Stripe retries automatically but the customer needs to know
+          // NOW so they can update the card before the auto-cancel kicks in.
+          const { sendPaymentFailedEmail } = await import("../email");
+          const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+
           if (user?.email) {
-            const { sendPaymentFailedEmail } = await import("../email");
-            const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
-            const portalUrl = `${origin}/billing/portal`;
             await sendPaymentFailedEmail(user.email, user.name, {
               amountDueCents: invoice.amount_due,
               nextRetryAt: invoice.next_payment_attempt || null,
-              portalUrl,
+              portalUrl: `${origin}/billing/portal`,
             }, env);
+          } else if (agencyRow?.contact_email) {
+            // Agency contact gets the same email but with the agency-side
+            // billing portal as the action target.
+            const { getAgency } = await import("../agency");
+            const agencyFull = await getAgency(env, agencyRow.id);
+            await sendPaymentFailedEmail(agencyRow.contact_email, null, {
+              amountDueCents: invoice.amount_due,
+              nextRetryAt: invoice.next_payment_attempt || null,
+              portalUrl: `${origin}/agency/billing`,
+            }, env, agencyFull);
           }
         } catch (e) {
           console.log(`Payment failure notification failed: ${e}`);
@@ -530,7 +549,21 @@ export async function handleBillingPortal(
     `, user), 500);
   }
 
-  if (!user.stripe_customer_id) {
+  // Agency admins -> use the agency's stripe customer + return to
+  // /agency/billing. Direct customers -> their own user row.
+  let customerId: string | null = user.stripe_customer_id || null;
+  let returnPath = "/settings";
+  if (user.role === "agency_admin" && user.agency_id) {
+    const agency = await env.DB.prepare(
+      "SELECT stripe_customer_id FROM agencies WHERE id = ?"
+    ).bind(user.agency_id).first<{ stripe_customer_id: string | null }>();
+    if (agency?.stripe_customer_id) {
+      customerId = agency.stripe_customer_id;
+      returnPath = "/agency/billing";
+    }
+  }
+
+  if (!customerId) {
     return html(layout("Billing", `
       <div class="empty">
         <h3>No billing account</h3>
@@ -541,8 +574,8 @@ export async function handleBillingPortal(
 
   const origin = new URL(request.url).origin;
   const session = await stripeRequest("/billing_portal/sessions", env.STRIPE_SECRET_KEY, {
-    customer: user.stripe_customer_id,
-    return_url: `${origin}/settings`,
+    customer: customerId,
+    return_url: `${origin}${returnPath}`,
   });
 
   if (session.error) {

@@ -546,10 +546,27 @@ export async function runExpiringCardCheck(env: Env): Promise<void> {
   if (!env.STRIPE_SECRET_KEY) return;
 
   const now = Math.floor(Date.now() / 1000);
-  const customers = (await env.DB.prepare(
+  // Two attribution paths: direct customers (users.stripe_customer_id)
+  // and agency subscriptions (agencies.stripe_customer_id). Walk both
+  // and tag each entry with which kind so the email + portal link are
+  // routed correctly.
+  const userCustomers = (await env.DB.prepare(
     `SELECT id, email, name, stripe_customer_id FROM users
        WHERE stripe_customer_id IS NOT NULL AND stripe_customer_id != ''`
   ).all<{ id: number; email: string; name: string | null; stripe_customer_id: string }>()).results;
+  const agencyCustomers = (await env.DB.prepare(
+    `SELECT id, contact_email AS email, name, stripe_customer_id FROM agencies
+       WHERE stripe_customer_id IS NOT NULL AND stripe_customer_id != ''
+         AND contact_email IS NOT NULL`
+  ).all<{ id: number; email: string; name: string; stripe_customer_id: string }>()).results;
+  type CustomerEntry = {
+    id: number; email: string; name: string | null;
+    stripe_customer_id: string; isAgency: boolean;
+  };
+  const customers: CustomerEntry[] = [
+    ...userCustomers.map((c) => ({ ...c, isAgency: false })),
+    ...agencyCustomers.map((c) => ({ ...c, isAgency: true })),
+  ];
   if (customers.length === 0) return;
 
   // 30 days from now: anything expiring before this date gets warned.
@@ -599,10 +616,19 @@ export async function runExpiringCardCheck(env: Env): Promise<void> {
 
       const { sendCardExpiringEmail } = await import("./email");
       const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+      // Agency-scoped sends go to the agency-side billing portal AND
+      // get branded as the agency. Direct sends go to the user portal.
+      let agencyForBrand = null;
+      let portalUrl = `${origin}/billing/portal`;
+      if (c.isAgency) {
+        const { getAgency } = await import("./agency");
+        agencyForBrand = await getAgency(env, c.id);
+        portalUrl = `${origin}/agency/billing`;
+      }
       const ok = await sendCardExpiringEmail(c.email, c.name, {
         last4, expMonth: exp_month, expYear: exp_year,
-        portalUrl: `${origin}/billing/portal`,
-      }, env);
+        portalUrl,
+      }, env, agencyForBrand);
       if (ok) warned++;
 
       await new Promise((r) => setTimeout(r, 200));
