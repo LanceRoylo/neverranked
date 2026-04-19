@@ -14,6 +14,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
+import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
@@ -716,6 +717,12 @@ export default {
     // Billing portal
     if (path === "/billing/portal" && method === "POST") {
       return handleBillingPortal(user, request, env);
+    }
+    if (path === "/settings/cancel" && method === "GET") {
+      return handleCancelFlowGet(user, env, url);
+    }
+    if (path === "/settings/cancel" && method === "POST") {
+      return handleCancelFlowPost(request, user, env);
     }
 
     // 404

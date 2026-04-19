@@ -102,10 +102,13 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
           <div style="color:var(--text-faint)">One-time purchase</div>
         `}
       </div>
-      <form method="POST" action="/billing/portal">
-        <button type="submit" class="btn">Manage billing</button>
-        <span style="font-size:12px;color:var(--text-faint);margin-left:12px">Update payment method, view invoices, or cancel</span>
-      </form>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <form method="POST" action="/billing/portal" style="margin:0">
+          <button type="submit" class="btn">Manage billing</button>
+        </form>
+        <a href="/settings/cancel" style="font-size:12px;color:var(--text-faint);border-bottom:1px solid var(--line)">Need to cancel or pause?</a>
+      </div>
+      <p style="font-size:12px;color:var(--text-faint);margin:10px 0 0">Manage billing opens Stripe to update payment, view invoices, or cancel directly.</p>
     </div>
     ` : ""}
 
