@@ -15,6 +15,7 @@ import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } f
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
 import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow";
+import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
@@ -723,6 +724,12 @@ export default {
     }
     if (path === "/settings/cancel" && method === "POST") {
       return handleCancelFlowPost(request, user, env);
+    }
+    if (path === "/nps" && method === "POST") {
+      return handleNpsPost(request, user, env);
+    }
+    if (path === "/nps/dismiss" && method === "POST") {
+      return handleNpsDismiss(request, user, env);
     }
 
     // 404

@@ -1669,6 +1669,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${shareFlash}
     ${user.role !== "admin" ? await buildSetupCompletenessWidget(domain, user, env) : ""}
     ${user.role !== "admin" ? buildMeasurementModeBanner(domain, env) : ""}
+    ${user.role !== "admin" ? await (await import("./nps")).renderNpsPromptIfDue(user, env) : ""}
     ${await buildGettingStarted(domain, user, env)}
     ${reportSection}
     ${trendSection}
