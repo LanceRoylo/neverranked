@@ -11,7 +11,18 @@
 # Node
 node_modules/
 
-# Wrangler dev secrets — never commit
+# Wrangler dev secrets -- never commit
 .dev.vars
 admin/.dev.vars
 admin/node_modules/
+
+# Build and test artifacts
+.tmp-build/
+test-results/
+tools/schema-check/test-results/
+
+# Local SQLite databases used for scripts
+outreach.db
+
+# Raw audit dumps -- regenerated per run, not source
+audits/**/raw/
