@@ -19,6 +19,7 @@ import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow"
 import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
 import { handleInstallIndex, handleInstallGuide } from "./routes/install-guides";
 import { handleChangelog } from "./routes/changelog";
+import { startRequestLog } from "./log";
 import {
   handle2faSettingsGet,
   handle2faEnrollPost,
@@ -68,6 +69,17 @@ import { getBrandingContext } from "./agency";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    // Per-request structured access log: one JSON line at the end with
+    // method, path, status, duration_ms, country, truncated UA, IP
+    // prefix, and (when known) the authenticated user_id. Pipe wrangler
+    // tail through jq to filter by any field.
+    const reqLog = startRequestLog(request);
+    let _user_id_for_log: number | undefined;
+
+    // Wrap routing in an IIFE so every existing `return X` becomes
+    // "return X from the IIFE", which we then log + decorate before
+    // returning to Cloudflare. No invasive change to the routing body.
+    const response = await (async (): Promise<Response> => {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -218,6 +230,7 @@ export default {
     // --- Auth check ---
 
     const user = await getUser(request, env);
+    if (user) _user_id_for_log = user.id;
 
     if (path === "/logout") {
       return handleLogout(request, env);
@@ -809,6 +822,13 @@ export default {
         <p>This page does not exist. <a href="/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">Go to dashboard</a></p>
       </div>
     `, user), 404);
+    })();
+
+    // Log + decorate the response.
+    reqLog.finish(response, { user_id: _user_id_for_log });
+    const decorated = new Response(response.body, response);
+    decorated.headers.set("X-Request-Id", reqLog.id);
+    return decorated;
   },
 
   async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
