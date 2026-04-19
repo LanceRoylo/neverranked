@@ -321,6 +321,168 @@ const REGRESSION_THRESHOLD = 5; // pts drop to trigger alert
 export { REGRESSION_THRESHOLD };
 
 // ---------------------------------------------------------------------------
+// Billing notifications (involuntary churn defense)
+// ---------------------------------------------------------------------------
+
+/**
+ * Notify the customer when an invoice payment fails. Stripe will retry
+ * automatically, but the customer needs to know NOW so they can update
+ * their card before the auto-cancel kicks in. Failure-to-notify is the
+ * #1 source of involuntary churn.
+ */
+export async function sendPaymentFailedEmail(
+  to: string,
+  userName: string | null,
+  opts: { amountDueCents: number; nextRetryAt: number | null; portalUrl: string },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Payment failed email for ${to}: $${(opts.amountDueCents / 100).toFixed(2)}`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const amount = `$${(opts.amountDueCents / 100).toFixed(2)}`;
+  const retryStr = opts.nextRetryAt
+    ? new Date(opts.nextRetryAt * 1000).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
+    : "in a few days";
+
+  const subject = `Payment failed -- update your card to keep ${brand.name} active`;
+  const text = [
+    `Hi ${greeting},`,
+    ``,
+    `Heads up: the most recent invoice charge of ${amount} didn't go through. This usually means an expired card, an insufficient balance, or the bank flagging the transaction.`,
+    ``,
+    `Stripe will retry automatically (next attempt: ${retryStr}), but the cleanest fix is to update your payment method now so the retry succeeds:`,
+    ``,
+    opts.portalUrl,
+    ``,
+    `If the retry fails too many times your subscription will pause and access will be suspended. We'd much rather catch this now than lose you to a card issue.`,
+    ``,
+    `Reply if anything is wrong on our end.`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${brand.name} <billing@neverranked.com>`,
+        to: [to],
+        subject,
+        text,
+        html: `
+<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi ${escEmail(greeting)},</p>
+<p style="margin:0 0 20px">Heads up: the most recent invoice charge of <strong>${amount}</strong> didn't go through. This usually means an expired card, an insufficient balance, or the bank flagging the transaction.</p>
+<p style="margin:0 0 20px">Stripe will retry automatically (next attempt: <strong>${escEmail(retryStr)}</strong>), but the cleanest fix is to update your payment method now so the retry succeeds:</p>
+<div style="margin:24px 0">
+  <a href="${escEmail(opts.portalUrl)}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:${brand.color};font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Update payment method &rarr;</a>
+</div>
+<p style="margin:0 0 20px;color:#555">If the retry fails too many times your subscription will pause and access will be suspended. We'd much rather catch this now than lose you to a card issue.</p>
+<p style="margin:0 0 20px;color:#555">Reply if anything is wrong on our end.</p>
+<p style="margin:0;color:#888;font-size:13px">${escEmail(brand.name)}</p>
+</body></html>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`Payment-failed email to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "payment_failed", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "payment_failed", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    console.log(`Payment-failed email to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "payment_failed", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+/**
+ * 30-day warning before a card on file expires. Stripe doesn't email
+ * the customer about this; without this, they get caught off guard
+ * when the next charge fails.
+ */
+export async function sendCardExpiringEmail(
+  to: string,
+  userName: string | null,
+  opts: { last4: string; expMonth: number; expYear: number; portalUrl: string },
+  env: Env,
+  agency?: Agency | null,
+): Promise<boolean> {
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Card-expiring email for ${to}: ending ${opts.last4}, ${opts.expMonth}/${opts.expYear}`);
+    return true;
+  }
+
+  const greeting = userName ? userName.split(" ")[0] : "there";
+  const brand = brandFor(agency);
+  const expLabel = `${String(opts.expMonth).padStart(2, "0")}/${String(opts.expYear).slice(-2)}`;
+  const subject = `Your card on file expires soon (${expLabel})`;
+
+  const text = [
+    `Hi ${greeting},`,
+    ``,
+    `Quick heads up: the card you have on file (ending ${opts.last4}) expires ${expLabel}. To avoid your next ${brand.name} renewal failing, update it now:`,
+    ``,
+    opts.portalUrl,
+    ``,
+    `Takes 30 seconds. We'd rather catch this before the renewal than after.`,
+    ``,
+    `-- ${brand.name}`,
+  ].join("\n");
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `${brand.name} <billing@neverranked.com>`,
+        to: [to],
+        subject,
+        text,
+        html: `
+<!doctype html><html><body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a;font-size:15px;line-height:1.65;padding:0 20px">
+<p style="margin:0 0 20px">Hi ${escEmail(greeting)},</p>
+<p style="margin:0 0 20px">Quick heads up: the card you have on file (ending <strong>${escEmail(opts.last4)}</strong>) expires <strong>${escEmail(expLabel)}</strong>. To avoid your next ${escEmail(brand.name)} renewal failing, update it now:</p>
+<div style="margin:24px 0">
+  <a href="${escEmail(opts.portalUrl)}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:${brand.color};font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">Update card on file &rarr;</a>
+</div>
+<p style="margin:0 0 20px;color:#555">Takes 30 seconds. We'd rather catch this before the renewal than after.</p>
+<p style="margin:0;color:#888;font-size:13px">${escEmail(brand.name)}</p>
+</body></html>`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.log(`Card-expiring email to ${to} failed: ${res.status} ${err}`);
+      await logEmailDelivery(env, { email: to, type: "card_expiring", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      return false;
+    }
+    await logEmailDelivery(env, { email: to, type: "card_expiring", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    return true;
+  } catch (e) {
+    console.log(`Card-expiring email to ${to} error: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "card_expiring", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Monthly recap
 // ---------------------------------------------------------------------------
 

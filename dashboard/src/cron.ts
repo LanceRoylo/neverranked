@@ -256,10 +256,101 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Monthly recap: only fires on day 1 of the month, self-guards
   // against re-fire via email_delivery_log.
   await maybeSendMonthlyRecaps(env);
+  // Expiring card check: warns customers 30 days before their card on
+  // file expires. Self-guards via email_delivery_log so it only nags
+  // each customer once per (card, month).
+  await runExpiringCardCheck(env);
   // Digest runs LAST so it includes anything the earlier sweeps wrote.
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+}
+
+// ---------------------------------------------------------------------------
+// Expiring card warning (30 days out)
+// ---------------------------------------------------------------------------
+//
+// Stripe doesn't proactively notify customers their card is about to
+// expire. Without this, the next renewal silently fails (we DO catch
+// that via the payment_failed webhook, but at that point the customer
+// is already mid-decline). 30 days of warning gives them time to
+// update without urgency.
+//
+// Strategy: walk every user with a stripe_customer_id, ask Stripe for
+// their default payment method, check the card expiry. If it expires
+// within 30 days AND we haven't warned them in the last 25 days, fire.
+
+export async function runExpiringCardCheck(env: Env): Promise<void> {
+  if (!env.STRIPE_SECRET_KEY) return;
+
+  const now = Math.floor(Date.now() / 1000);
+  const customers = (await env.DB.prepare(
+    `SELECT id, email, name, stripe_customer_id FROM users
+       WHERE stripe_customer_id IS NOT NULL AND stripe_customer_id != ''`
+  ).all<{ id: number; email: string; name: string | null; stripe_customer_id: string }>()).results;
+  if (customers.length === 0) return;
+
+  // 30 days from now: anything expiring before this date gets warned.
+  const cutoffDate = new Date();
+  cutoffDate.setUTCDate(cutoffDate.getUTCDate() + 30);
+  const cutoffMonth = cutoffDate.getUTCMonth() + 1; // 1-12
+  const cutoffYear = cutoffDate.getUTCFullYear();
+
+  let warned = 0;
+  let skipped = 0;
+
+  for (const c of customers) {
+    try {
+      // Fetch the customer to get the default payment method id.
+      const custRes = await fetch(`https://api.stripe.com/v1/customers/${c.stripe_customer_id}`, {
+        headers: { "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}` },
+      });
+      if (!custRes.ok) { skipped++; continue; }
+      const cust = await custRes.json() as { invoice_settings?: { default_payment_method?: string } };
+      const pmId = cust.invoice_settings?.default_payment_method;
+      if (!pmId) { skipped++; continue; }
+
+      // Fetch the payment method to get the card expiry.
+      const pmRes = await fetch(`https://api.stripe.com/v1/payment_methods/${pmId}`, {
+        headers: { "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}` },
+      });
+      if (!pmRes.ok) { skipped++; continue; }
+      const pm = await pmRes.json() as {
+        card?: { exp_month: number; exp_year: number; last4: string };
+      };
+      if (!pm.card) { skipped++; continue; }
+
+      const { exp_month, exp_year, last4 } = pm.card;
+      // Card "expires at end of exp_month/exp_year." Compare to cutoff.
+      const expiresBeforeCutoff =
+        exp_year < cutoffYear ||
+        (exp_year === cutoffYear && exp_month <= cutoffMonth);
+      if (!expiresBeforeCutoff) { skipped++; continue; }
+
+      // Already warned in the last 25 days? Skip.
+      const recentWarn = await env.DB.prepare(
+        `SELECT id FROM email_delivery_log
+          WHERE email = ? AND type = 'card_expiring' AND created_at > ?
+          LIMIT 1`
+      ).bind(c.email, now - 25 * 86400).first<{ id: number }>();
+      if (recentWarn) { skipped++; continue; }
+
+      const { sendCardExpiringEmail } = await import("./email");
+      const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+      const ok = await sendCardExpiringEmail(c.email, c.name, {
+        last4, expMonth: exp_month, expYear: exp_year,
+        portalUrl: `${origin}/billing/portal`,
+      }, env);
+      if (ok) warned++;
+
+      await new Promise((r) => setTimeout(r, 200));
+    } catch (e) {
+      console.log(`[expiring-card] failed for user ${c.id}: ${e}`);
+      skipped++;
+    }
+  }
+
+  console.log(`[expiring-card] checked ${customers.length}: ${warned} warned, ${skipped} skipped`);
 }
 
 // ---------------------------------------------------------------------------

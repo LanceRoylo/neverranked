@@ -469,9 +469,10 @@ export async function handleStripeWebhook(
       if (env.RESEND_API_KEY) {
         try {
           const user = await env.DB.prepare(
-            "SELECT email FROM users WHERE stripe_customer_id = ?"
-          ).bind(customerId).first<{ email: string }>();
+            "SELECT email, name FROM users WHERE stripe_customer_id = ?"
+          ).bind(customerId).first<{ email: string; name: string | null }>();
 
+          // Admin alert (existing behavior)
           await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
@@ -485,6 +486,20 @@ export async function handleStripeWebhook(
               html: `<p>Invoice payment failed.</p><p>Customer: <strong>${user?.email || 'unknown'}</strong></p><p>Amount: $${(invoice.amount_due / 100).toFixed(2)}</p><p>Time: ${new Date().toISOString()}</p>`,
             }),
           });
+
+          // CUSTOMER notification (new): the actual leverage move. Stripe
+          // retries automatically but the customer needs to know NOW so
+          // they can update the card before the auto-cancel kicks in.
+          if (user?.email) {
+            const { sendPaymentFailedEmail } = await import("../email");
+            const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+            const portalUrl = `${origin}/billing/portal`;
+            await sendPaymentFailedEmail(user.email, user.name, {
+              amountDueCents: invoice.amount_due,
+              nextRetryAt: invoice.next_payment_attempt || null,
+              portalUrl,
+            }, env);
+          }
         } catch (e) {
           console.log(`Payment failure notification failed: ${e}`);
         }
