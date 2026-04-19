@@ -14,7 +14,14 @@ import { countActiveSlots, getAgency } from "../agency";
 import { sendSnippetDeliveryEmail } from "../agency-emails";
 
 /** Admin overview: list all clients and domains */
-export async function handleAdminHome(user: User, env: Env): Promise<Response> {
+export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<Response> {
+  const flash = url?.searchParams.get("flash") || null;
+  const errorMsg = url?.searchParams.get("error") || null;
+  const flashBlock = flash
+    ? `<div class="flash" style="margin-bottom:16px">${esc(flash)}</div>`
+    : errorMsg
+    ? `<div class="flash flash-error" style="margin-bottom:16px">${esc(errorMsg)}</div>`
+    : "";
   const domains = (await env.DB.prepare(
     "SELECT * FROM domains WHERE active = 1 ORDER BY client_slug, is_competitor, domain"
   ).all<Domain>()).results;
@@ -135,6 +142,8 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
       <h1>Manage <em>clients</em></h1>
     </div>
 
+    ${flashBlock}
+
     ${agenciesSection}
 
     ${clientSections}
@@ -254,7 +263,7 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
     <div class="card" style="margin-top:24px">
       <h3 style="margin-bottom:16px">Users</h3>
       <table class="data-table">
-        <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Client</th><th>Last login</th></tr></thead>
+        <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Client</th><th>Last login</th><th>2FA</th></tr></thead>
         <tbody>
           ${users.map(u => `
             <tr>
@@ -263,6 +272,11 @@ export async function handleAdminHome(user: User, env: Env): Promise<Response> {
               <td><span class="status status-${u.role === 'admin' ? 'in_progress' : 'pending'}">${u.role}</span></td>
               <td>${u.client_slug ? esc(u.client_slug) : '<span style="color:var(--text-faint)">-</span>'}</td>
               <td style="color:var(--text-faint)">${u.last_login_at ? new Date(u.last_login_at * 1000).toLocaleDateString() : 'Never'}</td>
+              <td>${u.totp_enabled_at ? `
+                <form method="POST" action="/admin/users/${u.id}/reset-2fa" style="display:inline;margin:0" onsubmit="return confirm('Reset 2FA for ${esc(u.email)}? They will be emailed and need to re-enroll.');">
+                  <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px;color:var(--red,#c85050)" title="Clear TOTP secret and recovery codes">Reset 2FA</button>
+                </form>
+              ` : '<span style="color:var(--text-faint);font-size:11px">off</span>'}</td>
             </tr>
           `).join('')}
         </tbody>

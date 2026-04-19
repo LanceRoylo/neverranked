@@ -1983,3 +1983,86 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
 </html>
   `.trim();
 }
+
+// ---------------------------------------------------------------------------
+// 2FA state-change notifications
+// ---------------------------------------------------------------------------
+
+export type TwoFactorEvent =
+  | "enrolled"
+  | "disabled_self"
+  | "disabled_admin"
+  | "recovery_code_used";
+
+export async function sendTwoFactorStateChangeEmail(
+  email: string,
+  event: TwoFactorEvent,
+  env: Env,
+  opts: { remainingRecoveryCodes?: number } = {},
+): Promise<boolean> {
+  const subjectMap: Record<TwoFactorEvent, string> = {
+    enrolled: "Two-factor authentication turned on",
+    disabled_self: "Two-factor authentication turned off",
+    disabled_admin: "Two-factor authentication was reset by an admin",
+    recovery_code_used: "A recovery code was used on your account",
+  };
+  const bodyMap: Record<TwoFactorEvent, string> = {
+    enrolled: "You turned on 2FA. You'll be prompted for a 6-digit code the next time you sign in.",
+    disabled_self: "You disabled 2FA. Your account is now protected only by magic-link sign-in. If this wasn't you, reply to this email immediately.",
+    disabled_admin: "A NeverRanked admin reset 2FA on your account. You should set it up again from Settings. If you did not request this, reply to this email immediately.",
+    recovery_code_used: "Someone signed in using one of your 2FA recovery codes. If this wasn't you, reply to this email and we'll lock the account.",
+  };
+  const remainingLine = event === "recovery_code_used" && typeof opts.remainingRecoveryCodes === "number"
+    ? `<p style="margin:0 0 12px;font-size:12px;color:#888">Recovery codes remaining: ${opts.remainingRecoveryCodes}. Generate new ones from Settings if you're running low.</p>`
+    : "";
+
+  const subject = subjectMap[event];
+  const body = bodyMap[event];
+  const when = new Date().toUTCString();
+
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] 2FA state email to ${email}: ${subject}`);
+    return true;
+  }
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: `Never Ranked <security@neverranked.com>`,
+        to: [email],
+        reply_to: "support@neverranked.com",
+        subject,
+        text: `${body}\n\nTime: ${when}\n\nIf this wasn't you, reply to this email right away.\n\nNever Ranked`,
+        html: `
+          <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
+            <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">Never Ranked</p>
+            <p style="margin:0 0 16px;font-size:16px;color:#1a1a1a">${subject}</p>
+            <p style="margin:0 0 16px;line-height:1.6">${body}</p>
+            ${remainingLine}
+            <p style="margin:24px 0 0;font-size:12px;color:#888">Time: ${when}</p>
+            <p style="margin:8px 0 0;font-size:12px;color:#888">If this wasn't you, reply to this email right away.</p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`2FA state email to ${email} (${event}) failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email, type: `2fa_${event}`, status: "failed", statusCode: resp.status, errorMessage: errBody });
+      return false;
+    }
+
+    await logEmailDelivery(env, { email, type: `2fa_${event}`, status: "queued", statusCode: resp.status });
+    return true;
+  } catch (err) {
+    console.error(`2FA state email to ${email} (${event}) error:`, err);
+    await logEmailDelivery(env, { email, type: `2fa_${event}`, status: "failed", errorMessage: String(err) });
+    return false;
+  }
+}

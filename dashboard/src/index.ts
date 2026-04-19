@@ -27,6 +27,7 @@ import {
   handle2faDisablePost,
   handle2faChallengeGet,
   handle2faChallengePost,
+  handleAdminReset2fa,
 } from "./routes/two-factor";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
@@ -424,7 +425,7 @@ export default {
       return handleCockpit(user, env);
     }
     if (path === "/admin/manage" && method === "GET" && user.role === "admin") {
-      return handleAdminHome(user, env);
+      return handleAdminHome(user, env, url);
     }
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
@@ -469,6 +470,10 @@ export default {
     }
     if (path === "/admin/users" && method === "POST" && user.role === "admin") {
       return handleAddUser(request, user, env);
+    }
+    const reset2faMatch = path.match(/^\/admin\/users\/(\d+)\/reset-2fa$/);
+    if (reset2faMatch && method === "POST" && user.role === "admin") {
+      return handleAdminReset2fa(Number(reset2faMatch[1]), user, env);
     }
     const scanMatch = path.match(/^\/admin\/scan\/(\d+)$/);
     if (scanMatch && method === "POST" && user.role === "admin") {

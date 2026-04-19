@@ -17,6 +17,7 @@
 import type { Env, User } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { generateSecret, provisioningUri, totpVerify, generateRecoveryCodes, consumeRecoveryCode } from "../totp";
+import { sendTwoFactorStateChangeEmail } from "../email";
 
 const ISSUER = "Never Ranked";
 
@@ -86,8 +87,8 @@ export async function handle2faSettingsGet(user: User, env: Env, url: URL): Prom
       ` : `
         <h3 style="margin:0 0 12px">Set up 2FA</h3>
         <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin-bottom:18px">
-          You'll need an authenticator app (Google Authenticator, 1Password, Authy, or your iOS/macOS Passwords app).
-          Click below to generate a secret and scan it.
+          Install an authenticator app first if you don't have one: Google Authenticator, Authy, 1Password, Microsoft Authenticator, Bitwarden, or iOS/macOS Passwords all work.
+          Scan the QR from inside that app, not your phone's regular camera.
         </p>
         <form method="POST" action="/settings/2fa/enroll">
           <button type="submit" class="btn">Start enrollment</button>
@@ -128,6 +129,10 @@ export async function handle2faEnrollPost(user: User, env: Env): Promise<Respons
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;max-width:840px">
       <div class="card">
         <h3 style="margin-top:0">1. Scan with your authenticator app</h3>
+        <p class="muted" style="font-size:12px;line-height:1.6;margin:0 0 10px">
+          Open your authenticator app first (Google Authenticator, Authy, 1Password, Microsoft Authenticator, Bitwarden, or iOS/macOS Passwords), then scan from inside the app.
+          Don't use your phone's regular camera. It'll try to save the code to iCloud Keychain instead.
+        </p>
         <div style="text-align:center;padding:14px;background:#fff;border-radius:6px;margin:10px 0 16px">
           <img src="${esc(qrUrl)}" alt="2FA QR code" width="240" height="240" style="display:block;margin:0 auto">
         </div>
@@ -186,6 +191,8 @@ export async function handle2faVerifyPost(request: Request, user: User, env: Env
     ).bind(sessionToken).run();
   }
 
+  try { await sendTwoFactorStateChangeEmail(user.email, "enrolled", env); } catch {}
+
   return redirect("/settings/2fa?flash=" + encodeURIComponent("Two-factor authentication is on. You'll be prompted for a code on each new sign-in."));
 }
 
@@ -206,6 +213,7 @@ export async function handle2faDisablePost(request: Request, user: User, env: En
   await env.DB.prepare(
     "UPDATE users SET totp_secret = NULL, totp_enabled_at = NULL, totp_recovery_codes = NULL WHERE id = ?"
   ).bind(user.id).run();
+  try { await sendTwoFactorStateChangeEmail(user.email, "disabled_self", env); } catch {}
   return redirect("/settings/2fa?flash=" + encodeURIComponent("2FA disabled. Your account is now protected only by magic-link sign-in."));
 }
 
@@ -268,12 +276,14 @@ export async function handle2faChallengePost(request: Request, user: User | null
   }
 
   // Path 2: recovery code
+  let recoveryCodeConsumed: { remaining: number } | null = null;
   if (!verified && recoveryCode && user.totp_recovery_codes) {
     try {
       const codes: string[] = JSON.parse(user.totp_recovery_codes);
       const remaining = consumeRecoveryCode(codes, recoveryCode);
       if (remaining !== null) {
         verified = true;
+        recoveryCodeConsumed = { remaining: remaining.length };
         await env.DB.prepare(
           "UPDATE users SET totp_recovery_codes = ? WHERE id = ?"
         ).bind(JSON.stringify(remaining), user.id).run();
@@ -295,5 +305,40 @@ export async function handle2faChallengePost(request: Request, user: User | null
     ).bind(sessionToken).run();
   }
 
+  if (recoveryCodeConsumed) {
+    try {
+      await sendTwoFactorStateChangeEmail(user.email, "recovery_code_used", env, { remainingRecoveryCodes: recoveryCodeConsumed.remaining });
+    } catch {}
+  }
+
   return redirect(safeNext);
+}
+
+// ---------------------------------------------------------------------------
+// POST /admin/users/:id/reset-2fa  (admin-only: wipe another user's 2FA)
+// ---------------------------------------------------------------------------
+
+export async function handleAdminReset2fa(targetId: number, actor: User, env: Env): Promise<Response> {
+  if (actor.role !== "admin") return redirect("/");
+
+  const target = await env.DB.prepare(
+    "SELECT id, email, totp_enabled_at FROM users WHERE id = ?"
+  ).bind(targetId).first<{ id: number; email: string; totp_enabled_at: number | null }>();
+
+  if (!target) {
+    return redirect("/admin/manage?error=" + encodeURIComponent("User not found."));
+  }
+  if (!target.totp_enabled_at) {
+    return redirect("/admin/manage?flash=" + encodeURIComponent(`${target.email} already has 2FA off. Nothing to reset.`));
+  }
+
+  await env.DB.prepare(
+    "UPDATE users SET totp_secret = NULL, totp_enabled_at = NULL, totp_recovery_codes = NULL WHERE id = ?"
+  ).bind(targetId).run();
+
+  try { await sendTwoFactorStateChangeEmail(target.email, "disabled_admin", env); } catch {}
+
+  console.log(`[2fa-admin-reset] actor=${actor.email} target=${target.email} id=${targetId}`);
+
+  return redirect("/admin/manage?flash=" + encodeURIComponent(`2FA reset for ${target.email}. They'll need to re-enroll.`));
 }
