@@ -71,6 +71,91 @@ function buildMeasurementModeBanner(domain: Domain, env: Env): string {
   `;
 }
 
+/**
+ * Setup completeness widget. Persistent on /domain/:id until the
+ * client has completed all five activation steps. Each row strikes
+ * through as it's done; the whole widget vanishes at 5/5.
+ *
+ * Lives ABOVE the measurement-mode banner so the order of attention
+ * is: "here's what's missing" -> "here's the impact of one specific
+ * missing thing (snippet)" -> "here's your dashboard."
+ */
+async function buildSetupCompletenessWidget(domain: Domain, user: User, env: Env): Promise<string> {
+  if (domain.is_competitor) return "";
+
+  // Run all checks in parallel.
+  const [hasGsc, keywordCount, scanCount, shareCount] = await Promise.all([
+    env.DB.prepare(
+      "SELECT 1 FROM gsc_properties WHERE client_slug = ? LIMIT 1"
+    ).bind(domain.client_slug).first<unknown>(),
+    env.DB.prepare(
+      "SELECT COUNT(*) AS cnt FROM citation_keywords WHERE client_slug = ? AND active = 1"
+    ).bind(domain.client_slug).first<{ cnt: number }>(),
+    env.DB.prepare(
+      "SELECT COUNT(*) AS cnt FROM scan_results WHERE domain_id = ? AND error IS NULL"
+    ).bind(domain.id).first<{ cnt: number }>(),
+    env.DB.prepare(
+      "SELECT COUNT(*) AS cnt FROM shared_reports WHERE client_slug = ?"
+    ).bind(domain.client_slug).first<{ cnt: number }>(),
+  ]);
+
+  const steps: { label: string; done: boolean; href?: string; cta?: string }[] = [
+    {
+      label: "First scan complete",
+      done: (scanCount?.cnt || 0) > 0,
+    },
+    {
+      label: "Snippet installed on the site",
+      done: !!domain.snippet_last_detected_at,
+      href: `/install?slug=${encodeURIComponent(domain.client_slug)}`,
+      cta: "Install guide",
+    },
+    {
+      label: "Google Search Console connected",
+      done: !!hasGsc,
+      href: `/gsc`,
+      cta: "Connect",
+    },
+    {
+      label: "Citation keywords added",
+      done: (keywordCount?.cnt || 0) > 0,
+      href: `/citations/${domain.client_slug}`,
+      cta: "Add keywords",
+    },
+    {
+      label: "Shared a report with a stakeholder",
+      done: (shareCount?.cnt || 0) > 0,
+      href: `/report/${domain.client_slug}`,
+      cta: "Open report",
+    },
+  ];
+
+  const done = steps.filter((s) => s.done).length;
+  const total = steps.length;
+  if (done === total) return "";
+
+  const rows = steps.map((s) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)">
+      <span style="font-family:var(--mono);width:18px;color:${s.done ? 'var(--green)' : 'var(--text-faint)'};font-size:14px;flex-shrink:0">${s.done ? '&check;' : '&middot;'}</span>
+      <span style="flex:1;font-size:13px;${s.done ? 'color:var(--text-faint);text-decoration:line-through' : 'color:var(--text)'}">${esc(s.label)}</span>
+      ${!s.done && s.href ? `<a href="${s.href}" class="btn btn-ghost" style="padding:4px 10px;font-size:11px;flex-shrink:0">${esc(s.cta || "Open")}</a>` : ""}
+    </div>
+  `).join("");
+
+  return `
+    <div style="margin-bottom:32px;padding:18px 22px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;gap:16px">
+        <div>
+          <div class="label" style="margin-bottom:6px;color:var(--gold)">Setup checklist</div>
+          <div style="font-size:12px;color:var(--text-faint)">Each item below unlocks more of the platform. Card disappears at 5/5.</div>
+        </div>
+        <span class="label" style="font-size:11px">${done} of ${total} done</span>
+      </div>
+      <div>${rows}</div>
+    </div>
+  `;
+}
+
 async function buildGettingStarted(domain: Domain, user: User, env: Env): Promise<string> {
   // Only show for clients, not admins
   if (user.role === "admin") return "";
@@ -1582,6 +1667,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     </div>
 
     ${shareFlash}
+    ${user.role !== "admin" ? await buildSetupCompletenessWidget(domain, user, env) : ""}
     ${user.role !== "admin" ? buildMeasurementModeBanner(domain, env) : ""}
     ${await buildGettingStarted(domain, user, env)}
     ${reportSection}
