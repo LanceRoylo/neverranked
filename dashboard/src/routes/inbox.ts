@@ -277,19 +277,28 @@ export async function handleInboxAgencyAppAction(
   }
 
   // Approve path. Provision the full stack:
-  //   1. Create agencies row (status='pending' so branding stays off
-  //      until Stripe checkout completes -- agency admin sees the app
-  //      but it doesn't start white-labeling client reports yet).
-  //   2. Create the agency_admin user. Deduplicate on email so a repeat
+  //   1. Atomically claim the application (status=pending -> approved).
+  //      This is our single-writer gate: a double-click or concurrent
+  //      approval will lose the race here and bail, preventing duplicate
+  //      agency rows from being created for the same applicant.
+  //   2. Create agencies row (status='pending' so branding stays off
+  //      until Stripe checkout completes).
+  //   3. Create the agency_admin user. Deduplicate on email so a repeat
   //      application from the same address just attaches the existing user.
-  //   3. Generate a magic-link token so the welcome email can deep-link
-  //      them straight into the dashboard.
-  //   4. Send the onboarding email (magic link + next steps).
+  //   4. Attach agency_id back to the application row for traceability.
+  //   5. Generate a magic-link token + send the onboarding email.
   //
   // We wrap the DB work carefully so a partial failure (e.g. Resend is
   // down) still leaves a consistent state: the agency + user rows are
   // created, the application is marked approved, and Lance can resend
   // the welcome email manually if Resend hiccuped.
+
+  // 1. Atomic claim. D1 .run().meta.changes is 0 when the WHERE didn't
+  //    match, which means someone else already approved this row.
+  const claim = await env.DB.prepare(
+    "UPDATE agency_applications SET status = 'approved', reviewed_by = ?, reviewed_at = ? WHERE id = ? AND status = 'pending'"
+  ).bind(user.id, now, id).run();
+  if (!claim.meta?.changes) return redirect("/admin/inbox");
 
   // Derive a slug from the agency name. Fall back to "agency-<id>" if
   // the normalized name is empty or already taken.
@@ -307,7 +316,7 @@ export async function handleInboxAgencyAppAction(
     slug = `${baseSlug || `agency-${id}`}-${i + 1}`;
   }
 
-  // 1. Create agency row (status='pending' -- flips to 'active' on
+  // 2. Create agency row (status='pending' -- flips to 'active' on
   //    successful Stripe checkout via the billing/activate handler).
   const agencyInsert = await env.DB.prepare(
     `INSERT INTO agencies (slug, name, contact_email, primary_color, status, created_at, updated_at)
@@ -315,7 +324,7 @@ export async function handleInboxAgencyAppAction(
   ).bind(slug, app.agency_name, app.contact_email, now, now).run();
   const agencyId = agencyInsert.meta.last_row_id as number;
 
-  // 2. Create or attach the agency_admin user.
+  // 3. Create or attach the agency_admin user.
   let userId: number;
   const existingUser = await env.DB.prepare(
     "SELECT id FROM users WHERE email = ?"
@@ -334,12 +343,13 @@ export async function handleInboxAgencyAppAction(
     userId = userInsert.meta.last_row_id as number;
   }
 
-  // 3. Update the application row with agency_id and reviewer info.
+  // 4. Attach agency_id to the application row. Status + reviewer were
+  //    already set atomically in step 1; this is just traceability.
   await env.DB.prepare(
-    "UPDATE agency_applications SET status = 'approved', reviewed_by = ?, reviewed_at = ?, agency_id = ? WHERE id = ?"
-  ).bind(user.id, now, agencyId, id).run();
+    "UPDATE agency_applications SET agency_id = ? WHERE id = ?"
+  ).bind(agencyId, id).run();
 
-  // 4. Generate magic-link token + send onboarding email. We import
+  // 5. Generate magic-link token + send onboarding email. We import
   //    lazily because the mail module pulls in config that isn't needed
   //    on the hot path for most routes.
   try {
