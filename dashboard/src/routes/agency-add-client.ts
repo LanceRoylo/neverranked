@@ -300,15 +300,23 @@ export async function handleAgencyAddClientPost(request: Request, user: User | n
   if (!newDomainId) return queryback("Could not save the client (no row id). Contact ops.");
 
   // Slot reconcile -> Stripe quantity update + lazy Amplify item create.
-  // Errors are logged but don't fail the add (Lance can run reconcile
-  // manually from the admin cockpit if Stripe was hiccuping).
+  // If Stripe rejects, roll back the domain insert so D1 and Stripe
+  // stay in sync. Otherwise the agency would have an active client in
+  // our DB that Stripe isn't billing, and neither side would know.
   try {
     await reconcileAgencySlots(env, agency.id);
   } catch (e) {
     console.log(`[agency-add-client] reconcile failed for agency ${agency.id}: ${e}`);
+    try {
+      await env.DB.prepare("DELETE FROM domains WHERE id = ?").bind(newDomainId).run();
+    } catch (delErr) {
+      console.log(`[agency-add-client] rollback delete failed for domain ${newDomainId}: ${delErr}`);
+    }
+    return queryback("Billing update failed -- the client wasn't added. Try again, or contact ops if it keeps failing.");
   }
 
-  // Slot event ledger row.
+  // Slot event ledger row. Only logged after Stripe is in sync so the
+  // ledger never shows an activation that got rolled back.
   try {
     const slotsAfter = await countActiveSlots(env, agency.id);
     const after = plan === "amplify" ? slotsAfter.amplify : slotsAfter.signal;
