@@ -11,7 +11,7 @@ import { autoGenerateRoadmap } from "../auto-provision";
 import { autoCompleteRoadmapItems } from "../auto-complete";
 import { reconcileAgencySlots } from "../agency-slots";
 import { countActiveSlots, getAgency } from "../agency";
-import { sendSnippetDeliveryEmail } from "../agency-emails";
+import { sendSnippetDeliveryEmail, sendAgencyOnboardingEmail } from "../agency-emails";
 
 /** Admin overview: list all clients and domains */
 export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<Response> {
@@ -263,7 +263,7 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
     <div class="card" style="margin-top:24px">
       <h3 style="margin-bottom:16px">Users</h3>
       <table class="data-table">
-        <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Client</th><th>Last login</th><th>2FA</th></tr></thead>
+        <thead><tr><th>Email</th><th>Name</th><th>Role</th><th>Client</th><th>Last login</th><th>Actions</th></tr></thead>
         <tbody>
           ${users.map(u => `
             <tr>
@@ -272,11 +272,21 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
               <td><span class="status status-${u.role === 'admin' ? 'in_progress' : 'pending'}">${u.role}</span></td>
               <td>${u.client_slug ? esc(u.client_slug) : '<span style="color:var(--text-faint)">-</span>'}</td>
               <td style="color:var(--text-faint)">${u.last_login_at ? new Date(u.last_login_at * 1000).toLocaleDateString() : 'Never'}</td>
-              <td>${u.totp_enabled_at ? `
-                <form method="POST" action="/admin/users/${u.id}/reset-2fa" style="display:inline;margin:0" onsubmit="return confirm('Reset 2FA for ${esc(u.email)}? They will be emailed and need to re-enroll.');">
-                  <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px;color:var(--red,#c85050)" title="Clear TOTP secret and recovery codes">Reset 2FA</button>
-                </form>
-              ` : '<span style="color:var(--text-faint);font-size:11px">off</span>'}</td>
+              <td>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                  ${u.totp_enabled_at ? `
+                    <form method="POST" action="/admin/users/${u.id}/reset-2fa" style="display:inline;margin:0" onsubmit="return confirm('Reset 2FA for ${esc(u.email)}? They will be emailed and need to re-enroll.');">
+                      <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px;color:var(--red,#c85050)" title="Clear TOTP secret and recovery codes">Reset 2FA</button>
+                    </form>
+                  ` : ''}
+                  ${u.role === 'agency_admin' && u.agency_id ? `
+                    <form method="POST" action="/admin/users/${u.id}/resend-onboarding" style="display:inline;margin:0" onsubmit="return confirm('Resend onboarding email to ${esc(u.email)}?');">
+                      <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px" title="Regenerate magic link + resend welcome email">Resend onboarding</button>
+                    </form>
+                  ` : ''}
+                  ${!u.totp_enabled_at && (u.role !== 'agency_admin' || !u.agency_id) ? '<span style="color:var(--text-faint);font-size:11px">-</span>' : ''}
+                </div>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -571,4 +581,60 @@ export async function handleReconcileAgency(agencyId: number, user: User, env: E
     ).run();
   }
   return redirect("/admin/manage");
+}
+
+// ---------------------------------------------------------------------------
+// POST /admin/users/:id/resend-onboarding
+//
+// Regenerates a fresh 7-day magic-link token for an agency_admin and
+// re-fires the onboarding welcome email. Used when the original send
+// bounced, the 7-day link lapsed, or the agency lost the email.
+// ---------------------------------------------------------------------------
+
+export async function handleAdminResendOnboarding(
+  targetId: number,
+  actor: User,
+  env: Env,
+): Promise<Response> {
+  if (actor.role !== "admin") return redirect("/");
+
+  const target = await env.DB.prepare(
+    "SELECT id, email, name, role, agency_id FROM users WHERE id = ?"
+  ).bind(targetId).first<{ id: number; email: string; name: string | null; role: string; agency_id: number | null }>();
+
+  if (!target) {
+    return redirect("/admin/manage?error=" + encodeURIComponent("User not found."));
+  }
+  if (target.role !== "agency_admin" || !target.agency_id) {
+    return redirect("/admin/manage?error=" + encodeURIComponent("Resend onboarding only applies to agency admins."));
+  }
+
+  const agency = await env.DB.prepare(
+    "SELECT name FROM agencies WHERE id = ?"
+  ).bind(target.agency_id).first<{ name: string }>();
+  if (!agency) {
+    return redirect("/admin/manage?error=" + encodeURIComponent("Agency not found."));
+  }
+
+  try {
+    const token = crypto.randomUUID().replace(/-/g, "") + crypto.randomUUID().replace(/-/g, "");
+    const now = Math.floor(Date.now() / 1000);
+    const expires = now + 86400 * 7;
+    await env.DB.prepare(
+      "INSERT INTO magic_links (email, token, expires_at, used, created_at) VALUES (?, ?, ?, 0, ?)"
+    ).bind(target.email, token, expires, now).run();
+
+    await sendAgencyOnboardingEmail(env, {
+      to: target.email,
+      contactName: target.name || "",
+      agencyName: agency.name,
+      magicLinkToken: token,
+    });
+  } catch (e) {
+    console.log(`[admin-resend-onboarding] failed for user ${targetId}: ${e}`);
+    return redirect("/admin/manage?error=" + encodeURIComponent("Failed to send onboarding email. Check logs."));
+  }
+
+  console.log(`[admin-resend-onboarding] actor=${actor.email} target=${target.email}`);
+  return redirect("/admin/manage?flash=" + encodeURIComponent(`Onboarding email re-sent to ${target.email}.`));
 }
