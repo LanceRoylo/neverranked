@@ -15,6 +15,7 @@
 import type { Env } from "../types";
 import { html, redirect, esc } from "../render";
 import { CSS } from "../styles";
+import { hashIP, logEvent } from "../analytics";
 
 function publicLayout(title: string, body: string): string {
   return `<!doctype html>
@@ -72,6 +73,10 @@ export async function handleAgencyApplyGet(): Promise<Response> {
         <label>Anything we should know?</label>
         <textarea name="notes" rows="4" maxlength="2000" placeholder="Type of clients, current SEO stack, questions, etc."></textarea>
       </div>
+      <div style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+        <label>Company affiliation (leave blank)</label>
+        <input type="text" name="company_affiliation" tabindex="-1" autocomplete="off">
+      </div>
       <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-top:4px">
         <a href="https://neverranked.com" style="font-size:12px;color:var(--text-faint)">&larr; Back to neverranked.com</a>
         <button type="submit" class="btn">Submit application</button>
@@ -93,6 +98,27 @@ export async function handleAgencyApplyPost(request: Request, env: Env): Promise
   const estimatedClientsRaw = String(form.get("estimated_clients") || "").trim();
   const estimatedClients = estimatedClientsRaw ? Math.min(500, Math.max(0, parseInt(estimatedClientsRaw, 10) || 0)) : null;
   const notes = String(form.get("notes") || "").trim().slice(0, 2000);
+  const honeypot = String(form.get("company_affiliation") || "").trim();
+
+  // Thank-you page is the same shape the real flow returns, so spam
+  // traps look indistinguishable from a normal submit.
+  const thankYou = (nameForSalutation: string, agencyNameForBody: string) =>
+    html(publicLayout("Thanks", `
+      <div class="label" style="margin-bottom:8px">Got it</div>
+      <h1 style="margin-bottom:12px">Thanks, <em>${esc(nameForSalutation.split(' ')[0] || 'there')}</em>.</h1>
+      <p style="color:var(--text-faint);font-size:15px;line-height:1.7;margin-bottom:24px">
+        We got your application for <strong style="color:var(--text)">${esc(agencyNameForBody)}</strong>. We review these within 24 hours. If there's a fit, you'll get a login link at <strong style="color:var(--text)">${esc(contactEmail)}</strong> with next steps. If the inbox goes quiet for more than a day, reply to the original outreach thread and we'll fast-track you.
+      </p>
+      <a href="https://neverranked.com" style="color:var(--gold);font-size:13px">Back to neverranked.com &rarr;</a>
+    `));
+
+  // Honeypot: hidden field is invisible to humans but most naive bots
+  // fill every input. Silently return the thank-you page -- no insert,
+  // no alert, no error. The attacker sees "success" and moves on.
+  if (honeypot) {
+    console.log(`[agency-apply] honeypot tripped from ${hashIP(request.headers.get("CF-Connecting-IP") || "unknown")}`);
+    return thankYou(contactName, agencyName);
+  }
 
   // Minimal validation -- client-side required attrs catch most; the
   // server re-checks so a scripted bypass just sees an error, not an
@@ -105,12 +131,27 @@ export async function handleAgencyApplyPost(request: Request, env: Env): Promise
     `), 400);
   }
 
+  const now = Math.floor(Date.now() / 1000);
+  const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+  const ipH = hashIP(ip);
+
+  // IP rate limit: no more than 5 submissions from the same IP in the
+  // last 24h. Reuses analytics_events so no migration needed. Silently
+  // returns thank-you -- bots get no signal that they've been stopped.
+  const ipRecent = await env.DB.prepare(
+    `SELECT COUNT(*) AS n FROM analytics_events
+       WHERE event_type = 'agency_apply_submit' AND ip_hash = ? AND created_at > ?`
+  ).bind(ipH, now - 86400).first<{ n: number }>();
+  if ((ipRecent?.n ?? 0) >= 5) {
+    console.log(`[agency-apply] IP rate limit hit for ${ipH} (${ipRecent?.n} submits in 24h)`);
+    return thankYou(contactName, agencyName);
+  }
+
   // Duplicate suppression. If this email has a pending or approved
   // application in the last 24h, don't insert a second one. Swallow it
   // silently behind the same thank-you page so a confused prospect
   // doesn't see an error -- their original submission is already in
   // our inbox.
-  const now = Math.floor(Date.now() / 1000);
   const existing = await env.DB.prepare(
     `SELECT id FROM agency_applications
        WHERE contact_email = ? AND created_at > ? AND status IN ('pending', 'approved')
@@ -133,6 +174,11 @@ export async function handleAgencyApplyPost(request: Request, env: Env): Promise
       `${contactName} (${contactEmail}) from ${website}. Estimated ${estimatedClients ?? '?'} clients in first 90 days.`,
       now,
     ).run();
+
+    // Log the submit so the IP rate limit counter increments for the
+    // next attempt within the window. Fire-and-forget; analytics never
+    // blocks the response.
+    await logEvent(env, { type: "agency_apply_submit", source: "main_site", ipHash: ipH });
   }
 
   return html(publicLayout("Thanks", `
