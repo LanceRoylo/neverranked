@@ -57,7 +57,8 @@ export interface SlotReconcileResult {
  */
 export async function reconcileAgencySlots(
   env: Env,
-  agencyId: number
+  agencyId: number,
+  _attempt: number = 0
 ): Promise<SlotReconcileResult> {
   const agency = await getAgency(env, agencyId);
   if (!agency) throw new Error(`Agency ${agencyId} not found`);
@@ -77,6 +78,41 @@ export async function reconcileAgencySlots(
 
   const signal = await reconcileSignal(env, agency, slots.signal);
   const amplify = await reconcileAmplify(env, agency, slots.amplify);
+
+  // Drift guard. Two concurrent add-client requests can each insert their
+  // domain row and then reconcile -- if the second reconcile's D1 read
+  // happens on a replica that hasn't seen the first insert yet, it will
+  // push Stripe back to an old quantity. After reconcile, re-read the DB
+  // and if the count has advanced past what we just wrote to Stripe, run
+  // reconcile once more. Capped at one retry so we don't loop forever if
+  // something upstream is genuinely broken.
+  if (_attempt === 0) {
+    const slotsAfter = await countActiveSlots(env, agencyId);
+    const drift =
+      slotsAfter.signal !== signal.stripeQuantity ||
+      slotsAfter.amplify !== amplify.stripeQuantity;
+    if (drift) {
+      console.log(
+        `[agency-slots] drift detected for agency ${agencyId}: ` +
+        `db=(signal:${slotsAfter.signal},amplify:${slotsAfter.amplify}) ` +
+        `stripe=(signal:${signal.stripeQuantity},amplify:${amplify.stripeQuantity}) -- retrying reconcile`
+      );
+      try {
+        const now = Math.floor(Date.now() / 1000);
+        await env.DB.prepare(
+          `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+             VALUES ('_system', 'slot_drift_detected', ?, ?, ?)`
+        ).bind(
+          `Slot drift on agency ${agencyId}`,
+          `DB counts (signal:${slotsAfter.signal}, amplify:${slotsAfter.amplify}) diverged from Stripe quantities (signal:${signal.stripeQuantity}, amplify:${amplify.stripeQuantity}) after reconcile. Auto-retrying.`,
+          now,
+        ).run();
+      } catch (e) {
+        console.log(`[agency-slots] failed to log drift alert: ${e}`);
+      }
+      return reconcileAgencySlots(env, agencyId, 1);
+    }
+  }
 
   return { agencyId, signal, amplify };
 }

@@ -12,6 +12,12 @@
       "runtimeExecutable": "bash",
       "runtimeArgs": ["-c", "cd tools/schema-check && npx wrangler dev --port 8789"],
       "port": 8789
+    },
+    {
+      "name": "dashboard",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd dashboard && npx wrangler dev --port 8788"],
+      "port": 8788
     }
   ]
 }

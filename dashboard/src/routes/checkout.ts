@@ -302,7 +302,23 @@ export async function handleStripeWebhook(
         .replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
       const emailDomain = email.split("@")[1];
       const provisionDomain = rawDomain || emailDomain;
-      const clientSlug = provisionDomain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
+
+      // Slug derivation. For custom domains the slug is domain-derived so
+      // it reads naturally (acme.com -> "acme"). For generic email providers
+      // (gmail, yahoo, etc.) falling back to the email domain would make
+      // every gmail user share client_slug="gmail" -- multi-tenant leak.
+      // In that case we derive from the email local part + short hash of the
+      // full email so two gmail users never collide.
+      const GENERIC_EMAIL_DOMAINS = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com", "protonmail.com", "mail.com"];
+      let clientSlug: string;
+      if (!rawDomain && GENERIC_EMAIL_DOMAINS.includes(emailDomain)) {
+        const emailLocal = email.split("@")[0].replace(/[^a-z0-9]/g, "-").slice(0, 40) || "user";
+        const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
+        const hashHex = Array.from(new Uint8Array(hashBuf)).slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+        clientSlug = `${emailLocal}-${hashHex}`;
+      } else {
+        clientSlug = provisionDomain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
+      }
 
       // Check if user exists
       let user = await env.DB.prepare(
@@ -396,6 +412,21 @@ export async function handleStripeWebhook(
           }
         } catch (e) {
           console.log(`Welcome email failed: ${e}`);
+          // Surface this in /admin/inbox so Lance can manually resend the
+          // magic link. Without the alert the user has a paid account but
+          // no way to log in and no signal reaches ops.
+          try {
+            await env.DB.prepare(
+              `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+                 VALUES ('_system', 'welcome_email_failed', ?, ?, ?)`
+            ).bind(
+              `Welcome email failed: ${email}`,
+              `Checkout succeeded for ${email} (${plan}) but the welcome email with magic link did not send. Error: ${String(e).slice(0, 500)}. Resend manually.`,
+              now,
+            ).run();
+          } catch (alertErr) {
+            console.log(`Failed to insert welcome_email_failed alert: ${alertErr}`);
+          }
         }
 
         // Send notification to admin
