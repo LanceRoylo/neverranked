@@ -473,6 +473,26 @@ h1,h2,h3,h4{
   background:var(--gold);
   box-shadow:0 0 0 3px rgba(201,168,76,.18);
 }
+.mobile-overlay .mob-utility{
+  margin-top:36px;
+  padding-top:24px;
+  border-top:1px solid rgba(240,236,227,.08);
+  width:100%;
+  display:flex;
+  gap:18px;
+  flex-wrap:wrap;
+}
+.mobile-overlay .mob-utility a{
+  display:inline-block;
+  width:auto;
+  padding:4px 0;
+  border-bottom:0;
+  font-size:11px;
+  letter-spacing:.2em;
+  opacity:.6;
+  text-transform:uppercase;
+}
+.mobile-overlay .mob-utility a:hover{opacity:1;color:var(--gold)}
 
 @media(max-width:820px){
   .hamburger{display:block}
@@ -653,6 +673,160 @@ h1,h2,h3,h4{
   background:var(--gold);
   flex-shrink:0;
 }
+
+/* ---------- hero url check ---------- */
+.url-check{max-width:540px;position:relative}
+.url-check .caption{
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.26em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:18px;
+}
+.url-check .caption::before{content:"";width:24px;height:1px;background:var(--gold)}
+.url-check .caption b{color:var(--gold);font-weight:500}
+.url-check .field{
+  display:flex;align-items:baseline;gap:14px;
+  border-bottom:1px solid var(--gold-dim);
+  padding:10px 0 14px;
+  transition:border-color .3s var(--ease),opacity .3s var(--ease);
+}
+.url-check .field:focus-within{border-bottom-color:var(--gold)}
+.url-check[data-state="loading"] .field{opacity:.55;pointer-events:none}
+.url-check .prefix{
+  font-family:var(--mono);font-size:16px;
+  color:var(--text-faint);letter-spacing:.01em;user-select:none;
+}
+.url-check input{
+  flex:1;min-width:0;background:transparent;border:0;outline:0;
+  color:var(--text);font-family:var(--mono);
+  font-size:clamp(18px,1.7vw,22px);font-weight:300;letter-spacing:-.005em;
+  padding:0;caret-color:var(--gold);
+}
+.url-check input::placeholder{color:rgba(251,248,239,.32);font-weight:300}
+.url-check button.submit{
+  background:none;border:0;cursor:pointer;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.22em;font-size:11px;font-weight:500;
+  color:var(--gold);display:inline-flex;align-items:center;gap:12px;
+  padding:4px 0;white-space:nowrap;
+  transition:color .3s var(--ease);
+}
+.url-check button.submit:hover{color:var(--text)}
+.url-check button.submit .arrow{
+  display:inline-block;width:18px;height:1px;background:currentColor;
+  position:relative;transition:width .35s var(--ease);
+}
+.url-check button.submit .arrow::after{
+  content:"";position:absolute;right:0;top:-3px;
+  width:7px;height:7px;
+  border-top:1px solid currentColor;border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.url-check button.submit:hover .arrow{width:28px}
+.url-check .microcopy{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  letter-spacing:.02em;margin-top:14px;
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+}
+.url-check .microcopy .sep{color:rgba(251,248,239,.24)}
+.url-check .microcopy a{
+  color:var(--text-mute);
+  border-bottom:1px solid rgba(251,248,239,.18);padding-bottom:1px;
+}
+.url-check .status{
+  margin-top:14px;font-family:var(--mono);font-size:12px;
+  color:var(--text-faint);letter-spacing:.02em;min-height:18px;
+}
+.url-check .status.loading::after{
+  content:"";display:inline-block;
+  width:40px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  background-size:200% 100%;
+  animation:url-sweep 1.1s linear infinite;
+  margin-left:12px;vertical-align:middle;
+}
+@keyframes url-sweep{
+  0%{background-position:100% 0}
+  100%{background-position:-100% 0}
+}
+.url-check .status.error{color:#e89090}
+.url-result{
+  margin-top:32px;display:none;opacity:0;transform:translateY(8px);
+  transition:opacity .55s var(--ease),transform .55s var(--ease);
+}
+.url-check[data-state="result"] .url-result{
+  display:block;opacity:1;transform:translateY(0);
+}
+.url-check[data-state="result"] .field,
+.url-check[data-state="result"] .microcopy{display:none}
+.url-check[data-state="result"] .caption b{color:var(--text-mute)}
+.result-top{
+  display:grid;grid-template-columns:auto 1fr;align-items:end;
+  gap:28px;padding-bottom:22px;border-bottom:1px solid var(--line);
+}
+.result-score{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  color:var(--gold);font-size:clamp(56px,8vw,96px);
+  line-height:.9;letter-spacing:-.02em;
+}
+.result-score .denom{
+  font-size:.3em;color:var(--text-faint);
+  font-style:normal;font-family:var(--mono);
+  margin-left:6px;letter-spacing:.02em;
+}
+.result-meta{display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
+.result-meta .domain{
+  font-family:var(--mono);font-size:13px;color:var(--text-mute);
+  letter-spacing:.01em;word-break:break-all;
+}
+.result-meta .grade{
+  font-family:var(--serif);font-style:italic;font-size:20px;color:var(--text);
+}
+.result-meta .grade b{
+  color:var(--gold);font-weight:400;font-size:26px;margin-left:8px;
+}
+.result-signals{margin:22px 0 28px;display:flex;flex-direction:column;gap:10px}
+.result-signal{
+  display:grid;grid-template-columns:14px 1fr;align-items:baseline;gap:14px;
+  font-family:var(--mono);font-size:12.5px;line-height:1.55;color:var(--text-soft);
+}
+.result-signal .pip{width:8px;height:8px;border-radius:50%;margin-top:6px}
+.result-signal.good .pip{background:var(--gold)}
+.result-signal.warning .pip{background:#e67e22}
+.result-signal.bad .pip{background:#c0392b}
+.result-signal b{color:var(--text);font-weight:400}
+.result-signal .val{color:var(--text-faint);margin-left:6px}
+.result-ctas{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.result-ctas .primary{
+  display:inline-flex;align-items:center;gap:14px;
+  border:1px solid var(--gold);color:var(--gold);
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.22em;font-size:11px;font-weight:500;
+  padding:14px 22px;
+  transition:background .3s var(--ease),color .3s var(--ease);
+}
+.result-ctas .primary:hover{background:var(--gold);color:var(--bg)}
+.result-ctas .primary .arrow{
+  display:inline-block;width:16px;height:1px;background:currentColor;position:relative;
+}
+.result-ctas .primary .arrow::after{
+  content:"";position:absolute;right:0;top:-3px;width:6px;height:6px;
+  border-top:1px solid currentColor;border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.result-ctas .secondary{
+  font-family:var(--mono);font-size:12px;color:var(--text-mute);
+  border-bottom:1px solid rgba(251,248,239,.22);padding-bottom:2px;
+}
+.result-ctas .reset{
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.22em;font-size:10px;color:var(--text-faint);
+  background:none;border:0;cursor:pointer;padding:0;margin-left:auto;
+}
+.result-ctas .reset:hover{color:var(--gold)}
 
 /* ---------- marquee ---------- */
 .marquee{
@@ -1127,6 +1301,192 @@ h1,h2,h3,h4{
   margin-top:8px;
 }
 .tool-banner .btn:hover{background:var(--gold);color:var(--bg)}
+
+/* ---------- competitor check (inline) ---------- */
+.comp-form{
+  display:flex;flex-direction:column;align-items:stretch;gap:10px;
+  width:100%;max-width:560px;margin-top:8px;
+}
+.comp-field{
+  display:flex;align-items:stretch;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(232,199,103,.28);
+  border-radius:4px;overflow:hidden;
+  transition:border-color .25s var(--ease),background .25s var(--ease);
+}
+.comp-field:focus-within{
+  border-color:var(--gold);
+  background:rgba(232,199,103,.05);
+}
+.comp-field .prefix{
+  display:flex;align-items:center;
+  padding:0 6px 0 16px;
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);user-select:none;
+}
+.comp-field input{
+  flex:1;min-width:0;
+  background:transparent;border:0;outline:0;
+  padding:15px 10px;
+  font-family:var(--mono);font-size:14px;color:var(--text);
+  letter-spacing:.01em;
+}
+.comp-field input::placeholder{color:rgba(240,236,227,.25)}
+.comp-submit{
+  background:var(--gold);color:var(--bg);
+  border:0;padding:0 26px;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.18em;font-size:11px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .25s var(--ease);
+}
+.comp-submit:hover{background:#f2d68a}
+.comp-submit .spinner{
+  display:none;width:12px;height:12px;border-radius:50%;
+  border:1.5px solid rgba(18,18,18,.25);border-top-color:var(--bg);
+  animation:compSpin .7s linear infinite;
+}
+.comp-form[data-state="loading"] .comp-submit{pointer-events:none;opacity:.9}
+.comp-form[data-state="loading"] .comp-submit .label{display:none}
+.comp-form[data-state="loading"] .comp-submit .spinner{display:block}
+@keyframes compSpin{to{transform:rotate(360deg)}}
+.comp-status{
+  font-family:var(--mono);font-size:11px;
+  color:rgba(240,236,227,.45);
+  min-height:14px;letter-spacing:.02em;text-align:left;
+}
+.comp-status[data-tone="error"]{color:#e57373}
+.comp-result{
+  margin-top:28px;width:100%;max-width:560px;
+  animation:compFade .45s var(--ease) both;
+}
+@keyframes compFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.comp-result-inner{
+  background:rgba(255,255,255,.02);
+  border:1px solid rgba(240,236,227,.08);
+  border-radius:6px;
+  padding:22px 26px;
+  display:flex;flex-direction:column;gap:14px;
+  text-align:left;
+}
+.comp-domain{
+  font-family:var(--mono);font-size:12px;
+  color:var(--text-faint);letter-spacing:.02em;word-break:break-all;
+}
+.comp-score-row{
+  display:flex;align-items:baseline;gap:14px;
+  padding:2px 0 12px;
+  border-bottom:1px solid rgba(240,236,227,.08);
+}
+.comp-grade{
+  font-family:var(--serif);font-size:46px;font-weight:400;font-style:italic;
+  color:var(--gold);line-height:1;
+}
+.comp-score{
+  font-family:var(--mono);font-size:17px;color:var(--text);
+  font-feature-settings:"tnum";
+}
+.comp-score-label{
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.2em;font-size:10px;color:var(--text-faint);
+  margin-left:auto;
+}
+.comp-summary{
+  font-family:var(--mono);font-size:12px;
+  color:rgba(240,236,227,.55);line-height:1.65;
+  letter-spacing:.01em;
+}
+.comp-summary b{color:var(--text);font-weight:500}
+.comp-ctas{
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  padding-top:4px;
+}
+.comp-cta-primary{
+  display:inline-block;
+  border:1px solid var(--gold);color:var(--gold);
+  padding:12px 22px;border-radius:4px;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.18em;font-size:11px;font-weight:600;
+  transition:background .25s var(--ease),color .25s var(--ease);
+}
+.comp-cta-primary:hover{background:var(--gold);color:var(--bg)}
+.comp-reset{
+  background:transparent;border:0;cursor:pointer;
+  font-family:var(--mono);font-size:11px;
+  color:var(--text-faint);padding:6px 0;
+  letter-spacing:.02em;
+  text-decoration:underline;
+  text-decoration-color:rgba(240,236,227,.2);
+  text-underline-offset:3px;
+}
+.comp-reset:hover{color:var(--text)}
+@media (max-width:560px){
+  .comp-field{flex-direction:column}
+  .comp-field .prefix{padding:12px 14px 0}
+  .comp-field input{padding:10px 14px 14px}
+  .comp-submit{width:100%;padding:14px 0}
+  .comp-grade{font-size:38px}
+}
+
+/* ---------- sticky recapture bar ---------- */
+.recapture{
+  position:fixed;left:0;right:0;bottom:0;z-index:60;
+  background:rgba(18,18,18,.94);
+  -webkit-backdrop-filter:blur(14px);
+  backdrop-filter:blur(14px);
+  border-top:1px solid rgba(232,199,103,.3);
+  padding:14px 22px;
+  transform:translateY(110%);
+  transition:transform .5s var(--ease);
+}
+.recapture.is-visible{transform:translateY(0)}
+.recapture-inner{
+  max-width:960px;margin:0 auto;
+  display:flex;align-items:center;gap:18px;
+}
+.recapture-label{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;
+  font-size:11px;color:var(--gold);white-space:nowrap;
+}
+.recapture-form{
+  display:flex;flex:1;align-items:stretch;min-width:0;
+  border:1px solid rgba(232,199,103,.35);border-radius:4px;
+  overflow:hidden;
+  background:rgba(255,255,255,.03);
+  transition:border-color .25s var(--ease);
+}
+.recapture-form:focus-within{border-color:var(--gold)}
+.recapture-form input{
+  flex:1;min-width:0;
+  background:transparent;border:0;outline:0;
+  padding:11px 14px;
+  font-family:var(--mono);font-size:13px;color:var(--text);
+}
+.recapture-form input::placeholder{color:rgba(240,236,227,.3)}
+.recapture-form button[type=submit]{
+  background:var(--gold);color:var(--bg);
+  border:0;padding:0 20px;
+  font-family:var(--label);text-transform:uppercase;
+  letter-spacing:.16em;font-size:11px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:background .25s var(--ease);
+}
+.recapture-form button[type=submit]:hover{background:#f2d68a}
+.recapture-dismiss{
+  background:transparent;border:0;cursor:pointer;
+  font-family:var(--mono);font-size:20px;line-height:1;
+  color:var(--text-faint);
+  padding:6px 6px;
+  transition:color .2s var(--ease);
+}
+.recapture-dismiss:hover{color:var(--text)}
+@media (max-width:600px){
+  .recapture{padding:10px 12px}
+  .recapture-inner{gap:10px}
+  .recapture-label{display:none}
+  .recapture-form button[type=submit]{padding:0 14px}
+}
 
 /* ---------- insights preview ---------- */
 .insights-preview{
@@ -2005,6 +2365,68 @@ h1,h2,h3,h4{
   .dashboard-features{padding:80px 0 60px}
 }
 
+/* ---------- product showcase ---------- */
+.product-showcase{
+  padding:120px 0 100px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg-lift);
+}
+.showcase-head{
+  max-width:680px;
+  margin-bottom:60px;
+}
+.showcase-head h2{
+  font-family:var(--serif);
+  font-size:clamp(28px,4vw,44px);
+  font-weight:400;letter-spacing:-.02em;
+  line-height:1.15;margin:0 0 18px;
+}
+.showcase-head h2 em{font-style:italic;color:var(--gold)}
+.showcase-head p{
+  font-family:var(--mono);font-size:13px;
+  color:var(--text-faint);line-height:1.7;
+  max-width:520px;
+}
+.showcase-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--line);
+  border:1px solid var(--line);
+}
+.showcase-step{
+  background:var(--bg-lift);
+  padding:42px 32px 46px;
+  display:flex;flex-direction:column;gap:16px;
+  min-height:260px;
+  transition:background .5s var(--ease);
+  position:relative;
+}
+.showcase-step:hover{background:var(--bg)}
+.showcase-step .step-n{
+  font-family:var(--label);
+  font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;
+  color:var(--gold);font-weight:500;
+}
+.showcase-step h3{
+  font-family:var(--serif);
+  font-size:clamp(20px,2vw,26px);
+  font-weight:400;letter-spacing:-.01em;line-height:1.15;
+}
+.showcase-step h3 em{font-style:italic;color:var(--gold);font-weight:400}
+.showcase-step p{
+  font-size:13px;line-height:1.7;
+  color:var(--text-soft);margin:0;max-width:32ch;
+}
+@media(max-width:900px){
+  .showcase-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:540px){
+  .showcase-grid{grid-template-columns:1fr}
+  .product-showcase{padding:80px 0 60px}
+}
+
 /* ---------- ROI calculator ---------- */
 .roi-calc{
   padding:120px 0 100px;
@@ -2205,6 +2627,9 @@ h1,h2,h3,h4{
   .marquee-track,.grain{animation:none}
   html{scroll-behavior:auto}
 }
+@media(max-width:600px){
+  .grain{inset:0;width:100%;height:100%}
+}
 </style>
 
 <!-- Meta Pixel — replace YOUR_PIXEL_ID with your actual pixel ID -->
@@ -2243,25 +2668,25 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
 <button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
 <div class="mobile-overlay" id="mobileMenu">
-  <a href="/about/">About</a>
-  <a href="/blog/">Insights</a>
   <a href="#services">Services</a>
   <a href="#pricing">Pricing</a>
-  <a href="https://check.neverranked.com">Free Tool</a>
-  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/blog/">Insights</a>
+  <a href="/about/">About</a>
   <a href="#audit" class="mob-cta">$500 Audit</a>
   <span class="mob-status">Taking clients Q2</span>
+  <div class="mob-utility">
+    <a href="https://app.neverranked.com/demo">Live demo</a>
+    <a href="https://app.neverranked.com">Client login</a>
+  </div>
 </div>
 
 <nav class="nav" id="nav">
   <a href="#" class="mark">Never Ranked<sup>©</sup></a>
   <div class="right">
-    <a href="/about/" class="nav-link">About</a>
-    <a href="/blog/" class="nav-link">Insights</a>
     <a href="#services" class="nav-link">Services</a>
     <a href="#pricing" class="nav-link">Pricing</a>
-    <a href="https://check.neverranked.com" class="nav-link">Free Tool</a>
-    <a href="https://app.neverranked.com" class="nav-link">Client Login</a>
+    <a href="/blog/" class="nav-link">Insights</a>
+    <a href="/about/" class="nav-link">About</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
     <span class="status">Taking clients Q2</span>
   </div>
@@ -2286,18 +2711,41 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           </h1>
         </div>
         <div class="reveal" style="transition-delay:.15s">
-          <p class="hero-detail">
-            Google answers before it links. ChatGPT cites who it trusts. Perplexity quotes the source, not the ranking.
+          <p class="hero-sub" style="margin-bottom:36px">
+            <b>Search changed. Your visibility didn't.</b> Check how ChatGPT, Perplexity, Gemini, and Google AI see your site. Takes thirty seconds.
           </p>
-          <p class="hero-sub">
-            <b>Search changed. Your visibility didn't.</b> We build for the engines that already answer for you.
-          </p>
-          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-            <a href="https://check.neverranked.com" class="cta">
-              See your score free
-              <span class="arrow"></span>
-            </a>
-            <a href="#audit" style="font-family:var(--mono);font-size:12px;color:var(--text-faint);border-bottom:1px solid rgba(251,248,239,.2);padding-bottom:2px;transition:color .3s,border-color .3s">or start with the $500 audit</a>
+
+          <div class="url-check" id="urlCheck" data-state="idle">
+            <div class="caption">
+              <span>§ Check your site</span>
+              <b id="captionHint">Free &middot; 30 seconds</b>
+            </div>
+            <form class="field" id="checkForm" novalidate>
+              <span class="prefix">https://</span>
+              <input type="text" id="checkInput" placeholder="yourdomain.com" autocomplete="off" spellcheck="false" required>
+              <button type="submit" class="submit">Check <span class="arrow"></span></button>
+            </form>
+            <div class="status" id="checkStatus" aria-live="polite"></div>
+            <div class="microcopy">
+              <span>No signup. No email gate.</span>
+              <span class="sep">&middot;</span>
+              <a href="#audit">or start with the $500 audit</a>
+            </div>
+            <div class="url-result" id="checkResult" aria-live="polite">
+              <div class="result-top">
+                <div class="result-score"><span id="resultScore">0</span><span class="denom">/100</span></div>
+                <div class="result-meta">
+                  <span class="domain" id="resultDomain">yourdomain.com</span>
+                  <span class="grade">AEO grade <b id="resultGrade">&mdash;</b></span>
+                </div>
+              </div>
+              <div class="result-signals" id="resultSignals"></div>
+              <div class="result-ctas">
+                <a class="primary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report <span class="arrow"></span></a>
+                <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $500 audit</a>
+                <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -2312,8 +2760,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="tag">Method</div>
         </div>
         <div class="cell">
-          <div class="stmt">Three months to compound. <em>Then month-to-month.</em></div>
-          <div class="tag">Terms</div>
+          <div class="stmt">One new client <em>pays for a year.</em></div>
+          <div class="tag">ROI</div>
         </div>
       </div>
     </div>
@@ -2367,9 +2815,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
         <div class="problem-cell">
           <div class="num">§02 / Chat</div>
-          <h3>Perplexity &amp; ChatGPT</h3>
-          <p>The new front page of the internet, and your site isn't on it. These engines don't crawl. They cite. They pick sources from a much shorter list, and that list is being written right now.</p>
-          <div class="stat">Monthly users <b>— 800M+</b></div>
+          <h3>ChatGPT, Claude &amp; Gemini</h3>
+          <p>The new front page of the internet, and your site isn't on it. ChatGPT, Claude, Gemini, and Perplexity don't crawl. They cite. They pick sources from a much shorter list, and that list is being written right now.</p>
+          <div class="stat">Combined monthly users <b>— 1B+</b></div>
         </div>
         <div class="problem-cell">
           <div class="num">§03 / Stack</div>
@@ -2451,7 +2899,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
 
       <div class="services-head">
-        <h2 class="reveal">What we <em>actually do.</em></h2>
+        <h2 class="reveal">Six tracks. <em>One system.</em></h2>
         <p class="aside reveal" style="transition-delay:.1s">
           Every track runs on a deliberate split of automation and human judgment. The percentage is not marketing. It's the part we let the machine handle so we spend our hours on the part it can't.
         </p>
@@ -2581,14 +3029,39 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
-  <!-- ============ FREE TOOL ============ -->
-  <section class="tool-banner reveal">
+  <!-- ============ COMPETITOR CHECK ============ -->
+  <section class="tool-banner reveal" id="competitorCheck">
     <div class="wrap">
       <div class="inner">
-        <span class="kicker">Free in 30 seconds</span>
-        <h2>What does AI think of <em>your site?</em></h2>
-        <p class="sub">Enter your URL. Get an instant AEO readiness grade, schema coverage breakdown, and a list of exactly what to fix. No signup. No email gate. Takes 30 seconds.</p>
-        <a href="https://check.neverranked.com" class="btn">Run a free check →</a>
+        <span class="kicker">Competitor check · 30 seconds</span>
+        <h2>See who ChatGPT cites <em>instead of you.</em></h2>
+        <p class="sub">Drop a competitor's domain. We'll grade their AEO readiness and show you where they're winning. The gaps are the opening.</p>
+        <form class="comp-form" id="compForm" data-state="idle" autocomplete="off" novalidate>
+          <div class="comp-field">
+            <span class="prefix">https://</span>
+            <input type="text" id="compInput" placeholder="competitor.com" spellcheck="false" autocapitalize="off" autocorrect="off" inputmode="url" aria-label="Competitor domain" />
+            <button type="submit" class="comp-submit">
+              <span class="label">Check →</span>
+              <span class="spinner" aria-hidden="true"></span>
+            </button>
+          </div>
+          <div class="comp-status" id="compStatus" role="status" aria-live="polite"></div>
+        </form>
+        <div class="comp-result" id="compResult" hidden>
+          <div class="comp-result-inner">
+            <div class="comp-domain" id="compDomain"></div>
+            <div class="comp-score-row">
+              <span class="comp-grade" id="compGrade"></span>
+              <span class="comp-score" id="compScore"></span>
+              <span class="comp-score-label">AEO score</span>
+            </div>
+            <div class="comp-summary" id="compSummary"></div>
+            <div class="comp-ctas">
+              <a class="comp-cta-primary" href="#intake" data-href-base="#intake">See your side-by-side →</a>
+              <button type="button" class="comp-reset" id="compReset">Check another</button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -2606,40 +3079,98 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="dash-head">
         <h2 class="reveal">Not a PDF. <em>A product.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          Every client gets a live dashboard at app.neverranked.com. Not a monthly report you forget to open. A product you check because the data matters to you.
+          Every client gets a live dashboard at app.neverranked.com. AEO scores, citation tracking, competitor gaps, Search Console data, and a roadmap that auto-generates from your scan results. Not a report you forget to open. A product you check because the data matters.
         </p>
       </div>
 
       <div class="dash-grid reveal-stagger">
         <div class="dash-card">
           <div class="dash-icon">&#8635;</div>
-          <div class="dash-title">Weekly scans</div>
-          <div class="dash-desc">Your AEO score is scanned every Monday. Score history, trend charts, and deltas so you see movement over time, not a single snapshot.</div>
+          <div class="dash-title">Weekly AEO scans</div>
+          <div class="dash-desc">Every Monday your site is re-scanned across 30+ AEO signals. Score history, trend charts, and week-over-week deltas. Movement over time, not a single snapshot.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9650;</div>
+          <div class="dash-title">Score projection</div>
+          <div class="dash-desc">See where your AEO score is headed based on remaining roadmap items. The dashboard estimates your projected ceiling so you know the gap between now and full optimization.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#10003;</div>
+          <div class="dash-title">AI citation tracking</div>
+          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, and Google AI Overviews. See which queries cite you, which cite competitors, and your share of answer over time.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9638;</div>
+          <div class="dash-title">Competitor citation matrix</div>
+          <div class="dash-desc">A keyword-by-competitor grid showing exactly who gets cited where. Green where you win. Red where you don't. The gaps are the opportunity.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9670;</div>
-          <div class="dash-title">Phased roadmap</div>
-          <div class="dash-desc">A clear action plan broken into phases: Foundation, Growth, Dominance. See what's done, what's in progress, and what unlocks next. Progress bar included.</div>
+          <div class="dash-title">Auto-generated roadmap</div>
+          <div class="dash-desc">When your domain is added, a phased roadmap generates automatically from scan results. Foundation, Growth, Dominance. Items auto-complete as improvements land.</div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon">&#9646;&#9646;</div>
-          <div class="dash-title">Competitor benchmarks</div>
-          <div class="dash-desc">Side-by-side AEO comparison against your actual competitors. Schema gaps, score differences, and where you're winning or losing ground.</div>
+          <div class="dash-icon">&#9776;</div>
+          <div class="dash-title">Monthly reports</div>
+          <div class="dash-desc">Score deltas, red flags resolved, schema changes, roadmap progress, citation movement, and GSC trends. One page. Emailable. Printable. No PDF theatre.</div>
         </div>
         <div class="dash-card">
-          <div class="dash-icon">&#9888;</div>
-          <div class="dash-title">Regression alerts</div>
-          <div class="dash-desc">If your score drops more than 5 points, you hear about it immediately. Not next Monday. Not next month. The moment it happens.</div>
+          <div class="dash-icon">&#9740;</div>
+          <div class="dash-title">Search console integration</div>
+          <div class="dash-desc">Google Search Console data pulled directly into the dashboard. Clicks, impressions, CTR, and average position alongside your AEO metrics in one view.</div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-icon">&#9881;</div>
+          <div class="dash-title">Content gap analysis</div>
+          <div class="dash-desc">Surfaces topics your competitors get cited for and you don't. Grouped by category with the competitor names attached. Your next content calendar writes itself.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9993;</div>
-          <div class="dash-title">Weekly digest</div>
-          <div class="dash-desc">Score, changes, and top action item in your inbox every Monday. Forward it to your boss. It speaks plain English, not SEO jargon.</div>
+          <div class="dash-title">Alerts & weekly digest</div>
+          <div class="dash-desc">Score regressions trigger instant alerts. Every Monday a digest lands in your inbox: score, citation share, GSC clicks, roadmap progress. Forward it to your board.</div>
         </div>
-        <div class="dash-card">
-          <div class="dash-icon">&#8599;</div>
-          <div class="dash-title">Shareable reports</div>
-          <div class="dash-desc">Generate a public link to share your AEO report with stakeholders. No login required. Print-friendly. Branded. Expires in 90 days.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PRODUCT SHOWCASE ============ -->
+  <section class="product-showcase" id="experience">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.2</span>
+        <span>The Experience</span>
+        <span class="rule"></span>
+        <span>what it feels like</span>
+      </div>
+
+      <div class="showcase-head">
+        <h2 class="reveal">From scan to <em>cited.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          You don't learn the dashboard. You open a tab and the data is already there. Here is what the first 30 days look like from the inside.
+        </p>
+        <a href="https://app.neverranked.com/demo" class="reveal" style="transition-delay:.2s;display:inline-flex;align-items:center;gap:10px;margin-top:20px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none">See the live demo <span style="display:inline-block;width:14px;height:1px;background:currentColor;position:relative"><span style="position:absolute;right:0;top:-3px;width:5px;height:5px;border-top:1px solid currentColor;border-right:1px solid currentColor;transform:rotate(45deg)"></span></span></a>
+      </div>
+
+      <div class="showcase-grid reveal-stagger">
+        <div class="showcase-step">
+          <div class="step-n">Day 1</div>
+          <h3>We scan. A roadmap <em>writes itself.</em></h3>
+          <p>Your domain is added and scanned across 30+ AEO signals. A phased roadmap generates automatically from the results. No kickoff meeting. No onboarding deck.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Week 1</div>
+          <h3>You see the <em>full picture.</em></h3>
+          <p>AEO score, citation share, competitor gaps, Search Console data, and content opportunities. Everything in one tab. Refreshed every Monday.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Every Monday</div>
+          <h3>A digest lands in <em>your inbox.</em></h3>
+          <p>Score, citation movement, GSC clicks, roadmap progress, and the one thing that matters most this week. Plain English. Forward it to whoever needs to know.</p>
+        </div>
+        <div class="showcase-step">
+          <div class="step-n">Monthly</div>
+          <h3>A report you'd actually <em>send upward.</em></h3>
+          <p>Score delta, red flags resolved, schema changes, competitor movement, and GSC trends. One page. Printable. Emailable. Built so your boss reads it.</p>
         </div>
       </div>
     </div>
@@ -2649,7 +3180,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <section class="roi-calc" id="roi">
     <div class="wrap">
       <div class="section-label reveal">
-        <span class="num">§04.2</span>
+        <span class="num">§04.3</span>
         <span>The Math</span>
         <span class="rule"></span>
         <span>your industry, your numbers</span>
@@ -2716,33 +3247,6 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <input type="number" id="roi-custom-val" min="100" step="100">
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ============ LATEST INSIGHTS ============ -->
-  <section class="insights-preview">
-    <div class="wrap">
-      <div class="header-row reveal">
-        <h2>Latest <em>Insights</em></h2>
-        <a href="/blog/" class="view-all">View all <span class="arrow"></span></a>
-      </div>
-      <div class="insights-grid">
-        <a href="/blog/check-if-business-shows-up-chatgpt/" class="insight-card reveal">
-          <div class="ic-date">April 2026</div>
-          <div class="ic-title">How to Check If Your Business Shows Up in ChatGPT</div>
-          <span class="ic-read">Read <span class="arrow"></span></span>
-        </a>
-        <a href="/blog/why-chatgpt-recommends-your-competitor/" class="insight-card reveal" style="transition-delay:.08s">
-          <div class="ic-date">April 2026</div>
-          <div class="ic-title">Why ChatGPT Recommends Your Competitor (and What to Do About It)</div>
-          <span class="ic-read">Read <span class="arrow"></span></span>
-        </a>
-        <a href="/blog/is-seo-dead/" class="insight-card reveal" style="transition-delay:.16s">
-          <div class="ic-date">April 2026</div>
-          <div class="ic-title">Is SEO Dead? What Actually Replaced It</div>
-          <span class="ic-read">Read <span class="arrow"></span></span>
-        </a>
       </div>
     </div>
   </section>
@@ -2966,6 +3470,33 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
+  <!-- ============ LATEST INSIGHTS ============ -->
+  <section class="insights-preview">
+    <div class="wrap">
+      <div class="header-row reveal">
+        <h2>Field <em>notes.</em></h2>
+        <a href="/blog/" class="view-all">View all <span class="arrow"></span></a>
+      </div>
+      <div class="insights-grid">
+        <a href="/blog/check-if-business-shows-up-chatgpt/" class="insight-card reveal">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">How to Check If Your Business Shows Up in ChatGPT</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+        <a href="/blog/why-chatgpt-recommends-your-competitor/" class="insight-card reveal" style="transition-delay:.08s">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">Why ChatGPT Recommends Your Competitor (and What to Do About It)</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+        <a href="/blog/is-seo-dead/" class="insight-card reveal" style="transition-delay:.16s">
+          <div class="ic-date">April 2026</div>
+          <div class="ic-title">Is SEO Dead? What Actually Replaced It</div>
+          <span class="ic-read">Read <span class="arrow"></span></span>
+        </a>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ CLOSING ============ -->
   <footer class="closing">
     <div class="wrap">
@@ -2987,11 +3518,23 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
       <div class="footer">
         <div class="l">Never Ranked © 2026</div>
-        <div class="c"><a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a></div>
+        <div class="c"><a href="https://app.neverranked.com">Client login</a> · <a href="https://app.neverranked.com/demo">Live demo</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://app.neverranked.com/agency/apply">For agencies</a> · <a href="https://app.neverranked.com/changelog">Changelog</a></div>
         <div class="r"><a href="mailto:hello@neverranked.com">hello@neverranked.com</a></div>
       </div>
     </div>
   </footer>
+
+  <!-- ============ RECAPTURE BAR ============ -->
+  <div class="recapture" id="recaptureBar" hidden>
+    <div class="recapture-inner">
+      <span class="recapture-label">§ Still here?</span>
+      <form class="recapture-form" id="recaptureForm" autocomplete="off" novalidate>
+        <input type="text" id="recaptureInput" placeholder="yourdomain.com" spellcheck="false" autocapitalize="off" autocorrect="off" inputmode="url" aria-label="Your domain" />
+        <button type="submit" aria-label="Check your site">Check my site →</button>
+      </form>
+      <button type="button" class="recapture-dismiss" id="recaptureDismiss" aria-label="Dismiss">&times;</button>
+    </div>
+  </div>
 
 </main>
 
@@ -3224,6 +3767,271 @@ window.scrollTo(0,0);
       setDomain(this.value);
     });
   }
+
+  // Exposed so the hero URL check can also pre-fill checkout links after a scan
+  window.__setCheckoutDomain = setDomain;
+})();
+
+/* ---------- hero: inline AEO check ---------- */
+(function(){
+  var API='https://check.neverranked.com/api/check';
+  var urlCheck=document.getElementById('urlCheck');
+  if(!urlCheck) return;
+  var form=document.getElementById('checkForm');
+  var input=document.getElementById('checkInput');
+  var statusEl=document.getElementById('checkStatus');
+  var captionHint=document.getElementById('captionHint');
+  var scoreEl=document.getElementById('resultScore');
+  var domainEl=document.getElementById('resultDomain');
+  var gradeEl=document.getElementById('resultGrade');
+  var signalsEl=document.getElementById('resultSignals');
+  var ctaPrimary=document.getElementById('resultCtaPrimary');
+  var ctaSecondary=document.getElementById('resultCtaSecondary');
+  var resetBtn=document.getElementById('resultReset');
+
+  function setStatus(msg, cls){
+    statusEl.textContent=msg||'';
+    statusEl.className='status'+(cls?' '+cls:'');
+  }
+  function normalizeUrl(raw){
+    var v=(raw||'').trim();
+    if(!v) return null;
+    v=v.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/+$/,'');
+    if(!/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(v)) return null;
+    return 'https://'+v;
+  }
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+      return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+    });
+  }
+  function animateNumber(el,to){
+    var start=0,duration=800,t0=performance.now();
+    function step(t){
+      var p=Math.min(1,(t-t0)/duration);
+      var eased=1-Math.pow(1-p,3);
+      el.textContent=Math.round(start+(to-start)*eased);
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function renderResult(report){
+    domainEl.textContent=report.domain||'';
+    gradeEl.textContent=report.grade||'—';
+    animateNumber(scoreEl, report.aeo_score||0);
+    var signals=(report.technical_signals||[]).slice(0,4);
+    signalsEl.innerHTML=signals.map(function(s){
+      return '<div class="result-signal '+(s.status||'good')+'">'+
+        '<span class="pip"></span>'+
+        '<div><b>'+escapeHtml(s.label)+'</b><span class="val">'+escapeHtml(s.value)+'</span></div>'+
+      '</div>';
+    }).join('');
+    var domainEnc=encodeURIComponent(report.domain||'');
+    ctaPrimary.href='https://check.neverranked.com/?url='+domainEnc;
+    ctaSecondary.href='https://app.neverranked.com/checkout/audit?domain='+domainEnc;
+    if(typeof window.__setCheckoutDomain==='function') window.__setCheckoutDomain(report.domain);
+    urlCheck.setAttribute('data-state','result');
+    captionHint.textContent='Scan complete';
+  }
+  function reset(){
+    urlCheck.setAttribute('data-state','idle');
+    captionHint.textContent='Free · 30 seconds';
+    setStatus('');
+    input.value='';
+    input.focus();
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var target=normalizeUrl(input.value);
+    if(!target){
+      setStatus('Use a full domain (yourdomain.com)','error');
+      return;
+    }
+    urlCheck.setAttribute('data-state','loading');
+    setStatus('Scanning '+target.replace(/^https:\/\//,''),'loading');
+
+    fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ url:target, referrer:'neverranked.com/hero' })
+    })
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }); })
+    .then(function(res){
+      if(!res.ok){
+        urlCheck.setAttribute('data-state','idle');
+        setStatus((res.body&&res.body.error)||'Something went wrong. Try again.','error');
+        return;
+      }
+      setStatus('');
+      renderResult(res.body);
+    })
+    .catch(function(){
+      urlCheck.setAttribute('data-state','idle');
+      setStatus("Couldn't reach the scanner. Try again in a moment.",'error');
+    });
+  });
+  resetBtn.addEventListener('click', reset);
+})();
+
+/* ---------- competitor check (mid-page) ---------- */
+(function(){
+  var API='https://check.neverranked.com/api/check';
+  var form=document.getElementById('compForm');
+  if(!form) return;
+  var input=document.getElementById('compInput');
+  var statusEl=document.getElementById('compStatus');
+  var result=document.getElementById('compResult');
+  var domainEl=document.getElementById('compDomain');
+  var gradeEl=document.getElementById('compGrade');
+  var scoreEl=document.getElementById('compScore');
+  var summaryEl=document.getElementById('compSummary');
+  var ctaPrimary=result.querySelector('.comp-cta-primary');
+  var ctaBase=ctaPrimary.getAttribute('data-href-base')||'#intake';
+  var resetBtn=document.getElementById('compReset');
+
+  function setStatus(msg,tone){
+    statusEl.textContent=msg||'';
+    if(tone) statusEl.setAttribute('data-tone',tone); else statusEl.removeAttribute('data-tone');
+  }
+  function normalizeUrl(raw){
+    var v=(raw||'').trim();
+    if(!v) return null;
+    v=v.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/+$/,'');
+    if(!/^[a-z0-9.-]+\.[a-z]{2,}(\/.*)?$/i.test(v)) return null;
+    return 'https://'+v;
+  }
+  function animateNumber(el,to){
+    var start=0,duration=700,t0=performance.now();
+    function step(t){
+      var p=Math.min(1,(t-t0)/duration);
+      var eased=1-Math.pow(1-p,3);
+      el.textContent=Math.round(start+(to-start)*eased)+' / 100';
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function summarize(report){
+    var score=report.aeo_score||0;
+    var sigs=report.technical_signals||[];
+    var bad=sigs.filter(function(s){return s.status==='bad'}).length;
+    var warn=sigs.filter(function(s){return s.status==='warning'}).length;
+    var weak=bad+warn;
+    if(score>=85){
+      return 'They\u2019re already well-optimized. <b>Overtaking them takes deep schema and citation work.</b>';
+    }
+    if(score>=70){
+      return weak>0
+        ? weak+' weak signal'+(weak===1?'':'s')+' in their technical stack. <b>A focused 90-day push can close the gap.</b>'
+        : 'Technically clean, but citations and schema depth are where you can still outrank them.';
+    }
+    if(score>=50){
+      return weak+' signals missing or weak. <b>The opening is wide.</b>';
+    }
+    return 'Critical AEO gaps across schema, metadata, and structure. <b>They\u2019re leaving the door open.</b>';
+  }
+  function render(report){
+    domainEl.textContent=report.domain||'';
+    gradeEl.textContent=report.grade||'\u2014';
+    scoreEl.textContent='0 / 100';
+    animateNumber(scoreEl, report.aeo_score||0);
+    summaryEl.innerHTML=summarize(report);
+    // CTA scrolls to the intake section — user enters THEIR own domain there.
+    // Don't call __setCheckoutDomain here: the scanned domain is the competitor's.
+    ctaPrimary.href=ctaBase;
+    result.hidden=false;
+  }
+  function reset(){
+    form.setAttribute('data-state','idle');
+    result.hidden=true;
+    setStatus('');
+    input.value='';
+    input.focus();
+  }
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var target=normalizeUrl(input.value);
+    if(!target){
+      setStatus('Use a full domain (competitor.com)','error');
+      return;
+    }
+    form.setAttribute('data-state','loading');
+    setStatus('Scanning '+target.replace(/^https:\/\//,''));
+    fetch(API,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ url:target, referrer:'neverranked.com/competitor' })
+    })
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok, body:j}; }); })
+    .then(function(res){
+      form.setAttribute('data-state','idle');
+      if(!res.ok){
+        setStatus((res.body&&res.body.error)||'Something went wrong. Try again.','error');
+        return;
+      }
+      setStatus('');
+      render(res.body);
+    })
+    .catch(function(){
+      form.setAttribute('data-state','idle');
+      setStatus("Couldn't reach the scanner. Try again in a moment.",'error');
+    });
+  });
+  resetBtn.addEventListener('click', reset);
+})();
+
+/* ---------- sticky recapture bar ---------- */
+(function(){
+  var bar=document.getElementById('recaptureBar');
+  if(!bar) return;
+  var KEY='nr:recapture:dismissed';
+  if(sessionStorage.getItem(KEY)==='1') return;
+  var form=document.getElementById('recaptureForm');
+  var input=document.getElementById('recaptureInput');
+  var dismiss=document.getElementById('recaptureDismiss');
+  var hero=document.getElementById('urlCheck');
+  var heroForm=document.getElementById('checkForm');
+  var heroInput=document.getElementById('checkInput');
+
+  var shown=false, ticking=false;
+  function check(){
+    ticking=false;
+    if(shown) return;
+    var sy=window.scrollY||window.pageYOffset;
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    if(h<=0) return;
+    if(sy/h>=0.7){
+      shown=true;
+      bar.hidden=false;
+      requestAnimationFrame(function(){ bar.classList.add('is-visible'); });
+      window.removeEventListener('scroll', onScroll);
+    }
+  }
+  function onScroll(){
+    if(!ticking){ ticking=true; requestAnimationFrame(check); }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+
+  function hide(){
+    bar.classList.remove('is-visible');
+    sessionStorage.setItem(KEY,'1');
+    setTimeout(function(){ bar.hidden=true; }, 500);
+  }
+  dismiss.addEventListener('click', hide);
+
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var v=(input.value||'').trim();
+    if(!v || !hero || !heroForm || !heroInput) return;
+    heroInput.value=v;
+    hero.scrollIntoView({behavior:'smooth', block:'start'});
+    // Give the smooth scroll a moment so the animated score is visible when scan resolves
+    setTimeout(function(){
+      heroForm.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
+    }, 650);
+    hide();
+  });
 })();
 </script>
 

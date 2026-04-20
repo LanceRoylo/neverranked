@@ -1,0 +1,40 @@
+name: Deploy homepage to Cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - '404.html'
+      - 'og.png'
+      - 'og-source.html'
+      - 'robots.txt'
+      - 'sitemap.xml'
+      - '_headers'
+      - 'about/**'
+      - 'blog/**'
+      - 'case-studies/**'
+      - 'privacy/**'
+      - 'terms/**'
+      - 'wrangler.jsonc'
+      - 'scripts/build.sh'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build dist/
+        run: bash scripts/build.sh
+
+      - name: Deploy to Cloudflare Workers
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy
