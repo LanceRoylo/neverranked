@@ -234,11 +234,28 @@ export async function handleOnboarding(user: User, env: Env): Promise<Response> 
         </div>
 
         <div style="display:flex;gap:12px;align-items:center">
-          <button type="submit" class="btn">Start tracking</button>
+          <button type="submit" class="btn" data-start-button>Start tracking</button>
           <a href="/onboarding/skip" style="color:var(--text-faint);font-size:12px;text-decoration:none;border-bottom:1px solid var(--line)">I'll add competitors later</a>
         </div>
       </form>
     </div>
+    <script>
+      // The onboarding POST runs the initial scan, pulls competitors, and
+      // auto-generates the roadmap inline -- it can take 3-5 seconds. Without
+      // a loading state the user sees nothing and starts double-clicking.
+      (function(){
+        var form = document.querySelector('form[action="/onboarding"]') || document.querySelector('form');
+        if (!form) return;
+        form.addEventListener('submit', function(){
+          var btn = form.querySelector('[data-start-button]');
+          if (!btn) return;
+          btn.disabled = true;
+          btn.style.opacity = '0.6';
+          btn.style.cursor = 'wait';
+          btn.textContent = 'Setting up your account...';
+        });
+      })();
+    </script>
   `;
 
   return html(layout("Welcome", body, user));
