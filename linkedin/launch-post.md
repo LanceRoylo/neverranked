@@ -6,9 +6,9 @@ The first post. Goes out from Lance's personal LinkedIn profile, not the company
 
 ## Image
 
-`post-01-scorecard.png` — 1200×1200 square. Editorial black/gold scorecard with empty score boxes beside each of the four engines. Format-surprise play: the image is a template people can fill in with their own results and post back.
+`post-01-scorecard.png` — 1200×1200 square. Near-literal template of the real tool's result card. Empty slots for domain, score (out of 100), letter grade, and the four underlying checks (Title tag, Meta description, Canonical URL, og:image). When someone runs the real check, their result looks almost identical to the post image — that visual recognition is what drives the screenshot-and-share behavior.
 
-Regenerate with `node linkedin/render.mjs` (after appending this target to the script) or rebuild manually from `post-01-scorecard-source.html`.
+Regenerate with `node linkedin/render.mjs` (target already wired in).
 
 ---
 
@@ -16,11 +16,11 @@ Regenerate with `node linkedin/render.mjs` (after appending this target to the s
 
 Starting a thing. Maybe you'll play.
 
-Most brands don't know what ChatGPT, Perplexity, Gemini, or Google AI actually say about them. They rank on Google and assume the other engines are similar. They're not.
+Most brands don't know how ChatGPT, Perplexity, Gemini, and Google AI actually see their site. They rank on Google and assume the other engines are similar. They're not.
 
-So I built a 30-second check at neverranked.com that tells you. Four engines, four scores. No email gate, no signup wall.
+So I built a 30-second check at neverranked.com that gives you an AEO score out of 100, a letter grade, and four checks on what's working and what's broken. No email gate, no signup wall.
 
-The challenge: run it on your own domain, screenshot the card, drop your score in the comments. I'll go first, and I'll be honest if it's ugly.
+The challenge: run it on your own domain, screenshot the result, drop your score in the comments. I'll go first, and I'll be honest if it's ugly.
 
 Two things happen when you post the number publicly.
 

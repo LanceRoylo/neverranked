@@ -39,67 +39,22 @@
     pointer-events: none;
   }
 
-  /* Left mark lockup */
-  .mark-lockup {
-    position: absolute;
-    left: 56px; top: 50%;
-    transform: translateY(-50%);
-    display: flex; align-items: center;
-    gap: 14px;
-    z-index: 3;
-  }
-  .mark-n {
-    font-family: "Playfair Display", serif;
-    font-style: italic;
-    font-weight: 500;
-    font-size: 58px;
-    line-height: 1;
-    color: #c9a84c;
-    letter-spacing: -0.02em;
-  }
-  .mark-stack {
-    display: flex; flex-direction: column;
-    gap: 4px;
-  }
-  .mark-word {
-    font-family: "Barlow Condensed", sans-serif;
-    font-weight: 500;
-    font-size: 18px;
-    letter-spacing: 0.38em;
-    color: #fbf8ef;
-    text-transform: uppercase;
-  }
-  .mark-tag {
-    font-family: "DM Mono", monospace;
-    font-weight: 400;
-    font-size: 10px;
-    letter-spacing: 0.12em;
-    color: rgba(251,248,239,.68);
-    text-transform: uppercase;
-  }
-
-  /* Divider */
-  .divider {
-    position: absolute;
-    left: 360px; top: 50%;
-    transform: translateY(-50%);
-    width: 1px; height: 96px;
-    background: rgba(251,248,239,.14);
-    z-index: 3;
-  }
-
-  /* Center headline block */
+  /* Centered headline block — left-bottom kept clear for LinkedIn's avatar overlay */
   .headline {
     position: absolute;
-    left: 410px; right: 56px;
-    top: 50%;
-    transform: translateY(-50%);
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     z-index: 3;
+    padding: 0 40px;
   }
   .h1 {
     font-family: "Playfair Display", serif;
     font-weight: 400;
-    font-size: 48px;
+    font-size: 54px;
     line-height: 1.02;
     letter-spacing: -0.015em;
     color: #fbf8ef;
@@ -112,26 +67,30 @@
   .sub {
     font-family: "DM Mono", monospace;
     font-weight: 400;
-    font-size: 12px;
-    letter-spacing: 0.02em;
-    color: rgba(251,248,239,.86);
+    font-size: 13px;
+    letter-spacing: 0.04em;
+    color: rgba(251,248,239,.82);
     margin: 0;
   }
+  /* Flanking rule lines, kept clear of the avatar's bottom-left zone */
+  .rule {
+    position: absolute;
+    top: 50%;
+    width: 140px;
+    height: 1px;
+    background: rgba(232,199,103,.35);
+    z-index: 3;
+  }
+  .rule.right { right: 56px; }
+  .rule.left  { left: 260px; } /* 260 keeps clear of desktop avatar column */
 </style>
 </head>
 <body>
   <div class="gold-wash"></div>
   <div class="grain"></div>
 
-  <div class="mark-lockup">
-    <div class="mark-n">N</div>
-    <div class="mark-stack">
-      <div class="mark-word">NeverRanked</div>
-      <div class="mark-tag">Citations, not rankings</div>
-    </div>
-  </div>
-
-  <div class="divider"></div>
+  <div class="rule left"></div>
+  <div class="rule right"></div>
 
   <div class="headline">
     <h1 class="h1">Never Ranked. <span class="italic">Until now.</span></h1>
