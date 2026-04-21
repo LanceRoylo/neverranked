@@ -8,38 +8,25 @@
 
 ## Image
 
-![Post 01 image](post-01-scorecard.png)
+![Post 01 image](images/post-01-scorecard.png)
 
-`post-01-scorecard.png` · 1200×1200
+- **File:** [images/post-01-scorecard.png](images/post-01-scorecard.png) · 1200×1200
+- **Source:** `post-01-scorecard-source.html` (run `node linkedin/render.mjs` to re-render)
 
 Stylized ChatGPT conversation in NR's editorial black/gold. Bracketed question lets viewers mentally auto-fill their own industry/city. Four fictional competitor agencies (Parker & Wells, Northbound Creative, Studio Meridian, Blackline Marketing) named in the answer. Kicker reveals "Your business wasn't in the answer." Three stats (4.5B, 58%, 0$) anchor the bottom.
 
-Edit the source at `post-01-scorecard-source.html` and run `node linkedin/render.mjs` to re-render.
-
 ---
 
-## Caption (copy-paste ready, ~930 chars)
+## Caption
 
-> People stopped asking Google. They're asking ChatGPT.
->
-> And ChatGPT already has an answer. The question is whether your business is in it.
->
-> Tried it yesterday for a client in the dental space. Asked ChatGPT the exact question their customers ask. Four practices named. The one ranking #1 on Google wasn't in the list.
->
-> That gap is where customers go now. Not to your competitor's Google ranking. To whoever the AI hands them first.
->
-> Free 30-second check at neverranked.com tells you if you're in the answer or invisible. No email gate. No signup.
->
-> Challenge: run it, screenshot the result, drop it in the comments. If your score is ugly, I'll send the three things I'd fix first, free. Reply "roast" under your score.
->
-> I'll go first.
+Copy-paste from [captions/post-01-chatgpt-mock.txt](captions/post-01-chatgpt-mock.txt).
 
 ---
 
 ## How to post
 
-1. Upload `post-01-scorecard.png` as the image.
-2. Paste the caption exactly as written above.
+1. Upload `images/post-01-scorecard.png` as the image.
+2. Paste the caption from `captions/post-01-chatgpt-mock.txt` exactly as written.
 3. Do not let LinkedIn attach a link preview card. Paste `neverranked.com` as plain text in the body only — the algorithm suppresses posts with outbound link previews.
 4. As comment 1 from your own account (within one minute of posting), paste a real screenshot of your own neverranked.com audit result. Sets the tone and shows you went first.
 5. Pin the post for one week.

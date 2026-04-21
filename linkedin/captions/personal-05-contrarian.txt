@@ -1,0 +1,15 @@
+Unpopular take from someone who spent a decade selling keyword reports.
+
+Keyword reports are theater.
+
+They exist because they're easy to produce and they look like progress. They tell you nothing about whether you'll be found in the conversation that matters next year.
+
+What actually matters now:
+
+Share of answer across the four major AI engines. Quote fidelity (are you being named or paraphrased). Entity recognition (does the model know what your brand is). Schema completeness on the pages you want cited. Velocity of citations over the last 90 days.
+
+None of these show up in an Ahrefs export.
+
+If you're getting an SEO report every month and none of that is in it, you're paying for a photo of a scoreboard from a game that already ended.
+
+Free 30-second check at neverranked.com.

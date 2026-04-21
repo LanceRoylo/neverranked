@@ -1,0 +1,11 @@
+The scoreboard changed and nobody sent a memo.
+
+Old scoreboard: keyword rank, SERP position, domain authority, backlink count.
+
+New scoreboard: share of answer, quote fidelity, citation velocity, entity resolution, schema coverage.
+
+If your marketing team's monthly report is still on the first scoreboard, you're measuring a game that's losing relevance every quarter.
+
+The fix isn't a new dashboard. It's a new discipline. You track what you can influence, and what you can influence now is whether the AI names you when the question gets asked.
+
+I built a free readiness check at neverranked.com that runs the second scoreboard against your domain. 30 seconds, no email.

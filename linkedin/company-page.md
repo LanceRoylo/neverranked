@@ -59,74 +59,12 @@ Answer Engine Optimization, AEO, AI SEO, ChatGPT Citation, Perplexity SEO, Googl
 
 ## Seed posts (5)
 
-Post these from the company page in order, one per weekday during launch week.
+Post these from the company page in order, one per weekday during launch week. Copy-paste from the `.txt` files.
 
-### Post 1 — Manifesto (launch day)
-
-Search didn't die. It forked.
-
-One version still crawls, indexes, and ranks the old way. The other one answers the question itself and never hands the visit to anyone.
-
-Most agencies are still selling you the first one. We built NeverRanked for the second.
-
-Citations, not rankings. That's the whole thesis.
-
-See how the AI engines read your site at neverranked.com.
-
----
-
-### Post 2 — Stat
-
-58.5% of Google clicks now end on an AI Overview.
-
-ChatGPT: 4.5 billion visits a month.
-Perplexity: quoting sources directly, no SERP required.
-Gemini: built into every Android and every Chrome address bar.
-
-Your last SEO report told you which keyword you rank #7 for. None of those engines cared.
-
-We track something different. Share of answer. Quote fidelity. Whether you got mentioned at all.
-
-Free 30-second check at neverranked.com. No email gate.
-
----
-
-### Post 3 — Proof-of-practice
-
-Before we sold AEO as a service, we tried to break it on ourselves.
-
-Montaic is our in-house product. AI-native content for real estate. We treated it like our first client. Ran the full audit. Rebuilt the schema. Rewrote content for citation. Tracked every engine.
-
-The reason we're booking agency clients now is because it worked there first. We don't pitch what we haven't tried.
-
-If your current agency can't show you their own AEO before they sell you yours, that's a tell.
-
----
-
-### Post 4 — The $500 audit
-
-The SEO audit most agencies send you: 90 pages, auto-generated, full of "recommendations" that take another quote to implement.
-
-Ours: Six deliverables. 48 hours. Five hundred dollars.
-
-Technical audit. Schema review. Keyword and intent gap. AI citation audit. Competitor teardown. 90-day roadmap.
-
-Yours to keep whether you hire us after or not. We don't refund. We deliver.
-
-neverranked.com
-
----
-
-### Post 5 — Anti-agency complicity
-
-If your SEO agency is still talking about "SERP positions" in 2026, a few honest questions:
-
-When's the last time they showed you an AI Overview appearance?
-
-Do they track ChatGPT citations? Perplexity? Gemini? Or just Ahrefs ranks?
-
-Have they ever told you to do something they couldn't bill for?
-
-Keyword reports are theater. The scoreboard changed. Your agency didn't.
-
-We built NeverRanked for people who already figured that out.
+| # | Angle | File |
+|---|---|---|
+| 1 | Manifesto (launch day) | [captions/company-01-manifesto.txt](captions/company-01-manifesto.txt) |
+| 2 | Stat | [captions/company-02-stat.txt](captions/company-02-stat.txt) |
+| 3 | Proof-of-practice (Montaic) | [captions/company-03-proof.txt](captions/company-03-proof.txt) |
+| 4 | The $500 audit | [captions/company-04-audit.txt](captions/company-04-audit.txt) |
+| 5 | Anti-agency | [captions/company-05-anti-agency.txt](captions/company-05-anti-agency.txt) |

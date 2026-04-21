@@ -1,0 +1,9 @@
+Search didn't die. It forked.
+
+One version still crawls, indexes, and ranks the old way. The other one answers the question itself and never hands the visit to anyone.
+
+Most agencies are still selling you the first one. We built NeverRanked for the second.
+
+Citations, not rankings. That's the whole thesis.
+
+See how the AI engines read your site at neverranked.com.

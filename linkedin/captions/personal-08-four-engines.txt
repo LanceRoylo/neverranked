@@ -1,0 +1,13 @@
+Four engines. Four different problems.
+
+Google AI Overviews. Pulling from top organic, but weighting freshness and structured data over backlink profile. You can be #1 and never appear in the Overview.
+
+ChatGPT Search. Cites from a smaller curated set. If your entity isn't well-defined across the open web, you're paraphrased or skipped.
+
+Perplexity. Fastest-moving citation graph. Rewards explicit source linking and well-scoped FAQ content.
+
+Gemini. Heaviest weight on Google's Knowledge Graph. If your Google Business and Wikidata presence aren't cleaned up, you're invisible here.
+
+Most brands I audit are visible on one of the four, kind-of-visible on one, and missing from two.
+
+The free check at neverranked.com tells you which is which.

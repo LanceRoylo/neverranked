@@ -8,8 +8,8 @@ Two PNGs generated from HTML sources. Both use the live site's typography (Playf
 
 | File | Size | Use |
 |---|---|---|
-| `logo-300.png` | 300 × 300 | Company Page logo |
-| `cover-1128x191.png` | 1128 × 191 | Company Page cover image |
+| `images/logo-300.png` | 300 × 300 | Company Page logo |
+| `images/cover-1128x191.png` | 1128 × 191 | Company Page cover image |
 
 LinkedIn specs:
 - **Logo:** square, minimum 300×300, PNG or JPG, under 4MB. This file is exact-fit.
@@ -28,7 +28,7 @@ Both pass the Blind Brand Test (from HM quality benchmarks): cover the name and 
 
 ## Regenerating
 
-Sources live next to the PNGs.
+Source HTML files live in `linkedin/`. PNGs render into `linkedin/images/`.
 
 ```bash
 cd /Users/lanceroylo/Desktop/neverranked

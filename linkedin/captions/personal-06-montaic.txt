@@ -1,0 +1,13 @@
+We run a real-estate AI product called Montaic. It's been our AEO lab for a year.
+
+Here's what actually moved citations on it.
+
+Month 1: Rebuilt schema from scratch. RealEstateAgent + Organization + FAQ on every page. Zero to 14 Perplexity citations in 30 days.
+
+Month 2: Added a Person schema for the founder with sameAs pointing to LinkedIn, Twitter, and a Crunchbase profile. ChatGPT started naming us in broad "AI real estate tools" queries within two weeks.
+
+Month 3: Wrote 12 comparison pages with explicit structured data. Gemini began citing those directly.
+
+Biggest thing I wish I'd done sooner: stopped writing for Google and started writing for the quote. Shorter paragraphs. Specific numbers. Named entities.
+
+If you want to see your AEO baseline, neverranked.com has a free check. 30 seconds.

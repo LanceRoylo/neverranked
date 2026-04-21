@@ -1,0 +1,11 @@
+Three schema fields that disproportionately move the needle for AI citation.
+
+1. sameAs. Links your entity to its Wikipedia, Wikidata, Crunchbase, and LinkedIn pages. The engines use these to verify you're who you say you are. Missing it is the top reason brands get paraphrased instead of named.
+
+2. author with a populated Person schema. Not just a byline string. AI answer engines weight "who wrote this" as a proxy for whether to cite. A string like "By Jane Smith" is not the same as a linked entity with credentials.
+
+3. speakable. Marks the 2-3 sentences you want read aloud by voice assistants. It's also a strong hint to text-based engines about which part of the page to quote.
+
+None of this is new. It's just unused. I still audit top-3-ranking sites that ship zero of the three.
+
+If you want a fast read on which your site is missing, drop a URL into the check on neverranked.com.

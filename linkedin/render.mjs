@@ -9,10 +9,10 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const targets = [
-  { html: 'logo-source.html',              out: 'logo-300.png',           w: 300,  h: 300 },
-  { html: 'cover-source.html',             out: 'cover-1128x191.png',     w: 1128, h: 191 },
-  { html: 'post-01-scorecard-source.html', out: 'post-01-scorecard.png',  w: 1200, h: 1200 },
-  { html: 'post-02-truthcard-source.html', out: 'post-02-truthcard.png',  w: 1200, h: 1200 },
+  { html: 'logo-source.html',              out: 'images/logo-300.png',           w: 300,  h: 300 },
+  { html: 'cover-source.html',             out: 'images/cover-1128x191.png',     w: 1128, h: 191 },
+  { html: 'post-01-scorecard-source.html', out: 'images/post-01-scorecard.png',  w: 1200, h: 1200 },
+  { html: 'post-02-truthcard-source.html', out: 'images/post-02-truthcard.png',  w: 1200, h: 1200 },
 ];
 
 const browser = await chromium.launch();

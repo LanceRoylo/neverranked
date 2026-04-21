@@ -1,0 +1,13 @@
+Asked ChatGPT "best dermatologists in Austin" this morning.
+
+It named six practices. Five of them were not the top-ranking organic results. One of them was a clinic ranking #14 for the same query.
+
+Why that one? I dug in.
+
+Clean LocalBusiness schema with every field populated. Individual dermatologist profiles marked up as Person entities with medicalSpecialty. FAQ schema on 40+ symptom pages. Linked to Healthgrades, Vitals, and their state medical board records.
+
+The #1 organic result had none of it. Pretty website. Great UX. Invisible to the model.
+
+Rankings are a Google problem. Citations are a different game, and a different engineering effort.
+
+We run this teardown on your own category as part of the free audit. Drop a domain into neverranked.com and see who the AI picks instead.

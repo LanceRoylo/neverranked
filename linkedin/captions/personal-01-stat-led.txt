@@ -1,0 +1,11 @@
+Spent the morning pulling click data for a client in the HVAC space.
+
+They rank #3 for their biggest money term. Traffic down 41% year over year.
+
+Nothing changed in the rankings. Google just started answering the query with an AI Overview. The user got their answer without clicking anything.
+
+This is happening across every category I look at. Real estate. Legal. Med spas. Financial advisors. Anywhere the question has a factual answer, the AI is handing it to the user directly.
+
+The fix isn't "rank better." The fix is getting cited inside the Overview itself. Different game. Different muscle.
+
+If you want to see what the AI engines already say about your brand, I built a 30-second check into neverranked.com. No email gate.
