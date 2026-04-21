@@ -1,0 +1,722 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Principles — How Never Ranked Works</title>
+<meta name="description" content="How Never Ranked works. Twelve principles, stated plainly. For the agency owner or operator deciding whether we'd be a good partner.">
+<link rel="canonical" href="https://neverranked.com/principles/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="Principles — How Never Ranked Works">
+<meta property="og:description" content="Twelve principles, stated plainly. A new species of SEO agency.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/principles/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Principles — Never Ranked">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Principles — How Never Ranked Works">
+<meta name="twitter:description" content="Twelve principles, stated plainly. A new species of SEO agency.">
+<meta name="twitter:image" content="https://neverranked.com/og.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": "https://neverranked.com/#organization",
+      "name": "Never Ranked",
+      "url": "https://neverranked.com",
+      "logo": "https://neverranked.com/og.png",
+      "sameAs": []
+    },
+    {
+      "@type": "WebSite",
+      "@id": "https://neverranked.com/#website",
+      "name": "Never Ranked",
+      "url": "https://neverranked.com",
+      "publisher": { "@id": "https://neverranked.com/#organization" }
+    },
+    {
+      "@type": "AboutPage",
+      "name": "Principles — How Never Ranked Works",
+      "description": "Twelve principles, stated plainly. How Never Ranked approaches AEO, SEO, client work, and transparency.",
+      "url": "https://neverranked.com/principles/",
+      "isPartOf": { "@id": "https://neverranked.com/#website" },
+      "publisher": { "@id": "https://neverranked.com/#organization" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://neverranked.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Principles", "item": "https://neverranked.com/principles/" }
+      ]
+    }
+  ]
+}
+</script>
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+
+/* ---------- reset ---------- */
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+img,svg{display:block;max-width:100%}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* ---------- grain overlay ---------- */
+.grain{
+  position:fixed;
+  inset:-50%;
+  width:200%;
+  height:200%;
+  pointer-events:none;
+  z-index:100;
+  opacity:.14;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}
+  20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}
+  60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}
+  100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:99;
+  background:
+    radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+    radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* ---------- shared layout ---------- */
+.wrap{
+  width:100%;
+  max-width:var(--max);
+  margin:0 auto;
+  padding:0 var(--gutter);
+  position:relative;
+}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;
+  top:0;left:0;right:0;
+  z-index:80;
+  padding:22px var(--gutter);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  mix-blend-mode:difference;
+  color:#f0ece3;
+  transition:transform .6s var(--ease);
+}
+.nav.hide{transform:translateY(-120%)}
+.nav .mark{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:20px;
+  letter-spacing:-.01em;
+}
+.nav .mark sup{
+  font-family:var(--label);
+  font-style:normal;
+  font-size:9px;
+  letter-spacing:.2em;
+  margin-left:4px;
+  vertical-align:super;
+  opacity:.78;
+}
+.nav .right{
+  display:flex;
+  align-items:center;
+  gap:28px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:11px;
+}
+.nav .right a{transition:opacity .25s,color .25s}
+.nav .right .nav-link{opacity:.88}
+.nav .right .nav-link:hover{opacity:1}
+.nav .right .nav-link.active{opacity:1;color:var(--gold)}
+.nav .right .nav-cta{
+  color:var(--gold);
+  border:1px solid var(--gold);
+  padding:10px 16px;
+  font-weight:500;
+  letter-spacing:.2em;
+  transition:background .35s var(--ease),color .35s var(--ease);
+}
+.nav .right .nav-cta:hover{background:var(--gold);color:var(--bg)}
+
+/* ---------- hamburger ---------- */
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;
+  left:0;right:0;height:2px;
+  background:#f0ece3;
+  transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+
+.mobile-overlay{
+  display:none;
+  position:fixed;
+  top:0;left:0;right:0;bottom:0;
+  z-index:190;
+  background:#080808;
+  padding:90px var(--gutter) 40px;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:0;
+  overflow-y:auto;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:14px;
+  color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;
+  padding:16px 0;
+  letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);
+  color:#f0ece3;
+  text-decoration:none;
+  transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;
+  text-align:center;
+  color:var(--gold);
+  border:1px solid var(--gold);
+  padding:16px 24px;
+  width:100%;
+  box-sizing:border-box;
+  font-weight:500;
+  letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right .nav-link,.nav .right .status{display:none}
+}
+
+/* ---------- hero ---------- */
+.principles-hero{
+  padding:180px 0 70px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.principles-hero::before{
+  content:"";
+  position:absolute;left:0;right:0;top:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--line-strong) 20%,var(--line-strong) 80%,transparent);
+}
+.principles-hero .section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:11px;
+  color:var(--text-mute);
+  margin-bottom:36px;
+}
+.principles-hero .section-label .dot{
+  display:inline-block;
+  width:6px;height:6px;
+  background:var(--gold);
+  border-radius:50%;
+  box-shadow:0 0 0 3px rgba(201,168,76,.15);
+}
+.principles-hero .section-label .rule{flex:1;height:1px;background:var(--line)}
+.principles-hero .kicker{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:12px;
+  color:var(--gold);
+  margin-bottom:24px;
+  font-weight:500;
+}
+.principles-hero h1{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(36px,5.5vw,64px);
+  line-height:1.06;
+  letter-spacing:-.02em;
+  margin:0 0 28px;
+  max-width:16ch;
+}
+.principles-hero h1 em{font-style:italic;color:var(--gold)}
+.principles-hero .lede{
+  max-width:54ch;
+  font-size:15px;
+  line-height:1.8;
+  color:var(--text-mute);
+  margin:0;
+}
+
+/* ---------- list ---------- */
+.principles-list{
+  max-width:760px;
+  margin:0 auto;
+  padding:90px var(--gutter) 60px;
+  display:grid;
+  gap:0;
+}
+.principle{
+  display:grid;
+  grid-template-columns:80px 1fr;
+  gap:24px;
+  padding:30px 0;
+  border-top:1px solid var(--line);
+}
+.principle:last-of-type{border-bottom:1px solid var(--line)}
+.principle .num{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:12px;
+  color:var(--gold);
+  padding-top:6px;
+  font-weight:500;
+}
+.principle .body{font-family:var(--mono);font-size:14px;line-height:1.8;color:var(--text-soft)}
+.principle .lead{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:400;
+  font-size:22px;
+  line-height:1.25;
+  letter-spacing:-.005em;
+  color:var(--text);
+  margin:0 0 10px;
+  display:block;
+}
+.principle .body p{margin:0;color:var(--text-mute)}
+.principle .body a{color:var(--gold);border-bottom:1px solid var(--gold-dim);transition:border-color .3s var(--ease)}
+.principle .body a:hover{border-color:var(--gold)}
+
+@media(max-width:640px){
+  .principle{grid-template-columns:1fr;gap:10px;padding:26px 0}
+  .principle .num{padding-top:0}
+  .principle .lead{font-size:20px}
+}
+
+/* ---------- CTA ---------- */
+.principles-cta{
+  border-top:1px solid var(--line);
+  padding:90px 0 100px;
+  text-align:center;
+}
+.principles-cta .eyebrow{
+  font-family:var(--label);
+  font-weight:500;
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:12px;
+  color:var(--text-mute);
+  margin-bottom:20px;
+}
+.principles-cta .eyebrow .dot{
+  display:inline-block;
+  width:6px;height:6px;
+  background:var(--gold);
+  border-radius:50%;
+  margin-right:10px;
+  transform:translateY(-2px);
+  box-shadow:0 0 0 3px rgba(201,168,76,.15);
+}
+.principles-cta h2{
+  font-family:var(--serif);
+  font-weight:400;
+  font-style:italic;
+  font-size:clamp(28px,5vw,44px);
+  line-height:1.1;
+  letter-spacing:-.02em;
+  margin:0 0 16px;
+  color:var(--text-soft);
+}
+.principles-cta .sub{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-faint);
+  line-height:1.7;
+  margin:0 auto 36px;
+  max-width:48ch;
+}
+.cta{
+  display:inline-flex;
+  align-items:center;
+  gap:16px;
+  padding:18px 26px 18px 28px;
+  border:1px solid var(--gold);
+  color:var(--gold);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:12px;
+  font-weight:500;
+  position:relative;
+  overflow:hidden;
+  transition:color .4s var(--ease);
+}
+.cta::before{
+  content:"";position:absolute;inset:0;
+  background:var(--gold);
+  transform:translateY(101%);
+  transition:transform .5s var(--ease);
+  z-index:-1;
+}
+.cta:hover{color:var(--bg)}
+.cta:hover::before{transform:translateY(0)}
+.cta .arrow{
+  display:inline-block;
+  width:18px;height:1px;
+  background:currentColor;position:relative;
+  transition:width .4s var(--ease);
+}
+.cta .arrow::after{
+  content:"";position:absolute;
+  right:0;top:-3px;width:7px;height:7px;
+  border-top:1px solid currentColor;
+  border-right:1px solid currentColor;
+  transform:rotate(45deg);
+}
+.cta:hover .arrow{width:24px}
+.cta-row{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.cta-secondary{
+  display:inline-flex;align-items:center;gap:16px;
+  padding:18px 26px 18px 28px;
+  border:1px solid var(--line);
+  color:var(--text-mute);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:12px;font-weight:500;
+  transition:border-color .35s var(--ease),color .35s var(--ease);
+}
+.cta-secondary:hover{border-color:var(--text-mute);color:var(--text)}
+
+/* ---------- footer ---------- */
+.footer{
+  border-top:1px solid var(--line);
+  margin-top:0;
+  padding:36px 0 40px;
+  display:grid;
+  grid-template-columns:1fr;
+  gap:20px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  color:var(--text-mute);
+}
+@media(min-width:720px){
+  .footer{grid-template-columns:1fr 1fr 1fr;align-items:center}
+  .footer .c{text-align:center}
+  .footer .r{text-align:right}
+}
+.footer a{color:var(--text-mute);transition:color .3s}
+.footer a:hover{color:var(--gold)}
+
+/* ---------- reveal ---------- */
+.reveal{
+  opacity:0;
+  transform:translateY(28px);
+  transition:opacity 1s var(--ease),transform 1s var(--ease);
+}
+.reveal.in{opacity:1;transform:none}
+</style>
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/principles/">Principles</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$500 Audit</a>
+</div>
+
+<nav class="nav" id="nav">
+  <a href="/" class="mark">Never Ranked<sup>&copy;</sup></a>
+  <div class="right">
+    <a href="/about/" class="nav-link">About</a>
+    <a href="/blog/" class="nav-link">Insights</a>
+    <a href="/principles/" class="nav-link active">Principles</a>
+    <a href="/#services" class="nav-link">Services</a>
+    <a href="/#audit" class="nav-cta">$500 Audit</a>
+  </div>
+</nav>
+
+<main>
+
+  <!-- HERO -->
+  <section class="principles-hero">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="dot"></span>
+        <span>A new species of SEO agency</span>
+        <span class="rule"></span>
+      </div>
+      <div class="kicker reveal">How we work</div>
+      <h1 class="reveal" style="transition-delay:.06s">Twelve principles, <em>stated plainly.</em></h1>
+      <p class="lede reveal" style="transition-delay:.12s">If you're an agency owner, an operator, or an in-house marketer deciding whether we'd be a good partner, read this page before the pitch deck. Every claim below is load-bearing. If any of these twelve feels wrong to you, we're probably not the right agency. That is useful information for both of us.</p>
+    </div>
+  </section>
+
+  <!-- LIST -->
+  <section class="principles-list">
+    <div class="principle reveal">
+      <div class="num">§01</div>
+      <div class="body">
+        <span class="lead">Citations, not rankings.</span>
+        <p>The blue-link era is ending. The answer-engine era has begun. We optimize for the moment an AI model names you in its answer, not the position your page holds on page one.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§02</div>
+      <div class="body">
+        <span class="lead">One thing done well.</span>
+        <p>No PPC. No paid social. No tool stack we don't believe in. One specialist firm, one category. If you need a generalist, you already have ten to choose from. We aren't one of them.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§03</div>
+      <div class="body">
+        <span class="lead">Name the lever or don't ship it.</span>
+        <p>Every deliverable has a named creative mechanism. Schema, entity graph, citation mining, voice calibration, comparison authority. If we can't name what will move the number and why, the work has no business being done.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§04</div>
+      <div class="body">
+        <span class="lead">Proof beats promise.</span>
+        <p>Every claim ships with a receipt. Read the <a href="/case-studies/montaic/">Montaic case study</a> for the full teardown of our own SaaS. Seventeen actions, twelve days, every number in public. Then decide.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§05</div>
+      <div class="body">
+        <span class="lead">Schema is infrastructure. Entity registration is the address.</span>
+        <p>Structured data tells the model what you are. Sameas links across Wikidata, Crunchbase, G2, LinkedIn tell it where else you live. Without both, the machines can't cite what they can't identify.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§06</div>
+      <div class="body">
+        <span class="lead">Classic SEO hygiene is necessary. It is not sufficient.</span>
+        <p>Canonicals, meta tags, title budgets, crawlability. We do all of it. We do it on day one. Then we do the ninety percent of the work your last agency never touched because the category didn't exist yet.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§07</div>
+      <div class="body">
+        <span class="lead">The ninety-day foundation is non-negotiable.</span>
+        <p>Compound returns require a compounding substrate. The first ninety days build that substrate. We will not promise citations in week one. We will show you what to expect and when.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§08</div>
+      <div class="body">
+        <span class="lead">No monthly retainer that bills for nothing.</span>
+        <p>Our retainer meters against the work that actually moved. Every month ships a report that names the lever, the action, and the result. If it didn't move, we say so, and we say why.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§09</div>
+      <div class="body">
+        <span class="lead">No refunds. We deliver.</span>
+        <p>If we take the job, we finish the job. The audit ships in forty-eight hours. Six deliverables. Yours to keep whether you hire us after or not. The retainer ships on the schedule we set, not when it's convenient.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§10</div>
+      <div class="body">
+        <span class="lead">Lance reads every email.</span>
+        <p>No account managers. No sales funnel. No inbox triage. The founder answers. If you email <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>, I read it and reply within a day. This does not scale, which is the point.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§11</div>
+      <div class="body">
+        <span class="lead">If the case study doesn't hold up, neither do we.</span>
+        <p>We audited our own SaaS before we sold anyone else an audit. The results are public at <a href="/case-studies/montaic/">neverranked.com/case-studies/montaic</a>. If you can read that page and still think we don't know what we're doing, don't hire us.</p>
+      </div>
+    </div>
+
+    <div class="principle reveal">
+      <div class="num">§12</div>
+      <div class="body">
+        <span class="lead">Move first or pay to catch up.</span>
+        <p>Every category shift rewards early movers and taxes late ones. The AEO shift is not different. The agencies and brands that build the citation foundation now will compound against the ones that wait. The cost of waiting goes up every quarter.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="principles-cta">
+    <div class="wrap">
+      <div class="eyebrow reveal"><span class="dot"></span>If this reads right</div>
+      <h2 class="reveal" style="transition-delay:.06s">Start with the audit.</h2>
+      <p class="sub reveal" style="transition-delay:.12s">Five hundred dollars. Forty-eight hours. Six deliverables. Yours to keep whether you hire us after or not.</p>
+      <div class="cta-row reveal" style="transition-delay:.18s">
+        <a href="/#audit" class="cta">
+          Book the $500 audit
+          <span class="arrow"></span>
+        </a>
+        <a href="mailto:hello@neverranked.com" class="cta-secondary">
+          Email Lance
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="wrap">
+      <div class="footer">
+        <div class="l">Never Ranked &copy; 2026</div>
+        <div class="c"><a href="/">Home</a> &middot; <a href="/blog/">Insights</a> &middot; <a href="/about/">About</a> &middot; <a href="/case-studies/montaic/">Case Study</a></div>
+        <div class="r"><a href="mailto:hello@neverranked.com">hello@neverranked.com</a></div>
+      </div>
+    </div>
+  </footer>
+
+</main>
+
+<script>
+(function(){
+  var els = document.querySelectorAll('.reveal');
+  if(!('IntersectionObserver' in window)){els.forEach(function(el){el.classList.add('in')});return}
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(entry){
+      if(entry.isIntersecting){entry.target.classList.add('in');io.unobserve(entry.target)}
+    });
+  },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
+  els.forEach(function(el){io.observe(el)});
+})();
+
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){btn.classList.add('active');menu.classList.add('open');document.body.style.overflow='hidden'}
+  function close(){btn.classList.remove('active');menu.classList.remove('open');document.body.style.overflow=''}
+  btn.addEventListener('click',function(e){
+    e.stopPropagation();
+    menu.classList.contains('open') ? close() : open();
+  });
+  menu.addEventListener('click',function(e){if(e.target.tagName==='A') close()});
+})();
+
+(function(){
+  var nav = document.getElementById('nav');
+  var menu = document.getElementById('mobileMenu');
+  var last = 0; var ticking = false;
+  function onScroll(){
+    var y = window.scrollY;
+    if(menu && menu.classList.contains('open')) { last = y; ticking = false; return }
+    if(y > last && y > 200){nav.classList.add('hide')} else {nav.classList.remove('hide')}
+    last = y; ticking = false;
+  }
+  window.addEventListener('scroll',function(){
+    if(!ticking){window.requestAnimationFrame(onScroll);ticking = true}
+  },{passive:true});
+})();
+</script>
+</body>
+</html>

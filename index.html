@@ -2167,6 +2167,40 @@ h1,h2,h3,h4{
   transition:border-color .3s var(--ease);
 }
 .audit-email a:hover{border-color:var(--gold)}
+.audit-founder{
+  margin-top:18px;
+  padding-top:14px;
+  border-top:1px solid var(--line);
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:13px;
+  line-height:1.55;
+  color:var(--text-faint);
+  max-width:42ch;
+}
+
+/* ---------- press strip (hidden until earned) ---------- */
+.press-strip{
+  display:none; /* flip to flex when first press mention lands */
+  align-items:center;
+  gap:22px;
+  flex-wrap:wrap;
+  padding:20px 0;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+  margin:0 0 24px;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  color:var(--text-faint);
+}
+.press-strip .ps-label{color:var(--gold);font-weight:500}
+.press-strip a{
+  color:var(--text-faint);
+  transition:color .3s var(--ease);
+}
+.press-strip a:hover{color:var(--text)}
 
 /* ---------- intake ---------- */
 .intake{
@@ -3486,6 +3520,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <a href="#services">Services</a>
   <a href="#pricing">Pricing</a>
   <a href="/blog/">Insights</a>
+  <a href="/principles/">Principles</a>
   <a href="/about/">About</a>
   <a href="#audit" class="mob-cta">$500 Audit</a>
   <span class="mob-status">Booking <span data-booking-window>May 2026</span></span>
@@ -3513,7 +3548,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <section class="hero">
     <div class="wrap">
       <div class="hero-eyebrow reveal">
-        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>AI-NATIVE SEO &amp; AEO (ANSWER ENGINE OPTIMIZATION)</span>
+        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>A NEW SPECIES OF SEO AGENCY</span>
         <span class="tag">BY APPOINTMENT</span>
       </div>
 
@@ -3527,7 +3562,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
         <div class="reveal" style="transition-delay:.15s">
           <p class="hero-sub" style="margin-bottom:36px">
-            <b>Search changed. Your visibility didn't.</b> Check how ChatGPT, Perplexity, Gemini, and Google AI see your site. Takes thirty seconds.
+            <b>Search changed. Your visibility didn't.</b> Most agencies still optimize for a blue-link web that 58% of searches already skip. We only do what replaced it.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4671,6 +4706,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <span class="arrow"></span>
           </a>
           <p class="audit-email">or email <a href="mailto:hello@neverranked.com">hello@neverranked.com</a> directly</p>
+          <p class="audit-founder">Lance reads every email. No account managers. No funnel. I answer within a day.</p>
         </div>
       </div>
     </div>
@@ -4792,9 +4828,17 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <a href="mailto:hello@neverranked.com" class="email">hello@neverranked.com</a>
       </div>
 
+      <!-- Press strip: hidden until first press mention lands. To activate, remove style="display:none" and uncomment the entries below. -->
+      <div class="press-strip" style="display:none">
+        <span class="ps-label">§ Seen in</span>
+        <!-- <a href="#">TechCrunch</a> -->
+        <!-- <a href="#">HousingWire</a> -->
+        <!-- <a href="#">Inman</a> -->
+      </div>
+
       <div class="footer">
         <div class="l">Never Ranked © 2026</div>
-        <div class="c"><a href="https://app.neverranked.com">Client login</a> · <a href="https://app.neverranked.com/demo">Live demo</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://app.neverranked.com/agency/apply">For agencies</a> · <a href="https://app.neverranked.com/changelog">Changelog</a></div>
+        <div class="c"><a href="https://app.neverranked.com">Client login</a> · <a href="https://app.neverranked.com/demo">Live demo</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="https://app.neverranked.com/agency/apply">For agencies</a> · <a href="/principles/">Principles</a> · <a href="https://app.neverranked.com/changelog">Changelog</a></div>
         <div class="r"><a href="mailto:hello@neverranked.com">hello@neverranked.com</a></div>
       </div>
     </div>
