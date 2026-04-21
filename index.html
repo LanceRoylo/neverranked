@@ -1893,6 +1893,47 @@ h1,h2,h3,h4{
 }
 .compound-note b{color:var(--text-mute);font-weight:400}
 
+/* ---------- compound growth curve ---------- */
+.compound-curve{
+  display:block;
+  width:100%;
+  max-width:960px;
+  height:auto;
+  margin:16px auto 56px;
+}
+.compound-curve .grid line{stroke:var(--line);stroke-width:.6}
+.compound-curve .curve-fill{fill:url(#curveFill)}
+.compound-curve .curve-line{
+  fill:none;
+  stroke:#c9a84c;
+  stroke-width:1.6;
+  stroke-linecap:round;
+}
+.compound-curve .mk{fill:#c9a84c}
+.compound-curve .mk-bend{fill:#e8c866;stroke:#c9a84c;stroke-width:1.2}
+.compound-curve .mk-final{fill:#e8c866;stroke:#c9a84c;stroke-width:1.8}
+.compound-curve .axis text{
+  font-family:var(--mono);
+  font-size:11px;
+  fill:var(--text-mute);
+  text-anchor:middle;
+  letter-spacing:.1em;
+}
+.compound-curve .annot text{
+  font-family:var(--label);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  fill:#c9a84c;
+}
+.compound-curve .axis-title{
+  font-family:var(--label);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  fill:var(--text-soft);
+}
+
 /* ---------- audit ---------- */
 .audit{
   padding:160px 0 160px;
@@ -4366,6 +4407,54 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           Ads stop when you stop paying. AEO compounds. The schema, content, and structured data you build today trains the model that cites you six months from now. Here is what that actually looks like.
         </p>
       </div>
+
+      <svg class="compound-curve reveal" viewBox="0 0 900 340" role="img" aria-label="Compound growth curve: share of answer stays flat through months 1 and 2 during foundation work, then bends upward sharply at month 3 and continues compounding through month 6">
+        <defs>
+          <linearGradient id="curveFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#c9a84c" stop-opacity=".18"/>
+            <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+
+        <!-- y-axis title -->
+        <text class="axis-title" x="60" y="22">SHARE OF ANSWER</text>
+
+        <!-- subtle gridlines -->
+        <g class="grid">
+          <line x1="60" y1="280" x2="860" y2="280"/>
+          <line x1="60" y1="170" x2="860" y2="170"/>
+          <line x1="60" y1="60" x2="860" y2="60"/>
+        </g>
+
+        <!-- fill area under curve -->
+        <path class="curve-fill" d="M 60 280 C 200 278, 350 275, 460 217 S 750 90, 860 61 L 860 280 Z"/>
+
+        <!-- the curve itself -->
+        <path class="curve-line" d="M 60 280 C 200 278, 350 275, 460 217 S 750 90, 860 61"/>
+
+        <!-- month markers -->
+        <circle class="mk" cx="193" cy="272" r="3.5"/>
+        <circle class="mk" cx="327" cy="257" r="3.5"/>
+        <circle class="mk mk-bend" cx="460" cy="217" r="5"/>
+        <circle class="mk mk-final" cx="860" cy="61" r="6"/>
+
+        <!-- x-axis month labels -->
+        <g class="axis">
+          <text x="60" y="305">M0</text>
+          <text x="193" y="305">M1</text>
+          <text x="327" y="305">M2</text>
+          <text x="460" y="305">M3</text>
+          <text x="593" y="305">M4</text>
+          <text x="727" y="305">M5</text>
+          <text x="860" y="305">M6</text>
+        </g>
+
+        <!-- annotations -->
+        <g class="annot">
+          <text x="460" y="203" text-anchor="middle">The bend</text>
+          <text x="860" y="45" text-anchor="end">Compound</text>
+        </g>
+      </svg>
 
       <div class="timeline reveal-stagger">
         <div class="tl-card">
