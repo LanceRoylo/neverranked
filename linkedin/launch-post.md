@@ -6,31 +6,29 @@ The first post. Goes out from Lance's personal LinkedIn profile, not the company
 
 ## Image
 
-`post-01-scorecard.png` — 1200×1200 square. Near-literal template of the real tool's result card. Empty slots for domain, score (out of 100), letter grade, and the four underlying checks (Title tag, Meta description, Canonical URL, og:image). When someone runs the real check, their result looks almost identical to the post image — that visual recognition is what drives the screenshot-and-share behavior.
+`post-01-scorecard.png` — 1200×1200 square. A mock ChatGPT conversation styled in NR's editorial black/gold. The user asks a generic "best [X] in [your city]" question, ChatGPT lists four fictional competitors, and the kicker underneath reveals: "Your business wasn't in the answer." Built for the non-technical viewer who doesn't know what schema is but absolutely understands losing to competitors on ChatGPT.
+
+Bracketed placeholders in the question let viewers auto-fill their own industry/city mentally. The four competitor names are fictional-but-plausible (Parker & Wells, Northbound Creative, etc.) to avoid legal risk while feeling real.
 
 Regenerate with `node linkedin/render.mjs` (target already wired in).
 
 ---
 
-## Caption (copy-paste ready, ~950 chars)
+## Caption (copy-paste ready, ~930 chars)
 
-Starting a thing. Maybe you'll play.
+People stopped asking Google. They're asking ChatGPT.
 
-Most brands don't know how ChatGPT, Perplexity, Gemini, and Google AI actually see their site. They rank on Google and assume the other engines are similar. They're not.
+And ChatGPT already has an answer. The question is whether your business is in it.
 
-So I built a 30-second check at neverranked.com that gives you an AEO score out of 100, a letter grade, and four checks on what's working and what's broken. No email gate, no signup wall.
+Tried it yesterday for a client in the dental space. Asked ChatGPT the exact question their customers ask. Four practices named. The one ranking #1 on Google wasn't in the list.
 
-The challenge: run it on your own domain, screenshot the result, drop your score in the comments. I'll go first, and I'll be honest if it's ugly.
+That gap is where customers go now. Not to your competitor's Google ranking. To whoever the AI hands them first.
 
-Two things happen when you post the number publicly.
+Free 30-second check at neverranked.com tells you if you're in the answer or invisible. No email gate. No signup.
 
-One, you find out where you actually stand on the engines already eating your click-through rate.
+Challenge: run it, screenshot the result, drop it in the comments. If your score is ugly, I'll send the three things I'd fix first, free. Reply "roast" under your score.
 
-Two, the exercise of publishing is more useful than the score itself. You can't fix what you won't name.
-
-If you want a roast of what's broken, reply "roast" under your score and I'll send the three things I'd fix first, free.
-
-Your move.
+I'll go first.
 
 ---
 

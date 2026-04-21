@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>NeverRanked — Launch Post Scorecard</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap" rel="stylesheet">
+<title>NeverRanked — Launch Post (ChatGPT Mock)</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
   html, body {
     margin: 0; padding: 0;
@@ -19,7 +19,7 @@
   .grain {
     position: absolute; inset: 0;
     z-index: 1;
-    opacity: .09;
+    opacity: .08;
     mix-blend-mode: overlay;
     pointer-events: none;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
@@ -30,8 +30,8 @@
     width: 140%; height: 140%;
     z-index: 1;
     background:
-      radial-gradient(ellipse 50% 40% at 50% 15%, rgba(232,199,103,.10) 0%, transparent 60%),
-      radial-gradient(ellipse 50% 40% at 50% 85%, rgba(232,199,103,.05) 0%, transparent 60%);
+      radial-gradient(ellipse 60% 50% at 50% 20%, rgba(232,199,103,.09) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 50% 90%, rgba(232,199,103,.07) 0%, transparent 60%);
     pointer-events: none;
   }
   .vignette {
@@ -39,17 +39,17 @@
     z-index: 10;
     pointer-events: none;
     background:
-      radial-gradient(140% 100% at 50% 0%, transparent 75%, rgba(0,0,0,.28) 100%),
-      radial-gradient(120% 100% at 50% 100%, transparent 75%, rgba(0,0,0,.32) 100%);
+      radial-gradient(140% 100% at 50% 0%, transparent 75%, rgba(0,0,0,.25) 100%),
+      radial-gradient(120% 100% at 50% 100%, transparent 75%, rgba(0,0,0,.30) 100%);
   }
 
   /* Frame */
   .frame {
     position: absolute;
-    inset: 90px;
+    inset: 70px;
     z-index: 3;
     border: 1px solid rgba(251,248,239,.10);
-    padding: 60px 80px;
+    padding: 48px 70px;
     display: flex; flex-direction: column;
   }
 
@@ -58,7 +58,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding-bottom: 28px;
+    padding-bottom: 22px;
     border-bottom: 1px solid rgba(251,248,239,.14);
   }
   .topbar .mark {
@@ -68,7 +68,7 @@
     font-family: "Playfair Display", serif;
     font-style: italic;
     font-weight: 500;
-    font-size: 40px;
+    font-size: 38px;
     line-height: 1;
     color: #c9a84c;
     letter-spacing: -0.02em;
@@ -76,7 +76,7 @@
   .mark-word {
     font-family: "Barlow Condensed", sans-serif;
     font-weight: 500;
-    font-size: 18px;
+    font-size: 17px;
     letter-spacing: 0.38em;
     color: #fbf8ef;
     text-transform: uppercase;
@@ -84,211 +84,194 @@
   .topbar .label {
     font-family: "Barlow Condensed", sans-serif;
     font-weight: 500;
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 0.38em;
     color: rgba(251,248,239,.55);
     text-transform: uppercase;
   }
 
-  /* Status row */
-  .statusbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    padding: 30px 0 10px 0;
-  }
-  .statusbar .scan-label {
-    font-family: "Barlow Condensed", sans-serif;
-    font-weight: 500;
-    font-size: 13px;
-    letter-spacing: 0.38em;
-    color: rgba(251,248,239,.55);
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .statusbar .scan-label::before {
-    content: "";
-    display: inline-block;
-    width: 24px; height: 1px;
-    background: rgba(232,199,103,.6);
-  }
-  .statusbar .scan-state {
-    font-family: "Barlow Condensed", sans-serif;
-    font-weight: 600;
-    font-size: 13px;
-    letter-spacing: 0.38em;
-    color: #c9a84c;
-    text-transform: uppercase;
-  }
-
-  /* Domain slot */
-  .domain {
-    font-family: "DM Mono", monospace;
-    font-weight: 400;
-    font-size: 20px;
-    color: rgba(251,248,239,.75);
-    margin: 14px 0 6px 0;
-    padding: 10px 0;
-    border-bottom: 1px dashed rgba(251,248,239,.12);
-    letter-spacing: 0.02em;
-  }
-  .domain .placeholder {
-    color: rgba(251,248,239,.35);
-  }
-
-  /* Score block */
-  .score-block {
-    display: flex;
-    align-items: baseline;
-    gap: 46px;
-    padding: 36px 0 18px 0;
-  }
-  .score-num {
-    font-family: "Playfair Display", serif;
-    font-weight: 400;
-    font-style: italic;
-    font-size: 168px;
-    line-height: 1;
-    color: #c9a84c;
-    letter-spacing: -0.02em;
-    display: flex;
-    align-items: baseline;
-  }
-  .score-num .slot {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 200px;
-    height: 156px;
-    color: rgba(232,199,103,.28);
-    border: 2px dashed rgba(232,199,103,.55);
-    padding: 0 8px 16px 8px;
-    box-sizing: border-box;
-    background: rgba(232,199,103,.04);
-    line-height: 1;
-  }
-  .score-num .slash {
-    color: rgba(251,248,239,.55);
-    font-size: 64px;
-    font-style: normal;
-    margin-left: 4px;
-  }
-  .score-num .total {
-    color: rgba(251,248,239,.75);
-    font-size: 56px;
-    font-style: normal;
-    margin-left: 6px;
-    font-family: "DM Mono", monospace;
-    letter-spacing: 0.02em;
-  }
-  .grade-block {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    padding-bottom: 18px;
-  }
-  .grade-label {
-    font-family: "Playfair Display", serif;
-    font-style: italic;
-    font-weight: 400;
-    font-size: 32px;
-    color: rgba(251,248,239,.78);
-    letter-spacing: -0.005em;
-  }
-  .grade-slot {
-    font-family: "Playfair Display", serif;
-    font-style: italic;
-    font-weight: 500;
-    font-size: 68px;
-    color: rgba(232,199,103,.3);
-    line-height: 1;
-    border: 2px dashed rgba(232,199,103,.55);
-    background: rgba(232,199,103,.04);
-    min-width: 110px;
-    height: 100px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding-bottom: 8px;
-    box-sizing: border-box;
-  }
-
-  .divider {
-    height: 1px;
-    background: rgba(251,248,239,.14);
-    margin: 12px 0 26px 0;
-  }
-
-  /* Checks */
-  .checks {
-    display: flex; flex-direction: column;
-    gap: 22px;
-  }
-  .check {
-    display: grid;
-    grid-template-columns: 20px 240px 1fr;
-    align-items: center;
-    gap: 22px;
-    font-family: "DM Mono", monospace;
-    font-size: 18px;
-    color: rgba(251,248,239,.88);
-  }
-  .dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: rgba(251,248,239,.2);
-    border: 1px solid rgba(251,248,239,.35);
-  }
-  .field {
-    font-weight: 500;
-    color: #fbf8ef;
-    letter-spacing: 0.01em;
-  }
-  .value-slot {
-    height: 1px;
-    background: rgba(251,248,239,.14);
+  /* Conversation card */
+  .convo {
+    margin-top: 28px;
+    background: rgba(251,248,239,.03);
+    border: 1px solid rgba(251,248,239,.12);
+    border-radius: 4px;
+    padding: 34px 38px 38px 38px;
     position: relative;
   }
+  .convo::before {
+    content: "";
+    position: absolute;
+    top: 18px; right: 18px;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #c9a84c;
+    box-shadow: 0 0 8px rgba(232,199,103,.6);
+  }
+  .block + .block { margin-top: 26px; }
 
-  /* CTA */
-  .cta {
-    margin-top: auto;
-    padding-top: 34px;
+  .role-label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    color: rgba(251,248,239,.5);
+    margin: 0 0 10px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .role-label::before {
+    content: "";
+    width: 18px; height: 1px;
+    background: rgba(232,199,103,.5);
+  }
+
+  .user-q {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.45;
+    color: #fbf8ef;
+    letter-spacing: 0.005em;
+    margin: 0;
+  }
+  .user-q .bracket {
+    color: #c9a84c;
+    font-style: italic;
+  }
+
+  .ai-response {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 1.55;
+    color: rgba(251,248,239,.92);
+    margin: 0;
+  }
+  .ai-list {
+    list-style: none;
+    margin: 12px 0 0 0;
+    padding: 0;
+  }
+  .ai-list li {
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 18px;
+    font-family: "DM Mono", monospace;
+    color: rgba(251,248,239,.92);
+  }
+  .ai-list li .num {
+    color: rgba(232,199,103,.75);
+    font-weight: 500;
+  }
+  .ai-list li .biz {
+    color: #fbf8ef;
+  }
+  .ai-list li .note {
+    color: rgba(251,248,239,.55);
+    font-size: 16px;
+  }
+  .ai-trail {
+    margin-top: 14px;
+    font-family: "DM Mono", monospace;
+    font-size: 16px;
+    color: rgba(251,248,239,.55);
+    font-style: italic;
+  }
+
+  /* Kicker — break out of card */
+  .kicker {
+    margin-top: 44px;
+    padding-top: 40px;
     border-top: 1px solid rgba(251,248,239,.14);
     text-align: center;
   }
-  .cta-h {
+  .kicker-h {
     font-family: "Playfair Display", serif;
     font-weight: 400;
     font-style: italic;
-    font-size: 56px;
-    line-height: 1.05;
+    font-size: 58px;
+    line-height: 1.06;
     letter-spacing: -0.015em;
     color: #c9a84c;
-    margin: 0 0 12px 0;
+    margin: 0 0 22px 0;
   }
-  .cta-sub {
+  .kicker-sub {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 17px;
+    line-height: 1.6;
+    color: rgba(251,248,239,.88);
+    margin: 0 auto;
+    max-width: 780px;
+    letter-spacing: 0.01em;
+  }
+
+  /* Stat row */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 80px;
+    margin-top: 44px;
+    padding-top: 32px;
+    border-top: 1px dashed rgba(251,248,239,.12);
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 52px;
+    line-height: 1;
+    color: #c9a84c;
+    letter-spacing: -0.02em;
+    margin: 0 0 8px 0;
+  }
+  .stat-num .unit {
+    font-size: 30px;
+    color: rgba(232,199,103,.7);
+    font-style: normal;
+    margin-left: 2px;
+  }
+  .stat-label {
     font-family: "Barlow Condensed", sans-serif;
     font-weight: 500;
-    font-size: 16px;
-    letter-spacing: 0.38em;
-    color: rgba(251,248,239,.7);
+    font-size: 13px;
+    letter-spacing: 0.34em;
     text-transform: uppercase;
-    margin: 0 0 18px 0;
+    color: rgba(251,248,239,.6);
+    margin: 0;
   }
-  .footline {
+
+  /* Footer */
+  .footer {
+    margin-top: auto;
+    padding-top: 26px;
+    border-top: 1px solid rgba(251,248,239,.14);
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
-  .footline .tag {
+  .footer .url {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.38em;
+    color: #c9a84c;
+    text-transform: uppercase;
+  }
+  .footer .tag {
     font-family: "Barlow Condensed", sans-serif;
     font-weight: 500;
     font-size: 12px;
     letter-spacing: 0.34em;
-    color: rgba(251,248,239,.45);
+    color: rgba(251,248,239,.5);
     text-transform: uppercase;
   }
 </style>
@@ -304,60 +287,57 @@
         <div class="mark-n">N</div>
         <div class="mark-word">NeverRanked</div>
       </div>
-      <div class="label">AEO Scorecard · 2026</div>
+      <div class="label">The New Search · 2026</div>
     </div>
 
-    <div class="statusbar">
-      <div class="scan-label">§ Check your site</div>
-      <div class="scan-state">Scan Complete</div>
+    <div class="convo">
+
+      <div class="block">
+        <p class="role-label">You asked</p>
+        <p class="user-q">
+          Best <span class="bracket">[marketing agencies]</span> in <span class="bracket">[your city]</span> for small businesses?
+        </p>
+      </div>
+
+      <div class="block">
+        <p class="role-label">ChatGPT answered</p>
+        <p class="ai-response">
+          Here are the top-rated agencies local business owners work with:
+        </p>
+        <ol class="ai-list">
+          <li><span class="num">1.</span><span><span class="biz">Parker &amp; Wells Agency</span> <span class="note">· full-service, growth focus</span></span></li>
+          <li><span class="num">2.</span><span><span class="biz">Northbound Creative</span> <span class="note">· brand + content</span></span></li>
+          <li><span class="num">3.</span><span><span class="biz">Studio Meridian</span> <span class="note">· design-led</span></span></li>
+          <li><span class="num">4.</span><span><span class="biz">Blackline Marketing</span> <span class="note">· performance + paid</span></span></li>
+        </ol>
+        <p class="ai-trail">Each specializes in growth-stage small businesses and has strong local reviews...</p>
+      </div>
+
     </div>
 
-    <div class="domain"><span class="placeholder">your-domain.com</span></div>
+    <div class="kicker">
+      <h2 class="kicker-h">Your business wasn't in the answer.</h2>
+      <p class="kicker-sub">Your customers stopped asking Google. They're asking ChatGPT. The only question is whether you're the answer or your competitor is.</p>
+    </div>
 
-    <div class="score-block">
-      <div class="score-num">
-        <span class="slot">00</span>
-        <span class="slash">/</span>
-        <span class="total">100</span>
+    <div class="stats">
+      <div class="stat">
+        <p class="stat-num">4.5<span class="unit">B</span></p>
+        <p class="stat-label">ChatGPT visits / month</p>
       </div>
-      <div class="grade-block">
-        <div class="grade-label">AEO grade</div>
-        <div class="grade-slot">A</div>
+      <div class="stat">
+        <p class="stat-num">58<span class="unit">%</span></p>
+        <p class="stat-label">Google clicks ending in AI Overviews</p>
+      </div>
+      <div class="stat">
+        <p class="stat-num">0<span class="unit">$</span></p>
+        <p class="stat-label">To find out where you stand</p>
       </div>
     </div>
 
-    <div class="divider"></div>
-
-    <div class="checks">
-      <div class="check">
-        <div class="dot"></div>
-        <div class="field">Title tag</div>
-        <div class="value-slot"></div>
-      </div>
-      <div class="check">
-        <div class="dot"></div>
-        <div class="field">Meta description</div>
-        <div class="value-slot"></div>
-      </div>
-      <div class="check">
-        <div class="dot"></div>
-        <div class="field">Canonical URL</div>
-        <div class="value-slot"></div>
-      </div>
-      <div class="check">
-        <div class="dot"></div>
-        <div class="field">og:image</div>
-        <div class="value-slot"></div>
-      </div>
-    </div>
-
-    <div class="cta">
-      <h2 class="cta-h">What's your score?</h2>
-      <p class="cta-sub">neverranked.com · 30 seconds · no email gate</p>
-      <div class="footline">
-        <div class="tag">Citations, not rankings</div>
-        <div class="tag">Drop yours in the comments</div>
-      </div>
+    <div class="footer">
+      <div class="tag">Citations, not rankings</div>
+      <div class="url">neverranked.com · 30-second check</div>
     </div>
 
   </div>
