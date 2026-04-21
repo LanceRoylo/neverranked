@@ -2712,15 +2712,15 @@ h1,h2,h3,h4{
 .share-dot-core{
   transform-box:fill-box;
   transform-origin:center;
-  animation:dotPulse 2.8s ease-in-out infinite;
-  will-change:transform;
+  animation:dotPulse 1.6s ease-in-out infinite;
+  will-change:transform,fill;
 }
 @keyframes dotPulse{
-  0%,100% {transform:scale(1)}
-  50%     {transform:scale(1.12)}
+  0%,100% {transform:scale(1);fill:#c9a84c}
+  50%     {transform:scale(1.18);fill:#e8c866}
 }
 @media(prefers-reduced-motion:reduce){
-  .share-dot-core{animation:none}
+  .share-dot-core{animation:none;fill:#c9a84c}
 }
 
 /* ---------- dashboard mockup ---------- */
@@ -3247,7 +3247,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             </pattern>
           </defs>
           <rect width="100" height="100" fill="url(#shareDots)"/>
-          <circle cx="5" cy="5" r="4.4" fill="none" stroke="#c9a84c" stroke-opacity=".25" stroke-width=".5"/>
+          <circle cx="5" cy="5" r="4.4" fill="none" stroke="#c9a84c" stroke-opacity=".35" stroke-width=".55"/>
           <circle class="share-dot-core" cx="5" cy="5" r="2.8" fill="#c9a84c"/>
         </svg>
         <div class="share-viz-copy">
