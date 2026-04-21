@@ -2630,6 +2630,130 @@ h1,h2,h3,h4{
 @media(max-width:600px){
   .grain{inset:0;width:100%;height:100%}
 }
+
+/* ---------- services lede (positioning line) ---------- */
+.services-lede{
+  font-family:var(--serif);
+  font-size:clamp(20px,2vw,26px);
+  line-height:1.4;
+  color:var(--text-soft);
+  margin:0 0 48px;
+  max-width:52ch;
+  letter-spacing:-.005em;
+}
+.services-lede em{
+  font-style:italic;
+  color:var(--gold);
+  font-weight:400;
+}
+
+/* ---------- fit (who this is for) ---------- */
+.fit{
+  padding:140px 0 120px;
+  border-bottom:1px solid var(--line);
+  background:var(--bg);
+  position:relative;
+}
+.fit-head{
+  max-width:760px;
+  margin-bottom:72px;
+}
+.fit-head h2{
+  font-size:clamp(40px,6vw,72px);
+  line-height:1;
+  margin-bottom:28px;
+}
+.fit-head h2 em{font-style:italic;color:var(--gold);font-weight:400}
+.fit-head p{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-soft);
+  line-height:1.75;
+  max-width:48ch;
+}
+.fit-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:32px;
+}
+@media(min-width:900px){
+  .fit-grid{grid-template-columns:1fr 1fr;gap:48px}
+}
+.fit-col{
+  padding:40px 36px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.012);
+  transition:border-color .4s var(--ease), background .4s var(--ease);
+}
+.fit-col--yes{border-left:2px solid var(--gold)}
+.fit-col--no{border-left:2px solid var(--text-mute)}
+.fit-col:hover{background:rgba(255,255,255,.02)}
+.fit-col-head{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  margin-bottom:28px;
+  padding-bottom:20px;
+  border-bottom:1px solid var(--line);
+}
+.fit-col-head .fit-mark{
+  font-family:var(--label);
+  color:var(--gold);
+  font-size:11px;
+  letter-spacing:.22em;
+  font-weight:500;
+}
+.fit-col--no .fit-col-head .fit-mark{color:var(--text-mute)}
+.fit-col-head h3{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:12px;
+  color:var(--text);
+  font-weight:500;
+}
+.fit-col ul{
+  list-style:none;
+  padding:0;
+  margin:0;
+  display:flex;
+  flex-direction:column;
+  gap:22px;
+}
+.fit-col li{
+  font-family:var(--serif);
+  font-size:19px;
+  line-height:1.5;
+  color:var(--text);
+  padding-left:22px;
+  position:relative;
+}
+.fit-col li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:14px;
+  width:10px;
+  height:1px;
+  background:var(--gold);
+}
+.fit-col--no li::before{background:var(--text-mute)}
+.fit-col--no li{color:var(--text-soft)}
+.fit-col li b{
+  display:block;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-mute);
+  font-weight:400;
+  letter-spacing:.05em;
+  margin-top:6px;
+}
+@media(max-width:720px){
+  .fit{padding:100px 0 80px}
+  .fit-head{margin-bottom:48px}
+  .fit-col{padding:32px 24px}
+  .fit-col li{font-size:17px}
+}
 </style>
 
 <!-- Meta Pixel — replace YOUR_PIXEL_ID with your actual pixel ID -->
@@ -2897,6 +3021,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span class="rule"></span>
         <span>06 / tracks</span>
       </div>
+
+      <p class="services-lede reveal">You don't need another dashboard. <em>You need to show up.</em></p>
 
       <div class="services-head">
         <h2 class="reveal">Six tracks. <em>One system.</em></h2>
@@ -3246,6 +3372,49 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <label for="roi-custom-val">Your avg customer value: $</label>
             <input type="number" id="roi-custom-val" min="100" step="100">
           </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FIT ============ -->
+  <section class="fit" id="fit">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§04.4</span>
+        <span>Fit</span>
+        <span class="rule"></span>
+        <span>who this is built for</span>
+      </div>
+
+      <div class="fit-head">
+        <h2 class="reveal">Fit <em>first.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">Before price. Before scope. Before a call. We'd rather lose the wrong client at the homepage than three months in.</p>
+      </div>
+
+      <div class="fit-grid reveal-stagger">
+        <div class="fit-col fit-col--yes">
+          <div class="fit-col-head">
+            <span class="fit-mark">§01</span>
+            <h3>Built for</h3>
+          </div>
+          <ul>
+            <li>Clinics, med spas, and health practices where most new patients come from a local search.</li>
+            <li>Home services and trades with a service radius, not a national footprint.</li>
+            <li>Boutique agencies and studios where the founder is still the best salesperson.</li>
+            <li>Professional services where a Google or ChatGPT search is how most new clients find you.</li>
+          </ul>
+        </div>
+        <div class="fit-col fit-col--no">
+          <div class="fit-col-head">
+            <span class="fit-mark">§02</span>
+            <h3>Not built for</h3>
+          </div>
+          <ul>
+            <li>Enterprise SaaS with an in-house SEO team. You already have this.</li>
+            <li>Anyone looking for a dashboard to log into. That's a different product.</li>
+            <li>Businesses that want to wait six months to see movement. Our work ships weekly.</li>
+          </ul>
         </div>
       </div>
     </div>
