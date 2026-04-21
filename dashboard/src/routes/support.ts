@@ -63,7 +63,7 @@ export async function handleSupport(user: User, env: Env, url?: URL): Promise<Re
 
         <!-- Direct email fallback -->
         <div style="margin-top:16px;padding:16px 20px;background:var(--bg-edge);border-radius:4px;font-size:12px;color:var(--text-faint);line-height:1.6">
-          You can also email us directly at <a href="mailto:lance@neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">lance@neverranked.com</a>
+          You can also email us directly at <a href="mailto:lance@hi.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">lance@hi.neverranked.com</a>
         </div>
       </div>
 
@@ -144,7 +144,7 @@ export async function handleSupportSubmit(request: Request, user: User, env: Env
         },
         body: JSON.stringify({
           from: "NeverRanked Dashboard <notifications@neverranked.com>",
-          to: [env.ADMIN_EMAIL || "lance@neverranked.com"],
+          to: [env.ADMIN_EMAIL || "lance@hi.neverranked.com"],
           reply_to: user.email,
           subject: emailSubject,
           text: [

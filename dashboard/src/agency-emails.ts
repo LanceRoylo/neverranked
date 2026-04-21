@@ -86,7 +86,7 @@ async function sendResend(
         subject,
         text,
         html,
-        reply_to: replyTo || "lance@neverranked.com",
+        reply_to: replyTo || "lance@hi.neverranked.com",
       }),
     });
     if (!resp.ok) {

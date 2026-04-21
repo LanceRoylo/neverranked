@@ -383,7 +383,7 @@ ${alertsHtml}
 
 </body></html>`;
 
-  const to = env.ADMIN_EMAIL || "lance@neverranked.com";
+  const to = env.ADMIN_EMAIL || "lance@hi.neverranked.com";
   if (!env.RESEND_API_KEY) {
     console.log(`[automation-digest] DEV: would send "${subject}" to ${to}\n${text.slice(0, 600)}...`);
     return;
