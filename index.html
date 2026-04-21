@@ -5277,8 +5277,15 @@ window.scrollTo(0,0);
     }
     requestAnimationFrame(step);
   }
+  function displayUrl(report){
+    // Show the exact URL scanned (host + path), so a prospect sees when
+    // a product page was graded rather than the homepage. Strip https:// and
+    // www. for cleanliness, trim trailing slash. Falls back to domain.
+    var raw = report.url || report.domain || '';
+    return raw.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
+  }
   function renderResult(report){
-    domainEl.textContent=report.domain||'';
+    domainEl.textContent=displayUrl(report);
     gradeEl.textContent=report.grade||'—';
     animateNumber(scoreEl, report.aeo_score||0);
     var signals=(report.technical_signals||[]).slice(0,4);
@@ -5392,8 +5399,12 @@ window.scrollTo(0,0);
     }
     return 'Critical AEO gaps across schema, metadata, and structure. <b>They\u2019re leaving the door open.</b>';
   }
+  function displayUrl(report){
+    var raw = report.url || report.domain || '';
+    return raw.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
+  }
   function render(report){
-    domainEl.textContent=report.domain||'';
+    domainEl.textContent=displayUrl(report);
     gradeEl.textContent=report.grade||'\u2014';
     scoreEl.textContent='0 / 100';
     animateNumber(scoreEl, report.aeo_score||0);

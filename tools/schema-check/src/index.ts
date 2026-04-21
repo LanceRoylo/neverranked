@@ -378,6 +378,12 @@ body::before{
   font-size:12px;
   color:var(--text-faint);
   margin-top:12px;
+  word-break:break-all;
+  max-width:640px;
+  margin-left:auto;
+  margin-right:auto;
+  padding:0 20px;
+  line-height:1.5;
 }
 
 /* section labels */
@@ -1229,12 +1235,17 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   function renderResults(data){
     // Grade
     var gradeClass = 'grade-'+data.grade.toLowerCase();
+    // Show the exact URL scanned (host + path), not just the hostname. A
+    // prospect scanning /products/foo vs the homepage can see why the score
+    // differs when they check the same domain at two different URLs.
+    var scannedDisplay = (data.url || data.domain || '')
+      .replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
     gradeSection.innerHTML=
       '<div class="grade-circle '+gradeClass+'">'+
         '<span class="letter">'+data.grade+'</span>'+
       '</div>'+
       '<div class="aeo-score">AEO Readiness: <span>'+data.aeo_score+'</span>/100</div>'+
-      '<div class="grade-domain">'+escHtml(data.domain)+'</div>';
+      '<div class="grade-domain">'+escHtml(scannedDisplay)+'</div>';
 
     // Grade-specific insight
     var insight = document.getElementById('grade-insight');
