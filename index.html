@@ -3483,14 +3483,14 @@ h1,h2,h3,h4{
 
 /* ---------- scroll-triggered motion (problem matrices, six-tracks, montaic) ---------- */
 
-/* problem grid: each gold dot transitions individually. Per-circle
-   transition-delay is set in JS based on cell index + circle index. */
+/* problem grid: each gold dot pops in individually, same character as the
+   six-tracks output matrix. Per-circle transition-delay is set in JS. */
 .problem-grid .cell-viz .gold circle{
   opacity:0;
-  transform:scale(.4);
+  transform:scale(.5);
   transform-origin:center;
   transform-box:fill-box;
-  transition:opacity .45s cubic-bezier(.22,.61,.28,1), transform .5s cubic-bezier(.22,.61,.28,1);
+  transition:opacity .7s cubic-bezier(.22,.61,.28,1), transform .7s cubic-bezier(.22,.61,.28,1);
 }
 .problem-grid.in .cell-viz .gold circle{
   opacity:1;
@@ -3528,18 +3528,18 @@ h1,h2,h3,h4{
   opacity:0;
   transform:scale(.5);
   transform-origin:center;
-  transition:opacity .8s ease, transform .8s cubic-bezier(.22,.61,.28,1);
+  transition:opacity .7s cubic-bezier(.22,.61,.28,1), transform .7s cubic-bezier(.22,.61,.28,1);
 }
 .svc-converge.in .gold circle{opacity:1;transform:scale(1)}
-.svc-converge.in .gold circle:nth-child(1){transition-delay:6.60s}
-.svc-converge.in .gold circle:nth-child(2){transition-delay:6.85s}
-.svc-converge.in .gold circle:nth-child(3){transition-delay:7.10s}
-.svc-converge.in .gold circle:nth-child(4){transition-delay:7.35s}
-.svc-converge.in .gold circle:nth-child(5){transition-delay:7.60s}
-.svc-converge.in .gold circle:nth-child(6){transition-delay:7.85s}
-.svc-converge.in .gold circle:nth-child(7){transition-delay:8.10s}
-.svc-converge.in .gold circle:nth-child(8){transition-delay:8.35s}
-.svc-converge .output-label{opacity:0;transition:opacity 1.2s ease 7.80s}
+.svc-converge.in .gold circle:nth-child(1){transition-delay:6.40s}
+.svc-converge.in .gold circle:nth-child(2){transition-delay:6.56s}
+.svc-converge.in .gold circle:nth-child(3){transition-delay:6.72s}
+.svc-converge.in .gold circle:nth-child(4){transition-delay:6.88s}
+.svc-converge.in .gold circle:nth-child(5){transition-delay:7.04s}
+.svc-converge.in .gold circle:nth-child(6){transition-delay:7.20s}
+.svc-converge.in .gold circle:nth-child(7){transition-delay:7.36s}
+.svc-converge.in .gold circle:nth-child(8){transition-delay:7.52s}
+.svc-converge .output-label{opacity:0;transition:opacity 1.0s ease 7.30s}
 .svc-converge.in .output-label{opacity:1}
 
 /* montaic proof-viz: unhurried split-entrance on the before/after panels */
@@ -4981,8 +4981,8 @@ window.scrollTo(0,0);
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
   if(reduce) return;
   var cells = grid.querySelectorAll('.problem-cell');
-  var cellStart = 250;  // ms between when each cell starts populating
-  var perDot = 14;      // ms between individual dots within a cell
+  var cellStart = 350;  // ms between when each cell starts populating
+  var perDot = 28;      // ms between individual dots within a cell
   cells.forEach(function(cell, ci){
     var circles = cell.querySelectorAll('.cell-viz .gold circle');
     var base = ci * cellStart;
