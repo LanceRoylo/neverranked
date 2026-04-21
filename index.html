@@ -2723,6 +2723,207 @@ h1,h2,h3,h4{
   .share-dot-core{animation:none;fill:#c9a84c}
 }
 
+/* ---------- proof before/after (montaic) ---------- */
+.proof-viz{
+  margin:80px 0 0;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.012);
+}
+@media(min-width:960px){
+  .proof-viz{margin-top:100px}
+}
+.proof-viz-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:16px 24px;
+  border-bottom:1px solid var(--line);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  color:var(--text-mute);
+  flex-wrap:wrap;
+  gap:10px;
+}
+.proof-viz-kicker{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:var(--text-soft);
+}
+.proof-viz-kicker .gold{color:var(--gold)}
+.proof-viz-kicker .dot-sep{color:var(--text-mute)}
+.proof-viz-tag{
+  font-size:10px;
+  letter-spacing:.2em;
+  color:var(--gold);
+  text-transform:uppercase;
+}
+.proof-viz-split{
+  display:grid;
+  grid-template-columns:1fr;
+}
+@media(min-width:820px){
+  .proof-viz-split{grid-template-columns:1fr 1fr}
+}
+.proof-viz-panel{
+  padding:40px 32px;
+  display:flex;
+  flex-direction:column;
+  gap:32px;
+}
+.proof-viz-panel--before{
+  border-bottom:1px solid var(--line);
+}
+@media(min-width:820px){
+  .proof-viz-panel--before{
+    border-right:1px solid var(--line);
+    border-bottom:none;
+  }
+}
+.proof-viz-panel-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  padding-bottom:18px;
+  border-bottom:1px solid var(--line);
+}
+.proof-viz-when{
+  font-family:var(--serif);
+  font-size:26px;
+  color:var(--text);
+  letter-spacing:-.01em;
+}
+.proof-viz-panel--after .proof-viz-when{color:var(--gold);font-style:italic}
+.proof-viz-state{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:10px;
+  color:var(--text-mute);
+}
+.proof-viz-panel--after .proof-viz-state{color:var(--gold)}
+
+.proof-viz-metric{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+.proof-viz-metric-label{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  color:var(--text-mute);
+}
+.proof-viz-metric-value{
+  display:flex;
+  align-items:baseline;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.proof-viz-metric-value .big{
+  font-family:var(--serif);
+  font-size:44px;
+  line-height:1;
+  color:var(--text-soft);
+  font-weight:400;
+  letter-spacing:-.015em;
+}
+.proof-viz-panel--after .proof-viz-metric-value .big{color:var(--text)}
+.proof-viz-metric-value .big em{
+  font-style:normal;
+  font-size:24px;
+  color:var(--text-mute);
+  margin-left:2px;
+}
+.proof-viz-panel--after .proof-viz-metric-value .big em{color:var(--gold)}
+.proof-viz-metric-value .meta{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-mute);
+  letter-spacing:.04em;
+}
+
+/* dot row (pillar articles) */
+.proof-viz-dots{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  height:14px;
+}
+.proof-viz-dots span{
+  width:12px;
+  height:12px;
+  border-radius:50%;
+  background:rgba(154,144,124,.22);
+  display:inline-block;
+}
+.proof-viz-dots span.on{
+  background:var(--gold);
+  box-shadow:0 0 0 2px rgba(201,168,76,.18);
+}
+
+/* bar (schema coverage) */
+.proof-viz-bar{
+  height:6px;
+  background:rgba(154,144,124,.18);
+  border-radius:1px;
+  overflow:hidden;
+  position:relative;
+}
+.proof-viz-bar-fill{
+  height:100%;
+  background:rgba(154,144,124,.35);
+  transition:width 1.2s cubic-bezier(.4,0,.2,1);
+}
+.proof-viz-bar-fill--on{background:var(--gold)}
+
+/* score bar (voice calibration) */
+.proof-viz-score{
+  display:flex;
+  gap:4px;
+  height:8px;
+  align-items:center;
+}
+.proof-viz-score span{
+  flex:1;
+  height:6px;
+  background:rgba(154,144,124,.18);
+  border-radius:1px;
+}
+.proof-viz-score span.on{background:var(--gold)}
+.proof-viz-score span.half{background:rgba(201,168,76,.4)}
+
+.proof-viz-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:18px 24px;
+  border-top:1px solid var(--line);
+  background:rgba(255,255,255,.012);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  color:var(--text-soft);
+  gap:12px;
+  flex-wrap:wrap;
+}
+.proof-viz-foot a{
+  color:var(--gold);
+  text-decoration:none;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  font-size:10px;
+}
+.proof-viz-foot a:hover{color:var(--text)}
+
+@media(max-width:720px){
+  .proof-viz-panel{padding:30px 24px;gap:24px}
+  .proof-viz-metric-value .big{font-size:36px}
+  .proof-viz-when{font-size:22px}
+}
+
 /* ---------- dashboard mockup ---------- */
 .dash-mock{
   margin:0 0 80px;
@@ -3336,6 +3537,106 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="arrow"></span>
             </span>
           </a>
+        </div>
+      </div>
+
+      <div class="proof-viz reveal" role="img" aria-label="Montaic 12-day rebuild benchmark. Day 1: 0 pillar articles, 0% schema coverage, voice calibration not assessed. Day 12: 7 pillar articles, 100% schema coverage, voice calibration 6.9 out of 10.">
+        <div class="proof-viz-head">
+          <div class="proof-viz-kicker">
+            <span class="gold">§ In-House Benchmark</span>
+            <span class="dot-sep">&middot;</span>
+            <span>Montaic &middot; 12-day rebuild</span>
+          </div>
+          <div class="proof-viz-tag">Tracked in public</div>
+        </div>
+
+        <div class="proof-viz-split">
+          <div class="proof-viz-panel proof-viz-panel--before">
+            <div class="proof-viz-panel-head">
+              <span class="proof-viz-when">Day 1</span>
+              <span class="proof-viz-state">Pre-build</span>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Pillar articles</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">0</span>
+                <span class="meta">nothing indexed</span>
+              </div>
+              <div class="proof-viz-dots">
+                <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Schema coverage</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">0<em>%</em></span>
+                <span class="meta">no structured types</span>
+              </div>
+              <div class="proof-viz-bar">
+                <div class="proof-viz-bar-fill" style="width:2%"></div>
+              </div>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Voice calibration</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">&mdash;</span>
+                <span class="meta">not assessed</span>
+              </div>
+              <div class="proof-viz-score">
+                <span></span><span></span><span></span><span></span><span></span>
+                <span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="proof-viz-panel proof-viz-panel--after">
+            <div class="proof-viz-panel-head">
+              <span class="proof-viz-when">Day 12</span>
+              <span class="proof-viz-state">Shipped</span>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Pillar articles</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">7</span>
+                <span class="meta">indexed, citable</span>
+              </div>
+              <div class="proof-viz-dots">
+                <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+              </div>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Schema coverage</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">100<em>%</em></span>
+                <span class="meta">full type coverage</span>
+              </div>
+              <div class="proof-viz-bar">
+                <div class="proof-viz-bar-fill proof-viz-bar-fill--on" style="width:100%"></div>
+              </div>
+            </div>
+
+            <div class="proof-viz-metric">
+              <div class="proof-viz-metric-label">Voice calibration</div>
+              <div class="proof-viz-metric-value">
+                <span class="big">6.9<em>/10</em></span>
+                <span class="meta">draft vs brand match</span>
+              </div>
+              <div class="proof-viz-score">
+                <span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span>
+                <span class="on"></span><span class="half"></span><span></span><span></span><span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="proof-viz-foot">
+          <span>12 days &middot; real numbers &middot; tracked in public</span>
+          <a href="/case-studies/montaic/">Read the full case &rarr;</a>
         </div>
       </div>
     </div>
