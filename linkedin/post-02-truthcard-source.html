@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked — B-test Truth Card</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 1200px; height: 1200px;
+    background: #080808;
+    overflow: hidden;
+    position: relative;
+    font-family: "DM Mono", monospace;
+    color: #fbf8ef;
+  }
+
+  /* Texture */
+  .grain {
+    position: absolute; inset: 0;
+    z-index: 1;
+    opacity: .09;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .gold-wash {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 60% 70% at 50% 45%, rgba(232,199,103,.10) 0%, transparent 65%);
+    pointer-events: none;
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background:
+      radial-gradient(140% 100% at 50% 0%, transparent 70%, rgba(0,0,0,.35) 100%),
+      radial-gradient(130% 100% at 50% 100%, transparent 70%, rgba(0,0,0,.40) 100%);
+  }
+
+  /* Frame */
+  .frame {
+    position: absolute;
+    inset: 80px;
+    z-index: 3;
+    border: 1px solid rgba(251,248,239,.10);
+    padding: 60px 80px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top lockup */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 26px;
+    border-bottom: 1px solid rgba(251,248,239,.14);
+  }
+  .topbar .mark {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .mark-n {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 42px;
+    line-height: 1;
+    color: #c9a84c;
+    letter-spacing: -0.02em;
+  }
+  .mark-word {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: 0.38em;
+    color: #fbf8ef;
+    text-transform: uppercase;
+  }
+  .topbar .label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.38em;
+    color: rgba(251,248,239,.55);
+    text-transform: uppercase;
+  }
+
+  /* Hero */
+  .hero {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 30px 0;
+  }
+  .eyebrow {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.5em;
+    color: rgba(232,199,103,.7);
+    text-transform: uppercase;
+    margin: 0 0 40px 0;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .eyebrow::before,
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(232,199,103,.3);
+  }
+
+  .h1 {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-size: 96px;
+    line-height: 1.02;
+    letter-spacing: -0.025em;
+    color: #fbf8ef;
+    margin: 0;
+    text-align: center;
+  }
+  .h1 .italic {
+    font-style: italic;
+    color: #c9a84c;
+    display: block;
+    margin-top: 14px;
+  }
+
+  .support {
+    text-align: center;
+    margin-top: 56px;
+    padding-top: 36px;
+    border-top: 1px dashed rgba(251,248,239,.14);
+  }
+  .support-line {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 20px;
+    line-height: 1.55;
+    color: rgba(251,248,239,.88);
+    margin: 0 auto;
+    max-width: 720px;
+    letter-spacing: 0.005em;
+  }
+  .support-line .gold {
+    color: #c9a84c;
+    font-style: italic;
+    font-family: "Playfair Display", serif;
+    font-size: 22px;
+    letter-spacing: -0.005em;
+  }
+
+  /* Footer */
+  .footer {
+    padding-top: 28px;
+    border-top: 1px solid rgba(251,248,239,.14);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .footer .url {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 15px;
+    letter-spacing: 0.38em;
+    color: #c9a84c;
+    text-transform: uppercase;
+  }
+  .footer .tag {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.34em;
+    color: rgba(251,248,239,.55);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="gold-wash"></div>
+  <div class="grain"></div>
+
+  <div class="frame">
+
+    <div class="topbar">
+      <div class="mark">
+        <div class="mark-n">N</div>
+        <div class="mark-word">NeverRanked</div>
+      </div>
+      <div class="label">The Hard Truth · 2026</div>
+    </div>
+
+    <div class="hero">
+      <p class="eyebrow">A Question Worth Asking</p>
+
+      <h1 class="h1">
+        ChatGPT doesn't know<br>your business exists.
+        <span class="italic">Your competitors do.</span>
+      </h1>
+
+      <div class="support">
+        <p class="support-line">
+          Ask ChatGPT <span class="gold">"best [your industry] in [your city]"</span> right now. If your name isn't in the answer, the customer asking that question never found you.
+        </p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div class="tag">Citations, not rankings</div>
+      <div class="url">neverranked.com · 30-second check</div>
+    </div>
+
+  </div>
+
+  <div class="vignette"></div>
+</body>
+</html>

@@ -58,3 +58,41 @@ I'll go first.
 - **Specificity.** Four named engines, 30 seconds, three findings, 48 hours. Numbers and nouns do the persuasion.
 
 Passes the Swap Test: a generic agency couldn't run this mechanic because they don't have a public tool that returns a 4-engine score in 30 seconds.
+
+---
+
+## B-test: Post 02 — "The Hard Truth" typographic card
+
+Rotate this in week 2 or use as the first reply/repost variant when engagement on Post 01 slows. Different visual lever (pure typography vs. mock UI) so the two don't feel like the same post.
+
+### Image
+
+`post-02-truthcard.png` — 1200×1200 square. Pure editorial typography on black/gold. Hero statement in big Playfair: "ChatGPT doesn't know your business exists. Your competitors do." Support line below: "Ask ChatGPT 'best [your industry] in [your city]' right now. If your name isn't in the answer, the customer asking that question never found you."
+
+Creative lever: Contrast + Confession. No mock UI, no charts. The statement carries the whole image. Passes Blind Brand Test — pure NR visual language.
+
+### Caption (copy-paste ready, ~880 chars)
+
+When was the last time you asked ChatGPT about your own industry?
+
+Try it right now. Open ChatGPT. Type "best [your category] in [your city]." Read who it names.
+
+If your business is in the list, great. You're one of the minority who's structured for it.
+
+If it's not, a few things are true at the same time.
+
+Customers asking that exact question today are being handed to your competitors by default. No click required. No ranking needed. They just get a name, and the name isn't yours.
+
+This is the quiet part of the shift from Google to AI that most agencies haven't told their clients yet. The old scoreboard (rank #1, drive clicks) got replaced. The new one is just "are you named or not."
+
+Free 30-second check at neverranked.com tells you where you actually stand across ChatGPT, Perplexity, Gemini, and Google AI. No email gate.
+
+Run it. Drop your score. I'll reply with what I'd fix first.
+
+### How this differs from Post 01
+
+- Post 01 hook: fear ("look what the AI says about you vs. your competitor")
+- Post 02 hook: curiosity ("when did you last check")
+- Both drive to the same audit tool. The 30-second check is the through-line.
+
+Use Post 01 for cold-reach shares and Post 02 as the evergreen re-post every 2-3 weeks. The curiosity framing also works better as a DM conversation-starter to specific prospects.
