@@ -2723,6 +2723,223 @@ h1,h2,h3,h4{
   .share-dot-core{animation:none}
 }
 
+/* ---------- dashboard mockup ---------- */
+.dash-mock{
+  margin:0 0 80px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.015);
+  border-radius:2px;
+  overflow:hidden;
+  position:relative;
+}
+.dash-mock-chrome{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:14px 22px;
+  border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.02);
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  color:var(--text-mute);
+}
+.dash-mock-url{color:var(--text-soft)}
+.dash-mock-url b{color:var(--text);font-weight:400}
+.dash-mock-url .slash{color:var(--text-mute);margin:0 8px}
+.dash-mock-meta{
+  display:flex;
+  align-items:center;
+  gap:18px;
+}
+.dash-mock-live{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  color:var(--text-soft);
+  letter-spacing:.16em;
+}
+.dash-mock-live-dot{
+  width:6px;
+  height:6px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+  animation:liveBlink 2.4s ease-in-out infinite;
+}
+@keyframes liveBlink{
+  0%,100%{opacity:1}
+  50%{opacity:.4}
+}
+@media(prefers-reduced-motion:reduce){
+  .dash-mock-live-dot{animation:none}
+}
+.dash-mock-body{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:1px;
+  background:var(--line);
+}
+@media(min-width:820px){
+  .dash-mock-body{grid-template-columns:1.1fr 1fr 1.3fr}
+}
+.dash-widget{
+  padding:28px 26px;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  min-height:220px;
+}
+.dash-widget-label{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  color:var(--text-mute);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.dash-widget-label .num{color:var(--gold);font-weight:500;letter-spacing:.16em}
+.dash-widget-stat{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+}
+.dash-widget-stat .big{
+  font-family:var(--serif);
+  font-size:52px;
+  line-height:1;
+  letter-spacing:-.02em;
+  color:var(--text);
+  font-weight:400;
+}
+.dash-widget-stat .unit{
+  font-family:var(--serif);
+  font-size:24px;
+  color:var(--text-soft);
+  font-weight:400;
+}
+.dash-widget-delta{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  color:var(--gold);
+}
+.dash-widget-delta .arrow{
+  font-size:10px;
+  line-height:1;
+}
+.dash-widget-delta .period{color:var(--text-mute)}
+
+/* sparkline */
+.dash-sparkline{
+  width:100%;
+  height:44px;
+  display:block;
+  margin-top:auto;
+}
+.dash-sparkline-track{
+  stroke:#9a907c;
+  stroke-opacity:.22;
+  stroke-width:.8;
+  fill:none;
+}
+.dash-sparkline-line{
+  stroke:#c9a84c;
+  stroke-width:1.6;
+  fill:none;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.dash-sparkline-fill{
+  fill:url(#sparkFill);
+  opacity:.6;
+}
+.dash-sparkline-dot{fill:#c9a84c}
+
+/* mini dot matrix (share of answer) */
+.dash-mini-dots{
+  width:100%;
+  max-width:140px;
+  aspect-ratio:1;
+  margin-top:auto;
+}
+
+/* citation matrix */
+.dash-matrix-wrap{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  gap:10px 14px;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--text-soft);
+  margin-top:auto;
+}
+.dash-matrix-corner{color:var(--text-mute);letter-spacing:.1em}
+.dash-matrix-engines{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+  text-align:center;
+  letter-spacing:.04em;
+  color:var(--text-mute);
+}
+.dash-matrix-keys{
+  display:flex;
+  flex-direction:column;
+  justify-content:space-around;
+  gap:6px;
+  letter-spacing:.02em;
+  text-align:right;
+  color:var(--text-soft);
+}
+.dash-matrix-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(5,1fr);
+  gap:6px;
+}
+.dash-matrix-cell{
+  aspect-ratio:1;
+  border-radius:1px;
+  background:rgba(255,255,255,.035);
+}
+.dash-matrix-cell.on{background:var(--gold);box-shadow:0 0 0 1px rgba(201,168,76,.25)}
+.dash-matrix-cell.half{background:rgba(201,168,76,.35)}
+
+.dash-mock-foot{
+  padding:14px 22px;
+  border-top:1px solid var(--line);
+  background:rgba(255,255,255,.012);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.06em;
+  color:var(--text-mute);
+}
+.dash-mock-foot a{
+  color:var(--gold);
+  text-decoration:none;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  font-size:10px;
+}
+.dash-mock-foot a:hover{color:var(--text)}
+
+@media(max-width:820px){
+  .dash-mock-body{grid-template-columns:1fr}
+  .dash-widget{min-height:auto}
+  .dash-widget-stat .big{font-size:44px}
+  .dash-matrix-engines{font-size:9px}
+}
+
 /* ---------- services lede (positioning line) ---------- */
 .services-lede{
   font-family:var(--serif);
@@ -3319,6 +3536,141 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <p class="reveal" style="transition-delay:.1s">
           Every client gets a live dashboard at app.neverranked.com. AEO scores, citation tracking, competitor gaps, Search Console data, and a roadmap that auto-generates from your scan results. Not a report you forget to open. A product you check because the data matters.
         </p>
+      </div>
+
+      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 5 engines">
+        <div class="dash-mock-chrome">
+          <div class="dash-mock-url">
+            <b>app.neverranked.com</b><span class="slash">/</span>demo
+          </div>
+          <div class="dash-mock-meta">
+            <span>Updated 4 min ago</span>
+            <span class="dash-mock-live">
+              <span class="dash-mock-live-dot"></span>LIVE
+            </span>
+          </div>
+        </div>
+
+        <div class="dash-mock-body">
+          <!-- Widget 1: AEO Score -->
+          <div class="dash-widget">
+            <div class="dash-widget-label">
+              <span>AEO Score</span>
+              <span class="num">§01</span>
+            </div>
+            <div class="dash-widget-stat">
+              <span class="big">84</span>
+              <span class="unit">/ 100</span>
+            </div>
+            <div class="dash-widget-delta">
+              <span class="arrow">&#9650;</span>+6 <span class="period">this week</span>
+            </div>
+            <svg class="dash-sparkline" viewBox="0 0 140 40" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="sparkFill" x1="0" x2="0" y1="0" y2="1">
+                  <stop offset="0%" stop-color="#c9a84c" stop-opacity=".35"/>
+                  <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path class="dash-sparkline-fill" d="M0,34 L12,32 L24,33 L36,28 L48,24 L60,26 L72,20 L84,17 L96,12 L108,10 L120,7 L132,5 L140,4 L140,40 L0,40 Z"/>
+              <polyline class="dash-sparkline-line" points="0,34 12,32 24,33 36,28 48,24 60,26 72,20 84,17 96,12 108,10 120,7 132,5 140,4"/>
+              <circle class="dash-sparkline-dot" cx="140" cy="4" r="2.5"/>
+            </svg>
+          </div>
+
+          <!-- Widget 2: Share of Answer -->
+          <div class="dash-widget">
+            <div class="dash-widget-label">
+              <span>Share of Answer</span>
+              <span class="num">§02</span>
+            </div>
+            <div class="dash-widget-stat">
+              <span class="big">8</span>
+              <span class="unit">%</span>
+            </div>
+            <div class="dash-widget-delta">
+              <span class="arrow">&#9650;</span>+6.8 pts <span class="period">90d</span>
+            </div>
+            <svg class="dash-mini-dots" viewBox="0 0 100 100" aria-hidden="true">
+              <defs>
+                <pattern id="miniDots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+                  <circle cx="5" cy="5" r="1.8" fill="#9a907c" fill-opacity=".22"/>
+                </pattern>
+              </defs>
+              <rect width="100" height="100" fill="url(#miniDots)"/>
+              <!-- 8 gold dots scattered to suggest recent wins -->
+              <circle cx="5" cy="5" r="2.2" fill="#c9a84c"/>
+              <circle cx="25" cy="15" r="2.2" fill="#c9a84c"/>
+              <circle cx="55" cy="25" r="2.2" fill="#c9a84c"/>
+              <circle cx="15" cy="35" r="2.2" fill="#c9a84c"/>
+              <circle cx="75" cy="45" r="2.2" fill="#c9a84c"/>
+              <circle cx="45" cy="55" r="2.2" fill="#c9a84c"/>
+              <circle cx="85" cy="75" r="2.2" fill="#c9a84c"/>
+              <circle cx="35" cy="85" r="2.2" fill="#c9a84c"/>
+            </svg>
+          </div>
+
+          <!-- Widget 3: Citation Matrix -->
+          <div class="dash-widget">
+            <div class="dash-widget-label">
+              <span>Citation Matrix</span>
+              <span class="num">§03</span>
+            </div>
+            <div class="dash-matrix-wrap">
+              <span class="dash-matrix-corner">QRY / ENG</span>
+              <div class="dash-matrix-engines">
+                <span>GPT</span>
+                <span>PPX</span>
+                <span>GEM</span>
+                <span>CLD</span>
+                <span>AIO</span>
+              </div>
+              <div class="dash-matrix-keys">
+                <span>Q1</span>
+                <span>Q2</span>
+                <span>Q3</span>
+                <span>Q4</span>
+                <span>Q5</span>
+              </div>
+              <div class="dash-matrix-grid">
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell half"></span>
+                <span class="dash-matrix-cell on"></span>
+
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell half"></span>
+
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+
+                <span class="dash-matrix-cell half"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell on"></span>
+                <span class="dash-matrix-cell"></span>
+                <span class="dash-matrix-cell on"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="dash-mock-foot">
+          <span>Example view · Refreshes every morning · 30+ AEO signals tracked</span>
+          <a href="https://app.neverranked.com/demo" target="_blank" rel="noopener">View live demo &rarr;</a>
+        </div>
       </div>
 
       <div class="dash-grid reveal-stagger">
