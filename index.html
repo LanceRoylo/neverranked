@@ -2709,6 +2709,24 @@ h1,h2,h3,h4{
   text-transform:uppercase;
   margin-top:12px;
 }
+.share-dot-ping{
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:dotPing 2.5s cubic-bezier(.4,0,.2,1) infinite;
+  will-change:transform,stroke-opacity;
+}
+.share-dot-ping-2{
+  animation-delay:1.25s;
+}
+@keyframes dotPing{
+  0%   {transform:scale(.75);stroke-opacity:.65}
+  70%  {stroke-opacity:.05}
+  100% {transform:scale(2.6);stroke-opacity:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .share-dot-ping{animation:none;stroke-opacity:.3}
+  .share-dot-ping-2{display:none}
+}
 
 /* ---------- services lede (positioning line) ---------- */
 .services-lede{
@@ -3017,8 +3035,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             </pattern>
           </defs>
           <rect width="100" height="100" fill="url(#shareDots)"/>
+          <circle class="share-dot-ping" cx="5" cy="5" r="4" fill="none" stroke="#c9a84c" stroke-width=".6"/>
+          <circle class="share-dot-ping share-dot-ping-2" cx="5" cy="5" r="4" fill="none" stroke="#c9a84c" stroke-width=".6"/>
           <circle cx="5" cy="5" r="2.8" fill="#c9a84c"/>
-          <circle cx="5" cy="5" r="4.4" fill="none" stroke="#c9a84c" stroke-opacity=".3" stroke-width=".6"/>
         </svg>
         <div class="share-viz-copy">
           <span class="share-viz-kicker">§ The Recommendation Gap</span>
