@@ -2631,6 +2631,85 @@ h1,h2,h3,h4{
   .grain{inset:0;width:100%;height:100%}
 }
 
+/* ---------- share of answer visual (problem section) ---------- */
+.share-viz{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:48px;
+  align-items:center;
+  margin:0 0 100px;
+  padding:48px 0 8px;
+  border-top:1px solid var(--line);
+  border-bottom:1px solid var(--line);
+}
+@media(min-width:900px){
+  .share-viz{
+    grid-template-columns:minmax(280px,380px) 1fr;
+    gap:80px;
+    padding:64px 0 40px;
+  }
+}
+.share-viz-dots{
+  width:100%;
+  max-width:380px;
+  aspect-ratio:1;
+  display:block;
+  margin:0 auto;
+}
+.share-viz-copy{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  max-width:52ch;
+}
+.share-viz-kicker{
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  font-size:11px;
+  color:var(--gold);
+  font-weight:500;
+}
+.share-viz-stat{
+  font-family:var(--serif);
+  font-size:clamp(72px,10vw,140px);
+  line-height:.9;
+  letter-spacing:-.03em;
+  color:var(--text);
+  margin:4px 0 6px;
+  font-weight:400;
+}
+.share-viz-stat em{
+  font-style:italic;
+  color:var(--gold);
+  font-weight:400;
+}
+.share-viz-caption{
+  font-family:var(--serif);
+  font-size:clamp(20px,2vw,26px);
+  line-height:1.35;
+  color:var(--text);
+  margin:0;
+  max-width:30ch;
+}
+.share-viz-caption em{font-style:italic;color:var(--gold);font-weight:400}
+.share-viz-body{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-soft);
+  line-height:1.75;
+  margin:8px 0 0;
+  max-width:48ch;
+}
+.share-viz-source{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.08em;
+  color:var(--text-mute);
+  text-transform:uppercase;
+  margin-top:12px;
+}
+
 /* ---------- services lede (positioning line) ---------- */
 .services-lede{
   font-family:var(--serif);
@@ -2928,6 +3007,26 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <p class="reveal" style="transition-delay:.1s">
           Your current agency is still optimizing for a page of results nobody looks at. The traffic you used to own is being answered by a model instead. This is the shape of what replaced it.
         </p>
+      </div>
+
+      <div class="share-viz reveal">
+        <svg class="share-viz-dots" viewBox="0 0 100 100" role="img" aria-label="Visualization showing 1 out of 100 dots highlighted, representing the 1.2% of businesses recommended by AI">
+          <defs>
+            <pattern id="shareDots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
+              <circle cx="5" cy="5" r="2.2" fill="#9a907c" fill-opacity=".22"/>
+            </pattern>
+          </defs>
+          <rect width="100" height="100" fill="url(#shareDots)"/>
+          <circle cx="5" cy="5" r="2.8" fill="#c9a84c"/>
+          <circle cx="5" cy="5" r="4.4" fill="none" stroke="#c9a84c" stroke-opacity=".3" stroke-width=".6"/>
+        </svg>
+        <div class="share-viz-copy">
+          <span class="share-viz-kicker">§ The Recommendation Gap</span>
+          <div class="share-viz-stat">1<em>.</em>2%</div>
+          <p class="share-viz-caption">Of businesses get recommended when someone asks <em>AI for one.</em></p>
+          <p class="share-viz-body">Meanwhile, 45% of consumers now use AI to find local services. The rest go to the same short list of names being written into the model right now.</p>
+          <p class="share-viz-source">Bain &amp; Co. · BrightEdge · 2024</p>
+        </div>
       </div>
 
       <div class="problem-grid reveal-stagger">
