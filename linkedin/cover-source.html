@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked — LinkedIn Cover 1128x191</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 1128px; height: 191px;
+    background: #080808;
+    overflow: hidden;
+    position: relative;
+    font-family: "DM Mono", monospace;
+    color: #fbf8ef;
+  }
+  .grain {
+    position: absolute; inset: 0;
+    z-index: 1;
+    opacity: .09;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 180% at 50% 0%, transparent 40%, rgba(0,0,0,.55) 100%),
+      radial-gradient(80% 120% at 50% 100%, transparent 40%, rgba(0,0,0,.45) 100%);
+  }
+  .gold-wash {
+    position: absolute;
+    left: -10%; top: -50%;
+    width: 60%; height: 200%;
+    z-index: 1;
+    background: radial-gradient(ellipse at center, rgba(232,199,103,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* Left mark lockup */
+  .mark-lockup {
+    position: absolute;
+    left: 56px; top: 50%;
+    transform: translateY(-50%);
+    display: flex; align-items: center;
+    gap: 14px;
+    z-index: 3;
+  }
+  .mark-n {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 58px;
+    line-height: 1;
+    color: #c9a84c;
+    letter-spacing: -0.02em;
+  }
+  .mark-stack {
+    display: flex; flex-direction: column;
+    gap: 4px;
+  }
+  .mark-word {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 18px;
+    letter-spacing: 0.38em;
+    color: #fbf8ef;
+    text-transform: uppercase;
+  }
+  .mark-tag {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: rgba(251,248,239,.68);
+    text-transform: uppercase;
+  }
+
+  /* Divider */
+  .divider {
+    position: absolute;
+    left: 360px; top: 50%;
+    transform: translateY(-50%);
+    width: 1px; height: 96px;
+    background: rgba(251,248,239,.14);
+    z-index: 3;
+  }
+
+  /* Center headline block */
+  .headline {
+    position: absolute;
+    left: 410px; right: 56px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 3;
+  }
+  .h1 {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-size: 48px;
+    line-height: 1.02;
+    letter-spacing: -0.015em;
+    color: #fbf8ef;
+    margin: 0 0 10px 0;
+  }
+  .h1 .italic {
+    font-style: italic;
+    color: #c9a84c;
+  }
+  .sub {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+    color: rgba(251,248,239,.86);
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+  <div class="gold-wash"></div>
+  <div class="grain"></div>
+
+  <div class="mark-lockup">
+    <div class="mark-n">N</div>
+    <div class="mark-stack">
+      <div class="mark-word">NeverRanked</div>
+      <div class="mark-tag">Citations, not rankings</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="headline">
+    <h1 class="h1">Never Ranked. <span class="italic">Until now.</span></h1>
+    <p class="sub">AI-native SEO for ChatGPT, Perplexity, Gemini, and Google AI Overviews.</p>
+  </div>
+
+  <div class="vignette"></div>
+</body>
+</html>
