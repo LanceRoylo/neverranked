@@ -10,7 +10,7 @@ import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding } from "./routes/admin";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings } from "./routes/admin";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -478,6 +478,9 @@ export default {
     }
     if (path === "/admin/users" && method === "POST" && user.role === "admin") {
       return handleAddUser(request, user, env);
+    }
+    if (path === "/admin/client-settings" && method === "POST" && user.role === "admin") {
+      return handleClientSettings(request, user, env);
     }
     const reset2faMatch = path.match(/^\/admin\/users\/(\d+)\/reset-2fa$/);
     if (reset2faMatch && method === "POST" && user.role === "admin") {

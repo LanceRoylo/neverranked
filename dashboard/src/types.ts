@@ -42,6 +42,13 @@ export interface GscProperty {
   created_at: number;
 }
 
+export interface ClientSettings {
+  client_slug: string;
+  avg_deal_value: number | null; // cents, nullable; null = "not set"
+  created_at: number;
+  updated_at: number;
+}
+
 export interface GscSnapshot {
   id: number;
   client_slug: string;

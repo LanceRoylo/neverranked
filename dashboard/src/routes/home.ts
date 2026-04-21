@@ -439,6 +439,144 @@ async function buildClientHealth(env: Env): Promise<string> {
 }
 
 /**
+ * ROI Counter card — sits at the top of the client dashboard home. The job
+ * of this card is to answer "is this paying off?" every time a client logs
+ * in. We only show numbers we can honestly back up:
+ *
+ *   - Days since signup: earliest users.created_at for this slug.
+ *   - AI citations earned since signup: SUM(client_cited) from citation_runs
+ *     across all keywords belonging to this client, scoped to runs after
+ *     the signup date.
+ *   - Search clicks in the last reporting window (and delta vs the first
+ *     reporting window we have on file, so a client who grew from 400 to
+ *     2,400 clicks sees "+2,000 since signup").
+ *   - Estimated revenue: only rendered when client_settings.avg_deal_value
+ *     is set. We multiply (citations + search-click lift) by deal value and
+ *     a conservative conversion assumption (1% of new traffic becomes a
+ *     deal). The conversion rate is conservative on purpose — we would
+ *     rather under-promise and let the client tell us it's higher than
+ *     over-claim and lose trust.
+ *
+ * If avg_deal_value is null, we show a prompt pointing admins to set it,
+ * instead of fabricating a number. Same principle as the HTTP-526 fix: we
+ * tell the truth about what we know and we name what we don't.
+ */
+async function buildRoiCard(user: User, env: Env): Promise<string> {
+  if (!user.client_slug) return "";
+  const slug = user.client_slug;
+
+  // Signup date: earliest user.created_at for this slug. Fallback: earliest
+  // domain row. If neither, skip the card entirely.
+  const signupRow = await env.DB.prepare(
+    "SELECT MIN(created_at) as signup_at FROM users WHERE client_slug = ?"
+  ).bind(slug).first<{ signup_at: number | null }>();
+  let signupAt = signupRow?.signup_at || null;
+  if (!signupAt) {
+    const domainRow = await env.DB.prepare(
+      "SELECT MIN(created_at) as signup_at FROM domains WHERE client_slug = ?"
+    ).bind(slug).first<{ signup_at: number | null }>();
+    signupAt = domainRow?.signup_at || null;
+  }
+  if (!signupAt) return "";
+
+  const now = Math.floor(Date.now() / 1000);
+  const daysSince = Math.max(0, Math.floor((now - signupAt) / 86400));
+
+  // Citations earned since signup. Returns 0 if there are no keywords or
+  // runs yet, which is a valid "brand-new client" state.
+  const citationRow = await env.DB.prepare(
+    `SELECT COALESCE(SUM(client_cited), 0) as total FROM citation_runs
+     WHERE keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)
+       AND run_at >= ?`
+  ).bind(slug, signupAt).first<{ total: number }>();
+  const citationsEarned = citationRow?.total || 0;
+
+  // Search clicks: latest weekly snapshot vs the earliest snapshot we have
+  // on file after signup. If we only have one snapshot, show current only.
+  const latestGsc = await env.DB.prepare(
+    "SELECT clicks, impressions FROM gsc_snapshots WHERE client_slug = ? ORDER BY date_end DESC LIMIT 1"
+  ).bind(slug).first<{ clicks: number; impressions: number }>();
+  const earliestGsc = await env.DB.prepare(
+    "SELECT clicks FROM gsc_snapshots WHERE client_slug = ? AND created_at >= ? ORDER BY date_end ASC LIMIT 1"
+  ).bind(slug, signupAt).first<{ clicks: number }>();
+  const currentClicks = latestGsc?.clicks || 0;
+  const earliestClicks = earliestGsc?.clicks || 0;
+  const clicksDelta = currentClicks - earliestClicks;
+
+  // Optional $ estimate. We use a conservative 1% conversion on the
+  // combined lift (citations + click growth) as an *illustrative* number,
+  // not a guaranteed one. The hover label spells that out.
+  const settings = await env.DB.prepare(
+    "SELECT avg_deal_value FROM client_settings WHERE client_slug = ?"
+  ).bind(slug).first<{ avg_deal_value: number | null }>();
+  const dealValueCents = settings?.avg_deal_value ?? null;
+
+  let estimatedValueHtml = "";
+  if (dealValueCents && dealValueCents > 0) {
+    const conversionRate = 0.01;
+    const lift = Math.max(0, citationsEarned) + Math.max(0, clicksDelta);
+    const estDollars = Math.round((lift * conversionRate * dealValueCents) / 100);
+    const estDisplay = estDollars >= 1000
+      ? "$" + (estDollars / 1000).toFixed(1) + "k"
+      : "$" + estDollars.toLocaleString();
+    estimatedValueHtml = `
+      <div style="flex:1;min-width:140px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px" title="Illustrative: (new citations + new clicks) x 1% conservative conversion x your average deal value.">Est. value earned</div>
+        <div style="font-family:var(--serif);font-style:italic;font-size:32px;color:var(--gold);line-height:1">${estDisplay}</div>
+        <div style="font-size:10px;color:var(--text-faint);margin-top:6px">at $${(dealValueCents/100).toLocaleString()} avg deal &middot; 1% conv. est.</div>
+      </div>
+    `;
+  } else {
+    // Don't fabricate a number. Tell the truth: we need their deal value
+    // to compute this honestly, and surface the path to set it.
+    estimatedValueHtml = `
+      <div style="flex:1;min-width:160px;border-left:1px solid var(--line);padding-left:20px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Est. value earned</div>
+        <div style="font-size:12px;color:var(--text-soft);line-height:1.5">
+          ${user.role === "admin"
+            ? '<a href="/admin/manage#client-settings" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">Set avg deal value &rarr;</a> to show revenue estimate.'
+            : 'Your account manager can set an average deal value to show an estimated revenue figure here.'}
+        </div>
+      </div>
+    `;
+  }
+
+  const clicksDeltaHtml = (() => {
+    if (clicksDelta === 0 || !earliestGsc) return "";
+    const color = clicksDelta > 0 ? "var(--green)" : "var(--red)";
+    const sign = clicksDelta > 0 ? "+" : "";
+    return `<span style="color:${color};font-size:11px;margin-left:6px">${sign}${clicksDelta.toLocaleString()}</span>`;
+  })();
+
+  return `
+    <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,var(--bg-lift) 0%,var(--bg-edge) 100%);border-color:var(--gold-dim)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap">
+        <div>
+          <div class="label" style="margin-bottom:4px;color:var(--gold)">§ Progress to date</div>
+          <h3 style="margin:0;font-style:italic">Since you <em style="color:var(--gold)">started</em></h3>
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap">
+          ${daysSince} day${daysSince === 1 ? '' : 's'} tracked
+        </div>
+      </div>
+      <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:1;min-width:140px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">AI citations earned</div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:32px;color:var(--text);line-height:1">${citationsEarned.toLocaleString()}</div>
+          <div style="font-size:10px;color:var(--text-faint);margin-top:6px">across ChatGPT, Perplexity, Gemini, Claude</div>
+        </div>
+        <div style="flex:1;min-width:140px;border-left:1px solid var(--line);padding-left:20px">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Search clicks / wk</div>
+          <div style="font-family:var(--serif);font-style:italic;font-size:32px;color:var(--text);line-height:1">${currentClicks.toLocaleString()}${clicksDeltaHtml}</div>
+          <div style="font-size:10px;color:var(--text-faint);margin-top:6px">${earliestGsc ? 'vs. ' + earliestClicks.toLocaleString() + ' when you started' : 'latest GSC reporting window'}</div>
+        </div>
+        ${estimatedValueHtml}
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Detects whether a search query is phrased as a question. Matches queries
  * starting with common interrogative words or containing "?". Deliberately
  * generous on the prefix list so we catch natural variations ("should i...",
@@ -688,6 +826,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       </div>
     </div>
 
+    ${user.role === "client" && user.client_slug ? await buildRoiCard(user, env) : ""}
     ${changeBanner}
     ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
     ${user.role === "admin" ? await buildClientHealth(env) : await buildWeeklySummary(user, env)}

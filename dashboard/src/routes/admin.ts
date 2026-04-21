@@ -226,6 +226,39 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
           <button type="submit" class="btn">Add user</button>
         </form>
       </div>
+
+      <div class="card" id="client-settings" style="grid-column:1 / -1">
+        <h3 style="margin-bottom:8px">Client <em>settings</em></h3>
+        <p style="font-size:12px;color:var(--text-faint);margin-bottom:20px;line-height:1.6">
+          Average deal value powers the ROI estimate on the client dashboard. Stored per client slug. If blank, the dashboard shows a prompt instead of a fabricated revenue figure.
+        </p>
+        ${await (async () => {
+          const rows = (await env.DB.prepare(
+            `SELECT d.client_slug, COALESCE(cs.avg_deal_value, 0) as avg_deal_value
+             FROM (SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0) d
+             LEFT JOIN client_settings cs ON cs.client_slug = d.client_slug
+             ORDER BY d.client_slug`
+          ).all<{ client_slug: string; avg_deal_value: number }>()).results;
+          if (rows.length === 0) {
+            return '<div style="font-size:12px;color:var(--text-faint)">No clients yet.</div>';
+          }
+          return rows.map(r => {
+            const dollars = r.avg_deal_value ? (r.avg_deal_value / 100) : "";
+            return `
+              <form method="POST" action="/admin/client-settings" style="display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)">
+                <input type="hidden" name="client_slug" value="${esc(r.client_slug)}">
+                <div style="flex:1;font-family:var(--mono);font-size:13px;color:var(--text)">${esc(r.client_slug)}</div>
+                <label style="font-size:11px;color:var(--text-faint)">Avg deal value</label>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <span style="color:var(--text-faint);font-size:13px">$</span>
+                  <input type="number" name="avg_deal_value" value="${dollars}" placeholder="5000" min="0" step="1" style="width:120px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px">
+                </div>
+                <button type="submit" class="btn" style="padding:6px 14px;font-size:11px">Save</button>
+              </form>
+            `;
+          }).join("");
+        })()}
+      </div>
     </div>
 
     ${suggestions.length > 0 ? `
@@ -433,6 +466,39 @@ export async function handleAddUser(request: Request, user: User, env: Env): Pro
   }
 
   return redirect("/admin/manage");
+}
+
+/**
+ * Upsert per-client settings. Currently supports avg_deal_value only. Stored
+ * in cents to avoid floating-point drift. Empty/zero input is treated as
+ * "unset" and blanks out the row so the dashboard falls back to the prompt
+ * state rather than computing ROI off a $0 deal value.
+ */
+export async function handleClientSettings(request: Request, user: User, env: Env): Promise<Response> {
+  const form = await request.formData();
+  const clientSlug = (form.get("client_slug") as string || "").trim().toLowerCase();
+  const rawDealValue = (form.get("avg_deal_value") as string || "").trim();
+
+  if (!clientSlug) {
+    return redirect("/admin/manage#client-settings");
+  }
+
+  let dealValueCents: number | null = null;
+  if (rawDealValue) {
+    const parsed = parseInt(rawDealValue, 10);
+    if (!isNaN(parsed) && parsed > 0) {
+      dealValueCents = parsed * 100;
+    }
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    `INSERT INTO client_settings (client_slug, avg_deal_value, created_at, updated_at)
+     VALUES (?, ?, ?, ?)
+     ON CONFLICT(client_slug) DO UPDATE SET avg_deal_value = excluded.avg_deal_value, updated_at = excluded.updated_at`
+  ).bind(clientSlug, dealValueCents, now, now).run();
+
+  return redirect("/admin/manage#client-settings");
 }
 
 /** Trigger a manual scan */
