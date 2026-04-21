@@ -3170,6 +3170,44 @@ h1,h2,h3,h4{
   font-weight:400;
 }
 
+/* ---------- services converge diagram ---------- */
+.svc-converge{
+  display:block;
+  width:100%;
+  max-width:900px;
+  height:auto;
+  margin:8px auto 72px;
+}
+.svc-converge .label,
+.svc-converge .output-label{
+  font-family:var(--label);
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  fill:var(--text-soft);
+}
+.svc-converge .output-label{fill:var(--text);font-weight:500}
+.svc-converge .track{
+  fill:none;
+  stroke:#9a907c;
+  stroke-opacity:.45;
+  stroke-width:1;
+}
+.svc-converge .output-line{
+  fill:none;
+  stroke:#c9a84c;
+  stroke-opacity:.7;
+  stroke-width:1.4;
+}
+.svc-converge .node{fill:#c9a84c}
+.svc-converge .arrow{fill:#c9a84c}
+.svc-converge .muted{fill:#9a907c;fill-opacity:.22}
+.svc-converge .gold{fill:#c9a84c}
+@media(max-width:720px){
+  .svc-converge{margin:0 auto 48px}
+  .svc-converge .label{font-size:9px}
+}
+
 /* ---------- fit (who this is for) ---------- */
 .fit{
   padding:140px 0 120px;
@@ -3677,6 +3715,55 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           Every track runs on a deliberate split of automation and human judgment. The percentage is not marketing. It's the part we let the machine handle so we spend our hours on the part it can't.
         </p>
       </div>
+
+      <svg class="svc-converge reveal" viewBox="0 0 900 280" role="img" aria-label="Diagram showing six service tracks converging into a single output: share of answer">
+        <defs>
+          <pattern id="svcOut" width="10" height="10" patternUnits="userSpaceOnUse">
+            <circle cx="5" cy="5" r="2" fill="#9a907c" fill-opacity=".22"/>
+          </pattern>
+        </defs>
+
+        <!-- TRACK LABELS -->
+        <text class="label" x="20" y="53">§01 · AUDIT</text>
+        <text class="label" x="20" y="89">§02 · CONTENT</text>
+        <text class="label" x="20" y="125">§03 · SCHEMA</text>
+        <text class="label" x="20" y="161">§04 · KEYWORDS</text>
+        <text class="label" x="20" y="197">§05 · CITATIONS</text>
+        <text class="label" x="20" y="233">§06 · REPORT</text>
+
+        <!-- TRACK PATHS (converge into node at 560,140) -->
+        <path class="track" d="M 140 50 L 380 50 C 470 50, 470 140, 560 140"/>
+        <path class="track" d="M 140 86 L 380 86 C 470 86, 470 140, 560 140"/>
+        <path class="track" d="M 140 122 L 380 122 C 470 122, 470 140, 560 140"/>
+        <path class="track" d="M 140 158 L 380 158 C 470 158, 470 140, 560 140"/>
+        <path class="track" d="M 140 194 L 380 194 C 470 194, 470 140, 560 140"/>
+        <path class="track" d="M 140 230 L 380 230 C 470 230, 470 140, 560 140"/>
+
+        <!-- CONVERGENCE NODE -->
+        <circle class="node" cx="560" cy="140" r="5"/>
+
+        <!-- OUTPUT LINE + ARROW -->
+        <path class="output-line" d="M 560 140 L 685 140"/>
+        <polygon class="arrow" points="678,134 692,140 678,146"/>
+
+        <!-- OUTPUT DOT MATRIX (share of answer growing) -->
+        <g transform="translate(700,90)">
+          <rect width="100" height="100" fill="url(#svcOut)"/>
+          <g class="gold">
+            <circle cx="5" cy="5" r="2"/>
+            <circle cx="15" cy="5" r="2"/>
+            <circle cx="25" cy="5" r="2"/>
+            <circle cx="35" cy="5" r="2"/>
+            <circle cx="45" cy="5" r="2"/>
+            <circle cx="55" cy="5" r="2"/>
+            <circle cx="65" cy="5" r="2"/>
+            <circle cx="75" cy="5" r="2"/>
+          </g>
+        </g>
+
+        <!-- OUTPUT CAPTION -->
+        <text class="output-label" x="750" y="215" text-anchor="middle">SHARE OF ANSWER</text>
+      </svg>
 
       <div class="services-grid reveal-stagger">
         <article class="svc" style="--pct:85%">
