@@ -9,8 +9,9 @@ import { dirname, resolve } from 'node:path';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const targets = [
-  { html: 'logo-source.html',  out: 'logo-300.png',        w: 300,  h: 300 },
-  { html: 'cover-source.html', out: 'cover-1128x191.png',  w: 1128, h: 191 },
+  { html: 'logo-source.html',            out: 'logo-300.png',         w: 300,  h: 300 },
+  { html: 'cover-source.html',           out: 'cover-1128x191.png',   w: 1128, h: 191 },
+  { html: 'post-01-scorecard-source.html', out: 'post-01-scorecard.png', w: 1200, h: 1200 },
 ];
 
 const browser = await chromium.launch();

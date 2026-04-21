@@ -1,0 +1,266 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked — Launch Post Scorecard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap" rel="stylesheet">
+<style>
+  html, body {
+    margin: 0; padding: 0;
+    width: 1200px; height: 1200px;
+    background: #080808;
+    overflow: hidden;
+    position: relative;
+    font-family: "DM Mono", monospace;
+    color: #fbf8ef;
+  }
+
+  /* Texture layers */
+  .grain {
+    position: absolute; inset: 0;
+    z-index: 1;
+    opacity: .09;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .gold-wash {
+    position: absolute;
+    left: -20%; top: -20%;
+    width: 140%; height: 140%;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 50% 40% at 50% 15%, rgba(232,199,103,.10) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 40% at 50% 85%, rgba(232,199,103,.06) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background:
+      radial-gradient(120% 80% at 50% 0%, transparent 55%, rgba(0,0,0,.55) 100%),
+      radial-gradient(100% 80% at 50% 100%, transparent 55%, rgba(0,0,0,.60) 100%);
+  }
+
+  /* Frame */
+  .frame {
+    position: absolute;
+    inset: 90px;
+    z-index: 3;
+    border: 1px solid rgba(251,248,239,.10);
+    display: grid;
+    grid-template-rows: auto auto 1fr auto auto;
+    padding: 70px 80px;
+  }
+
+  /* Top mark lockup */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(251,248,239,.14);
+  }
+  .topbar .mark {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .mark-n {
+    font-family: "Playfair Display", serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 44px;
+    line-height: 1;
+    color: #c9a84c;
+    letter-spacing: -0.02em;
+  }
+  .mark-word {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 20px;
+    letter-spacing: 0.38em;
+    color: #fbf8ef;
+    text-transform: uppercase;
+  }
+  .topbar .label {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 14px;
+    letter-spacing: 0.38em;
+    color: rgba(251,248,239,.55);
+    text-transform: uppercase;
+  }
+
+  /* Title */
+  .title-block {
+    padding-top: 46px;
+    padding-bottom: 36px;
+  }
+  .title-eyebrow {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    letter-spacing: 0.5em;
+    color: rgba(251,248,239,.55);
+    text-transform: uppercase;
+    margin: 0 0 16px 0;
+  }
+  .title-h1 {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-size: 86px;
+    line-height: 1.02;
+    letter-spacing: -0.02em;
+    color: #fbf8ef;
+    margin: 0;
+  }
+  .title-h1 .italic {
+    font-style: italic;
+    color: #c9a84c;
+  }
+
+  /* Score rows */
+  .scores {
+    display: flex; flex-direction: column;
+    justify-content: center;
+    gap: 22px;
+    padding: 20px 0;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 36px;
+    padding: 14px 0;
+    border-bottom: 1px solid rgba(251,248,239,.08);
+  }
+  .row .idx {
+    font-family: "DM Mono", monospace;
+    font-weight: 500;
+    font-size: 16px;
+    color: rgba(251,248,239,.45);
+    letter-spacing: 0.05em;
+  }
+  .row .engine {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 40px;
+    letter-spacing: 0.18em;
+    color: #fbf8ef;
+    text-transform: uppercase;
+  }
+  .row .box {
+    width: 120px;
+    height: 90px;
+    border: 1px solid rgba(232,199,103,.55);
+    background: rgba(232,199,103,.04);
+    position: relative;
+  }
+  .row .box::after {
+    content: "";
+    position: absolute;
+    left: 18px; right: 18px; bottom: 14px;
+    height: 1px;
+    background: rgba(232,199,103,.25);
+  }
+
+  /* CTA */
+  .cta {
+    padding-top: 40px;
+    border-top: 1px solid rgba(251,248,239,.14);
+    text-align: center;
+  }
+  .cta-h {
+    font-family: "Playfair Display", serif;
+    font-weight: 400;
+    font-style: italic;
+    font-size: 64px;
+    line-height: 1.05;
+    letter-spacing: -0.015em;
+    color: #c9a84c;
+    margin: 0 0 16px 0;
+  }
+  .cta-sub {
+    font-family: "DM Mono", monospace;
+    font-weight: 400;
+    font-size: 18px;
+    letter-spacing: 0.16em;
+    color: rgba(251,248,239,.75);
+    text-transform: uppercase;
+    margin: 0;
+  }
+
+  /* Footer */
+  .footline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 30px;
+  }
+  .footline .tag {
+    font-family: "Barlow Condensed", sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    letter-spacing: 0.34em;
+    color: rgba(251,248,239,.45);
+    text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="gold-wash"></div>
+  <div class="grain"></div>
+
+  <div class="frame">
+
+    <div class="topbar">
+      <div class="mark">
+        <div class="mark-n">N</div>
+        <div class="mark-word">NeverRanked</div>
+      </div>
+      <div class="label">AEO Readiness · 2026</div>
+    </div>
+
+    <div class="title-block">
+      <p class="title-eyebrow">Official Scorecard</p>
+      <h1 class="title-h1">The Four <span class="italic">Engines.</span></h1>
+    </div>
+
+    <div class="scores">
+      <div class="row">
+        <div class="idx">01</div>
+        <div class="engine">ChatGPT</div>
+        <div class="box"></div>
+      </div>
+      <div class="row">
+        <div class="idx">02</div>
+        <div class="engine">Perplexity</div>
+        <div class="box"></div>
+      </div>
+      <div class="row">
+        <div class="idx">03</div>
+        <div class="engine">Gemini</div>
+        <div class="box"></div>
+      </div>
+      <div class="row">
+        <div class="idx">04</div>
+        <div class="engine">Google AI</div>
+        <div class="box"></div>
+      </div>
+    </div>
+
+    <div class="cta">
+      <h2 class="cta-h">What's your score?</h2>
+      <p class="cta-sub">neverranked.com · 30 seconds</p>
+    </div>
+
+    <div class="footline">
+      <div class="tag">Citations, not rankings</div>
+      <div class="tag">Drop yours in the comments</div>
+    </div>
+
+  </div>
+
+  <div class="vignette"></div>
+</body>
+</html>
