@@ -29,6 +29,7 @@ DIRS=(
   about
   blog
   case-studies
+  principles
   privacy
   terms
 )
