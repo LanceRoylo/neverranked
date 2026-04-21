@@ -3480,6 +3480,83 @@ h1,h2,h3,h4{
   .fit-col{padding:32px 24px}
   .fit-col li{font-size:17px}
 }
+
+/* ---------- scroll-triggered motion (problem matrices, six-tracks, montaic) ---------- */
+
+/* problem grid: fade gold dots in per-cell after the cell reveal settles */
+.problem-grid .cell-viz .gold{opacity:0;transition:opacity .8s var(--ease)}
+.problem-grid.in .problem-cell:nth-child(1) .cell-viz .gold{transition-delay:.25s;opacity:1}
+.problem-grid.in .problem-cell:nth-child(2) .cell-viz .gold{transition-delay:.40s;opacity:1}
+.problem-grid.in .problem-cell:nth-child(3) .cell-viz .gold{transition-delay:.55s;opacity:1}
+.problem-grid.in .problem-cell:nth-child(4) .cell-viz .gold{transition-delay:.70s;opacity:1}
+
+/* six-tracks: draw paths, pop node, reveal output matrix + label */
+.svc-converge .track{
+  stroke-dasharray:700;
+  stroke-dashoffset:700;
+  transition:stroke-dashoffset 1.1s cubic-bezier(.4,.1,.2,1);
+}
+.svc-converge.in .track{stroke-dashoffset:0}
+.svc-converge.in .track.t1{transition-delay:.05s}
+.svc-converge.in .track.t2{transition-delay:.15s}
+.svc-converge.in .track.t3{transition-delay:.25s}
+.svc-converge.in .track.t4{transition-delay:.35s}
+.svc-converge.in .track.t5{transition-delay:.45s}
+.svc-converge.in .track.t6{transition-delay:.55s}
+.svc-converge .node{
+  transform-origin:560px 140px;
+  transform:scale(0);
+  transition:transform .4s var(--ease) 1.1s;
+}
+.svc-converge.in .node{transform:scale(1)}
+.svc-converge .output-line{
+  stroke-dasharray:140;
+  stroke-dashoffset:140;
+  transition:stroke-dashoffset .5s var(--ease) 1.25s;
+}
+.svc-converge.in .output-line{stroke-dashoffset:0}
+.svc-converge .arrow{opacity:0;transition:opacity .25s ease 1.7s}
+.svc-converge.in .arrow{opacity:1}
+.svc-converge .gold circle{
+  opacity:0;
+  transform:scale(.5);
+  transform-origin:center;
+  transition:opacity .3s ease, transform .3s var(--ease);
+}
+.svc-converge.in .gold circle{opacity:1;transform:scale(1)}
+.svc-converge.in .gold circle:nth-child(1){transition-delay:1.85s}
+.svc-converge.in .gold circle:nth-child(2){transition-delay:1.92s}
+.svc-converge.in .gold circle:nth-child(3){transition-delay:1.99s}
+.svc-converge.in .gold circle:nth-child(4){transition-delay:2.06s}
+.svc-converge.in .gold circle:nth-child(5){transition-delay:2.13s}
+.svc-converge.in .gold circle:nth-child(6){transition-delay:2.20s}
+.svc-converge.in .gold circle:nth-child(7){transition-delay:2.27s}
+.svc-converge.in .gold circle:nth-child(8){transition-delay:2.34s}
+.svc-converge .output-label{opacity:0;transition:opacity .4s ease 2.2s}
+.svc-converge.in .output-label{opacity:1}
+
+/* montaic proof-viz: split-entrance on the before/after panels */
+.proof-viz .proof-viz-panel{
+  opacity:0;
+  transition:opacity .6s var(--ease), transform .6s var(--ease);
+}
+.proof-viz .proof-viz-panel--before{transform:translateX(-24px)}
+.proof-viz .proof-viz-panel--after{transform:translateX(24px);transition-delay:.25s}
+.proof-viz.in .proof-viz-panel{opacity:1;transform:none}
+
+/* tabular nums so count-up doesn't shift layout */
+.proof-viz-panel--after .proof-viz-metric-value .big{font-variant-numeric:tabular-nums}
+
+@media(prefers-reduced-motion:reduce){
+  .problem-grid .cell-viz .gold{opacity:1;transition:none}
+  .svc-converge .track{stroke-dashoffset:0;transition:none}
+  .svc-converge .node,
+  .svc-converge .output-line,
+  .svc-converge .arrow,
+  .svc-converge .gold circle,
+  .svc-converge .output-label{opacity:1;transform:none;transition:none;stroke-dashoffset:0}
+  .proof-viz .proof-viz-panel{opacity:1;transform:none;transition:none}
+}
 </style>
 
 <!-- Meta Pixel — replace YOUR_PIXEL_ID with your actual pixel ID -->
@@ -3822,7 +3899,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="proof-viz-metric">
               <div class="proof-viz-metric-label">Pillar articles</div>
               <div class="proof-viz-metric-value">
-                <span class="big">7</span>
+                <span class="big" data-count="7">7</span>
                 <span class="meta">indexed, citable</span>
               </div>
               <div class="proof-viz-dots">
@@ -3833,7 +3910,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="proof-viz-metric">
               <div class="proof-viz-metric-label">Schema coverage</div>
               <div class="proof-viz-metric-value">
-                <span class="big">100<em>%</em></span>
+                <span class="big" data-count="100">100<em>%</em></span>
                 <span class="meta">full type coverage</span>
               </div>
               <div class="proof-viz-bar">
@@ -3844,7 +3921,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="proof-viz-metric">
               <div class="proof-viz-metric-label">Voice calibration</div>
               <div class="proof-viz-metric-value">
-                <span class="big">6.9<em>/10</em></span>
+                <span class="big" data-count="6.9">6.9<em>/10</em></span>
                 <span class="meta">draft vs brand match</span>
               </div>
               <div class="proof-viz-score">
@@ -3898,12 +3975,12 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <text class="label" x="20" y="233">§06 · REPORT</text>
 
         <!-- TRACK PATHS (converge into node at 560,140) -->
-        <path class="track" d="M 140 50 L 380 50 C 470 50, 470 140, 560 140"/>
-        <path class="track" d="M 140 86 L 380 86 C 470 86, 470 140, 560 140"/>
-        <path class="track" d="M 140 122 L 380 122 C 470 122, 470 140, 560 140"/>
-        <path class="track" d="M 140 158 L 380 158 C 470 158, 470 140, 560 140"/>
-        <path class="track" d="M 140 194 L 380 194 C 470 194, 470 140, 560 140"/>
-        <path class="track" d="M 140 230 L 380 230 C 470 230, 470 140, 560 140"/>
+        <path class="track t1" d="M 140 50 L 380 50 C 470 50, 470 140, 560 140"/>
+        <path class="track t2" d="M 140 86 L 380 86 C 470 86, 470 140, 560 140"/>
+        <path class="track t3" d="M 140 122 L 380 122 C 470 122, 470 140, 560 140"/>
+        <path class="track t4" d="M 140 158 L 380 158 C 470 158, 470 140, 560 140"/>
+        <path class="track t5" d="M 140 194 L 380 194 C 470 194, 470 140, 560 140"/>
+        <path class="track t6" d="M 140 230 L 380 230 C 470 230, 470 140, 560 140"/>
 
         <!-- CONVERGENCE NODE -->
         <circle class="node" cx="560" cy="140" r="5"/>
@@ -4888,6 +4965,39 @@ window.scrollTo(0,0);
     });
   },{threshold:.12,rootMargin:'0px 0px -8% 0px'});
   els.forEach(function(el){io.observe(el)});
+})();
+
+/* ---------- count-up on [data-count] spans (montaic day-12 numbers) ---------- */
+(function(){
+  var targets = document.querySelectorAll('[data-count]');
+  if(!targets.length) return;
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if(reduce || !('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(!e.isIntersecting) return;
+      var el = e.target;
+      var raw = el.getAttribute('data-count');
+      var end = parseFloat(raw);
+      var decimals = (raw.split('.')[1]||'').length;
+      var textNode = el.firstChild;
+      if(!textNode || textNode.nodeType !== 3) return;
+      var start = 0;
+      var t0 = performance.now();
+      var dur = 1100;
+      textNode.nodeValue = decimals ? (0).toFixed(decimals) : '0';
+      function tick(t){
+        var p = Math.min(1,(t-t0)/dur);
+        var eased = 1 - Math.pow(1-p, 3);
+        var v = start + (end-start)*eased;
+        textNode.nodeValue = decimals ? v.toFixed(decimals) : Math.round(v).toString();
+        if(p<1) requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+      io.unobserve(el);
+    });
+  },{threshold:.5});
+  targets.forEach(function(el){io.observe(el)});
 })();
 
 /* ---------- nav hide on scroll down ---------- */
