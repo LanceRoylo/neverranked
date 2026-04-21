@@ -250,7 +250,17 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
   const journeyHtml = buildPhaseJourney(updatedPhases);
 
   // Build each phase section
-  let phaseSections = "";
+  let phaseSections = `
+    <style>
+      details.phase-done { margin-bottom:16px }
+      details.phase-done > summary { cursor:pointer; list-style:none; outline:none }
+      details.phase-done > summary::-webkit-details-marker { display:none }
+      details.phase-done > summary::marker { content:"" }
+      details.phase-done:not([open]) { opacity:.75 }
+      details.phase-done[open] .phase-chev { transform:rotate(180deg) }
+      .phase-chev { display:inline-block; transition:transform .2s var(--ease); font-size:12px; color:var(--text-faint) }
+    </style>
+  `;
   for (const phase of updatedPhases) {
     const phaseItems = allItems.filter(i => i.phase_id === phase.id);
     const phaseDone = phaseItems.filter(i => i.status === "done").length;
@@ -263,22 +273,30 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
         ? new Date(phase.completed_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })
         : "";
       phaseSections += `
-        <div class="card" style="margin-bottom:16px;opacity:.7">
-          <div style="display:flex;align-items:center;justify-content:space-between">
-            <div style="display:flex;align-items:center;gap:16px">
-              <div style="width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;color:#080808;flex-shrink:0">&#10003;</div>
-              <div>
-                <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">Phase ${phase.phase_number}: ${esc(phase.title)}</div>
-                ${phase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-top:2px">${esc(phase.subtitle)}</div>` : ""}
+        <details class="card phase-done">
+          <summary>
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+              <div style="display:flex;align-items:center;gap:16px;min-width:0">
+                <div style="width:32px;height:32px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:14px;color:#080808;flex-shrink:0">&#10003;</div>
+                <div style="min-width:0">
+                  <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">Phase ${phase.phase_number}: ${esc(phase.title)}</div>
+                  ${phase.subtitle ? `<div style="font-size:12px;color:var(--text-faint);margin-top:2px">${esc(phase.subtitle)}</div>` : ""}
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:16px;flex-shrink:0">
+                <div style="text-align:right">
+                  <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green)">Completed</div>
+                  ${completedDate ? `<div style="font-size:11px;color:var(--text-faint);margin-top:2px">${completedDate}</div>` : ""}
+                  <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${phaseDone} items delivered</div>
+                </div>
+                <span class="phase-chev" aria-hidden="true">&#9662;</span>
               </div>
             </div>
-            <div style="text-align:right;flex-shrink:0">
-              <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--green)">Completed</div>
-              ${completedDate ? `<div style="font-size:11px;color:var(--text-faint);margin-top:2px">${completedDate}</div>` : ""}
-              <div style="font-size:12px;color:var(--text-faint);margin-top:2px">${phaseDone} items delivered</div>
-            </div>
+          </summary>
+          <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line)">
+            ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId)}
           </div>
-        </div>
+        </details>
       `;
     } else if (phase.status === "active") {
       // Expanded active phase with full item list
