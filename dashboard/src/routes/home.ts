@@ -438,6 +438,110 @@ async function buildClientHealth(env: Env): Promise<string> {
   `;
 }
 
+/**
+ * Detects whether a search query is phrased as a question. Matches queries
+ * starting with common interrogative words or containing "?". Deliberately
+ * generous on the prefix list so we catch natural variations ("should i...",
+ * "do i need...", "how much for...").
+ */
+function isQuestionQuery(query: string): boolean {
+  if (!query) return false;
+  const q = query.toLowerCase().trim();
+  if (q.indexOf("?") !== -1) return true;
+  const starters = /^(how|what|why|when|where|who|whose|which|can|could|does|do|did|is|are|was|were|will|would|should|has|have|had|am)\s+/;
+  return starters.test(q);
+}
+
+interface GscQueryRow {
+  query: string;
+  clicks: number;
+  impressions: number;
+  ctr: number;
+  position: number;
+}
+
+/**
+ * "Top Questions" panel — surfaces question-format queries from the latest
+ * Google Search Console snapshot. These are real queries from real users
+ * that impressed the client's site. No simulation, no guessing.
+ *
+ * Empty states:
+ *  - GSC not connected: caller decides whether to render this panel at all
+ *  - GSC connected but no question queries in latest snapshot: show friendly
+ *    empty copy rather than hiding the panel (the absence is itself a signal
+ *    worth surfacing — their audience isn't asking questions that reach them)
+ */
+async function buildTopQuestionsPanel(user: User, env: Env): Promise<string> {
+  if (!user.client_slug) return "";
+
+  const snap = await env.DB.prepare(
+    "SELECT top_queries, date_start, date_end FROM gsc_snapshots WHERE client_slug = ? ORDER BY date_end DESC LIMIT 1"
+  ).bind(user.client_slug).first<{ top_queries: string; date_start: string; date_end: string }>();
+
+  if (!snap || !snap.top_queries) return "";
+
+  const allQueries = safeParse<GscQueryRow[]>(snap.top_queries, []);
+  if (allQueries.length === 0) return "";
+
+  const questions = allQueries
+    .filter(q => isQuestionQuery(q.query))
+    .sort((a, b) => b.clicks - a.clicks || b.impressions - a.impressions)
+    .slice(0, 8);
+
+  const rangeLabel = (() => {
+    try {
+      const start = new Date(snap.date_start).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      const end = new Date(snap.date_end).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      return `${start} – ${end}`;
+    } catch {
+      return "latest reporting period";
+    }
+  })();
+
+  let bodyHtml: string;
+  if (questions.length === 0) {
+    bodyHtml = `
+      <div style="padding:20px 0;font-size:13px;color:var(--text-faint);line-height:1.6">
+        No question-format queries reached your site in this reporting window.
+        That isn't always bad — it can mean people already know your brand and
+        search by name. But it's worth watching: AI engines favor sites that
+        answer questions, so if nobody asks anything on the way to you, you're
+        not positioned to be cited.
+      </div>
+    `;
+  } else {
+    const rows = questions.map(q => {
+      const ctrPct = (q.ctr * 100).toFixed(1);
+      const pos = q.position ? q.position.toFixed(1) : "—";
+      return `
+        <div style="padding:12px 0;border-top:1px solid rgba(251,248,239,.06);display:grid;grid-template-columns:1fr auto auto auto;gap:20px;align-items:baseline">
+          <div style="font-size:13px;color:var(--text);line-height:1.5">${esc(q.query)}</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text-soft);text-align:right;min-width:60px">${q.clicks.toLocaleString()} <span style="color:var(--text-faint);font-size:10px">clicks</span></div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text-faint);text-align:right;min-width:70px">${q.impressions.toLocaleString()} <span style="font-size:10px">imp</span></div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--gold);text-align:right;min-width:50px">pos ${pos}</div>
+        </div>
+      `;
+    }).join("");
+    bodyHtml = `<div style="margin-top:4px">${rows}</div>`;
+  }
+
+  return `
+    <div class="card" style="margin-bottom:24px">
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+        <div>
+          <div class="label" style="margin-bottom:6px">§ Top Questions</div>
+          <h3 style="font-style:italic;margin:0">What people <em style="color:var(--gold);font-style:italic">ask</em> on the way to your site</h3>
+          <div style="font-size:12px;color:var(--text-faint);margin-top:6px;line-height:1.5">
+            Real question-format queries from Google Search Console. These are the conversations you're already in — and a starting point for the answers AI engines will cite.
+          </div>
+        </div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap">${esc(rangeLabel)}</div>
+      </div>
+      ${bodyHtml}
+    </div>
+  `;
+}
+
 function buildGscNudge(user: User, env: Env): string {
   const authUrl = getGoogleAuthUrl(env, "https://app.neverranked.com");
   const state = `client:${user.client_slug}`;
@@ -587,6 +691,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     ${changeBanner}
     ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
     ${user.role === "admin" ? await buildClientHealth(env) : await buildWeeklySummary(user, env)}
+    ${user.role === "client" && user.client_slug && gscMap.has(user.client_slug) ? await buildTopQuestionsPanel(user, env) : ""}
 
     ${domainCards.length > 0
       ? `<div class="narrative-context" style="margin-bottom:24px">${esc(homeNarrative)}</div>
