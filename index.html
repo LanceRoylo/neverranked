@@ -3488,7 +3488,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <a href="/blog/">Insights</a>
   <a href="/about/">About</a>
   <a href="#audit" class="mob-cta">$500 Audit</a>
-  <span class="mob-status">Taking clients Q2</span>
+  <span class="mob-status">Booking May 2026</span>
   <div class="mob-utility">
     <a href="https://app.neverranked.com/demo">Live demo</a>
     <a href="https://app.neverranked.com">Client login</a>
@@ -3503,7 +3503,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <a href="/blog/" class="nav-link">Insights</a>
     <a href="/about/" class="nav-link">About</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
-    <span class="status">Taking clients Q2</span>
+    <span class="status">Booking May 2026</span>
   </div>
 </nav>
 
@@ -4643,7 +4643,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           </h2>
           <div class="audit-status reveal" style="transition-delay:.15s">
             <span class="label">§ Status</span>
-            <p>Paced deliberately. <em>Currently booking Q2 2026.</em></p>
+            <p>Paced deliberately. <em>Next available: May 2026.</em></p>
           </div>
         </div>
 
@@ -4730,8 +4730,14 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="arrow"></span>
             </button>
             <p class="intake-note">§ No spam. No sequences. No sales team.</p>
+            <p style="font-family:var(--mono);font-size:12px;color:var(--gold);margin-top:14px;line-height:1.7;letter-spacing:.02em">
+              § We read every brief within <b>24 business hours.</b>
+            </p>
             <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:24px;line-height:1.7">
               Not ready for a brief? <a href="https://check.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">See your AEO score free</a> first.
+            </p>
+            <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:14px;line-height:1.7">
+              Enterprise or need to talk first? Email <a href="mailto:lance@neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">lance@neverranked.com</a> directly.
             </p>
           </div>
           <div class="form-status" id="formStatus" aria-live="polite"></div>
@@ -4927,9 +4933,8 @@ window.scrollTo(0,0);
     })
     .then(function(res){
       if(res.ok && res.body && res.body.ok){
-        form.classList.add('sent');
-        status.className = 'form-status';
-        status.innerHTML = 'Thanks. We\'ll read this ourselves and reply within <em>twenty-four hours.</em>';
+        window.location.href = '/thanks/';
+        return;
       } else {
         button.disabled = false;
         if(label) label.textContent = 'Send brief';
