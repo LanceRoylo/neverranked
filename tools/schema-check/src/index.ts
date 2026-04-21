@@ -2080,6 +2080,59 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
 </html>`.trim();
 }
 
+// ---------- Fetch failure descriptions ----------
+// Maps upstream HTTP status codes to specific, diagnostic messages. Cloudflare
+// edge errors (520-527) deserve their own explanation because they usually
+// indicate a real configuration problem on the target site's infrastructure,
+// not a user-input error. AI crawlers will hit the same wall, so this doubles
+// as a useful diagnostic for the prospect.
+function describeFetchFailure(status: number): string {
+  switch (status) {
+    case 400:
+      return "The site rejected the request (HTTP 400). The URL may be malformed or the server may require additional headers.";
+    case 401:
+      return "The site requires authentication (HTTP 401). AI crawlers cannot access pages behind a login, so anything gated this way is invisible to ChatGPT, Perplexity, and Google AI Overviews.";
+    case 403:
+      return "The site is blocking our scanner (HTTP 403). If your firewall or bot filter is too aggressive, it may also be blocking GPTBot, ClaudeBot, and PerplexityBot. Check your robots.txt and WAF rules.";
+    case 404:
+      return "That URL returns a 404. Double-check the address, or point us at the homepage.";
+    case 429:
+      return "The site rate-limited our request (HTTP 429). Try again in a minute, or check whether your host is throttling automated requests too aggressively.";
+    case 500:
+      return "The site returned a server error (HTTP 500). The origin is throwing an unhandled exception. Worth a look in your application logs.";
+    case 502:
+      return "Bad Gateway (HTTP 502). A proxy or CDN in front of the site could not reach the origin server. Usually a temporary infrastructure issue, but if it persists it will block AI crawlers the same way.";
+    case 503:
+      return "Service Unavailable (HTTP 503). The origin is down or overloaded, or maintenance mode is on. AI systems will treat this as an unreachable source.";
+    case 504:
+      return "Gateway Timeout (HTTP 504). The origin took too long to respond. If this is consistent, AI crawlers will skip the site entirely.";
+    case 520:
+      return "Cloudflare returned an unknown error from the origin (HTTP 520). The origin server sent an empty or malformed response. This is a site-owner issue and it blocks AI crawlers from citing the content.";
+    case 521:
+      return "Cloudflare cannot reach the origin server (HTTP 521). The origin is down or blocking Cloudflare's IPs. Fix this or AI systems will see the same dead end.";
+    case 522:
+      return "The origin server timed out on Cloudflare (HTTP 522). The origin is unresponsive or too slow to complete the handshake. AI crawlers will give up the same way.";
+    case 523:
+      return "Cloudflare could not find the origin (HTTP 523). Usually a DNS or routing misconfiguration between Cloudflare and the origin.";
+    case 524:
+      return "The origin took too long to generate a response (HTTP 524). Cloudflare connected, but the origin never finished. Anything this slow gets dropped by AI crawlers.";
+    case 525:
+      return "SSL handshake failed between Cloudflare and the origin (HTTP 525). The origin's certificate setup is broken. Fix this before worrying about AEO, because nothing can fetch the site cleanly.";
+    case 526:
+      return "The origin's SSL certificate is invalid (HTTP 526). Cloudflare refused to trust the cert on the underlying server. This is a site-owner configuration error. AI crawlers, Google, and our scanner all hit the same wall. Fixing the origin cert is the first step before any AEO work can matter.";
+    case 527:
+      return "Cloudflare lost its connection to the origin mid-request (HTTP 527). Usually an origin network or firewall issue.";
+    default:
+      if (status >= 500) {
+        return `The site returned a server error (HTTP ${status}). Something is wrong on the origin or its CDN. Worth investigating before AI crawlers hit the same error.`;
+      }
+      if (status >= 400) {
+        return `The site refused the request (HTTP ${status}). Check that the URL is public and not gated by a firewall, bot filter, or login.`;
+      }
+      return `Could not fetch the site (HTTP ${status}). Make sure the URL is publicly accessible.`;
+  }
+}
+
 // ---------- Worker handler ----------
 
 export default {
@@ -2148,7 +2201,7 @@ export default {
 
         if (!resp.ok) {
           return Response.json(
-            { error: `Could not fetch the site (HTTP ${resp.status}). Make sure the URL is publicly accessible.` },
+            { error: describeFetchFailure(resp.status) },
             { status: 422, headers: corsHeaders }
           );
         }
