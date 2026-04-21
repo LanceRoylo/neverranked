@@ -3488,7 +3488,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <a href="/blog/">Insights</a>
   <a href="/about/">About</a>
   <a href="#audit" class="mob-cta">$500 Audit</a>
-  <span class="mob-status">Booking May 2026</span>
+  <span class="mob-status">Booking <span data-booking-window>May 2026</span></span>
   <div class="mob-utility">
     <a href="https://app.neverranked.com/demo">Live demo</a>
     <a href="https://app.neverranked.com">Client login</a>
@@ -3503,7 +3503,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <a href="/blog/" class="nav-link">Insights</a>
     <a href="/about/" class="nav-link">About</a>
     <a href="#audit" class="nav-cta">$500 Audit →</a>
-    <span class="status">Booking May 2026</span>
+    <span class="status">Booking <span data-booking-window>May 2026</span></span>
   </div>
 </nav>
 
@@ -4643,7 +4643,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           </h2>
           <div class="audit-status reveal" style="transition-delay:.15s">
             <span class="label">§ Status</span>
-            <p>Paced deliberately. <em>Next available: May 2026.</em></p>
+            <p>Paced deliberately. <em>Next available: <span data-booking-window>May 2026</span>.</em></p>
           </div>
         </div>
 
@@ -4815,6 +4815,14 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 </main>
 
 <script>
+/* ---------- booking window (single source of truth) ---------- */
+/* Update this one string monthly to sync every scarcity copy on the page. */
+var BOOKING_WINDOW = 'May 2026';
+(function(){
+  var els = document.querySelectorAll('[data-booking-window]');
+  for(var i=0;i<els.length;i++) els[i].textContent = BOOKING_WINDOW;
+})();
+
 /* ---------- force top on reload ---------- */
 if('scrollRestoration' in history) history.scrollRestoration='manual';
 window.scrollTo(0,0);
