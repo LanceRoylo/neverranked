@@ -3496,49 +3496,49 @@ h1,h2,h3,h4{
   transform:scale(1);
 }
 
-/* six-tracks: brisk but elegant draw. Tracks, node, output line, matrix, label. */
+/* six-tracks: quick draw, clean landing. Tracks, node, output line, matrix, label. */
 .svc-converge .track{
   stroke-dasharray:700;
   stroke-dashoffset:700;
-  transition:stroke-dashoffset 1.4s cubic-bezier(.22,.61,.28,1);
+  transition:stroke-dashoffset .9s cubic-bezier(.22,.61,.28,1);
 }
 .svc-converge.in .track{stroke-dashoffset:0}
-.svc-converge.in .track.t1{transition-delay:.10s}
-.svc-converge.in .track.t2{transition-delay:.25s}
-.svc-converge.in .track.t3{transition-delay:.40s}
-.svc-converge.in .track.t4{transition-delay:.55s}
-.svc-converge.in .track.t5{transition-delay:.70s}
-.svc-converge.in .track.t6{transition-delay:.85s}
+.svc-converge.in .track.t1{transition-delay:.05s}
+.svc-converge.in .track.t2{transition-delay:.15s}
+.svc-converge.in .track.t3{transition-delay:.25s}
+.svc-converge.in .track.t4{transition-delay:.35s}
+.svc-converge.in .track.t5{transition-delay:.45s}
+.svc-converge.in .track.t6{transition-delay:.55s}
 .svc-converge .node{
   transform-origin:560px 140px;
   transform:scale(0);
-  transition:transform .5s cubic-bezier(.34,1.2,.64,1) 1.80s;
+  transition:transform .35s cubic-bezier(.34,1.2,.64,1) 1.20s;
 }
 .svc-converge.in .node{transform:scale(1)}
 .svc-converge .output-line{
   stroke-dasharray:140;
   stroke-dashoffset:140;
-  transition:stroke-dashoffset .7s cubic-bezier(.22,.61,.28,1) 2.10s;
+  transition:stroke-dashoffset .5s cubic-bezier(.22,.61,.28,1) 1.40s;
 }
 .svc-converge.in .output-line{stroke-dashoffset:0}
-.svc-converge .arrow{opacity:0;transition:opacity .4s ease 2.70s}
+.svc-converge .arrow{opacity:0;transition:opacity .3s ease 1.80s}
 .svc-converge.in .arrow{opacity:1}
 .svc-converge .gold circle{
   opacity:0;
   transform:scale(.5);
   transform-origin:center;
-  transition:opacity .45s cubic-bezier(.22,.61,.28,1), transform .45s cubic-bezier(.22,.61,.28,1);
+  transition:opacity .35s cubic-bezier(.22,.61,.28,1), transform .35s cubic-bezier(.22,.61,.28,1);
 }
 .svc-converge.in .gold circle{opacity:1;transform:scale(1)}
-.svc-converge.in .gold circle:nth-child(1){transition-delay:2.85s}
-.svc-converge.in .gold circle:nth-child(2){transition-delay:2.93s}
-.svc-converge.in .gold circle:nth-child(3){transition-delay:3.01s}
-.svc-converge.in .gold circle:nth-child(4){transition-delay:3.09s}
-.svc-converge.in .gold circle:nth-child(5){transition-delay:3.17s}
-.svc-converge.in .gold circle:nth-child(6){transition-delay:3.25s}
-.svc-converge.in .gold circle:nth-child(7){transition-delay:3.33s}
-.svc-converge.in .gold circle:nth-child(8){transition-delay:3.41s}
-.svc-converge .output-label{opacity:0;transition:opacity .6s ease 3.30s}
+.svc-converge.in .gold circle:nth-child(1){transition-delay:1.90s}
+.svc-converge.in .gold circle:nth-child(2){transition-delay:1.95s}
+.svc-converge.in .gold circle:nth-child(3){transition-delay:2.00s}
+.svc-converge.in .gold circle:nth-child(4){transition-delay:2.05s}
+.svc-converge.in .gold circle:nth-child(5){transition-delay:2.10s}
+.svc-converge.in .gold circle:nth-child(6){transition-delay:2.15s}
+.svc-converge.in .gold circle:nth-child(7){transition-delay:2.20s}
+.svc-converge.in .gold circle:nth-child(8){transition-delay:2.25s}
+.svc-converge .output-label{opacity:0;transition:opacity .4s ease 2.20s}
 .svc-converge.in .output-label{opacity:1}
 
 /* montaic proof-viz: split-entrance on the before/after panels */
