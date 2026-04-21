@@ -171,6 +171,12 @@ export async function handleCheckout(
     "line_items[0][quantity]": "1",
     "payment_method_types[0]": "card",
     "allow_promotion_codes": "true",
+    // Skip payment method collection when the initial invoice is $0 (e.g.
+    // a 100%-off comp coupon). Paying customers still have amount_due > 0
+    // and are always required to enter a card. If the comp expires and a
+    // renewal invoice hits, Stripe fails the charge and eventually cancels
+    // the sub, which our customer.subscription.deleted webhook handles.
+    "payment_method_collection": "if_required",
     "metadata[plan]": plan,
     // Ask for the domain to monitor during checkout
     "custom_fields[0][key]": "domain",
