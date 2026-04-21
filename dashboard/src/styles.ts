@@ -13,7 +13,7 @@ export const CSS = `
   --text:#fbf8ef;
   --text-soft:rgba(251,248,239,.95);
   --text-mute:rgba(251,248,239,.82);
-  --text-faint:rgba(251,248,239,.65);
+  --text-faint:rgba(251,248,239,.78);
   --line:rgba(251,248,239,.10);
   --line-strong:rgba(251,248,239,.20);
   --red:#e85454;
@@ -39,7 +39,7 @@ body{
   font-family:var(--mono);
   font-size:15px;
   line-height:1.7;
-  font-weight:300;
+  font-weight:400;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
   text-rendering:optimizeLegibility;
