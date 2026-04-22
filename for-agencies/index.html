@@ -341,20 +341,35 @@
   section + section{margin-top:44px}
 
   /* print */
-  @page{size:letter;margin:.6in}
+  @page{size:letter;margin:.55in}
   @media print{
-    body{background:white;font-size:11px}
-    .page{padding:0;max-width:none;min-height:0}
-    .page + .page{border-top:none;page-break-before:always}
+    body{background:white;font-size:10.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .page{padding:0;max-width:none;min-height:0;border-top:none !important}
+    /* Force a hard page break between the two .page blocks. Using both legacy
+       page-break-* and modern break-* so Chrome headless, Safari, and Firefox
+       all honor it. */
+    .page:first-of-type{page-break-after:always;break-after:page}
+    .page{page-break-inside:avoid;break-inside:avoid}
     .cta-block{background:#f6f2e6;color:var(--ink);border:1px solid var(--line-strong)}
     .cta-block h2{color:var(--ink)}
     .cta-block p{color:var(--ink-soft)}
     .cta-primary{background:var(--gold);color:var(--ink)}
     .cta-secondary{color:var(--ink-soft);border-color:var(--line-strong)}
+    .pricing-table .margin{color:var(--gold-deep) !important}
     a{color:var(--gold-deep)}
     .no-print{display:none !important}
-    h1{font-size:34px}
-    h2{font-size:22px}
+    h1{font-size:32px;line-height:1.05}
+    h2{font-size:20px}
+    h3{font-size:14px}
+    .hero{margin-bottom:28px}
+    section + section{margin-top:28px}
+    .deliverable{padding:14px 18px 14px 0}
+    .deliverable:nth-child(even){padding-left:18px}
+    .step{padding:12px 0}
+    .pricing-fine{font-size:10px;margin-top:10px}
+    .topbar{margin-bottom:32px;padding-bottom:14px}
+    .kicker{margin-bottom:14px}
+    .footnote{margin-top:28px;padding-top:12px}
   }
 
   /* screen: floating print button */
