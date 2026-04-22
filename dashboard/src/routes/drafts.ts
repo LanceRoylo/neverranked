@@ -16,6 +16,7 @@ import type { Env, User, ContentDraft, ContentDraftStatus } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
+import { generateDraftInVoice, scoreDraftAgainstProfile } from "../voice-engine";
 
 // ---------- status helpers ----------
 
@@ -136,7 +137,7 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
 
 // ---------- detail page (editor) ----------
 
-export async function handleDraftDetail(clientSlug: string, draftId: number, user: User, env: Env): Promise<Response> {
+export async function handleDraftDetail(clientSlug: string, draftId: number, user: User, env: Env, url?: URL): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
   }
@@ -150,6 +151,8 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
   }
 
   const status = (draft.status as ContentDraftStatus) || "draft";
+  const genError = url?.searchParams.get("gen_error") || "";
+  const genOk = url?.searchParams.get("gen_ok") || "";
 
   const body = `
     <div style="margin-bottom:24px">
@@ -164,9 +167,37 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
     </div>
 
     <!-- Status banner explaining current step -->
-    <div style="margin-bottom:24px;padding:14px 18px;background:var(--bg-lift);border-left:2px solid ${STATUS_COLOR[status]};border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.65;max-width:820px">
+    <div style="margin-bottom:16px;padding:14px 18px;background:var(--bg-lift);border-left:2px solid ${STATUS_COLOR[status]};border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.65;max-width:820px">
       ${esc(STATUS_HINT[status])}
     </div>
+
+    ${genError ? `
+      <div style="margin-bottom:16px;padding:12px 16px;background:rgba(201,106,106,.08);border-left:2px solid var(--red,#c96a6a);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.6;max-width:820px">
+        ${esc(genError)}
+      </div>
+    ` : ""}
+    ${genOk ? `
+      <div style="margin-bottom:16px;padding:12px 16px;background:rgba(106,154,106,.08);border-left:2px solid var(--green,#6a9a6a);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.6;max-width:820px">
+        Draft generated in your voice. Review below and edit as needed before approving.
+      </div>
+    ` : ""}
+
+    ${(user.role === "admin" || user.role === "agency_admin") ? `
+      <!-- Generate in voice. Separate form from the save form so it has
+           its own submit action. Brief is optional; the voice engine will
+           produce a draft from the title alone if brief is empty. -->
+      <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/generate" id="generate-form" style="margin-bottom:20px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px" onsubmit="this.querySelector('button[type=submit]').disabled=true;this.querySelector('button[type=submit]').textContent='Generating\u2026 (10-30s)';">
+        <div class="label" style="margin-bottom:4px;color:var(--gold)">\u00a7 Draft in your voice</div>
+        <div style="font-size:12px;color:var(--text-soft);line-height:1.65;margin-bottom:12px;max-width:720px">
+          Optionally give a brief (angle, thesis, key points to cover). The engine reads your voice profile and produces a full markdown draft matching your writing style. Overwrites the body below.
+        </div>
+        <textarea name="brief" placeholder="Brief (optional). E.g. 'Cover why the author thinks em dashes are overused in marketing, open with the stat that 58% of searches are zero-click, close with our own example.'" rows="4" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12px;line-height:1.6;border-radius:3px;resize:vertical;margin-bottom:10px"></textarea>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button type="submit" class="btn">Generate draft</button>
+          <span style="font-size:11px;color:var(--text-faint)">Uses an Anthropic API call. Takes 10-30 seconds. Requires a voice profile to be built first.</span>
+        </div>
+      </form>
+    ` : ""}
 
     <!-- Editor -->
     <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/save" id="draft-form" style="margin-bottom:24px">
@@ -233,6 +264,121 @@ export async function handleDraftCreate(clientSlug: string, request: Request, us
 
   const draftId = (result.meta.last_row_id as number | null) ?? 0;
   return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+/**
+ * Generate (or regenerate) a draft body in the client's voice. Admin or
+ * agency_admin only -- each call costs LLM tokens. Scores the output
+ * against the profile in the same request so the badge lights up
+ * immediately on the next page render.
+ */
+export async function handleDraftGenerate(clientSlug: string, draftId: number, request: Request, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin" && user.role !== "agency_admin") {
+    return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
+  }
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const draft = await env.DB.prepare(
+    "SELECT id, title, body_markdown FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).first<{ id: number; title: string; body_markdown: string }>();
+  if (!draft) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
+
+  const form = await request.formData();
+  const brief = ((form.get("brief") as string) || "").trim();
+
+  const slugPath = encodeURIComponent(clientSlug);
+
+  let newBody = "";
+  try {
+    const out = await generateDraftInVoice(env, clientSlug, draft.title, brief || undefined);
+    newBody = out.body_markdown;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Draft generation failed.";
+    return redirect(`/drafts/${slugPath}/${draftId}?gen_error=${encodeURIComponent(msg)}`);
+  }
+
+  // Score the new body while we have the profile hot. If scoring fails or
+  // no profile exists, we just leave voice_score null -- non-fatal.
+  let score: number | null = null;
+  try {
+    const res = await scoreDraftAgainstProfile(env, clientSlug, newBody);
+    score = res?.score ?? null;
+  } catch {}
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Snapshot the OLD body into version history before we overwrite.
+  if (draft.body_markdown && draft.body_markdown.trim().length > 0) {
+    await env.DB.prepare(
+      `INSERT INTO content_draft_versions (draft_id, body_markdown, voice_score, edited_by_system, created_at)
+       VALUES (?, ?, NULL, 'generation', ?)`
+    ).bind(draftId, draft.body_markdown, now).run();
+  }
+
+  await env.DB.prepare(
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+  ).bind(newBody, score, now, draftId, clientSlug).run();
+
+  return redirect(`/drafts/${slugPath}/${draftId}?gen_ok=1`);
+}
+
+/**
+ * One-click: create a new draft with the given title (optional brief) and
+ * immediately generate the body in the client's voice. Used by the
+ * "Draft in your voice" buttons on roadmap items and citation-gap cards.
+ */
+export async function handleDraftCreateAndGenerate(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin" && user.role !== "agency_admin") {
+    return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
+  }
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const form = await request.formData();
+  const title = ((form.get("title") as string) || "").trim() || "Untitled draft";
+  const brief = ((form.get("brief") as string) || "").trim();
+  const kindRaw = ((form.get("kind") as string) || "article").trim();
+  const kind = ["article", "faq", "service_page", "landing"].includes(kindRaw) ? kindRaw : "article";
+  const roadmapItemId = form.get("roadmap_item_id") ? Number(form.get("roadmap_item_id")) : null;
+  const citationKeywordId = form.get("citation_keyword_id") ? Number(form.get("citation_keyword_id")) : null;
+
+  const slugPath = encodeURIComponent(clientSlug);
+  const now = Math.floor(Date.now() / 1000);
+
+  const insert = await env.DB.prepare(
+    `INSERT INTO content_drafts (client_slug, roadmap_item_id, citation_keyword_id, kind, title, body_markdown, status, created_by_user_id, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, '', 'draft', ?, ?, ?)`
+  ).bind(clientSlug, roadmapItemId, citationKeywordId, kind, title, user.id, now, now).run();
+  const draftId = (insert.meta.last_row_id as number | null) ?? 0;
+  if (!draftId) {
+    return redirect(`/drafts/${slugPath}`);
+  }
+
+  let body = "";
+  try {
+    const out = await generateDraftInVoice(env, clientSlug, title, brief || undefined);
+    body = out.body_markdown;
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Draft generation failed.";
+    // Still land on the editor so the admin can retry; surface the error.
+    return redirect(`/drafts/${slugPath}/${draftId}?gen_error=${encodeURIComponent(msg)}`);
+  }
+
+  let score: number | null = null;
+  try {
+    const res = await scoreDraftAgainstProfile(env, clientSlug, body);
+    score = res?.score ?? null;
+  } catch {}
+
+  const updatedAt = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ?"
+  ).bind(body, score, updatedAt, draftId).run();
+
+  return redirect(`/drafts/${slugPath}/${draftId}?gen_ok=1`);
 }
 
 export async function handleDraftSave(clientSlug: string, draftId: number, request: Request, user: User, env: Env): Promise<Response> {

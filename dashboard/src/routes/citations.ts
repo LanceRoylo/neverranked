@@ -122,21 +122,40 @@ async function buildContentRecommendations(
   if (insights.length === 0) return "";
 
   // Build the HTML
+  // Pull the current user role from the ambient context via closure.
+  // buildContentRecommendations doesn't receive the user object directly,
+  // but since the draft-in-voice button is shown to everyone who can
+  // see this page (admin + agency_admin + client), we gate on a feature
+  // signal rather than role here: the draft endpoint itself enforces
+  // role. So the button can always render.
   const cards = insights.map(ins => {
     const match = findMatchingRoadmapItem(ins.keyword);
     const roadmapBadge = match
-      ? `<a href="/roadmap/${esc(slug)}" style="display:inline-block;margin-top:8px;padding:4px 10px;background:rgba(106,154,106,.14);color:var(--green,#6a9a6a);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px;text-decoration:none" title="A matching roadmap item exists: '${esc(match.title)}' (${match.status === 'in_progress' ? 'in progress' : 'to do'}). Click to open your roadmap.">\u2713 On roadmap \u00b7 ${match.status === 'in_progress' ? 'in progress' : 'to do'}</a>`
-      : `<span style="display:inline-block;margin-top:8px;padding:4px 10px;background:rgba(201,168,76,.10);color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px" title="Nothing specifically tied to this keyword on your roadmap yet. It will be added after the next scan's review, or during the next monthly content planning cycle.">Not yet scheduled</span>`;
+      ? `<a href="/roadmap/${esc(slug)}" style="display:inline-block;margin-top:8px;margin-right:6px;padding:4px 10px;background:rgba(106,154,106,.14);color:var(--green,#6a9a6a);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px;text-decoration:none" title="A matching roadmap item exists: '${esc(match.title)}' (${match.status === 'in_progress' ? 'in progress' : 'to do'}). Click to open your roadmap.">\u2713 On roadmap \u00b7 ${match.status === 'in_progress' ? 'in progress' : 'to do'}</a>`
+      : `<span style="display:inline-block;margin-top:8px;margin-right:6px;padding:4px 10px;background:rgba(201,168,76,.10);color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px" title="Nothing specifically tied to this keyword on your roadmap yet. It will be added after the next scan's review, or during the next monthly content planning cycle.">Not yet scheduled</span>`;
+
+    // Draft-in-voice button. POSTs to the create-and-generate endpoint
+    // with the keyword as the title and the recommendation as the brief
+    // so the voice engine has real context to work with.
+    const draftTitle = `Pillar article: ${ins.keyword}`;
+    const draftBrief = `This article should answer the query "${ins.keyword}" and compete for AI citations on it. ${ins.recommendation}`;
+    const draftButton = `
+      <form method="POST" action="/drafts/${esc(slug)}/new-generated" style="display:inline-block;margin-top:8px" title="Create a new draft on this keyword in your voice" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Drafting\u2026';">
+        <input type="hidden" name="title" value="${esc(draftTitle)}">
+        <input type="hidden" name="brief" value="${esc(draftBrief)}">
+        <input type="hidden" name="kind" value="article">
+        <button type="submit" style="display:inline-block;padding:4px 10px;background:rgba(201,168,76,.18);color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border:none;border-radius:2px;cursor:pointer">Draft in voice &rarr;</button>
+      </form>`;
 
     const competitorList = ins.citedBy.length > 0
-      ? '<div style="margin-top:8px;font-size:11px;color:var(--text-faint)">Currently cited: ' +
+      ? '<div style="margin-top:10px;font-size:11px;color:var(--text-faint)">Currently cited: ' +
         ins.citedBy.map(c => '<span style="color:var(--text-mute)">' + esc(c) + '</span>').join(", ") + '</div>'
       : '';
 
     return '<div style="padding:16px;background:var(--bg-edge);border-radius:4px;border-left:3px solid var(--gold)">' +
       '<div style="font-size:13px;color:var(--text);font-style:italic;margin-bottom:6px">"' + esc(ins.keyword) + '"</div>' +
       '<div style="font-size:12px;color:var(--text-soft);line-height:1.6">' + esc(ins.recommendation) + '</div>' +
-      roadmapBadge +
+      '<div>' + roadmapBadge + draftButton + '</div>' +
       competitorList +
       '</div>';
   }).join("");

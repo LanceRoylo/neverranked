@@ -667,6 +667,15 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
             ${dueStr && item.status !== "done" ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
+            ${(user.role === "admin" || user.role === "agency_admin") && item.status !== "done" ? `
+              <form method="POST" action="/drafts/${clientSlug}/new-generated" style="display:inline" title="Create a new draft in your voice using this item's title and description as the brief" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Drafting\u2026';">
+                <input type="hidden" name="title" value="${esc(item.title)}">
+                <input type="hidden" name="brief" value="${esc(item.description || "")}">
+                <input type="hidden" name="kind" value="article">
+                <input type="hidden" name="roadmap_item_id" value="${item.id}">
+                <button type="submit" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--gold)">Draft in voice</button>
+              </form>
+            ` : ""}
             ${user.role === "admin" ? `
               <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
                 ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}

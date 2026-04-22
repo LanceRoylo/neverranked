@@ -33,7 +33,7 @@ import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, h
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
-import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload } from "./routes/drafts";
+import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate } from "./routes/drafts";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -683,6 +683,14 @@ export default {
     if (draftsNewMatch && method === "POST") {
       return handleDraftCreate(decodeURIComponent(draftsNewMatch[1]), request, user, env);
     }
+    const draftsNewGenMatch = path.match(/^\/drafts\/([^/]+)\/new-generated$/);
+    if (draftsNewGenMatch && method === "POST") {
+      return handleDraftCreateAndGenerate(decodeURIComponent(draftsNewGenMatch[1]), request, user, env);
+    }
+    const draftGenerateMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/generate$/);
+    if (draftGenerateMatch && method === "POST") {
+      return handleDraftGenerate(decodeURIComponent(draftGenerateMatch[1]), Number(draftGenerateMatch[2]), request, user, env);
+    }
     const draftDownloadMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/download\.(md|html)$/);
     if (draftDownloadMatch && method === "GET") {
       return handleDraftDownload(decodeURIComponent(draftDownloadMatch[1]), Number(draftDownloadMatch[2]), draftDownloadMatch[3] as "md" | "html", user, env);
@@ -701,7 +709,7 @@ export default {
     }
     const draftDetailMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)$/);
     if (draftDetailMatch && method === "GET") {
-      return handleDraftDetail(decodeURIComponent(draftDetailMatch[1]), Number(draftDetailMatch[2]), user, env);
+      return handleDraftDetail(decodeURIComponent(draftDetailMatch[1]), Number(draftDetailMatch[2]), user, env, url);
     }
 
     // Citations -- redirect or pick client
