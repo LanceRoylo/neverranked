@@ -1402,9 +1402,14 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     `;
   } else {
     reportSection = `
-      <div class="empty" style="padding:40px">
-        <h3>No scans yet</h3>
-        <p>Trigger a scan to see the AEO report for this domain.</p>
+      <div class="empty" style="padding:32px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;max-width:720px">
+        <h3 style="margin-bottom:10px;font-style:italic">No scans yet</h3>
+        <p style="color:var(--text-soft);font-size:13px;line-height:1.7;margin:0 0 16px">This domain was just added and has not been scanned yet. The first scan will fire automatically on the next weekly run (every Monday at 6am UTC). If you want to see the report sooner, trigger a manual scan.</p>
+        ${user.role === "admin" ? `
+          <form method="POST" action="/admin/scan/${domain.id}" style="margin:0">
+            <button type="submit" class="btn">Run a scan now</button>
+          </form>
+        ` : `<p style="color:var(--text-faint);font-size:11px;margin:0;line-height:1.6">If this domain has been tracked for more than 48 hours and still has no scans, email <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a> and we will investigate.</p>`}
       </div>
     `;
   }

@@ -592,8 +592,12 @@ function completionSourceLabel(item: RoadmapItem): string {
 function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number, injectionByItemId: Map<number, { status: string }>): string {
   if (items.length === 0) {
     return `
-      <div class="empty" style="padding:24px">
-        <p style="color:var(--text-faint)">${user.role === "admin" ? "Add items below to build this phase." : "Items for this phase are being prepared."}</p>
+      <div class="empty" style="padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <p style="color:var(--text-soft);font-size:12px;line-height:1.7;margin:0;max-width:680px">
+          ${user.role === "admin"
+            ? "No items added for this phase yet. Use the admin panel to add items manually, or trigger an auto-provision from the latest scan."
+            : "Items for this phase are being prepared. The system generates phase items automatically from each weekly scan. If this phase stays empty after your next Monday scan, email your account manager."}
+        </p>
       </div>
     `;
   }

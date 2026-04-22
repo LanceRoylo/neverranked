@@ -101,9 +101,10 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
         <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
         <h1>Competitive <em>comparison</em></h1>
       </div>
-      <div class="empty" style="margin-bottom:32px">
-        <h3>No competitors tracked yet</h3>
-        <p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto 24px">Add your competitors below. We'll scan them on the same schedule as your site and show you side-by-side AEO scores, citation rates, and schema coverage.</p>
+      <div class="empty" style="margin-bottom:32px;padding:32px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:left">
+        <h3 style="margin-bottom:10px;font-style:italic">No competitors tracked yet</h3>
+        <p style="color:var(--text-soft);font-size:13px;line-height:1.7;max-width:680px;margin:0 0 12px">Add one or more competitor domains below and the system will scan them on the same weekly Monday schedule as your own site. You will then see side-by-side AEO scores, citation share, schema coverage, and score trends over time.</p>
+        <p style="color:var(--text-faint);font-size:11px;line-height:1.6;max-width:680px;margin:0">Unsure who to add? Start with the two or three sites you most often lose business to. The comparison gets more useful with each addition.</p>
       </div>
       ${buildAddCompetitorForm(clientSlug)}
     `, user, clientSlug));
