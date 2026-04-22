@@ -341,35 +341,50 @@
   section + section{margin-top:44px}
 
   /* print */
-  @page{size:letter;margin:.55in}
+  @page{size:letter;margin:.45in}
   @media print{
-    body{background:white;font-size:10.5px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{background:white;font-size:10px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
     .page{padding:0;max-width:none;min-height:0;border-top:none !important}
-    /* Force a hard page break between the two .page blocks. Using both legacy
-       page-break-* and modern break-* so Chrome headless, Safari, and Firefox
-       all honor it. */
     .page:first-of-type{page-break-after:always;break-after:page}
-    .page{page-break-inside:avoid;break-inside:avoid}
-    .cta-block{background:#f6f2e6;color:var(--ink);border:1px solid var(--line-strong)}
-    .cta-block h2{color:var(--ink)}
-    .cta-block p{color:var(--ink-soft)}
-    .cta-primary{background:var(--gold);color:var(--ink)}
-    .cta-secondary{color:var(--ink-soft);border-color:var(--line-strong)}
+    .cta-block{background:#f6f2e6;color:var(--ink);border:1px solid var(--line-strong);padding:18px;margin-top:20px}
+    .cta-block h2{color:var(--ink);margin-bottom:8px}
+    .cta-block p{color:var(--ink-soft);margin-bottom:10px;font-size:10px}
+    .cta-row{margin-top:10px;gap:14px}
+    .cta-primary{background:var(--gold);color:var(--ink);padding:8px 14px;font-size:10px}
+    .cta-secondary{color:var(--ink-soft);border-color:var(--line-strong);font-size:10px}
     .pricing-table .margin{color:var(--gold-deep) !important}
     a{color:var(--gold-deep)}
     .no-print{display:none !important}
-    h1{font-size:32px;line-height:1.05}
-    h2{font-size:20px}
-    h3{font-size:14px}
-    .hero{margin-bottom:28px}
-    section + section{margin-top:28px}
-    .deliverable{padding:14px 18px 14px 0}
-    .deliverable:nth-child(even){padding-left:18px}
-    .step{padding:12px 0}
-    .pricing-fine{font-size:10px;margin-top:10px}
-    .topbar{margin-bottom:32px;padding-bottom:14px}
-    .kicker{margin-bottom:14px}
-    .footnote{margin-top:28px;padding-top:12px}
+    h1{font-size:28px;line-height:1.05;margin-bottom:10px}
+    h1 em{color:var(--gold-deep)}
+    h2{font-size:17px;line-height:1.2;margin-bottom:8px}
+    h3{font-size:12px;margin-bottom:4px}
+    p{margin-bottom:8px;line-height:1.5}
+    .hero{margin-bottom:20px}
+    .hero .sub{font-size:11px;margin-top:10px;line-height:1.5}
+    section + section{margin-top:20px}
+    .deliverable{padding:10px 14px 10px 0}
+    .deliverable:nth-child(even){padding-left:14px}
+    .deliverable h3{font-size:12px;margin-bottom:3px}
+    .deliverable p{font-size:10px;line-height:1.5}
+    .step{padding:9px 0;grid-template-columns:36px 1fr;gap:12px}
+    .step .n{font-size:22px}
+    .step .body h3{font-size:11px;margin-bottom:2px}
+    .step .body p{font-size:10px;line-height:1.5}
+    .pricing-table{font-size:10px}
+    .pricing-table td,.pricing-table th{padding:9px 10px 9px 0}
+    .pricing-table .tier small{font-size:9px;margin-top:2px}
+    .pricing-fine{font-size:9.5px;margin-top:10px;line-height:1.55}
+    .proof-grid{gap:14px;margin-top:4px}
+    .proof{padding:14px}
+    .proof h3{font-size:12px}
+    .proof p{font-size:10px;line-height:1.5;margin-bottom:6px}
+    .proof .link{font-size:10px}
+    .topbar{margin-bottom:20px;padding-bottom:10px}
+    .kicker{margin-bottom:12px;font-size:9px}
+    .footnote{margin-top:16px;padding-top:8px;font-size:9px}
+    .deliverables{margin-top:4px}
+    .steps{margin-top:4px}
   }
 
   /* screen: floating print button */
