@@ -32,6 +32,8 @@ import {
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
+import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete } from "./routes/voice";
+import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload } from "./routes/drafts";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -644,6 +646,58 @@ export default {
     const phaseAddMatch = path.match(/^\/roadmap\/([^/]+)\/add-phase$/);
     if (phaseAddMatch && method === "POST" && user.role === "admin") {
       return handleAddPhase(decodeURIComponent(phaseAddMatch[1]), request, user, env);
+    }
+
+    // ---------- Voice (writing samples + fingerprint) ----------
+    if ((path === "/voice" || path === "/voice/") && method === "GET") {
+      if (user.client_slug) return redirect(`/voice/${user.client_slug}`);
+      return renderClientPicker("Voice", "voice", user, env);
+    }
+    const voiceMatch = path.match(/^\/voice\/([^/]+?)\/?$/);
+    if (voiceMatch && method === "GET") {
+      return handleVoicePage(decodeURIComponent(voiceMatch[1]), user, env);
+    }
+    const voiceSampleCreateMatch = path.match(/^\/voice\/([^/]+)\/sample$/);
+    if (voiceSampleCreateMatch && method === "POST") {
+      return handleVoiceSampleCreate(decodeURIComponent(voiceSampleCreateMatch[1]), request, user, env);
+    }
+    const voiceSampleDeleteMatch = path.match(/^\/voice\/([^/]+)\/sample\/(\d+)\/delete$/);
+    if (voiceSampleDeleteMatch && method === "POST") {
+      return handleVoiceSampleDelete(decodeURIComponent(voiceSampleDeleteMatch[1]), Number(voiceSampleDeleteMatch[2]), user, env);
+    }
+
+    // ---------- Drafts (content drafting + editor + export) ----------
+    if ((path === "/drafts" || path === "/drafts/") && method === "GET") {
+      if (user.client_slug) return redirect(`/drafts/${user.client_slug}`);
+      return renderClientPicker("Drafts", "drafts", user, env);
+    }
+    const draftsListMatch = path.match(/^\/drafts\/([^/]+?)\/?$/);
+    if (draftsListMatch && method === "GET") {
+      return handleDraftsList(decodeURIComponent(draftsListMatch[1]), user, env);
+    }
+    const draftsNewMatch = path.match(/^\/drafts\/([^/]+)\/new$/);
+    if (draftsNewMatch && method === "POST") {
+      return handleDraftCreate(decodeURIComponent(draftsNewMatch[1]), request, user, env);
+    }
+    const draftDownloadMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/download\.(md|html)$/);
+    if (draftDownloadMatch && method === "GET") {
+      return handleDraftDownload(decodeURIComponent(draftDownloadMatch[1]), Number(draftDownloadMatch[2]), draftDownloadMatch[3] as "md" | "html", user, env);
+    }
+    const draftSaveMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/save$/);
+    if (draftSaveMatch && method === "POST") {
+      return handleDraftSave(decodeURIComponent(draftSaveMatch[1]), Number(draftSaveMatch[2]), request, user, env);
+    }
+    const draftStatusMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/status$/);
+    if (draftStatusMatch && method === "POST") {
+      return handleDraftStatus(decodeURIComponent(draftStatusMatch[1]), Number(draftStatusMatch[2]), request, user, env);
+    }
+    const draftDeleteMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/delete$/);
+    if (draftDeleteMatch && method === "POST") {
+      return handleDraftDelete(decodeURIComponent(draftDeleteMatch[1]), Number(draftDeleteMatch[2]), user, env);
+    }
+    const draftDetailMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)$/);
+    if (draftDetailMatch && method === "GET") {
+      return handleDraftDetail(decodeURIComponent(draftDetailMatch[1]), Number(draftDetailMatch[2]), user, env);
     }
 
     // Citations -- redirect or pick client

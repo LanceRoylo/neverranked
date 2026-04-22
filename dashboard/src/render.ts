@@ -35,6 +35,8 @@ export function layout(
   const roadHref = slug ? `/roadmap/${slug}` : '/roadmap';
   const searchHref = slug ? `/search/${slug}` : '/search';
   const summaryHref = slug ? `/summary/${slug}` : '/summary';
+  const voiceHref = slug ? `/voice/${slug}` : '/voice';
+  const draftsHref = slug ? `/drafts/${slug}` : '/drafts';
   // Agency admins get a different nav: their lens is the agency, not a
   // single client. Slug-bound client nav doesn't apply to them (they
   // manage many clients). This collapses the topbar to the agency
@@ -60,6 +62,8 @@ export function layout(
       <a href="${user.role === 'admin' ? '/citations' : citeHref}" class="nav-links-item${title === 'Citations' || title === 'Citation Keywords' ? ' active' : ''}">Citations</a>
       <a href="${user.role === 'admin' ? '/search' : searchHref}" class="nav-links-item${title === 'Search Performance' || title === 'Search Console' ? ' active' : ''}">Search</a>
       <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">${badges.roadmap ? '<span class="nav-badge">' + badges.roadmap + '</span>' : ''}Roadmap</a>
+      <a href="${user.role === 'admin' ? '/voice' : voiceHref}" class="nav-links-item${title === 'Voice' ? ' active' : ''}" title="Upload writing samples so drafts sound like you">Voice</a>
+      <a href="${user.role === 'admin' ? '/drafts' : draftsHref}" class="nav-links-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="In-dashboard content drafts, editor, and export">Drafts</a>
       <a href="${user.role === 'admin' ? '/report' : slug ? '/report/' + slug : '/report'}" class="nav-links-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
       <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
       ${user.role === 'admin' ? `<div class="nav-dropdown">

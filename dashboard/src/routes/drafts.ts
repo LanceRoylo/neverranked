@@ -1,0 +1,391 @@
+/**
+ * Dashboard -- /drafts/:clientSlug (list) and /drafts/:clientSlug/:id (editor)
+ *
+ * All draft content lives here. Agency owners never hand a Google Doc to a
+ * client -- they open this page, see every draft queued for the client,
+ * edit inline, approve, and the client copies the finished text or
+ * downloads it as a file. No external handoff.
+ *
+ * Phase 1 scaffolds the list and detail views. Draft generation (the LLM
+ * call that turns a roadmap item into a first draft) lands in phase 3.
+ * For now admins can create drafts manually via a "Create draft" form to
+ * exercise the editor and export pipeline.
+ */
+
+import type { Env, User, ContentDraft, ContentDraftStatus } from "../types";
+import { layout, html, esc, redirect } from "../render";
+import { canAccessClient } from "../agency";
+import { buildGlossary } from "../glossary";
+
+// ---------- status helpers ----------
+
+const STATUS_LABEL: Record<ContentDraftStatus, string> = {
+  draft: "Draft",
+  in_review: "In review",
+  approved: "Approved",
+  rejected: "Needs rewrite",
+};
+const STATUS_COLOR: Record<ContentDraftStatus, string> = {
+  draft: "var(--text-faint)",
+  in_review: "var(--gold)",
+  approved: "var(--green, #6a9a6a)",
+  rejected: "var(--red, #c96a6a)",
+};
+const STATUS_HINT: Record<ContentDraftStatus, string> = {
+  draft: "System-generated first pass or newly created by admin. Not yet reviewed.",
+  in_review: "The client is reviewing and may still edit. Waiting on approval.",
+  approved: "Client approved this draft. Ready to copy or download and publish.",
+  rejected: "Sent back for a rewrite. The next version will land as a new draft.",
+};
+
+// ---------- list page ----------
+
+export async function handleDraftsList(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  const drafts = (await env.DB.prepare(
+    "SELECT * FROM content_drafts WHERE client_slug = ? ORDER BY updated_at DESC"
+  ).bind(clientSlug).all<ContentDraft>()).results;
+
+  const rows = drafts.map(d => {
+    const status = (d.status as ContentDraftStatus) || "draft";
+    const scoreLabel = d.voice_score === null
+      ? "<span style=\"color:var(--text-faint)\">pending</span>"
+      : `<span style="color:${d.voice_score >= 75 ? "var(--green,#6a9a6a)" : d.voice_score >= 60 ? "var(--gold)" : "var(--red,#c96a6a)"}">${d.voice_score}/100</span>`;
+    return `
+      <tr>
+        <td><a href="/drafts/${esc(clientSlug)}/${d.id}" style="color:var(--text);text-decoration:none"><strong>${esc(d.title)}</strong></a></td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:capitalize">${esc(d.kind)}</td>
+        <td style="font-family:var(--mono);font-size:11px" title="${esc(STATUS_HINT[status])}"><span style="color:${STATUS_COLOR[status]}">${STATUS_LABEL[status]}</span></td>
+        <td style="font-family:var(--mono);font-size:11px">${scoreLabel}</td>
+        <td style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${new Date(d.updated_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</td>
+      </tr>
+    `;
+  }).join("");
+
+  const body = `
+    <div style="margin-bottom:32px">
+      <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
+      <h1>Content <em>drafts</em></h1>
+    </div>
+
+    <!-- How this page works -->
+    <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 How drafts work</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:820px">
+        Drafts are articles, FAQs, and landing pages the system generates for you from roadmap items and citation gaps. Each one is calibrated to the voice fingerprint on your <a href="/voice/${esc(clientSlug)}" style="color:var(--gold)">Voice</a> page. Click any draft to edit it, score it, approve it, and copy or download the finished text. Nothing leaves the dashboard.
+      </div>
+    </div>
+
+    ${drafts.length === 0 ? `
+      <div style="padding:24px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <h3 style="margin-bottom:8px;font-style:italic">No drafts yet</h3>
+        <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin:0 0 14px;max-width:640px">
+          Drafts appear here automatically once the drafting pipeline (Phase 3 of this feature) is live and a roadmap item triggers a generation. You can also create a draft manually from any roadmap item or citation gap.
+        </p>
+        ${user.role === "admin" ? `
+          <form method="POST" action="/drafts/${esc(clientSlug)}/new" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="text" name="title" placeholder="Draft title" required style="flex:1;min-width:260px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
+            <select name="kind" style="padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
+              <option value="article">Article</option>
+              <option value="faq">FAQ</option>
+              <option value="service_page">Service page</option>
+              <option value="landing">Landing page</option>
+            </select>
+            <button type="submit" class="btn">Create blank draft</button>
+          </form>
+        ` : ""}
+      </div>
+    ` : `
+      ${user.role === "admin" ? `
+        <div class="card" style="margin-bottom:20px">
+          <div class="label" style="margin-bottom:10px">Create draft manually</div>
+          <form method="POST" action="/drafts/${esc(clientSlug)}/new" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <input type="text" name="title" placeholder="Draft title" required style="flex:1;min-width:260px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
+            <select name="kind" style="padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
+              <option value="article">Article</option>
+              <option value="faq">FAQ</option>
+              <option value="service_page">Service page</option>
+              <option value="landing">Landing page</option>
+            </select>
+            <button type="submit" class="btn">Create</button>
+          </form>
+        </div>
+      ` : ""}
+      <table class="data-table" style="margin-bottom:32px">
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Kind</th>
+            <th>Status</th>
+            <th title="0-100 voice match score. Higher means the draft reads closer to your uploaded writing samples.">Voice score</th>
+            <th>Updated</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `}
+
+    ${buildGlossary()}
+  `;
+
+  return html(layout("Drafts", body, user, clientSlug));
+}
+
+// ---------- detail page (editor) ----------
+
+export async function handleDraftDetail(clientSlug: string, draftId: number, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  const draft = await env.DB.prepare(
+    "SELECT * FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).first<ContentDraft>();
+
+  if (!draft) {
+    return html(layout("Not Found", `<div class="empty"><h3>Draft not found</h3></div>`, user), 404);
+  }
+
+  const status = (draft.status as ContentDraftStatus) || "draft";
+
+  const body = `
+    <div style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:8px">
+        <a href="/" style="color:var(--text-mute)">Dashboard</a> /
+        <a href="/drafts/${esc(clientSlug)}" style="color:var(--text-mute)">${esc(clientSlug)}</a> / Draft
+      </div>
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <h1 style="margin:0">${esc(draft.title)}</h1>
+        <span style="font-family:var(--mono);font-size:11px;color:${STATUS_COLOR[status]}" title="${esc(STATUS_HINT[status])}">${STATUS_LABEL[status]}</span>
+      </div>
+    </div>
+
+    <!-- Status banner explaining current step -->
+    <div style="margin-bottom:24px;padding:14px 18px;background:var(--bg-lift);border-left:2px solid ${STATUS_COLOR[status]};border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.65;max-width:820px">
+      ${esc(STATUS_HINT[status])}
+    </div>
+
+    <!-- Editor -->
+    <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/save" id="draft-form" style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:10px">Draft body (Markdown)</div>
+      <textarea name="body_markdown" id="draft-body" rows="28" style="width:100%;padding:16px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.7;border-radius:3px;resize:vertical" placeholder="Start writing, or paste a generated draft here...">${esc(draft.body_markdown || "")}</textarea>
+      <div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap;align-items:center">
+        <button type="submit" class="btn">Save changes</button>
+        <button type="button" class="btn btn-ghost" id="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('draft-body').value).then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy to clipboard',1500)})">Copy to clipboard</button>
+        <a href="/drafts/${esc(clientSlug)}/${draft.id}/download.md" class="btn btn-ghost">Download .md</a>
+        <a href="/drafts/${esc(clientSlug)}/${draft.id}/download.html" class="btn btn-ghost">Download .html</a>
+        <span style="font-size:11px;color:var(--text-faint);margin-left:auto">Voice score: <span style="color:${draft.voice_score !== null && draft.voice_score >= 75 ? "var(--green,#6a9a6a)" : "var(--text-faint)"}">${draft.voice_score === null ? "pending first generation" : draft.voice_score + "/100"}</span></span>
+      </div>
+    </form>
+
+    <!-- Approval / status change -->
+    <div class="card" style="margin-bottom:32px">
+      <div class="label" style="margin-bottom:10px">Review</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.65;margin-bottom:14px;max-width:720px">
+        Once you are happy with the draft, mark it approved. Approved drafts stay available for copy and download but cannot be edited without reopening.
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/status">
+          <input type="hidden" name="status" value="in_review">
+          <button type="submit" class="btn btn-ghost" ${status === "in_review" ? "disabled" : ""}>Send to review</button>
+        </form>
+        <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/status">
+          <input type="hidden" name="status" value="approved">
+          <button type="submit" class="btn" ${status === "approved" ? "disabled" : ""}>Approve</button>
+        </form>
+        <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/status">
+          <input type="hidden" name="status" value="rejected">
+          <button type="submit" class="btn btn-ghost" ${status === "rejected" ? "disabled" : ""}>Send back for rewrite</button>
+        </form>
+        ${user.role === "admin" ? `
+          <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/delete" onsubmit="return confirm('Delete this draft permanently? This cannot be undone.')" style="margin-left:auto">
+            <button type="submit" class="btn btn-ghost" style="color:var(--red,#c96a6a)">Delete</button>
+          </form>
+        ` : ""}
+      </div>
+    </div>
+
+    ${buildGlossary()}
+  `;
+
+  return html(layout(`Draft: ${draft.title}`, body, user, clientSlug));
+}
+
+// ---------- POST handlers ----------
+
+export async function handleDraftCreate(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const form = await request.formData();
+  const title = ((form.get("title") as string) || "").trim() || "Untitled draft";
+  const kindRaw = ((form.get("kind") as string) || "article").trim();
+  const kind = ["article", "faq", "service_page", "landing"].includes(kindRaw) ? kindRaw : "article";
+
+  const now = Math.floor(Date.now() / 1000);
+  const result = await env.DB.prepare(
+    `INSERT INTO content_drafts (client_slug, kind, title, body_markdown, status, created_by_user_id, created_at, updated_at)
+     VALUES (?, ?, ?, '', 'draft', ?, ?, ?)`
+  ).bind(clientSlug, kind, title, user.id, now, now).run();
+
+  const draftId = (result.meta.last_row_id as number | null) ?? 0;
+  return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+export async function handleDraftSave(clientSlug: string, draftId: number, request: Request, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const form = await request.formData();
+  const body = ((form.get("body_markdown") as string) || "").trim();
+
+  const current = await env.DB.prepare(
+    "SELECT body_markdown, voice_score FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).first<{ body_markdown: string; voice_score: number | null }>();
+  if (!current) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    "UPDATE content_drafts SET body_markdown = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+  ).bind(body, now, draftId, clientSlug).run();
+
+  // Snapshot the previous version into content_draft_versions so edits are
+  // revertable. We store the OLD body, not the new one, so history reads
+  // "this is what it looked like before the user's latest save".
+  await env.DB.prepare(
+    `INSERT INTO content_draft_versions (draft_id, body_markdown, voice_score, edited_by_user_id, created_at)
+     VALUES (?, ?, ?, ?, ?)`
+  ).bind(draftId, current.body_markdown, current.voice_score, user.id, now).run();
+
+  return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+export async function handleDraftStatus(clientSlug: string, draftId: number, request: Request, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const form = await request.formData();
+  const status = ((form.get("status") as string) || "draft").trim();
+  if (!["draft", "in_review", "approved", "rejected"].includes(status)) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  if (status === "approved") {
+    await env.DB.prepare(
+      "UPDATE content_drafts SET status = ?, approved_by_user_id = ?, approved_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(status, user.id, now, now, draftId, clientSlug).run();
+  } else {
+    await env.DB.prepare(
+      "UPDATE content_drafts SET status = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(status, now, draftId, clientSlug).run();
+  }
+
+  return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+export async function handleDraftDelete(clientSlug: string, draftId: number, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin") {
+    return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
+  }
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  await env.DB.prepare(
+    "DELETE FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).run();
+  return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+}
+
+// ---------- downloads ----------
+
+export async function handleDraftDownload(clientSlug: string, draftId: number, format: "md" | "html", user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return new Response("Not found", { status: 404 });
+  }
+  const draft = await env.DB.prepare(
+    "SELECT title, body_markdown FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).first<{ title: string; body_markdown: string }>();
+  if (!draft) return new Response("Not found", { status: 404 });
+
+  const safeTitle = draft.title.replace(/[^a-z0-9-]+/gi, "-").toLowerCase().slice(0, 80);
+
+  if (format === "md") {
+    const content = `# ${draft.title}\n\n${draft.body_markdown}\n`;
+    return new Response(content, {
+      headers: {
+        "Content-Type": "text/markdown; charset=utf-8",
+        "Content-Disposition": `attachment; filename="${safeTitle}.md"`,
+      },
+    });
+  }
+
+  // HTML export: wrap markdown in minimal HTML + Article schema JSON-LD so
+  // it is paste-ready for a CMS. We do light Markdown -> HTML here without
+  // a full parser: paragraphs, headings, and bullet lists only. Good enough
+  // for most pillar articles; clients who need richer formatting can hand
+  // the Markdown to their existing CMS.
+  const md = draft.body_markdown;
+  const lines = md.split(/\n/);
+  const out: string[] = [];
+  let inList = false;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) {
+      if (inList) { out.push("</ul>"); inList = false; }
+      continue;
+    }
+    if (line.startsWith("# ")) { if (inList) { out.push("</ul>"); inList = false; } out.push(`<h1>${escHtml(line.slice(2))}</h1>`); continue; }
+    if (line.startsWith("## ")) { if (inList) { out.push("</ul>"); inList = false; } out.push(`<h2>${escHtml(line.slice(3))}</h2>`); continue; }
+    if (line.startsWith("### ")) { if (inList) { out.push("</ul>"); inList = false; } out.push(`<h3>${escHtml(line.slice(4))}</h3>`); continue; }
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      if (!inList) { out.push("<ul>"); inList = true; }
+      out.push(`<li>${escHtml(line.slice(2))}</li>`);
+      continue;
+    }
+    if (inList) { out.push("</ul>"); inList = false; }
+    out.push(`<p>${escHtml(line)}</p>`);
+  }
+  if (inList) out.push("</ul>");
+
+  const articleJsonLd = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": draft.title,
+  }, null, 2);
+
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${escHtml(draft.title)}</title>
+<script type="application/ld+json">
+${articleJsonLd}
+</script>
+</head>
+<body>
+${out.join("\n")}
+</body>
+</html>
+`;
+  return new Response(html, {
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Content-Disposition": `attachment; filename="${safeTitle}.html"`,
+    },
+  });
+}
+
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}

@@ -254,6 +254,70 @@ export interface RoadmapItem {
   updated_at: number;
 }
 
+// ---------- Voice calibration + content drafts ----------
+
+export interface VoiceSample {
+  id: number;
+  client_slug: string;
+  title: string | null;
+  source_url: string | null;
+  body: string;
+  word_count: number;
+  uploaded_by_user_id: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface VoiceFingerprint {
+  client_slug: string;
+  fingerprint_json: string;
+  sample_count: number;
+  total_word_count: number;
+  computed_at: number;
+  model: string | null;
+}
+
+/** Shape of the parsed fingerprint JSON. Evolves over time. */
+export interface VoiceFingerprintData {
+  summary?: string;                   // one-paragraph plain-English voice description
+  tone?: string[];                    // ["direct", "conversational", "no fluff"]
+  sentence_length?: "short" | "mixed" | "long";
+  vocabulary_notes?: string[];        // ["uses 'folks' over 'customers'", ...]
+  forbidden_patterns?: string[];      // ["em dashes", "semicolons", "elevate your business"]
+  structural_preferences?: string[];  // ["H2-heavy, no H3", "bullet lists for process steps"]
+}
+
+export type ContentDraftStatus = "draft" | "in_review" | "approved" | "rejected";
+export type ContentDraftKind = "article" | "faq" | "service_page" | "landing";
+
+export interface ContentDraft {
+  id: number;
+  client_slug: string;
+  roadmap_item_id: number | null;
+  citation_keyword_id: number | null;
+  kind: ContentDraftKind;
+  title: string;
+  body_markdown: string;
+  body_html: string | null;
+  voice_score: number | null;
+  status: ContentDraftStatus;
+  created_by_user_id: number | null;
+  approved_by_user_id: number | null;
+  approved_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface ContentDraftVersion {
+  id: number;
+  draft_id: number;
+  body_markdown: string;
+  voice_score: number | null;
+  edited_by_user_id: number | null;
+  edited_by_system: string | null;
+  created_at: number;
+}
+
 export interface SchemaInjection {
   id: number;
   client_slug: string;
