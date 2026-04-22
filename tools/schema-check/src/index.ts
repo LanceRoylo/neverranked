@@ -386,6 +386,22 @@ body::before{
   line-height:1.5;
 }
 
+/* Agency pitch-link mode: hide NeverRanked's own conversion surfaces so the
+   prospect only sees the agency's branding + CTA. The scan itself, the grade,
+   the insights, and the technical findings all stay visible because those
+   are the product being resold. */
+body.agency-mode .hero-trust,
+body.agency-mode #cta-pricing,
+body.agency-mode .cta-features,
+body.agency-mode .social-proof,
+body.agency-mode .email-gate,
+body.agency-mode #email-gate,
+body.agency-mode .dashboard-preview-section,
+body.agency-mode #dashboard-preview{
+  display:none !important;
+}
+body.agency-mode #agency-cta-card{display:block !important}
+
 /* section labels */
 .section-label{
   display:flex;align-items:center;gap:14px;
@@ -1004,6 +1020,21 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 </nav>
 
 <main class="wrap">
+  <!-- Agency pitch banner: shown only when ref_name URL param is present.
+       Lets an agency reseller share a branded audit URL with their prospect.
+       Populated by the boot script below; hidden by default so the default
+       check.neverranked.com experience is unchanged. -->
+  <div id="agency-banner" style="display:none;margin:0 auto 32px;max-width:820px;padding:18px 24px;background:linear-gradient(135deg,var(--bg-lift) 0%,rgba(201,168,76,.08) 100%);border:1px solid var(--gold-dim);border-radius:4px">
+    <div style="font-family:var(--label);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">§ Prepared for you</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
+      <div style="font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.5">
+        This AEO audit was prepared by <strong id="agency-banner-name" style="color:var(--gold);font-weight:500"></strong>.
+        <span style="color:var(--text-faint);display:block;font-size:11px;margin-top:4px">They work with Never Ranked to run and interpret this scan for their clients.</span>
+      </div>
+      <a id="agency-banner-cta" href="#" style="white-space:nowrap;padding:10px 18px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:500;text-decoration:none;border-radius:2px">Book a call &rarr;</a>
+    </div>
+  </div>
+
   <section class="hero">
     <h1>How ready is your site<br>for <em>AI search</em>?</h1>
     <p class="sub">Enter your URL. Get an instant grade on schema coverage, technical signals, and AEO readiness. Free. No signup.</p>
@@ -1143,6 +1174,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span><span class="sp-num">2,400+</span> sites scanned</span>
         <span><span class="sp-num">4</span> AI engines tracked</span>
         <span><span class="sp-num">Weekly</span> automated scans</span>
+      </div>
+
+      <!-- Agency-mode CTA: single "Book a call with [agency]" card that
+           replaces the NeverRanked tier pricing when ref_name is set. -->
+      <div id="agency-cta-card" style="display:none;max-width:460px;margin:32px auto;padding:28px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;text-align:center">
+        <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--gold);margin-bottom:12px">§ Next step</div>
+        <h3 style="font-family:var(--serif);font-size:22px;font-style:italic;margin-bottom:10px;color:var(--text)">Talk to <em id="agency-cta-name" style="color:var(--gold)">your agency</em></h3>
+        <p style="font-size:13px;color:var(--text-faint);line-height:1.6;margin-bottom:22px">The scan above is the starting point. Your agency will walk you through what the findings mean and what the fix looks like in your timeline and budget.</p>
+        <a id="agency-cta-btn" href="#" style="display:inline-block;padding:12px 28px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:500;text-decoration:none;border-radius:2px">Book a call &rarr;</a>
+        <div id="agency-cta-contact" style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--text-faint)"></div>
       </div>
 
       <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
@@ -1670,6 +1711,66 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){
     if(_sp.get(k)) _utm[k] = _sp.get(k);
   });
+
+  // Agency pitch-link mode. When ref_name is present in the URL, an agency
+  // reseller has sent this link to their prospect. We swap:
+  //   - show the agency banner at the top with their name + book-a-call CTA
+  //   - replace the NeverRanked pricing CTAs with a single "Talk to [agency]"
+  //     block so the prospect talks to the agency, not us
+  //   - keep everything else (scan, grade, insights, signals) intact because
+  //     that is the product value the agency is reselling
+  var _agency = null;
+  var _refName = _sp.get('ref_name');
+  if (_refName) {
+    _agency = {
+      name: _refName,
+      email: _sp.get('ref_email') || '',
+      phone: _sp.get('ref_phone') || '',
+      website: _sp.get('ref_website') || ''
+    };
+    document.body.classList.add('agency-mode');
+    var banner = document.getElementById('agency-banner');
+    var bannerName = document.getElementById('agency-banner-name');
+    var bannerCta = document.getElementById('agency-banner-cta');
+    if (banner && bannerName) {
+      bannerName.textContent = _agency.name;
+      banner.style.display = 'block';
+    }
+    if (bannerCta) {
+      if (_agency.email) {
+        bannerCta.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+      } else if (_agency.website) {
+        bannerCta.href = _agency.website;
+        bannerCta.setAttribute('target','_blank');
+        bannerCta.setAttribute('rel','noopener');
+      } else {
+        bannerCta.style.display = 'none';
+      }
+    }
+    // Also populate the bottom-of-page agency CTA card (shown when the
+    // NeverRanked pricing tiers are hidden by body.agency-mode CSS).
+    var ctaName = document.getElementById('agency-cta-name');
+    var ctaBtn = document.getElementById('agency-cta-btn');
+    var ctaContact = document.getElementById('agency-cta-contact');
+    if (ctaName) ctaName.textContent = _agency.name;
+    if (ctaBtn) {
+      if (_agency.email) {
+        ctaBtn.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+      } else if (_agency.website) {
+        ctaBtn.href = _agency.website;
+        ctaBtn.setAttribute('target','_blank');
+        ctaBtn.setAttribute('rel','noopener');
+      } else {
+        ctaBtn.style.display = 'none';
+      }
+    }
+    if (ctaContact) {
+      var contactBits = [];
+      if (_agency.email) contactBits.push(_agency.email);
+      if (_agency.phone) contactBits.push(_agency.phone);
+      ctaContact.textContent = contactBits.join(' · ');
+    }
+  }
 
   // Auto-scan via ?url= param. Used by outreach emails ("See the full scan
   // yourself: https://check.neverranked.com/?url=agency.com") so the

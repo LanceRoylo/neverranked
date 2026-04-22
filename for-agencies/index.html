@@ -498,7 +498,7 @@
     <div class="kicker"><span class="gold">§04</span> <span>Pricing &amp; margin</span></div>
     <h2>Wholesale below retail. <em>You keep the spread.</em></h2>
     <p style="color:var(--ink-soft);font-size:12px;max-width:620px">
-      Our retail prices are on neverranked.com. Reseller pricing is discounted so your agency earns margin on every engagement. Minimum three active clients to unlock the reseller rate. Billed monthly, no annual lock.
+      Our retail prices are on neverranked.com. Reseller pricing is discounted so your agency earns margin on every engagement. One active client unlocks the reseller rate. Billed monthly, no annual lock.
     </p>
 
     <table class="pricing-table">
@@ -562,6 +562,96 @@
       </div>
     </div>
   </section>
+
+  <section class="no-print" style="margin-top:44px">
+    <div class="kicker"><span class="gold">§06</span> <span>Pitch Link generator</span></div>
+    <h2>Build a branded audit link <em>now.</em></h2>
+    <p style="color:var(--ink-soft);font-size:13px;max-width:620px">
+      Paste a prospect's URL, enter your agency name and contact, get a shareable link that runs the audit with your branding and your CTA. Use it as the opener on cold outreach or the follow-up on a first call. No login required to share.
+    </p>
+
+    <div style="margin-top:24px;padding:24px;background:var(--bg-lift);border:1px solid var(--line-strong);border-radius:2px;background:#f6f2e6">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <label style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint);display:block">
+          Prospect URL
+          <input type="text" id="pl-url" placeholder="meetmaev.com" style="display:block;width:100%;margin-top:6px;padding:10px 12px;background:white;border:1px solid var(--line-strong);border-radius:2px;font-family:var(--mono);font-size:13px;color:var(--ink)">
+        </label>
+        <label style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint);display:block">
+          Your agency name
+          <input type="text" id="pl-name" placeholder="Smith Co Marketing" style="display:block;width:100%;margin-top:6px;padding:10px 12px;background:white;border:1px solid var(--line-strong);border-radius:2px;font-family:var(--mono);font-size:13px;color:var(--ink)">
+        </label>
+        <label style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint);display:block">
+          Your email
+          <input type="email" id="pl-email" placeholder="hi@smithco.com" style="display:block;width:100%;margin-top:6px;padding:10px 12px;background:white;border:1px solid var(--line-strong);border-radius:2px;font-family:var(--mono);font-size:13px;color:var(--ink)">
+        </label>
+        <label style="font-family:var(--label);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint);display:block">
+          Your phone (optional)
+          <input type="text" id="pl-phone" placeholder="(555) 123-4567" style="display:block;width:100%;margin-top:6px;padding:10px 12px;background:white;border:1px solid var(--line-strong);border-radius:2px;font-family:var(--mono);font-size:13px;color:var(--ink)">
+        </label>
+      </div>
+
+      <button id="pl-build" type="button" style="margin-top:20px;padding:12px 22px;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:12px;letter-spacing:.04em;border:none;border-radius:2px;cursor:pointer">Build pitch link &rarr;</button>
+
+      <div id="pl-output" style="display:none;margin-top:20px;padding:16px;background:white;border:1px solid var(--line-strong);border-radius:2px">
+        <div style="font-family:var(--label);text-transform:uppercase;font-size:10px;letter-spacing:.15em;color:var(--ink-faint);margin-bottom:8px">Your pitch link</div>
+        <div id="pl-link" style="font-family:var(--mono);font-size:12px;color:var(--ink);word-break:break-all;line-height:1.6;padding:10px;background:#faf8f0;border-radius:2px;border:1px solid var(--line)"></div>
+        <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap">
+          <button id="pl-copy" type="button" style="padding:8px 14px;background:var(--gold-deep);color:white;font-family:var(--mono);font-size:11px;border:none;border-radius:2px;cursor:pointer">Copy</button>
+          <a id="pl-preview" href="#" target="_blank" rel="noopener" style="padding:8px 14px;background:white;color:var(--ink);font-family:var(--mono);font-size:11px;border:1px solid var(--line-strong);border-radius:2px;text-decoration:none">Preview</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    (function(){
+      var btn = document.getElementById('pl-build');
+      if (!btn) return;
+      var output = document.getElementById('pl-output');
+      var linkEl = document.getElementById('pl-link');
+      var previewEl = document.getElementById('pl-preview');
+      var copyBtn = document.getElementById('pl-copy');
+
+      function normalizeProspectUrl(raw){
+        var v = (raw||'').trim();
+        if (!v) return '';
+        v = v.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/+$/,'');
+        return 'https://' + v;
+      }
+
+      btn.addEventListener('click', function(){
+        var url = normalizeProspectUrl(document.getElementById('pl-url').value);
+        var name = (document.getElementById('pl-name').value||'').trim();
+        var email = (document.getElementById('pl-email').value||'').trim();
+        var phone = (document.getElementById('pl-phone').value||'').trim();
+
+        if (!url || !name) {
+          alert('Prospect URL and agency name are both required.');
+          return;
+        }
+
+        var params = new URLSearchParams();
+        params.set('url', url);
+        params.set('ref_name', name);
+        if (email) params.set('ref_email', email);
+        if (phone) params.set('ref_phone', phone);
+
+        var pitchUrl = 'https://check.neverranked.com/?' + params.toString();
+        linkEl.textContent = pitchUrl;
+        previewEl.href = pitchUrl;
+        output.style.display = 'block';
+      });
+
+      copyBtn.addEventListener('click', function(){
+        var txt = linkEl.textContent;
+        if (!txt) return;
+        navigator.clipboard.writeText(txt).then(function(){
+          copyBtn.textContent = 'Copied';
+          setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1500);
+        });
+      });
+    })();
+  </script>
 
   <div class="cta-block">
     <div class="kicker" style="color:rgba(251,248,239,.5);margin-bottom:18px"><span style="color:var(--gold)">§ Next step</span></div>
