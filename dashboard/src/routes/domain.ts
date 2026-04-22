@@ -1262,21 +1262,42 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     // Generate narrative
     const narrative = generateNarrative(domain.domain, latest, previous);
 
+    // Plain-English interpretation of the score, so readers (especially
+    // agency owners showing this to a client) can answer "is that number
+    // good?" without looking anything up.
+    const _s = latest.aeo_score;
+    const scoreMeaning =
+      _s >= 90 ? "This is cite-ready territory. AI engines will confidently use this site as a source. The job now is defense: keep the structure fresh, add new content, and keep schema coverage from drifting."
+      : _s >= 75 ? "Strong foundation. A few specific gaps still cost citations. The roadmap below shows exactly which fixes move this from B into A range."
+      : _s >= 60 ? "Visible but not first-choice. When AI engines need a source in this space, competitors with cleaner structure are getting picked over this site. The roadmap is where to start closing the gap."
+      : _s >= 40 ? "Real structural problems are costing citations. AI engines are skipping this site for cleaner sources. The fixes in the roadmap are known, ordered by impact, and tracked."
+      : "AI engines cannot parse this site well enough to cite it. Every week without action the gap widens while competitors improve. The roadmap starts with the fixes that unlock everything else.";
+
+    const scanTypeLabel =
+      latest.scan_type === "cron" ? "weekly automated scan"
+      : latest.scan_type === "manual" ? "manual re-scan you triggered"
+      : latest.scan_type === "onboarding" ? "onboarding scan"
+      : latest.scan_type;
+
     reportSection = `
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:48px">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:24px">
         <div style="text-align:center">
-          <div class="grade grade-${latest.grade}" style="width:80px;height:80px;font-size:40px;margin-bottom:12px">${latest.grade}</div>
-          <div class="score">${latest.aeo_score}<small>/100</small></div>
+          <div class="grade grade-${latest.grade}" style="width:80px;height:80px;font-size:40px;margin-bottom:12px" title="Grade ${latest.grade}. 90+ is A, 75-89 is B, 60-74 is C, 40-59 is D, below 40 is F.">${latest.grade}</div>
+          <div class="score" title="AEO Readiness score: 0-100. Based on structured data coverage, technical signals, content structure, and citation proxies.">${latest.aeo_score}<small>/100</small></div>
           ${deltaHtml}
         </div>
         <div>
-          <div style="font-size:12px;color:var(--text-faint);margin-bottom:8px">Last scanned ${scanDate} (${latest.scan_type})</div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px">
-            ${schemaCoverage.map(s => `
-              <span style="padding:4px 10px;font-family:var(--label);text-transform:uppercase;letter-spacing:.15em;font-size:9px;font-weight:500;border:1px solid;border-radius:2px;${s.present ? 'color:var(--green);border-color:var(--green)' : 'color:var(--text-faint);border-color:var(--line)'}">
-                ${esc(s.type)}
+          <div style="font-size:12px;color:var(--text-faint);margin-bottom:8px">Last scanned ${scanDate} &middot; ${scanTypeLabel}</div>
+          <p style="font-size:13px;line-height:1.7;color:var(--text-soft);margin:0 0 18px;max-width:720px">${scoreMeaning}</p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">
+            ${schemaCoverage.map(sc => `
+              <span style="padding:4px 10px;font-family:var(--label);text-transform:uppercase;letter-spacing:.15em;font-size:9px;font-weight:500;border:1px solid;border-radius:2px;${sc.present ? 'color:var(--green);border-color:var(--green)' : 'color:var(--text-faint);border-color:var(--line)'}" title="${sc.present ? 'Found on this page.' : 'Missing on this page -- add to earn this credit.'}">
+                ${esc(sc.type)}
               </span>
             `).join('')}
+          </div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:10px;line-height:1.6;max-width:680px">
+            Each tag above is a schema type AI engines look for. Green means the scanner found it on your site. Faint means it is missing and adding it would earn credit on the next scan.
           </div>
         </div>
       </div>

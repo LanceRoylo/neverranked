@@ -256,23 +256,35 @@ function buildCitationDataSection(
     aeoContext
   );
 
-  const chartHtml = chartData.length > 1 ? `
+  const chartHtml = chartData.length > 1 ? (() => {
+    const firstShare = (chartData[0].citation_share * 100).toFixed(1);
+    const lastShare = (chartData[chartData.length - 1].citation_share * 100).toFixed(1);
+    const direction = chartData[chartData.length - 1].citation_share - chartData[0].citation_share;
+    const trendWord = direction > 0.01 ? "trending up" : direction < -0.01 ? "trending down" : "roughly flat";
+    return `
     <div class="card">
       <div class="label">Citation share trend (${chartData.length} weeks)</div>
+      <div class="narrative-context" style="margin-bottom:12px">
+        The line below is the percentage of AI answers that cite your site, measured weekly. ${chartData.length} weeks ago it was ${firstShare}%. This week it is ${lastShare}%. The series is ${trendWord}. Each dot is one Monday's citation run.
+      </div>
       <div class="chart-container" style="height:200px;margin-top:16px;position:relative">
-        <svg viewBox="0 0 ${chartData.length * 80} 200" style="width:100%;height:100%" preserveAspectRatio="none">
+        <svg viewBox="0 0 ${chartData.length * 80} 200" style="width:100%;height:100%" preserveAspectRatio="none" role="img" aria-label="Citation share trend over ${chartData.length} weeks, from ${firstShare}% to ${lastShare}%">
           ${[0, 25, 50, 75, 100].map(v =>
             '<line x1="0" y1="' + (200 - v * 2) + '" x2="' + (chartData.length * 80) + '" y2="' + (200 - v * 2) + '" stroke="rgba(251,248,239,0.08)" stroke-width="1"/>'
           ).join("")}
           <polyline fill="none" stroke="#e8c767" stroke-width="2"
             points="${chartData.map((s, i) => (i * 80 + 40) + "," + (200 - s.citation_share * 200)).join(" ")}"/>
           ${chartData.map((s, i) =>
-            '<circle cx="' + (i * 80 + 40) + '" cy="' + (200 - s.citation_share * 200) + '" r="4" fill="#e8c767"/>'
+            '<circle cx="' + (i * 80 + 40) + '" cy="' + (200 - s.citation_share * 200) + '" r="4" fill="#e8c767"><title>Week of ' + new Date(s.week_start * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }) + ': ' + (s.citation_share * 100).toFixed(1) + '%</title></circle>'
           ).join("")}
         </svg>
       </div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:10px;line-height:1.6">
+        The y-axis runs 0 to 100 percent. Bottom of the chart is zero citations, top is cited on every query. Hover any dot for the exact percentage that week.
+      </div>
     </div>
-  ` : "";
+  `;
+  })() : "";
 
   const engineHtml = Object.keys(enginesBreakdown).length > 0 ? `
     <div class="card">
@@ -472,10 +484,24 @@ export async function handleCitations(
       <div class="section-sub">${esc(slug)}${latest ? ' -- last updated ' + new Date(latest.created_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ''}</div>
     </div>
 
+    <!-- How the page works. Answers "what is citation share and what do
+         these numbers mean" once, at the top, so every reader has a frame
+         before they see a percentage. -->
+    <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 What this page shows</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:780px">
+        Every Monday we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, and Claude. Your <strong style="color:var(--text);font-weight:500">citation share</strong> is the percentage of answers that cite your site. 10% means one in ten answers names you. Numbers below come from real AI responses this past week, not simulated traffic.
+      </div>
+    </div>
+
     ${!latest ? `
-    <div class="empty">
-      <h3>No citation data yet</h3>
-      <p>Citation tracking runs weekly on Mondays. ${keywords.length === 0 ? 'Add keywords first to start tracking.' : 'Your first scan will run next Monday.'}</p>
+    <div class="empty" style="padding:28px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <h3 style="margin-bottom:10px;font-style:italic">No citation data yet</h3>
+      <p style="color:var(--text-faint);font-size:13px;line-height:1.7;max-width:680px;margin:0">
+        ${keywords.length === 0
+          ? 'Citation tracking starts once keywords are configured. Your account manager adds these during onboarding based on the questions your prospects are actually asking AI assistants.'
+          : 'Citation tracking runs automatically every Monday at 6am UTC. Your first results will appear here after the next Monday scan.'}
+      </p>
       ${user.role === "admin" ? `
         <div style="margin-top:16px">
           <a href="/admin/citations/${esc(slug)}" class="btn">Manage keywords</a>
