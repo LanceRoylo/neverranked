@@ -154,6 +154,15 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
   const genError = url?.searchParams.get("gen_error") || "";
   const genOk = url?.searchParams.get("gen_ok") || "";
 
+  // Version history (up to 10 most recent). Each row is a snapshot of
+  // the body BEFORE a save, so reverting means taking that row's body
+  // and making it the current body (which archives the current one).
+  const versions = (await env.DB.prepare(
+    `SELECT id, body_markdown, voice_score, edited_by_user_id, edited_by_system, created_at
+     FROM content_draft_versions WHERE draft_id = ?
+     ORDER BY created_at DESC LIMIT 10`
+  ).bind(draftId).all<{ id: number; body_markdown: string; voice_score: number | null; edited_by_user_id: number | null; edited_by_system: string | null; created_at: number }>()).results;
+
   const body = `
     <div style="margin-bottom:24px">
       <div class="label" style="margin-bottom:8px">
@@ -238,6 +247,47 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
         ` : ""}
       </div>
     </div>
+
+    ${versions.length > 0 ? `
+      <!-- Version history. Each row is a snapshot of the body BEFORE a
+           save, so clicking Revert restores that snapshot and archives
+           the current body as a new version. -->
+      <div class="card" style="margin-bottom:32px">
+        <div class="label" style="margin-bottom:6px">Version history</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;max-width:640px;line-height:1.55">
+          Every save and every generation creates a snapshot here. Revert restores an older version -- the current body gets archived too so nothing is lost.
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${versions.map(v => {
+            const dateLabel = new Date(v.created_at * 1000).toLocaleString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+            const byLabel = v.edited_by_system
+              ? v.edited_by_system
+              : v.edited_by_user_id
+                ? "user edit"
+                : "unknown";
+            const preview = v.body_markdown.replace(/\s+/g, " ").slice(0, 140);
+            const scoreLabel = v.voice_score === null ? "" : `<span style="margin-right:10px;font-family:var(--mono);font-size:10px;color:${v.voice_score >= 75 ? 'var(--green,#6a9a6a)' : v.voice_score >= 60 ? 'var(--gold)' : 'var(--red,#c96a6a)'}">${v.voice_score}/100</span>`;
+            return `
+              <div style="padding:10px 14px;background:var(--bg-edge);border-radius:3px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+                <div style="flex:1;min-width:200px;font-size:11px;color:var(--text-faint)">
+                  <span style="color:var(--text);font-family:var(--mono);font-size:11px">${dateLabel}</span>
+                  &middot; <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:9px">${esc(byLabel)}</span>
+                  <div style="margin-top:4px;font-size:11px;color:var(--text-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(preview)}${v.body_markdown.length > 140 ? "\u2026" : ""}</div>
+                </div>
+                <div style="display:flex;gap:8px;align-items:center">
+                  ${scoreLabel}
+                  ${(user.role === "admin" || user.role === "agency_admin") ? `
+                    <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/revert/${v.id}" onsubmit="return confirm('Restore this older version? Your current body will be archived into the history too.')">
+                      <button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:10px">Revert</button>
+                    </form>
+                  ` : ""}
+                </div>
+              </div>
+            `;
+          }).join("")}
+        </div>
+      </div>
+    ` : ""}
 
     ${buildGlossary()}
   `;
@@ -396,9 +446,20 @@ export async function handleDraftSave(clientSlug: string, draftId: number, reque
   }
 
   const now = Math.floor(Date.now() / 1000);
+
+  // Rescore on save if the body actually changed. Skip if unchanged so a
+  // "Save" click without edits doesn't burn an API call.
+  let newScore: number | null = current.voice_score;
+  if (body !== current.body_markdown && body.length >= 50) {
+    try {
+      const res = await scoreDraftAgainstProfile(env, clientSlug, body);
+      newScore = res?.score ?? current.voice_score;
+    } catch {}
+  }
+
   await env.DB.prepare(
-    "UPDATE content_drafts SET body_markdown = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
-  ).bind(body, now, draftId, clientSlug).run();
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+  ).bind(body, newScore, now, draftId, clientSlug).run();
 
   // Snapshot the previous version into content_draft_versions so edits are
   // revertable. We store the OLD body, not the new one, so history reads
@@ -431,6 +492,48 @@ export async function handleDraftStatus(clientSlug: string, draftId: number, req
       "UPDATE content_drafts SET status = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
     ).bind(status, now, draftId, clientSlug).run();
   }
+
+  return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+/**
+ * Revert the current draft body to an older version. Archives the current
+ * body into a new version row first so nothing is destroyed; the user can
+ * always revert the revert.
+ */
+export async function handleDraftRevert(clientSlug: string, draftId: number, versionId: number, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin" && user.role !== "agency_admin") {
+    return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
+  }
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  const version = await env.DB.prepare(
+    "SELECT body_markdown, voice_score FROM content_draft_versions WHERE id = ? AND draft_id = ?"
+  ).bind(versionId, draftId).first<{ body_markdown: string; voice_score: number | null }>();
+  if (!version) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+  }
+
+  const current = await env.DB.prepare(
+    "SELECT body_markdown, voice_score FROM content_drafts WHERE id = ? AND client_slug = ?"
+  ).bind(draftId, clientSlug).first<{ body_markdown: string; voice_score: number | null }>();
+  if (!current) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Archive the current body before overwriting.
+  await env.DB.prepare(
+    `INSERT INTO content_draft_versions (draft_id, body_markdown, voice_score, edited_by_user_id, edited_by_system, created_at)
+     VALUES (?, ?, ?, ?, 'revert-archive', ?)`
+  ).bind(draftId, current.body_markdown, current.voice_score, user.id, now).run();
+
+  await env.DB.prepare(
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+  ).bind(version.body_markdown, version.voice_score, now, draftId, clientSlug).run();
 
   return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
 }

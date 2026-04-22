@@ -33,7 +33,7 @@ import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, h
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
-import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate } from "./routes/drafts";
+import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert } from "./routes/drafts";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -690,6 +690,10 @@ export default {
     const draftGenerateMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/generate$/);
     if (draftGenerateMatch && method === "POST") {
       return handleDraftGenerate(decodeURIComponent(draftGenerateMatch[1]), Number(draftGenerateMatch[2]), request, user, env);
+    }
+    const draftRevertMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/revert\/(\d+)$/);
+    if (draftRevertMatch && method === "POST") {
+      return handleDraftRevert(decodeURIComponent(draftRevertMatch[1]), Number(draftRevertMatch[2]), Number(draftRevertMatch[3]), user, env);
     }
     const draftDownloadMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/download\.(md|html)$/);
     if (draftDownloadMatch && method === "GET") {
