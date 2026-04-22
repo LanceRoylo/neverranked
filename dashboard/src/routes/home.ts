@@ -201,8 +201,17 @@ async function buildWeeklySummary(user: User, env: Env): Promise<string> {
 
   if (metrics.length === 0) return "";
 
+  // Per-card tooltip copy so hovering any KPI number explains what it
+  // measures and why the delta arrow means what it means.
+  const cardTooltips: Record<string, string> = {
+    "AEO Score": "AEO Readiness on a 0-100 scale. Updated every weekly scan. Delta compares this week to last week. Green is up, red is down.",
+    "Citation Share": "Percentage of AI engine answers (ChatGPT, Perplexity, Gemini, Claude) that cite your site when asked about your industry. Measured weekly.",
+    "Search Clicks": "Clicks from Google Search Console in the latest weekly reporting window. Delta compares to the previous week. Data is delayed ~3 days.",
+    "Roadmap": "Percentage of roadmap items marked done across all phases. The fraction shows completed out of total items.",
+  };
+
   const cards = metrics.map(m => `
-    <div style="flex:1;min-width:140px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+    <div style="flex:1;min-width:140px;padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px" title="${esc(cardTooltips[m.label] || m.label)}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint)">${esc(m.label)}</span>
         <span style="font-family:var(--mono);font-size:11px;color:rgba(251,248,239,.3)">${esc(m.icon)}</span>
@@ -214,7 +223,10 @@ async function buildWeeklySummary(user: User, env: Env): Promise<string> {
 
   return `
     <div style="margin-bottom:32px">
-      <div class="label" style="margin-bottom:12px">This Week</div>
+      <div class="label" style="margin-bottom:6px">\u00a7 This week</div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:14px;line-height:1.55;max-width:680px">
+        The four KPIs below update every Monday at 6am UTC. Deltas compare this week to the previous week. Hover any card to see what it measures.
+      </div>
       <div style="display:flex;gap:12px;flex-wrap:wrap">
         ${cards}
       </div>
@@ -552,10 +564,13 @@ async function buildRoiCard(user: User, env: Env): Promise<string> {
 
   return `
     <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,var(--bg-lift) 0%,var(--bg-edge) 100%);border-color:var(--gold-dim)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:16px;flex-wrap:wrap">
         <div>
-          <div class="label" style="margin-bottom:4px;color:var(--gold)">§ Progress to date</div>
-          <h3 style="margin:0;font-style:italic">Since you <em style="color:var(--gold)">started</em></h3>
+          <div class="label" style="margin-bottom:4px;color:var(--gold)">\u00a7 Progress to date</div>
+          <h3 style="margin:0 0 6px;font-style:italic">Since you <em style="color:var(--gold)">started</em></h3>
+          <div style="font-size:12px;color:var(--text-faint);line-height:1.55;max-width:560px">
+            Running totals since your account was created. Citations are tallied from every weekly AI probing run. Search clicks compare the current week to the first week we have on record.
+          </div>
         </div>
         <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);white-space:nowrap">
           ${daysSince} day${daysSince === 1 ? '' : 's'} tracked
