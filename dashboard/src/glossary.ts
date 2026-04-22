@@ -55,13 +55,13 @@ const SCHEDULE = [
     when: "Every day at 6:00 UTC",
     what: "Daily maintenance runs",
     detail:
-      "Stale-roadmap checks, drip emails to new clients, snippet verification, regression alerts, and the automation digest. Most users never need to think about these.",
+      "Stale-roadmap checks, onboarding and nurture drip emails, snippet verification, auto-provision of missing roadmaps, and the automation digest. Also where the monthly and annual recaps below are triggered from (on their specific dates). Most users never need to think about these.",
   },
   {
     when: "Every Monday at 6:00 UTC",
     what: "Weekly AEO update",
     detail:
-      "Full site scan for every tracked domain, citation run across ChatGPT, Perplexity, Gemini, and Claude, Search Console data pull, and the Monday morning brief email to any user who opted in.",
+      "Full site scan for every tracked domain, citation run across ChatGPT, Perplexity, Gemini, and Claude, Search Console data pull, regression alerts if any score dropped significantly, and the Monday morning brief email to any user who opted in.",
   },
   {
     when: "First or second day of every month",
