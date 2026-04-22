@@ -14,6 +14,7 @@ import type { Env, User, VoiceSample, VoiceFingerprint, VoiceFingerprintData } f
 import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
+import { extractVoiceProfile } from "../voice-engine";
 
 export async function handleVoicePage(clientSlug: string, user: User, env: Env, url?: URL): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
@@ -118,6 +119,22 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
     </div>
 
     ${fingerprintCard}
+
+    ${(user.role === "admin" || user.role === "agency_admin") && samples.length > 0 ? `
+      <!-- Build/rebuild profile action. Only admins see this button; the
+           extraction is LLM-backed and a client triggering it on every
+           page load would rack up API costs. -->
+      <div style="margin:16px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <form method="POST" action="/voice/${esc(clientSlug)}/build" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Building\u2026';">
+          <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Uses an Anthropic API call; typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build profile now"}</button>
+        </form>
+        <span style="font-size:11px;color:var(--text-faint);line-height:1.55;max-width:520px">
+          ${fpData
+            ? "Rebuilding reads all current samples and replaces the existing profile. Do this whenever you add or remove a meaningful sample."
+            : "Builds your voice profile from the samples below. Uses an Anthropic API call so it takes ~15 seconds. Admins only."}
+        </span>
+      </div>
+    ` : ""}
 
     <!-- Coverage summary -->
     <div style="margin:24px 0 12px;font-size:12px;color:var(--text-soft);line-height:1.6;max-width:720px">
@@ -334,6 +351,23 @@ export async function handleVoiceSampleCreate(clientSlug: string, request: Reque
     now
   ).run();
 
+  return redirect(`/voice/${slugPath}?fetched=1`);
+}
+
+export async function handleVoiceBuildProfile(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (user.role !== "admin" && user.role !== "agency_admin") {
+    return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
+  }
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  const slugPath = encodeURIComponent(clientSlug);
+  try {
+    await extractVoiceProfile(env, clientSlug);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Failed to build voice profile.";
+    return redirect(`/voice/${slugPath}?fetch_error=${encodeURIComponent(msg)}`);
+  }
   return redirect(`/voice/${slugPath}?fetched=1`);
 }
 

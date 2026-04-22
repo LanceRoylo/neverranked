@@ -32,7 +32,7 @@ import {
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
-import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete } from "./routes/voice";
+import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload } from "./routes/drafts";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
@@ -660,6 +660,10 @@ export default {
     const voiceSampleCreateMatch = path.match(/^\/voice\/([^/]+)\/sample$/);
     if (voiceSampleCreateMatch && method === "POST") {
       return handleVoiceSampleCreate(decodeURIComponent(voiceSampleCreateMatch[1]), request, user, env);
+    }
+    const voiceBuildMatch = path.match(/^\/voice\/([^/]+)\/build$/);
+    if (voiceBuildMatch && method === "POST") {
+      return handleVoiceBuildProfile(decodeURIComponent(voiceBuildMatch[1]), user, env);
     }
     const voiceSampleDeleteMatch = path.match(/^\/voice\/([^/]+)\/sample\/(\d+)\/delete$/);
     if (voiceSampleDeleteMatch && method === "POST") {
