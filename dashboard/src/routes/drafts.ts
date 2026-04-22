@@ -17,6 +17,28 @@ import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
 import { generateDraftInVoice, scoreDraftAgainstProfile } from "../voice-engine";
+import { canUseDraftingFeature } from "../gating";
+
+/** Upgrade nudge for non-Amplify clients landing on /drafts. */
+function renderUpgradeNudge(clientSlug: string, user: User): string {
+  const body = `
+    <div style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
+      <h1>Drafts</h1>
+    </div>
+    <div class="card" style="border:1px solid var(--gold-dim);background:linear-gradient(135deg,var(--bg-lift) 0%,rgba(201,168,76,.04) 100%)">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 Amplify tier feature</div>
+      <h3 style="font-style:italic;margin-bottom:12px">In-dashboard drafting is an <em style="color:var(--gold)">Amplify</em> tier feature</h3>
+      <div style="font-size:13px;color:var(--text-soft);line-height:1.75;max-width:720px;margin-bottom:18px">
+        Voice profile and in-dashboard drafting belong to the Amplify retainer. We learn how you write from samples you upload, then draft articles, FAQs, and landing pages that read like you wrote them. Drafts live in the dashboard with editor, version history, voice score, and export. Nothing leaves your account.
+      </div>
+      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
+      <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
+    </div>
+    ${buildGlossary()}
+  `;
+  return layout("Drafts", body, user, clientSlug);
+}
 
 // ---------- status helpers ----------
 
@@ -44,6 +66,9 @@ const STATUS_HINT: Record<ContentDraftStatus, string> = {
 export async function handleDraftsList(clientSlug: string, user: User, env: Env): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return html(renderUpgradeNudge(clientSlug, user));
   }
 
   const drafts = (await env.DB.prepare(
@@ -140,6 +165,9 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
 export async function handleDraftDetail(clientSlug: string, draftId: number, user: User, env: Env, url?: URL): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return html(renderUpgradeNudge(clientSlug, user));
   }
 
   const draft = await env.DB.prepare(
@@ -301,6 +329,9 @@ export async function handleDraftCreate(clientSlug: string, request: Request, us
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
   }
+  if (!canUseDraftingFeature(user)) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
   const form = await request.formData();
   const title = ((form.get("title") as string) || "").trim() || "Untitled draft";
   const kindRaw = ((form.get("kind") as string) || "article").trim();
@@ -328,6 +359,9 @@ export async function handleDraftGenerate(clientSlug: string, draftId: number, r
   }
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
   }
   const draft = await env.DB.prepare(
     "SELECT id, title, body_markdown FROM content_drafts WHERE id = ? AND client_slug = ?"
@@ -386,6 +420,9 @@ export async function handleDraftCreateAndGenerate(clientSlug: string, request: 
   }
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
   }
   const form = await request.formData();
   const title = ((form.get("title") as string) || "").trim() || "Untitled draft";

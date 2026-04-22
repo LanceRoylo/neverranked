@@ -15,10 +15,44 @@ import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
 import { extractVoiceProfile } from "../voice-engine";
+import { canUseDraftingFeature } from "../gating";
+
+/**
+ * Render the "Amplify-only" upgrade nudge. Shown to clients on Signal or
+ * Audit when they land on /voice or /drafts. Admins and agency_admins
+ * bypass this entirely because they do the work on clients' behalf.
+ */
+function renderUpgradeNudge(title: string, clientSlug: string, user: User): string {
+  const body = `
+    <div style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
+      <h1>${title}</h1>
+    </div>
+
+    <div class="card" style="border:1px solid var(--gold-dim);background:linear-gradient(135deg,var(--bg-lift) 0%,rgba(201,168,76,.04) 100%)">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 Amplify tier feature</div>
+      <h3 style="font-style:italic;margin-bottom:12px">In-dashboard drafting is an <em style="color:var(--gold)">Amplify</em> tier feature</h3>
+      <div style="font-size:13px;color:var(--text-soft);line-height:1.75;max-width:720px;margin-bottom:18px">
+        Voice profile and in-dashboard drafting belong to the Amplify retainer. We learn how you write from samples you upload, then draft articles, FAQs, and landing pages that read like you wrote them. Drafts live in the dashboard with editor, version history, voice score, and export. Nothing leaves your account.
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.6;margin-bottom:20px;max-width:720px">
+        Signal clients get the citation tracking, schema work, monthly brief, and roadmap -- everything that identifies where to write. Amplify adds the drafting that turns the roadmap into finished content.
+      </div>
+      <a href="https://app.neverranked.com/checkout/amplify" class="btn">Upgrade to Amplify</a>
+      <a href="mailto:hello@neverranked.com?subject=Amplify%20upgrade%20question" style="margin-left:14px;font-size:12px;color:var(--gold)">Questions first? Email us &rarr;</a>
+    </div>
+
+    ${buildGlossary()}
+  `;
+  return layout(title, body, user, clientSlug);
+}
 
 export async function handleVoicePage(clientSlug: string, user: User, env: Env, url?: URL): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return html(renderUpgradeNudge("Voice", clientSlug, user));
   }
 
   // Error/info banner passed through URL params so the form can tell the
@@ -84,7 +118,7 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
       <div style="padding:24px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
         <h3 style="margin-bottom:8px;font-style:italic">No samples uploaded yet</h3>
         <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin:0;max-width:640px">
-          Start with three or four pieces of your best existing writing. Paste the full text below and give each one a short title. The voice engine uses these as the ground truth for what "sounds like you."
+          Start with three or four pieces of your best existing writing. Use the form above to paste URLs of published pieces, or expand the fallback to paste text directly. The voice engine uses these as the ground truth for what "sounds like you."
         </p>
       </div>
     `
@@ -147,7 +181,7 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
     <div class="card" style="margin-bottom:32px">
       <div class="label" style="margin-bottom:4px">Add a sample</div>
       <div style="font-size:11px;color:var(--text-faint);margin-bottom:14px;max-width:680px;line-height:1.55">
-        Paste the URL of a piece you've published and we'll fetch it and extract the article body. Works for blog posts, service pages, case studies, anything with a public URL. For drafts or gated content, use "paste the text directly" below.
+        Paste the URL of a piece you've published and we'll fetch it and extract the article body. Works for blog posts, service pages, case studies, anything with a public URL. For drafts or gated content, expand "Or paste the text directly" at the bottom of this card.
       </div>
 
       ${fetchError ? `
@@ -260,6 +294,9 @@ function extractArticleText(htmlDoc: string): { title: string | null; body: stri
 export async function handleVoiceSampleCreate(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return redirect(`/voice/${encodeURIComponent(clientSlug)}`);
   }
   const form = await request.formData();
   const mode = ((form.get("mode") as string) || "fetch").trim();
