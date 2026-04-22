@@ -1481,41 +1481,50 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       });
     }
 
-    // Grade-aware CTA headline and recommended plan highlight
+    // Grade-aware CTA headline and recommended plan highlight. All DOM
+    // references are null-guarded so the post-scan flow never throws when an
+    // element has been removed or hidden (e.g. agency-mode swap).
     var ctaHeadline = document.getElementById('cta-headline');
     var ctaSubtext = document.getElementById('cta-subtext');
     var tierAudit = document.getElementById('cta-tier-audit');
     var tierSignal = document.getElementById('cta-tier-signal');
     var tierAmplify = document.getElementById('cta-tier-amplify');
 
+    function setHeadline(html){ if(ctaHeadline) ctaHeadline.innerHTML = html; }
+    function setSubtext(txt){ if(ctaSubtext) ctaSubtext.textContent = txt; }
+    function setBorder(el, color){ if(el) el.style.borderColor = color; }
+    function recolorBtn(tier, primary){
+      if(!tier) return;
+      var b = tier.querySelector('.btn');
+      if(!b) return;
+      b.className = primary ? 'btn btn-primary' : 'btn btn-ghost-link';
+      b.style.fontSize = '10px';
+      b.style.display = 'inline-block';
+      b.style.marginTop = '8px';
+    }
+
     if(score >= 75){
-      ctaHeadline.innerHTML = "You're ahead. <em>Stay there.</em>";
-      ctaSubtext.textContent = 'AI search indexes refresh weekly. Your score today does not guarantee your score next month. NeverRanked tracks every shift so you never lose ground.';
-      // Highlight Signal as recommended
-      tierSignal.style.borderColor = 'var(--gold)';
+      setHeadline("You're ahead. <em>Stay there.</em>");
+      setSubtext('AI search indexes refresh weekly. Your score today does not guarantee your score next month. NeverRanked tracks every shift so you never lose ground.');
+      setBorder(tierSignal, 'var(--gold)');
     } else if(score >= 50){
-      ctaHeadline.innerHTML = "You're close to the top.<br><em>One push gets you there.</em>";
-      ctaSubtext.textContent = 'You have a foundation. What you need is a roadmap to close the gap and monitoring to make sure you stay there. That is exactly what NeverRanked does.';
-      tierSignal.style.borderColor = 'var(--gold)';
+      setHeadline("You're close to the top.<br><em>One push gets you there.</em>");
+      setSubtext('You have a foundation. What you need is a roadmap to close the gap and monitoring to make sure you stay there. That is exactly what NeverRanked does.');
+      setBorder(tierSignal, 'var(--gold)');
     } else if(score >= 30){
-      ctaHeadline.innerHTML = "Your competitors are already <em>ahead.</em>";
-      ctaSubtext.textContent = 'At this score, AI engines are choosing your competitors every time. The good news: the fixes are known and the path is clear. NeverRanked builds the roadmap and tracks your climb.';
-      // Highlight Amplify for low scores
-      tierSignal.style.borderColor = 'var(--line)';
-      tierAmplify.style.borderColor = 'var(--gold)';
-      var ampBtn = tierAmplify.querySelector('.btn');
-      if(ampBtn){ampBtn.className='btn btn-primary';ampBtn.style.fontSize='10px';ampBtn.style.display='inline-block';ampBtn.style.marginTop='8px';}
-      var sigBtn = tierSignal.querySelector('.btn');
-      if(sigBtn){sigBtn.className='btn btn-ghost-link';sigBtn.style.fontSize='10px';sigBtn.style.display='inline-block';sigBtn.style.marginTop='8px';}
+      setHeadline("Your competitors are already <em>ahead.</em>");
+      setSubtext('At this score, AI engines are choosing your competitors every time. The good news: the fixes are known and the path is clear. NeverRanked builds the roadmap and tracks your climb.');
+      setBorder(tierSignal, 'var(--line)');
+      setBorder(tierAmplify, 'var(--gold)');
+      recolorBtn(tierAmplify, true);
+      recolorBtn(tierSignal, false);
     } else {
-      ctaHeadline.innerHTML = "You are <em>invisible</em> to AI search.";
-      ctaSubtext.textContent = 'AI engines cannot parse your site well enough to cite it. Every week without action, the gap grows. NeverRanked provides the full-service fix: we audit, build the roadmap, and execute.';
-      tierSignal.style.borderColor = 'var(--line)';
-      tierAmplify.style.borderColor = 'var(--gold)';
-      var ampBtn2 = tierAmplify.querySelector('.btn');
-      if(ampBtn2){ampBtn2.className='btn btn-primary';ampBtn2.style.fontSize='10px';ampBtn2.style.display='inline-block';ampBtn2.style.marginTop='8px';}
-      var sigBtn2 = tierSignal.querySelector('.btn');
-      if(sigBtn2){sigBtn2.className='btn btn-ghost-link';sigBtn2.style.fontSize='10px';sigBtn2.style.display='inline-block';sigBtn2.style.marginTop='8px';}
+      setHeadline("You are <em>invisible</em> to AI search.");
+      setSubtext('AI engines cannot parse your site well enough to cite it. Every week without action, the gap grows. NeverRanked provides the full-service fix: we audit, build the roadmap, and execute.');
+      setBorder(tierSignal, 'var(--line)');
+      setBorder(tierAmplify, 'var(--gold)');
+      recolorBtn(tierAmplify, true);
+      recolorBtn(tierSignal, false);
     }
 
     results.classList.add('active');
@@ -1546,8 +1555,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         body:JSON.stringify({email:email,report:lastReportData})
       });
       if(!resp.ok) throw new Error('Failed');
-      emailForm.style.display='none';
-      emailSuccess.style.display='block';
+      if (emailForm) emailForm.style.display='none';
+      if (emailSuccess) emailSuccess.style.display='block';
       // Fire conversion events for retargeting
       if(typeof fbq==='function') fbq('track','Lead');
       if(typeof lintrk==='function') lintrk('track',{conversion_id:0});
