@@ -178,16 +178,18 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
     const age = daysSince(lead.created);
     const scanCount = lead.scans.length;
 
-    // Drip status
+    // Drip status. Never show a bare "Pending" -- always say what it's
+    // waiting on. The drip has fixed day-7 and day-14 sends, so "Pending"
+    // here specifically means "day-3 email is ready but hasn't fired yet."
     let dripStatus = "";
     if (lead.drip_day7_sent) {
-      dripStatus = `<span class="status status-done">Complete</span>`;
+      dripStatus = `<span class="status status-done" title="Day-3 and day-7 drip emails both sent.">Drip complete</span>`;
     } else if (lead.drip_day3_sent) {
-      dripStatus = `<span class="status status-in_progress">Day 3 sent</span>`;
+      dripStatus = `<span class="status status-in_progress" title="Day-3 email fired. Day-7 email will fire automatically on the next daily cron after 7 days since first scan.">Day 3 sent, day 7 queued</span>`;
     } else if (age >= 3) {
-      dripStatus = `<span class="status status-pending">Pending</span>`;
+      dripStatus = `<span class="status status-pending" title="Day-3 email has not fired yet. Usually means this lead was created outside the normal scan flow. Check email-delivery-log.">Day 3 overdue</span>`;
     } else {
-      dripStatus = `<span style="color:var(--text-faint);font-size:11px">Day ${age}</span>`;
+      dripStatus = `<span style="color:var(--text-faint);font-size:11px" title="Drip starts firing on day 3. Currently day ${age} since first scan.">Day ${age} of 14</span>`;
     }
 
     tableRows += `

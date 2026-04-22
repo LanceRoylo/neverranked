@@ -19,11 +19,17 @@ const CATEGORIES: Record<string, string> = {
   custom: "Custom",
 };
 
-const STATUSES: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "var(--text-faint)" },
-  in_progress: { label: "In Progress", color: "var(--yellow)" },
-  done: { label: "Done", color: "var(--green)" },
-  blocked: { label: "Blocked", color: "var(--red)" },
+// Status labels used on roadmap item rows. "Pending" was the original value
+// but it read as ambiguous to clients ("pending what? a decision? a scan?")
+// so we use "To do" which is unmistakable. "In Progress" stays because
+// clients already understand it from task managers. Tooltip text on each
+// label explains exactly what it means so agency owners forwarding the
+// roadmap never have to answer "what's in progress?" for their clients.
+const STATUSES: Record<string, { label: string; color: string; hint: string }> = {
+  pending: { label: "To do", color: "var(--text-faint)", hint: "Not started. The system added this fix to your roadmap after a scan." },
+  in_progress: { label: "In progress", color: "var(--yellow)", hint: "You started this item. Mark it done when the change is shipped, or reopen later." },
+  done: { label: "Done", color: "var(--green)", hint: "Completed. The next weekly scan will re-verify the fix is still in place." },
+  blocked: { label: "Blocked", color: "var(--red)", hint: "Paused because something external is in the way. Leave a note so we can help unblock." },
 };
 
 const PHASE_TEMPLATES: { title: string; subtitle: string; description: string }[] = [
@@ -449,8 +455,8 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
               <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Regenerate</button>
             </form>
             ${allItems.some(i => i.status === "pending") ? `
-              <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/bulk-start" onsubmit="return confirm('Start all pending items in the active phase?')">
-                <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Start all pending</button>
+              <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/bulk-start" onsubmit="return confirm('Mark every To-do item in the active phase as In-progress?')">
+                <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px" title="Flips every To-do item in the active phase to In-progress so the client can start checking them off.">Start all to-dos</button>
               </form>
             ` : ''}
           </div>
@@ -463,8 +469,18 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
     </div>
 
     <!-- Context -->
-    <div class="narrative-context" style="margin-bottom:32px">
+    <div class="narrative-context" style="margin-bottom:24px">
       ${buildRoadmapNarrative(totalItems, totalDone, completedPhases, updatedPhases.length, allItems)}
+    </div>
+
+    <!-- How this page works. Every roadmap opens with the same question:
+         "what am I looking at and what am I supposed to do?" This card
+         answers that in one read so users stop guessing at status labels. -->
+    <div style="margin-bottom:32px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 How this roadmap works</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.65;max-width:780px">
+        Every item here was added by the system based on scans of your site. Work through them in phase order. Click the checkbox to mark an item <strong style="color:var(--text);font-weight:500">done</strong> once you ship the fix. The next weekly scan will re-verify it. Items you start but haven't shipped are <strong style="color:var(--text);font-weight:500">in progress</strong>. Items you can't complete right now stay in <strong style="color:var(--text);font-weight:500">to do</strong> until you're ready. Phases unlock sequentially so you can focus without being overwhelmed.
+      </div>
     </div>
 
     ${journeyHtml}
@@ -651,7 +667,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
                 ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
               </form>
             ` : item.status !== "done" ? `
-              <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px">${st.label}</span>
+              <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px" title="${esc(st.hint)}">${st.label}</span>
             ` : ""}
           </div>
         </div>
