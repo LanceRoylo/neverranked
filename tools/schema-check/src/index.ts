@@ -1719,56 +1719,67 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   //     block so the prospect talks to the agency, not us
   //   - keep everything else (scan, grade, insights, signals) intact because
   //     that is the product value the agency is reselling
+  //
+  // The entire block is wrapped in try/catch so a DOM lookup failure here
+  // can never prevent the primary Run Check handler from wiring up below.
+  // Our failures should never take down the main tool.
   var _agency = null;
-  var _refName = _sp.get('ref_name');
-  if (_refName) {
-    _agency = {
-      name: _refName,
-      email: _sp.get('ref_email') || '',
-      phone: _sp.get('ref_phone') || '',
-      website: _sp.get('ref_website') || ''
-    };
-    document.body.classList.add('agency-mode');
-    var banner = document.getElementById('agency-banner');
-    var bannerName = document.getElementById('agency-banner-name');
-    var bannerCta = document.getElementById('agency-banner-cta');
-    if (banner && bannerName) {
-      bannerName.textContent = _agency.name;
-      banner.style.display = 'block';
-    }
-    if (bannerCta) {
-      if (_agency.email) {
-        bannerCta.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
-      } else if (_agency.website) {
-        bannerCta.href = _agency.website;
-        bannerCta.setAttribute('target','_blank');
-        bannerCta.setAttribute('rel','noopener');
-      } else {
-        bannerCta.style.display = 'none';
+  try {
+    var _refName = _sp.get('ref_name');
+    if (_refName) {
+      _agency = {
+        name: _refName,
+        email: _sp.get('ref_email') || '',
+        phone: _sp.get('ref_phone') || '',
+        website: _sp.get('ref_website') || ''
+      };
+      document.body.classList.add('agency-mode');
+      var banner = document.getElementById('agency-banner');
+      var bannerName = document.getElementById('agency-banner-name');
+      var bannerCta = document.getElementById('agency-banner-cta');
+      if (banner && bannerName) {
+        bannerName.textContent = _agency.name;
+        banner.style.display = 'block';
+      }
+      if (bannerCta) {
+        if (_agency.email) {
+          bannerCta.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+        } else if (_agency.website) {
+          bannerCta.href = _agency.website;
+          bannerCta.setAttribute('target','_blank');
+          bannerCta.setAttribute('rel','noopener');
+        } else {
+          bannerCta.style.display = 'none';
+        }
+      }
+      // Also populate the bottom-of-page agency CTA card (shown when the
+      // NeverRanked pricing tiers are hidden by body.agency-mode CSS).
+      var ctaName = document.getElementById('agency-cta-name');
+      var ctaBtn = document.getElementById('agency-cta-btn');
+      var ctaContact = document.getElementById('agency-cta-contact');
+      if (ctaName) ctaName.textContent = _agency.name;
+      if (ctaBtn) {
+        if (_agency.email) {
+          ctaBtn.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+        } else if (_agency.website) {
+          ctaBtn.href = _agency.website;
+          ctaBtn.setAttribute('target','_blank');
+          ctaBtn.setAttribute('rel','noopener');
+        } else {
+          ctaBtn.style.display = 'none';
+        }
+      }
+      if (ctaContact) {
+        var contactBits = [];
+        if (_agency.email) contactBits.push(_agency.email);
+        if (_agency.phone) contactBits.push(_agency.phone);
+        ctaContact.textContent = contactBits.join(' · ');
       }
     }
-    // Also populate the bottom-of-page agency CTA card (shown when the
-    // NeverRanked pricing tiers are hidden by body.agency-mode CSS).
-    var ctaName = document.getElementById('agency-cta-name');
-    var ctaBtn = document.getElementById('agency-cta-btn');
-    var ctaContact = document.getElementById('agency-cta-contact');
-    if (ctaName) ctaName.textContent = _agency.name;
-    if (ctaBtn) {
-      if (_agency.email) {
-        ctaBtn.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
-      } else if (_agency.website) {
-        ctaBtn.href = _agency.website;
-        ctaBtn.setAttribute('target','_blank');
-        ctaBtn.setAttribute('rel','noopener');
-      } else {
-        ctaBtn.style.display = 'none';
-      }
-    }
-    if (ctaContact) {
-      var contactBits = [];
-      if (_agency.email) contactBits.push(_agency.email);
-      if (_agency.phone) contactBits.push(_agency.phone);
-      ctaContact.textContent = contactBits.join(' · ');
+  } catch (e) {
+    // Never let agency-mode setup block the core Run Check flow
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('Agency mode setup failed:', e);
     }
   }
 
