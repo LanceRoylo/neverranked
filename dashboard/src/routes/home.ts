@@ -5,6 +5,7 @@
 import type { Env, User, Domain, ScanResult, GscSnapshot, CitationSnapshot } from "../types";
 import { layout, html, esc, safeParse } from "../render";
 import { getGoogleAuthUrl } from "../gsc";
+import { buildStatusCard } from "../status";
 
 interface HomeGscData {
   clicks: number;
@@ -740,6 +741,8 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     const grade = scan ? scan.grade : "?";
     const redFlagCount = scan ? safeParse<string[]>(scan.red_flags, []).length : 0;
     const scanDate = scan ? new Date(scan.scanned_at * 1000).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "No scans yet";
+    const nowSec = Math.floor(Date.now() / 1000);
+    const scanAgeDays = scan ? Math.floor((nowSec - scan.scanned_at) / 86400) : null;
 
     // Score delta vs previous scan
     let deltaHtml = "";
@@ -754,9 +757,52 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       }
     }
 
+    // Domain health classification. Logic:
+    //   - no scan yet -> "First scan pending"
+    //   - scan within 10 days AND red flags <= 2 AND (score >= 70 OR score null) -> Healthy
+    //   - scan stale (>10 days) -> Stale (will self-heal on next Monday)
+    //   - red flags > 4 OR score < 50 -> Needs attention
+    //   - otherwise -> Watch
+    //
+    // Status is used both for the colored dot and the short reason line so
+    // the agency owner can skim a list of 10 domains and instantly see which
+    // ones are on fire vs which are fine.
+    let healthDot = "var(--text-faint)";
+    let healthLabel = "";
+    let healthReason = "";
+    if (!scan) {
+      healthDot = "var(--gold)";
+      healthLabel = "First scan pending";
+      healthReason = "Your first scan will run automatically on the next weekly update (see Status at the top of the page).";
+    } else if (scanAgeDays !== null && scanAgeDays > 10) {
+      healthDot = "var(--gold)";
+      healthLabel = "Scan is stale";
+      healthReason = "Last scan was " + scanAgeDays + " days ago. A fresh scan fires on the next Monday 6am UTC run. You can also trigger a manual re-scan from the domain page.";
+    } else if (redFlagCount > 4 || (score !== null && score < 50)) {
+      healthDot = "var(--red,#c96a6a)";
+      healthLabel = "Needs attention";
+      healthReason = "Multiple red flags or a low AEO score. Open the domain to see the fixes the system has queued on the roadmap.";
+    } else if (redFlagCount > 2 || (score !== null && score < 70)) {
+      healthDot = "var(--gold)";
+      healthLabel = "Watch";
+      healthReason = "A few signals are weak. The next weekly scan will re-check and the roadmap will update accordingly.";
+    } else {
+      healthDot = "var(--green,#6a9a6a)";
+      healthLabel = "Healthy";
+      healthReason = "AEO score is solid, red flags are minimal, and the scan is fresh. The system keeps watch and re-scans weekly.";
+    }
+
+    const scanAgeLabel = scanAgeDays === null
+      ? "No scan yet"
+      : scanAgeDays === 0
+        ? "Scanned today"
+        : scanAgeDays === 1
+          ? "Scanned yesterday"
+          : "Scanned " + scanAgeDays + " days ago";
+
     domainCards.push(`
       <a href="/domain/${d.id}" class="card" style="display:block;text-decoration:none">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:14px">
           <div>
             <div class="label" style="margin-bottom:6px">${esc(d.client_slug)}</div>
             <h3 style="font-style:italic">${esc(d.domain)}</h3>
@@ -766,9 +812,21 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
             <div class="grade grade-${grade}">${grade}</div>
           </div>
         </div>
+
+        <!-- Domain health strip: single-line status so a reader skimming
+             a list of 10 client domains can triage at a glance. The reason
+             text below explains the dot in plain English. -->
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg-edge);border-radius:3px;margin-bottom:12px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${healthDot};flex-shrink:0"></span>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--text);font-weight:500">${healthLabel}</span>
+          <span style="color:var(--line-strong)">&middot;</span>
+          <span style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">${scanAgeLabel}</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-faint);line-height:1.55;margin-bottom:14px;max-width:680px">${healthReason}</div>
+
         <div style="display:flex;gap:24px;font-size:12px;color:var(--text-faint);flex-wrap:wrap">
-          ${score !== null ? `<span>Score: <strong style="color:var(--text);font-weight:400">${score}/100</strong></span>` : ''}
-          <span>Red flags: <strong style="color:${redFlagCount > 4 ? 'var(--red)' : 'var(--text)'};font-weight:400">${redFlagCount}</strong></span>
+          ${score !== null ? `<span title="AEO Readiness score. Higher is better. 90+ is an A grade, 75-89 is B, 60-74 is C.">Score: <strong style="color:var(--text);font-weight:400">${score}/100</strong></span>` : ''}
+          <span title="Signals the scanner flagged as structural issues (missing schema, bad canonical, etc). Fewer is better.">Red flags: <strong style="color:${redFlagCount > 4 ? 'var(--red)' : 'var(--text)'};font-weight:400">${redFlagCount}</strong></span>
           <span>Last scan: ${scanDate}</span>
           ${(() => {
             const gsc = gscMap.get(d.client_slug);
@@ -779,7 +837,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
               if (diff > 0) clicksDelta = ' <span style="color:var(--green)">+' + diff + '</span>';
               else if (diff < 0) clicksDelta = ' <span style="color:var(--red)">' + diff + '</span>';
             }
-            return '<span style="border-left:1px solid var(--line);padding-left:12px">Search: <strong style="color:var(--text);font-weight:400">' + gsc.clicks + ' clicks</strong>' + clicksDelta + ' / ' + gsc.impressions.toLocaleString() + ' imp</span>';
+            return '<span style="border-left:1px solid var(--line);padding-left:12px" title="Clicks and impressions from Google Search in the last reporting week.">Search: <strong style="color:var(--text);font-weight:400">' + gsc.clicks + ' clicks</strong>' + clicksDelta + ' / ' + gsc.impressions.toLocaleString() + ' imp</span>';
           })()}
         </div>
       </a>
@@ -826,6 +884,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       </div>
     </div>
 
+    ${await buildStatusCard(user, env)}
     ${user.role === "client" && user.client_slug ? await buildRoiCard(user, env) : ""}
     ${changeBanner}
     ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
