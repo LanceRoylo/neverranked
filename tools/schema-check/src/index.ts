@@ -1591,12 +1591,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     if(ctaAmplify) ctaAmplify.href = 'https://app.neverranked.com/checkout/amplify?domain='+encodeURIComponent(domain);
     if(ctaPreview) ctaPreview.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
 
-    // Reset email capture
-    emailForm.style.display='flex';
-    emailSuccess.style.display='none';
-    emailBtn.textContent='Send';
-    emailBtn.disabled=false;
-    emailInput.value='';
+    // Reset email capture (guarded — the email-form element was removed from
+    // the HTML when we killed the duplicate capture section; these null-safe
+    // checks keep the post-scan flow from throwing on missing elements).
+    if (emailForm) emailForm.style.display='flex';
+    if (emailSuccess) emailSuccess.style.display='none';
+    if (emailBtn) { emailBtn.textContent='Send'; emailBtn.disabled=false; }
+    if (emailInput) emailInput.value='';
 
     // Email gate: show teaser + hidden-count, or auto-reveal if already captured
     updateEmailGate(data);
