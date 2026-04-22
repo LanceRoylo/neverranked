@@ -1280,7 +1280,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     // prospect scanning /products/foo vs the homepage can see why the score
     // differs when they check the same domain at two different URLs.
     var scannedDisplay = (data.url || data.domain || '')
-      .replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
+      .replace(/^https?:\\/\\//i,'').replace(/^www\\./i,'').replace(/\\/$/,'');
     gradeSection.innerHTML=
       '<div class="grade-circle '+gradeClass+'">'+
         '<span class="letter">'+data.grade+'</span>'+
