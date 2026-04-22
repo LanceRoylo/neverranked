@@ -48,6 +48,10 @@ export function layout(
       <a href="/agency/invites" class="nav-links-item${title === 'Invites' ? ' active' : ''}">Invites</a>
       <a href="/agency/settings" class="nav-links-item${title === 'Agency Settings' ? ' active' : ''}">Settings</a>
       <a href="/agency/billing" class="nav-links-item${title.includes('Agency Billing') ? ' active' : ''}">Billing</a>
+      ${slug ? `
+        <a href="/voice/${slug}" class="nav-links-item${title === 'Voice' ? ' active' : ''}" title="Upload writing samples so drafts sound like this client">Voice</a>
+        <a href="/drafts/${slug}" class="nav-links-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="Content drafts for this client">Drafts</a>
+      ` : ''}
       <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
     `
     : '';

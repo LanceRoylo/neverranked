@@ -85,7 +85,7 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
         <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin:0 0 14px;max-width:640px">
           Drafts appear here automatically once the drafting pipeline (Phase 3 of this feature) is live and a roadmap item triggers a generation. You can also create a draft manually from any roadmap item or citation gap.
         </p>
-        ${user.role === "admin" ? `
+        ${user.role === "admin" || user.role === "agency_admin" ? `
           <form method="POST" action="/drafts/${esc(clientSlug)}/new" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <input type="text" name="title" placeholder="Draft title" required style="flex:1;min-width:260px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
             <select name="kind" style="padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
@@ -99,7 +99,7 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
         ` : ""}
       </div>
     ` : `
-      ${user.role === "admin" ? `
+      ${user.role === "admin" || user.role === "agency_admin" ? `
         <div class="card" style="margin-bottom:20px">
           <div class="label" style="margin-bottom:10px">Create draft manually</div>
           <form method="POST" action="/drafts/${esc(clientSlug)}/new" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -200,7 +200,7 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <input type="hidden" name="status" value="rejected">
           <button type="submit" class="btn btn-ghost" ${status === "rejected" ? "disabled" : ""}>Send back for rewrite</button>
         </form>
-        ${user.role === "admin" ? `
+        ${user.role === "admin" || user.role === "agency_admin" ? `
           <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/delete" onsubmit="return confirm('Delete this draft permanently? This cannot be undone.')" style="margin-left:auto">
             <button type="submit" class="btn btn-ghost" style="color:var(--red,#c96a6a)">Delete</button>
           </form>
@@ -290,7 +290,7 @@ export async function handleDraftStatus(clientSlug: string, draftId: number, req
 }
 
 export async function handleDraftDelete(clientSlug: string, draftId: number, user: User, env: Env): Promise<Response> {
-  if (user.role !== "admin") {
+  if (user.role !== "admin" && user.role !== "agency_admin") {
     return html(layout("Forbidden", `<div class="empty"><h3>Admins only</h3></div>`, user), 403);
   }
   if (!(await canAccessClient(env, user, clientSlug))) {
