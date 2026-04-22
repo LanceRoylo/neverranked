@@ -341,11 +341,14 @@
   section + section{margin-top:44px}
 
   /* print */
-  @page{size:letter;margin:.45in}
+  @page{size:letter;margin:.4in}
   @media print{
-    body{background:white;font-size:10px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    body{background:white;font-size:9.5px;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    /* Let content flow naturally; strip the page wrappers and suppress the
+       second topbar/footnote pair so nothing forces artificial breaks. */
     .page{padding:0;max-width:none;min-height:0;border-top:none !important}
-    .page:first-of-type{page-break-after:always;break-after:page}
+    .page + .page .topbar,.page + .page .footnote{display:none !important}
+    .page + .page{margin-top:0;padding-top:10px}
     .cta-block{background:#f6f2e6;color:var(--ink);border:1px solid var(--line-strong);padding:18px;margin-top:20px}
     .cta-block h2{color:var(--ink);margin-bottom:8px}
     .cta-block p{color:var(--ink-soft);margin-bottom:10px;font-size:10px}
