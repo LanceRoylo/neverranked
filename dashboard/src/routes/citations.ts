@@ -37,6 +37,31 @@ async function buildContentRecommendations(
   const gaps = keywordBreakdown.filter(k => !k.cited);
   if (gaps.length === 0) return "";
 
+  // Pull open roadmap items so we can annotate each gap card with "on
+  // roadmap" when a related work order exists. Matching is fuzzy: we look
+  // for roadmap item titles/descriptions that contain any substantive word
+  // from the gap keyword. This closes the loop between "you are not cited
+  // for X" and "we are working on X" without requiring a foreign key.
+  const openItems = (await env.DB.prepare(
+    `SELECT id, title, description, status FROM roadmap_items
+     WHERE client_slug = ? AND status IN ('pending','in_progress')`
+  ).bind(slug).all<{ id: number; title: string; description: string | null; status: string }>()).results;
+
+  function findMatchingRoadmapItem(keyword: string): { id: number; title: string; status: string } | null {
+    const words = keyword
+      .toLowerCase()
+      .split(/\s+/)
+      .filter(w => w.length >= 4 && !["near", "best", "cost", "vs"].includes(w));
+    if (words.length === 0) return null;
+    for (const item of openItems) {
+      const hay = (item.title + " " + (item.description || "")).toLowerCase();
+      if (words.some(w => hay.includes(w))) {
+        return { id: item.id, title: item.title, status: item.status };
+      }
+    }
+    return null;
+  }
+
   // For each gap keyword, find who IS being cited (from citation_runs)
   interface GapInsight {
     keyword: string;
@@ -98,6 +123,11 @@ async function buildContentRecommendations(
 
   // Build the HTML
   const cards = insights.map(ins => {
+    const match = findMatchingRoadmapItem(ins.keyword);
+    const roadmapBadge = match
+      ? `<a href="/roadmap/${esc(slug)}" style="display:inline-block;margin-top:8px;padding:4px 10px;background:rgba(106,154,106,.14);color:var(--green,#6a9a6a);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px;text-decoration:none" title="A matching roadmap item exists: '${esc(match.title)}' (${match.status === 'in_progress' ? 'in progress' : 'to do'}). Click to open your roadmap.">\u2713 On roadmap \u00b7 ${match.status === 'in_progress' ? 'in progress' : 'to do'}</a>`
+      : `<span style="display:inline-block;margin-top:8px;padding:4px 10px;background:rgba(201,168,76,.10);color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:9px;font-weight:500;border-radius:2px" title="Nothing specifically tied to this keyword on your roadmap yet. It will be added after the next scan's review, or during the next monthly content planning cycle.">Not yet scheduled</span>`;
+
     const competitorList = ins.citedBy.length > 0
       ? '<div style="margin-top:8px;font-size:11px;color:var(--text-faint)">Currently cited: ' +
         ins.citedBy.map(c => '<span style="color:var(--text-mute)">' + esc(c) + '</span>').join(", ") + '</div>'
@@ -106,6 +136,7 @@ async function buildContentRecommendations(
     return '<div style="padding:16px;background:var(--bg-edge);border-radius:4px;border-left:3px solid var(--gold)">' +
       '<div style="font-size:13px;color:var(--text);font-style:italic;margin-bottom:6px">"' + esc(ins.keyword) + '"</div>' +
       '<div style="font-size:12px;color:var(--text-soft);line-height:1.6">' + esc(ins.recommendation) + '</div>' +
+      roadmapBadge +
       competitorList +
       '</div>';
   }).join("");
@@ -116,11 +147,24 @@ async function buildContentRecommendations(
         <div class="label">Content Opportunities</div>
         <div style="font-size:12px;color:var(--text-faint)">${gaps.length} uncited keyword${gaps.length !== 1 ? "s" : ""}</div>
       </div>
-      <div style="font-size:13px;color:var(--text-faint);line-height:1.6;margin-bottom:16px">
+      <div style="font-size:13px;color:var(--text-faint);line-height:1.6;margin-bottom:14px">
         These are queries where AI engines do not cite your brand. Each one is a content opportunity. The recommendations below show what to create and who currently owns the citation.
       </div>
+
+      <!-- How these gaps actually get closed. Spells out the service flow
+           so clients know the work is happening rather than assuming the
+           matrix is just a diagnosis with no action behind it. -->
+      <div style="margin-bottom:18px;padding:14px 16px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.65;max-width:780px">
+        <strong style="color:var(--text);font-weight:500">How these gaps get closed.</strong>
+        Each gap is translated into a roadmap item. On the Signal retainer we fix the schema and draft the content brief; you ship the content. On Amplify we also draft the content for you to approve and publish. Next Monday's citation run re-verifies. The badge under each card below shows whether a matching roadmap item already exists.
+      </div>
+
       <div style="display:flex;flex-direction:column;gap:10px">
         ${cards}
+      </div>
+
+      <div style="margin-top:14px;font-size:11px;color:var(--text-faint);line-height:1.6">
+        See the full list of current work on your <a href="/roadmap/${esc(slug)}" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">roadmap &rarr;</a>
       </div>
     </div>
   `;
