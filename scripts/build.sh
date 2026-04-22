@@ -29,6 +29,7 @@ DIRS=(
   about
   blog
   case-studies
+  for-agencies
   principles
   privacy
   terms
