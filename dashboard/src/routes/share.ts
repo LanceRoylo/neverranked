@@ -243,20 +243,36 @@ export async function handlePublicReport(token: string, env: Env): Promise<Respo
         <div style="font-size:12px;color:var(--text-faint);margin-top:8px">Generated ${scanDate}</div>
       </div>
 
-      <!-- Score + Grade -->
-      <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:48px">
+      <!-- Score + Grade (shared public report; recipient may be a client
+           seeing the AEO score for the first time, so everything is
+           annotated in plain English). -->
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:32px;align-items:start;margin-bottom:40px">
         <div style="text-align:center">
-          <div class="grade grade-${latest.grade}" style="width:100px;height:100px;font-size:52px;margin-bottom:12px">${latest.grade}</div>
-          <div class="score">${latest.aeo_score}<small>/100</small></div>
+          <div class="grade grade-${latest.grade}" style="width:100px;height:100px;font-size:52px;margin-bottom:12px" title="Grade ${latest.grade}. 90+ is A, 75-89 is B, 60-74 is C, 40-59 is D, below 40 is F.">${latest.grade}</div>
+          <div class="score" title="AEO Readiness score: 0-100. Higher is better.">${latest.aeo_score}<small>/100</small></div>
           ${deltaHtml}
         </div>
         <div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;margin-top:8px">
+          <p style="font-size:14px;line-height:1.75;color:var(--text-soft);margin:8px 0 20px;max-width:680px">
+            ${latest.aeo_score >= 90
+              ? "This site is in cite-ready territory. AI engines will confidently use it as a source. The ongoing work is defense: keep the structure fresh and schema coverage from drifting."
+              : latest.aeo_score >= 75
+                ? "Strong foundation with a few specific gaps. The roadmap further down this report shows exactly which fixes move this site from a B into the A range."
+                : latest.aeo_score >= 60
+                  ? "Visible to AI engines but not first-choice yet. When an engine needs a source in this space, competitors with cleaner structure are getting picked first. The roadmap is where to start closing the gap."
+                  : latest.aeo_score >= 40
+                    ? "Real structural issues are costing citations. AI engines are skipping this site for cleaner sources. The fixes are known, ordered by impact, and tracked below."
+                    : "AI engines cannot parse this site well enough to cite it. Every week without action the gap widens while competitors improve. The roadmap starts with the fixes that unlock everything else."}
+          </p>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px">
             ${schemaCoverage.map(s => `
-              <span style="padding:4px 10px;font-family:var(--label);text-transform:uppercase;letter-spacing:.15em;font-size:9px;font-weight:500;border:1px solid;border-radius:2px;${s.present ? 'color:var(--green);border-color:var(--green)' : 'color:var(--text-faint);border-color:var(--line)'}">
+              <span style="padding:4px 10px;font-family:var(--label);text-transform:uppercase;letter-spacing:.15em;font-size:9px;font-weight:500;border:1px solid;border-radius:2px;${s.present ? 'color:var(--green);border-color:var(--green)' : 'color:var(--text-faint);border-color:var(--line)'}" title="${s.present ? 'Found on the site.' : 'Missing -- adding it would earn credit.'}">
                 ${esc(s.type)}
               </span>
             `).join("")}
+          </div>
+          <div style="font-size:11px;color:var(--text-faint);margin-top:10px;line-height:1.6;max-width:680px">
+            Each tag is a schema type AI engines look for. Green means it was found on the site. Faint means it is missing and adding it would earn credit on the next scan.
           </div>
         </div>
       </div>
@@ -531,7 +547,7 @@ function expiredPage(): string {
   <style>body{background:#121212;color:#fbf8ef;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
   .box{text-align:center;max-width:400px;padding:40px}h1{font-style:italic;font-size:28px;margin-bottom:12px}p{color:rgba(251,248,239,.6);font-size:14px;line-height:1.7}
   a{color:#e8c767;text-decoration:none;border-bottom:1px solid rgba(232,199,103,.4)}</style></head>
-  <body><div class="box"><h1>Report expired</h1><p>This report link is no longer active. Contact your account manager for a fresh link, or visit <a href="https://neverranked.com">neverranked.com</a>.</p></div></body></html>`;
+  <body><div class="box"><h1>This report link has expired</h1><p>Share links stay live for 30 days by default. Ask whoever sent you this link to generate a fresh one. They can do it in one click from the domain page on their dashboard.</p><p style="margin-top:16px;font-size:13px;color:#666">Learn more about Never Ranked: <a href="https://neverranked.com">neverranked.com</a></p></div></body></html>`;
 }
 
 function noDataPage(domain: string): string {
@@ -539,5 +555,5 @@ function noDataPage(domain: string): string {
   <style>body{background:#121212;color:#fbf8ef;font-family:Georgia,serif;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0}
   .box{text-align:center;max-width:400px;padding:40px}h1{font-style:italic;font-size:28px;margin-bottom:12px}p{color:rgba(251,248,239,.6);font-size:14px;line-height:1.7}
   a{color:#e8c767;text-decoration:none;border-bottom:1px solid rgba(232,199,103,.4)}</style></head>
-  <body><div class="box"><h1>Report pending</h1><p>The AEO report for ${domain} is still being generated. Check back shortly.</p></div></body></html>`;
+  <body><div class="box"><h1>Report is still generating</h1><p>The AEO report for <strong>${domain}</strong> is still being built from the latest scan. Reports are typically ready within a few minutes of the scan completing. Refresh this page in a minute or two and you should see the full report.</p></div></body></html>`;
 }

@@ -173,12 +173,22 @@ export async function handleAdminGsc(
       <div class="section-sub">Google Search Console integration</div>
     </div>
 
+    <!-- What connecting GSC does. Clients get confused about what they
+         are granting access to and what data shows up after. This card
+         answers both in plain English before they click anything. -->
+    <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 What this integration does</div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:820px">
+        Connecting Google Search Console lets us pull your weekly search performance data (clicks, impressions, top queries) into the dashboard. Access is <strong style="color:var(--text);font-weight:500">read-only</strong>. We cannot change anything in your Google account, cannot see anything outside Search Console, and you can disconnect any time. After connecting, pick which GSC property belongs to which client below. Data appears automatically within a minute of the first pull.
+      </div>
+    </div>
+
     ${error ? `
-    <div class="flash flash-error" style="margin-bottom:24px">Error: ${esc(error)}</div>
+    <div class="flash flash-error" style="margin-bottom:24px">Error connecting to Google: ${esc(error)}. This usually means the OAuth popup was closed before approval, or the Google account signed in does not have access to a verified Search Console property. Try the Connect button again.</div>
     ` : ""}
 
     ${connected ? `
-    <div class="flash" style="margin-bottom:24px">Google account connected successfully.</div>
+    <div class="flash" style="margin-bottom:24px">Google account connected. Pick a property below to link it to a client slug, and we will begin weekly pulls on the next Monday 6am UTC run.</div>
     ` : ""}
 
     ${isPulling ? `
@@ -220,17 +230,20 @@ export async function handleAdminGsc(
     <div class="card">
       <div class="label">Connection</div>
       <div style="display:flex;align-items:center;gap:12px;margin-top:12px">
-        <div style="width:10px;height:10px;border-radius:50%;background:${isConnected ? 'var(--green)' : 'var(--red)'}"></div>
-        <div style="font-size:14px;color:var(--text)">${isConnected ? 'Google account connected' : 'Not connected'}</div>
+        <div style="width:10px;height:10px;border-radius:50%;background:${isConnected ? 'var(--green)' : 'var(--text-faint)'}"></div>
+        <div style="font-size:14px;color:var(--text)">${isConnected ? 'Google account connected' : 'Not connected yet'}</div>
       </div>
       ${!isConnected ? `
       <div style="margin-top:16px">
         <a href="${esc(authUrl)}" class="btn">Connect Google Search Console</a>
       </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-faint);line-height:1.6;max-width:640px">
+        You'll be bounced to Google's consent screen. Pick the Google account that owns the Search Console properties you want to use. The popup may say "unverified app" -- that's expected for small integrations like ours. Proceed anyway.
+      </div>
       ` : `
       <div style="margin-top:12px;font-size:13px;color:var(--text-faint)">
-        ${availableSites.length} site${availableSites.length !== 1 ? 's' : ''} accessible.
-        <a href="${esc(authUrl)}" style="color:var(--gold);margin-left:8px">Reconnect</a>
+        ${availableSites.length} site${availableSites.length !== 1 ? 's' : ''} accessible under this Google account.
+        <a href="${esc(authUrl)}" style="color:var(--gold);margin-left:8px" title="Re-authorize with a different Google account or refresh the token">Reconnect</a>
       </div>
       `}
     </div>

@@ -419,10 +419,10 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         <div class="label" style="margin-bottom:8px">New (7d)</div>
         <div style="font-size:28px;font-weight:600">${purchases7d.length}</div>
       </div>
-      <div class="card" style="text-align:center">
-        <div class="label" style="margin-bottom:8px">Pending apps</div>
+      <div class="card" style="text-align:center" title="Agencies that submitted the reseller application form and are waiting for you to approve or decline.">
+        <div class="label" style="margin-bottom:8px">Agency apps awaiting review</div>
         <div style="font-size:28px;font-weight:600;${(pendingApps?.count || 0) > 0 ? "color:var(--gold)" : "color:var(--text-faint)"}">${pendingApps?.count || 0}</div>
-        <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${(pendingApps?.count || 0) > 0 ? `<a href="/admin/inbox" style="color:var(--gold)">Review &rarr;</a>` : "&nbsp;"}</div>
+        <div style="font-size:11px;color:var(--text-faint);margin-top:4px">${(pendingApps?.count || 0) > 0 ? `<a href="/admin/inbox" style="color:var(--gold)">Review &rarr;</a>` : "none waiting"}</div>
       </div>
       <div class="card" style="text-align:center">
         <div class="label" style="margin-bottom:8px">Free leads</div>
@@ -438,9 +438,12 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     <!-- Action queue -->
     ${(pendingAudits.length > 0 || regressions.length > 0 || neverLoggedIn.length > 0 || (pendingSuggestions?.count || 0) > 0) ? `
     <div class="card" style="margin-bottom:32px;border:1px solid var(--gold-dim)">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
         <h3>Action <em>queue</em></h3>
         <span style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);background:var(--gold-wash);padding:4px 10px;border-radius:2px">${pendingAudits.length + regressions.length + neverLoggedIn.length + (pendingSuggestions?.count || 0)} items</span>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);margin-bottom:18px;max-width:680px;line-height:1.6">
+        Things that need you specifically this week: audits you have not delivered yet, clients whose scores dropped, paid users who have not logged in, and client-submitted competitors waiting on approval.
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${pendingAudits.map(u => `
