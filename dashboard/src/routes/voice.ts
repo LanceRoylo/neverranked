@@ -76,9 +76,19 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
 
   const totalWords = samples.reduce((s, r) => s + (r.word_count || 0), 0);
   const recommendedMinWords = 2000;
+  const readyToBuild = totalWords >= recommendedMinWords && !fpData;
+  const canBuild = user.role === "admin" || user.role === "agency_admin";
   const coverageLabel = totalWords >= recommendedMinWords
     ? `${totalWords.toLocaleString()} words uploaded. Enough for us to build a reliable voice profile (a pattern of how you write that drafts are matched against).`
     : `${totalWords.toLocaleString()} of ${recommendedMinWords.toLocaleString()} words uploaded. Add more samples to sharpen how closely drafts sound like you.`;
+
+  // Inline Build button HTML, reused inside the stub card and (if a
+  // profile already exists) in a small row beneath the profile card.
+  const buildButton = canBuild && samples.length > 0 ? `
+    <form method="POST" action="/voice/${esc(clientSlug)}/build" style="display:inline-block" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Building\u2026';">
+      <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Uses an Anthropic API call; typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
+    </form>
+  ` : "";
 
   const fingerprintCard = fpData
     ? `
@@ -107,11 +117,39 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
         <div style="font-size:11px;color:var(--text-faint);margin-bottom:12px;max-width:720px;line-height:1.55">
           Your profile is a short summary of how you write (tone, rhythm, word choice, what to avoid). We build it from the samples you upload so drafts sound like you and not like AI.
         </div>
-        <div style="font-size:13px;color:var(--text-soft);line-height:1.7;max-width:720px">
-          Your profile builds automatically once the first draft is requested, or when your admin runs "Build profile" (Phase 2 of this feature rolls out shortly). In the meantime, upload as many representative samples as you can. Blog posts, service pages, case studies, emails, podcast transcripts, anything that sounds like you when you write.
+        <div style="font-size:13px;color:var(--text-soft);line-height:1.7;max-width:720px;margin-bottom:16px">
+          ${samples.length === 0
+            ? "Upload samples below first. Start with three or four pieces of your best existing writing."
+            : readyToBuild
+              ? "You have enough samples to build a reliable profile. Click the button below."
+              : `Add more samples below. The profile gets better with more text; aim for ${recommendedMinWords.toLocaleString()}+ words.`}
         </div>
+        ${canBuild && samples.length > 0 ? `
+          <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+            ${buildButton}
+            <span style="font-size:11px;color:var(--text-faint);line-height:1.55;max-width:440px">
+              Builds from the samples below. Uses an Anthropic API call so it takes ~15 seconds. Admins only.
+            </span>
+          </div>
+        ` : ""}
       </div>
     `;
+
+  // Prominent "you're ready" banner when enough samples have been uploaded
+  // but no profile exists yet. Only shown to admins/agency_admins since
+  // they are the ones who can click Build.
+  const readyBanner = readyToBuild && canBuild ? `
+    <div style="margin:0 0 20px;padding:18px 22px;background:linear-gradient(90deg,rgba(201,168,76,.14),rgba(201,168,76,.04));border:1px solid var(--gold);border-radius:4px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <div style="flex:1;min-width:260px">
+        <div class="label" style="margin-bottom:4px;color:var(--gold)">\u00a7 Next step</div>
+        <div style="font-family:var(--serif);font-size:18px;font-style:italic;color:var(--text)">You're ready. <em style="color:var(--gold)">Build your voice profile.</em></div>
+        <div style="font-size:12px;color:var(--text-faint);margin-top:6px;line-height:1.55;max-width:520px">
+          ${totalWords.toLocaleString()} words uploaded \u2014 enough to distill a reliable profile. One click runs the extraction and unlocks drafting in your voice.
+        </div>
+      </div>
+      ${buildButton}
+    </div>
+  ` : "";
 
   const samplesList = samples.length === 0
     ? `
@@ -152,20 +190,16 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
       </div>
     </div>
 
+    ${readyBanner}
+
     ${fingerprintCard}
 
-    ${(user.role === "admin" || user.role === "agency_admin") && samples.length > 0 ? `
-      <!-- Build/rebuild profile action. Only admins see this button; the
-           extraction is LLM-backed and a client triggering it on every
-           page load would rack up API costs. -->
+    ${fpData && canBuild ? `
+      <!-- Rebuild action when a profile already exists -->
       <div style="margin:16px 0 0;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-        <form method="POST" action="/voice/${esc(clientSlug)}/build" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Building\u2026';">
-          <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Uses an Anthropic API call; typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build profile now"}</button>
-        </form>
+        ${buildButton}
         <span style="font-size:11px;color:var(--text-faint);line-height:1.55;max-width:520px">
-          ${fpData
-            ? "Rebuilding reads all current samples and replaces the existing profile. Do this whenever you add or remove a meaningful sample."
-            : "Builds your voice profile from the samples below. Uses an Anthropic API call so it takes ~15 seconds. Admins only."}
+          Rebuilding reads all current samples and replaces the existing profile. Do this whenever you add or remove a meaningful sample.
         </span>
       </div>
     ` : ""}
