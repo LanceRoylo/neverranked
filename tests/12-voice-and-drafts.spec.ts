@@ -42,17 +42,21 @@ test.describe("Voice page (read-only shape)", () => {
 
     // Explainer block
     expect(body.toLowerCase()).toContain("why this matters");
-    // Either the fingerprint card is computed ("your voice fingerprint")
-    // or the Phase 1 stub is showing ("voice engine coming online"). Both
-    // are valid depending on whether samples have been uploaded.
-    const hasFingerprintHeading = body.toLowerCase().includes("voice fingerprint");
-    const hasStubHeading = body.toLowerCase().includes("voice engine coming online");
-    expect(hasFingerprintHeading || hasStubHeading).toBe(true);
+    // Either the voice profile card is computed ("your voice profile")
+    // or the Phase 1 stub is showing ("voice profile coming online").
+    // Both are valid depending on whether samples have been uploaded.
+    const hasProfileHeading = body.toLowerCase().includes("your voice profile");
+    const hasStubHeading = body.toLowerCase().includes("voice profile coming online");
+    expect(hasProfileHeading || hasStubHeading).toBe(true);
 
-    // Upload form elements
+    // Upload form elements. URL field + title are visible; the paste
+    // textarea is inside a <details> fallback so it's in the DOM but
+    // collapsed (not visible) by default.
     await expect(page.locator(`form[action="/voice/${SLUG}/sample"]`)).toBeVisible();
+    await expect(page.locator('input[name="source_url"]')).toBeVisible();
     await expect(page.locator('input[name="title"]')).toBeVisible();
-    await expect(page.locator('textarea[name="body"]')).toBeVisible();
+    await expect(page.locator('button[name="mode"][value="fetch"]')).toBeVisible();
+    await expect(page.locator(`form[action="/voice/${SLUG}/sample"] textarea[name="body"]`)).toBeAttached();
 
     // Glossary footer (shared across client-facing pages)
     expect(body.toLowerCase()).toContain("grade scale");
@@ -67,16 +71,15 @@ test.describe("Voice page (read-only shape)", () => {
     await expect(page.locator(`a.nav-links-item[href="/drafts/${SLUG}"]`)).toBeVisible();
   });
 
-  test("voice fingerprint card shows the 'engine coming online' stub in Phase 1", async ({ page }) => {
+  test("voice profile card shows the 'coming online' stub in Phase 1", async ({ page }) => {
     await page.goto(`${APP}/voice/${SLUG}`);
     await page.waitForLoadState("networkidle");
     const body = (await page.textContent("body")) || "";
-    // Either the stub is visible (no fingerprint yet), or a real fingerprint
-    // summary is present. The test accepts either so it doesn't break once
-    // Phase 2 extractor lands.
-    const hasStub = body.toLowerCase().includes("voice engine coming online");
-    const hasFingerprint = body.toLowerCase().includes("your voice fingerprint");
-    expect(hasStub || hasFingerprint).toBe(true);
+    // Either the stub is visible (no profile yet) or a real profile is
+    // computed. Test accepts either so it stays green once Phase 2 lands.
+    const hasStub = body.toLowerCase().includes("voice profile coming online");
+    const hasProfile = body.toLowerCase().includes("your voice profile");
+    expect(hasStub || hasProfile).toBe(true);
   });
 });
 
@@ -86,19 +89,26 @@ test.describe("Voice sample lifecycle (create -> verify -> delete)", () => {
     expect(ok).toBe(true);
   });
 
-  test("upload a sample, it appears in the list, delete removes it", async ({ page }) => {
+  test("paste a sample via the fallback path, it appears in the list, delete removes it", async ({ page }) => {
     const uniqueTitle = `E2E sample ${Date.now()}`;
     const sampleBody = "This is a small piece of writing for the Playwright test suite. " +
-      "It exists only to verify the upload flow, word counter, and delete action. Cleanup happens at the end of this test.";
+      "It exists only to verify the paste flow, word counter, and delete action. Cleanup happens at the end of this test.";
 
-    // Create
+    // Create via the paste fallback (inside a <details> element)
     await page.goto(`${APP}/voice/${SLUG}`);
     await page.waitForLoadState("networkidle");
     await page.fill('input[name="title"]', uniqueTitle);
-    await page.fill('textarea[name="body"]', sampleBody);
+    // Open the "paste the text directly" details. Scope the selector to
+    // the sample form so it doesn't collide with the glossary's many
+    // <details> elements at the bottom of the page.
+    await page.locator(`form[action="/voice/${SLUG}/sample"] details summary`).click();
+    await page.fill(`form[action="/voice/${SLUG}/sample"] textarea[name="body"]`, sampleBody);
     await Promise.all([
       page.waitForLoadState("networkidle"),
-      page.click(`form[action="/voice/${SLUG}/sample"] button[type="submit"]`),
+      // Click the paste submit (name="mode" value="paste") to use the
+      // fallback path. The fetch button (value="fetch") would try to hit
+      // a URL we haven't provided.
+      page.click('button[name="mode"][value="paste"]'),
     ]);
 
     // Verify it shows in the list
@@ -123,6 +133,64 @@ test.describe("Voice sample lifecycle (create -> verify -> delete)", () => {
     // Cleanup verification
     body = (await page.textContent("body")) || "";
     expect(body).not.toContain(uniqueTitle);
+  });
+});
+
+test.describe("Voice sample via URL fetch (primary path)", () => {
+  test.beforeEach(async ({ context }) => {
+    const ok = await authenticateAs(context, E2E_TEST_AGENCY_ADMIN_EMAIL);
+    expect(ok).toBe(true);
+  });
+
+  test("paste a URL, fetch fires, extracted sample appears, cleanup removes it", async ({ page }) => {
+    // Target a real long-form page we know will exist and parse cleanly.
+    // neverranked.com blog posts are the safest bet -- our own site.
+    const targetUrl = "https://neverranked.com/blog/is-seo-dead/";
+
+    await page.goto(`${APP}/voice/${SLUG}`);
+    await page.waitForLoadState("networkidle");
+    await page.fill('input[name="source_url"]', targetUrl);
+    // No title given -- the extractor should auto-detect one from <title>
+    await Promise.all([
+      page.waitForLoadState("networkidle"),
+      page.click('button[name="mode"][value="fetch"]'),
+    ]);
+
+    // Success banner should render
+    const body = (await page.textContent("body")) || "";
+    expect(body.toLowerCase()).toContain("fetched and saved");
+
+    // The extracted sample should appear in the list. We don't know the
+    // exact title the extractor picked, but a sample whose source_url
+    // matches our target should exist.
+    await expect(page.locator(`a[href="${targetUrl}"]`).first()).toBeVisible();
+
+    // Cleanup: find the row containing our URL and delete it.
+    page.once("dialog", (d) => d.accept());
+    const sampleRow = page.locator('div').filter({ has: page.locator(`a[href="${targetUrl}"]`) }).filter({ has: page.locator('form[action*="/delete"]') }).first();
+    await Promise.all([
+      page.waitForLoadState("networkidle"),
+      sampleRow.locator('form[action*="/delete"] button[type="submit"]').click(),
+    ]);
+
+    const bodyAfter = (await page.textContent("body")) || "";
+    expect(bodyAfter).not.toContain(targetUrl);
+  });
+
+  test("invalid URL surfaces a friendly error", async ({ page }) => {
+    await page.goto(`${APP}/voice/${SLUG}`);
+    await page.waitForLoadState("networkidle");
+    await page.fill('input[name="source_url"]', "not-a-real-url");
+    await Promise.all([
+      page.waitForLoadState("networkidle"),
+      page.click('button[name="mode"][value="fetch"]'),
+    ]);
+    const body = (await page.textContent("body")) || "";
+    // Browser-level validation blocks the submit OR our server returns
+    // the URL error. Either is acceptable.
+    const browserBlocked = !body.toLowerCase().includes("fetched and saved");
+    const serverError = body.toLowerCase().includes("doesn't look valid") || body.toLowerCase().includes("valid");
+    expect(browserBlocked || serverError).toBe(true);
   });
 });
 

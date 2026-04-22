@@ -75,7 +75,7 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
     <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
       <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 How drafts work</div>
       <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:820px">
-        Drafts are articles, FAQs, and landing pages the system generates for you from roadmap items and citation gaps. Each one is calibrated to the voice fingerprint on your <a href="/voice/${esc(clientSlug)}" style="color:var(--gold)">Voice</a> page. Click any draft to edit it, score it, approve it, and copy or download the finished text. Nothing leaves the dashboard.
+        Drafts are articles, FAQs, and landing pages the system generates for you from roadmap items and citation gaps. Each one is written to match the voice profile on your <a href="/voice/${esc(clientSlug)}" style="color:var(--gold)">Voice</a> page (a summary of how you write, learned from samples you upload) so drafts read like you, not like AI. Click any draft to edit it, score it, approve it, and copy or download the finished text. Nothing leaves the dashboard.
       </div>
     </div>
 

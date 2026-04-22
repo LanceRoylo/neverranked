@@ -655,7 +655,7 @@ export default {
     }
     const voiceMatch = path.match(/^\/voice\/([^/]+?)\/?$/);
     if (voiceMatch && method === "GET") {
-      return handleVoicePage(decodeURIComponent(voiceMatch[1]), user, env);
+      return handleVoicePage(decodeURIComponent(voiceMatch[1]), user, env, url);
     }
     const voiceSampleCreateMatch = path.match(/^\/voice\/([^/]+)\/sample$/);
     if (voiceSampleCreateMatch && method === "POST") {
