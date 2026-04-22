@@ -14,6 +14,7 @@ import { html, layout, esc, redirect } from "../render";
 import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
 import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
 import { canAccessClient } from "../agency";
+import { buildGlossary } from "../glossary";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -538,6 +539,8 @@ export async function handleCitations(
       </div>
       ` : ""}
     </div>
+
+    ${buildGlossary()}
 
     <style>
       .delta { font-size:14px; margin-top:4px; display:inline-block }

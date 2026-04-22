@@ -8,6 +8,8 @@ import { generateNarrative } from "../narrative";
 import { scanDomain } from "../scanner";
 import { autoCompleteRoadmapItems } from "../auto-complete";
 import { canAccessClient } from "../agency";
+import { buildGlossary } from "../glossary";
+import { buildDomainStatusStrip } from "../status";
 
 /** Build a getting-started checklist for new clients */
 /**
@@ -1693,6 +1695,14 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     </div>
 
     ${shareFlash}
+    ${buildDomainStatusStrip({
+      domainName: domain.domain,
+      scannedAt: latest ? latest.scanned_at : null,
+      aeoScore: latest && !latest.error ? latest.aeo_score : null,
+      redFlagCount: latest && !latest.error ? safeParse<string[]>(latest.red_flags, []).length : 0,
+      scanError: latest ? latest.error : null,
+      domainId: domain.id,
+    }, user.role)}
     ${user.role !== "admin" ? await buildSetupCompletenessWidget(domain, user, env) : ""}
     ${user.role !== "admin" ? buildMeasurementModeBanner(domain, env) : ""}
     ${user.role !== "admin" ? await (await import("./nps")).renderNpsPromptIfDue(user, env) : ""}
@@ -1707,6 +1717,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     ${await buildContentTopics(domain.client_slug, env)}
     ${await buildCitationTrend(domain.client_slug, env)}
     ${historySection}
+    ${buildGlossary()}
   `;
 
   return html(layout(domain.domain, body, user, domain.client_slug, reportBranding));

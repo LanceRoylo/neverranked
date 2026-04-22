@@ -11,6 +11,7 @@ import { scanDomain } from "../scanner";
 import { canAccessClient } from "../agency";
 import { validateCompetitorSuggestion } from "../competitor-sanity";
 import { logAutomation } from "../automation";
+import { buildGlossary } from "../glossary";
 
 interface ComparisonRow {
   domain: Domain;
@@ -469,6 +470,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     <!-- Add / manage competitors -->
     ${buildAddCompetitorForm(clientSlug)}
     ${buildManageCompetitors(competitors, clientSlug)}
+    ${buildGlossary()}
   `;
 
   return html(layout("Competitors", body, user, clientSlug));

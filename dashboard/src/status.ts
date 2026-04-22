@@ -376,3 +376,88 @@ export async function buildStatusCard(user: User, env: Env): Promise<string> {
   const snapshot = await computeStatus(user, env);
   return renderStatusCard(snapshot);
 }
+
+// ---------- per-domain status (for /domain detail page) ----------
+
+/**
+ * A compact, domain-scoped status strip for the top of /domain/:id. Unlike
+ * the big three-column card on /home, this is a single-line summary so the
+ * detail page stays focused on the scan report itself. It answers:
+ *
+ *   - How healthy is THIS domain?
+ *   - When was it last scanned, when is the next scan?
+ *   - Is anything specifically waiting on the user for this domain?
+ *
+ * Called with the domain row and the latest scan (both already loaded by
+ * the caller, so no redundant DB reads).
+ */
+export interface DomainStatusInputs {
+  domainName: string;
+  scannedAt: number | null; // unix seconds, null if never scanned
+  aeoScore: number | null;
+  redFlagCount: number;
+  scanError: string | null;
+  snippetDetected?: boolean; // if the caller has this info
+  domainId: number;
+}
+
+export function buildDomainStatusStrip(d: DomainStatusInputs, userRole: string): string {
+  const now = Math.floor(Date.now() / 1000);
+  const scanAgeDays = d.scannedAt ? Math.floor((now - d.scannedAt) / 86400) : null;
+  const weekly = nextWeeklyScan();
+
+  // Health classification mirrors the /home card logic so a user who sees
+  // "Healthy" on the home card sees the same word here. Consistency of
+  // language is the entire point of the clarity pass.
+  let healthDot: string;
+  let healthLabel: string;
+  let healthReason: string;
+
+  if (d.scanError) {
+    healthDot = "var(--red,#c96a6a)";
+    healthLabel = "Last scan failed";
+    healthReason = "The most recent scan did not complete successfully. A fresh attempt will fire on the next weekly run. If the error persists, email hello@neverranked.com.";
+  } else if (d.scannedAt === null) {
+    healthDot = "var(--gold)";
+    healthLabel = "First scan pending";
+    healthReason = "This domain has not been scanned yet. The first scan fires automatically on the next weekly run, or you can trigger a manual scan from the button above.";
+  } else if (scanAgeDays !== null && scanAgeDays > 10) {
+    healthDot = "var(--gold)";
+    healthLabel = "Scan is stale";
+    healthReason = "Last scan was " + scanAgeDays + " days ago. A fresh scan fires on the next Monday 6am UTC run. The Rescan button triggers one sooner.";
+  } else if (d.redFlagCount > 4 || (d.aeoScore !== null && d.aeoScore < 50)) {
+    healthDot = "var(--red,#c96a6a)";
+    healthLabel = "Needs attention";
+    healthReason = "Multiple red flags or a low AEO score. Scroll to the roadmap below to see the prioritized fixes the system has queued.";
+  } else if (d.redFlagCount > 2 || (d.aeoScore !== null && d.aeoScore < 70)) {
+    healthDot = "var(--gold)";
+    healthLabel = "Watch";
+    healthReason = "A few signals are weak. The next weekly scan will re-check and the roadmap will update accordingly.";
+  } else {
+    healthDot = "var(--green,#6a9a6a)";
+    healthLabel = "Healthy";
+    healthReason = "AEO score is solid, red flags are minimal, and the scan is fresh. The system keeps watch and re-scans this domain every Monday.";
+  }
+
+  const scanAgeLabel = scanAgeDays === null
+    ? "Not yet scanned"
+    : scanAgeDays === 0
+      ? "Scanned today"
+      : scanAgeDays === 1
+        ? "Scanned yesterday"
+        : "Scanned " + scanAgeDays + " days ago";
+
+  return `
+    <div style="margin-bottom:28px;padding:18px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;border-left:3px solid ${healthDot}">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:8px">
+        <span style="width:10px;height:10px;border-radius:50%;background:${healthDot};flex-shrink:0"></span>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--text);font-weight:500">${healthLabel}</span>
+        <span style="color:var(--line-strong)">&middot;</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">${scanAgeLabel}</span>
+        <span style="color:var(--line-strong)">&middot;</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">Next scan: <span style="color:var(--gold)">${weekly.hint}</span></span>
+      </div>
+      <div style="font-size:12px;color:var(--text-soft);line-height:1.65;max-width:820px">${healthReason}</div>
+    </div>
+  `;
+}

@@ -10,6 +10,7 @@ import type { Env, User, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, redirect, esc } from "../render";
 import { regenerateRoadmap } from "../auto-provision";
 import { canAccessClient } from "../agency";
+import { buildGlossary } from "../glossary";
 
 const CATEGORIES: Record<string, string> = {
   schema: "Schema Markup",
@@ -494,6 +495,8 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
           : `<a href="/roadmap/${esc(clientSlug)}?advanced=1" style="font-size:11px;color:var(--text-faint);text-decoration:none" title="Adds a form to manually create custom roadmap items or phases. Rarely needed -- the auto-generator handles the normal path.">Show advanced (manual add)</a>`}
       </div>
     ` : ""}
+
+    ${buildGlossary()}
   `;
 
   return html(layout("Roadmap", body, user, clientSlug));
