@@ -304,9 +304,9 @@ a.card:hover{border-color:var(--gold-dim)}
   width:10px;
   height:10px;
   border-radius:50%;
-  background:rgba(201,168,76,.12);
+  background:rgba(201,168,76,.14);
   animation-name:nr-dot-fill;
-  animation-duration:1.3s;
+  animation-duration:2.4s;
   animation-timing-function:ease-in-out;
   animation-iteration-count:infinite;
 }
@@ -314,28 +314,28 @@ a.card:hover{border-color:var(--gold-dim)}
    busy row becomes visible every dot is at a different phase.
    Dot 1 at t=0 is fresh, dot 2 is 260ms ahead in cycle, etc. This
    creates the wave from the very first rendered frame. */
-/* Reversed delays so dot 1 reaches the bright peak first, then dot 2,
-   then 3, 4, 5, then cycles. Dot 1 at -0.26s means its animation has
-   been running 0.26s when the row appears -- putting it at 20% of the
-   1.3s cycle, which is the bright-peak window. Dot 5 lags by 1.04s. */
-.nr-dot-row>span:nth-child(1){animation-delay:-.26s}
+/* Delays staggered so dot 1 reaches the bright peak first, then 2, 3,
+   4, 5, then the cycle repeats. Each dot is offset by 20% of the 2.4s
+   cycle (480ms) from the next. Peak keyframe is at 20%, so dot 1 at
+   -0.48s is already at peak when the row appears. */
+.nr-dot-row>span:nth-child(1){animation-delay:-.48s}
 .nr-dot-row>span:nth-child(2){animation-delay:0s}
-.nr-dot-row>span:nth-child(3){animation-delay:-1.04s}
-.nr-dot-row>span:nth-child(4){animation-delay:-.78s}
-.nr-dot-row>span:nth-child(5){animation-delay:-.52s}
-/* Tight single-point peak at 20%. Before/after stays dim. With 5 dots
-   offset by 20% of cycle, exactly one dot is ever at the peak at a
-   time -- no overlap of bright neighbors. */
+.nr-dot-row>span:nth-child(3){animation-delay:-1.92s}
+.nr-dot-row>span:nth-child(4){animation-delay:-1.44s}
+.nr-dot-row>span:nth-child(5){animation-delay:-.96s}
+/* Single soft peak at 20% of the cycle. Ease-in-out on a long 2.4s
+   duration plus gentle scale/glow makes the highlight drift across
+   the row like a slow breath. Ramp spans 0-40%; the rest is dim. */
 @keyframes nr-dot-fill{
-  0%,15%,30%,100%{
-    background:rgba(201,168,76,.12);
+  0%,40%,100%{
+    background:rgba(201,168,76,.14);
     transform:scale(1);
     box-shadow:none;
   }
   20%{
     background:var(--gold);
-    transform:scale(1.6);
-    box-shadow:0 0 12px rgba(201,168,76,.8);
+    transform:scale(1.15);
+    box-shadow:0 0 5px rgba(201,168,76,.4);
   }
 }
 /* Label next to the dot row. Subtle opacity pulse so the text feels
@@ -347,6 +347,40 @@ a.card:hover{border-color:var(--gold-dim)}
 @keyframes nr-label-fade{
   0%,100%{opacity:1}
   50%{opacity:.65}
+}
+
+/* Cycling phase messages. Grid-stack all children in the same cell so
+   the container auto-sizes to the longest phase — no absolute-positioned
+   overflow. Each phase eases in, holds, eases out; delays stagger so
+   exactly one is visible at a time. Pure CSS, no JS. */
+.nr-phases{
+  display:inline-grid;
+  vertical-align:middle;
+}
+.nr-phases>.nr-phase{
+  grid-area:1/1;
+  opacity:0;
+  animation-name:nr-phase-cycle;
+  animation-duration:10s;
+  animation-iteration-count:infinite;
+  animation-timing-function:ease-in-out;
+}
+/* Four phases across a 10s loop = 2.5s each. Negative delays put each
+   phase at the right point in the cycle so 1 lights first, then 2, 3, 4.
+   Blocks with 3 phases just drop the 4th selector. */
+.nr-phases>.nr-phase:nth-child(1){animation-delay:0s}
+.nr-phases>.nr-phase:nth-child(2){animation-delay:-7.5s}
+.nr-phases>.nr-phase:nth-child(3){animation-delay:-5s}
+.nr-phases>.nr-phase:nth-child(4){animation-delay:-2.5s}
+/* Ease in 0-5%, hold 5-20%, ease out 20-25%, stay dark 25-95%, ease back
+   to full by 100%. The wraparound-to-100% keeps the transition between
+   last and first phase smooth instead of snapping. */
+@keyframes nr-phase-cycle{
+  0%{opacity:1}
+  20%{opacity:1}
+  25%{opacity:0}
+  95%{opacity:0}
+  100%{opacity:1}
 }
 
 /* table */

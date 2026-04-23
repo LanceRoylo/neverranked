@@ -89,7 +89,12 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
       <button type="submit" class="btn nr-busy-trigger" data-busy-label="Building\u2026" title="Reads all samples below and distills them into a voice profile. Typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
       <div class="nr-busy">
         <span class="nr-dot-row" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
-        <span class="nr-busy-label">Reading your samples and building the profile&hellip;</span>
+        <span class="nr-busy-label nr-phases">
+          <span class="nr-phase">Reading your samples&hellip;</span>
+          <span class="nr-phase">Finding your cadence&hellip;</span>
+          <span class="nr-phase">Distilling the profile&hellip;</span>
+          <span class="nr-phase">Saving voice fingerprint&hellip;</span>
+        </span>
       </div>
     </form>
   ` : "";
@@ -241,7 +246,11 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
           <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Typically takes 1-3 seconds. We extract the article body and drop navigation, footers, and ads.</span>
           <div class="nr-busy">
             <span class="nr-dot-row" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
-            <span class="nr-busy-label">Fetching the page&hellip;</span>
+            <span class="nr-busy-label nr-phases">
+              <span class="nr-phase">Fetching the page&hellip;</span>
+              <span class="nr-phase">Parsing content&hellip;</span>
+              <span class="nr-phase">Pulling clean text&hellip;</span>
+            </span>
           </div>
         </div>
 

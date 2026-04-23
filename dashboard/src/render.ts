@@ -196,10 +196,8 @@ ${poweredBy}
 <!-- Shared busy-state activator. On form submit:
      - disables the trigger button, swaps its text to data-busy-label
      - hides .nr-idle copy, shows .nr-busy block
-     - cycles through phase messages defined by data-phases on a
-       .nr-phases span (pipe-separated). Each phase runs ~2.2s then
-       advances. The cycling is theater, not literal progress -- its
-       whole job is to keep the screen feeling alive during the wait. -->
+     Phase message cycling inside .nr-phases is pure CSS (see styles.ts);
+     no JS needed here. -->
 <script>
 (function(){
   var triggers=document.querySelectorAll('.nr-busy-trigger');
@@ -214,9 +212,6 @@ ${poweredBy}
       form.querySelectorAll('.nr-idle').forEach(function(el){el.style.display='none'});
       var busy=form.querySelector('.nr-busy');
       if(busy) busy.classList.add('on');
-      // Phase messages cycle via pure CSS keyframes (see .nr-phase in
-      // styles.ts). No JS needed -- keeps working even if timers are
-      // throttled during form submission.
     });
   });
 })();
