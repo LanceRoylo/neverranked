@@ -191,6 +191,37 @@ img,svg{display:block;max-width:100%}
 }
 .sidebar-item .nav-badge{margin-left:auto}
 
+/* ---------- empty-state hero ----------
+   Shared empty-state pattern for pre-setup surfaces (summary before
+   first scan, voice before first sample, etc.). Loud-but-restrained:
+   enough presence to direct the eye, calm enough not to feel like an
+   error state. */
+.empty-hero{
+  background:var(--bg-lift);
+  border:1px solid var(--gold-dim);
+  border-radius:var(--radius);
+  padding:40px 36px;
+  margin-bottom:32px;
+  max-width:720px;
+}
+.empty-hero-eyebrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;
+  font-size:10px;color:var(--gold);margin-bottom:8px;
+}
+.empty-hero-title{
+  font-family:var(--serif);font-size:28px;font-weight:400;
+  color:var(--text);letter-spacing:-.01em;line-height:1.2;margin:0 0 16px;
+}
+.empty-hero-body{
+  font-family:var(--mono);font-size:13px;color:var(--text-faint);
+  line-height:1.7;margin:0 0 24px;
+}
+.empty-hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+@media(max-width:720px){
+  .empty-hero{padding:28px 22px}
+  .empty-hero-title{font-size:22px}
+}
+
 /* ---------- Getting Started checklist ----------
    Persistent card at the top of Dashboard/Agency home. Quiet gold
    framing, progress bar on the right, a stepped ordered list, and a

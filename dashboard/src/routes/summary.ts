@@ -32,9 +32,13 @@ export async function handleSummary(
         <h1>Weekly Summary</h1>
         <div class="section-sub">${esc(slug)}</div>
       </div>
-      <div class="empty">
-        <h3>No domains tracked yet</h3>
-        <p>Once domains are added, this page will show a complete picture of your brand's AI visibility.</p>
+      <div class="empty-hero">
+        <div class="empty-hero-eyebrow">Your audit is on its way</div>
+        <h2 class="empty-hero-title">We're getting ready to measure your AI visibility.</h2>
+        <p class="empty-hero-body">Your AEO score, grade, and what's hurting your visibility will land here once your first scan runs. Scans fire every Monday at 6am UTC. The fastest way to get moving: install the tracking snippet on your site.</p>
+        <div class="empty-hero-actions">
+          <a href="/install" class="btn">Install the snippet &rarr;</a>
+        </div>
       </div>
     `;
     return html(layout("Summary", body, user, slug));

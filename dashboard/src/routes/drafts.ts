@@ -75,6 +75,15 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
     "SELECT * FROM content_drafts WHERE client_slug = ? ORDER BY updated_at DESC"
   ).bind(clientSlug).all<ContentDraft>()).results;
 
+  // When there are no drafts yet, branch the empty-state CTA based on
+  // whether the voice profile is set up. No samples = build profile
+  // first; samples exist = point them at Roadmap where generation is
+  // triggered from individual items.
+  const voiceSampleCount = drafts.length === 0 ? ((await env.DB.prepare(
+    "SELECT COUNT(*) AS cnt FROM voice_samples WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ cnt: number }>())?.cnt || 0) : 0;
+  const hasVoice = voiceSampleCount > 0;
+
   const rows = drafts.map(d => {
     const status = (d.status as ContentDraftStatus) || "draft";
     const scoreLabel = d.voice_score === null
@@ -106,12 +115,23 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
     </div>
 
     ${drafts.length === 0 ? `
-      <div style="padding:24px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
-        <h3 style="margin-bottom:8px;font-style:italic">No drafts yet</h3>
-        <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin:0 0 14px;max-width:640px">
-          Drafts appear here automatically once the drafting pipeline (Phase 3 of this feature) is live and a roadmap item triggers a generation. You can also create a draft manually from any roadmap item or citation gap.
-        </p>
-        ${user.role === "admin" || user.role === "agency_admin" ? `
+      <div class="empty-hero">
+        <div class="empty-hero-eyebrow">No drafts yet</div>
+        <h2 class="empty-hero-title">${hasVoice ? "Generate your first draft from a roadmap item." : "Build your voice profile first."}</h2>
+        <p class="empty-hero-body">${hasVoice
+          ? `Every roadmap item with a content fix can generate a draft automatically &mdash; written to match the voice profile on your Voice page. Open the Roadmap, pick an item, and click <em>Generate draft</em>. It lands here when it's ready.`
+          : `Drafts are articles, FAQs, and landing pages the system generates for you from roadmap items and citation gaps. Every draft is written to match your voice profile so it reads like you, not like AI. Upload a few writing samples first, then drafts can start generating.`
+        }</p>
+        <div class="empty-hero-actions">
+          ${hasVoice
+            ? `<a href="/roadmap/${esc(clientSlug)}" class="btn">Open Roadmap &rarr;</a>`
+            : `<a href="/voice/${esc(clientSlug)}" class="btn">Build voice profile &rarr;</a>`
+          }
+        </div>
+      </div>
+      ${user.role === "admin" || user.role === "agency_admin" ? `
+        <div class="card">
+          <div class="label" style="margin-bottom:10px">Create draft manually</div>
           <form method="POST" action="/drafts/${esc(clientSlug)}/new" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
             <input type="text" name="title" placeholder="Draft title" required style="flex:1;min-width:260px;padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
             <select name="kind" style="padding:8px 12px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
@@ -120,10 +140,10 @@ export async function handleDraftsList(clientSlug: string, user: User, env: Env)
               <option value="service_page">Service page</option>
               <option value="landing">Landing page</option>
             </select>
-            <button type="submit" class="btn">Create blank draft</button>
+            <button type="submit" class="btn btn-ghost">Create blank draft</button>
           </form>
-        ` : ""}
-      </div>
+        </div>
+      ` : ""}
     ` : `
       ${user.role === "admin" || user.role === "agency_admin" ? `
         <div class="card" style="margin-bottom:20px">

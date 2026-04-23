@@ -698,6 +698,14 @@ export async function handleInstallGuide(platform: string, request: Request, _en
     ${gotchasBlock}
 
     ${notesBlock}
+
+    <div style="margin-top:40px;padding:20px 24px;background:var(--bg-edge);border:1px solid var(--gold-dim);border-radius:4px">
+      <div class="label" style="margin-bottom:8px;color:var(--gold)">When it's live</div>
+      <div style="font-size:13px;color:var(--text);line-height:1.7;margin-bottom:14px">
+        Return to your <a href="https://app.neverranked.com" style="color:var(--gold);font-weight:500">Dashboard</a> and your first scan will fire within 24 hours. We push schema fixes to the site automatically from there.
+      </div>
+      <a href="https://app.neverranked.com" style="display:inline-block;padding:10px 18px;background:var(--gold);color:#080808;font-family:var(--label);font-size:11px;text-transform:uppercase;letter-spacing:.16em;text-decoration:none;border-radius:3px">Open Dashboard &rarr;</a>
+    </div>
   `;
 
   return html(publicLayout(

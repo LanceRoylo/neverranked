@@ -162,11 +162,13 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
 
   const samplesList = samples.length === 0
     ? `
-      <div style="padding:24px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
-        <h3 style="margin-bottom:8px;font-style:italic">No samples uploaded yet</h3>
-        <p style="color:var(--text-faint);font-size:13px;line-height:1.7;margin:0;max-width:640px">
-          Start with three or four pieces of your best existing writing. Use the form above to paste URLs of published pieces, or expand the fallback to paste text directly. The voice engine uses these as the ground truth for what "sounds like you."
-        </p>
+      <div class="empty-hero">
+        <div class="empty-hero-eyebrow">Teach us how you write</div>
+        <h2 class="empty-hero-title">Upload three or four pieces of your best writing.</h2>
+        <p class="empty-hero-body">Blog posts, landing pages, newsletters &mdash; whatever sounds most like you. We'll distill the cadence and word choices into a voice profile that every draft we generate will match. Takes about thirty seconds per sample. The engine uses these as the ground truth for what "sounds like you."</p>
+        <div class="empty-hero-actions">
+          <a href="#voice-url-form" class="btn" onclick="setTimeout(function(){var el=document.querySelector('#voice-url-form input[name=source_url]');if(el)el.focus();},50)">Paste your first URL &rarr;</a>
+        </div>
       </div>
     `
     : samples.map(s => `
@@ -238,7 +240,7 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
         </div>
       ` : ""}
 
-      <form method="POST" action="/voice/${esc(clientSlug)}/sample" style="display:flex;flex-direction:column;gap:12px">
+      <form id="voice-url-form" method="POST" action="/voice/${esc(clientSlug)}/sample" style="display:flex;flex-direction:column;gap:12px">
         <input type="url" name="source_url" placeholder="https://example.com/blog/my-article" style="padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
         <input type="text" name="title" placeholder="Title (optional \u2014 we'll use the page title if blank)" style="padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
         <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
