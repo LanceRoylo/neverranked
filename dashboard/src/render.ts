@@ -4,6 +4,7 @@
 
 import { CSS } from "./styles";
 import type { User, BrandingContext } from "./types";
+import { canUseDraftingFeature } from "./gating";
 
 /**
  * Normalize a hex color or CSS color string so we can safely interpolate
@@ -27,70 +28,111 @@ export function layout(
   branding?: BrandingContext,
 ): string {
   const badges = user ? { alerts: user._alertCount || 0, roadmap: user._roadmapInProgress || 0 } : { alerts: 0, roadmap: 0 };
-  // For slug-dependent nav links: use activeSlug if we know which client we're viewing,
-  // otherwise use the user's client_slug, otherwise use bare path (triggers auto-redirect)
+  // For slug-dependent nav links: use activeSlug when we're viewing a
+  // specific client, otherwise fall back to the logged-in user's own
+  // client_slug; admins on list pages use the bare path.
   const slug = activeSlug || user?.client_slug || '';
-  const compHref = slug ? `/competitors/${slug}` : '/competitors';
-  const citeHref = slug ? `/citations/${slug}` : '/citations';
-  const roadHref = slug ? `/roadmap/${slug}` : '/roadmap';
-  const searchHref = slug ? `/search/${slug}` : '/search';
-  const summaryHref = slug ? `/summary/${slug}` : '/summary';
-  const voiceHref = slug ? `/voice/${slug}` : '/voice';
-  const draftsHref = slug ? `/drafts/${slug}` : '/drafts';
-  // Agency admins get a different nav: their lens is the agency, not a
-  // single client. Slug-bound client nav doesn't apply to them (they
-  // manage many clients). This collapses the topbar to the agency
-  // surfaces and the agency dropdown.
+  const slugify = (path: string) => user?.role === 'admin' && !activeSlug ? path : (slug ? `${path}/${slug}` : path);
   const isAgencyAdmin = user?.role === 'agency_admin';
-  const agencyNav = isAgencyAdmin
-    ? `
-      <a href="/agency" class="nav-links-item${title.includes('-- Agency') ? ' active' : ''}">Agency</a>
-      <a href="/agency/invites" class="nav-links-item${title === 'Invites' ? ' active' : ''}">Invites</a>
-      <a href="/agency/settings" class="nav-links-item${title === 'Agency Settings' ? ' active' : ''}">Settings</a>
-      <a href="/agency/billing" class="nav-links-item${title.includes('Agency Billing') ? ' active' : ''}">Billing</a>
-      ${slug ? `
-        <a href="/voice/${slug}" class="nav-links-item${title === 'Voice' ? ' active' : ''}" title="Upload writing samples so drafts sound like this client">Voice</a>
-        <a href="/drafts/${slug}" class="nav-links-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="Content drafts for this client">Drafts</a>
-      ` : ''}
-      <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
-    `
-    : '';
-  const navLinks = user && isAgencyAdmin
-    ? agencyNav
-    : user
-    ? `
-      <a href="/" class="nav-links-item${title === 'Dashboard' ? ' active' : ''}">Dashboard</a>
-      <a href="/alerts" class="nav-links-item${title === 'Alerts' ? ' active' : ''}">${badges.alerts ? '<span class="nav-badge">' + (badges.alerts > 9 ? '9+' : badges.alerts) + '</span>' : ''}Alerts</a>
-      <a href="${user.role === 'admin' ? '/summary' : summaryHref}" class="nav-links-item${title === 'Summary' ? ' active' : ''}">Summary</a>
-      <a href="${user.role === 'admin' ? '/competitors' : compHref}" class="nav-links-item${title === 'Competitors' ? ' active' : ''}">Competitors</a>
-      <a href="${user.role === 'admin' ? '/citations' : citeHref}" class="nav-links-item${title === 'Citations' || title === 'Citation Keywords' ? ' active' : ''}">Citations</a>
-      <a href="${user.role === 'admin' ? '/search' : searchHref}" class="nav-links-item${title === 'Search Performance' || title === 'Search Console' ? ' active' : ''}">Search</a>
-      <a href="${user.role === 'admin' ? '/roadmap' : roadHref}" class="nav-links-item${title === 'Roadmap' ? ' active' : ''}">${badges.roadmap ? '<span class="nav-badge">' + badges.roadmap + '</span>' : ''}Roadmap</a>
-      <a href="${user.role === 'admin' ? '/voice' : voiceHref}" class="nav-links-item${title === 'Voice' ? ' active' : ''}" title="Upload writing samples so drafts sound like you">Voice</a>
-      <a href="${user.role === 'admin' ? '/drafts' : draftsHref}" class="nav-links-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="In-dashboard content drafts, editor, and export">Drafts</a>
-      <a href="${user.role === 'admin' ? '/report' : slug ? '/report/' + slug : '/report'}" class="nav-links-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
-      <a href="/learn" class="nav-links-item${title === 'Learn' ? ' active' : ''}">Learn</a>
-      ${user.role === 'admin' ? `<div class="nav-dropdown">
-        <a href="/admin" class="nav-links-item${title.startsWith('Admin') || title === 'Inject' || title === 'Leads' || title === 'Scan Health' || title === 'Engagement' ? ' active' : ''}">Ops</a>
-        <div class="nav-dropdown-menu">
-          <a href="/admin">Cockpit</a>
-          <a href="/admin/inbox">Inbox</a>
-          <a href="/admin/manage">Manage Clients</a>
-          <a href="/admin/scans">Scan Health</a>
-          <a href="/admin/engagement">Engagement</a>
-          <a href="/admin/leads">Leads</a>
-        </div>
-      </div>` : ''}
-    `
-    : '';
+  const isAdmin = user?.role === 'admin';
+  const canDraft = user ? canUseDraftingFeature(user) : false;
 
-  const userInfo = user
-    ? `<div class="user-info">
-        <a href="/support" style="color:var(--text-faint);text-decoration:none;font-size:12px${title === 'Support' ? ';color:var(--gold)' : ''}">Support</a>
-        <a href="/settings" style="color:var(--text-faint);text-decoration:none;font-size:12px${title === 'Settings' ? ';color:var(--gold)' : ''}">Settings</a>
-        <span>${user.email}</span>
-        <a href="/logout">Sign out</a>
-      </div>`
+  // Badge helpers. Kept compact so the sidebar items don't get noisy.
+  const alertBadge = badges.alerts ? `<span class="nav-badge">${badges.alerts > 9 ? '9+' : badges.alerts}</span>` : '';
+  const roadmapBadge = badges.roadmap ? `<span class="nav-badge">${badges.roadmap}</span>` : '';
+
+  // Active-state helper: returns ' active' if any predicate matches the
+  // current title. Keeps the sidebar markup readable instead of repeating
+  // ternaries everywhere.
+  const active = (...titles: string[]) => titles.some(t => title === t || title.startsWith(t)) ? ' active' : '';
+
+  // Sidebar. Grouped by job-to-be-done (Overview / Measure / Improve /
+  // Learn for clients; Agency / Ops for admin roles). Voice + Drafts are
+  // hidden entirely for clients without the drafting entitlement --
+  // cleaner than a grayed-out upgrade nudge in the nav.
+  const clientSidebar = !isAgencyAdmin && user ? `
+    <nav class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Overview</div>
+        <a href="/" class="sidebar-item${active('Dashboard')}">Dashboard</a>
+        <a href="/alerts" class="sidebar-item${active('Alerts')}">Alerts${alertBadge}</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Measure</div>
+        <a href="${slugify('/summary')}" class="sidebar-item${active('Summary')}">Summary</a>
+        <a href="${slugify('/report')}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
+        <a href="${slugify('/search')}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
+        <a href="${slugify('/competitors')}" class="sidebar-item${active('Competitors')}">Competitors</a>
+        <a href="${slugify('/citations')}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Improve</div>
+        <a href="${slugify('/roadmap')}" class="sidebar-item${active('Roadmap')}">Roadmap${roadmapBadge}</a>
+        ${canDraft ? `<a href="${slugify('/voice')}" class="sidebar-item${active('Voice')}" title="Upload writing samples so drafts sound like you">Voice</a>` : ''}
+        ${canDraft ? `<a href="${slugify('/drafts')}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="In-dashboard content drafts, editor, and export">Drafts</a>` : ''}
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Learn</div>
+        <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+      </div>
+      ${isAdmin ? `
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Ops</div>
+        <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
+        <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
+        <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>
+        <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
+        <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>
+        <a href="/admin/leads" class="sidebar-item${active('Leads')}">Leads</a>
+      </div>` : ''}
+    </nav>` : '';
+
+  const agencySidebar = isAgencyAdmin ? `
+    <nav class="sidebar" id="sidebar" aria-label="Primary">
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Agency</div>
+        <a href="/agency" class="sidebar-item${title.includes('-- Agency') ? ' active' : ''}">Clients</a>
+        <a href="/agency/invites" class="sidebar-item${active('Invites')}">Invites</a>
+        <a href="/agency/billing" class="sidebar-item${title.includes('Agency Billing') ? ' active' : ''}">Billing</a>
+        <a href="/agency/settings" class="sidebar-item${active('Agency Settings')}">Branding</a>
+      </div>
+      ${slug ? `
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Client: ${esc(slug)}</div>
+        <a href="/summary/${slug}" class="sidebar-item${active('Summary')}">Summary</a>
+        <a href="/report/${slug}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
+        <a href="/search/${slug}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
+        <a href="/competitors/${slug}" class="sidebar-item${active('Competitors')}">Competitors</a>
+        <a href="/citations/${slug}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+        <a href="/roadmap/${slug}" class="sidebar-item${active('Roadmap')}">Roadmap${roadmapBadge}</a>
+        <a href="/voice/${slug}" class="sidebar-item${active('Voice')}" title="Upload writing samples for this client">Voice</a>
+        <a href="/drafts/${slug}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="Drafts for this client">Drafts</a>
+      </div>` : ''}
+      <div class="sidebar-section">
+        <div class="sidebar-section-header">Learn</div>
+        <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+      </div>
+    </nav>` : '';
+
+  const sidebar = clientSidebar || agencySidebar;
+
+  // Avatar menu: native <details> gives us click-to-toggle with keyboard
+  // support. Everything chrome-related (email, settings, support, sign
+  // out) lives here so the sidebar can stay focused on product surfaces.
+  const initial = user ? (user.name?.trim()?.[0] || user.email[0] || '?').toUpperCase() : '';
+  const avatarMenu = user
+    ? `<details class="avatar-menu">
+        <summary aria-label="Account menu">
+          <span class="avatar-chip">${esc(initial)}</span>
+          <span class="avatar-caret">&#9662;</span>
+        </summary>
+        <div class="avatar-panel" role="menu">
+          <div class="avatar-panel-email">${esc(user.email)}</div>
+          <a href="/settings" class="${title === 'Settings' ? 'active' : ''}" role="menuitem">Settings</a>
+          <a href="/support" class="${title === 'Support' ? 'active' : ''}" role="menuitem">Support</a>
+          <a href="/logout" role="menuitem">Sign out</a>
+        </div>
+      </details>`
     : '';
 
   // Branding resolution. Default = NeverRanked. Agency branding only
@@ -166,32 +208,34 @@ ${brandStyleOverride}
 <div class="grain" aria-hidden="true"></div>
 
 ${user ? `<header class="topbar">
-  <a href="/" class="mark">${brandMark}</a>
-  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
-  <div class="nav-links">${navLinks}</div>
-  ${userInfo}
-</header>` : ''}
-
-${isAgencyAdmin && activeSlug ? `
-<div style="background:var(--bg-edge);border-bottom:1px solid var(--gold-dim);padding:8px 24px;font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
-  <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-    <span style="color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px">Viewing client</span>
-    <strong style="color:var(--text)">${esc(activeSlug)}</strong>
-    <span class="muted" style="font-size:11px">&middot;</span>
-    <a href="/roadmap/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Roadmap</a>
-    <a href="/citations/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Citations</a>
-    <a href="/search/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Search</a>
-    <a href="/competitors/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Competitors</a>
-    <a href="/report/${esc(activeSlug)}" style="color:var(--text-faint);text-decoration:none;border-bottom:1px solid var(--line)">Report</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-scrim').classList.toggle('on')" aria-label="Menu">&#9776;</button>
+    <a href="/" class="mark">${brandMark}</a>
   </div>
-  <a href="/agency" style="color:var(--gold);text-decoration:none;font-size:11px">&larr; Back to agency dashboard</a>
-</div>
-` : ""}
-
+  ${avatarMenu}
+</header>
+<div class="sidebar-scrim" id="sidebar-scrim" onclick="document.getElementById('sidebar').classList.remove('open');this.classList.remove('on')"></div>
+<div class="app-shell">
+  ${sidebar}
+  <div>
+    ${isAgencyAdmin && activeSlug ? `
+    <div class="client-context">
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <span class="ctx-label">Viewing client</span>
+        <strong style="color:var(--text)">${esc(activeSlug)}</strong>
+      </div>
+      <a href="/agency" style="color:var(--gold);text-decoration:none;font-size:11px">&larr; Back to agency dashboard</a>
+    </div>` : ''}
+    <main class="page">
+    ${body}
+    </main>
+    ${poweredBy}
+  </div>
+</div>` : `
 <main class="page">
 ${body}
 </main>
-${poweredBy}
+${poweredBy}`}
 
 <!-- Shared busy-state activator. On form submit:
      - disables the trigger button, swaps its text to data-busy-label
@@ -214,6 +258,29 @@ ${poweredBy}
       if(busy) busy.classList.add('on');
     });
   });
+
+  // Close the avatar menu when the user clicks anywhere outside it.
+  // Native <details> only toggles on its own <summary>, so without this
+  // the panel hangs open after the cursor moves on.
+  var avatar=document.querySelector('.avatar-menu');
+  if(avatar){
+    document.addEventListener('click',function(e){
+      if(avatar.open && !avatar.contains(e.target)) avatar.open=false;
+    });
+  }
+
+  // On narrow viewports, close the slide-in sidebar after tapping a
+  // nav link so the user lands on the new page instead of the drawer.
+  var sb=document.getElementById('sidebar');
+  var scrim=document.getElementById('sidebar-scrim');
+  if(sb){
+    sb.querySelectorAll('a.sidebar-item').forEach(function(a){
+      a.addEventListener('click',function(){
+        sb.classList.remove('open');
+        if(scrim) scrim.classList.remove('on');
+      });
+    });
+  }
 })();
 </script>
 

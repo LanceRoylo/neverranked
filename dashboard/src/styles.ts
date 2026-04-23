@@ -69,14 +69,20 @@ img,svg{display:block;max-width:100%}
 }
 
 /* nav */
+/* ---------- app shell ----------
+   Hybrid layout: thin sticky topbar (brand + avatar menu) and a grouped
+   left sidebar that owns all product surfaces. Sidebar collapses behind
+   a hamburger on narrow viewports. Content scrolls inside .page.
+*/
 .topbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:16px var(--gutter);
+  padding:14px var(--gutter);
   border-bottom:1px solid var(--line);
-  position:sticky;top:0;z-index:50;
+  position:sticky;top:0;z-index:60;
   background:rgba(18,18,18,.96);
   backdrop-filter:blur(20px);
   -webkit-backdrop-filter:blur(20px);
+  min-height:56px;
 }
 .topbar .mark{
   font-family:var(--serif);font-style:italic;font-size:17px;
@@ -88,70 +94,119 @@ img,svg{display:block;max-width:100%}
   font-family:var(--label);font-style:normal;font-size:8px;
   letter-spacing:.2em;margin-left:3px;vertical-align:super;opacity:.5;
 }
-.topbar .nav-links{
-  display:flex;align-items:center;gap:28px;
-  font-family:var(--label);text-transform:uppercase;
-  letter-spacing:.16em;font-size:11px;
+
+/* Avatar menu in the topbar. Native <details> gives us click-to-toggle
+   disclosure with keyboard support for free -- no custom JS required. */
+.avatar-menu{position:relative}
+.avatar-menu>summary{
+  list-style:none;cursor:pointer;
+  display:inline-flex;align-items:center;gap:10px;
+  padding:6px 10px;border-radius:var(--radius);
+  font-family:var(--mono);font-size:12px;color:var(--text-mute);
+  transition:background .15s,color .15s;
 }
-.topbar .nav-links a{
-  color:var(--text-faint);
-  transition:color .2s;
-  position:relative;
-  padding:4px 0;
+.avatar-menu>summary::-webkit-details-marker{display:none}
+.avatar-menu>summary:hover{background:var(--gold-wash);color:var(--text)}
+.avatar-menu[open]>summary{background:var(--gold-wash);color:var(--text)}
+.avatar-chip{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:26px;height:26px;border-radius:50%;
+  background:var(--gold-wash);color:var(--gold);
+  font-family:var(--serif);font-size:13px;
+  border:1px solid var(--gold-dim);
 }
-.topbar .nav-links a::after{
-  content:'';position:absolute;bottom:-2px;left:0;right:0;
-  height:1px;background:var(--gold);
-  transform:scaleX(0);transform-origin:center;
-  transition:transform .25s var(--ease);
+.avatar-caret{font-size:9px;opacity:.6}
+.avatar-panel{
+  position:absolute;top:calc(100% + 8px);right:0;min-width:240px;
+  background:var(--bg-lift);border:1px solid var(--line-strong);
+  border-radius:var(--radius);
+  box-shadow:0 12px 32px rgba(0,0,0,.45);
+  z-index:70;overflow:hidden;
 }
-.topbar .nav-links a:hover{color:var(--text)}
-.topbar .nav-links a:hover::after{transform:scaleX(1)}
-.topbar .nav-links a.active{color:var(--gold)}
-.topbar .nav-links a.active::after{transform:scaleX(1)}
+.avatar-panel-email{
+  padding:12px 14px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:12px;color:var(--text-faint);
+  word-break:break-all;
+}
+.avatar-panel a{
+  display:block;padding:10px 14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;color:var(--text-mute);
+  border-bottom:1px solid var(--line);
+  transition:background .15s,color .15s;
+}
+.avatar-panel a:last-child{border-bottom:none}
+.avatar-panel a:hover{background:var(--gold-wash);color:var(--text)}
+.avatar-panel a.active{color:var(--gold)}
+
+/* The shell: sidebar column + main column. Grid is cleaner than flex
+   here because we want the sidebar to stay exactly its declared width
+   regardless of content. */
+.app-shell{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  min-height:calc(100vh - 56px);
+}
+.sidebar{
+  position:sticky;top:56px;
+  align-self:start;
+  height:calc(100vh - 56px);
+  overflow-y:auto;
+  border-right:1px solid var(--line);
+  padding:24px 0 32px;
+  background:var(--bg-edge);
+}
+.sidebar-section{margin-bottom:22px}
+.sidebar-section:last-child{margin-bottom:0}
+.sidebar-section-header{
+  padding:0 22px 8px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;
+  font-size:10px;color:var(--text-faint);font-weight:500;
+}
+.sidebar-item{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:10px;padding:9px 22px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;color:var(--text-mute);
+  border-left:2px solid transparent;
+  transition:color .15s,background .15s,border-color .15s;
+}
+.sidebar-item:hover{color:var(--text);background:var(--gold-wash)}
+.sidebar-item.active{
+  color:var(--gold);
+  background:var(--gold-wash);
+  border-left-color:var(--gold);
+}
+.sidebar-item::after{display:none}
 .nav-badge{
   display:inline-flex;align-items:center;justify-content:center;
-  min-width:16px;height:16px;padding:0 4px;
+  min-width:18px;height:18px;padding:0 5px;
   background:var(--red);color:#fff;
   font-family:var(--mono);font-size:9px;font-weight:500;
-  border-radius:8px;margin-right:6px;
+  border-radius:9px;
   letter-spacing:0;text-transform:none;
   line-height:1;
 }
-.nav-dropdown{position:relative}
-.nav-dropdown>.nav-links-item{cursor:pointer}
-.nav-dropdown-menu{
-  display:none;position:absolute;top:calc(100% + 8px);right:0;
-  background:var(--bg-lift);border:1px solid var(--line-strong);
-  min-width:180px;z-index:60;
-  box-shadow:0 8px 24px rgba(0,0,0,.4);
+.sidebar-item .nav-badge{margin-left:auto}
+
+/* Client-context breadcrumb strip for agency admins viewing a specific
+   client. Lives above the main page content, not under the topbar, so
+   it doesn't crowd the brand row. */
+.client-context{
+  background:var(--bg-edge);
+  border-bottom:1px solid var(--gold-dim);
+  padding:10px var(--gutter);
+  font-size:12px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
 }
-/* Invisible hover bridge: fills the 8px gap between the nav link and the
-   menu so the mouse can traverse without losing :hover state. Without
-   this, the dropdown closes the instant the cursor leaves the link. */
-.nav-dropdown-menu::before{
-  content:'';position:absolute;left:0;right:0;top:-8px;height:8px;
+.client-context .ctx-label{
+  color:var(--gold);font-family:var(--label);
+  text-transform:uppercase;letter-spacing:.14em;font-size:10px;
 }
-.nav-dropdown:hover .nav-dropdown-menu{display:block}
-.nav-dropdown-menu a{
-  display:block;padding:10px 16px;
-  font-family:var(--label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
-  color:var(--text-mute);transition:background .15s,color .15s;
-  border-bottom:1px solid var(--line);
-}
-.nav-dropdown-menu a:last-child{border-bottom:none}
-.nav-dropdown-menu a:hover{background:var(--gold-wash);color:var(--text)}
-.nav-dropdown-menu a::after{display:none}
-.topbar .user-info{
-  font-family:var(--mono);font-size:12px;color:var(--text-faint);
-  display:flex;align-items:center;gap:16px;
-}
-.topbar .user-info a{color:var(--text-mute);transition:color .2s}
-.topbar .user-info a:hover{color:var(--gold)}
 
 /* layout */
 .page{
-  max-width:var(--max);margin:0 auto;padding:48px var(--gutter) 80px;
+  max-width:var(--max);margin:0 auto;padding:40px var(--gutter) 80px;
 }
 
 /* headings */
@@ -513,25 +568,24 @@ a.card:hover{border-color:var(--gold-dim)}
   display:none;cursor:pointer;background:none;border:none;padding:8px;
   color:var(--text-faint);font-size:20px;line-height:1;
 }
-@media(max-width:768px){
+@media(max-width:900px){
   .hamburger{display:block}
-  .topbar .nav-links{
-    display:none;position:absolute;top:100%;left:0;right:0;
-    background:rgba(18,18,18,.98);
-    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    border-bottom:1px solid var(--line);
-    padding:8px 24px;flex-direction:column;gap:0;z-index:100;
+  .app-shell{grid-template-columns:1fr}
+  .sidebar{
+    position:fixed;top:56px;left:0;bottom:0;width:260px;
+    transform:translateX(-100%);transition:transform .25s var(--ease);
+    z-index:55;height:auto;
+    background:var(--bg-edge);
+    box-shadow:0 0 0 1px var(--line);
   }
-  .topbar .nav-links.open{display:flex}
-  .topbar .nav-links .nav-links-item{
-    padding:14px 0;border-bottom:1px solid var(--line);font-size:12px;
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-scrim{
+    display:none;position:fixed;inset:56px 0 0 0;
+    background:rgba(0,0,0,.5);z-index:54;
   }
-  .topbar .nav-links .nav-links-item:last-child{border-bottom:none}
-  .topbar .nav-links a::after{display:none}
-  .topbar .user-info{font-size:10px}
-  .topbar{flex-wrap:wrap}
+  .sidebar-scrim.on{display:block}
   .card{padding:20px 18px}
-  .page{padding:32px var(--gutter) 60px}
+  .page{padding:28px var(--gutter) 60px}
   h1{font-size:24px}
 }
 
@@ -550,7 +604,8 @@ a.card:hover{border-color:var(--gold-dim)}
   *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important;color-adjust:exact !important}
   body{background:#fff !important;color:#111 !important;font-size:11px !important}
   th,td{color:#222 !important}
-  .grain,.topbar,.hamburger,.no-print{display:none !important}
+  .grain,.topbar,.sidebar,.sidebar-scrim,.client-context,.hamburger,.no-print{display:none !important}
+  .app-shell{display:block !important}
   body::before{display:none !important}
   .page{padding:0 !important;max-width:100% !important}
   .card,.data-table,table{break-inside:avoid}

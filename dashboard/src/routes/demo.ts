@@ -22,10 +22,12 @@ import {
 // ---------------------------------------------------------------------------
 
 function demoLayout(title: string, body: string, activePage: string): string {
+  const linkBase = "font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;padding:4px 0;transition:color .2s;";
+  const linkFor = (page: string) => `${linkBase}color:${activePage === page ? 'var(--gold)' : 'var(--text-faint)'};`;
   const navLinks = `
-    <a href="/demo/domain" class="nav-links-item${activePage === 'domain' ? ' active' : ''}">Dashboard</a>
-    <a href="/demo/citations" class="nav-links-item${activePage === 'citations' ? ' active' : ''}">Citations</a>
-    <a href="/demo/roadmap" class="nav-links-item${activePage === 'roadmap' ? ' active' : ''}">Roadmap</a>
+    <a href="/demo/domain" style="${linkFor('domain')}">Dashboard</a>
+    <a href="/demo/citations" style="${linkFor('citations')}">Citations</a>
+    <a href="/demo/roadmap" style="${linkFor('roadmap')}">Roadmap</a>
   `;
 
   return `<!doctype html>
@@ -86,11 +88,10 @@ function demoLayout(title: string, body: string, activePage: string): string {
 
 <header class="topbar">
   <a href="/demo/domain" class="mark">Never Ranked<sup>demo</sup></a>
-  <button class="hamburger" onclick="document.querySelector('.nav-links').classList.toggle('open')" aria-label="Menu">&#9776;</button>
-  <div class="nav-links">${navLinks}</div>
-  <div class="user-info">
-    <span style="color:var(--text-faint);font-size:12px">demo@meridiandental.com</span>
-    <a href="https://neverranked.com" style="color:var(--gold);font-size:12px;text-decoration:none">Back to site</a>
+  <div style="display:flex;align-items:center;gap:28px">${navLinks}</div>
+  <div style="font-family:var(--mono);font-size:12px;display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+    <span style="color:var(--text-faint)">demo@meridiandental.com</span>
+    <a href="https://neverranked.com" style="color:var(--gold);text-decoration:none">Back to site</a>
   </div>
 </header>
 
