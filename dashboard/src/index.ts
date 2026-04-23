@@ -36,6 +36,7 @@ import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, hand
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
 import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handlePublishingDelete } from "./routes/publishing";
 import { handleCalendarGet, handleCalendarAdd, handleCalendarSkip } from "./routes/calendar";
+import { handleContentReviewList, handleContentReviewClear } from "./routes/content-review";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -780,6 +781,15 @@ export default {
     const pubDeleteMatch = path.match(/^\/publishing\/([^/]+)\/delete$/);
     if (pubDeleteMatch && method === "POST") {
       return handlePublishingDelete(decodeURIComponent(pubDeleteMatch[1]), user, env);
+    }
+
+    // ---------- Ops content review queue (admin only) ----------
+    if (path === "/admin/content-review" && method === "GET" && user.role === "admin") {
+      return handleContentReviewList(user, env);
+    }
+    const reviewClearMatch = path.match(/^\/admin\/content-review\/(\d+)\/clear$/);
+    if (reviewClearMatch && method === "POST" && user.role === "admin") {
+      return handleContentReviewClear(Number(reviewClearMatch[1]), user, env);
     }
 
     // Citations -- redirect or pick client

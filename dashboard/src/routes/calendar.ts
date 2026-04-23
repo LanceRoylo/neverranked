@@ -52,6 +52,22 @@ function itemCard(item: ScheduledDraft, clientSlug: string): string {
   const draftHref = item.draft_id ? `/drafts/${esc(clientSlug)}/${item.draft_id}` : null;
   const liveHref = item.published_url;
 
+  // Outcome line (Phase C): only rendered for published items. Shows
+  // earned citations since publish, plus peak rank if we have it.
+  let outcomeLine = "";
+  if (item.status === "published" && item.published_at) {
+    const daysLive = Math.max(0, Math.floor((Date.now() / 1000 - item.published_at) / 86400));
+    const earned = item.earned_citations_count || 0;
+    const rankPart = item.rank_peak ? ` &middot; peak rank #${item.rank_peak}` : "";
+    const outcomeColor = earned > 0 ? "var(--green)" : "var(--text-faint)";
+    outcomeLine = `
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--line);font-family:var(--mono);font-size:11px;color:${outcomeColor};line-height:1.5">
+        ${earned > 0 ? `&uarr; ${earned} citation${earned === 1 ? "" : "s"} earned` : "no citations yet"}${rankPart}
+        <span style="color:var(--text-faint)"> &middot; ${daysLive}d live</span>
+      </div>
+    `;
+  }
+
   return `
     <div style="padding:14px 16px;background:var(--bg-lift);border:1px solid var(--line);border-radius:3px;margin-bottom:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
@@ -71,6 +87,7 @@ function itemCard(item: ScheduledDraft, clientSlug: string): string {
         ` : ""}
         ${item.status === "failed" && item.error ? `<span style="color:var(--red);font-size:11px">${esc(item.error).slice(0, 80)}</span>` : ""}
       </div>
+      ${outcomeLine}
     </div>
   `;
 }

@@ -82,6 +82,7 @@ export function layout(
         <div class="sidebar-section-header">Ops</div>
         <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
+        <a href="/admin/content-review" class="sidebar-item${title === 'Content review' ? ' active' : ''}">Content review</a>
         <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>
         <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
         <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>

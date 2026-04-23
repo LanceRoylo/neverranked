@@ -42,6 +42,14 @@ export interface ScheduledDraft {
   published_url: string | null;
   published_at: number | null;
   error: string | null;
+  // Phase C outcome tracking
+  target_keyword_id: number | null;
+  wp_post_id: number | null;
+  outcome_checked_at: number | null;
+  earned_citations_count: number | null;
+  rank_current: number | null;
+  rank_peak: number | null;
+  indexed_at: number | null;
   created_at: number;
   updated_at: number;
 }
