@@ -193,6 +193,37 @@ ${body}
 </main>
 ${poweredBy}
 
+<!-- Shared busy-state activator. Any form that contains a button with
+     class 'nr-busy-trigger' will, on submit, disable the button, swap
+     its text to data-busy-label (default 'Working...'), hide any
+     .nr-idle sibling copy, and show any .nr-busy sibling block. If a
+     .nr-elapsed span exists inside the .nr-busy block it counts up in
+     seconds so the user sees motion even while the page is waiting on
+     a server redirect. -->
+<script>
+(function(){
+  var triggers=document.querySelectorAll('.nr-busy-trigger');
+  triggers.forEach(function(btn){
+    var form=btn.form;
+    if(!form) return;
+    form.addEventListener('submit',function(){
+      var label=btn.getAttribute('data-busy-label')||'Working\u2026';
+      btn.disabled=true;
+      btn.textContent=label;
+      btn.style.opacity='.55';
+      form.querySelectorAll('.nr-idle').forEach(function(el){el.style.display='none'});
+      var busy=form.querySelector('.nr-busy');
+      if(busy) busy.classList.add('on');
+      var elapsed=form.querySelector('.nr-elapsed');
+      if(elapsed){
+        var t0=Date.now();
+        setInterval(function(){elapsed.textContent=Math.round((Date.now()-t0)/1000)+'s'},500);
+      }
+    });
+  });
+})();
+</script>
+
 </body>
 </html>`;
 }

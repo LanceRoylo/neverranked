@@ -85,8 +85,12 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
   // Inline Build button HTML, reused inside the stub card and (if a
   // profile already exists) in a small row beneath the profile card.
   const buildButton = canBuild && samples.length > 0 ? `
-    <form method="POST" action="/voice/${esc(clientSlug)}/build" style="display:inline-block" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Building\u2026';">
-      <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
+    <form method="POST" action="/voice/${esc(clientSlug)}/build" style="display:inline-flex;gap:14px;align-items:center;flex-wrap:wrap">
+      <button type="submit" class="btn nr-busy-trigger" data-busy-label="Building\u2026" title="Reads all samples below and distills them into a voice profile. Typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
+      <div class="nr-busy">
+        <span class="nr-loading-bar" aria-hidden="true"></span>
+        <span>Reading your samples\u2026 <span class="nr-elapsed">0s</span></span>
+      </div>
     </form>
   ` : "";
 
@@ -232,9 +236,13 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
       <form method="POST" action="/voice/${esc(clientSlug)}/sample" style="display:flex;flex-direction:column;gap:12px">
         <input type="url" name="source_url" placeholder="https://example.com/blog/my-article" style="padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
         <input type="text" name="title" placeholder="Title (optional \u2014 we'll use the page title if blank)" style="padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;border-radius:3px">
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <button type="submit" name="mode" value="fetch" class="btn">Fetch and save</button>
-          <span style="font-size:11px;color:var(--text-faint)">Typically takes 1-3 seconds. We extract the article body and drop navigation, footers, and ads.</span>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <button type="submit" name="mode" value="fetch" class="btn nr-busy-trigger" data-busy-label="Fetching\u2026">Fetch and save</button>
+          <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Typically takes 1-3 seconds. We extract the article body and drop navigation, footers, and ads.</span>
+          <div class="nr-busy">
+            <span class="nr-loading-bar" aria-hidden="true"></span>
+            <span>Fetching the page\u2026 <span class="nr-elapsed">0s</span></span>
+          </div>
         </div>
 
         <details style="margin-top:10px;border-top:1px solid var(--line);padding-top:14px">

@@ -229,52 +229,15 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           Optionally give a brief (angle, thesis, key points to cover). The engine reads your voice profile and produces a full markdown draft matching your writing style. Overwrites the body below.
         </div>
         <textarea name="brief" placeholder="Brief (optional). E.g. 'Cover why the author thinks em dashes are overused in marketing, open with the stat that 58% of searches are zero-click, close with our own example.'" rows="4" style="width:100%;padding:10px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:12px;line-height:1.6;border-radius:3px;resize:vertical;margin-bottom:10px"></textarea>
-        <div class="gen-action" style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-          <button type="submit" class="btn gen-btn">Generate draft</button>
-          <span class="gen-idle" style="font-size:11px;color:var(--text-faint)">Takes 10-30 seconds. Requires a voice profile to be built first.</span>
-          <div class="gen-busy" style="display:none;align-items:center;gap:10px;font-family:var(--mono);font-size:12px;color:var(--gold)">
-            <span class="gen-bar" aria-hidden="true"></span>
-            <span>Drafting in your voice\u2026 <span class="gen-elapsed">0s</span></span>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <button type="submit" class="btn nr-busy-trigger" data-busy-label="Drafting\u2026">Generate draft</button>
+          <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Takes 10-30 seconds. Requires a voice profile to be built first.</span>
+          <div class="nr-busy">
+            <span class="nr-loading-bar" aria-hidden="true"></span>
+            <span>Drafting in your voice\u2026 <span class="nr-elapsed">0s</span></span>
           </div>
         </div>
       </form>
-      <style>
-        /* Animated progress bar shown while the generate request is in
-           flight. The page will navigate when the server responds, so the
-           animation just needs to keep moving -- it doesn't represent
-           true progress. */
-        .gen-bar {
-          display:inline-block;
-          width:80px;
-          height:4px;
-          border-radius:2px;
-          background:linear-gradient(90deg,transparent 0%,var(--gold) 50%,transparent 100%);
-          background-size:200% 100%;
-          background-position:100% 0;
-          animation:gen-bar-slide 1.4s linear infinite;
-        }
-        @keyframes gen-bar-slide { to { background-position:-100% 0 } }
-      </style>
-      <script>
-        (function(){
-          var form=document.getElementById('generate-form');
-          if(!form) return;
-          form.addEventListener('submit',function(){
-            var btn=form.querySelector('.gen-btn');
-            var idle=form.querySelector('.gen-idle');
-            var busy=form.querySelector('.gen-busy');
-            var elapsed=form.querySelector('.gen-elapsed');
-            if(btn){btn.disabled=true;btn.textContent='Drafting\u2026';btn.style.opacity='.55';}
-            if(idle) idle.style.display='none';
-            if(busy) busy.style.display='inline-flex';
-            var t0=Date.now();
-            setInterval(function(){
-              if(!elapsed) return;
-              elapsed.textContent=Math.round((Date.now()-t0)/1000)+'s';
-            },500);
-          });
-        })();
-      </script>
     ` : ""}
 
     <!-- Editor -->

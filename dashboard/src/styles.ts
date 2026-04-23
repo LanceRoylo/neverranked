@@ -265,6 +265,61 @@ a.card:hover{border-color:var(--gold-dim)}
 .status-in_progress{color:var(--gold);border-color:var(--gold-dim)}
 .status-complete,.status-done{color:var(--green);border-color:var(--green)}
 
+/* ---------- shared loading widgets ----------
+   Drop-in animated indicators for any long-running action (LLM calls,
+   URL fetches, etc). Visible movement is the whole point -- users need
+   to see obvious motion so they know the page is working, not stuck.
+*/
+.nr-loading-bar{
+  position:relative;
+  display:inline-block;
+  width:140px;
+  height:4px;
+  background:rgba(201,168,76,.14);
+  border-radius:2px;
+  overflow:hidden;
+  vertical-align:middle;
+}
+.nr-loading-bar::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-40%;
+  width:40%;
+  height:100%;
+  background:var(--gold);
+  border-radius:2px;
+  animation:nr-loading-slide 1.15s ease-in-out infinite;
+}
+@keyframes nr-loading-slide{
+  0%{left:-40%}
+  100%{left:100%}
+}
+/* Inline busy row: bar + label + elapsed-time counter. */
+.nr-busy{
+  display:none;
+  align-items:center;
+  gap:12px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--gold);
+}
+.nr-busy.on{display:inline-flex}
+/* Pulsing dot for compact contexts where a 140px bar is too wide. */
+.nr-loading-dot{
+  display:inline-block;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:var(--gold);
+  animation:nr-loading-pulse 1s ease-in-out infinite;
+  vertical-align:middle;
+}
+@keyframes nr-loading-pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.35;transform:scale(.7)}
+}
+
 /* table */
 .data-table{
   width:100%;border-collapse:collapse;
