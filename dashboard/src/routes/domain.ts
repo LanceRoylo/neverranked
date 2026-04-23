@@ -1397,11 +1397,10 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
       ${buildSchemaSnippets(schemaCoverage, domain.domain)}
     `;
   } else if (latest && latest.error) {
-    reportSection = `
-      <div class="flash flash-error" style="margin-bottom:32px">
-        Last scan failed: ${esc(latest.error)}
-      </div>
-    `;
+    // Error detail is already rendered in the domain status strip at the
+    // top of the page (see buildDomainStatusStrip). Intentionally empty
+    // here so we don't duplicate the same message.
+    reportSection = "";
   } else {
     reportSection = `
       <div class="empty" style="padding:32px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;max-width:720px">
@@ -1508,11 +1507,22 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
       ? '<span style="color:var(--red)">' + totalChange + ' pts</span> since ' + first.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
       : 'No net change since ' + first.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 
+    // Subtitle copy: the raw "over N days" math breaks when all scans
+    // landed on the same calendar day. Render a human-readable span and
+    // note hidden failed scans so the graph's silence isn't misleading.
+    const spanDays = Math.round((last.date.getTime() - first.date.getTime()) / 86400000);
+    const spanLabel = spanDays === 0 ? "all today"
+      : spanDays === 1 ? "across 2 days"
+      : `across ${spanDays + 1} days`;
+    const failedCount = history.filter(h => h.error || h.aeo_score === 0).length;
+    const failedNote = failedCount > 0
+      ? ` &middot; <span style="color:var(--red,#c96a6a)">${failedCount} failed ${failedCount === 1 ? 'scan' : 'scans'} hidden</span>`
+      : "";
     trendSection = `
       <div style="margin-bottom:48px">
         <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px">
           <div class="label">Score Trend</div>
-          <div style="font-size:12px;color:var(--text-faint)">${successfulScans.length} scans over ${Math.round((last.date.getTime() - first.date.getTime()) / 86400000)} days</div>
+          <div style="font-size:12px;color:var(--text-faint)">${successfulScans.length} ${successfulScans.length === 1 ? 'scan' : 'scans'} ${spanLabel}${failedNote}</div>
         </div>
         <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;padding:20px;overflow-x:auto">
           <svg viewBox="0 0 ${W} ${H}" width="100%" style="max-width:${W}px;display:block;margin:0 auto">
@@ -1677,7 +1687,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
           <button type="submit" class="btn btn-ghost no-print">Share report</button>
         </form>
         ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}">
-          <button type="submit" class="btn no-print">Run scan</button>
+          <button type="submit" class="btn ${latest && latest.error ? 'btn-ghost' : ''} no-print" title="${latest && latest.error ? 'Last scan failed. Retrying may hit the same issue -- check the error detail above first.' : ''}">Run scan</button>
         </form>` : (() => {
           // Client rescan: rate-limited to once per 24h
           const now = Math.floor(Date.now() / 1000);

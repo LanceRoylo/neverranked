@@ -30,6 +30,7 @@
  */
 
 import type { Env, User } from "./types";
+import { esc } from "./render";
 
 export interface StatusEntry {
   label: string;
@@ -416,7 +417,7 @@ export function buildDomainStatusStrip(d: DomainStatusInputs, userRole: string):
   if (d.scanError) {
     healthDot = "var(--red,#c96a6a)";
     healthLabel = "Last scan failed";
-    healthReason = "The most recent scan did not complete successfully. A fresh attempt will fire on the next weekly run. If the error persists, email hello@neverranked.com.";
+    healthReason = `<span style="color:var(--red,#c96a6a)">Error:</span> ${esc(d.scanError)}. A fresh attempt will fire on the next weekly run. If this keeps happening, email <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a>.`;
   } else if (d.scannedAt === null) {
     healthDot = "var(--gold)";
     healthLabel = "First scan pending";
