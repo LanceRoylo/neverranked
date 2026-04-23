@@ -233,24 +233,8 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <button type="submit" class="btn nr-busy-trigger" data-busy-label="Drafting\u2026">Generate draft</button>
           <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Takes 10-30 seconds. Requires a voice profile to be built first.</span>
           <div class="nr-busy">
-            <span class="nr-loading-bar" aria-hidden="true"></span>
-            <span class="nr-busy-label">
-              ${(() => {
-                const phases = [
-                  "Reading your voice profile",
-                  "Studying your rhythm and vocabulary",
-                  "Outlining the article",
-                  "Drafting the opening",
-                  "Writing the body in your voice",
-                  "Checking for patterns you avoid",
-                  "Polishing transitions",
-                  "Finalizing",
-                ];
-                const perPhase = 2.2; // seconds each phase stays visible
-                const total = phases.length * perPhase;
-                return `<span class="nr-phases-wrap" style="min-width:280px">${phases.map((p, i) => `<span class="nr-phase" style="animation-duration:${total}s;animation-delay:${(i * perPhase).toFixed(2)}s">${p}</span>`).join("")}</span>`;
-              })()}<span class="nr-busy-dots" aria-hidden="true"></span>
-            </span>
+            <span class="nr-dot-row" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+            <span class="nr-busy-label">Drafting in your voice&hellip;</span>
           </div>
         </div>
       </form>

@@ -266,28 +266,10 @@ a.card:hover{border-color:var(--gold-dim)}
 .status-complete,.status-done{color:var(--green);border-color:var(--green)}
 
 /* ---------- shared loading widgets ----------
-   Drop-in animated indicators for any long-running action. Three motion
-   cues running simultaneously -- a rotating spinner, pulsing label, and
-   animated dots -- so it's impossible to mistake for a frozen screen.
+   Row of dots that illuminate in a left-to-right wave, plus a
+   constantly-pulsing container. Pure CSS, driven by the browser
+   compositor, so nothing can pause it.
 */
-.nr-loading-bar{
-  display:inline-block;
-  width:26px;
-  height:26px;
-  border:3px solid rgba(201,168,76,.18);
-  border-top-color:var(--gold);
-  border-right-color:var(--gold);
-  border-radius:50%;
-  animation:nr-spin .7s linear infinite;
-  vertical-align:middle;
-  box-sizing:border-box;
-  flex-shrink:0;
-}
-@keyframes nr-spin{
-  from{transform:rotate(0deg)}
-  to{transform:rotate(360deg)}
-}
-/* Inline busy row: spinner + pulsing label + elapsed-time counter. */
 .nr-busy{
   display:none;
   align-items:center;
@@ -306,77 +288,43 @@ a.card:hover{border-color:var(--gold-dim)}
   0%,100%{background-color:rgba(201,168,76,.08);border-color:var(--gold-dim)}
   50%{background-color:rgba(201,168,76,.18);border-color:var(--gold)}
 }
-.nr-busy-label{
-  animation:nr-label-fade 1.2s ease-in-out infinite;
-  position:relative;
+/* Dot row: 7 dots, each with an animation-delay staggered so the
+   illumination sweeps left-to-right on an infinite loop. Classic
+   'progress' indicator. */
+.nr-dot-row{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+  flex-shrink:0;
+}
+.nr-dot-row>span{
   display:inline-block;
-  min-height:1.2em;
+  width:7px;
+  height:7px;
+  border-radius:50%;
+  background:rgba(201,168,76,.22);
+  animation:nr-dot-fill 1.6s ease-in-out infinite;
+}
+.nr-dot-row>span:nth-child(1){animation-delay:0s}
+.nr-dot-row>span:nth-child(2){animation-delay:.12s}
+.nr-dot-row>span:nth-child(3){animation-delay:.24s}
+.nr-dot-row>span:nth-child(4){animation-delay:.36s}
+.nr-dot-row>span:nth-child(5){animation-delay:.48s}
+.nr-dot-row>span:nth-child(6){animation-delay:.60s}
+.nr-dot-row>span:nth-child(7){animation-delay:.72s}
+@keyframes nr-dot-fill{
+  0%,60%,100%{background:rgba(201,168,76,.22);transform:scale(1)}
+  25%,35%{background:var(--gold);transform:scale(1.35);box-shadow:0 0 6px rgba(201,168,76,.55)}
+}
+/* Label next to the dot row. Subtle opacity pulse so the text feels
+   alive even though it doesn't change. */
+.nr-busy-label{
+  animation:nr-label-fade 1.8s ease-in-out infinite;
+  display:inline-block;
 }
 @keyframes nr-label-fade{
   0%,100%{opacity:1}
-  50%{opacity:.55}
-}
-/* Pure-CSS phase cycler. Each .nr-phase span is absolutely positioned
-   and fades in during its assigned window of the total cycle. Driven
-   entirely by the browser compositor, so it keeps moving even if the
-   page is waiting on a form-submit response. */
-.nr-phases-wrap{
-  position:relative;
-  display:inline-block;
-  vertical-align:baseline;
-  min-height:1.2em;
-  white-space:nowrap;
-}
-.nr-phase{
-  position:absolute;
-  left:0;
-  top:0;
-  opacity:0;
-  white-space:nowrap;
-  animation-name:nr-phase-show;
-  animation-timing-function:ease-in-out;
-  animation-iteration-count:infinite;
-  animation-fill-mode:both;
-}
-/* Fade-in, hold, fade-out. Visible for ~14% of the cycle with 1% fade
-   windows on each side. The timing works for any number of phases
-   because each phase shares the same keyframes but with its own delay
-   and its own duration = count * 2s. */
-@keyframes nr-phase-show{
-  0%{opacity:0}
-  2%{opacity:1}
-  14%{opacity:1}
-  16%{opacity:0}
-  100%{opacity:0}
-}
-/* Animated dots after the label. Three dots cycling. */
-.nr-busy-dots::after{
-  display:inline-block;
-  width:20px;
-  text-align:left;
-  content:"";
-  animation:nr-dots 1.4s steps(4,end) infinite;
-}
-@keyframes nr-dots{
-  0%{content:""}
-  25%{content:"."}
-  50%{content:".."}
-  75%{content:"..."}
-  100%{content:""}
-}
-/* Compact variant for tight contexts. */
-.nr-loading-dot{
-  display:inline-block;
-  width:8px;
-  height:8px;
-  border-radius:50%;
-  background:var(--gold);
-  animation:nr-loading-pulse 1s ease-in-out infinite;
-  vertical-align:middle;
-}
-@keyframes nr-loading-pulse{
-  0%,100%{opacity:1;transform:scale(1)}
-  50%{opacity:.35;transform:scale(.7)}
+  50%{opacity:.65}
 }
 
 /* table */
