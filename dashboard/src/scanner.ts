@@ -39,16 +39,26 @@ async function attemptScan(url: string): Promise<{ report: Report | null; error:
     if (err instanceof Error && err.name === "AbortError") {
       return { report: null, error: "Timeout (10s)" };
     }
-    return { report: null, error: "Could not reach site" };
+    // Capture the real error name + message instead of a generic
+    // "Could not reach site". This is how we tell DNS failures apart
+    // from TLS failures, connect-refused, Cloudflare intra-zone
+    // loopback issues, etc. -- otherwise every network-layer problem
+    // collapses to the same unhelpful string and we can't debug it.
+    const detail = err instanceof Error
+      ? `${err.name}: ${err.message}`
+      : String(err);
+    console.error(`[scanner] fetch failed for ${url}: ${detail}`);
+    return { report: null, error: `Network: ${detail}` };
   }
 }
 
-// Treat 5xx, timeouts, and "could not reach" as retryable. 4xx, robots.txt
-// blocks, and permanent issues are NOT retryable -- we'd just hammer them.
+// Treat 5xx, timeouts, and network-layer failures as retryable. 4xx,
+// robots.txt blocks, and permanent issues are NOT retryable -- we'd
+// just hammer them.
 function isRetryableError(error: string | null): boolean {
   if (!error) return false;
-  if (error === "Timeout (10s)") return true;
-  if (error === "Could not reach site") return true;
+  if (error.startsWith("Timeout")) return true;
+  if (error.startsWith("Network:")) return true;
   const m = error.match(/^HTTP (\d+)$/);
   if (m) {
     const code = Number(m[1]);
