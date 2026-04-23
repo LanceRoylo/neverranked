@@ -314,11 +314,15 @@ a.card:hover{border-color:var(--gold-dim)}
    busy row becomes visible every dot is at a different phase.
    Dot 1 at t=0 is fresh, dot 2 is 260ms ahead in cycle, etc. This
    creates the wave from the very first rendered frame. */
-.nr-dot-row>span:nth-child(1){animation-delay:0s}
-.nr-dot-row>span:nth-child(2){animation-delay:-.26s}
-.nr-dot-row>span:nth-child(3){animation-delay:-.52s}
+/* Reversed delays so dot 1 reaches the bright peak first, then dot 2,
+   then 3, 4, 5, then cycles. Dot 1 at -0.26s means its animation has
+   been running 0.26s when the row appears -- putting it at 20% of the
+   1.3s cycle, which is the bright-peak window. Dot 5 lags by 1.04s. */
+.nr-dot-row>span:nth-child(1){animation-delay:-.26s}
+.nr-dot-row>span:nth-child(2){animation-delay:0s}
+.nr-dot-row>span:nth-child(3){animation-delay:-1.04s}
 .nr-dot-row>span:nth-child(4){animation-delay:-.78s}
-.nr-dot-row>span:nth-child(5){animation-delay:-1.04s}
+.nr-dot-row>span:nth-child(5){animation-delay:-.52s}
 @keyframes nr-dot-fill{
   0%,55%,100%{
     background:rgba(201,168,76,.12);
