@@ -90,7 +90,19 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
       <div class="nr-busy">
         <span class="nr-loading-bar" aria-hidden="true"></span>
         <span class="nr-busy-label">
-          <span class="nr-phases" data-phases="Reading your samples|Mapping tone and sentence rhythm|Cataloging your vocabulary|Detecting patterns you avoid|Naming your structural preferences|Finalizing">Reading your samples</span><span class="nr-busy-dots" aria-hidden="true"></span>
+          ${(() => {
+            const phases = [
+              "Reading your samples",
+              "Mapping tone and sentence rhythm",
+              "Cataloging your vocabulary",
+              "Detecting patterns you avoid",
+              "Naming your structural preferences",
+              "Finalizing",
+            ];
+            const perPhase = 2.5;
+            const total = phases.length * perPhase;
+            return `<span class="nr-phases-wrap" style="min-width:280px">${phases.map((p, i) => `<span class="nr-phase" style="animation-duration:${total}s;animation-delay:${(i * perPhase).toFixed(2)}s">${p}</span>`).join("")}</span>`;
+          })()}<span class="nr-busy-dots" aria-hidden="true"></span>
         </span>
       </div>
     </form>
@@ -244,7 +256,17 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
           <div class="nr-busy">
             <span class="nr-loading-bar" aria-hidden="true"></span>
             <span class="nr-busy-label">
-              <span class="nr-phases" data-phases="Fetching the page|Extracting the article body|Stripping navigation and footers|Saving the sample">Fetching the page</span><span class="nr-busy-dots" aria-hidden="true"></span>
+              ${(() => {
+                const phases = [
+                  "Fetching the page",
+                  "Extracting the article body",
+                  "Stripping navigation and footers",
+                  "Saving the sample",
+                ];
+                const perPhase = 0.9;
+                const total = phases.length * perPhase;
+                return `<span class="nr-phases-wrap" style="min-width:280px">${phases.map((p, i) => `<span class="nr-phase" style="animation-duration:${total}s;animation-delay:${(i * perPhase).toFixed(2)}s">${p}</span>`).join("")}</span>`;
+              })()}<span class="nr-busy-dots" aria-hidden="true"></span>
             </span>
           </div>
         </div>

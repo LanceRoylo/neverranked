@@ -235,7 +235,21 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <div class="nr-busy">
             <span class="nr-loading-bar" aria-hidden="true"></span>
             <span class="nr-busy-label">
-              <span class="nr-phases" data-phases="Reading your voice profile|Studying your rhythm and vocabulary|Outlining the article|Drafting the opening|Writing the body in your voice|Checking for patterns you avoid|Polishing transitions|Finalizing">Reading your voice profile</span><span class="nr-busy-dots" aria-hidden="true"></span>
+              ${(() => {
+                const phases = [
+                  "Reading your voice profile",
+                  "Studying your rhythm and vocabulary",
+                  "Outlining the article",
+                  "Drafting the opening",
+                  "Writing the body in your voice",
+                  "Checking for patterns you avoid",
+                  "Polishing transitions",
+                  "Finalizing",
+                ];
+                const perPhase = 2.2; // seconds each phase stays visible
+                const total = phases.length * perPhase;
+                return `<span class="nr-phases-wrap" style="min-width:280px">${phases.map((p, i) => `<span class="nr-phase" style="animation-duration:${total}s;animation-delay:${(i * perPhase).toFixed(2)}s">${p}</span>`).join("")}</span>`;
+              })()}<span class="nr-busy-dots" aria-hidden="true"></span>
             </span>
           </div>
         </div>

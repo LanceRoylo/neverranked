@@ -308,10 +308,46 @@ a.card:hover{border-color:var(--gold-dim)}
 }
 .nr-busy-label{
   animation:nr-label-fade 1.2s ease-in-out infinite;
+  position:relative;
+  display:inline-block;
+  min-height:1.2em;
 }
 @keyframes nr-label-fade{
   0%,100%{opacity:1}
   50%{opacity:.55}
+}
+/* Pure-CSS phase cycler. Each .nr-phase span is absolutely positioned
+   and fades in during its assigned window of the total cycle. Driven
+   entirely by the browser compositor, so it keeps moving even if the
+   page is waiting on a form-submit response. */
+.nr-phases-wrap{
+  position:relative;
+  display:inline-block;
+  vertical-align:baseline;
+  min-height:1.2em;
+  white-space:nowrap;
+}
+.nr-phase{
+  position:absolute;
+  left:0;
+  top:0;
+  opacity:0;
+  white-space:nowrap;
+  animation-name:nr-phase-show;
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
+  animation-fill-mode:both;
+}
+/* Fade-in, hold, fade-out. Visible for ~14% of the cycle with 1% fade
+   windows on each side. The timing works for any number of phases
+   because each phase shares the same keyframes but with its own delay
+   and its own duration = count * 2s. */
+@keyframes nr-phase-show{
+  0%{opacity:0}
+  2%{opacity:1}
+  14%{opacity:1}
+  16%{opacity:0}
+  100%{opacity:0}
 }
 /* Animated dots after the label. Three dots cycling. */
 .nr-busy-dots::after{
