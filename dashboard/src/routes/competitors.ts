@@ -107,10 +107,10 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
         <h2 class="empty-hero-title">Add the sites you lose business to.</h2>
         <p class="empty-hero-body">Once you add competitor domains, we scan them on the same weekly Monday schedule as your own site. You'll see side-by-side AEO scores, citation share, schema coverage, and score trends over time. Start with the two or three sites you lose business to most often &mdash; the comparison gets more useful with each addition.</p>
         <div class="empty-hero-actions">
-          <a href="#add-competitor-form" class="btn">Add your first competitor &rarr;</a>
+          <a href="#add-competitor-form" class="btn" onclick="setTimeout(function(){var el=document.querySelector('#add-competitor-form input[name=domain]');if(el)el.focus();},50)">Add your first competitor &rarr;</a>
         </div>
       </div>
-      <div id="add-competitor-form">${buildAddCompetitorForm(clientSlug)}</div>
+      <div id="add-competitor-form" style="scroll-margin-top:24px">${buildAddCompetitorForm(clientSlug)}</div>
     `, user, clientSlug));
   }
 
