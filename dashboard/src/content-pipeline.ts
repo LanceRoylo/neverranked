@@ -127,6 +127,31 @@ async function sendContentPublishedEmail(clientSlug: string, title: string, live
 // ---------- PHASE B: pipeline steps ----------
 
 /**
+ * Check whether a client's pipeline is paused. Paused clients have their
+ * planned + drafted rows skipped by the cron; ops or the customer un-
+ * pauses by approving something or by clearing the flag manually.
+ */
+async function isClientPaused(clientSlug: string, env: Env): Promise<boolean> {
+  const row = await env.DB.prepare(
+    "SELECT pipeline_paused_at FROM client_settings WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ pipeline_paused_at: number | null }>();
+  return !!(row?.pipeline_paused_at);
+}
+
+/**
+ * Read the per-client content restrictions (never-say list). Returns
+ * raw text; the caller injects it into prompts. Null/empty means no
+ * custom restrictions beyond the built-in defaults.
+ */
+async function getContentRestrictions(clientSlug: string, env: Env): Promise<string | null> {
+  const row = await env.DB.prepare(
+    "SELECT content_restrictions FROM client_settings WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ content_restrictions: string | null }>();
+  const text = row?.content_restrictions?.trim();
+  return text ? text : null;
+}
+
+/**
  * Generate a draft for a scheduled_drafts row. Creates a content_drafts
  * row, writes the body via the voice engine, scores it, runs the QA
  * pipeline, and links the two. Emails the customer on success.
@@ -137,6 +162,13 @@ async function generateForScheduled(item: ScheduledDraft, env: Env): Promise<voi
     "SELECT status FROM scheduled_drafts WHERE id = ?",
   ).bind(item.id).first<{ status: string }>();
   if (!fresh || fresh.status !== "planned") return;
+
+  // Skip entirely if the client's pipeline is paused. Row stays
+  // 'planned' so it'll resume on the next sweep once unpaused.
+  if (await isClientPaused(item.client_slug, env)) {
+    console.log(`[content-pipeline] client ${item.client_slug} paused; skipping sched ${item.id}`);
+    return;
+  }
 
   const now = Math.floor(Date.now() / 1000);
 
@@ -149,9 +181,17 @@ async function generateForScheduled(item: ScheduledDraft, env: Env): Promise<voi
   const draftId = (insert.meta.last_row_id as number | null) ?? 0;
   if (!draftId) return;
 
+  // Content restrictions become a brief that's prepended to the
+  // generation request so the voice engine avoids them at write time.
+  // Still cross-checked by QA in case the model ignores them.
+  const restrictions = await getContentRestrictions(item.client_slug, env);
+  const brief = restrictions
+    ? `Hard content rules for this piece -- do not violate these even implicitly:\n${restrictions}`
+    : undefined;
+
   let body = "";
   try {
-    const out = await generateDraftInVoice(env, item.client_slug, item.title);
+    const out = await generateDraftInVoice(env, item.client_slug, item.title, brief);
     body = out.body_markdown;
   } catch (err) {
     const msg = err instanceof Error ? err.message : "generation failed";
@@ -171,7 +211,13 @@ async function generateForScheduled(item: ScheduledDraft, env: Env): Promise<voi
   let qaJson: string | null = null;
   let qaLevel: string | null = null;
   try {
-    const qa = await runContentQa(env, { title: item.title, body, kind: item.kind, voiceScore: score });
+    const qa = await runContentQa(env, {
+      title: item.title,
+      body,
+      kind: item.kind,
+      voiceScore: score,
+      restrictions,
+    });
     qaJson = JSON.stringify(qa);
     qaLevel = qa.level;
   } catch (err) {
@@ -204,6 +250,9 @@ async function generateForScheduled(item: ScheduledDraft, env: Env): Promise<voi
  */
 async function maybeAutoPublish(item: ScheduledDraft, env: Env): Promise<void> {
   if (!item.draft_id) return;
+  // Paused clients never auto-publish. Their approved drafts are still
+  // publishable manually via the one-click Publish button.
+  if (await isClientPaused(item.client_slug, env)) return;
   const draft = await env.DB.prepare(
     "SELECT * FROM content_drafts WHERE id = ? AND client_slug = ?",
   ).bind(item.draft_id, item.client_slug).first<ContentDraft>();
@@ -349,11 +398,48 @@ export async function runContentOutcomeScan(env: Env): Promise<void> {
         earned = row?.cnt || 0;
       }
 
+      // GSC rank tracking. Look up the most recent GSC snapshot for
+      // this client, find the published_url in top_pages, record its
+      // position as rank_current. Update rank_peak if better (lower),
+      // stamp indexed_at the first time we see any impressions.
+      let rankCurrent: number | null = item.rank_current ?? null;
+      let rankPeak: number | null = item.rank_peak ?? null;
+      let indexedAt: number | null = item.indexed_at ?? null;
+      if (item.published_url) {
+        const snap = await env.DB.prepare(
+          `SELECT top_pages FROM gsc_snapshots
+             WHERE client_slug = ?
+             ORDER BY date_end DESC LIMIT 1`,
+        ).bind(item.client_slug).first<{ top_pages: string }>();
+        if (snap?.top_pages) {
+          try {
+            const pages = JSON.parse(snap.top_pages) as { page: string; impressions: number; position: number }[];
+            // GSC returns pages as full URLs. Match exactly first; fall
+            // back to path-only match in case of trailing-slash drift.
+            const target = item.published_url;
+            const targetPath = (() => { try { return new URL(target).pathname.replace(/\/+$/, ""); } catch { return null; } })();
+            const match = pages.find(p => p.page === target)
+              || (targetPath ? pages.find(p => { try { return new URL(p.page).pathname.replace(/\/+$/, "") === targetPath; } catch { return false; } }) : undefined);
+            if (match) {
+              const pos = Math.round(match.position);
+              rankCurrent = pos;
+              if (rankPeak === null || pos < rankPeak) rankPeak = pos;
+              if (!indexedAt && match.impressions > 0) indexedAt = now;
+            }
+          } catch { /* malformed JSON, skip */ }
+        }
+      }
+
       await env.DB.prepare(
         `UPDATE scheduled_drafts
-           SET earned_citations_count = ?, outcome_checked_at = ?, updated_at = ?
+           SET earned_citations_count = ?,
+               rank_current = ?,
+               rank_peak = ?,
+               indexed_at = ?,
+               outcome_checked_at = ?,
+               updated_at = ?
            WHERE id = ?`,
-      ).bind(earned, now, now, item.id).run();
+      ).bind(earned, rankCurrent, rankPeak, indexedAt, now, now, item.id).run();
     } catch (err) {
       console.error(`[content-pipeline] outcome scan failed for ${item.id}: ${err}`);
     }

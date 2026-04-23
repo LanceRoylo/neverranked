@@ -122,10 +122,24 @@ export async function handleCalendarGet(clientSlug: string, user: User, env: Env
 
   const thisMonth = rows.filter(r => r.scheduled_date >= thisMonthStart && r.scheduled_date <= thisMonthEnd && r.status !== "published" && r.status !== "skipped");
   const nextMonth = rows.filter(r => r.scheduled_date >= nextMonthStart && r.scheduled_date <= nextMonthEnd && r.status !== "published" && r.status !== "skipped");
-  const published = rows.filter(r => r.status === "published").slice(0, 8);
+  const publishedAll = rows.filter(r => r.status === "published");
+  const published = publishedAll.slice(0, 8);
 
-  // Publishing connection state (for the header callout).
+  // Publishing connection state + pause state (for the header).
   const conn = await getConnection(clientSlug, env);
+  const settings = await env.DB.prepare(
+    "SELECT pipeline_paused_at, pipeline_pause_reason FROM client_settings WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ pipeline_paused_at: number | null; pipeline_pause_reason: string | null }>();
+
+  // Roll-up stats for the Impact strip (Phase D). Only rendered when
+  // the customer has at least one published piece.
+  const totalPublished = publishedAll.length;
+  const totalCitationsEarned = publishedAll.reduce((sum, r) => sum + (r.earned_citations_count || 0), 0);
+  const indexedCount = publishedAll.filter(r => r.indexed_at !== null).length;
+  const bestRank = publishedAll
+    .map(r => r.rank_peak)
+    .filter((r): r is number => r !== null && r !== undefined)
+    .reduce<number | null>((best, r) => best === null || r < best ? r : best, null);
 
   // Surface topic suggestions from citation gaps the user isn't cited
   // on. Keeps this page the one place the customer goes to plan.
@@ -170,6 +184,19 @@ export async function handleCalendarGet(clientSlug: string, user: User, env: Env
       </div>
     </div>
 
+    ${settings?.pipeline_paused_at ? `
+      <div style="margin-bottom:20px;padding:14px 18px;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:3px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
+          <div style="font-size:13px;color:var(--text);line-height:1.55">
+            <strong>Pipeline is paused.</strong> We've stopped auto-generating drafts ${settings.pipeline_pause_reason === "two_rejections_in_a_row" ? "after two rejected drafts in a row" : ""}. Approve any pending draft to resume, or resume manually.
+          </div>
+          <form method="POST" action="/publishing/${esc(clientSlug)}/unpause" style="margin:0">
+            <button type="submit" class="btn" style="white-space:nowrap">Resume pipeline</button>
+          </form>
+        </div>
+      </div>
+    ` : ""}
+
     ${!conn ? `
       <div style="margin-bottom:24px;padding:16px 20px;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:3px">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
@@ -177,6 +204,32 @@ export async function handleCalendarGet(clientSlug: string, user: User, env: Env
             <strong>Connect your WordPress site</strong> so approved drafts publish automatically on their scheduled date. Without this, we'll email you the finished drafts.
           </div>
           <a href="/publishing/${esc(clientSlug)}" class="btn btn-ghost" style="white-space:nowrap">Set up publishing &rarr;</a>
+        </div>
+      </div>
+    ` : ""}
+
+    ${totalPublished > 0 ? `
+      <!-- Impact roll-up: the at-a-glance outcome strip. Only renders
+           when the customer has actually shipped something. -->
+      <div style="margin-bottom:28px;padding:22px 26px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div class="label" style="margin-bottom:14px;color:var(--gold)">Impact</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:20px">
+          <div>
+            <div style="font-family:var(--serif);font-size:32px;color:var(--text);line-height:1;font-weight:400">${totalPublished}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:6px;letter-spacing:.06em">piece${totalPublished === 1 ? "" : "s"} shipped</div>
+          </div>
+          <div>
+            <div style="font-family:var(--serif);font-size:32px;color:${totalCitationsEarned > 0 ? "var(--green)" : "var(--text)"};line-height:1;font-weight:400">${totalCitationsEarned > 0 ? "+" : ""}${totalCitationsEarned}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:6px;letter-spacing:.06em">citation${totalCitationsEarned === 1 ? "" : "s"} earned</div>
+          </div>
+          <div>
+            <div style="font-family:var(--serif);font-size:32px;color:var(--text);line-height:1;font-weight:400">${indexedCount}<span style="font-size:18px;color:var(--text-faint)"> / ${totalPublished}</span></div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:6px;letter-spacing:.06em">indexed in Search Console</div>
+          </div>
+          <div>
+            <div style="font-family:var(--serif);font-size:32px;color:var(--text);line-height:1;font-weight:400">${bestRank !== null ? "#" + bestRank : "--"}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:6px;letter-spacing:.06em">best rank achieved</div>
+          </div>
         </div>
       </div>
     ` : ""}

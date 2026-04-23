@@ -684,10 +684,38 @@ export async function handleDraftStatus(clientSlug: string, draftId: number, req
     await env.DB.prepare(
       "UPDATE content_drafts SET status = ?, approved_by_user_id = ?, approved_at = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
     ).bind(status, user.id, now, now, draftId, clientSlug).run();
+    // Any explicit approve clears an auto-pause -- the customer is
+    // actively engaged again, so we resume the pipeline.
+    await env.DB.prepare(
+      "UPDATE client_settings SET pipeline_paused_at = NULL, pipeline_pause_reason = NULL, updated_at = ? WHERE client_slug = ? AND pipeline_paused_at IS NOT NULL",
+    ).bind(now, clientSlug).run();
   } else {
     await env.DB.prepare(
       "UPDATE content_drafts SET status = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
     ).bind(status, now, draftId, clientSlug).run();
+  }
+
+  // Auto-pause on two-in-a-row rejections. Reads the two most recent
+  // decided drafts for this client; if both are rejected and we're
+  // not already paused, pause and record the reason.
+  if (status === "rejected") {
+    const recent = (await env.DB.prepare(
+      `SELECT status FROM content_drafts
+         WHERE client_slug = ? AND status IN ('approved', 'rejected')
+         ORDER BY updated_at DESC LIMIT 2`,
+    ).bind(clientSlug).all<{ status: string }>()).results;
+    const twoRejected = recent.length >= 2 && recent.every(r => r.status === "rejected");
+    if (twoRejected) {
+      await env.DB.prepare(
+        `INSERT INTO client_settings (client_slug, pipeline_paused_at, pipeline_pause_reason, created_at, updated_at)
+           VALUES (?, ?, 'two_rejections_in_a_row', ?, ?)
+         ON CONFLICT(client_slug) DO UPDATE SET
+           pipeline_paused_at = excluded.pipeline_paused_at,
+           pipeline_pause_reason = excluded.pipeline_pause_reason,
+           updated_at = excluded.updated_at
+         WHERE client_settings.pipeline_paused_at IS NULL`,
+      ).bind(clientSlug, now, now, now).run();
+    }
   }
 
   return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);

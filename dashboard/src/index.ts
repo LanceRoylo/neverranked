@@ -34,7 +34,7 @@ import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorF
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
-import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handlePublishingDelete } from "./routes/publishing";
+import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handlePublishingDelete, handlePublishingRestrictions, handlePublishingUnpause } from "./routes/publishing";
 import { handleCalendarGet, handleCalendarAdd, handleCalendarSkip } from "./routes/calendar";
 import { handleContentReviewList, handleContentReviewClear } from "./routes/content-review";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
@@ -781,6 +781,14 @@ export default {
     const pubDeleteMatch = path.match(/^\/publishing\/([^/]+)\/delete$/);
     if (pubDeleteMatch && method === "POST") {
       return handlePublishingDelete(decodeURIComponent(pubDeleteMatch[1]), user, env);
+    }
+    const pubRestrictionsMatch = path.match(/^\/publishing\/([^/]+)\/restrictions$/);
+    if (pubRestrictionsMatch && method === "POST") {
+      return handlePublishingRestrictions(decodeURIComponent(pubRestrictionsMatch[1]), request, user, env);
+    }
+    const pubUnpauseMatch = path.match(/^\/publishing\/([^/]+)\/unpause$/);
+    if (pubUnpauseMatch && method === "POST") {
+      return handlePublishingUnpause(decodeURIComponent(pubUnpauseMatch[1]), user, env);
     }
 
     // ---------- Ops content review queue (admin only) ----------

@@ -43,8 +43,9 @@ export async function handlePublishingGet(clientSlug: string, user: User, env: E
   }
 
   const conn = await getConnection(clientSlug, env);
-  const url = new URL("http://dummy?" + "");
-  const flash = new URLSearchParams().get("flash"); // placeholder for later flash wiring
+  const settings = await env.DB.prepare(
+    "SELECT content_restrictions, pipeline_paused_at, pipeline_pause_reason FROM client_settings WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ content_restrictions: string | null; pipeline_paused_at: number | null; pipeline_pause_reason: string | null }>();
 
   const body = `
     <div style="margin-bottom:32px">
@@ -125,6 +126,30 @@ export async function handlePublishingGet(clientSlug: string, user: User, env: E
       </form>
     </div>
 
+    ${settings?.pipeline_paused_at ? `
+      <div style="margin-top:32px;padding:16px 20px;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:3px;max-width:720px">
+        <div class="label" style="margin-bottom:8px;color:var(--gold)">Pipeline paused</div>
+        <div style="font-size:13px;color:var(--text-soft);line-height:1.65;margin-bottom:12px">
+          Your content pipeline is paused ${settings.pipeline_pause_reason === "two_rejections_in_a_row" ? "because you rejected two drafts in a row" : `(${esc(settings.pipeline_pause_reason || "manual")})`}. We've stopped generating new drafts until you're ready to resume. Approve any queued draft to automatically resume, or resume manually below.
+        </div>
+        <form method="POST" action="/publishing/${esc(clientSlug)}/unpause">
+          <button type="submit" class="btn">Resume pipeline</button>
+        </form>
+      </div>
+    ` : ""}
+
+    <div class="card" style="margin-top:32px">
+      <h2 style="margin:0 0 10px;font-family:var(--serif);font-size:22px;font-style:italic">Content rules</h2>
+      <p style="font-size:13px;color:var(--text-soft);line-height:1.7;margin:0 0 14px;max-width:640px">Topics or phrasings the AI should never use in your drafts -- compliance requirements, brand guardrails, names of competitors we shouldn't mention, etc. These get injected into both the generation prompt and the QA scan, so anything that slips through still gets flagged.</p>
+      <form method="POST" action="/publishing/${esc(clientSlug)}/restrictions" style="max-width:720px">
+        <textarea name="content_restrictions" rows="6" placeholder="One rule per line. Examples:&#10;- Never recommend specific medications or dosages&#10;- Don't mention competitors by name&#10;- Avoid pricing claims; always link to /pricing instead&#10;- Never take political positions" style="width:100%;padding:12px 14px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;border-radius:3px;resize:vertical">${esc(settings?.content_restrictions || "")}</textarea>
+        <div style="display:flex;gap:10px;margin-top:10px;align-items:center">
+          <button type="submit" class="btn btn-ghost">Save rules</button>
+          <span style="font-size:11px;color:var(--text-faint)">Applied to every new draft and every QA scan.</span>
+        </div>
+      </form>
+    </div>
+
     <!-- Safety net: if the customer's stack doesn't support app passwords -->
     <div style="margin-top:32px;padding:18px 22px;background:var(--bg-lift);border:1px solid var(--line);border-radius:3px;max-width:720px">
       <div class="label" style="margin-bottom:8px">Not on self-hosted WordPress?</div>
@@ -135,6 +160,36 @@ export async function handlePublishingGet(clientSlug: string, user: User, env: E
   `;
 
   return html(layout("Publishing", body, user, clientSlug));
+}
+
+export async function handlePublishingRestrictions(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) return redirect("/");
+  if (!canUseDraftingFeature(user)) return redirect("/settings");
+
+  const form = await request.formData();
+  const text = String(form.get("content_restrictions") || "").trim();
+  const value = text.length > 0 ? text : null;
+  const now = Math.floor(Date.now() / 1000);
+
+  await env.DB.prepare(
+    `INSERT INTO client_settings (client_slug, content_restrictions, created_at, updated_at)
+       VALUES (?, ?, ?, ?)
+     ON CONFLICT(client_slug) DO UPDATE SET
+       content_restrictions = excluded.content_restrictions,
+       updated_at = excluded.updated_at`,
+  ).bind(clientSlug, value, now, now).run();
+
+  return redirect(`/publishing/${encodeURIComponent(clientSlug)}?flash=${encodeURIComponent("Content rules saved.")}`);
+}
+
+export async function handlePublishingUnpause(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) return redirect("/");
+  if (!canUseDraftingFeature(user)) return redirect("/settings");
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    "UPDATE client_settings SET pipeline_paused_at = NULL, pipeline_pause_reason = NULL, updated_at = ? WHERE client_slug = ?",
+  ).bind(now, clientSlug).run();
+  return redirect(`/publishing/${encodeURIComponent(clientSlug)}?flash=${encodeURIComponent("Pipeline resumed.")}`);
 }
 
 export async function handlePublishingSave(clientSlug: string, request: Request, user: User, env: Env): Promise<Response> {

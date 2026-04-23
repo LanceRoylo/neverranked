@@ -111,7 +111,7 @@ function runMechanicalChecks(input: MechanicalInputs): { checks: QaCheck[]; word
 
 // ---------- Claude brand-safety + fact-claims pass ----------
 
-const QA_SYSTEM = `You are a cautious editorial reviewer for a B2B content pipeline. You review AI-generated drafts BEFORE they are published to the customer's site. The customer is a real business -- mistakes here are reputation-damaging.
+const QA_SYSTEM_BASE = `You are a cautious editorial reviewer for a B2B content pipeline. You review AI-generated drafts BEFORE they are published to the customer's site. The customer is a real business -- mistakes here are reputation-damaging.
 
 You have two jobs in one pass:
 
@@ -122,6 +122,7 @@ You have two jobs in one pass:
    - legal_advice: specific legal recommendations or interpretations
    - inflammatory: attack language, dehumanizing phrasing, any group slurs
    - reputational: controversial claims, unverified attacks on named competitors, anything obviously off-brand
+   - restriction_violation: a violation of the client's explicit content rules (listed below, if any)
 
 2. FACT CLAIMS: extract every factual claim -- statistics, specific percentages, historical events, named studies, regulatory details, product claims about the client's own business, claims about named third parties. Rate each as low / medium / high risk based on how easy it is to verify and how embarrassing it would be if wrong.
 
@@ -142,6 +143,7 @@ async function runClaudeQaPass(
   env: Env,
   title: string,
   body: string,
+  restrictions?: string | null,
 ): Promise<{ brandSafetyFlags: BrandSafetyFlag[]; factClaims: FactClaim[] }> {
   if (!env.ANTHROPIC_API_KEY) {
     // When the key isn't set (local dev), skip the Claude pass cleanly.
@@ -164,14 +166,14 @@ async function runClaudeQaPass(
       system: [
         {
           type: "text",
-          text: QA_SYSTEM,
+          text: QA_SYSTEM_BASE,
           cache_control: { type: "ephemeral" },
         },
       ],
       messages: [
         {
           role: "user",
-          content: `Draft title: ${title}\n\n---\n\n${body.slice(0, 18000)}`,
+          content: `${restrictions ? `Client's explicit content rules (never violate):\n${restrictions}\n\n---\n\n` : ""}Draft title: ${title}\n\n---\n\n${body.slice(0, 18000)}`,
         },
       ],
     }),
@@ -224,6 +226,7 @@ export async function runContentQa(
     body: string;
     kind: string;
     voiceScore: number | null;
+    restrictions?: string | null;
   },
 ): Promise<ContentQaResult> {
   const { checks, wordCount } = runMechanicalChecks({
@@ -244,8 +247,8 @@ export async function runContentQa(
     });
   }
 
-  // Claude pass.
-  const { brandSafetyFlags, factClaims } = await runClaudeQaPass(env, params.title, params.body);
+  // Claude pass, with any per-client restrictions injected.
+  const { brandSafetyFlags, factClaims } = await runClaudeQaPass(env, params.title, params.body, params.restrictions);
 
   // Any brand-safety flag is a hard hold. High-risk fact claims are a
   // warn but not a block -- customer is the final reviewer on facts.
