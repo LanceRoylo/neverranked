@@ -158,18 +158,26 @@ img,svg{display:block;max-width:100%}
   padding:24px 0 32px;
   background:var(--bg-edge);
 }
-.sidebar-section{margin-bottom:22px}
+.sidebar-section{margin-bottom:30px}
 .sidebar-section:last-child{margin-bottom:0}
+/* Section header reads as an eyebrow -- distinct enough from the nav
+   items below that the eye groups them without re-reading. Warm gold
+   at reduced intensity keeps them subordinate to active items but
+   clearly above the item color. */
 .sidebar-section-header{
-  padding:0 22px 8px;
-  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;
-  font-size:10px;color:var(--text-faint);font-weight:500;
+  padding:0 22px 10px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;
+  font-size:10px;color:var(--gold-dim);font-weight:500;
+  opacity:.85;
 }
+/* Nav items in sentence case + normal letter spacing so each word is a
+   scannable target, not another line of Barlow caps. The aim is
+   Linear-style: eyebrow/caps for sections, mixed-case for items. */
 .sidebar-item{
   display:flex;align-items:center;justify-content:space-between;
-  gap:10px;padding:9px 22px;
-  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
-  font-size:11px;color:var(--text-mute);
+  gap:10px;padding:8px 22px;
+  font-family:var(--label);font-size:14px;
+  color:var(--text-mute);font-weight:400;
   border-left:2px solid transparent;
   transition:color .15s,background .15s,border-color .15s;
 }
@@ -178,6 +186,7 @@ img,svg{display:block;max-width:100%}
   color:var(--gold);
   background:var(--gold-wash);
   border-left-color:var(--gold);
+  font-weight:500;
 }
 .sidebar-item::after{display:none}
 .nav-badge{
