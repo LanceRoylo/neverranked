@@ -193,13 +193,13 @@ ${body}
 </main>
 ${poweredBy}
 
-<!-- Shared busy-state activator. Any form that contains a button with
-     class 'nr-busy-trigger' will, on submit, disable the button, swap
-     its text to data-busy-label (default 'Working...'), hide any
-     .nr-idle sibling copy, and show any .nr-busy sibling block. If a
-     .nr-elapsed span exists inside the .nr-busy block it counts up in
-     seconds so the user sees motion even while the page is waiting on
-     a server redirect. -->
+<!-- Shared busy-state activator. On form submit:
+     - disables the trigger button, swaps its text to data-busy-label
+     - hides .nr-idle copy, shows .nr-busy block
+     - cycles through phase messages defined by data-phases on a
+       .nr-phases span (pipe-separated). Each phase runs ~2.2s then
+       advances. The cycling is theater, not literal progress -- its
+       whole job is to keep the screen feeling alive during the wait. -->
 <script>
 (function(){
   var triggers=document.querySelectorAll('.nr-busy-trigger');
@@ -214,10 +214,26 @@ ${poweredBy}
       form.querySelectorAll('.nr-idle').forEach(function(el){el.style.display='none'});
       var busy=form.querySelector('.nr-busy');
       if(busy) busy.classList.add('on');
-      var elapsed=form.querySelector('.nr-elapsed');
-      if(elapsed){
-        var t0=Date.now();
-        setInterval(function(){elapsed.textContent=Math.round((Date.now()-t0)/1000)+'s'},500);
+      // Cycle through phase messages if any.
+      var phasesEl=form.querySelector('.nr-phases');
+      if(phasesEl){
+        var raw=phasesEl.getAttribute('data-phases')||'';
+        var phases=raw.split('|').map(function(s){return s.trim()}).filter(Boolean);
+        if(phases.length>0){
+          var i=0;
+          phasesEl.textContent=phases[0];
+          setInterval(function(){
+            i=(i+1)%phases.length;
+            // Brief fade-out-in so the message change is itself a motion
+            // cue, not just a silent text swap.
+            phasesEl.style.transition='opacity .2s';
+            phasesEl.style.opacity='0';
+            setTimeout(function(){
+              phasesEl.textContent=phases[i];
+              phasesEl.style.opacity='1';
+            },220);
+          },2200);
+        }
       }
     });
   });

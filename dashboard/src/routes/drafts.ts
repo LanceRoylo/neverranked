@@ -234,8 +234,9 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Takes 10-30 seconds. Requires a voice profile to be built first.</span>
           <div class="nr-busy">
             <span class="nr-loading-bar" aria-hidden="true"></span>
-            <span class="nr-busy-label">Drafting in your voice<span class="nr-busy-dots" aria-hidden="true"></span></span>
-            <span style="opacity:.7;font-size:11px">(<span class="nr-elapsed">0s</span>)</span>
+            <span class="nr-busy-label">
+              <span class="nr-phases" data-phases="Reading your voice profile|Studying your rhythm and vocabulary|Outlining the article|Drafting the opening|Writing the body in your voice|Checking for patterns you avoid|Polishing transitions|Finalizing">Reading your voice profile</span><span class="nr-busy-dots" aria-hidden="true"></span>
+            </span>
           </div>
         </div>
       </form>
