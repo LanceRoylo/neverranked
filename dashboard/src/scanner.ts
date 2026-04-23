@@ -16,11 +16,43 @@ const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/
 // ~50s including the waits.
 const SCAN_RETRY_WAITS_MS = [5_000, 15_000];
 
-async function attemptScan(url: string): Promise<{ report: Report | null; error: string | null }> {
+// Cloudflare intra-zone loopback workaround: when a Worker fetches a
+// domain served by another Worker in the same CF account, the fetch can
+// be short-circuited through internal routing which occasionally fails
+// in the scheduled-event context while working fine in request context.
+// DB evidence: 100% cron failures vs 100% manual success on
+// neverranked.com. For these known loopback domains, fetching via the
+// workers.dev subdomain bypasses the zone routing and the fetch works
+// reliably from any context. The marketing Worker serves both URLs
+// identically so the scanned HTML is the same.
+const CF_LOOPBACK_FALLBACK: Record<string, string> = {
+  "neverranked.com": "https://neverranked.lanceroylo.workers.dev",
+  "www.neverranked.com": "https://neverranked.lanceroylo.workers.dev",
+};
+
+function loopbackFallbackUrl(originalUrl: string): string | null {
+  try {
+    const u = new URL(originalUrl);
+    const base = CF_LOOPBACK_FALLBACK[u.hostname];
+    if (!base) return null;
+    return base + u.pathname + u.search;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Attempt a single scan. `fetchUrl` is what we hit over the wire;
+ * `reportUrl` is the canonical URL recorded in signals and derived
+ * references. They're the same in the normal path; they diverge only
+ * when the loopback fallback is in play (fetch workers.dev, report as
+ * the public custom domain).
+ */
+async function attemptScan(fetchUrl: string, reportUrl: string = fetchUrl): Promise<{ report: Report | null; error: string | null }> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
-    const resp = await fetch(url, {
+    const resp = await fetch(fetchUrl, {
       headers: {
         "User-Agent": USER_AGENT,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
@@ -34,7 +66,7 @@ async function attemptScan(url: string): Promise<{ report: Report | null; error:
       return { report: null, error: `HTTP ${resp.status}` };
     }
     const html = await resp.text();
-    return { report: buildReport(url, html), error: null };
+    return { report: buildReport(reportUrl, html), error: null };
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
       return { report: null, error: "Timeout (10s)" };
@@ -90,6 +122,29 @@ export async function scanDomain(
       await new Promise((r) => setTimeout(r, SCAN_RETRY_WAITS_MS[i]));
     }
   }
+
+  // Last-resort loopback fallback: if the domain is one we know is
+  // served by a Worker in our own CF account AND all attempts failed
+  // with network-layer errors, try once via the workers.dev subdomain.
+  // That URL bypasses the zone routing that causes the short-circuit
+  // loopback failure in the scheduled-event context.
+  if (error && error.startsWith("Network:")) {
+    const fallbackUrl = loopbackFallbackUrl(url);
+    if (fallbackUrl) {
+      console.warn(`[scanner] ${url} failed with ${error}, trying loopback fallback: ${fallbackUrl}`);
+      // Fetch via workers.dev but keep canonical URL in the report so
+      // signals (canonical tags, base URLs, etc.) reference the public
+      // site, not the internal loopback address.
+      const fallback = await attemptScan(fallbackUrl, url);
+      if (!fallback.error) {
+        report = fallback.report;
+        error = null;
+        attempts = attempts + 1;
+        console.log(`[scanner] ${url} recovered via workers.dev fallback`);
+      }
+    }
+  }
+
   if (attempts > 1) {
     console.log(`[scanner] ${url} settled after ${attempts} attempt(s)${error ? ` with error: ${error}` : " (succeeded on retry)"}`);
   }
