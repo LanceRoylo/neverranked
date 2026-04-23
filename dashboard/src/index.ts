@@ -33,7 +33,9 @@ import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, h
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
-import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert } from "./routes/drafts";
+import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
+import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handlePublishingDelete } from "./routes/publishing";
+import { handleCalendarGet, handleCalendarAdd, handleCalendarSkip } from "./routes/calendar";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
@@ -728,6 +730,10 @@ export default {
     if (draftStatusMatch && method === "POST") {
       return handleDraftStatus(decodeURIComponent(draftStatusMatch[1]), Number(draftStatusMatch[2]), request, user, env);
     }
+    const draftPublishMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/publish$/);
+    if (draftPublishMatch && method === "POST") {
+      return handleDraftPublish(decodeURIComponent(draftPublishMatch[1]), Number(draftPublishMatch[2]), user, env);
+    }
     const draftDeleteMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)\/delete$/);
     if (draftDeleteMatch && method === "POST") {
       return handleDraftDelete(decodeURIComponent(draftDeleteMatch[1]), Number(draftDeleteMatch[2]), user, env);
@@ -735,6 +741,45 @@ export default {
     const draftDetailMatch = path.match(/^\/drafts\/([^/]+)\/(\d+)$/);
     if (draftDetailMatch && method === "GET") {
       return handleDraftDetail(decodeURIComponent(draftDetailMatch[1]), Number(draftDetailMatch[2]), user, env, url);
+    }
+
+    // ---------- Content calendar + publishing settings ----------
+    if ((path === "/calendar" || path === "/calendar/") && method === "GET") {
+      if (user.client_slug) return redirect(`/calendar/${user.client_slug}`);
+      return renderClientPicker("Calendar", "calendar", user, env);
+    }
+    const calendarMatch = path.match(/^\/calendar\/([^/]+?)\/?$/);
+    if (calendarMatch && method === "GET") {
+      return handleCalendarGet(decodeURIComponent(calendarMatch[1]), user, env);
+    }
+    const calendarAddMatch = path.match(/^\/calendar\/([^/]+)\/add$/);
+    if (calendarAddMatch && method === "POST") {
+      return handleCalendarAdd(decodeURIComponent(calendarAddMatch[1]), request, user, env);
+    }
+    const calendarSkipMatch = path.match(/^\/calendar\/([^/]+)\/skip\/(\d+)$/);
+    if (calendarSkipMatch && method === "POST") {
+      return handleCalendarSkip(decodeURIComponent(calendarSkipMatch[1]), Number(calendarSkipMatch[2]), user, env);
+    }
+
+    if ((path === "/publishing" || path === "/publishing/") && method === "GET") {
+      if (user.client_slug) return redirect(`/publishing/${user.client_slug}`);
+      return renderClientPicker("Publishing", "publishing", user, env);
+    }
+    const pubGetMatch = path.match(/^\/publishing\/([^/]+?)\/?$/);
+    if (pubGetMatch && method === "GET") {
+      return handlePublishingGet(decodeURIComponent(pubGetMatch[1]), user, env);
+    }
+    const pubSaveMatch = path.match(/^\/publishing\/([^/]+)\/save$/);
+    if (pubSaveMatch && method === "POST") {
+      return handlePublishingSave(decodeURIComponent(pubSaveMatch[1]), request, user, env);
+    }
+    const pubTestMatch = path.match(/^\/publishing\/([^/]+)\/test$/);
+    if (pubTestMatch && method === "POST") {
+      return handlePublishingTest(decodeURIComponent(pubTestMatch[1]), user, env);
+    }
+    const pubDeleteMatch = path.match(/^\/publishing\/([^/]+)\/delete$/);
+    if (pubDeleteMatch && method === "POST") {
+      return handlePublishingDelete(decodeURIComponent(pubDeleteMatch[1]), user, env);
     }
 
     // Citations -- redirect or pick client

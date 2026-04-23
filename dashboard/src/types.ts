@@ -21,6 +21,44 @@ export interface Env {
   ANTHROPIC_API_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  // Used to encrypt per-client secrets at rest in D1 (currently just
+  // WordPress Application Passwords). Set via `wrangler secret put
+  // WP_ENCRYPTION_KEY`. Must be a 32-byte hex string. Rotating this
+  // invalidates every stored credential, so treat it as a one-way
+  // secret -- add a new key + migrate before removing the old one.
+  WP_ENCRYPTION_KEY?: string;
+}
+
+export interface ScheduledDraft {
+  id: number;
+  client_slug: string;
+  title: string;
+  kind: string;
+  topic_source: "manual" | "citation_gap" | "gsc" | "roadmap";
+  source_ref: string | null;
+  scheduled_date: number;
+  status: "planned" | "drafted" | "approved" | "published" | "skipped" | "failed";
+  draft_id: number | null;
+  published_url: string | null;
+  published_at: number | null;
+  error: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface WpConnection {
+  id: number;
+  client_slug: string;
+  site_url: string;
+  wp_username: string;
+  wp_app_password: string; // encrypted at rest
+  seo_plugin: string | null;
+  default_post_status: "future" | "publish" | "draft";
+  default_category_id: number | null;
+  last_tested_at: number | null;
+  last_test_status: string | null;
+  created_at: number;
+  updated_at: number;
 }
 
 export interface GscToken {
@@ -305,6 +343,8 @@ export interface ContentDraft {
   created_by_user_id: number | null;
   approved_by_user_id: number | null;
   approved_at: number | null;
+  qa_result_json: string | null;
+  qa_level: string | null;
   created_at: number;
   updated_at: number;
 }

@@ -17,6 +17,7 @@ import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
 import { generateDraftInVoice, scoreDraftAgainstProfile } from "../voice-engine";
+import { runContentQa } from "../content-qa";
 import { canUseDraftingFeature } from "../gating";
 
 /** Upgrade nudge for non-Amplify clients landing on /drafts. */
@@ -60,6 +61,89 @@ const STATUS_HINT: Record<ContentDraftStatus, string> = {
   approved: "Client approved this draft. Ready to copy or download and publish.",
   rejected: "Sent back for a rewrite. The next version will land as a new draft.",
 };
+
+// ---------- QA panel ----------
+
+/**
+ * Render the cached QA verdict as a compact panel above the editor.
+ * Shows: overall level badge, each check's status, and an expandable
+ * list of extracted fact claims so the reviewer can sanity-check.
+ * Blank if QA hasn't been run yet (e.g. draft pre-dates the pipeline).
+ */
+function renderQaPanel(draft: ContentDraft): string {
+  if (!draft.qa_result_json) return "";
+  let qa: any;
+  try { qa = JSON.parse(draft.qa_result_json); } catch { return ""; }
+  if (!qa || !Array.isArray(qa.checks)) return "";
+
+  const levelColor: Record<string, string> = {
+    pass: "var(--green, #6a9a6a)",
+    warn: "var(--gold)",
+    held: "var(--red, #c96a6a)",
+  };
+  const levelBg: Record<string, string> = {
+    pass: "rgba(94,199,106,.08)",
+    warn: "rgba(201,168,76,.08)",
+    held: "rgba(232,84,84,.08)",
+  };
+  const levelLabel: Record<string, string> = {
+    pass: "Cleared for approval",
+    warn: "Review required",
+    held: "Held for NeverRanked review",
+  };
+  const color = levelColor[qa.level] || "var(--text-faint)";
+  const bg = levelBg[qa.level] || "var(--bg-lift)";
+
+  const checkRows = qa.checks.map((c: any) => `
+    <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-top:1px solid var(--line);font-size:12px">
+      <span style="width:16px;text-align:center;color:${levelColor[c.level] || 'var(--text-faint)'}">${c.level === 'pass' ? '&check;' : c.level === 'warn' ? '!' : '&times;'}</span>
+      <span style="flex:0 0 160px;font-family:var(--mono);color:var(--text);font-weight:500">${esc(c.label)}</span>
+      <span style="flex:1;color:var(--text-faint);line-height:1.5">${esc(c.detail)}</span>
+    </div>
+  `).join("");
+
+  const factClaimsBlock = Array.isArray(qa.factClaims) && qa.factClaims.length > 0 ? `
+    <details style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      <summary style="cursor:pointer;font-size:12px;color:var(--gold);font-family:var(--mono)">Review ${qa.factClaims.length} factual claim${qa.factClaims.length === 1 ? '' : 's'}</summary>
+      <div style="margin-top:12px;display:flex;flex-direction:column;gap:10px">
+        ${qa.factClaims.map((f: any) => `
+          <div style="padding:10px 14px;background:var(--bg);border-left:2px solid ${f.risk === 'high' ? 'var(--red)' : f.risk === 'medium' ? 'var(--gold)' : 'var(--text-faint)'};border-radius:0 3px 3px 0;font-size:12px;line-height:1.55">
+            <div style="color:var(--text);margin-bottom:4px">${esc(f.claim)}</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:4px">"${esc(f.quote)}"</div>
+            <div style="font-size:11px;color:${f.risk === 'high' ? 'var(--red)' : f.risk === 'medium' ? 'var(--gold)' : 'var(--text-faint)'}">${esc(f.risk)} risk &middot; ${esc(f.reason)}</div>
+          </div>
+        `).join("")}
+      </div>
+    </details>
+  ` : "";
+
+  const brandFlagsBlock = Array.isArray(qa.brandSafetyFlags) && qa.brandSafetyFlags.length > 0 ? `
+    <div style="margin-top:14px;padding:12px 14px;background:rgba(232,84,84,.06);border-left:2px solid var(--red);border-radius:0 3px 3px 0">
+      <div class="label" style="margin-bottom:6px;color:var(--red)">Brand safety flags (${qa.brandSafetyFlags.length})</div>
+      ${qa.brandSafetyFlags.map((f: any) => `
+        <div style="font-size:12px;color:var(--text);margin-bottom:6px;line-height:1.55">
+          <strong style="color:var(--red)">${esc(f.category)}:</strong> ${esc(f.reason)}
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:2px">"${esc(f.excerpt)}"</div>
+        </div>
+      `).join("")}
+    </div>
+  ` : "";
+
+  return `
+    <div style="margin-bottom:16px;padding:14px 18px;background:${bg};border:1px solid ${color};border-radius:3px;max-width:820px">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:8px;height:8px;border-radius:50%;background:${color}"></span>
+          <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:11px;color:${color};font-weight:500">${levelLabel[qa.level] || qa.level}</span>
+        </div>
+        <span style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${qa.wordCount ? qa.wordCount.toLocaleString() + ' words' : ''}</span>
+      </div>
+      ${checkRows}
+      ${brandFlagsBlock}
+      ${factClaimsBlock}
+    </div>
+  `;
+}
 
 // ---------- list page ----------
 
@@ -239,6 +323,8 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
       </div>
     ` : ""}
 
+    ${renderQaPanel(draft)}
+
     ${(user.role === "admin" || user.role === "agency_admin") ? `
       <!-- Generate in voice. Separate form from the save form so it has
            its own submit action. Brief is optional; the voice engine will
@@ -297,12 +383,19 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <input type="hidden" name="status" value="rejected">
           <button type="submit" class="btn btn-ghost" ${status === "rejected" ? "disabled" : ""}>Send back for rewrite</button>
         </form>
+        ${status === "approved" && draft.qa_level !== "held" ? `
+          <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/publish" onsubmit="return confirm('Publish this draft to your WordPress site now?')">
+            <button type="submit" class="btn" style="background:var(--green);border-color:var(--green);color:#080808">Publish to WordPress</button>
+          </form>
+        ` : ""}
         ${user.role === "admin" || user.role === "agency_admin" ? `
           <form method="POST" action="/drafts/${esc(clientSlug)}/${draft.id}/delete" onsubmit="return confirm('Delete this draft permanently? This cannot be undone.')" style="margin-left:auto">
             <button type="submit" class="btn btn-ghost" style="color:var(--red,#c96a6a)">Delete</button>
           </form>
         ` : ""}
       </div>
+      ${url?.searchParams.get("pub_error") ? `<div style="margin-top:14px;padding:10px 14px;background:rgba(201,106,106,.08);border-left:2px solid var(--red);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.6">${esc(url.searchParams.get("pub_error") || "")}</div>` : ""}
+      ${url?.searchParams.get("pub_ok") ? `<div style="margin-top:14px;padding:10px 14px;background:rgba(106,154,106,.08);border-left:2px solid var(--green);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.6">Published to WordPress. <a href="${esc(url.searchParams.get("pub_ok") || "")}" target="_blank" rel="noopener" style="color:var(--gold)">View post &#8599;</a></div>` : ""}
     </div>
 
     ${versions.length > 0 ? `
@@ -421,6 +514,24 @@ export async function handleDraftGenerate(clientSlug: string, draftId: number, r
     score = res?.score ?? null;
   } catch {}
 
+  // Run the full QA pipeline: mechanical checks + brand-safety + fact
+  // extraction. Cached on the draft row so we don't re-run on each
+  // detail-page render. Failures are non-fatal -- the draft still saves.
+  let qaJson: string | null = null;
+  let qaLevel: string | null = null;
+  try {
+    const qa = await runContentQa(env, {
+      title: draft.title,
+      body: newBody,
+      kind: draft.kind || "article",
+      voiceScore: score,
+    });
+    qaJson = JSON.stringify(qa);
+    qaLevel = qa.level;
+  } catch (e) {
+    console.error(`[drafts] QA pipeline failed for draft ${draftId}: ${e}`);
+  }
+
   const now = Math.floor(Date.now() / 1000);
 
   // Snapshot the OLD body into version history before we overwrite.
@@ -432,8 +543,8 @@ export async function handleDraftGenerate(clientSlug: string, draftId: number, r
   }
 
   await env.DB.prepare(
-    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
-  ).bind(newBody, score, now, draftId, clientSlug).run();
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, qa_result_json = ?, qa_level = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+  ).bind(newBody, score, qaJson, qaLevel, now, draftId, clientSlug).run();
 
   return redirect(`/drafts/${slugPath}/${draftId}?gen_ok=1`);
 }
@@ -489,10 +600,20 @@ export async function handleDraftCreateAndGenerate(clientSlug: string, request: 
     score = res?.score ?? null;
   } catch {}
 
+  let qaJson: string | null = null;
+  let qaLevel: string | null = null;
+  try {
+    const qa = await runContentQa(env, { title, body, kind, voiceScore: score });
+    qaJson = JSON.stringify(qa);
+    qaLevel = qa.level;
+  } catch (e) {
+    console.error(`[drafts] QA pipeline failed for draft ${draftId}: ${e}`);
+  }
+
   const updatedAt = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
-    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ?"
-  ).bind(body, score, updatedAt, draftId).run();
+    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, qa_result_json = ?, qa_level = ?, updated_at = ? WHERE id = ?"
+  ).bind(body, score, qaJson, qaLevel, updatedAt, draftId).run();
 
   return redirect(`/drafts/${slugPath}/${draftId}?gen_ok=1`);
 }
@@ -523,9 +644,19 @@ export async function handleDraftSave(clientSlug: string, draftId: number, reque
     } catch {}
   }
 
-  await env.DB.prepare(
-    "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
-  ).bind(body, newScore, now, draftId, clientSlug).run();
+  // Any edit invalidates the cached QA result. Blank it out here; it'll
+  // be recomputed on the next full generation. We don't auto-run QA on
+  // every save because manual edits are small and Claude passes cost.
+  const bodyChanged = body !== current.body_markdown;
+  if (bodyChanged) {
+    await env.DB.prepare(
+      "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, qa_result_json = NULL, qa_level = NULL, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(body, newScore, now, draftId, clientSlug).run();
+  } else {
+    await env.DB.prepare(
+      "UPDATE content_drafts SET body_markdown = ?, voice_score = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
+    ).bind(body, newScore, now, draftId, clientSlug).run();
+  }
 
   // Snapshot the previous version into content_draft_versions so edits are
   // revertable. We store the OLD body, not the new one, so history reads
@@ -560,6 +691,67 @@ export async function handleDraftStatus(clientSlug: string, draftId: number, req
   }
 
   return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}`);
+}
+
+/**
+ * Publish an approved draft to WordPress. Guards:
+ *   - QA level must not be "held"
+ *   - Status must be "approved"
+ *   - A wp_connection must exist for the client
+ * Links the draft to a scheduled_drafts row if one exists (matched by
+ * title) so the calendar shows the post as published.
+ */
+export async function handleDraftPublish(clientSlug: string, draftId: number, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
+  if (!canUseDraftingFeature(user)) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+  }
+
+  const draft = await env.DB.prepare(
+    "SELECT * FROM content_drafts WHERE id = ? AND client_slug = ?",
+  ).bind(draftId, clientSlug).first<ContentDraft>();
+  if (!draft) return redirect(`/drafts/${encodeURIComponent(clientSlug)}`);
+
+  // Hard rails: never publish a held-QA draft, never publish non-approved.
+  if (draft.qa_level === "held") {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent("Draft is held by QA. Address brand-safety flags before publishing.")}`);
+  }
+  if (draft.status !== "approved") {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent("Draft must be approved before publishing.")}`);
+  }
+
+  const { getConnection, publishDraft } = await import("../wordpress");
+  const conn = await getConnection(clientSlug, env);
+  if (!conn) {
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent("No WordPress connection. Connect one first in Publishing settings.")}`);
+  }
+
+  try {
+    const { url: postUrl } = await publishDraft(
+      {
+        title: draft.title,
+        content_markdown: draft.body_markdown || "",
+        scheduled_date: null,
+      },
+      conn,
+      env,
+    );
+
+    // If there's a matching scheduled_drafts row, mark it published.
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare(
+      `UPDATE scheduled_drafts
+         SET status = 'published', draft_id = ?, published_url = ?, published_at = ?, updated_at = ?
+         WHERE client_slug = ? AND (draft_id = ? OR (draft_id IS NULL AND title = ?))`,
+    ).bind(draftId, postUrl, now, now, clientSlug, draftId, draft.title).run();
+
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_ok=${encodeURIComponent(postUrl)}`);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Publish failed.";
+    return redirect(`/drafts/${encodeURIComponent(clientSlug)}/${draftId}?pub_error=${encodeURIComponent(msg)}`);
+  }
 }
 
 /**

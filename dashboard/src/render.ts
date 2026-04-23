@@ -68,8 +68,10 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Improve</div>
         <a href="${slugify('/roadmap')}" class="sidebar-item${active('Roadmap')}">Roadmap${roadmapBadge}</a>
+        ${canDraft ? `<a href="${slugify('/calendar')}" class="sidebar-item${active('Calendar')}" title="Your content runway -- planned, drafted, approved, and published pieces">Calendar</a>` : ''}
         ${canDraft ? `<a href="${slugify('/voice')}" class="sidebar-item${active('Voice')}" title="Upload writing samples so drafts sound like you">Voice</a>` : ''}
         ${canDraft ? `<a href="${slugify('/drafts')}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="In-dashboard content drafts, editor, and export">Drafts</a>` : ''}
+        ${canDraft ? `<a href="${slugify('/publishing')}" class="sidebar-item${active('Publishing')}" title="WordPress connection for auto-publishing approved drafts">Publishing</a>` : ''}
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-header">Learn</div>

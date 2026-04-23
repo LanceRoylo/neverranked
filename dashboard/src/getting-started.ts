@@ -94,9 +94,10 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
     },
   ];
 
-  // Amplify-only final step: voice profile + first draft. Shown as a
-  // locked row for non-Amplify plans so they see what's available on
-  // upgrade, but never contributes to completion if they can't reach it.
+  // Amplify-only final steps: voice profile + WordPress hookup. Shown
+  // as locked rows for non-Amplify plans so they see what's available
+  // on upgrade, but never contribute to completion if they can't
+  // reach it.
   if (canDraft) {
     steps.push({
       key: "voice_draft",
@@ -105,6 +106,20 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
       href: `/voice/${slug}`,
       cta: voiceDone ? "Generate draft" : "Upload samples",
       done: voiceDone && draftDone,
+    });
+    // Publishing step: customer connects WordPress so approved drafts
+    // auto-publish on schedule. Table may not have a row yet, so a
+    // null result = not done.
+    const wpRow = await env.DB.prepare(
+      "SELECT last_test_status FROM wp_connections WHERE client_slug = ?",
+    ).bind(slug).first<{ last_test_status: string | null }>();
+    steps.push({
+      key: "publishing",
+      label: "Connect your WordPress site",
+      desc: "One-time setup so approved drafts publish to your site on their scheduled date.",
+      href: `/publishing/${slug}`,
+      cta: "Connect WordPress",
+      done: wpRow?.last_test_status === "ok",
     });
   } else {
     steps.push({
