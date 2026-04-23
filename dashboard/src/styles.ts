@@ -323,16 +323,19 @@ a.card:hover{border-color:var(--gold-dim)}
 .nr-dot-row>span:nth-child(3){animation-delay:-1.04s}
 .nr-dot-row>span:nth-child(4){animation-delay:-.78s}
 .nr-dot-row>span:nth-child(5){animation-delay:-.52s}
+/* Tight single-point peak at 20%. Before/after stays dim. With 5 dots
+   offset by 20% of cycle, exactly one dot is ever at the peak at a
+   time -- no overlap of bright neighbors. */
 @keyframes nr-dot-fill{
-  0%,55%,100%{
+  0%,15%,30%,100%{
     background:rgba(201,168,76,.12);
     transform:scale(1);
     box-shadow:none;
   }
-  15%,35%{
+  20%{
     background:var(--gold);
-    transform:scale(1.5);
-    box-shadow:0 0 10px rgba(201,168,76,.7);
+    transform:scale(1.6);
+    box-shadow:0 0 12px rgba(201,168,76,.8);
   }
 }
 /* Label next to the dot row. Subtle opacity pulse so the text feels
