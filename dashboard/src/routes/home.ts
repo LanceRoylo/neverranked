@@ -7,6 +7,7 @@ import { layout, html, esc, safeParse } from "../render";
 import { getGoogleAuthUrl } from "../gsc";
 import { buildStatusCard } from "../status";
 import { buildGlossary } from "../glossary";
+import { getClientChecklist, renderChecklistCard, shouldShowChecklist } from "../getting-started";
 
 interface HomeGscData {
   clicks: number;
@@ -887,6 +888,16 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
   // "What changed" banner for clients returning after absence
   const changeBanner = await buildChangeBanner(user, env);
 
+  // Getting Started checklist — client role only. Hidden once all
+  // actionable steps are done or the user dismisses it.
+  let checklistHtml = "";
+  if (user.role === "client" && user.client_slug) {
+    const steps = await getClientChecklist(user, env);
+    if (shouldShowChecklist(user, steps)) {
+      checklistHtml = renderChecklistCard(steps);
+    }
+  }
+
   const body = `
     <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
       <div>
@@ -900,6 +911,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       </div>
     </div>
 
+    ${checklistHtml}
     ${await buildStatusCard(user, env)}
     ${user.role === "client" && user.client_slug ? await buildRoiCard(user, env) : ""}
     ${changeBanner}

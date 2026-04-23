@@ -322,6 +322,23 @@ export default {
       return handleOnboardingSkip(user, env);
     }
 
+    // Getting Started checklist dismissal / reopen. Dismiss hides the
+    // card on the home Dashboard; reset clears it so the card shows
+    // again (triggered from the "Getting started" avatar-menu link).
+    if (path === "/onboarding/checklist/dismiss" && method === "POST") {
+      await env.DB.prepare(
+        "UPDATE users SET checklist_dismissed_at = ? WHERE id = ?",
+      ).bind(Math.floor(Date.now() / 1000), user.id).run();
+      const referer = request.headers.get("Referer");
+      return redirect(referer && referer.startsWith(new URL(request.url).origin) ? referer : "/");
+    }
+    if (path === "/onboarding/checklist/reset" && method === "POST") {
+      await env.DB.prepare(
+        "UPDATE users SET checklist_dismissed_at = NULL WHERE id = ?",
+      ).bind(user.id).run();
+      return redirect(user.role === "agency_admin" ? "/agency" : "/");
+    }
+
     // Auto-redirect non-onboarded clients to onboarding
     if (user.role === "client" && !user.onboarded) {
       return redirect("/onboarding");

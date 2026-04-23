@@ -89,6 +89,7 @@ export interface User {
   totp_enabled_at: number | null;
   totp_recovery_codes: string | null;
   totp_verified?: number; // joined from session row in getUser()
+  checklist_dismissed_at: number | null;
   created_at: number;
   last_login_at: number | null;
   // Runtime-only fields (not in DB)

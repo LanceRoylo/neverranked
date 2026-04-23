@@ -14,6 +14,7 @@ import type { Env, User, Domain, ScanResult, Agency } from "../types";
 import { layout, html, esc, redirect, shortDate } from "../render";
 import { getAgency, getAgencyBySlug, listAgencyClients, countActiveSlots } from "../agency";
 import { snippetTag } from "../agency-emails";
+import { getAgencyChecklist, renderChecklistCard, shouldShowChecklist } from "../getting-started";
 
 interface ClientRow {
   domain: Domain;
@@ -397,50 +398,17 @@ export async function handleAgencyDashboard(
     </div>
   `;
 
-  // First-run checklist. Shown until all required steps are done. The
-  // checks read live from the database; once each is complete the row
-  // disappears, and once everything is done the whole card vanishes
-  // automatically -- no dismiss state to track.
-  const hasInvitedTeammate = !!(await env.DB.prepare(
-    "SELECT 1 FROM agency_invites WHERE agency_id = ? AND role = 'agency_admin' LIMIT 1"
-  ).bind(agency.id).first());
-  const hasInvitedClient = !!(await env.DB.prepare(
-    "SELECT 1 FROM agency_invites WHERE agency_id = ? AND role = 'client' LIMIT 1"
-  ).bind(agency.id).first());
-  const hasBranding = !!(agency.logo_url || (agency.primary_color && agency.primary_color !== "#c9a84c"));
-  const hasBilling = agency.status === "active" && !!agency.stripe_subscription_id;
-  const hasClient = clients.length > 0;
-  const hasTeamOrClient = hasInvitedTeammate || hasInvitedClient;
-
-  const checklistSteps: { label: string; done: boolean; href: string; cta: string }[] = [
-    { label: "Set your branding (logo + color)", done: hasBranding, href: "/agency/settings", cta: "Open settings" },
-    { label: "Activate your subscription", done: hasBilling, href: "/agency/billing", cta: "Activate billing" },
-    { label: "Add your first client", done: hasClient, href: "/agency/clients/new", cta: "Add now" },
-    { label: "Invite a teammate or client", done: hasTeamOrClient, href: "/agency/invites", cta: "Send invites" },
-  ];
-  const stepsDone = checklistSteps.filter((s) => s.done).length;
-  const stepsTotal = checklistSteps.length;
-  const checklistBlock = stepsDone < stepsTotal && user.role === "agency_admin"
-    ? `
-      <div class="card" style="margin-bottom:24px;border-color:var(--gold-dim)">
-        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px">
-          <h3 style="margin:0">Get set up</h3>
-          <span class="label" style="font-size:11px">${stepsDone} of ${stepsTotal} done</span>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:8px">
-          ${checklistSteps.map((s) => `
-            <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)">
-              <span style="font-family:var(--mono);width:18px;color:${s.done ? 'var(--green)' : 'var(--text-faint)'}">
-                ${s.done ? '&check;' : '&middot;'}
-              </span>
-              <span style="flex:1;${s.done ? 'color:var(--text-faint);text-decoration:line-through' : ''}">${esc(s.label)}</span>
-              ${s.done ? '' : `<a href="${esc(s.href)}" class="btn btn-ghost" style="padding:4px 10px;font-size:11px">${esc(s.cta)}</a>`}
-            </div>
-          `).join("")}
-        </div>
-      </div>
-    `
-    : "";
+  // Getting Started checklist -- unified with the client Dashboard
+  // card. Auto-completes from live DB state; respects per-user
+  // dismissal (user.checklist_dismissed_at). Only shown for agency
+  // admins viewing their own agency home.
+  let checklistBlock = "";
+  if (user.role === "agency_admin") {
+    const steps = await getAgencyChecklist(user, env);
+    if (shouldShowChecklist(user, steps)) {
+      checklistBlock = renderChecklistCard(steps);
+    }
+  }
 
   const flash = url.searchParams.get("flash");
   const flashError = url.searchParams.get("error");

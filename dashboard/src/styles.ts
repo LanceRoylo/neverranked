@@ -128,15 +128,17 @@ img,svg{display:block;max-width:100%}
   font-family:var(--mono);font-size:12px;color:var(--text-faint);
   word-break:break-all;
 }
-.avatar-panel a{
-  display:block;padding:10px 14px;
+.avatar-panel a,.avatar-panel .avatar-panel-link{
+  display:block;width:100%;text-align:left;
+  padding:10px 14px;
   font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
   font-size:11px;color:var(--text-mute);
-  border-bottom:1px solid var(--line);
+  border:none;border-bottom:1px solid var(--line);
+  background:none;cursor:pointer;
   transition:background .15s,color .15s;
 }
-.avatar-panel a:last-child{border-bottom:none}
-.avatar-panel a:hover{background:var(--gold-wash);color:var(--text)}
+.avatar-panel a:last-child,.avatar-panel form:last-child .avatar-panel-link{border-bottom:none}
+.avatar-panel a:hover,.avatar-panel .avatar-panel-link:hover{background:var(--gold-wash);color:var(--text)}
 .avatar-panel a.active{color:var(--gold)}
 
 /* The shell: sidebar column + main column. Grid is cleaner than flex
@@ -188,6 +190,121 @@ img,svg{display:block;max-width:100%}
   line-height:1;
 }
 .sidebar-item .nav-badge{margin-left:auto}
+
+/* ---------- Getting Started checklist ----------
+   Persistent card at the top of Dashboard/Agency home. Quiet gold
+   framing, progress bar on the right, a stepped ordered list, and a
+   subtle dismiss link at the bottom. Hides entirely when all actionable
+   steps are done or the user dismisses it. */
+.gs-card{
+  background:var(--bg-lift);
+  border:1px solid var(--gold-dim);
+  border-radius:var(--radius);
+  padding:28px 28px 22px;
+  margin-bottom:32px;
+  position:relative;
+}
+.gs-head{
+  display:flex;align-items:flex-start;justify-content:space-between;
+  gap:24px;flex-wrap:wrap;margin-bottom:22px;
+}
+.gs-eyebrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;
+  font-size:10px;color:var(--gold);margin-bottom:4px;
+}
+.gs-title{
+  font-family:var(--serif);font-size:24px;font-weight:400;
+  color:var(--text);letter-spacing:-.01em;line-height:1.2;margin:0;
+}
+.gs-progress{min-width:180px}
+.gs-progress-label{
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  margin-bottom:6px;text-align:right;
+}
+.gs-progress-bar{
+  height:4px;background:var(--line);border-radius:2px;overflow:hidden;
+}
+.gs-progress-fill{
+  height:100%;background:var(--gold);
+  transition:width .4s var(--ease);
+}
+.gs-steps{
+  list-style:none;padding:0;margin:0;
+  display:flex;flex-direction:column;gap:2px;
+}
+.gs-step{
+  display:flex;align-items:flex-start;gap:16px;
+  padding:14px 4px;
+  border-top:1px solid var(--line);
+  transition:background .15s;
+}
+.gs-step:first-child{border-top:none}
+.gs-step-icon{
+  flex-shrink:0;
+  width:22px;height:22px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:12px;line-height:1;
+  border:1px solid var(--line-strong);
+  color:var(--text-faint);background:var(--bg);
+  margin-top:2px;
+}
+.gs-step-done .gs-step-icon{
+  background:var(--gold);color:var(--bg);border-color:var(--gold);
+  font-weight:600;
+}
+.gs-step-locked .gs-step-icon{
+  background:transparent;color:var(--text-faint);
+  border-style:dashed;font-size:8px;
+}
+.gs-step-body{flex:1;min-width:0}
+.gs-step-label{
+  font-family:var(--serif);font-size:16px;color:var(--text);
+  line-height:1.3;
+}
+.gs-step-done .gs-step-label{
+  color:var(--text-mute);text-decoration:line-through;
+  text-decoration-color:var(--gold-dim);
+}
+.gs-step-locked .gs-step-label{color:var(--text-mute)}
+.gs-step-desc{
+  font-family:var(--mono);font-size:12px;color:var(--text-faint);
+  line-height:1.55;margin-top:4px;
+}
+.gs-step-action{flex-shrink:0;margin-left:16px}
+.gs-step-cta{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;color:var(--gold);
+  padding:7px 14px;border:1px solid var(--gold-dim);
+  border-radius:var(--radius);background:transparent;
+  transition:background .15s,border-color .15s;
+  white-space:nowrap;
+}
+.gs-step-cta:hover{background:var(--gold-wash);border-color:var(--gold)}
+.gs-step-cta-locked{
+  color:var(--text-faint);border-color:var(--line);
+}
+.gs-step-cta-locked:hover{color:var(--gold);border-color:var(--gold-dim);background:var(--gold-wash)}
+.gs-step-cta-done{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+  font-size:11px;color:var(--text-faint);
+  padding:7px 14px;
+}
+.gs-dismiss{margin-top:8px;text-align:right}
+.gs-dismiss-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);
+  padding:4px 0;
+  transition:color .15s;
+}
+.gs-dismiss-btn:hover{color:var(--text-mute);text-decoration:underline}
+@media(max-width:720px){
+  .gs-card{padding:20px 18px 16px}
+  .gs-head{gap:12px}
+  .gs-progress{min-width:140px;flex:1}
+  .gs-step{flex-wrap:wrap;gap:12px}
+  .gs-step-action{width:100%;margin-left:38px}
+  .gs-step-action .gs-step-cta,.gs-step-action .gs-step-cta-done{display:inline-block}
+}
 
 /* Client-context breadcrumb strip for agency admins viewing a specific
    client. Lives above the main page content, not under the topbar, so

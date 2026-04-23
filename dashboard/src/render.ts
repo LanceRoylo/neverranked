@@ -128,6 +128,9 @@ export function layout(
         </summary>
         <div class="avatar-panel" role="menu">
           <div class="avatar-panel-email">${esc(user.email)}</div>
+          <form method="POST" action="/onboarding/checklist/reset" style="margin:0">
+            <button type="submit" class="avatar-panel-link" role="menuitem">Getting started</button>
+          </form>
           <a href="/settings" class="${title === 'Settings' ? 'active' : ''}" role="menuitem">Settings</a>
           <a href="/support" class="${title === 'Support' ? 'active' : ''}" role="menuitem">Support</a>
           <a href="/logout" role="menuitem">Sign out</a>
