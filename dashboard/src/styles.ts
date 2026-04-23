@@ -266,46 +266,69 @@ a.card:hover{border-color:var(--gold-dim)}
 .status-complete,.status-done{color:var(--green);border-color:var(--green)}
 
 /* ---------- shared loading widgets ----------
-   Drop-in animated indicators for any long-running action (LLM calls,
-   URL fetches, etc). Visible movement is the whole point -- users need
-   to see obvious motion so they know the page is working, not stuck.
+   Drop-in animated indicators for any long-running action. Three motion
+   cues running simultaneously -- a rotating spinner, pulsing label, and
+   animated dots -- so it's impossible to mistake for a frozen screen.
 */
 .nr-loading-bar{
-  position:relative;
   display:inline-block;
-  width:140px;
-  height:4px;
-  background:rgba(201,168,76,.14);
-  border-radius:2px;
-  overflow:hidden;
+  width:26px;
+  height:26px;
+  border:3px solid rgba(201,168,76,.18);
+  border-top-color:var(--gold);
+  border-right-color:var(--gold);
+  border-radius:50%;
+  animation:nr-spin .7s linear infinite;
   vertical-align:middle;
+  box-sizing:border-box;
+  flex-shrink:0;
 }
-.nr-loading-bar::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:-40%;
-  width:40%;
-  height:100%;
-  background:var(--gold);
-  border-radius:2px;
-  animation:nr-loading-slide 1.15s ease-in-out infinite;
+@keyframes nr-spin{
+  from{transform:rotate(0deg)}
+  to{transform:rotate(360deg)}
 }
-@keyframes nr-loading-slide{
-  0%{left:-40%}
-  100%{left:100%}
-}
-/* Inline busy row: bar + label + elapsed-time counter. */
+/* Inline busy row: spinner + pulsing label + elapsed-time counter. */
 .nr-busy{
   display:none;
   align-items:center;
-  gap:12px;
+  gap:14px;
+  padding:10px 16px;
+  background:rgba(201,168,76,.08);
+  border:1px solid var(--gold-dim);
+  border-radius:4px;
   font-family:var(--mono);
-  font-size:12px;
+  font-size:13px;
   color:var(--gold);
+  animation:nr-busy-pulse 1.6s ease-in-out infinite;
 }
 .nr-busy.on{display:inline-flex}
-/* Pulsing dot for compact contexts where a 140px bar is too wide. */
+@keyframes nr-busy-pulse{
+  0%,100%{background-color:rgba(201,168,76,.08);border-color:var(--gold-dim)}
+  50%{background-color:rgba(201,168,76,.18);border-color:var(--gold)}
+}
+.nr-busy-label{
+  animation:nr-label-fade 1.2s ease-in-out infinite;
+}
+@keyframes nr-label-fade{
+  0%,100%{opacity:1}
+  50%{opacity:.55}
+}
+/* Animated dots after the label. Three dots cycling. */
+.nr-busy-dots::after{
+  display:inline-block;
+  width:20px;
+  text-align:left;
+  content:"";
+  animation:nr-dots 1.4s steps(4,end) infinite;
+}
+@keyframes nr-dots{
+  0%{content:""}
+  25%{content:"."}
+  50%{content:".."}
+  75%{content:"..."}
+  100%{content:""}
+}
+/* Compact variant for tight contexts. */
 .nr-loading-dot{
   display:inline-block;
   width:8px;
