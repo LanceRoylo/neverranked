@@ -86,7 +86,7 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
   // profile already exists) in a small row beneath the profile card.
   const buildButton = canBuild && samples.length > 0 ? `
     <form method="POST" action="/voice/${esc(clientSlug)}/build" style="display:inline-block" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Building\u2026';">
-      <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Uses an Anthropic API call; typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
+      <button type="submit" class="btn" title="Reads all samples below and distills them into a voice profile. Typically takes 10-25 seconds.">${fpData ? "Rebuild profile" : "Build voice profile now"}</button>
     </form>
   ` : "";
 
@@ -128,7 +128,7 @@ export async function handleVoicePage(clientSlug: string, user: User, env: Env, 
           <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
             ${buildButton}
             <span style="font-size:11px;color:var(--text-faint);line-height:1.55;max-width:440px">
-              Builds from the samples below. Uses an Anthropic API call so it takes ~15 seconds. Admins only.
+              Builds from the samples below. Typically takes ~15 seconds. Admins only.
             </span>
           </div>
         ` : ""}
