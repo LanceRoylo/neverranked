@@ -214,7 +214,10 @@ ${poweredBy}
       form.querySelectorAll('.nr-idle').forEach(function(el){el.style.display='none'});
       var busy=form.querySelector('.nr-busy');
       if(busy) busy.classList.add('on');
-      // Cycle through phase messages if any.
+      // Cycle through phase messages if any. Uses requestAnimationFrame
+      // chaining (more reliable than setInterval during form-submit
+      // navigation in Safari) and starts the first transition at 1s
+      // so the user sees motion quickly.
       var phasesEl=form.querySelector('.nr-phases');
       if(phasesEl){
         var raw=phasesEl.getAttribute('data-phases')||'';
@@ -222,17 +225,25 @@ ${poweredBy}
         if(phases.length>0){
           var i=0;
           phasesEl.textContent=phases[0];
-          setInterval(function(){
-            i=(i+1)%phases.length;
-            // Brief fade-out-in so the message change is itself a motion
-            // cue, not just a silent text swap.
-            phasesEl.style.transition='opacity .2s';
-            phasesEl.style.opacity='0';
-            setTimeout(function(){
-              phasesEl.textContent=phases[i];
-              phasesEl.style.opacity='1';
-            },220);
-          },2200);
+          phasesEl.style.transition='opacity .22s';
+          var lastSwap=performance.now();
+          var firstDelay=1000;
+          var swapEvery=2000;
+          function tick(now){
+            var elapsed=now-lastSwap;
+            var threshold=(i===0)?firstDelay:swapEvery;
+            if(elapsed>=threshold){
+              i=(i+1)%phases.length;
+              phasesEl.style.opacity='0';
+              setTimeout(function(){
+                phasesEl.textContent=phases[i];
+                phasesEl.style.opacity='1';
+              },180);
+              lastSwap=now;
+            }
+            requestAnimationFrame(tick);
+          }
+          requestAnimationFrame(tick);
         }
       }
     });
