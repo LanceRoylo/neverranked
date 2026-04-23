@@ -15,6 +15,7 @@ import { layout, html, esc, redirect, shortDate } from "../render";
 import { getAgency, getAgencyBySlug, listAgencyClients, countActiveSlots } from "../agency";
 import { snippetTag } from "../agency-emails";
 import { getAgencyChecklist, renderChecklistCard, shouldShowChecklist } from "../getting-started";
+import { renderImpactStrip } from "../impact-strip";
 
 interface ClientRow {
   domain: Domain;
@@ -201,6 +202,30 @@ export async function handleAgencyDashboard(
 
   const totalActive = clients.filter((c) => c.active === 1).length;
   const totalPaused = clients.filter((c) => c.active === 0).length;
+
+  // Roster-wide content-pipeline rollup. Aggregates outcomes across
+  // every scheduled_drafts row whose client_slug belongs to this
+  // agency so the agency admin sees "what is my roster producing?"
+  // in one place instead of clicking into each client's calendar.
+  const rosterSlugs = clients.map(c => c.client_slug);
+  let rosterPublished = 0;
+  let rosterCitationsEarned = 0;
+  let rosterDraftsInReview = 0;
+  if (rosterSlugs.length > 0) {
+    const placeholders = rosterSlugs.map(() => "?").join(",");
+    const published = await env.DB.prepare(
+      `SELECT COUNT(*) AS cnt, COALESCE(SUM(earned_citations_count), 0) AS earned
+         FROM scheduled_drafts
+         WHERE status = 'published' AND client_slug IN (${placeholders})`,
+    ).bind(...rosterSlugs).first<{ cnt: number; earned: number }>();
+    rosterPublished = published?.cnt || 0;
+    rosterCitationsEarned = published?.earned || 0;
+    const inReview = await env.DB.prepare(
+      `SELECT COUNT(*) AS cnt FROM content_drafts
+         WHERE status = 'in_review' AND client_slug IN (${placeholders})`,
+    ).bind(...rosterSlugs).first<{ cnt: number }>();
+    rosterDraftsInReview = inReview?.cnt || 0;
+  }
 
   const clientsTable = clientRows.length === 0
     ? `<div class="empty">
@@ -445,6 +470,13 @@ export async function handleAgencyDashboard(
       ${stat("Signal slots", slots.signal)}
       ${stat("Amplify slots", slots.amplify)}
     </div>
+
+    ${rosterPublished > 0 || rosterDraftsInReview > 0 ? renderImpactStrip([
+      { value: rosterPublished, label: "pieces shipped across roster" },
+      { value: rosterCitationsEarned, label: "citations earned", accent: rosterCitationsEarned > 0 ? "var(--green)" : "var(--text)" },
+      { value: rosterDraftsInReview, label: "drafts awaiting review", accent: rosterDraftsInReview > 0 ? "var(--gold)" : "var(--text)" },
+      { value: slots.amplify, label: "active Amplify clients" },
+    ], { eyebrow: "Roster impact" }) : ""}
 
     <div class="card">
       <div class="section-header" style="margin-bottom:16px">

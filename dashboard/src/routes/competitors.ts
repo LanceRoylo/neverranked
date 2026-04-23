@@ -12,6 +12,7 @@ import { canAccessClient } from "../agency";
 import { validateCompetitorSuggestion } from "../competitor-sanity";
 import { logAutomation } from "../automation";
 import { buildGlossary } from "../glossary";
+import { renderImpactStrip } from "../impact-strip";
 
 interface ComparisonRow {
   domain: Domain;
@@ -409,25 +410,16 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
       </div>
     </div>
 
+    ${renderImpactStrip([
+      { value: primaryScore, label: "your AEO score", accent: "var(--text)" },
+      { value: wins, label: "competitors outperformed", accent: wins > 0 ? "var(--green)" : "var(--text)" },
+      { value: ties, label: "tied on score" },
+      { value: losses, label: "competitors ahead", accent: losses > 0 ? "var(--red)" : "var(--text)" },
+    ], { eyebrow: "Competitive position", caption: `${competitors.length} competitor${competitors.length === 1 ? "" : "s"} tracked` })}
+
     <!-- Context -->
     <div class="narrative-context" style="margin-bottom:32px">
       ${buildCompetitorNarrative(primaryScore, wins, losses, ties, competitors.length, advantages, gaps)}
-    </div>
-
-    <!-- Win/Loss Summary -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px">
-      <div style="padding:20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
-        <div style="font-size:32px;font-family:var(--serif);color:var(--green);margin-bottom:4px">${wins}</div>
-        <div style="font-family:var(--label);font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)">Outperforming</div>
-      </div>
-      <div style="padding:20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
-        <div style="font-size:32px;font-family:var(--serif);color:var(--text-faint);margin-bottom:4px">${ties}</div>
-        <div style="font-family:var(--label);font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)">Tied</div>
-      </div>
-      <div style="padding:20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;text-align:center">
-        <div style="font-size:32px;font-family:var(--serif);color:var(--red);margin-bottom:4px">${losses}</div>
-        <div style="font-family:var(--label);font-size:10px;text-transform:uppercase;letter-spacing:.15em;color:var(--text-faint)">Behind</div>
-      </div>
     </div>
 
     ${advantages.length > 0 || gaps.length > 0 ? `

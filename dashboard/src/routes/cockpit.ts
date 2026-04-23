@@ -9,6 +9,7 @@ import type { Env, User, Domain, ScanResult } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { getAnalyticsSummary } from "../analytics";
 import { getAutomationSettings, setAutomationPaused, setDailyDigestEnabled } from "../automation";
+import { detectStuckItems, renderStuckItemsWidget } from "../stuck-items";
 
 interface ClientHealth {
   slug: string;
@@ -349,6 +350,11 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     </div>
   ` : "";
 
+  // Stuck items -- unified "what needs my attention?" across every
+  // long-running workflow. See stuck-items.ts for the detector logic.
+  const stuckItems = await detectStuckItems(env);
+  const stuckItemsWidget = renderStuckItemsWidget(stuckItems);
+
   const body = `
     <div style="margin-bottom:40px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
       <div>
@@ -365,6 +371,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         ${automationToggleForm}
       </div>
     </div>
+
+    ${stuckItemsWidget}
 
     <!-- Pulse: traffic + activity -->
     <div class="card" style="margin-bottom:32px;border:1px solid var(--line)">

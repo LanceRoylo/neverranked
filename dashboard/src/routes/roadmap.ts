@@ -11,6 +11,7 @@ import { layout, html, redirect, esc } from "../render";
 import { regenerateRoadmap } from "../auto-provision";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
+import { renderImpactStrip } from "../impact-strip";
 
 const CATEGORIES: Record<string, string> = {
   schema: "Schema Markup",
@@ -251,7 +252,16 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
   // Overall progress across all phases
   const totalItems = allItems.length;
   const totalDone = allItems.filter(i => i.status === "done").length;
+  const totalInProgress = allItems.filter(i => i.status === "in_progress").length;
   const completedPhases = updatedPhases.filter(p => p.status === "completed").length;
+
+  // Velocity: items delivered in the last 30 days, and median days-to-
+  // ship from when an item moved to in_progress (if we have the data).
+  const THIRTY_DAYS_AGO = Math.floor(Date.now() / 1000) - 30 * 86400;
+  const recentlyDelivered = allItems.filter(i => i.status === "done" && i.completed_at && i.completed_at > THIRTY_DAYS_AGO).length;
+  // Stalled = in_progress but not touched in 14 days.
+  const FOURTEEN_DAYS_AGO = Math.floor(Date.now() / 1000) - 14 * 86400;
+  const stalledCount = allItems.filter(i => i.status === "in_progress" && i.updated_at < FOURTEEN_DAYS_AGO).length;
 
   // Build the phase journey indicator
   const journeyHtml = buildPhaseJourney(updatedPhases);
@@ -468,6 +478,13 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
         </div>
       </div>
     </div>
+
+    ${totalItems > 0 ? renderImpactStrip([
+      { value: totalDone, suffix: `/ ${totalItems}`, label: "items delivered", accent: "var(--text)" },
+      { value: recentlyDelivered, label: "delivered last 30 days", accent: recentlyDelivered > 0 ? "var(--green)" : "var(--text)" },
+      { value: totalInProgress, label: "actively in progress" },
+      { value: stalledCount, label: "stalled 14+ days", accent: stalledCount > 0 ? "var(--red)" : "var(--text)" },
+    ], { eyebrow: "Momentum", caption: `${completedPhases} of ${updatedPhases.length} phases complete` }) : ""}
 
     <!-- Context -->
     <div class="narrative-context" style="margin-bottom:24px">

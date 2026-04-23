@@ -10,6 +10,7 @@ import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { scanDomain } from "./scanner";
 import { scanDomainPages } from "./pages";
 import { runContentPipeline, runContentOutcomeScan } from "./content-pipeline";
+import { runScanStreakCheck, runRoadmapStallCheck } from "./safety-sweeps";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { checkAndAlertRegression, checkAndCelebrateGradeUp } from "./regression";
 import { autoCompleteRoadmapItems } from "./auto-complete";
@@ -277,6 +278,11 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Dormancy check-in: paying user hasn't logged in in 21+ days. Send
   // a "what changed while you were away" email to re-engage.
   await runDormancyCheckIn(env);
+  // Safety sweeps: the content-pipeline auto-pause pattern extended
+  // to scans and roadmap. Each fires at most one admin_alert per
+  // (client, type) per 7 days, so repeated failures don't spam.
+  await runScanStreakCheck(env);
+  await runRoadmapStallCheck(env);
   // Content pipeline: generate drafts for scheduled topics approaching
   // their ship date, auto-publish approved drafts whose scheduled date
   // has arrived (trust-window gated). Self-guards via scheduled_drafts
