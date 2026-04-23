@@ -233,7 +233,7 @@ export async function handleDraftDetail(clientSlug: string, draftId: number, use
           <button type="submit" class="btn nr-busy-trigger" data-busy-label="Drafting\u2026">Generate draft</button>
           <span class="nr-idle" style="font-size:11px;color:var(--text-faint)">Takes 10-30 seconds. Requires a voice profile to be built first.</span>
           <div class="nr-busy">
-            <span class="nr-dot-row" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
+            <span class="nr-dot-row" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></span>
             <span class="nr-busy-label">Drafting in your voice&hellip;</span>
           </div>
         </div>

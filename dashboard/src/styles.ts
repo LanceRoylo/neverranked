@@ -288,33 +288,48 @@ a.card:hover{border-color:var(--gold-dim)}
   0%,100%{background-color:rgba(201,168,76,.08);border-color:var(--gold-dim)}
   50%{background-color:rgba(201,168,76,.18);border-color:var(--gold)}
 }
-/* Dot row: 7 dots, each with an animation-delay staggered so the
-   illumination sweeps left-to-right on an infinite loop. Classic
-   'progress' indicator. */
+/* Dot row: 5 dots with negative animation-delays so each is already
+   mid-cycle at display-visible time. Guarantees the stagger regardless
+   of browser quirks around animation-start on display:none -> visible.
+   Bigger dots (10px), longer bright window, dimmer baseline so the
+   bright peak is unmistakable. */
 .nr-dot-row{
   display:inline-flex;
-  gap:6px;
+  gap:8px;
   align-items:center;
   flex-shrink:0;
 }
 .nr-dot-row>span{
   display:inline-block;
-  width:7px;
-  height:7px;
+  width:10px;
+  height:10px;
   border-radius:50%;
-  background:rgba(201,168,76,.22);
-  animation:nr-dot-fill 1.6s ease-in-out infinite;
+  background:rgba(201,168,76,.12);
+  animation-name:nr-dot-fill;
+  animation-duration:1.3s;
+  animation-timing-function:ease-in-out;
+  animation-iteration-count:infinite;
 }
+/* Negative delays = animation is "already" that far in, so when the
+   busy row becomes visible every dot is at a different phase.
+   Dot 1 at t=0 is fresh, dot 2 is 260ms ahead in cycle, etc. This
+   creates the wave from the very first rendered frame. */
 .nr-dot-row>span:nth-child(1){animation-delay:0s}
-.nr-dot-row>span:nth-child(2){animation-delay:.12s}
-.nr-dot-row>span:nth-child(3){animation-delay:.24s}
-.nr-dot-row>span:nth-child(4){animation-delay:.36s}
-.nr-dot-row>span:nth-child(5){animation-delay:.48s}
-.nr-dot-row>span:nth-child(6){animation-delay:.60s}
-.nr-dot-row>span:nth-child(7){animation-delay:.72s}
+.nr-dot-row>span:nth-child(2){animation-delay:-.26s}
+.nr-dot-row>span:nth-child(3){animation-delay:-.52s}
+.nr-dot-row>span:nth-child(4){animation-delay:-.78s}
+.nr-dot-row>span:nth-child(5){animation-delay:-1.04s}
 @keyframes nr-dot-fill{
-  0%,60%,100%{background:rgba(201,168,76,.22);transform:scale(1)}
-  25%,35%{background:var(--gold);transform:scale(1.35);box-shadow:0 0 6px rgba(201,168,76,.55)}
+  0%,55%,100%{
+    background:rgba(201,168,76,.12);
+    transform:scale(1);
+    box-shadow:none;
+  }
+  15%,35%{
+    background:var(--gold);
+    transform:scale(1.5);
+    box-shadow:0 0 10px rgba(201,168,76,.7);
+  }
 }
 /* Label next to the dot row. Subtle opacity pulse so the text feels
    alive even though it doesn't change. */
