@@ -10,7 +10,7 @@ import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings } from "./routes/admin";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings } from "./routes/admin";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -512,6 +512,10 @@ export default {
     const scanMatch = path.match(/^\/admin\/scan\/(\d+)$/);
     if (scanMatch && method === "POST" && user.role === "admin") {
       return handleManualScan(Number(scanMatch[1]), user, env);
+    }
+    const cronTestMatch = path.match(/^\/admin\/scan\/(\d+)\/as-cron$/);
+    if (cronTestMatch && method === "POST" && user.role === "admin") {
+      return handleCronTestScan(Number(cronTestMatch[1]), user, env);
     }
     const editMatch = path.match(/^\/admin\/suggestion\/(\d+)\/edit$/);
     if (editMatch && method === "POST" && user.role === "admin") {

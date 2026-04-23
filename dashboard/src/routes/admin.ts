@@ -524,6 +524,30 @@ export async function handleManualScan(domainId: number, user: User, env: Env): 
   return redirect(`/domain/${domain.id}`);
 }
 
+/**
+ * Trigger a scan that records itself as scan_type='cron' instead of
+ * 'manual'. This is a diagnostic tool -- it's what you use to prove a
+ * scanner fix works without waiting for Monday's natural cron. The
+ * scan still runs in Request context so it won't reproduce any bug
+ * that's specific to the scheduled-event runtime, but it exercises the
+ * same scanner code path (retries, fallbacks, error capture) and
+ * persists a distinguishable row in scan_results for inspection.
+ */
+export async function handleCronTestScan(domainId: number, user: User, env: Env): Promise<Response> {
+  const domain = await env.DB.prepare(
+    "SELECT * FROM domains WHERE id = ? AND active = 1"
+  ).bind(domainId).first<Domain>();
+
+  if (!domain) {
+    return redirect("/admin/manage");
+  }
+
+  const url = `https://${domain.domain}/`;
+  await scanDomain(domain.id, url, "cron", env);
+
+  return redirect(`/domain/${domain.id}?flash=cron_test_complete`);
+}
+
 /** Edit a competitor suggestion — updates both the suggestion record and the domains table */
 export async function handleEditSuggestion(suggestionId: number, request: Request, user: User, env: Env): Promise<Response> {
   const suggestion = await env.DB.prepare(

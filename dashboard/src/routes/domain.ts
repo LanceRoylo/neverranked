@@ -1686,7 +1686,10 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
         <form method="POST" action="/domain/${domain.id}/share">
           <button type="submit" class="btn btn-ghost no-print">Share report</button>
         </form>
-        ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}">
+        ${user.role === 'admin' ? `<form method="POST" action="/admin/scan/${domain.id}/as-cron" style="display:inline">
+          <button type="submit" class="btn btn-ghost no-print" title="Runs scanDomain with scan_type='cron' instead of 'manual'. Diagnostic: use this to verify scanner fixes without waiting for Monday's natural cron.">Run as cron</button>
+        </form>
+        <form method="POST" action="/admin/scan/${domain.id}">
           <button type="submit" class="btn ${latest && latest.error ? 'btn-ghost' : ''} no-print" title="${latest && latest.error ? 'Last scan failed. Retrying may hit the same issue -- check the error detail above first.' : ''}">Run scan</button>
         </form>` : (() => {
           // Client rescan: rate-limited to once per 24h
