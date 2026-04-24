@@ -38,8 +38,24 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
   // Agencies -- feeds the "Assign to agency" dropdown in the add-domain
   // form and the manual slot-reconcile UI.
   const agencies = (await env.DB.prepare(
-    "SELECT id, slug, name, status, stripe_subscription_id, amplify_slot_item_id FROM agencies ORDER BY status DESC, name"
-  ).all<Pick<Agency, "id" | "slug" | "name" | "status" | "stripe_subscription_id" | "amplify_slot_item_id">>()).results;
+    "SELECT id, slug, name, status, stripe_subscription_id, amplify_slot_item_id, trial_used FROM agencies ORDER BY status DESC, name"
+  ).all<Pick<Agency, "id" | "slug" | "name" | "status" | "stripe_subscription_id" | "amplify_slot_item_id" | "trial_used">>()).results;
+
+  // Trial funnel snapshot: active trials in progress, conversions in
+  // last 30d, expirations in last 30d. Keeps the feature observable
+  // without building a separate admin page.
+  const trialStatsRaw = await env.DB.prepare(
+    `SELECT
+       (SELECT COUNT(DISTINCT a.id) FROM agencies a
+          JOIN domains d ON d.agency_id = a.id AND d.trial = 1 AND d.active = 1
+         WHERE a.stripe_subscription_id IS NULL) AS active_trials,
+       (SELECT COUNT(*) FROM agencies
+         WHERE trial_used = 1 AND stripe_subscription_id IS NOT NULL
+           AND updated_at > strftime('%s','now') - 30*86400) AS converted_30d,
+       (SELECT COUNT(DISTINCT type) FROM admin_alerts
+         WHERE type LIKE 'trial_expired_%' AND created_at > strftime('%s','now') - 30*86400) AS expired_30d`
+  ).first<{ active_trials: number; converted_30d: number; expired_30d: number }>();
+  const trialStats = trialStatsRaw || { active_trials: 0, converted_30d: 0, expired_30d: 0 };
 
   // Live slot counts for each agency (DB source of truth) -- shown next
   // to the reconcile button so admins can spot drift at a glance.
@@ -122,15 +138,26 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
         <form method="POST" action="/admin/agencies/${a.id}/reconcile" style="margin:0">
           <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px" title="Push DB slot counts to Stripe">Reconcile slots</button>
         </form>
+        ${a.trial_used ? `
+        <form method="POST" action="/admin/agencies/${a.id}/trial-reset" style="margin:0"
+              onsubmit="return confirm('Reset trial for ${esc(a.slug)}? This lets them add another free trial client.')">
+          <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px;border-color:var(--gold-dim)" title="Clear trial_used so this agency can start another trial">Reset trial</button>
+        </form>
+        ` : ""}
       </div>
     `;
   }).join("");
 
   const agenciesSection = agencies.length > 0 ? `
     <div class="card" style="margin-bottom:16px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:16px;flex-wrap:wrap">
         <h3 style="margin:0;font-style:italic">Agencies</h3>
         <span class="label" style="font-size:10px">${agencies.length} total</span>
+      </div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:14px">
+        Trial funnel (last 30d): <strong style="color:var(--text)">${trialStats.active_trials}</strong> active
+        &middot; <strong style="color:var(--text)">${trialStats.converted_30d}</strong> converted
+        &middot; <strong style="color:var(--text)">${trialStats.expired_30d}</strong> expired
       </div>
       ${agencyRows}
     </div>
@@ -727,4 +754,28 @@ export async function handleAdminResendOnboarding(
 
   console.log(`[admin-resend-onboarding] actor=${actor.email} target=${target.email}`);
   return redirect("/admin/manage?flash=" + encodeURIComponent(`Onboarding email re-sent to ${target.email}.`));
+}
+
+/**
+ * POST /admin/agencies/:id/trial-reset
+ *
+ * Clears trial_used on an agency so they can start another trial
+ * client. Use cases: test account cleanup, customer hit the trial with
+ * the wrong domain and needs a do-over. Does NOT delete any existing
+ * trial domains -- those keep their trial=1 flag until the agency
+ * activates billing or the dormancy sweep deactivates them.
+ */
+export async function handleAdminTrialReset(agencyId: number, env: Env): Promise<Response> {
+  const now = Math.floor(Date.now() / 1000);
+  const agency = await env.DB.prepare(
+    "SELECT id, slug FROM agencies WHERE id = ?"
+  ).bind(agencyId).first<{ id: number; slug: string }>();
+  if (!agency) {
+    return redirect("/admin?error=" + encodeURIComponent("Agency not found."));
+  }
+  await env.DB.prepare(
+    "UPDATE agencies SET trial_used = 0, updated_at = ? WHERE id = ?"
+  ).bind(now, agencyId).run();
+  console.log(`[admin-trial-reset] agency=${agency.slug} (${agencyId}) trial_used cleared`);
+  return redirect("/admin?flash=" + encodeURIComponent(`Trial reset for ${agency.slug}. They can add another trial client.`));
 }

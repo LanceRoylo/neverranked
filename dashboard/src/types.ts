@@ -176,6 +176,9 @@ export interface Domain {
   snippet_nudge_day14_at: number | null;
   snippet_nudge_day21_at: number | null;
   snippet_pause_check_at: number | null;
+  // 1 while the domain is on the pre-billing trial. Cleared by webhook
+  // or lazy reconcile once the agency activates a Stripe subscription.
+  trial: number;
   created_at: number;
   updated_at: number;
 }
@@ -195,6 +198,9 @@ export interface Agency {
   signal_slot_item_id: string | null;
   amplify_slot_item_id: string | null;
   intro_discount_ends_at: number | null;
+  // 1 once this agency has used its one trial client. Prevents
+  // delete-and-retry cycling. Cleared from /admin if ops decides.
+  trial_used: number;
   notes: string | null;
   created_at: number;
   updated_at: number;

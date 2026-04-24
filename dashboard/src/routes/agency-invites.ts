@@ -345,6 +345,13 @@ export async function handleInviteClient(request: Request, user: User | null, en
     return redirect("/agency/invites?error=" + encodeURIComponent("Please pick a client and enter a valid email."));
   }
 
+  // Client portal invites are a paid feature. Trial agencies can see
+  // the form but submits bounce to billing so it's clear what unlocks
+  // the flow. The trial itself was sold as "internal only."
+  if (!agency.stripe_subscription_id) {
+    return redirect("/agency/billing?reason=portal_access&error=" + encodeURIComponent("Client portal invites unlock when you activate your subscription."));
+  }
+
   // Verify client_slug actually belongs to this agency.
   const owns = await env.DB.prepare(
     "SELECT 1 FROM domains WHERE client_slug = ? AND agency_id = ? AND is_competitor = 0 LIMIT 1"

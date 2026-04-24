@@ -217,6 +217,31 @@ export async function handleAgencyCheckoutCompleted(event: any, env: Env): Promi
   ).bind(customerId, subscriptionId, signalItemId, amplifyItemId, introEndsAt, now, agencyId).run();
 
   console.log(`Agency ${agency.slug} (${agencyId}) activated: sub=${subscriptionId} customer=${customerId}`);
+
+  // Trial conversion: any trial clients this agency has been running
+  // pre-billing are now real, billed clients. Clear the flag and
+  // reconcile Stripe quantities so Signal goes 0 -> 1 (or more) to
+  // match actual client count. Fires lazily on /agency load too, in
+  // case this webhook drops.
+  try {
+    const converted = await env.DB.prepare(
+      `UPDATE domains SET trial = 0, updated_at = ?
+        WHERE agency_id = ? AND trial = 1`
+    ).bind(now, agencyId).run();
+    const rows = converted.meta?.changes || 0;
+    if (rows > 0) {
+      const { reconcileAgencySlots } = await import("./agency-slots");
+      await reconcileAgencySlots(env, agencyId);
+      await env.DB.prepare(
+        `INSERT INTO agency_slot_events
+           (agency_id, plan, event_type, quantity_before, quantity_after, note, created_at)
+         VALUES (?, 'signal', 'activated', 0, ?, ?, ?)`
+      ).bind(agencyId, rows, `Trial converted on checkout: ${rows} client(s)`, now).run();
+      console.log(`[stripe-agency] converted ${rows} trial client(s) for agency ${agencyId}`);
+    }
+  } catch (e) {
+    console.log(`[stripe-agency] trial conversion failed for agency ${agencyId}: ${e} -- lazy reconcile will retry`);
+  }
 }
 
 /**

@@ -52,7 +52,7 @@ function autoSlugFromDomain(domain: string): string {
 async function loadAgencyForAddClient(
   user: User,
   env: Env,
-): Promise<{ agency: Agency; blockReason?: string }> {
+): Promise<{ agency: Agency; blockReason?: string; trialEligible?: boolean }> {
   if (!user.agency_id) {
     return { agency: null as unknown as Agency, blockReason: "Your account isn't attached to an agency." };
   }
@@ -64,7 +64,13 @@ async function loadAgencyForAddClient(
     return { agency, blockReason: "Your agency status is not active. Contact ops." };
   }
   if (!agency.stripe_subscription_id) {
-    return { agency, blockReason: "no_subscription" };
+    // Trial path: an approved agency with no Stripe sub yet can add
+    // exactly ONE client (trial=1) if they haven't used their trial
+    // already. After that, they get bounced to /agency/billing.
+    if (agency.trial_used) {
+      return { agency, blockReason: "no_subscription" };
+    }
+    return { agency, trialEligible: true };
   }
   return { agency };
 }
@@ -75,7 +81,7 @@ async function loadAgencyForAddClient(
 
 export async function handleAgencyAddClientGet(user: User | null, env: Env, url: URL): Promise<Response> {
   if (!user || user.role !== "agency_admin") return new Response("Forbidden", { status: 403 });
-  const { agency, blockReason } = await loadAgencyForAddClient(user, env);
+  const { agency, blockReason, trialEligible } = await loadAgencyForAddClient(user, env);
 
   // No subscription yet -> point them at billing instead of the form.
   if (blockReason === "no_subscription") {
@@ -101,17 +107,40 @@ export async function handleAgencyAddClientGet(user: User | null, env: Env, url:
   // Pre-fill from query params if the user landed here from a previous error.
   const prefillSlug = (url.searchParams.get("slug") || "").trim();
   const prefillDomain = (url.searchParams.get("domain") || "").trim();
-  const prefillPlan = (url.searchParams.get("plan") || "signal").trim();
-  const prefillMode = (url.searchParams.get("mode") || "internal").trim();
+  // Trial clients are locked to Signal / internal -- the paid plan
+  // picker is the second conversion lever, not part of the trial.
+  const prefillPlan = trialEligible ? "signal" : (url.searchParams.get("plan") || "signal").trim();
+  const prefillMode = trialEligible ? "internal" : (url.searchParams.get("mode") || "internal").trim();
   const errorMsg = url.searchParams.get("error") || "";
 
   const slots = await countActiveSlots(env, agency.id);
 
+  const trialBanner = trialEligible ? `
+      <div class="card" style="max-width:680px;border-color:var(--gold);background:var(--bg-edge);margin-bottom:18px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <span style="color:var(--gold);font-weight:600;letter-spacing:.04em;font-size:12px;text-transform:uppercase">Trial</span>
+          <div style="flex:1">
+            <p style="margin:0 0 8px 0;font-size:14px;line-height:1.6;color:var(--text)">
+              Add one client without billing to see the product work. Activate your Stripe subscription any time to add more or switch on Amplify.
+            </p>
+            <p style="margin:0;font-size:12px;line-height:1.7;color:var(--text-faint)">
+              <strong style="color:var(--text)">Included:</strong> weekly AEO scans, citation tracking, roadmap, schema health.
+              <strong style="color:var(--text)">Requires paid plan:</strong> more than one client, client portal invites, Amplify auto-push.
+            </p>
+          </div>
+        </div>
+      </div>
+  ` : "";
+
   const body = `
     <div class="section-header">
       <h1>Add a <em>client</em></h1>
-      <p class="section-sub">Provisioning is instant. The snippet install email goes to your agency contact (${esc(agency.contact_email || "no email on file")}) the moment you click add.</p>
+      <p class="section-sub">${trialEligible
+        ? `This is your trial client. Provisioning is instant. The snippet install email goes to your agency contact (${esc(agency.contact_email || "no email on file")}).`
+        : `Provisioning is instant. The snippet install email goes to your agency contact (${esc(agency.contact_email || "no email on file")}) the moment you click add.`}</p>
     </div>
+
+    ${trialBanner}
 
     ${errorMsg ? `<div class="flash flash-error">${esc(errorMsg)}</div>` : ""}
 
@@ -134,6 +163,28 @@ export async function handleAgencyAddClientGet(user: User | null, env: Env, url:
         </div>
       </div>
 
+      ${trialEligible ? `
+      <div class="card" style="margin-bottom:18px">
+        <div class="label" style="margin-bottom:10px;color:var(--gold)">Plan</div>
+        <input type="hidden" name="plan" value="signal">
+        <div style="padding:14px;border:1px solid var(--line);border-radius:4px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <strong>Signal (trial)</strong>
+            <span style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">$0 until you activate billing</span>
+          </div>
+          <p style="font-size:12px;color:var(--text-faint);line-height:1.6;margin:6px 0 0">Weekly scoring, citation tracking, roadmap. Amplify auto-push unlocks when you activate a paid subscription.</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:18px">
+        <div class="label" style="margin-bottom:10px;color:var(--gold)">Access mode</div>
+        <input type="hidden" name="client_access" value="internal">
+        <div style="padding:14px;border:1px solid var(--line);border-radius:4px">
+          <strong>Internal</strong>
+          <p style="font-size:12px;color:var(--text-faint);line-height:1.6;margin:6px 0 0">During trial, only your team sees the dashboard. Client-portal invites unlock when you activate a paid subscription.</p>
+        </div>
+      </div>
+      ` : `
       <div class="card" style="margin-bottom:18px">
         <div class="label" style="margin-bottom:14px;color:var(--gold)">Plan</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px" id="plan-cards">
@@ -188,9 +239,10 @@ export async function handleAgencyAddClientGet(user: User | null, env: Env, url:
           <div class="muted" style="font-size:12px;margin-top:8px" id="preview-cost">+$${prefillPlan === "amplify" ? AMPLIFY_BASE : SIGNAL_BASE}/mo at base rate, prorated to today on your next invoice. Volume discounts apply automatically at 10 and 25 slots.</div>
         </div>
       </div>
+      `}
 
       <div style="display:flex;gap:10px;align-items:center">
-        <button type="submit" class="btn">Add client</button>
+        <button type="submit" class="btn">${trialEligible ? "Start trial" : "Add client"}</button>
         <a href="/agency" class="btn btn-ghost">Cancel</a>
       </div>
     </form>
@@ -240,15 +292,18 @@ export async function handleAgencyAddClientGet(user: User | null, env: Env, url:
 
 export async function handleAgencyAddClientPost(request: Request, user: User | null, env: Env): Promise<Response> {
   if (!user || user.role !== "agency_admin") return new Response("Forbidden", { status: 403 });
-  const { agency, blockReason } = await loadAgencyForAddClient(user, env);
+  const { agency, blockReason, trialEligible } = await loadAgencyForAddClient(user, env);
   if (blockReason === "no_subscription") return redirect("/agency/billing?error=" + encodeURIComponent("Activate your subscription before adding clients."));
   if (blockReason) return redirect("/agency?error=" + encodeURIComponent(blockReason));
+  const isTrial = !!trialEligible;
 
   const form = await request.formData();
   const domainRaw = ((form.get("domain") as string) || "").trim().toLowerCase();
   const slugRaw = ((form.get("client_slug") as string) || "").trim().toLowerCase();
-  const plan = ((form.get("plan") as string) || "").trim().toLowerCase();
-  const access = ((form.get("client_access") as string) || "").trim().toLowerCase();
+  // Trial always forces Signal/internal regardless of what the client
+  // posted -- defense-in-depth against tampered hidden inputs.
+  const plan = isTrial ? "signal" : ((form.get("plan") as string) || "").trim().toLowerCase();
+  const access = isTrial ? "internal" : ((form.get("client_access") as string) || "").trim().toLowerCase();
 
   // Normalize domain (strip protocol / www / path).
   const domain = domainRaw
@@ -289,9 +344,9 @@ export async function handleAgencyAddClientPost(request: Request, user: User | n
     const result = await env.DB.prepare(
       `INSERT INTO domains
          (client_slug, domain, is_competitor, active,
-          agency_id, plan, client_access, activated_at, created_at, updated_at)
-       VALUES (?, ?, 0, 1, ?, ?, ?, ?, ?, ?)`
-    ).bind(slug, domain, agency.id, plan, access, now, now, now).run();
+          agency_id, plan, client_access, trial, activated_at, created_at, updated_at)
+       VALUES (?, ?, 0, 1, ?, ?, ?, ?, ?, ?, ?)`
+    ).bind(slug, domain, agency.id, plan, access, isTrial ? 1 : 0, now, now, now).run();
     newDomainId = (result.meta?.last_row_id as number) || null;
   } catch (e) {
     console.log(`[agency-add-client] insert failed: ${e}`);
@@ -303,30 +358,47 @@ export async function handleAgencyAddClientPost(request: Request, user: User | n
   // If Stripe rejects, roll back the domain insert so D1 and Stripe
   // stay in sync. Otherwise the agency would have an active client in
   // our DB that Stripe isn't billing, and neither side would know.
-  try {
-    await reconcileAgencySlots(env, agency.id);
-  } catch (e) {
-    console.log(`[agency-add-client] reconcile failed for agency ${agency.id}: ${e}`);
+  //
+  // Trial clients skip this entirely: there is no Stripe subscription
+  // yet, so nothing to reconcile. The conversion webhook (or lazy
+  // reconcile on /agency load) handles syncing when billing activates.
+  if (!isTrial) {
     try {
-      await env.DB.prepare("DELETE FROM domains WHERE id = ?").bind(newDomainId).run();
-    } catch (delErr) {
-      console.log(`[agency-add-client] rollback delete failed for domain ${newDomainId}: ${delErr}`);
+      await reconcileAgencySlots(env, agency.id);
+    } catch (e) {
+      console.log(`[agency-add-client] reconcile failed for agency ${agency.id}: ${e}`);
+      try {
+        await env.DB.prepare("DELETE FROM domains WHERE id = ?").bind(newDomainId).run();
+      } catch (delErr) {
+        console.log(`[agency-add-client] rollback delete failed for domain ${newDomainId}: ${delErr}`);
+      }
+      return queryback("Billing update failed -- the client wasn't added. Try again, or contact ops if it keeps failing.");
     }
-    return queryback("Billing update failed -- the client wasn't added. Try again, or contact ops if it keeps failing.");
-  }
 
-  // Slot event ledger row. Only logged after Stripe is in sync so the
-  // ledger never shows an activation that got rolled back.
-  try {
-    const slotsAfter = await countActiveSlots(env, agency.id);
-    const after = plan === "amplify" ? slotsAfter.amplify : slotsAfter.signal;
-    await env.DB.prepare(
-      `INSERT INTO agency_slot_events
-         (agency_id, domain_id, plan, event_type, quantity_before, quantity_after, note, created_at)
-         VALUES (?, ?, ?, 'activated', ?, ?, ?, ?)`
-    ).bind(agency.id, newDomainId, plan, after - 1, after, `Added by agency_admin user ${user.id} (self-serve)`, now).run();
-  } catch (e) {
-    console.log(`[agency-add-client] slot event log failed: ${e}`);
+    // Slot event ledger row. Only logged after Stripe is in sync so the
+    // ledger never shows an activation that got rolled back. Trial rows
+    // are excluded -- they aren't billed slots yet.
+    try {
+      const slotsAfter = await countActiveSlots(env, agency.id);
+      const after = plan === "amplify" ? slotsAfter.amplify : slotsAfter.signal;
+      await env.DB.prepare(
+        `INSERT INTO agency_slot_events
+           (agency_id, domain_id, plan, event_type, quantity_before, quantity_after, note, created_at)
+           VALUES (?, ?, ?, 'activated', ?, ?, ?, ?)`
+      ).bind(agency.id, newDomainId, plan, after - 1, after, `Added by agency_admin user ${user.id} (self-serve)`, now).run();
+    } catch (e) {
+      console.log(`[agency-add-client] slot event log failed: ${e}`);
+    }
+  } else {
+    // Lock the agency's trial -- they can't cycle through delete+re-add
+    // to keep getting free clients. Cleared only by an admin action.
+    try {
+      await env.DB.prepare(
+        "UPDATE agencies SET trial_used = 1, updated_at = ? WHERE id = ?"
+      ).bind(now, agency.id).run();
+    } catch (e) {
+      console.log(`[agency-add-client] trial_used flag write failed: ${e}`);
+    }
   }
 
   // Snippet delivery email -> agency contact gets the install instructions
@@ -359,6 +431,8 @@ export async function handleAgencyAddClientPost(request: Request, user: User | n
     console.log(`[agency-add-client] first scan failed: ${e}`);
   }
 
-  const flash = `Added ${slug} (${domain}). Snippet install email sent to ${agency.contact_email || "your agency contact"}. First scan running in the background.`;
+  const flash = isTrial
+    ? `Trial started for ${slug} (${domain}). Snippet install email sent to ${agency.contact_email || "your agency contact"}. First scan running in the background. Activate billing any time to add more clients.`
+    : `Added ${slug} (${domain}). Snippet install email sent to ${agency.contact_email || "your agency contact"}. First scan running in the background.`;
   return redirect("/agency?flash=" + encodeURIComponent(flash));
 }

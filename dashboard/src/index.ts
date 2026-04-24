@@ -10,7 +10,7 @@ import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
-import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings } from "./routes/admin";
+import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -531,6 +531,10 @@ export default {
     const reconcileMatch = path.match(/^\/admin\/agencies\/(\d+)\/reconcile$/);
     if (reconcileMatch && method === "POST" && user.role === "admin") {
       return handleReconcileAgency(Number(reconcileMatch[1]), user, env);
+    }
+    const trialResetMatch = path.match(/^\/admin\/agencies\/(\d+)\/trial-reset$/);
+    if (trialResetMatch && method === "POST" && user.role === "admin") {
+      return handleAdminTrialReset(Number(trialResetMatch[1]), env);
     }
     if (path === "/admin/automation/toggle" && method === "POST" && user.role === "admin") {
       return handleAutomationToggle(user, env);

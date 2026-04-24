@@ -289,6 +289,8 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Flag content-enabled clients whose scheduled_drafts queue is running
   // dry so we know to refill titles before the pipeline stalls.
   await runLowQueueCheck(env);
+  // Trial dormancy: nudge at day 14 and 30, deactivate at day 60.
+  await runTrialDormancyCheck(env);
   // Content pipeline: generate drafts for scheduled topics approaching
   // their ship date, auto-publish approved drafts whose scheduled date
   // has arrived (trust-window gated). Self-guards via scheduled_drafts
@@ -384,6 +386,81 @@ export async function runLowQueueCheck(env: Env): Promise<void> {
     });
   }
   console.log(`[low-queue-check] flagged ${lowClients.length} client(s) with low content queue`);
+}
+
+// ---------------------------------------------------------------------------
+// Trial dormancy
+// ---------------------------------------------------------------------------
+//
+// Agencies that added a trial client but never activated billing get
+// nudged at day 14 and day 30, then their trial client is deactivated
+// (active=0, not deleted) at day 60. Each stage fires at most one
+// admin_alert per agency via the type string so re-running is
+// idempotent. Data is preserved for re-activation later.
+
+export async function runTrialDormancyCheck(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const day14 = now - 14 * 86400;
+  const day30 = now - 30 * 86400;
+  const day60 = now - 60 * 86400;
+
+  // Pull all agencies with at least one trial=1, active=1 client and no
+  // Stripe sub. Use MIN(domains.created_at) as the trial anchor -- if
+  // they somehow have multiple trial rows, the oldest governs.
+  const rows = (await env.DB.prepare(
+    `SELECT a.id AS agency_id, a.slug, a.name, a.contact_email,
+            MIN(d.created_at) AS trial_started_at
+       FROM agencies a
+       JOIN domains d ON d.agency_id = a.id AND d.trial = 1 AND d.active = 1
+      WHERE a.stripe_subscription_id IS NULL
+      GROUP BY a.id`
+  ).all<{
+    agency_id: number; slug: string; name: string;
+    contact_email: string | null; trial_started_at: number;
+  }>()).results;
+
+  let nudged14 = 0, nudged30 = 0, expired = 0;
+
+  for (const r of rows) {
+    const age = r.trial_started_at;
+    if (age < day60) {
+      // Deactivate. Keep the data -- re-activation is just UPDATE
+      // active=1 + trial=0 after they hit Stripe checkout.
+      await env.DB.prepare(
+        "UPDATE domains SET active = 0, updated_at = ? WHERE agency_id = ? AND trial = 1"
+      ).bind(now, r.agency_id).run();
+      await createAlertIfFresh(env, {
+        clientSlug: "_system",
+        type: `trial_expired_${r.agency_id}`,
+        title: `Trial expired: ${r.name} (60d, no activation)`,
+        detail: `Agency ${r.slug} started a trial 60+ days ago and never activated billing. Trial client deactivated. Data preserved -- restore with UPDATE domains SET active=1, trial=0 WHERE agency_id=${r.agency_id}.`,
+        windowHours: 24 * 30,
+      });
+      expired++;
+    } else if (age < day30) {
+      await createAlertIfFresh(env, {
+        clientSlug: "_system",
+        type: `trial_day30_${r.agency_id}`,
+        title: `Trial day 30: ${r.name}`,
+        detail: `${r.name} (${r.contact_email || "no email"}) has had a trial client for 30+ days without activating. One more nudge, then day 60 deactivates.`,
+        windowHours: 24 * 14,
+      });
+      nudged30++;
+    } else if (age < day14) {
+      await createAlertIfFresh(env, {
+        clientSlug: "_system",
+        type: `trial_day14_${r.agency_id}`,
+        title: `Trial day 14: ${r.name}`,
+        detail: `${r.name} (${r.contact_email || "no email"}) has had a trial client for 14+ days without activating.`,
+        windowHours: 24 * 14,
+      });
+      nudged14++;
+    }
+  }
+
+  if (rows.length > 0) {
+    console.log(`[trial-dormancy] reviewed ${rows.length} trial agenc${rows.length === 1 ? "y" : "ies"}: day14=${nudged14} day30=${nudged30} expired=${expired}`);
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -121,6 +121,30 @@ export async function handleAgencyDashboard(
     return html(layout("Agency", `<div class="empty"><h3>Agency not found</h3></div>`, user), 404);
   }
 
+  // Lazy reconcile: if the agency has a Stripe subscription AND still
+  // has trial=1 domains, the conversion webhook must have dropped. Clear
+  // the flags and reconcile Stripe quantities. Self-heals without ops
+  // intervention; at most one extra Stripe call per visit when the
+  // state is inconsistent, zero when it isn't.
+  if (agency.stripe_subscription_id) {
+    try {
+      const stillTrial = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM domains WHERE agency_id = ? AND trial = 1"
+      ).bind(agency.id).first<{ n: number }>();
+      if (stillTrial && stillTrial.n > 0) {
+        const now = Math.floor(Date.now() / 1000);
+        await env.DB.prepare(
+          "UPDATE domains SET trial = 0, updated_at = ? WHERE agency_id = ? AND trial = 1"
+        ).bind(now, agency.id).run();
+        const { reconcileAgencySlots } = await import("../agency-slots");
+        await reconcileAgencySlots(env, agency.id);
+        console.log(`[agency] lazy trial conversion: cleared ${stillTrial.n} trial flag(s) for agency ${agency.id}`);
+      }
+    } catch (e) {
+      console.log(`[agency] lazy reconcile failed for agency ${agency.id}: ${e}`);
+    }
+  }
+
   const clients = await listAgencyClients(env, agency.id);
   const slots = await countActiveSlots(env, agency.id);
 
@@ -443,10 +467,48 @@ export async function handleAgencyDashboard(
     ? `<div class="flash flash-error">${esc(flashError)}</div>`
     : "";
 
+  const hasTrialClient = clients.some((c) => c.trial === 1);
+  const onTrial = hasTrialClient && !agency.stripe_subscription_id;
+  const trialBanner = onTrial ? `
+    <div class="card" style="border-color:var(--gold);background:var(--bg-edge);margin-bottom:18px">
+      <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <span style="color:var(--gold);font-weight:600;letter-spacing:.04em;font-size:12px;text-transform:uppercase;padding-top:2px">Trial active</span>
+        <div style="flex:1;min-width:260px">
+          <p style="margin:0 0 6px 0;font-size:14px;line-height:1.6;color:var(--text)">
+            You're on a free trial client. Scan, roadmap, and citation tracking are fully on.
+          </p>
+          <p style="margin:0;font-size:12px;line-height:1.7;color:var(--text-faint)">
+            Activate your Stripe subscription to add more clients, invite your client to a portal, or turn on Amplify auto-push.
+          </p>
+        </div>
+        <a href="/agency/billing" class="btn" style="align-self:center">Activate billing &rarr;</a>
+      </div>
+    </div>
+  ` : "";
+
+  const noSubNoTrialBanner = (!agency.stripe_subscription_id && !hasTrialClient && !agency.trial_used) ? `
+    <div class="card" style="border-color:var(--gold);background:var(--bg-edge);margin-bottom:18px">
+      <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <span style="color:var(--gold);font-weight:600;letter-spacing:.04em;font-size:12px;text-transform:uppercase;padding-top:2px">Welcome</span>
+        <div style="flex:1;min-width:260px">
+          <p style="margin:0 0 6px 0;font-size:14px;line-height:1.6;color:var(--text)">
+            You can add one trial client to see the product work before billing starts.
+          </p>
+          <p style="margin:0;font-size:12px;line-height:1.7;color:var(--text-faint)">
+            Trial covers weekly scans, roadmap, citations. Paid unlocks more clients, the client portal, and Amplify auto-push.
+          </p>
+        </div>
+        <a href="/agency/clients/new" class="btn" style="align-self:center">Add trial client &rarr;</a>
+      </div>
+    </div>
+  ` : "";
+
   const body = `
     ${adminPreview}
     ${flashBlock}
     ${checklistBlock}
+    ${trialBanner}
+    ${noSubNoTrialBanner}
     <div class="section-header" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
       <div>
         <h1>${esc(agency.name)}</h1>
