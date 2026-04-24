@@ -291,6 +291,9 @@ export async function runDailyTasks(env: Env): Promise<void> {
   await runLowQueueCheck(env);
   // Trial dormancy: nudge at day 14 and 30, deactivate at day 60.
   await runTrialDormancyCheck(env);
+  // Comp'd subscription expiry warnings: fire fresh alerts at T-30,
+  // T-7, and on the expiry date so they don't get buried in /admin/inbox.
+  await runCompExpiryCheck(env);
   // Content pipeline: generate drafts for scheduled topics approaching
   // their ship date, auto-publish approved drafts whose scheduled date
   // has arrived (trust-window gated). Self-guards via scheduled_drafts
@@ -460,6 +463,62 @@ export async function runTrialDormancyCheck(env: Env): Promise<void> {
 
   if (rows.length > 0) {
     console.log(`[trial-dormancy] reviewed ${rows.length} trial agenc${rows.length === 1 ? "y" : "ies"}: day14=${nudged14} day30=${nudged30} expired=${expired}`);
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Comp'd subscription expiry sweep
+// ---------------------------------------------------------------------------
+//
+// Records inserted as admin_alerts.type='comp_expiry_marker' are the
+// seed: they carry the expiry date embedded in the detail field as
+// "expires_at=<unix_ts>". This sweep parses that ts and fires fresh
+// alerts at T-30, T-7, and on/after the expiry date. Each stage
+// dedupes via a unique type string so re-runs are idempotent and the
+// alert resurfaces in /admin/inbox instead of staying buried under a
+// months-old marker.
+
+export async function runCompExpiryCheck(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const markers = (await env.DB.prepare(
+    "SELECT client_slug, detail FROM admin_alerts WHERE type = 'comp_expiry_marker'"
+  ).all<{ client_slug: string; detail: string }>()).results;
+
+  for (const m of markers) {
+    const match = m.detail.match(/expires_at=(\d+)/);
+    if (!match) continue;
+    const expiryTs = Number(match[1]);
+    if (!Number.isFinite(expiryTs)) continue;
+
+    const daysUntil = Math.ceil((expiryTs - now) / 86400);
+
+    if (daysUntil <= 0) {
+      // On or past expiry day. One alert per marker; the 30d window
+      // caps re-firing but keeps it visible if you miss the first one.
+      await createAlertIfFresh(env, {
+        clientSlug: m.client_slug,
+        type: `comp_expired_${m.client_slug}`,
+        title: `Comp subscription expired: ${m.client_slug}`,
+        detail: `Complimentary plan ended ${Math.abs(daysUntil)} day(s) ago. Decide whether to convert to paid or deactivate. Marker detail: ${m.detail}`,
+        windowHours: 24 * 30,
+      });
+    } else if (daysUntil <= 7) {
+      await createAlertIfFresh(env, {
+        clientSlug: m.client_slug,
+        type: `comp_expires_7d_${m.client_slug}`,
+        title: `Comp subscription expires in ${daysUntil} day(s): ${m.client_slug}`,
+        detail: `Comp ends soon. Reach out to decide whether to continue. Marker detail: ${m.detail}`,
+        windowHours: 24 * 7,
+      });
+    } else if (daysUntil <= 30) {
+      await createAlertIfFresh(env, {
+        clientSlug: m.client_slug,
+        type: `comp_expires_30d_${m.client_slug}`,
+        title: `Comp subscription expires in ${daysUntil} day(s): ${m.client_slug}`,
+        detail: `Comp ends within 30 days. Good time to book a conversion conversation. Marker detail: ${m.detail}`,
+        windowHours: 24 * 14,
+      });
+    }
   }
 }
 
