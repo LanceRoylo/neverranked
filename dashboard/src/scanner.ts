@@ -79,7 +79,7 @@ async function attemptScan(fetchUrl: string, reportUrl: string = fetchUrl): Prom
     const detail = err instanceof Error
       ? `${err.name}: ${err.message}`
       : String(err);
-    console.error(`[scanner] fetch failed for ${url}: ${detail}`);
+    console.error(`[scanner] fetch failed for ${fetchUrl}: ${detail}`);
     return { report: null, error: `Network: ${detail}` };
   }
 }
