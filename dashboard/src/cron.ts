@@ -286,6 +286,9 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Flag agency applications that have been pending for more than 24h
   // so they surface in /admin/inbox as a nudge to review.
   await runStaleAgencyAppCheck(env);
+  // Flag content-enabled clients whose scheduled_drafts queue is running
+  // dry so we know to refill titles before the pipeline stalls.
+  await runLowQueueCheck(env);
   // Content pipeline: generate drafts for scheduled topics approaching
   // their ship date, auto-publish approved drafts whose scheduled date
   // has arrived (trust-window gated). Self-guards via scheduled_drafts
@@ -336,6 +339,51 @@ export async function runStaleAgencyAppCheck(env: Env): Promise<void> {
     });
   }
   console.log(`[stale-app-check] reviewed ${stale.length} pending application(s)`);
+}
+
+// ---------------------------------------------------------------------------
+// Low content queue check
+// ---------------------------------------------------------------------------
+//
+// The content pipeline only ships what a human has queued in the calendar
+// UI -- there is no auto-seeder. If a client's queue runs dry the pipeline
+// quietly stops producing, which is easy to miss. This sweep flags any
+// client that looks content-enabled (has shipped or queued anything in
+// the last 60 days) but has fewer than 2 upcoming planned/drafted rows in
+// the next 30 days. windowHours=168 caps noise to one alert per client
+// per week.
+
+export async function runLowQueueCheck(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const sixtyDaysAgo = now - 60 * 86400;
+  const thirtyDaysOut = now + 30 * 86400;
+  const MIN_UPCOMING = 2;
+
+  const lowClients = (await env.DB.prepare(
+    `SELECT sd.client_slug AS slug,
+            COUNT(CASE WHEN sd.status IN ('planned','drafted')
+                        AND sd.scheduled_date BETWEEN ? AND ?
+                       THEN 1 END) AS upcoming,
+            MAX(sd.updated_at) AS last_activity
+       FROM scheduled_drafts sd
+       GROUP BY sd.client_slug
+       HAVING last_activity >= ? AND upcoming < ?`
+  ).bind(now, thirtyDaysOut, sixtyDaysAgo, MIN_UPCOMING).all<{
+    slug: string; upcoming: number; last_activity: number;
+  }>()).results;
+
+  if (lowClients.length === 0) return;
+
+  for (const row of lowClients) {
+    await createAlertIfFresh(env, {
+      clientSlug: row.slug,
+      type: "content_queue_low",
+      title: `Content queue low for ${row.slug}: ${row.upcoming} upcoming in next 30 days`,
+      detail: `Add titles in /calendar/${row.slug} to keep the pipeline shipping. Threshold is ${MIN_UPCOMING} planned/drafted in the next 30 days.`,
+      windowHours: 168,
+    });
+  }
+  console.log(`[low-queue-check] flagged ${lowClients.length} client(s) with low content queue`);
 }
 
 // ---------------------------------------------------------------------------
