@@ -283,6 +283,9 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // (client, type) per 7 days, so repeated failures don't spam.
   await runScanStreakCheck(env);
   await runRoadmapStallCheck(env);
+  // Flag agency applications that have been pending for more than 24h
+  // so they surface in /admin/inbox as a nudge to review.
+  await runStaleAgencyAppCheck(env);
   // Content pipeline: generate drafts for scheduled topics approaching
   // their ship date, auto-publish approved drafts whose scheduled date
   // has arrived (trust-window gated). Self-guards via scheduled_drafts
@@ -295,6 +298,44 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+}
+
+// ---------------------------------------------------------------------------
+// Stale agency-application nudge
+// ---------------------------------------------------------------------------
+//
+// Partner applications land in agency_applications with status='pending'
+// and an admin_alert fires immediately via /agency/apply. If the alert
+// sits unreviewed for more than 24h this sweep drops a second alert to
+// re-surface it in /admin/inbox. One alert per application via the type
+// string -- re-running the sweep is idempotent.
+
+export async function runStaleAgencyAppCheck(env: Env): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const cutoff = now - 86400;
+
+  const stale = (await env.DB.prepare(
+    `SELECT id, agency_name, contact_name, contact_email, created_at
+       FROM agency_applications
+      WHERE status = 'pending' AND created_at < ?`
+  ).bind(cutoff).all<{
+    id: number; agency_name: string; contact_name: string;
+    contact_email: string; created_at: number;
+  }>()).results;
+
+  if (stale.length === 0) return;
+
+  for (const app of stale) {
+    const hoursOld = Math.floor((now - app.created_at) / 3600);
+    await createAlertIfFresh(env, {
+      clientSlug: "_system",
+      type: `agency_app_stale_${app.id}`,
+      title: `Agency application pending ${hoursOld}h: ${app.agency_name}`,
+      detail: `${app.contact_name} (${app.contact_email}) applied ${hoursOld}h ago and is still pending review in /admin/inbox.`,
+      windowHours: 72, // one re-nudge every 3 days per application
+    });
+  }
+  console.log(`[stale-app-check] reviewed ${stale.length} pending application(s)`);
 }
 
 // ---------------------------------------------------------------------------
