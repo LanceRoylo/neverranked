@@ -33,6 +33,9 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
 
   const list = await env.LEADS.list({ prefix: "event:scan:", limit: 1000 });
 
+  // Parallelize KV reads — sequential get() on 300+ keys blocks for many seconds.
+  const rawValues = await Promise.all(list.keys.map((k) => env.LEADS.get(k.name)));
+
   const uniqueIps = new Set<string>();
   const uniqueIpUa = new Set<string>();
   const uniqueDomains = new Set<string>();
@@ -44,8 +47,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
   let earliest: string | null = null;
   let latest: string | null = null;
 
-  for (const key of list.keys) {
-    const raw = await env.LEADS.get(key.name);
+  for (const raw of rawValues) {
     if (!raw) continue;
     let evt: ScanEvent;
     try {
