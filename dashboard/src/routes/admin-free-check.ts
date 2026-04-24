@@ -114,10 +114,19 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
   const scanToCapturePct = real.length > 0 ? Math.round((captureCount / real.length) * 100) : 0;
   const captureToLeadPct = captureCount > 0 ? Math.round((leadCount / captureCount) * 100) : 0;
 
-  const topDomains = [...byDomain.entries()]
-    .map(([domain, v]) => ({ domain, count: v.count, avgScore: Math.round(v.scoreSum / v.count) }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 30);
+  const allDomains = [...byDomain.entries()]
+    .map(([domain, v]) => ({ domain, count: v.count, avgScore: Math.round(v.scoreSum / v.count) }));
+  const topDomains = [...allDomains].sort((a, b) => b.count - a.count).slice(0, 30);
+  const handRaisers = allDomains
+    .filter((d) => d.avgScore < 60 && d.count >= 2)
+    .sort((a, b) => a.avgScore - b.avgScore || b.count - a.count)
+    .slice(0, 8);
+
+  const totalGraded = Object.values(gradeCounts).reduce((s, n) => s + n, 0);
+  const lowGradeCount = gradeCounts.D + gradeCounts.F;
+  const lowGradePct = totalGraded > 0 ? Math.round((lowGradeCount / totalGraded) * 100) : 0;
+  const directRefCount = byReferrer.get("(direct)") || 0;
+  const directRefPct = real.length > 0 ? Math.round((directRefCount / real.length) * 100) : 0;
   const topReferrers = [...byReferrer.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12);
 
   // Build 14-day trend.
@@ -186,7 +195,6 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
   `;
 
   // ---- grade distribution ----
-  const totalGraded = Object.values(gradeCounts).reduce((s, n) => s + n, 0);
   const gradeBars = ["A", "B", "C", "D", "F"].map((g) => {
     const n = gradeCounts[g];
     const pct = totalGraded > 0 ? Math.round((n / totalGraded) * 100) : 0;
@@ -200,10 +208,17 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
       </div>
     `;
   }).join("");
+  const gradeNarrative = totalGraded === 0
+    ? "No scans yet."
+    : lowGradePct >= 50
+      ? `${lowGradePct}% of scanned sites scored D or F. Most people running this tool already know they have an AEO problem. That is your wedge.`
+      : lowGradePct >= 20
+        ? `${lowGradePct}% scored D or F (${lowGradeCount} sites). Solid pool of warm leads who already know they have a problem.`
+        : `Only ${lowGradePct}% scored D or F. Most scanners have decent AEO already, so they may be evaluating tools rather than urgently shopping.`;
   const gradeCard = `
     <div class="card" style="padding:16px">
       <div class="label">Grade distribution</div>
-      <div class="muted" style="font-size:11px;margin-top:4px;margin-bottom:12px">Where the websites being scanned land. Low grades are warm leads.</div>
+      <div class="muted" style="font-size:11px;margin-top:4px;margin-bottom:12px">${esc(gradeNarrative)}</div>
       ${gradeBars}
     </div>
   `;
@@ -218,10 +233,19 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
       <div style="font-size:22px;font-weight:600;font-variant-numeric:tabular-nums">${value}</div>
     </div>
   `;
+  const funnelNarrative = real.length === 0
+    ? "No scans yet."
+    : captureCount === 0
+      ? "Zero email captures so far. Either nobody is scrolling to the report, or the email-me CTA needs work. Worth a manual run to see where it sits."
+      : scanToCapturePct >= 10
+        ? `${scanToCapturePct}% of scans convert to email capture. Healthy. Industry benchmark for ungated tools is 5-15%.`
+        : scanToCapturePct >= 5
+          ? `${scanToCapturePct}% scan-to-capture rate. In the healthy band (5-15%). Worth A/B testing the CTA copy to push higher.`
+          : `${scanToCapturePct}% scan-to-capture rate. Below the 5-15% healthy band. Test the email CTA placement and copy.`;
   const funnelCard = `
     <div class="card" style="padding:16px">
       <div class="label">Conversion funnel</div>
-      <div class="muted" style="font-size:11px;margin-top:4px;margin-bottom:8px">Scans land. Some convert to email captures. Some captures become leads.</div>
+      <div class="muted" style="font-size:11px;margin-top:4px;margin-bottom:8px">${esc(funnelNarrative)}</div>
       ${funnelStep("Scans run", real.length, null)}
       ${funnelStep("Email captures", captureCount, real.length > 0 ? `${scanToCapturePct}% of scans` : null)}
       ${funnelStep("Leads stored", leadCount, captureCount > 0 ? `${captureToLeadPct}% of captures` : null)}
@@ -245,13 +269,25 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
     : wow >= 0
       ? `<span style="color:var(--green)">+${wow}%</span> vs prior 7 days`
       : `<span style="color:var(--red)">${wow}%</span> vs prior 7 days`;
+  const trendNarrative = trend14 === 0
+    ? "No scans in the last 14 days. The tool is live but nothing is hitting it. Likely a discovery or CTA problem on the landing page."
+    : wow === null
+      ? `${trend7} scans this week. Not enough history yet for a trend read.`
+      : wow >= 25
+        ? `Up ${wow}% week over week. Whatever you did last week is working. Worth documenting and doubling down.`
+        : wow >= 0
+          ? `Up ${wow}% week over week. Steady growth. Keep current outreach pace.`
+          : wow >= -25
+            ? `Down ${Math.abs(wow)}% week over week. Slight dip. Watch for another week before reacting.`
+            : `Down ${Math.abs(wow)}% week over week. Material drop. Check whether outreach paused or a referrer dried up.`;
   const trendCard = `
     <div class="card" style="padding:16px;margin-bottom:24px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
-        <div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px">
           <div class="label">14-day scan trend</div>
           <div class="muted" style="font-size:11px;margin-top:4px">${trend14} scans in last 14 days. ${trend7} in last 7. ${wowLabel}</div>
         </div>
+        <div style="flex:2;min-width:240px;font-size:12px;color:var(--text-mute);line-height:1.6">${esc(trendNarrative)}</div>
       </div>
       <div style="display:flex;gap:4px;align-items:flex-end;height:110px">
         ${trendBars}
@@ -280,7 +316,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
       <div class="card">
         <div style="padding:14px 16px;border-bottom:1px solid var(--line)">
           <div class="label">Top domains scanned</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Avg score colored by health. Red and orange are the warmest leads.</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">Domains with avg score under 60 and 2+ scans are hand-raisers. Someone there ran your tool more than once.</div>
         </div>
         <div class="table-wrap">
           <table class="data-table">
@@ -293,7 +329,7 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
       <div class="card">
         <div style="padding:14px 16px;border-bottom:1px solid var(--line)">
           <div class="label">Where visitors came from</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Referrer on the page that loaded the check tool</div>
+          <div class="muted" style="font-size:11px;margin-top:4px">${directRefPct >= 60 ? `${directRefPct}% direct. Most traffic is typed-URL or untagged outreach. Add UTM tags to attribute it properly.` : directRefPct >= 30 ? `${directRefPct}% direct. Mix of typed-URL and untagged sources. UTM your outreach links to clean this up.` : `${directRefPct}% direct. Most traffic is referred from a tracked source. Good attribution.`}</div>
         </div>
         <div class="table-wrap">
           <table class="data-table">
@@ -323,6 +359,71 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
   `;
 
   const renderedAt = new Date().toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+
+  // ---- headline (auto-generated state-of-things) ----
+  const headlineParts: string[] = [];
+  if (real.length === 0) {
+    headlineParts.push("No scans yet. The tool is live but nothing is hitting it.");
+  } else {
+    headlineParts.push(`${real.length} scan${real.length === 1 ? "" : "s"} across ${uniqueDomains.size} unique domain${uniqueDomains.size === 1 ? "" : "s"}.`);
+    if (wow !== null) {
+      if (wow >= 25) headlineParts.push(`Up ${wow}% week over week.`);
+      else if (wow > 0) headlineParts.push(`Up ${wow}% week over week.`);
+      else if (wow === 0) headlineParts.push(`Flat week over week.`);
+      else headlineParts.push(`Down ${Math.abs(wow)}% week over week.`);
+    }
+    if (handRaisers.length > 0) {
+      headlineParts.push(`${handRaisers.length} hand-raiser domain${handRaisers.length === 1 ? "" : "s"} (avg score under 60, multiple scans).`);
+    }
+    if (captureCount === 0 && real.length >= 10) {
+      headlineParts.push(`Zero email captures so far. CTA worth investigating.`);
+    } else if (captureCount > 0) {
+      headlineParts.push(`${captureCount} email capture${captureCount === 1 ? "" : "s"}.`);
+    }
+  }
+  const headline = `
+    <div class="card" style="padding:18px;margin-bottom:24px;border-left:3px solid var(--gold)">
+      <div class="label" style="margin-bottom:8px">Right now</div>
+      <div style="font-size:15px;line-height:1.6;color:var(--text)">${esc(headlineParts.join(" "))}</div>
+    </div>
+  `;
+
+  // ---- next steps panel ----
+  const actions: string[] = [];
+  if (handRaisers.length > 0) {
+    const list = handRaisers.map((d) => `<a href="https://${esc(d.domain)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(d.domain)}</a> <span class="muted" style="font-size:11px">(${d.avgScore}, ${d.count} scans)</span>`).join(", ");
+    actions.push(`<strong>Reach out to hand-raisers.</strong> ${list}. They scored low on your tool more than once. Personal outreach with a teardown of their result is the move.`);
+  }
+  if (captureCount === 0 && real.length >= 10) {
+    actions.push(`<strong>Email capture is broken or invisible.</strong> ${real.length} scans run, zero captures. Run the tool yourself end to end and check whether the email field is reachable, working, and offering enough to gate the full report.`);
+  } else if (real.length > 0 && scanToCapturePct > 0 && scanToCapturePct < 5) {
+    actions.push(`<strong>Capture rate is below benchmark.</strong> You are at ${scanToCapturePct}%, healthy is 5-15%. Test stronger CTA copy or move the email gate higher up the report.`);
+  }
+  if (wow !== null && wow <= -25) {
+    actions.push(`<strong>Scan velocity dropped ${Math.abs(wow)}%.</strong> Check whether last week's outreach paused, a referrer broke, or a paid campaign ended.`);
+  } else if (wow !== null && wow >= 25 && trend7 >= 5) {
+    actions.push(`<strong>Document what worked last week.</strong> Up ${wow}% week over week. Whatever you did is working. Capture it before you forget.`);
+  }
+  if (directRefPct >= 60 && real.length >= 10) {
+    actions.push(`<strong>Add UTM tags to your outreach.</strong> ${directRefPct}% of traffic shows as direct. You are losing attribution on most of your inbound.`);
+  }
+  if (real.length >= 1 && uniqueIps.size === 0) {
+    actions.push(`<strong>Wait for unique-visitor data to fill in.</strong> IP-hash logging started 2026-04-24. Older events are not deduped. Number will grow over the next week.`);
+  }
+  const nextStepsCard = actions.length > 0 ? `
+    <div class="card" style="padding:18px;margin-bottom:24px">
+      <div class="label" style="margin-bottom:10px">What to do next</div>
+      <ol style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;line-height:1.6;font-size:13px;color:var(--text-mute)">
+        ${actions.map((a) => `<li>${a}</li>`).join("")}
+      </ol>
+    </div>
+  ` : `
+    <div class="card" style="padding:18px;margin-bottom:24px">
+      <div class="label" style="margin-bottom:8px">What to do next</div>
+      <div class="muted" style="font-size:13px">Numbers look healthy. Keep current outreach cadence. Check this page weekly to catch shifts early.</div>
+    </div>
+  `;
+
   const footer = `
     <div class="muted" style="font-size:11px;text-align:right">Loaded ${esc(renderedAt)}. Refresh for fresh data.</div>
   `;
@@ -335,6 +436,8 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
       </p>
     </div>
 
+    ${headline}
+
     ${stats}
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px">
@@ -343,6 +446,8 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
     </div>
 
     ${trendCard}
+
+    ${nextStepsCard}
 
     ${tablesRow}
 
