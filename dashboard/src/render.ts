@@ -87,6 +87,7 @@ export function layout(
         <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
         <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>
         <a href="/admin/leads" class="sidebar-item${active('Leads')}">Leads</a>
+        <a href="/admin/free-check" class="sidebar-item${active('Free check activity')}">Free check</a>
       </div>` : ''}
     </nav>` : '';
 

@@ -14,6 +14,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
+import { handleAdminFreeCheckStats } from "./routes/admin-free-check";
 import { handleAdminNpsGet, handleAdminExitGet } from "./routes/admin-signals";
 import { handleCancelFlowGet, handleCancelFlowPost } from "./routes/cancel-flow";
 import { handleNpsPost, handleNpsDismiss } from "./routes/nps";
@@ -578,6 +579,10 @@ export default {
     // Leads (admin only)
     if (path === "/admin/leads" && method === "GET" && user.role === "admin") {
       return handleLeads(user, env);
+    }
+
+    if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
+      return handleAdminFreeCheckStats(user, env);
     }
 
     // Schema injection admin
