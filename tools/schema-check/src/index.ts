@@ -30,6 +30,12 @@ function isRateLimited(ip: string): boolean {
   return false;
 }
 
+async function sha256Hex(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 // ---------- Shared analysis logic (packages/aeo-analyzer) ----------
 
 import { buildReport } from "../../../packages/aeo-analyzer/src";
@@ -2349,8 +2355,13 @@ export default {
 
       const report = buildReport(targetUrl, html);
 
-      // Log anonymous scan event to KV (with referrer/UTM attribution)
+      // Log anonymous scan event to KV (with referrer/UTM attribution).
+      // Enriched with ip_hash + user-agent so we can dedupe unique humans
+      // and filter out internal/test traffic in the admin report.
       try {
+        const ua = request.headers.get("User-Agent") || "";
+        const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
+        const ipHash = rawIp ? await sha256Hex(rawIp) : "";
         const scanKey = `event:scan:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         const eventData: Record<string, unknown> = {
           type: "free_scan",
@@ -2358,11 +2369,15 @@ export default {
           score: report.aeo_score,
           grade: report.grade,
           ts: new Date().toISOString(),
+          ip_hash: ipHash,
+          ua,
         };
         if (referrer) eventData.referrer = referrer;
         if (Object.keys(utm).length > 0) eventData.utm = utm;
         await env.LEADS.put(scanKey, JSON.stringify(eventData), { expirationTtl: 90 * 24 * 60 * 60 });
-      } catch {}
+      } catch (e) {
+        console.error("scan-log-failed", e instanceof Error ? e.message : String(e));
+      }
 
       return Response.json(report, { headers: corsHeaders });
     }
@@ -2412,7 +2427,9 @@ export default {
           score: report.aeo_score,
           ts: new Date().toISOString(),
         }), { expirationTtl: 90 * 24 * 60 * 60 });
-      } catch {}
+      } catch (e) {
+        console.error("capture-log-failed", e instanceof Error ? e.message : String(e));
+      }
 
       // Send email if RESEND_API_KEY is set
       if (env.RESEND_API_KEY) {
@@ -2484,6 +2501,58 @@ export default {
         return Response.json({ total, referrers, utmSources }, { headers: corsHeaders });
       } catch (e) {
         return Response.json({ error: "Failed to read events" }, { status: 500, headers: corsHeaders });
+      }
+    }
+
+    if (url.pathname === "/api/admin/unique-users" && request.method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+      try {
+        const list = await env.LEADS.list({ prefix: "event:scan:", limit: 1000 });
+        const uniqueIps = new Set<string>();
+        const uniqueIpUa = new Set<string>();
+        const uniqueDomains = new Set<string>();
+        const byDomain: Record<string, number> = {};
+        const excludedBot: string[] = [];
+        const excludedInternal: string[] = [];
+        const realEvents: any[] = [];
+        const BOT_UA_RE = /playwright|headlesschrome|bot|crawler|spider|curl|wget|python-requests|axios/i;
+        for (const key of list.keys) {
+          const raw = await env.LEADS.get(key.name);
+          if (!raw) continue;
+          let evt: any;
+          try { evt = JSON.parse(raw); } catch { continue; }
+          const ua = evt.ua || "";
+          const ipHash = evt.ip_hash || "";
+          if (BOT_UA_RE.test(ua)) { excludedBot.push(key.name); continue; }
+          realEvents.push(evt);
+          if (ipHash) {
+            uniqueIps.add(ipHash);
+            uniqueIpUa.add(`${ipHash}|${ua.slice(0, 120)}`);
+          }
+          if (evt.domain) {
+            uniqueDomains.add(evt.domain);
+            byDomain[evt.domain] = (byDomain[evt.domain] || 0) + 1;
+          }
+        }
+        const topDomains = Object.entries(byDomain)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 25)
+          .map(([domain, count]) => ({ domain, count }));
+        return Response.json({
+          total_events: list.keys.length,
+          real_events: realEvents.length,
+          excluded_bot_ua: excludedBot.length,
+          unique_ips: uniqueIps.size,
+          unique_ip_ua: uniqueIpUa.size,
+          unique_domains_scanned: uniqueDomains.size,
+          top_domains: topDomains,
+          note: "ip_hash and ua fields are only populated on scans after 2026-04-24 logging fix. Older events lack these fields and will count as unique_ips=0.",
+        }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({ error: "Failed to read events", detail: String(e) }, { status: 500, headers: corsHeaders });
       }
     }
 
