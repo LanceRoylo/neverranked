@@ -2534,6 +2534,44 @@ export default {
       }
     }
 
+    // Admin: force-fire a drip email immediately (bypass age check)
+    // Use to verify the delivery pipeline without waiting 3-7 days.
+    if (url.pathname === "/api/admin/drip-force" && request.method === "POST") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+      const email = url.searchParams.get("email");
+      const day = url.searchParams.get("day");
+      if (!email || (day !== "3" && day !== "7")) {
+        return Response.json({ error: "Required: ?email=...&day=3|7" }, { status: 400, headers: corsHeaders });
+      }
+      const raw = await env.LEADS.get(`lead:${email}`);
+      if (!raw) {
+        return Response.json({ error: `No lead found for ${email}` }, { status: 404, headers: corsHeaders });
+      }
+      const lead: LeadData = JSON.parse(raw);
+      const latestScan = lead.scans[lead.scans.length - 1];
+      if (!latestScan) {
+        return Response.json({ error: "Lead has no scans" }, { status: 400, headers: corsHeaders });
+      }
+      const isDay3 = day === "3";
+      const result = await sendResend(env, {
+        from: "NeverRanked <reports@neverranked.com>",
+        to: [lead.email],
+        subject: isDay3
+          ? `${latestScan.domain} vs. the industry: where you stand`
+          : `A week later: has ${latestScan.domain} moved?`,
+        html: isDay3 ? buildDripDay3Email(latestScan, lead.email) : buildDripDay7Email(latestScan, lead.email),
+      });
+      await recordDelivery(env, isDay3 ? "drip_day3" : "drip_day7", lead.email, result);
+      if (result.ok) {
+        if (isDay3) lead.drip_day3_sent = true; else lead.drip_day7_sent = true;
+        await env.LEADS.put(`lead:${email}`, JSON.stringify(lead), { expirationTtl: 365 * 24 * 60 * 60 });
+      }
+      return Response.json({ forced: true, day, email, result }, { headers: corsHeaders });
+    }
+
     // Admin: drip + report email delivery truth-check
     if (url.pathname === "/api/admin/drip-status" && request.method === "GET") {
       const secret = url.searchParams.get("key");
