@@ -1963,6 +1963,55 @@ function daysSince(isoDate: string): number {
   return Math.floor((Date.now() - new Date(isoDate).getTime()) / (1000 * 60 * 60 * 24));
 }
 
+type ResendResult = { ok: boolean; id: string | null; status: number; error: string | null };
+
+async function sendResend(env: Env, payload: Record<string, unknown>): Promise<ResendResult> {
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    let body: any = null;
+    try { body = await resp.json(); } catch {}
+    if (resp.ok) {
+      return { ok: true, id: body?.id ?? null, status: resp.status, error: null };
+    }
+    const err = body?.message || body?.error || `HTTP ${resp.status}`;
+    return { ok: false, id: null, status: resp.status, error: String(err) };
+  } catch (e) {
+    return { ok: false, id: null, status: 0, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+async function recordDelivery(
+  env: Env,
+  kind: "drip_day3" | "drip_day7" | "report",
+  email: string,
+  result: ResendResult,
+): Promise<void> {
+  const key = kind === "report"
+    ? `report_delivery:${email}`
+    : `drip_delivery:${email}:${kind === "drip_day3" ? "day3" : "day7"}`;
+  const record = {
+    email,
+    kind,
+    status: result.ok ? "sent" : "failed",
+    resend_id: result.id,
+    http_status: result.status,
+    error: result.error,
+    ts: new Date().toISOString(),
+  };
+  try {
+    await env.LEADS.put(key, JSON.stringify(record), { expirationTtl: 365 * 24 * 60 * 60 });
+  } catch (e) {
+    console.error("delivery-record-failed", key, e instanceof Error ? e.message : String(e));
+  }
+}
+
 async function runDripSequence(env: Env): Promise<void> {
   if (!env.RESEND_API_KEY) return;
 
@@ -1982,25 +2031,19 @@ async function runDripSequence(env: Env): Promise<void> {
     if (age >= DRIP_DAY_3 && !lead.drip_day3_sent) {
       const latestScan = lead.scans[lead.scans.length - 1];
       if (latestScan) {
-        try {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "NeverRanked <reports@neverranked.com>",
-              to: [lead.email],
-              subject: `${latestScan.domain} vs. the industry: where you stand`,
-              html: buildDripDay3Email(latestScan, lead.email),
-            }),
-          });
+        const result = await sendResend(env, {
+          from: "NeverRanked <reports@neverranked.com>",
+          to: [lead.email],
+          subject: `${latestScan.domain} vs. the industry: where you stand`,
+          html: buildDripDay3Email(latestScan, lead.email),
+        });
+        await recordDelivery(env, "drip_day3", lead.email, result);
+        if (result.ok) {
           lead.drip_day3_sent = true;
           updated = true;
           sent++;
-        } catch (e) {
-          console.log(`Drip day3 failed for ${lead.email}: ${e}`);
+        } else {
+          console.error(`Drip day3 failed for ${lead.email}: status=${result.status} error=${result.error}`);
         }
       }
     }
@@ -2009,25 +2052,19 @@ async function runDripSequence(env: Env): Promise<void> {
     if (age >= DRIP_DAY_7 && !lead.drip_day7_sent) {
       const latestScan = lead.scans[lead.scans.length - 1];
       if (latestScan) {
-        try {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "NeverRanked <reports@neverranked.com>",
-              to: [lead.email],
-              subject: `A week later: has ${latestScan.domain} moved?`,
-              html: buildDripDay7Email(latestScan, lead.email),
-            }),
-          });
+        const result = await sendResend(env, {
+          from: "NeverRanked <reports@neverranked.com>",
+          to: [lead.email],
+          subject: `A week later: has ${latestScan.domain} moved?`,
+          html: buildDripDay7Email(latestScan, lead.email),
+        });
+        await recordDelivery(env, "drip_day7", lead.email, result);
+        if (result.ok) {
           lead.drip_day7_sent = true;
           updated = true;
           sent++;
-        } catch (e) {
-          console.log(`Drip day7 failed for ${lead.email}: ${e}`);
+        } else {
+          console.error(`Drip day7 failed for ${lead.email}: status=${result.status} error=${result.error}`);
         }
       }
     }
@@ -2433,23 +2470,16 @@ export default {
 
       // Send email if RESEND_API_KEY is set
       if (env.RESEND_API_KEY) {
-        try {
-          const emailHtml = buildReportEmail(report);
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: {
-              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              from: "NeverRanked <reports@neverranked.com>",
-              to: [email],
-              subject: `Your AEO Report: ${report.domain} scored ${report.aeo_score}/100`,
-              html: emailHtml,
-            }),
-          });
-        } catch (e) {
-          console.log(`Report email failed: ${e}`);
+        const emailHtml = buildReportEmail(report);
+        const result = await sendResend(env, {
+          from: "NeverRanked <reports@neverranked.com>",
+          to: [email],
+          subject: `Your AEO Report: ${report.domain} scored ${report.aeo_score}/100`,
+          html: emailHtml,
+        });
+        await recordDelivery(env, "report", email, result);
+        if (!result.ok) {
+          console.error(`Report email failed for ${email}: status=${result.status} error=${result.error}`);
         }
       }
 
@@ -2501,6 +2531,51 @@ export default {
         return Response.json({ total, referrers, utmSources }, { headers: corsHeaders });
       } catch (e) {
         return Response.json({ error: "Failed to read events" }, { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // Admin: drip + report email delivery truth-check
+    if (url.pathname === "/api/admin/drip-status" && request.method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+
+      try {
+        const leadsList = await env.LEADS.list({ prefix: "lead:", limit: 1000 });
+        const leadRaws = await Promise.all(leadsList.keys.map((k) => env.LEADS.get(k.name)));
+        const leads = leadRaws
+          .map((r) => { try { return r ? JSON.parse(r) as LeadData : null; } catch { return null; } })
+          .filter((l): l is LeadData => !!l);
+
+        const deliveryReads = await Promise.all(
+          leads.flatMap((l) => [
+            env.LEADS.get(`drip_delivery:${l.email}:day3`),
+            env.LEADS.get(`drip_delivery:${l.email}:day7`),
+            env.LEADS.get(`report_delivery:${l.email}`),
+          ])
+        );
+
+        const rows = leads.map((lead, i) => {
+          const day3Raw = deliveryReads[i * 3];
+          const day7Raw = deliveryReads[i * 3 + 1];
+          const reportRaw = deliveryReads[i * 3 + 2];
+          const parse = (raw: string | null) => { try { return raw ? JSON.parse(raw) : null; } catch { return null; } };
+          return {
+            email: lead.email,
+            created: lead.created,
+            age_days: daysSince(lead.created),
+            flag_drip_day3_sent: !!lead.drip_day3_sent,
+            flag_drip_day7_sent: !!lead.drip_day7_sent,
+            day3_delivery: parse(day3Raw) || (lead.drip_day3_sent ? { status: "unknown", note: "sent before delivery tracking added 2026-04-24" } : null),
+            day7_delivery: parse(day7Raw) || (lead.drip_day7_sent ? { status: "unknown", note: "sent before delivery tracking added 2026-04-24" } : null),
+            report_delivery: parse(reportRaw),
+          };
+        });
+
+        return Response.json({ count: rows.length, leads: rows }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500, headers: corsHeaders });
       }
     }
 

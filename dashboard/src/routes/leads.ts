@@ -109,20 +109,42 @@ export async function handleLeadsJson(request: Request, env: Env): Promise<Respo
   });
 }
 
+interface DeliveryRecord {
+  status: "sent" | "failed" | "unknown";
+  resend_id?: string | null;
+  http_status?: number;
+  error?: string | null;
+  ts?: string;
+  note?: string;
+}
+
 export async function handleLeads(user: User, env: Env): Promise<Response> {
   // Fetch all leads from KV
   const list = await env.LEADS.list({ prefix: "lead:" });
+  const rawLeads = await Promise.all(list.keys.map((k) => env.LEADS.get(k.name)));
   const leads: LeadData[] = [];
-
-  for (const key of list.keys) {
-    const raw = await env.LEADS.get(key.name);
+  for (const raw of rawLeads) {
     if (!raw) continue;
-    try {
-      leads.push(JSON.parse(raw));
-    } catch {
-      // skip corrupt entries
-    }
+    try { leads.push(JSON.parse(raw)); } catch {}
   }
+
+  // Fetch delivery records in parallel
+  const deliveryRaws = await Promise.all(
+    leads.flatMap((l) => [
+      env.LEADS.get(`drip_delivery:${l.email}:day3`),
+      env.LEADS.get(`drip_delivery:${l.email}:day7`),
+    ])
+  );
+  const deliveryByEmail = new Map<string, { day3: DeliveryRecord | null; day7: DeliveryRecord | null }>();
+  leads.forEach((l, i) => {
+    const parse = (raw: string | null): DeliveryRecord | null => {
+      try { return raw ? JSON.parse(raw) : null; } catch { return null; }
+    };
+    deliveryByEmail.set(l.email, {
+      day3: parse(deliveryRaws[i * 2]),
+      day7: parse(deliveryRaws[i * 2 + 1]),
+    });
+  });
 
   // Sort by most recent first
   leads.sort((a, b) => new Date(b.created).getTime() - new Date(a.created).getTime());
@@ -178,19 +200,36 @@ export async function handleLeads(user: User, env: Env): Promise<Response> {
     const age = daysSince(lead.created);
     const scanCount = lead.scans.length;
 
-    // Drip status. Never show a bare "Pending" -- always say what it's
-    // waiting on. The drip has fixed day-7 and day-14 sends, so "Pending"
-    // here specifically means "day-3 email is ready but hasn't fired yet."
-    let dripStatus = "";
-    if (lead.drip_day7_sent) {
-      dripStatus = `<span class="status status-done" title="Day-3 and day-7 drip emails both sent.">Drip complete</span>`;
-    } else if (lead.drip_day3_sent) {
-      dripStatus = `<span class="status status-in_progress" title="Day-3 email fired. Day-7 email will fire automatically on the next daily cron after 7 days since first scan.">Day 3 sent, day 7 queued</span>`;
-    } else if (age >= 3) {
-      dripStatus = `<span class="status status-pending" title="Day-3 email has not fired yet. Usually means this lead was created outside the normal scan flow. Check email-delivery-log.">Day 3 overdue</span>`;
-    } else {
-      dripStatus = `<span style="color:var(--text-faint);font-size:11px" title="Drip starts firing on day 3. Currently day ${age} since first scan.">Day ${age} of 14</span>`;
-    }
+    // Drip status, grounded in actual Resend delivery records when present.
+    // Pre-2026-04-24 leads have a flag but no record, so we mark those
+    // "unverified" rather than overstating delivery.
+    const delivery = deliveryByEmail.get(lead.email);
+    const day3Rec = delivery?.day3 ?? null;
+    const day7Rec = delivery?.day7 ?? null;
+
+    const pill = (label: string, color: string, bg: string, title: string) =>
+      `<span style="color:${color};background:${bg};font-family:var(--label);font-size:9px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px" title="${esc(title)}">${esc(label)}</span>`;
+
+    const statusFor = (rec: DeliveryRecord | null, flag: boolean, day: number): string => {
+      if (rec?.status === "sent") {
+        return pill(`D${day} sent`, "#4ade80", "rgba(74,222,128,.1)", `Resend confirmed delivery${rec.resend_id ? ` (id ${rec.resend_id})` : ""} at ${rec.ts || ""}`);
+      }
+      if (rec?.status === "failed") {
+        return pill(`D${day} failed`, "#f87171", "rgba(248,113,113,.12)", `Resend rejected: HTTP ${rec.http_status || "?"} ${rec.error || ""}`);
+      }
+      if (flag && !rec) {
+        return pill(`D${day} unverified`, "#fbbf24", "rgba(251,191,36,.12)", "Flag set before delivery tracking was added (2026-04-24). Cannot confirm Resend actually delivered.");
+      }
+      if (age >= day && !flag) {
+        return pill(`D${day} overdue`, "#f87171", "rgba(248,113,113,.12)", `Day ${day} email should have fired by now.`);
+      }
+      if (!flag) {
+        return pill(`D${day} queued`, "var(--text-faint)", "rgba(255,255,255,.04)", `Will send on day ${day}. Currently day ${age}.`);
+      }
+      return "";
+    };
+
+    const dripStatus = `<div style="display:flex;flex-direction:column;gap:4px;align-items:center">${statusFor(day3Rec, !!lead.drip_day3_sent, 3)}${statusFor(day7Rec, !!lead.drip_day7_sent, 7)}</div>`;
 
     tableRows += `
       <tr>
