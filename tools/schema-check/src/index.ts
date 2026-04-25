@@ -2504,58 +2504,6 @@ export default {
       }
     }
 
-    if (url.pathname === "/api/admin/unique-users" && request.method === "GET") {
-      const secret = url.searchParams.get("key");
-      if (!secret || secret !== (env as any).ADMIN_SECRET) {
-        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
-      }
-      try {
-        const list = await env.LEADS.list({ prefix: "event:scan:", limit: 1000 });
-        const uniqueIps = new Set<string>();
-        const uniqueIpUa = new Set<string>();
-        const uniqueDomains = new Set<string>();
-        const byDomain: Record<string, number> = {};
-        const excludedBot: string[] = [];
-        const excludedInternal: string[] = [];
-        const realEvents: any[] = [];
-        const BOT_UA_RE = /playwright|headlesschrome|bot|crawler|spider|curl|wget|python-requests|axios/i;
-        for (const key of list.keys) {
-          const raw = await env.LEADS.get(key.name);
-          if (!raw) continue;
-          let evt: any;
-          try { evt = JSON.parse(raw); } catch { continue; }
-          const ua = evt.ua || "";
-          const ipHash = evt.ip_hash || "";
-          if (BOT_UA_RE.test(ua)) { excludedBot.push(key.name); continue; }
-          realEvents.push(evt);
-          if (ipHash) {
-            uniqueIps.add(ipHash);
-            uniqueIpUa.add(`${ipHash}|${ua.slice(0, 120)}`);
-          }
-          if (evt.domain) {
-            uniqueDomains.add(evt.domain);
-            byDomain[evt.domain] = (byDomain[evt.domain] || 0) + 1;
-          }
-        }
-        const topDomains = Object.entries(byDomain)
-          .sort((a, b) => b[1] - a[1])
-          .slice(0, 25)
-          .map(([domain, count]) => ({ domain, count }));
-        return Response.json({
-          total_events: list.keys.length,
-          real_events: realEvents.length,
-          excluded_bot_ua: excludedBot.length,
-          unique_ips: uniqueIps.size,
-          unique_ip_ua: uniqueIpUa.size,
-          unique_domains_scanned: uniqueDomains.size,
-          top_domains: topDomains,
-          note: "ip_hash and ua fields are only populated on scans after 2026-04-24 logging fix. Older events lack these fields and will count as unique_ips=0.",
-        }, { headers: corsHeaders });
-      } catch (e) {
-        return Response.json({ error: "Failed to read events", detail: String(e) }, { status: 500, headers: corsHeaders });
-      }
-    }
-
     // Serve HTML UI -- inject the latest benchmark so client-side JS
     // can render real percentile / grade-distribution comparisons
     // instead of hardcoded fake numbers. Falls back to defaults if
