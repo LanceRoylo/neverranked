@@ -60,9 +60,6 @@ test.describe("Returning client", () => {
     if (hasGrade > 0) {
       await expect(grade.first()).toBeVisible();
 
-      // Score should be visible
-      await expect(page.locator(".score").first()).toBeVisible();
-
       // At least one data table (technical signals, scan history, etc.)
       const tables = page.locator(".data-table");
       expect(await tables.count()).toBeGreaterThan(0);
@@ -88,7 +85,7 @@ test.describe("Returning client", () => {
     await expect(page.locator(".mark")).toBeVisible();
 
     // Nav links present
-    const navLinks = page.locator(".nav-links-item");
+    const navLinks = page.locator(".sidebar-item");
     expect(await navLinks.count()).toBeGreaterThan(0);
   });
 

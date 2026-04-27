@@ -46,11 +46,12 @@ test.describe("Agency dashboard (authenticated)", () => {
     await page.goto(`${APP}/agency`);
     await page.waitForLoadState("networkidle");
 
-    // Each is wired in the routes/agency.ts header.
-    await expect(page.locator('a[href="/agency/clients/new"]:has-text("Add a client")')).toBeVisible();
-    await expect(page.locator('a[href="/agency/invites"]:has-text("Invites")')).toBeVisible();
-    await expect(page.locator('a[href="/agency/settings"]:has-text("Settings")')).toBeVisible();
-    await expect(page.locator('a[href="/agency/billing"]:has-text("Billing")')).toBeVisible();
+    // Each is wired in the routes/agency.ts header. The same hrefs
+    // appear in the sidebar, so scope to action-bar buttons (.btn).
+    await expect(page.locator('a.btn[href="/agency/clients/new"]:has-text("Add a client")')).toBeVisible();
+    await expect(page.locator('a.btn[href="/agency/invites"]:has-text("Invites")')).toBeVisible();
+    await expect(page.locator('a.btn[href="/agency/settings"]:has-text("Settings")')).toBeVisible();
+    await expect(page.locator('a.btn[href="/agency/billing"]:has-text("Billing")')).toBeVisible();
   });
 
   test("/agency/clients/new renders the add-client form", async ({ page }) => {

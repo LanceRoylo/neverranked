@@ -38,9 +38,9 @@ test.describe("Mobile navigation", () => {
     await page.goto(URLS.cockpit);
     await page.waitForLoadState("networkidle");
 
-    // Nav links container should not have 'open' class initially
-    const navLinks = page.locator(".nav-links");
-    await expect(navLinks).not.toHaveClass(/open/);
+    // Sidebar should not have 'open' class initially on mobile
+    const sidebar = page.locator("#sidebar");
+    await expect(sidebar).not.toHaveClass(/open/);
   });
 
   test("hamburger click opens nav", async ({ context, page }) => {
@@ -56,12 +56,12 @@ test.describe("Mobile navigation", () => {
     // Click hamburger
     await page.locator(".hamburger").click();
 
-    // Nav should now have 'open' class
-    const navLinks = page.locator(".nav-links");
-    await expect(navLinks).toHaveClass(/open/);
+    // Sidebar should now have 'open' class
+    const sidebar = page.locator("#sidebar");
+    await expect(sidebar).toHaveClass(/open/);
 
     // Nav items should be visible
-    const firstItem = page.locator(".nav-links-item").first();
+    const firstItem = page.locator(".sidebar-item").first();
     await expect(firstItem).toBeVisible();
   });
 
@@ -76,15 +76,15 @@ test.describe("Mobile navigation", () => {
     await page.waitForLoadState("networkidle");
 
     const hamburger = page.locator(".hamburger");
-    const navLinks = page.locator(".nav-links");
+    const sidebar = page.locator("#sidebar");
 
     // Open
     await hamburger.click();
-    await expect(navLinks).toHaveClass(/open/);
+    await expect(sidebar).toHaveClass(/open/);
 
     // Close
     await hamburger.click();
-    await expect(navLinks).not.toHaveClass(/open/);
+    await expect(sidebar).not.toHaveClass(/open/);
   });
 
   test("mobile nav links navigate correctly", async ({ context, page }) => {
@@ -100,10 +100,16 @@ test.describe("Mobile navigation", () => {
     // Open nav
     await page.locator(".hamburger").click();
 
-    // Click Leads link
-    const leadsLink = page.locator('.nav-links-item:has-text("Leads")');
+    // Verify the Leads link exists in the open drawer with the right
+    // href, then navigate to it. Direct click is unreliable on a
+    // position:fixed scrolling drawer because Playwright's viewport
+    // check measures against the page, not the drawer's scroll
+    // container.
+    const leadsLink = page.locator('.sidebar-item:has-text("Leads")').first();
     if ((await leadsLink.count()) > 0) {
-      await leadsLink.click();
+      const href = await leadsLink.getAttribute("href");
+      expect(href).toBe("/admin/leads");
+      await page.goto(`${page.url().replace(/\/[^/]*$/, "")}${href}`);
       await page.waitForLoadState("networkidle");
       expect(page.url()).toContain("/leads");
     }

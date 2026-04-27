@@ -97,8 +97,8 @@ async function buildSetupCompletenessWidget(domain: Domain, user: User, env: Env
       "SELECT COUNT(*) AS cnt FROM scan_results WHERE domain_id = ? AND error IS NULL"
     ).bind(domain.id).first<{ cnt: number }>(),
     env.DB.prepare(
-      "SELECT COUNT(*) AS cnt FROM shared_reports WHERE client_slug = ?"
-    ).bind(domain.client_slug).first<{ cnt: number }>(),
+      "SELECT COUNT(*) AS cnt FROM shared_reports WHERE domain_id = ?"
+    ).bind(domain.id).first<{ cnt: number }>(),
   ]);
 
   const steps: { label: string; done: boolean; href?: string; cta?: string }[] = [

@@ -121,7 +121,7 @@ test.describe("Admin cockpit", () => {
     await page.goto(URLS.cockpit);
     await page.waitForLoadState("networkidle");
 
-    const navLinks = page.locator(".nav-links-item");
+    const navLinks = page.locator(".sidebar-item");
     const navTexts: string[] = [];
     for (let i = 0; i < (await navLinks.count()); i++) {
       const text = await navLinks.nth(i).textContent();

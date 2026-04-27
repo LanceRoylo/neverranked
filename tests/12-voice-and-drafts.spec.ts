@@ -67,8 +67,8 @@ test.describe("Voice page (read-only shape)", () => {
     await page.goto(`${APP}/voice/${SLUG}`);
     await page.waitForLoadState("networkidle");
     // The nav links use href shortcuts bound to the active client slug.
-    await expect(page.locator(`a.nav-links-item[href="/voice/${SLUG}"]`)).toBeVisible();
-    await expect(page.locator(`a.nav-links-item[href="/drafts/${SLUG}"]`)).toBeVisible();
+    await expect(page.locator(`a.sidebar-item[href="/voice/${SLUG}"]`)).toBeVisible();
+    await expect(page.locator(`a.sidebar-item[href="/drafts/${SLUG}"]`)).toBeVisible();
   });
 
   test("voice profile card shows the 'coming online' stub in Phase 1", async ({ page }) => {

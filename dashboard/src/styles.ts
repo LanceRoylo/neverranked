@@ -731,7 +731,8 @@ a.card:hover{border-color:var(--gold-dim)}
   .sidebar{
     position:fixed;top:56px;left:0;bottom:0;width:260px;
     transform:translateX(-100%);transition:transform .25s var(--ease);
-    z-index:55;height:auto;
+    z-index:55;height:auto;overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
     background:var(--bg-edge);
     box-shadow:0 0 0 1px var(--line);
   }

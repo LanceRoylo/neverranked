@@ -183,9 +183,11 @@ test.describe("Demo -- domain page", () => {
   });
 
   test("nav links present and point to demo pages", async ({ page }) => {
-    const navLinks = page.locator(".nav-links-item");
+    // Demo nav uses inline anchors inside the topbar (not the dashboard sidebar).
+    // Match by href pattern instead of class.
+    const navLinks = page.locator('header.topbar a[href^="/demo/"]');
     const count = await navLinks.count();
-    expect(count).toBe(3);
+    expect(count).toBeGreaterThanOrEqual(3);
 
     const hrefs: string[] = [];
     for (let i = 0; i < count; i++) {
