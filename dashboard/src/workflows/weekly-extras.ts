@@ -26,25 +26,14 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
       await pullGscData(this.env);
     });
 
-    await step.do("dispatch-digests", async () => {
-      // Fan out one SendDigestWorkflow per opted-in user so each gets
-      // its own 1000-subrequest budget. Running them inline blew the
-      // per-invocation cap once we crossed ~5 users with multi-domain
-      // gather queries.
-      const users = (await this.env.DB.prepare(
-        "SELECT id FROM users WHERE email_digest = 1"
-      ).all<{ id: number }>()).results;
-      let dispatched = 0;
-      for (const u of users) {
-        try {
-          await this.env.SEND_DIGEST_WORKFLOW.create({ params: { userId: u.id } });
-          dispatched++;
-        } catch (e) {
-          console.log(`[weekly-extras] failed to dispatch digest for user ${u.id}: ${e}`);
-        }
-      }
-      console.log(`[weekly-extras] dispatched ${dispatched}/${users.length} digest workflows`);
-    });
+    // NOTE: digest dispatch lives in cron.ts, NOT here. Cloudflare
+    // Workflows share subrequest budget across all steps in one
+    // instance: the citations step burns through ~1000 subreqs over 3
+    // minutes, so by the time we hit a dispatch-digests step inside
+    // this same workflow, every .create() call hits "Too many
+    // subrequests" -- verified empirically (instance 3970ec9d 2026-04-28).
+    // The cron handler dispatches SendDigestWorkflow directly with a
+    // fresh budget, which works.
 
     await step.do("backup", async () => {
       await runWeeklyBackup(this.env);

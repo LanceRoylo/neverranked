@@ -47,14 +47,39 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   console.log(`Weekly scan dispatched: ${dispatched} workflow instances queued, ${dispatchErrors} dispatch failures, ${domains.length} total`);
 
   // --- Phase 2: Dispatch the weekly-extras workflow ---
-  // Citations + GSC + digests + backup each get their own retryable
-  // step inside one workflow invocation, isolated from the per-domain
-  // scans so a citation API hiccup can't poison digests.
+  // Citations + GSC + backup each get their own retryable step inside
+  // one workflow invocation, isolated from the per-domain scans.
   try {
     await env.WEEKLY_EXTRAS_WORKFLOW.create({ params: {} });
     console.log(`[cron] dispatched weekly-extras workflow`);
   } catch (e) {
     console.log(`[cron] failed to dispatch weekly-extras workflow: ${e}`);
+  }
+
+  // --- Phase 3: Fan out one SendDigestWorkflow per opted-in user ---
+  // Done here in the cron handler (not from inside WeeklyExtras)
+  // because Cloudflare Workflows share subrequest budget across all
+  // steps in one instance. Citations burns through ~1000 subreqs over
+  // 3 minutes; dispatching from inside the same workflow afterwards
+  // fails with "Too many subrequests" on the first .create() call.
+  // The cron handler is a separate invocation, so per-user dispatches
+  // here have a fresh budget. Verified working: instance 3edf55da.
+  try {
+    const users = (await env.DB.prepare(
+      "SELECT id FROM users WHERE email_digest = 1"
+    ).all<{ id: number }>()).results;
+    let digestsDispatched = 0;
+    for (const u of users) {
+      try {
+        await env.SEND_DIGEST_WORKFLOW.create({ params: { userId: u.id } });
+        digestsDispatched++;
+      } catch (e) {
+        console.log(`[cron] failed to dispatch digest for user ${u.id}: ${e}`);
+      }
+    }
+    console.log(`[cron] dispatched ${digestsDispatched}/${users.length} digest workflows`);
+  } catch (e) {
+    console.log(`[cron] failed to enumerate digest users: ${e}`);
   }
 }
 
