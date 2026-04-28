@@ -39,6 +39,16 @@
       "name": "scan-domain-workflow",
       "binding": "SCAN_DOMAIN_WORKFLOW",
       "class_name": "ScanDomainWorkflow"
+    },
+    {
+      "name": "weekly-extras-workflow",
+      "binding": "WEEKLY_EXTRAS_WORKFLOW",
+      "class_name": "WeeklyExtrasWorkflow"
+    },
+    {
+      "name": "send-digest-workflow",
+      "binding": "SEND_DIGEST_WORKFLOW",
+      "class_name": "SendDigestWorkflow"
     }
   ]
 }

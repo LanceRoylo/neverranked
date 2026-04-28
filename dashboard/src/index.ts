@@ -77,6 +77,8 @@ import { getBrandingContext, getAgency } from "./agency";
 // Cloudflare Workflows requires the class to be a named export of the
 // Worker entrypoint module so the runtime can instantiate it.
 export { ScanDomainWorkflow } from "./workflows/scan-domain";
+export { WeeklyExtrasWorkflow } from "./workflows/weekly-extras";
+export { SendDigestWorkflow } from "./workflows/send-digest";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {

@@ -31,6 +31,12 @@ export interface Env {
   // invocation so each gets its own subrequest budget. Declared in
   // wrangler.jsonc as scan-domain-workflow / ScanDomainWorkflow.
   SCAN_DOMAIN_WORKFLOW: Workflow;
+  // Citations + GSC + digests + backup as separate retryable steps,
+  // isolated from the scan dispatcher invocation.
+  WEEKLY_EXTRAS_WORKFLOW: Workflow;
+  // One digest email per user, each in its own invocation so multi-
+  // domain gather queries don't blow the per-Worker subrequest cap.
+  SEND_DIGEST_WORKFLOW: Workflow;
 }
 
 export interface ScheduledDraft {

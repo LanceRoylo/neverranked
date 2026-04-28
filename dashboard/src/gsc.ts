@@ -101,12 +101,49 @@ export async function getValidToken(env: Env): Promise<string | null> {
       ).bind(refreshed.access_token, newExpires, now, token.id).run();
       return refreshed.access_token;
     } catch (err) {
+      // Refresh failed -- token is dead until someone re-authenticates.
+      // Surface this loudly so the silent break that ate two weeks of
+      // GSC pulls (Apr 14 - Apr 28 2026) cannot recur. Dedup over a
+      // 24h window so the daily cron doesn't spam the inbox.
       console.log("GSC token refresh failed: " + err);
+      try {
+        const { createAlertIfFresh } = await import("./admin-alerts");
+        await createAlertIfFresh(env, {
+          clientSlug: "_system",
+          type: "gsc_token_dead",
+          title: "Google Search Console disconnected",
+          detail: `Token refresh failed at ${new Date().toISOString()}. Re-authenticate at /admin/gsc to resume daily pulls. Last error: ${String(err).slice(0, 200)}`,
+          windowHours: 24,
+        });
+      } catch {}
       return null;
     }
   }
 
   return token.access_token;
+}
+
+/** True when no token exists or refresh has failed in the last hour.
+ *  Used by /search and /admin/gsc surfaces to render a re-auth banner
+ *  rather than silently showing stale data. Cheap (one query, no fetch). */
+export async function isGscDisconnected(env: Env): Promise<boolean> {
+  const token = await env.DB.prepare(
+    "SELECT expires_at, refresh_token FROM gsc_tokens ORDER BY updated_at DESC LIMIT 1"
+  ).first<{ expires_at: number; refresh_token: string }>();
+  if (!token || !token.refresh_token) return true;
+  // If we're within 5 minutes of expiry and the most recent admin
+  // alert says we're dead, treat as disconnected.
+  const now = Math.floor(Date.now() / 1000);
+  if (token.expires_at < now + 300) {
+    const recentDead = await env.DB.prepare(
+      `SELECT id FROM admin_alerts
+         WHERE type = 'gsc_token_dead'
+           AND created_at > ?
+         LIMIT 1`
+    ).bind(now - 3600).first<{ id: number }>();
+    return !!recentDead;
+  }
+  return false;
 }
 
 // ---------------------------------------------------------------------------

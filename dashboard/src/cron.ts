@@ -12,15 +12,13 @@ import { runScanStreakCheck, runRoadmapStallCheck } from "./safety-sweeps";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
-import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
-import { pullGscData } from "./gsc";
+import { getCitationDigestData, type CitationDigestData } from "./citations";
 import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, sendSnippetPauseCheckIn, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
-import { runWeeklyBackup } from "./backup";
 
 export async function runWeeklyScans(env: Env): Promise<void> {
   const domains = (await env.DB.prepare(
@@ -48,32 +46,29 @@ export async function runWeeklyScans(env: Env): Promise<void> {
 
   console.log(`Weekly scan dispatched: ${dispatched} workflow instances queued, ${dispatchErrors} dispatch failures, ${domains.length} total`);
 
-  // --- Phase 2: Run citation tracking ---
-
-  await runWeeklyCitations(env);
-
-  // --- Phase 2b: Pull Google Search Console data ---
-
-  await pullGscData(env);
-
-  // --- Phase 3: Send digest emails ---
-
-  await sendWeeklyDigests(domains, env);
-
-  // --- Phase 4: Snapshot D1 to R2 for offline-restorable backup ---
-  // Runs after digests so any state changes from the run are captured.
-  // Self-contained: errors are logged + alerted, never fail the cron.
+  // --- Phase 2: Dispatch the weekly-extras workflow ---
+  // Citations + GSC + digests + backup each get their own retryable
+  // step inside one workflow invocation, isolated from the per-domain
+  // scans so a citation API hiccup can't poison digests.
   try {
-    await runWeeklyBackup(env);
+    await env.WEEKLY_EXTRAS_WORKFLOW.create({ params: {} });
+    console.log(`[cron] dispatched weekly-extras workflow`);
   } catch (e) {
-    console.log(`[cron] runWeeklyBackup threw: ${e}`);
+    console.log(`[cron] failed to dispatch weekly-extras workflow: ${e}`);
   }
 }
 
-/** Send digest emails to all opted-in users */
-async function sendWeeklyDigests(domains: Domain[], env: Env): Promise<void> {
-  // Get all users who have digests enabled
-  const users = (await env.DB.prepare(
+/** Send digest emails. If `usersOverride` is supplied, only those users
+ *  are processed (used by SendDigestWorkflow to scope to one user per
+ *  invocation, since per-user gather queries blow past the per-Worker
+ *  subrequest cap when fanned out inline). With no override, all
+ *  email_digest=1 users are loaded -- the legacy code path. */
+export async function sendWeeklyDigests(
+  domains: Domain[],
+  env: Env,
+  usersOverride?: User[]
+): Promise<void> {
+  const users = usersOverride ?? (await env.DB.prepare(
     "SELECT * FROM users WHERE email_digest = 1"
   ).all<User>()).results;
 

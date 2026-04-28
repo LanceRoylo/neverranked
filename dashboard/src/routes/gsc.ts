@@ -8,7 +8,7 @@
 
 import type { Env, User, GscSnapshot } from "../types";
 import { html, layout, esc, redirect } from "../render";
-import { getGoogleAuthUrl, exchangeCodeForTokens, listSites, getValidToken, fetchAggregateTotals, fetchSearchAnalytics } from "../gsc";
+import { getGoogleAuthUrl, exchangeCodeForTokens, listSites, getValidToken, fetchAggregateTotals, fetchSearchAnalytics, isGscDisconnected } from "../gsc";
 import { canAccessClient } from "../agency";
 
 // ---------------------------------------------------------------------------
@@ -425,6 +425,18 @@ export async function handleSearchPerformance(
     return html(layout("Search Performance", body, user, slug));
   }
 
+  // Disconnected-token banner. Snapshots may still render (because we
+  // have last-week's data cached) but the user needs to know data is
+  // about to go stale. Quiet on the happy path; loud when broken.
+  const disconnected = await isGscDisconnected(env);
+  const reauthBanner = disconnected
+    ? `<div style="margin-bottom:24px;padding:14px 18px;border:1px solid #c2524d;border-left:3px solid #c2524d;background:rgba(194,82,77,0.08);border-radius:6px;color:var(--text);font-size:14px;line-height:1.5">
+         <strong style="color:#e6a4a0">Search Console is disconnected.</strong>
+         Weekly pulls have stopped because the Google token expired or was revoked.
+         ${user.role === "admin" ? '<a href="/admin/gsc" class="btn btn-sm" style="margin-left:12px;display:inline-block">Reconnect</a>' : 'Ask your admin to reconnect.'}
+       </div>`
+    : "";
+
   // Parse data
   const topQueries: { query: string; clicks: number; impressions: number; ctr: number; position: number }[] = JSON.parse(latest.top_queries);
   const topPages: { page: string; clicks: number; impressions: number; ctr: number; position: number }[] = JSON.parse(latest.top_pages);
@@ -502,6 +514,8 @@ export async function handleSearchPerformance(
       <h1>Search Performance</h1>
       <div class="section-sub">${esc(slug)} -- ${esc(latest.date_start)} to ${esc(latest.date_end)}</div>
     </div>
+
+    ${reauthBanner}
 
     <!-- Narrative context -->
     <div class="narrative-context" style="margin-bottom:24px">
