@@ -3565,7 +3565,12 @@ h1,h2,h3,h4{
 }
 </style>
 
-<!-- Meta Pixel — replace YOUR_PIXEL_ID with your actual pixel ID -->
+<!--
+  Meta Pixel + LinkedIn Insight Tag - disabled until real IDs are
+  configured. Re-enable by replacing YOUR_PIXEL_ID / YOUR_PARTNER_ID
+  with the values from facebook.com/business and linkedin.com/campaign.
+
+<!- - Meta Pixel - ->
 <script>
 !function(f,b,e,v,n,t,s)
 {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
@@ -3580,7 +3585,7 @@ fbq('track', 'PageView');
 </script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
 
-<!-- LinkedIn Insight Tag — replace YOUR_PARTNER_ID with your actual partner ID -->
+<!- - LinkedIn Insight Tag - ->
 <script type="text/javascript">
 _linkedin_partner_id="YOUR_PARTNER_ID";
 window._linkedin_data_partner_ids=window._linkedin_data_partner_ids||[];
@@ -3593,6 +3598,8 @@ b.type="text/javascript";b.async=true;b.src="https://snap.licdn.com/li.lms-analy
 s.parentNode.insertBefore(b,s);})(window.lintrk);
 </script>
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_PARTNER_ID&fmt=gif"/></noscript>
+-->
+
 
 </head>
 <body>
