@@ -2746,6 +2746,9 @@ h1,h2,h3,h4{
 .roi-adjust{
   text-align:center;
   margin-top:20px;
+  display:flex;
+  gap:24px;
+  justify-content:center;
 }
 .roi-adjust button{
   font-family:var(--mono);
@@ -2756,6 +2759,49 @@ h1,h2,h3,h4{
   transition:color .3s var(--ease);
 }
 .roi-adjust button:hover{color:var(--gold)}
+.roi-sources{
+  display:none;
+  margin-top:24px;
+  padding:24px;
+  background:var(--bg-edge);
+  border:1px solid var(--line);
+  border-radius:6px;
+  text-align:left;
+}
+.roi-sources.visible{display:block}
+.roi-sources-intro{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  margin:0 0 16px;
+  line-height:1.6;
+}
+.roi-sources-list{
+  list-style:none;
+  padding:0;
+  margin:0 0 16px;
+}
+.roi-sources-list li{
+  font-size:13px;
+  color:var(--text-soft);
+  line-height:1.7;
+  padding:8px 0;
+  border-bottom:1px solid var(--line);
+}
+.roi-sources-list li:last-child{border-bottom:none}
+.roi-sources-list strong{color:var(--text)}
+.roi-sources-list em{color:var(--text-faint);font-style:italic}
+.roi-sources-list a{color:var(--gold);text-decoration:none;border-bottom:1px solid rgba(232,199,103,.3)}
+.roi-sources-list a:hover{border-bottom-color:var(--gold)}
+.roi-sources-disclaimer{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+  margin:16px 0 0;
+  line-height:1.6;
+  padding-top:12px;
+  border-top:1px solid var(--line);
+}
 .roi-custom{
   display:none;
   margin-top:24px;
@@ -4438,9 +4484,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
 
       <div class="roi-head">
-        <h2 class="reveal">How fast does it <em>pay for itself?</em></h2>
+        <h2 class="reveal">How many new customers <em>pay for a full year?</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          45% of consumers now use AI to find services. But AI only recommends 1.2% of businesses. Pick your industry and see what one change in visibility is worth.
+          45% of consumers now use AI to find services. But AI only recommends 1.2% of businesses. Pick your industry and see how many new customers it takes to cover Signal for a full year ($24,000).
         </p>
       </div>
 
@@ -4492,10 +4538,27 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
           <div class="roi-adjust">
             <button type="button" id="roi-adjust-btn">Adjust assumptions</button>
+            <button type="button" id="roi-sources-btn">View sources</button>
           </div>
           <div class="roi-custom" id="roi-custom">
             <label for="roi-custom-val">Your avg customer value: $</label>
             <input type="number" id="roi-custom-val" min="100" step="100">
+          </div>
+          <div class="roi-sources" id="roi-sources">
+            <p class="roi-sources-intro">Industry value estimates are derived from the following published sources. Adjust above for your real number.</p>
+            <ul class="roi-sources-list">
+              <li><strong>Med Spa:</strong> American Med Spa Association, <em>2024 State of the Medical Spa Industry Report</em> &mdash; avg $504 per patient visit. <a href="https://americanmedspa.org/news/2024-medical-spa-state-of-the-industry-executive-report-recap/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Dentist:</strong> ADA Health Policy Institute, <em>National Dental Expenditures, 2024</em>. <a href="https://www.ada.org/resources/research/health-policy-institute/dental-care-market/national-dental-expenses" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Personal Injury Law:</strong> CasePeer, <em>Personal Injury Settlement Amount Examples 2025</em> &mdash; avg settlements $24K&ndash;$55K, 33% contingency. <a href="https://www.casepeer.com/blog/personal-injury-settlement-amount-examples/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Family Law:</strong> Nolo, <em>How Much Will My Divorce Cost?</em> &mdash; avg attorney fees $11,300. <a href="https://www.nolo.com/legal-encyclopedia/ctp/cost-of-divorce.html" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Real Estate:</strong> RealEstateWitch / RealTrends commission data, 2024. NAR does not set commissions. <a href="https://www.realestatewitch.com/average-real-estate-commission/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Roofing:</strong> Angi, <em>How Much Does Roof Replacement Cost? 2024&ndash;2025 Data</em> &mdash; national avg $9,540. <a href="https://www.angi.com/articles/how-much-does-roof-replacement-cost.htm" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>HVAC:</strong> HomeAdvisor, <em>HVAC Installation Cost Guide, 2024</em> &mdash; avg replacement $7,500. <a href="https://www.homeadvisor.com/cost/heating-and-cooling/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Restaurant:</strong> U.S. Bureau of Labor Statistics, <em>Consumer Expenditures &mdash; 2024</em> &mdash; food away from home $3,945/yr per household. <a href="https://www.bls.gov/news.release/cesan.nr0.htm" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Financial Advisor:</strong> Kitces.com, <em>Independent Financial Advisor Fee Comparison, 2024</em> &mdash; median advisor fee 1% AUM. <a href="https://www.kitces.com/blog/independent-financial-advisor-fees-comparison-typical-aum-wealth-management-fee/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Chiropractic / PT:</strong> Journal of Manipulative and Physiological Therapeutics, 2024 utilization analysis &mdash; $677/yr per patient over 8.2 visits. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2875758/" target="_blank" rel="noopener">Source</a>.</li>
+            </ul>
+            <p class="roi-sources-disclaimer">All figures are national averages or industry-wide estimates current as of 2024&ndash;2025. Your real numbers will vary by region, practice mix, and customer profile &mdash; use the &ldquo;Adjust assumptions&rdquo; button to model your own.</p>
           </div>
         </div>
       </div>
@@ -5146,16 +5209,16 @@ window.scrollTo(0,0);
 /* ---------- ROI calculator ---------- */
 (function(){
   var data = {
-    medspa:      {value:5000,  label:'clients',  name:'Med Spa',            note:'Based on avg client lifetime value of $5,000 across Botox, fillers, and laser treatments with repeat visits over 2-3 years.'},
-    dentist:     {value:10000, label:'patients',  name:'Dental Practice',    note:'Based on avg patient lifetime value of $10,000 including cleanings, procedures, and referrals over a 5-7 year relationship.'},
-    'pi-law':    {value:15000, label:'cases',     name:'Personal Injury',    note:'Based on avg settlement of $40,000-$55,000 with 33% contingency fee. One case more than covers the entire year.'},
-    'family-law':{value:11000, label:'cases',     name:'Family Law',         note:'Based on avg case value of $11,300 for divorce and custody matters.'},
-    realestate:  {value:10000, label:'deals',     name:'Real Estate',        note:'Based on avg commission of $10,000 per transaction on a $400K home at 2.5% buyer or seller side.'},
-    roofing:     {value:15000, label:'jobs',      name:'Roofing',            note:'Based on avg residential roof replacement of $15,000. One job covers more than half the year.'},
-    hvac:        {value:5000,  label:'jobs',      name:'HVAC',               note:'Based on avg job value of $5,000 including installs and major repairs. Lifetime value with maintenance contracts is much higher.'},
-    restaurant:  {value:2000,  label:'regulars',  name:'Restaurant',         note:'Based on avg regular customer spending $35/visit weekly for a year. One loyal regular is worth $1,820-$2,000/yr.'},
-    financial:   {value:40000, label:'clients',   name:'Financial Advisory', note:'Based on avg client lifetime value of $40,000+ over a 10-year relationship at 1% AUM on a $400K portfolio.'},
-    chiro:       {value:4000,  label:'patients',  name:'Chiropractic / PT',  note:'Based on avg annual patient value of $4,000 with regular adjustment or therapy visits.'}
+    medspa:      {value:5000,  label:'clients',  name:'Med Spa',            note:'AmSpa 2024 reports an avg patient spend of $504 per visit. With ~3 visits/year and a 3-year relationship across botox, fillers, and laser, that\'s ~$5,000 lifetime value.'},
+    dentist:     {value:10000, label:'patients',  name:'Dental Practice',    note:'ADA Health Policy Institute (2024) tracks $189B in national dental spending. A typical patient relationship of 5-7 years at $1,500/year averages around $10,000 lifetime value.'},
+    'pi-law':    {value:13000, label:'cases',     name:'Personal Injury',    note:'Industry data shows avg PI settlements of $24,000-$55,000 (CasePeer, 2025). At a 33% contingency fee, the firm earns roughly $13,000 per average case.'},
+    'family-law':{value:11300, label:'cases',     name:'Family Law',         note:'Nolo (2024) reports the avg attorney fee for a divorce case is $11,300. Custody and contested cases skew higher.'},
+    realestate:  {value:10000, label:'deals',     name:'Real Estate',        note:'Per RealTrends/CrossCountry data (2024), avg commission per transaction is ~$10,000 — based on a $400K home at 2.5% on the buyer or seller side. NAR does not set rates.'},
+    roofing:     {value:9540,  label:'jobs',      name:'Roofing',            note:'Angi (2024-2025) puts the national avg residential roof replacement at $9,540. Costs range $5,892 to $13,272 by region and material.'},
+    hvac:        {value:7500,  label:'jobs',      name:'HVAC',               note:'HomeAdvisor (2024) reports avg HVAC system replacement at $7,500, ranging $5,000-$12,500. Lifetime value with maintenance contracts is much higher.'},
+    restaurant:  {value:1820,  label:'regulars',  name:'Restaurant',         note:'BLS Consumer Expenditure Survey (2024) shows avg household spends $3,945/year on food away from home. One loyal regular at $35/visit weekly = $1,820/year per person.'},
+    financial:   {value:40000, label:'clients',   name:'Financial Advisory', note:'Kitces (2024) reports the median advisor fee is 1% AUM. A $400K portfolio at 1% × 10-year client tenure = $40,000 lifetime fee revenue.'},
+    chiro:       {value:4000,  label:'patients',  name:'Chiropractic / PT',  note:'Journal of Manipulative and Physiological Therapeutics (2024) reports avg patient spend of $677/year over 8.2 visits. With a 5-7 year relationship, lifetime value averages ~$4,000.'}
   };
 
   var annual = 24000;
@@ -5183,7 +5246,7 @@ window.scrollTo(0,0);
     var maxBar = Math.max(val, monthly);
 
     numEl.textContent = needed;
-    textEl.innerHTML = 'new ' + d.label + ' per year to pay for NeverRanked Signal.<br><span style="font-size:12px;color:var(--text-faint)">The $500 audit? ' + (auditNeeded <= 1 ? 'One ' + d.label.replace(/s$/,'') + ' covers it.' : auditNeeded + ' ' + d.label + ' cover it.') + '</span>';
+    textEl.innerHTML = 'new ' + d.label + ' covers a full year of Signal ($24,000 = $2,000/mo &times; 12).<br><span style="font-size:12px;color:var(--text-faint)">The $500 audit? ' + (auditNeeded <= 1 ? 'One ' + d.label.replace(/s$/,'') + ' covers it.' : auditNeeded + ' ' + d.label + ' cover it.') + '</span>';
 
     barCustomer.style.width = ((val / maxBar) * 100) + '%';
     barCost.style.width = ((monthly / maxBar) * 100) + '%';
@@ -5202,6 +5265,14 @@ window.scrollTo(0,0);
   adjustBtn.addEventListener('click', function(){
     customWrap.classList.toggle('visible');
   });
+
+  var sourcesBtn = document.getElementById('roi-sources-btn');
+  var sourcesWrap = document.getElementById('roi-sources');
+  if (sourcesBtn && sourcesWrap) {
+    sourcesBtn.addEventListener('click', function(){
+      sourcesWrap.classList.toggle('visible');
+    });
+  }
 
   customInput.addEventListener('input', function(){
     var v = parseInt(this.value);
