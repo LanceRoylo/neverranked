@@ -19,6 +19,8 @@ FILES=(
   404.html
   og.png
   og-source.html
+  favicon.ico
+  favicon.png
   robots.txt
   sitemap.xml
   _headers

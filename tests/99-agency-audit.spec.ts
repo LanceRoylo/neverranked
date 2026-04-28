@@ -23,11 +23,26 @@ const SHOTS = "/Users/lanceroylo/Desktop/neverranked/test-results/agency-audit";
 fs.mkdirSync(SHOTS, { recursive: true });
 
 function sql(q: string): any {
-  const out = execSync(
-    `cd "${DASH}" && npx wrangler d1 execute neverranked-app --remote --command=${JSON.stringify(q)} --json 2>/dev/null`,
-    { encoding: "utf-8", timeout: 20000 }
-  );
-  return JSON.parse(out)?.[0]?.results ?? [];
+  // Do NOT swallow stderr -- silent failures here are how this suite
+  // leaked test agencies into production for weeks. Wrangler prints
+  // FK violations and SQL errors to stderr; stdout has the JSON body.
+  let stdout = "";
+  try {
+    stdout = execSync(
+      `cd "${DASH}" && npx wrangler d1 execute neverranked-app --remote --command=${JSON.stringify(q)} --json`,
+      { encoding: "utf-8", timeout: 30000, stdio: ["ignore", "pipe", "pipe"] }
+    );
+  } catch (e: any) {
+    const msg = (e.stderr || e.message || "").toString().slice(0, 400);
+    throw new Error(`sql() failed: ${q.slice(0, 120)}\n  ${msg}`);
+  }
+  // Wrangler prints status banners before the JSON; find the array.
+  const i = stdout.indexOf("[");
+  try {
+    return JSON.parse(i >= 0 ? stdout.slice(i) : stdout)?.[0]?.results ?? [];
+  } catch {
+    return [];
+  }
 }
 
 function shot(page: any, name: string) {
@@ -216,24 +231,87 @@ test.describe("Agency audit", () => {
 
   test("8. cleanup", async () => {
     const ss = JSON.parse(fs.readFileSync(path.join(SHOTS, "session.json"), "utf-8"));
-    let cleanup = [
-      `DELETE FROM sessions WHERE id='${ss.token}'`,
-      `DELETE FROM users WHERE id=${ss.userId}`,
-      `DELETE FROM agencies WHERE id=${ss.agencyId}`,
-      `DELETE FROM agency_applications WHERE contact_email='${AUDIT_EMAIL}'`,
-      `DELETE FROM admin_alerts WHERE detail LIKE '%${AUDIT_EMAIL}%'`,
-      `DELETE FROM domains WHERE domain LIKE 'audit-client-${TS}%'`,
-    ];
+    let clientSession: any = null;
     try {
-      const cs = JSON.parse(fs.readFileSync(path.join(SHOTS, "client-session.json"), "utf-8"));
-      cleanup.push(`DELETE FROM sessions WHERE id='${cs.clientToken}'`);
-      cleanup.push(`DELETE FROM users WHERE id=${cs.clientUserId}`);
-      cleanup.push(`DELETE FROM domains WHERE client_slug='${cs.clientSlug}'`);
-      cleanup.push(`DELETE FROM roadmap_items WHERE client_slug='${cs.clientSlug}'`);
+      clientSession = JSON.parse(fs.readFileSync(path.join(SHOTS, "client-session.json"), "utf-8"));
     } catch {}
+
+    // Cleanup order matters because FKs are enforced and there is no
+    // ON DELETE CASCADE. Order:
+    //   1. sessions (no children)
+    //   2. scan_results, monitored_pages_scans, page_scan_results,
+    //      roadmap_items (reference domain or client_slug)
+    //   3. domains
+    //   4. agency_invites, agency_slot_events, email_delivery_log,
+    //      exit_surveys, nps_responses, agency_applications
+    //   5. NULL out users.agency_id and domains.agency_id (in case any
+    //      survived prior steps -- belt and braces)
+    //   6. users
+    //   7. agencies
+    //   8. admin_alerts last (referenced by nothing, but tied by detail text)
+    const slugList: string[] = [];
+    if (clientSession?.clientSlug) slugList.push(clientSession.clientSlug);
+    const slugIn = slugList.length
+      ? `(${slugList.map(s => `'${s.replace(/'/g, "''")}'`).join(",")})`
+      : "('__never__')";
+
+    const cleanup = [
+      // 1. sessions
+      `DELETE FROM sessions WHERE id='${ss.token}'`,
+      ...(clientSession ? [`DELETE FROM sessions WHERE id='${clientSession.clientToken}'`] : []),
+
+      // 2. domain-scoped data. Anything that references domain_id must
+      //    be deleted before the domain row itself, including
+      //    agency_slot_events which has a NOT NULL FK to domains.
+      `DELETE FROM scan_results WHERE domain_id IN (SELECT id FROM domains WHERE domain LIKE 'audit-client-${TS}%' OR client_slug IN ${slugIn})`,
+      `DELETE FROM page_scans WHERE domain_id IN (SELECT id FROM domains WHERE domain LIKE 'audit-client-${TS}%' OR client_slug IN ${slugIn})`,
+      `DELETE FROM monitored_pages WHERE domain_id IN (SELECT id FROM domains WHERE domain LIKE 'audit-client-${TS}%' OR client_slug IN ${slugIn})`,
+      `DELETE FROM agency_slot_events WHERE agency_id=${ss.agencyId}`,
+      `DELETE FROM roadmap_items WHERE client_slug IN ${slugIn}`,
+      `DELETE FROM roadmap_phases WHERE client_slug IN ${slugIn}`,
+
+      // 3. domains
+      `DELETE FROM domains WHERE domain LIKE 'audit-client-${TS}%' OR client_slug IN ${slugIn}`,
+
+      // 4. remaining agency-scoped data
+      `DELETE FROM agency_invites WHERE agency_id=${ss.agencyId}`,
+      `DELETE FROM email_delivery_log WHERE agency_id=${ss.agencyId}`,
+      `DELETE FROM exit_surveys WHERE agency_id=${ss.agencyId}`,
+      `DELETE FROM nps_responses WHERE agency_id=${ss.agencyId}`,
+      `DELETE FROM agency_applications WHERE contact_email='${AUDIT_EMAIL}'`,
+
+      // 5. null out remaining FK refs
+      `UPDATE domains SET agency_id=NULL WHERE agency_id=${ss.agencyId}`,
+      `UPDATE users SET agency_id=NULL WHERE agency_id=${ss.agencyId}`,
+
+      // 6. users
+      `DELETE FROM users WHERE id=${ss.userId}`,
+      ...(clientSession ? [`DELETE FROM users WHERE id=${clientSession.clientUserId}`] : []),
+
+      // 7. agencies
+      `DELETE FROM agencies WHERE id=${ss.agencyId}`,
+
+      // 8. orphaned alerts
+      `DELETE FROM admin_alerts WHERE detail LIKE '%${AUDIT_EMAIL}%'`,
+    ];
+
+    const failures: string[] = [];
     for (const q of cleanup) {
-      try { sql(q); } catch (e) { console.log(`[audit] cleanup warn: ${q} -- ${e}`); }
+      try { sql(q); } catch (e: any) {
+        failures.push(`${q.slice(0, 100)}: ${String(e.message || e).slice(0, 200)}`);
+      }
     }
-    console.log(`[audit] cleaned up`);
+    if (failures.length) {
+      // Surface every failure -- silent leakage is the whole reason
+      // this test was eating production rows for weeks.
+      console.log(`[audit] cleanup had ${failures.length} failures:`);
+      failures.forEach(f => console.log(`  - ${f}`));
+      throw new Error(`Cleanup failed (${failures.length} queries). Fix before re-running.`);
+    }
+
+    // Final verification: agency must be gone.
+    const left = sql(`SELECT id FROM agencies WHERE id=${ss.agencyId}`);
+    expect(left.length, "agency row still present after cleanup").toBe(0);
+    console.log(`[audit] cleaned up cleanly (${cleanup.length} queries, agency ${ss.agencyId} gone)`);
   });
 });

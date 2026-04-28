@@ -409,60 +409,63 @@ test.describe("Marketing site -- refresh", () => {
     await page.waitForLoadState("networkidle");
   });
 
-  // These assertions describe a marketing-site structure (.dash-card,
-  // .product-showcase, .showcase-step, .hero-meta) that has drifted as
-  // the site evolved. Skipping rather than rewriting to chase the
-  // current copy, because marketing copy lives downstream of Hello
-  // Momentum tastemaking and pinning specific phrases / class names
-  // here makes the test suite the brake on every brand iteration.
-  // When the site is next refreshed, replace these with structural
-  // assertions ("a hero exists", "a pricing section exists with 2+
-  // tier cards") rather than copy-specific ones.
-  test.skip("has Live Demo link in nav", async ({ page }) => {
-    const demoLink = page.locator('a:has-text("Live Demo")');
-    expect(await demoLink.count()).toBeGreaterThan(0);
-    const href = await demoLink.first().getAttribute("href");
-    expect(href).toContain("app.neverranked.com/demo");
+  // Structural assertions only -- pin the *shape* of the page, not the
+  // copy. Marketing copy lives downstream of Hello Momentum tastemaking
+  // and pinning specific phrases / class names here makes the test
+  // suite the brake on every brand iteration.
+
+  test("home links to the live demo at app.neverranked.com/demo", async ({ page }) => {
+    // Anywhere on the page -- nav, body, or footer.
+    const demoLinks = page.locator('a[href*="app.neverranked.com/demo"], a[href$="/demo"]');
+    expect(await demoLinks.count()).toBeGreaterThan(0);
   });
 
-  test.skip("dashboard features section has 9 cards", async ({ page }) => {
-    const dashCards = page.locator(".dash-card");
-    expect(await dashCards.count()).toBe(9);
+  test("home has a hero with an h1", async ({ page }) => {
+    await expect(page.locator("h1").first()).toBeVisible();
   });
 
-  test.skip("dashboard features include new capabilities", async ({ page }) => {
-    const section = page.locator(".dashboard-features");
-    const text = await section.textContent();
-    expect(text?.toLowerCase()).toContain("score projection");
-    expect(text?.toLowerCase()).toContain("citation tracking");
-    expect(text?.toLowerCase()).toContain("competitor citation matrix");
-    expect(text?.toLowerCase()).toContain("monthly reports");
-    expect(text?.toLowerCase()).toContain("auto-generated roadmap");
-    expect(text?.toLowerCase()).toContain("search console");
-    expect(text?.toLowerCase()).toContain("content gap");
+  test("home has a pricing section with at least two tier cards", async ({ page }) => {
+    // Don't pin a class name -- look for two distinct anchors that go
+    // to the checkout routes (signal / amplify / audit). That's the
+    // structural signature of "a pricing section exists".
+    const checkoutLinks = page.locator('a[href*="/checkout/"]');
+    const count = await checkoutLinks.count();
+    expect(count).toBeGreaterThanOrEqual(2);
   });
 
-  test.skip("product showcase section exists", async ({ page }) => {
-    const showcase = page.locator(".product-showcase");
-    await expect(showcase).toBeVisible();
+  test("home has at least one CTA pointing into the dashboard app", async ({ page }) => {
+    const appLinks = page.locator('a[href*="app.neverranked.com"]');
+    expect(await appLinks.count()).toBeGreaterThan(0);
   });
 
-  test.skip("product showcase has 4 steps", async ({ page }) => {
-    const steps = page.locator(".showcase-step");
-    expect(await steps.count()).toBe(4);
+  test("home renders a footer with privacy + terms links", async ({ page }) => {
+    const privacy = page.locator('a[href*="/privacy"]');
+    const terms = page.locator('a[href*="/terms"]');
+    expect(await privacy.count()).toBeGreaterThan(0);
+    expect(await terms.count()).toBeGreaterThan(0);
   });
 
-  test.skip("product showcase has demo link", async ({ page }) => {
-    const showcase = page.locator(".product-showcase");
-    const demoLink = showcase.locator('a[href*="demo"]');
-    expect(await demoLink.count()).toBeGreaterThan(0);
+  test("home has a contact path (mailto or contact form)", async ({ page }) => {
+    const mailtos = await page.locator('a[href^="mailto:"]').count();
+    const contactForms = await page.locator('form input[type="email"]').count();
+    expect(mailtos + contactForms).toBeGreaterThan(0);
   });
 
-  test.skip("hero meta has ROI cell", async ({ page }) => {
-    const heroMeta = page.locator(".hero-meta");
-    const text = await heroMeta.textContent();
-    expect(text?.toLowerCase()).toContain("pays for a year");
-    expect(text?.toLowerCase()).toContain("roi");
+  test("home loads without console errors", async ({ page }) => {
+    // Reload with a console listener attached so we see what fired
+    // during the actual page load. Cloudflare beacon / favicon 404s
+    // surface here -- we tolerate the favicon one because static-asset
+    // 404s are noise, but JS errors are a real regression.
+    const errors: string[] = [];
+    page.on("pageerror", (e) => errors.push(`pageerror: ${e.message}`));
+    page.on("console", (msg) => {
+      if (msg.type() === "error") {
+        const t = msg.text();
+        if (!/favicon\.ico|cdn-cgi\/rum/.test(t)) errors.push(`console.error: ${t}`);
+      }
+    });
+    await page.reload({ waitUntil: "networkidle" });
+    expect(errors, errors.join("\n")).toEqual([]);
   });
 
   // Structural smoke check that survives copy iteration: the home
