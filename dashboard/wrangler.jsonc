@@ -33,5 +33,12 @@
   ],
   "triggers": {
     "crons": ["0 6 * * *"]
-  }
+  },
+  "workflows": [
+    {
+      "name": "scan-domain-workflow",
+      "binding": "SCAN_DOMAIN_WORKFLOW",
+      "class_name": "ScanDomainWorkflow"
+    }
+  ]
 }

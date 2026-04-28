@@ -27,6 +27,10 @@ export interface Env {
   // invalidates every stored credential, so treat it as a one-way
   // secret -- add a new key + migrate before removing the old one.
   WP_ENCRYPTION_KEY?: string;
+  // Cloudflare Workflow binding -- per-domain scan runs in its own
+  // invocation so each gets its own subrequest budget. Declared in
+  // wrangler.jsonc as scan-domain-workflow / ScanDomainWorkflow.
+  SCAN_DOMAIN_WORKFLOW: Workflow;
 }
 
 export interface ScheduledDraft {

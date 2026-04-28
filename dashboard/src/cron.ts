@@ -7,13 +7,9 @@
  */
 
 import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
-import { scanDomain } from "./scanner";
-import { scanDomainPages } from "./pages";
 import { runContentPipeline, runContentOutcomeScan } from "./content-pipeline";
 import { runScanStreakCheck, runRoadmapStallCheck } from "./safety-sweeps";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
-import { checkAndAlertRegression, checkAndCelebrateGradeUp } from "./regression";
-import { autoCompleteRoadmapItems } from "./auto-complete";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { runWeeklyCitations, getCitationDigestData, type CitationDigestData } from "./citations";
@@ -33,52 +29,24 @@ export async function runWeeklyScans(env: Env): Promise<void> {
 
   if (domains.length === 0) return;
 
-  let scanned = 0;
-  let errors = 0;
+  let dispatched = 0;
+  let dispatchErrors = 0;
 
-  // --- Phase 1: Run all scans ---
-
+  // --- Phase 1: Dispatch a workflow instance per domain ---
+  // Each domain runs in its own Worker invocation with its own
+  // 1000-subrequest budget. Failures in one don't affect others, and
+  // per-step retries are handled by the Workflows runtime.
   for (const d of domains) {
     try {
-      const url = `https://${d.domain}/`;
-      const result = await scanDomain(d.id, url, "cron", env);
-      if (result?.error) {
-        errors++;
-      } else {
-        scanned++;
-        // Auto-complete roadmap items based on scan improvements
-        if (result && !d.is_competitor) {
-          try {
-            await autoCompleteRoadmapItems(d.client_slug, result, env);
-          } catch (e) {
-            console.log(`Auto-complete failed for ${d.client_slug}: ${e}`);
-          }
-        }
-      }
-      // Also scan individual pages for schema coverage
-      await scanDomainPages(d.id, d.domain, env);
-
-      // Check for score regression and alert if needed
-      await checkAndAlertRegression(d, env);
-      // Check for grade improvement and celebrate (mirror of regression)
-      if (!d.is_competitor) {
-        try {
-          await checkAndCelebrateGradeUp(d, env);
-        } catch (e) {
-          console.log(`[grade-up] check failed for ${d.client_slug}: ${e}`);
-        }
-      }
-    } catch {
-      errors++;
-    }
-
-    // Small delay between scans to be respectful
-    if (d !== domains[domains.length - 1]) {
-      await new Promise(r => setTimeout(r, 500));
+      await env.SCAN_DOMAIN_WORKFLOW.create({ params: { domainId: d.id } });
+      dispatched++;
+    } catch (e) {
+      dispatchErrors++;
+      console.log(`[cron] failed to dispatch scan workflow for domain ${d.id} (${d.domain}): ${e}`);
     }
   }
 
-  console.log(`Weekly scan complete: ${scanned} succeeded, ${errors} failed, ${domains.length} total`);
+  console.log(`Weekly scan dispatched: ${dispatched} workflow instances queued, ${dispatchErrors} dispatch failures, ${domains.length} total`);
 
   // --- Phase 2: Run citation tracking ---
 

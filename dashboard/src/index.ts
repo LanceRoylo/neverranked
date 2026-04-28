@@ -74,6 +74,10 @@ import { handleAgencyPauseClient, handleAgencyResumeClient, handleAgencyResendSn
 import { handleAgencyAddClientGet, handleAgencyAddClientPost } from "./routes/agency-add-client";
 import { getBrandingContext, getAgency } from "./agency";
 
+// Cloudflare Workflows requires the class to be a named export of the
+// Worker entrypoint module so the runtime can instantiate it.
+export { ScanDomainWorkflow } from "./workflows/scan-domain";
+
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     // Per-request structured access log: one JSON line at the end with
