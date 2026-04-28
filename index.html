@@ -511,6 +511,7 @@ h1,h2,h3,h4{
   align-items:flex-end;
   position:relative;
   border-bottom:1px solid var(--line);
+  overflow:hidden;
 }
 .hero::before{
   content:"";
@@ -518,7 +519,83 @@ h1,h2,h3,h4{
   left:0;right:0;top:0;
   height:1px;
   background:linear-gradient(90deg,transparent,var(--line-strong) 20%,var(--line-strong) 80%,transparent);
+  z-index:2;
 }
+
+/* Halation: a barely-perceptible film grain over the hero. SVG fractal
+   noise tiled at 200px, fixed at 0.03 opacity. Removes the rendered
+   feel without being seen. Layered above the section background but
+   below the content (.wrap is z-index:2). */
+.hero-grain{
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.035;
+  z-index:1;
+  background-image:url("data:image/svg+xml;utf8,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size:200px 200px;
+}
+
+/* Scroll cue, bottom-right of the hero. Static label with a 48x1px
+   track; a 1px gold line sweeps across every 2.6s, infinite. Quiet
+   peripheral motion that pulls the eye downward. */
+.hero-scroll{
+  position:absolute;
+  right:max(40px,calc((100vw - 1280px)/2 + 40px));
+  /* Anchor to the bottom of the initial viewport, not the hero box.
+     Hero often grows past 100vh because of content + padding, which
+     pushes a `bottom:` anchor below the fold and kills the cue. */
+  top:calc(100vh - 56px);
+  top:calc(100svh - 56px);
+  display:flex;
+  align-items:center;
+  gap:14px;
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  z-index:3;
+  opacity:0;
+  transform:translateY(8px);
+  animation:fadeUp 1s 1.2s forwards;
+  pointer-events:none;
+}
+.hero-scroll-line{
+  position:relative;
+  width:48px;
+  height:1px;
+  background:rgba(201,168,76,.18);
+  overflow:hidden;
+}
+.hero-scroll-line::after{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:100%;
+  height:1px;
+  background:var(--gold);
+  animation:scrollLine 2.6s ease-in-out infinite;
+}
+@keyframes scrollLine{
+  0%{left:-100%}
+  100%{left:100%}
+}
+@keyframes fadeUp{
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:720px){
+  .hero-scroll{right:24px;top:calc(100vh - 44px);top:calc(100svh - 44px);font-size:9px}
+  .hero-scroll-line{width:36px}
+}
+@media(prefers-reduced-motion:reduce){
+  .hero-scroll-line::after{animation:none;left:0;width:30%}
+  .hero-scroll{animation:none;opacity:1;transform:none}
+}
+/* Hero content needs to sit above the grain overlay (z-index:1) and
+   the gradient top-border pseudo (z-index:2). */
+.hero .wrap{z-index:2}
 .hero-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -3683,6 +3760,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   <!-- ============ HERO ============ -->
   <section class="hero">
+    <div class="hero-grain" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-eyebrow reveal">
         <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>A NEW SPECIES OF SEO AGENCY</span>
@@ -3751,6 +3829,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="tag">ROI</div>
         </div>
       </div>
+    </div>
+    <div class="hero-scroll" aria-hidden="true">
+      <span>Scroll</span>
+      <span class="hero-scroll-line"></span>
     </div>
   </section>
 
