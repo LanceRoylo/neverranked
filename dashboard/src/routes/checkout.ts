@@ -15,6 +15,7 @@ import { layout, html, redirect } from "../render";
 import { createMagicLink } from "../auth";
 import { scanDomain } from "../scanner";
 import { autoGenerateRoadmap } from "../auto-provision";
+import { sendSnippetDeliveryEmail } from "../agency-emails";
 import {
   handleAgencyCheckoutCompleted,
   handleAgencySubscriptionDeleted,
@@ -375,6 +376,29 @@ export async function handleStripeWebhook(
           }
         } catch (e) {
           console.log(`Auto-provision scan failed: ${e}`);
+        }
+
+        // Snippet delivery for self-signup paid plans. Audit is a
+        // one-time deliverable with no ongoing schema injection, so
+        // skip the snippet email for that tier. Signal + Amplify both
+        // include schema auto-injection -- the snippet is required.
+        if (plan === "signal" || plan === "amplify") {
+          try {
+            const domainRow = await env.DB.prepare(
+              "SELECT * FROM domains WHERE id = ?"
+            ).bind(domainId).first<Domain>();
+            if (domainRow && !domainRow.snippet_email_sent_at) {
+              const sent = await sendSnippetDeliveryEmail(env, { domain: domainRow, to: email });
+              if (sent) {
+                await env.DB.prepare(
+                  "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+                ).bind(now, domainId).run();
+                console.log(`[checkout] snippet email sent to ${email} for ${provisionDomain}`);
+              }
+            }
+          } catch (e) {
+            console.log(`[checkout] snippet email failed for ${email}: ${e}`);
+          }
         }
       }
 

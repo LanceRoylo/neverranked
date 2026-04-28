@@ -447,6 +447,39 @@ export async function handleAddDomain(request: Request, user: User, env: Env): P
     }
   }
 
+  // Snippet delivery for ADMIN-added direct clients (no agency).
+  // The agency flow above (line ~412) handles agency-managed clients.
+  // This branch covers /admin/domain adds where agency_id is null --
+  // without it, direct clients never received their snippet email.
+  // Verified gap on 2026-04-28 (Hawaii Theatre, et al.).
+  if (newDomainId && !agencyId && !isCompetitor) {
+    try {
+      const domainRow = await env.DB.prepare(
+        "SELECT * FROM domains WHERE id = ?"
+      ).bind(newDomainId).first<Domain>();
+      // Find the client user for this slug. If none yet (admin added
+      // domain before user), skip the email -- the next admin add-user
+      // step would be the right place to retry, but for safety we
+      // log so this doesn't go unnoticed.
+      const clientUser = await env.DB.prepare(
+        "SELECT email, name FROM users WHERE client_slug = ? AND role = 'client' ORDER BY id ASC LIMIT 1"
+      ).bind(clientSlug).first<{ email: string; name: string | null }>();
+      if (domainRow && clientUser?.email && !domainRow.snippet_email_sent_at) {
+        const sent = await sendSnippetDeliveryEmail(env, { domain: domainRow, to: clientUser.email });
+        if (sent) {
+          await env.DB.prepare(
+            "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+          ).bind(now, newDomainId).run();
+          console.log(`[admin] snippet email sent to ${clientUser.email} for ${domain}`);
+        }
+      } else if (!clientUser) {
+        console.log(`[admin] no client user yet for ${clientSlug}; snippet email deferred until user is added`);
+      }
+    } catch (e) {
+      console.log(`[admin] snippet email failed for ${domain}: ${e}`);
+    }
+  }
+
   // Auto-provision for primary (non-competitor) domains
   if (newDomainId && !isCompetitor) {
     // Run first scan in background
@@ -489,7 +522,36 @@ export async function handleAddUser(request: Request, user: User, env: Env): Pro
       "INSERT INTO users (email, name, role, client_slug, created_at) VALUES (?, ?, ?, ?, ?)"
     ).bind(email, name, role, clientSlug, now).run();
   } catch {
-    // Likely duplicate email
+    // Duplicate email -- still run the catch-up below so re-submitting
+    // the form is a deliberate "fire pending snippet emails" tool.
+  }
+
+  // Catch-up snippet email: any active, non-agency, non-competitor
+  // domain on this client_slug that is still missing
+  // snippet_email_sent_at gets the install email now. The IS NULL
+  // guard makes this idempotent -- re-submitting cannot double-send.
+  if (role === "client" && clientSlug) {
+    try {
+      const pendingDomains = (await env.DB.prepare(
+        `SELECT * FROM domains
+           WHERE client_slug = ?
+             AND active = 1
+             AND is_competitor = 0
+             AND agency_id IS NULL
+             AND snippet_email_sent_at IS NULL`
+      ).bind(clientSlug).all<Domain>()).results;
+      for (const d of pendingDomains) {
+        const sent = await sendSnippetDeliveryEmail(env, { domain: d, to: email });
+        if (sent) {
+          await env.DB.prepare(
+            "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+          ).bind(now, d.id).run();
+          console.log(`[admin] catch-up snippet email sent to ${email} for ${d.domain}`);
+        }
+      }
+    } catch (e) {
+      console.log(`[admin] catch-up snippet email failed for ${clientSlug}: ${e}`);
+    }
   }
 
   return redirect("/admin/manage");

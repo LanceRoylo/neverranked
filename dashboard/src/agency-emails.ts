@@ -118,8 +118,15 @@ export function snippetTag(clientSlug: string): string {
 }
 
 interface SnippetEmailOpts {
-  agency: Agency;
+  /** When set, the snippet email goes to agency.contact_email (the
+   *  agency-managed flow). When absent, `to` must be supplied so we
+   *  can reach the client directly (admin-managed flow). */
+  agency?: Agency;
   domain: Domain;
+  /** Optional override -- used by the admin add-domain flow to send
+   *  the snippet email directly to the client user when no agency is
+   *  involved. Falls back to agency.contact_email when omitted. */
+  to?: string;
 }
 
 /**
@@ -136,9 +143,9 @@ export async function sendSnippetDeliveryEmail(
   opts: SnippetEmailOpts,
 ): Promise<boolean> {
   const { agency, domain } = opts;
-  const to = agency.contact_email;
+  const to = opts.to ?? agency?.contact_email;
   if (!to) {
-    console.log(`[agency-emails] agency ${agency.id} has no contact_email, skipping snippet email`);
+    console.log(`[agency-emails] no recipient for snippet email (domain ${domain.id})`);
     return false;
   }
 
@@ -197,7 +204,7 @@ ${installHelpHtml(env, domain.client_slug)}
 
 </body></html>`;
 
-  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_delivery", agencyId: agency.id, targetId: domain.id });
+  return sendResend(env, to, subject, text, html, undefined, { type: "snippet_delivery", agencyId: agency?.id, targetId: domain.id });
 }
 
 // ---------------------------------------------------------------------------
