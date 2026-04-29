@@ -2248,6 +2248,97 @@ h1,h2,h3,h4{
 }
 
 /* ---------- compound timeline ---------- */
+/* ---------- Schema auto-deploy callout (vs Ahrefs / others) ---------- */
+.schema-callout{
+  padding:100px 0;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(201,168,76,.04),rgba(201,168,76,.01) 60%,transparent);
+}
+.schema-callout-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:48px;
+  max-width:1180px;
+  margin:0 auto;
+}
+@media(min-width:980px){
+  .schema-callout-grid{
+    grid-template-columns:5fr 6fr;
+    gap:80px;
+    align-items:start;
+  }
+}
+.schema-callout-side h2{
+  font-size:clamp(36px,4.6vw,56px);
+  line-height:1.05;
+  letter-spacing:-.015em;
+  margin:0;
+}
+.schema-callout-body p{
+  font-size:16px;
+  line-height:1.7;
+  color:var(--text-soft);
+  margin:0 0 18px;
+  max-width:560px;
+}
+.schema-callout-body p:first-child{
+  font-family:var(--mono);
+  font-size:13px;
+  letter-spacing:.01em;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  line-height:1.7;
+  margin-bottom:14px;
+}
+.schema-callout-pullquote{
+  font-family:var(--serif) !important;
+  font-style:italic !important;
+  font-size:22px !important;
+  line-height:1.4 !important;
+  color:var(--text) !important;
+  border-left:2px solid var(--gold);
+  padding-left:18px !important;
+  margin:28px 0 !important;
+  text-transform:none !important;
+  letter-spacing:0 !important;
+}
+.schema-callout-stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:24px;
+  margin-top:36px;
+  padding-top:32px;
+  border-top:1px solid var(--line);
+}
+@media(max-width:700px){
+  .schema-callout-stats{grid-template-columns:1fr;gap:18px}
+}
+.schema-callout-stat-num{
+  font-family:var(--serif);
+  font-size:48px;
+  font-weight:400;
+  line-height:1;
+  color:var(--gold);
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+}
+.schema-callout-stat-unit{
+  font-size:18px;
+  color:var(--text-faint);
+}
+.schema-callout-stat-label{
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+  margin-top:10px;
+  line-height:1.55;
+  max-width:170px;
+}
+
 .compound{
   padding:120px 0;
   border-bottom:1px solid var(--line);
@@ -4969,6 +5060,42 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
+  <!-- ============ SCHEMA AUTO-DEPLOY CALLOUT ============ -->
+  <section class="schema-callout" id="schema-callout">
+    <div class="wrap">
+      <div class="schema-callout-grid reveal">
+        <div class="schema-callout-side">
+          <div class="section-label" style="margin-bottom:24px">
+            <span class="num">§</span>
+            <span>The difference</span>
+            <span class="rule"></span>
+            <span>tools vs us</span>
+          </div>
+          <h2>Most AEO tools tell you <em>what's broken.</em> We <em>ship the fix.</em></h2>
+        </div>
+        <div class="schema-callout-body">
+          <p>Every other AEO tool ends at the dashboard. They flag the missing schema. They list the content gaps. They show the citation deficit. Then they hand the work back to you.</p>
+          <p>Our snippet pastes into your site once. From then on, every schema fix we generate <strong>pushes to your live site within an hour.</strong> No CMS access. No dev tickets. No copy-paste. The audit becomes a roadmap. The roadmap becomes shipped code. The shipped code earns citations.</p>
+          <p class="schema-callout-pullquote"><em>"Other agencies still send PDFs. We push patches."</em></p>
+          <div class="schema-callout-stats">
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num">&lt; 1<span class="schema-callout-stat-unit">hr</span></div>
+              <div class="schema-callout-stat-label">From fix generated to live on your site</div>
+            </div>
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num">0<span class="schema-callout-stat-unit"></span></div>
+              <div class="schema-callout-stat-label">Dev tickets you have to file</div>
+            </div>
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num">3<span class="schema-callout-stat-unit"></span></div>
+              <div class="schema-callout-stat-label">Supported CMSes for content auto-publish (Amplify)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PRODUCT SHOWCASE ============ -->
   <section class="product-showcase" id="experience">
     <div class="wrap">
@@ -5252,6 +5379,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <details>
             <summary>How is this different from regular SEO?</summary>
             <p>Regular SEO optimizes for Google's ten blue links. AEO optimizes for what ChatGPT, Perplexity, Gemini, and Google's AI Overviews actually cite when someone asks a question. The signals overlap, but the work is different. <a href="/blog/is-seo-dead/">The long version is here.</a></p>
+          </details>
+          <details>
+            <summary>Why not just use Ahrefs or Semrush?</summary>
+            <p>Use them. We do, internally. Ahrefs and Semrush are tools that flag what's broken on your site and what your competitors are winning. They're great at that. They don't fix anything. After the report, you still have to write the schema, deploy it, draft the content, ship the pages, and maintain the calendar yourself. If your team has the bandwidth to execute a 30-page audit every month, an AEO tool subscription is the right call. If they don't, that's why we exist. Same data layer, plus the team that ships the work and a pipeline that auto-publishes to your CMS.</p>
           </details>
           <details>
             <summary>Do you work with businesses outside the US?</summary>
