@@ -23,11 +23,17 @@
  */
 
 import type { Env, Domain, ScanResult } from "./types";
+import { gradeSchema } from "./schema-grader";
 
 interface ExtractedAuthority {
   trust_profile_links: { platform: string; url: string }[];
   author_meta: string | null;
   has_person_schema: boolean;
+  /** Phase 4B: raw Person nodes detected on the page. We grade each
+   *  via schema-grader to decide whether the page counts as
+   *  "complete author" (any node graded >=60) or just "named author"
+   *  (presence-only). */
+  person_nodes?: Record<string, unknown>[];
 }
 
 const TRUST_PRIORITY_TIER1 = ["g2", "trustpilot", "capterra", "google_business"];
@@ -52,6 +58,22 @@ export async function ingestAuthoritySignals(
   const links = Array.isArray(signals.trust_profile_links) ? signals.trust_profile_links : [];
   const hasAuthor = !!signals.author_meta || signals.has_person_schema === true;
 
+  // Phase 4B: a page counts as "complete author" if at least one of
+  // its detected Person nodes grades >=60 in the schema-grader.
+  // Pages with author_meta only (no Person schema at all) DON'T
+  // count as complete -- author_meta is too weak a signal on its
+  // own; the grader's Person manifest is what catches the
+  // cargo-cult `{"@type":"Person","name":"Jane"}` pattern.
+  let hasCompleteAuthor = false;
+  if (Array.isArray(signals.person_nodes)) {
+    for (const node of signals.person_nodes) {
+      try {
+        const grade = gradeSchema(node);
+        if (grade.score >= 60) { hasCompleteAuthor = true; break; }
+      } catch { /* skip malformed node */ }
+    }
+  }
+
   // 1. Upsert each detected trust profile. PRIMARY KEY is
   //    (client_slug, platform, url) so this is idempotent across
   //    repeat scans of the same page.
@@ -72,24 +94,28 @@ export async function ingestAuthoritySignals(
   //    less than the ratio, and re-scans of the same URL get the
   //    same has_author verdict so the ratio stays stable.
   await env.DB.prepare(
-    `INSERT INTO author_coverage (client_slug, pages_scanned, pages_with_author, last_scan_at, created_at, updated_at)
-       VALUES (?, 1, ?, ?, ?, ?)
+    `INSERT INTO author_coverage (client_slug, pages_scanned, pages_with_author, pages_with_complete_author, last_scan_at, created_at, updated_at)
+       VALUES (?, 1, ?, ?, ?, ?, ?)
      ON CONFLICT(client_slug) DO UPDATE SET
-       pages_scanned     = pages_scanned + 1,
-       pages_with_author = pages_with_author + ?,
-       last_scan_at      = excluded.last_scan_at,
-       updated_at        = excluded.updated_at`
+       pages_scanned              = pages_scanned + 1,
+       pages_with_author          = pages_with_author + ?,
+       pages_with_complete_author = pages_with_complete_author + ?,
+       last_scan_at               = excluded.last_scan_at,
+       updated_at                 = excluded.updated_at`
   ).bind(
     domain.client_slug,
     hasAuthor ? 1 : 0,
+    hasCompleteAuthor ? 1 : 0,
     now, now, now,
     hasAuthor ? 1 : 0,
+    hasCompleteAuthor ? 1 : 0,
   ).run();
 
   // 3. Roadmap items for gaps. Gate behind >=5 scans so a brand-new
   //    site doesn't get spammed with items the first time it's added.
   await maybeAddTrustRoadmapItem(domain.client_slug, env, now);
   await maybeAddAuthorRoadmapItem(domain.client_slug, env, now);
+  await maybeAddThinAuthorRoadmapItem(domain.client_slug, env, now);
 }
 
 /** Add a single "set up review-platform presence" roadmap item if
@@ -160,10 +186,48 @@ async function maybeAddAuthorRoadmapItem(
   ).bind(clientSlug, title, desc, now, now).run();
 }
 
+/** Phase 4B: surface thin author bios as a distinct gap from
+ *  "no author at all." Fires when the client has author signal on
+ *  most pages but the Person nodes don't grade complete (presence
+ *  without identity-anchor fields like url/sameAs/jobTitle).
+ *  Gated to >=5 scans, >=50% author-presence (otherwise the
+ *  "Add named-author signals" item is the right one), and
+ *  <50% complete-author. */
+async function maybeAddThinAuthorRoadmapItem(
+  clientSlug: string,
+  env: Env,
+  now: number,
+): Promise<void> {
+  const cov = await env.DB.prepare(
+    "SELECT pages_scanned, pages_with_author, pages_with_complete_author FROM author_coverage WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ pages_scanned: number; pages_with_author: number; pages_with_complete_author: number }>();
+  if (!cov || cov.pages_scanned < 5) return;
+  // If author presence is low, the other roadmap item handles it.
+  if (cov.pages_with_author / cov.pages_scanned < 0.5) return;
+  // If completeness is high, skip.
+  if (cov.pages_with_complete_author / cov.pages_scanned >= 0.5) return;
+
+  const title = "Strengthen Person schema on author bios";
+  const exists = await env.DB.prepare(
+    "SELECT id FROM roadmap_items WHERE client_slug = ? AND title = ? LIMIT 1"
+  ).bind(clientSlug, title).first<{ id: number }>();
+  if (exists) return;
+
+  const completePct = Math.round((cov.pages_with_complete_author / cov.pages_scanned) * 100);
+  const desc = `Your pages declare authors but the Person schema is thin -- only ${completePct}% of scanned pages have a Person node with the fields AI engines actually use to evaluate authorship (url or sameAs as an identity anchor, plus jobTitle / worksFor / image). A name in a vacuum doesn't anchor authorship. Add url + sameAs (link to LinkedIn, X, or the author's bio page), jobTitle, and worksFor to every Person node so AI engines can verify who wrote what.`;
+
+  await env.DB.prepare(
+    `INSERT INTO roadmap_items (
+       client_slug, phase_id, title, description, category, status,
+       sort_order, refresh_source, stale, created_at, updated_at
+     ) VALUES (?, NULL, ?, ?, 'authority', 'pending', 1150, 'authority', 0, ?, ?)`
+  ).bind(clientSlug, title, desc, now, now).run();
+}
+
 /** Used by the /trust/<slug> route. */
 export async function getTrustMatrix(clientSlug: string, env: Env): Promise<{
   platforms: { platform: string; profiles: { url: string; last_seen_at: number; source_url: string | null }[] }[];
-  authorCoverage: { pages_scanned: number; pages_with_author: number; last_scan_at: number } | null;
+  authorCoverage: { pages_scanned: number; pages_with_author: number; pages_with_complete_author: number; last_scan_at: number } | null;
 }> {
   const profiles = (await env.DB.prepare(
     `SELECT platform, url, last_seen_at, source_url FROM trust_profiles
@@ -183,8 +247,8 @@ export async function getTrustMatrix(clientSlug: string, env: Env): Promise<{
   }));
 
   const cov = await env.DB.prepare(
-    "SELECT pages_scanned, pages_with_author, last_scan_at FROM author_coverage WHERE client_slug = ?"
-  ).bind(clientSlug).first<{ pages_scanned: number; pages_with_author: number; last_scan_at: number }>();
+    "SELECT pages_scanned, pages_with_author, pages_with_complete_author, last_scan_at FROM author_coverage WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ pages_scanned: number; pages_with_author: number; pages_with_complete_author: number; last_scan_at: number }>();
 
   return { platforms, authorCoverage: cov ?? null };
 }

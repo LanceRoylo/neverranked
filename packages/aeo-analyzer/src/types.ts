@@ -32,6 +32,11 @@ export interface Signals {
   // Trustpilot / Capterra / etc.) drives ~3x.
   author_meta: string | null;
   has_person_schema: boolean;
+  /** Raw Person nodes detected in JSON-LD (Phase 4B). Captured so the
+   *  schema-grader can score completeness instead of treating any
+   *  Person presence as equivalent. Empty array when no Person
+   *  nodes are present. */
+  person_nodes: Record<string, unknown>[];
   /** Outbound links matched against the trust-profile platform list,
    *  deduped, in canonical "platform: url" form. Empty if none found. */
   trust_profile_links: { platform: string; url: string }[];

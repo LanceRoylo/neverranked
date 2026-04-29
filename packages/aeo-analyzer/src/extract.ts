@@ -80,12 +80,14 @@ export function extractMeta(html: string, targetUrl: string): Signals {
   // JSON-LD
   const jsonldBlocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
   const schemaTypes: string[] = [];
+  const personNodes: Record<string, unknown>[] = [];
   let parseErrors = 0;
   for (const block of jsonldBlocks) {
     const inner = block.replace(/<script[^>]*>/i, "").replace(/<\/script>/i, "").trim();
     try {
       const data = JSON.parse(inner);
       collectSchemaTypes(data, schemaTypes);
+      collectPersonNodes(data, personNodes);
     } catch {
       parseErrors++;
     }
@@ -202,6 +204,30 @@ export function extractMeta(html: string, targetUrl: string): Signals {
     has_testimonial_text: hasTestimonialText,
     author_meta: authorMeta,
     has_person_schema: hasPersonSchema,
+    person_nodes: personNodes,
     trust_profile_links: trustProfileLinks,
   };
+}
+
+/** Walk a parsed JSON-LD blob and collect every Person node we
+ *  encounter (top-level, nested via @graph, or via author / creator
+ *  / publisher properties). Used by the schema-grader to score
+ *  Person completeness instead of treating presence as binary. */
+export function collectPersonNodes(data: unknown, bucket: Record<string, unknown>[]): void {
+  if (Array.isArray(data)) {
+    for (const item of data) collectPersonNodes(item, bucket);
+    return;
+  }
+  if (!data || typeof data !== "object") return;
+  const obj = data as Record<string, unknown>;
+  const t = obj["@type"];
+  const isPerson = t === "Person" || (Array.isArray(t) && t.includes("Person"));
+  if (isPerson) {
+    bucket.push(obj);
+  }
+  // Walk @graph and the common containers where Person nodes nest.
+  const recurseKeys = ["@graph", "author", "creator", "publisher", "editor", "contributor", "founder"];
+  for (const k of recurseKeys) {
+    if (k in obj) collectPersonNodes(obj[k], bucket);
+  }
 }

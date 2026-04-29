@@ -102,6 +102,23 @@ const MANIFESTS: Record<string, TypeManifest> = {
     required: ["name", "applicationCategory", "operatingSystem"],
     recommended: ["offers", "aggregateRating", "screenshot", "description"],
   },
+  Person: {
+    // Phase 4B: a named author with no profile linkage gives AI
+    // engines almost nothing to anchor authorship to. We require
+    // a verifiable identity hook (url OR sameAs) on top of name.
+    // Recommended fields are the ones AI engines use to evaluate
+    // author authority -- jobTitle, worksFor, image, description.
+    required: ["name"],
+    recommended: ["url", "sameAs", "jobTitle", "worksFor", "image", "description"],
+    custom: (data, issues) => {
+      // Treat missing BOTH url AND sameAs as a required-style
+      // failure. A Person node without an identity hook is the
+      // cargo-cult pattern this manifest is meant to catch.
+      if (!data.url && !data.sameAs) {
+        issues.push("Person needs either url OR sameAs (a link to a verifiable profile) -- a name alone gives AI engines no authorship anchor");
+      }
+    },
+  },
   BreadcrumbList: {
     required: ["itemListElement"],
     recommended: [],

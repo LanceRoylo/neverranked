@@ -57,6 +57,12 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
     authorPct >= 75 ? "good" : authorPct >= 40 ? "warn" : "bad";
   const authorColor = authorStatus === "good" ? "var(--green)" : authorStatus === "warn" ? "var(--yellow)" : "var(--red)";
 
+  // Phase 4B: completeness percent. Pages where the Person node graded >=60.
+  const completePct = authorCoverage && authorCoverage.pages_scanned > 0
+    ? Math.round((authorCoverage.pages_with_complete_author / authorCoverage.pages_scanned) * 100)
+    : 0;
+  const completeColor = completePct >= 50 ? "var(--green)" : completePct >= 20 ? "var(--yellow)" : "var(--red)";
+
   const body = `
     <div style="margin-bottom:32px">
       <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
@@ -86,6 +92,22 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
         </div>
       </div>
     </div>
+
+    ${authorCoverage ? `
+    <div style="border:1px solid var(--line);border-radius:6px;padding:24px;margin-bottom:32px;background:${completePct < 20 ? "rgba(192,57,43,.04)" : completePct < 50 ? "rgba(230,126,34,.04)" : "transparent"}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:24px">
+        <div style="flex:1">
+          <div class="label" style="margin-bottom:8px">Author completeness</div>
+          <div style="font-size:32px;font-weight:300;letter-spacing:-0.02em;color:${completeColor}">${completePct}% complete</div>
+          <p style="color:var(--text-muted);font-size:13px;margin-top:8px">
+            ${authorCoverage.pages_with_complete_author} of ${authorCoverage.pages_scanned} pages have a Person schema node with the fields AI engines use to evaluate authorship (url or sameAs as an identity anchor, plus jobTitle / worksFor / image).
+          </p>
+        </div>
+        <div style="max-width:380px;font-size:12px;color:var(--text-faint);line-height:1.6">
+          <strong style="color:var(--text-muted)">Why this matters.</strong> A Person node with just <code>{ "name": "Jane" }</code> passes the named-author check but gives AI engines nothing to anchor authorship to. The completeness score uses the same grader as the public schema scorer -- a Person node passes when it scores 60+, which requires identity linkage (url OR sameAs) plus most of the recommended fields.
+        </div>
+      </div>
+    </div>` : ""}
 
     <div style="margin-bottom:16px">
       <h2 style="font-size:20px;margin:0">Trust-platform matrix</h2>
