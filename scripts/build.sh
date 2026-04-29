@@ -35,6 +35,7 @@ DIRS=(
   principles
   privacy
   terms
+  thanks
 )
 
 echo "Building dist/ from repo root…"
