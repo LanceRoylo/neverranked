@@ -20,6 +20,63 @@ import {
   type SchemaType,
 } from "../schema-generator";
 import { runAutomation, getAutomationSettings } from "../automation";
+import { gradeSchema, gradeBucket } from "../schema-grader";
+
+/** Grade a schema and persist the score + issues. Idempotent;
+ *  callers can invoke this on every render of a row, on every
+ *  generate, on every edit, and on every approve. We always re-grade
+ *  on edit / generate; on render we skip the write if quality_graded_at
+ *  is recent (within 24h) to keep page renders cheap. */
+async function gradeAndPersist(
+  env: Env,
+  injectionId: number,
+  jsonLd: string,
+  options: { force?: boolean } = {},
+): Promise<{ score: number; issues: string[] }> {
+  if (!options.force) {
+    // Check if recently graded.
+    const row = await env.DB.prepare(
+      "SELECT quality_graded_at FROM schema_injections WHERE id = ?"
+    ).bind(injectionId).first<{ quality_graded_at: number | null }>();
+    const dayAgo = Math.floor(Date.now() / 1000) - 86400;
+    if (row?.quality_graded_at && row.quality_graded_at > dayAgo) {
+      // Use cached.
+      const cached = await env.DB.prepare(
+        "SELECT quality_score, quality_issues FROM schema_injections WHERE id = ?"
+      ).bind(injectionId).first<{ quality_score: number | null; quality_issues: string | null }>();
+      if (cached?.quality_score !== null && cached?.quality_score !== undefined) {
+        let issues: string[] = [];
+        try { issues = JSON.parse(cached.quality_issues || "[]"); } catch {}
+        return { score: cached.quality_score, issues };
+      }
+    }
+  }
+
+  const grade = gradeSchema(jsonLd);
+  const now = Math.floor(Date.now() / 1000);
+  await env.DB.prepare(
+    "UPDATE schema_injections SET quality_score = ?, quality_issues = ?, quality_graded_at = ? WHERE id = ?"
+  ).bind(grade.score, JSON.stringify(grade.issues), now, injectionId).run();
+  return { score: grade.score, issues: grade.issues };
+}
+
+/** Render a quality-score badge for the injection list UI. */
+function renderQualityBadge(score: number | null | undefined): string {
+  if (score === null || score === undefined) {
+    return `<span style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px;background:var(--bg-edge);border:1px solid var(--line);border-radius:3px;font-family:var(--mono);font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em">Not graded</span>`;
+  }
+  const bucket = gradeBucket(score);
+  const colors = {
+    green: { bg: "rgba(74,143,99,.15)", border: "rgba(74,143,99,.5)", text: "#7fb893" },
+    gold:  { bg: "rgba(201,168,76,.15)", border: "rgba(201,168,76,.5)", text: "var(--gold)" },
+    red:   { bg: "rgba(194,82,77,.15)", border: "rgba(194,82,77,.5)", text: "#e6a4a0" },
+  }[bucket];
+  const label = bucket === "green" ? "Quality" : bucket === "gold" ? "Acceptable" : "Below threshold";
+  return `<span title="Schema quality score. <60 blocks deploy" style="display:inline-flex;align-items:center;gap:6px;padding:3px 8px;background:${colors.bg};border:1px solid ${colors.border};border-radius:3px;font-family:var(--mono);font-size:10px;color:${colors.text};text-transform:uppercase;letter-spacing:.1em">
+    <span style="font-weight:600">${score}/100</span>
+    <span style="opacity:.85">${label}</span>
+  </span>`;
+}
 
 // Schema types we trust to auto-approve. These are deterministic
 // templates filled from InjectionConfig fields we validate up front
@@ -132,8 +189,24 @@ export async function handleInjectAdmin(
       "SELECT * FROM schema_injections WHERE client_slug = ? AND status != 'archived' ORDER BY schema_type"
     )
       .bind(slug)
-      .all<SchemaInjection>()
+      .all<SchemaInjection & { quality_score: number | null; quality_issues: string | null; quality_graded_at: number | null }>()
   ).results;
+
+  // Lazily grade any injection that has never been graded (or was
+  // graded > 24h ago). The grade-on-view pattern keeps the cost out
+  // of write paths and ensures backfill happens incrementally as the
+  // admin browses. Cap at 5 grades per render so the page stays fast.
+  let lazyGraded = 0;
+  for (const inj of injections) {
+    if (lazyGraded >= 5) break;
+    const dayAgo = Math.floor(Date.now() / 1000) - 86400;
+    if (inj.quality_score === null || (inj.quality_graded_at && inj.quality_graded_at < dayAgo)) {
+      const g = await gradeAndPersist(env, inj.id, inj.json_ld, { force: true });
+      inj.quality_score = g.score;
+      inj.quality_issues = JSON.stringify(g.issues);
+      lazyGraded++;
+    }
+  }
 
   // Get latest scan for schema coverage
   const domain = await env.DB.prepare(
@@ -278,11 +351,12 @@ export async function handleInjectAdmin(
         ? injections
             .map(
               (inj) => `
-            <div style="padding:16px;background:var(--bg-edge);border-radius:4px;margin-bottom:12px;border-left:3px solid ${inj.status === "approved" ? "#4ade80" : inj.status === "paused" ? "#f59e0b" : "#888"}">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-                <div style="display:flex;align-items:center;gap:8px">
+            <div id="i-${inj.id}" style="padding:16px;background:var(--bg-edge);border-radius:4px;margin-bottom:12px;border-left:3px solid ${inj.status === "approved" ? "#4ade80" : inj.status === "paused" ? "#f59e0b" : "#888"}">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
                   <span style="font-weight:600;font-size:13px">${esc(inj.schema_type)}</span>
                   ${statusBadge(inj.status)}
+                  ${renderQualityBadge(inj.quality_score)}
                   <span style="font-size:10px;color:var(--text-faint)">${inj.target_pages === "*" ? "All pages" : esc(inj.target_pages)}</span>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center">
@@ -301,6 +375,24 @@ export async function handleInjectAdmin(
                   <form method="POST" action="/admin/inject/${esc(slug)}/delete/${inj.id}" style="display:inline"><button type="submit" class="btn btn-ghost" style="padding:4px 10px;font-size:9px;color:#ef4444">Remove</button></form>
                 </div>
               </div>
+              ${(() => {
+                if (inj.quality_score === null || inj.quality_score === undefined) return "";
+                if (inj.quality_score >= 80) return "";
+                let issues: string[] = [];
+                try { issues = JSON.parse(inj.quality_issues || "[]"); } catch {}
+                if (issues.length === 0) return "";
+                const bucket = gradeBucket(inj.quality_score);
+                const borderColor = bucket === "red" ? "rgba(194,82,77,.5)" : "rgba(201,168,76,.5)";
+                const labelColor = bucket === "red" ? "#e6a4a0" : "var(--gold)";
+                return `
+                <details style="margin:6px 0 10px;padding:10px 14px;background:rgba(0,0,0,.15);border-left:2px solid ${borderColor};border-radius:0 3px 3px 0">
+                  <summary style="cursor:pointer;font-size:11px;color:${labelColor};font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em">${issues.length} quality issue${issues.length === 1 ? "" : "s"} found</summary>
+                  <ul style="margin:10px 0 0;padding:0 0 0 18px;font-size:11px;color:var(--text-soft);line-height:1.7">
+                    ${issues.slice(0, 12).map(i => `<li>${esc(i)}</li>`).join("")}
+                    ${issues.length > 12 ? `<li style="color:var(--text-faint)">...and ${issues.length - 12} more</li>` : ""}
+                  </ul>
+                </details>`;
+              })()}
               <details>
                 <summary style="cursor:pointer;font-size:11px;color:var(--text-faint);margin-bottom:8px">View JSON-LD</summary>
                 <pre style="background:var(--bg);padding:12px;border-radius:4px;font-size:11px;color:var(--text-faint);overflow-x:auto;white-space:pre-wrap;margin:0">${esc(JSON.stringify(JSON.parse(inj.json_ld), null, 2))}</pre>
@@ -481,6 +573,29 @@ export async function handleInjectGenerate(
     .run();
   const newId = Number(insert.meta?.last_row_id ?? 0);
 
+  // Grade the freshly-generated schema. The 18-percentage-point
+  // citation penalty for partial schema means we can't ship something
+  // we haven't quality-checked. If the generated schema scores below
+  // 60, we override the auto-approve decision and force admin review.
+  const grade = await gradeAndPersist(env, newId, jsonLd, { force: true });
+  if (status === "approved" && !grade) { /* never happens, but be safe */ }
+  if (status === "approved" && grade.score < 60) {
+    await env.DB.prepare(
+      "UPDATE schema_injections SET status = 'draft', updated_at = ? WHERE id = ?"
+    ).bind(now, newId).run();
+    try {
+      await env.DB.prepare(
+        "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'needs_review', ?, ?, ?)"
+      ).bind(
+        slug,
+        `Schema quality below threshold: ${schemaType}`,
+        `Auto-approve overridden because quality score is ${grade.score}/100. Issues: ${grade.issues.slice(0, 3).join("; ")}`,
+        now,
+      ).run();
+    } catch { /* non-fatal */ }
+    return redirect(`/admin/inject/${slug}?flash=${encodeURIComponent(`${schemaType} draft created but blocked from auto-approve (quality ${grade.score}/100). Review + edit, then approve.`)}`);
+  }
+
   if (decision.ok) {
     // Audit log (not guarded by runAutomation here since we're inside
     // the admin flow already -- we just want the bookkeeping).
@@ -518,9 +633,25 @@ export async function handleInjectGenerate(
 export async function handleInjectApprove(
   slug: string,
   id: number,
-  env: Env
+  env: Env,
+  request?: Request,
 ): Promise<Response> {
   const now = Math.floor(Date.now() / 1000);
+
+  // Quality gate: re-grade the schema and block approval if below
+  // the 60-point empirical threshold. Admins can override via a
+  // ?force=1 query param if the grader has a false positive.
+  const inj = await env.DB.prepare(
+    "SELECT json_ld FROM schema_injections WHERE id = ? AND client_slug = ?"
+  ).bind(id, slug).first<{ json_ld: string }>();
+  if (inj) {
+    const grade = await gradeAndPersist(env, id, inj.json_ld, { force: true });
+    const force = request ? new URL(request.url).searchParams.get("force") === "1" : false;
+    if (grade.score < 60 && !force) {
+      const msg = `Quality ${grade.score}/100 is below the 60-point deploy threshold. Empirical research shows partial/generic schema produces an 18-point citation penalty vs no schema. Edit the schema to fix the issues, or re-approve with &force=1 to override.`;
+      return redirect(`/admin/inject/${slug}?error=${encodeURIComponent(msg)}#i-${id}`);
+    }
+  }
 
   // Approve the injection
   await env.DB.prepare(
@@ -530,17 +661,17 @@ export async function handleInjectApprove(
     .run();
 
   // If linked to a roadmap item, set it to in_progress
-  const inj = await env.DB.prepare(
+  const linked = await env.DB.prepare(
     "SELECT roadmap_item_id FROM schema_injections WHERE id = ?"
   )
     .bind(id)
     .first<{ roadmap_item_id: number | null }>();
 
-  if (inj?.roadmap_item_id) {
+  if (linked?.roadmap_item_id) {
     await env.DB.prepare(
       "UPDATE roadmap_items SET status = 'in_progress', updated_at = ? WHERE id = ? AND status = 'pending'"
     )
-      .bind(now, inj.roadmap_item_id)
+      .bind(now, linked.roadmap_item_id)
       .run();
   }
 
@@ -589,6 +720,10 @@ export async function handleInjectEdit(
   )
     .bind(jsonLd, targetPages, now, id, slug)
     .run();
+
+  // Re-grade after the edit. Edits are the most common path to fix
+  // a low-quality schema, so we want the badge to update immediately.
+  await gradeAndPersist(env, id, jsonLd, { force: true });
 
   return redirect(`/admin/inject/${slug}`);
 }

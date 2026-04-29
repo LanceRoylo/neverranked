@@ -617,7 +617,7 @@ export default {
     }
     const injectApproveMatch = path.match(/^\/admin\/inject\/([^/]+)\/approve\/(\d+)$/);
     if (injectApproveMatch && method === "POST" && user.role === "admin") {
-      return handleInjectApprove(decodeURIComponent(injectApproveMatch[1]), Number(injectApproveMatch[2]), env);
+      return handleInjectApprove(decodeURIComponent(injectApproveMatch[1]), Number(injectApproveMatch[2]), env, request);
     }
     const injectPauseMatch = path.match(/^\/admin\/inject\/([^/]+)\/pause\/(\d+)$/);
     if (injectPauseMatch && method === "POST" && user.role === "admin") {

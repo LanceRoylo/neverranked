@@ -542,11 +542,19 @@ export async function handleCitations(
     }
   }
 
+  // Citation lift block (engagement baseline vs current). Surfaces
+  // the proof case at the top of the citations view.
+  const { computeCitationLift, renderCitationLiftBlock } = await import("../citation-lift");
+  const lift = await computeCitationLift(slug, env);
+  const liftHtml = renderCitationLiftBlock(lift);
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
       <div class="section-sub">${esc(slug)}${latest ? ' -- last updated ' + new Date(latest.created_at * 1000).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : ''}</div>
     </div>
+
+    ${liftHtml ? `<div style="margin-bottom:28px">${liftHtml}</div>` : ""}
 
     <!-- How the page works. Answers "what is citation share and what do
          these numbers mean" once, at the top, so every reader has a frame

@@ -10,6 +10,7 @@ import { autoCompleteRoadmapItems } from "../auto-complete";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
 import { buildDomainStatusStrip } from "../status";
+import { computeCitationLift, renderCitationLiftBlock } from "../citation-lift";
 
 /** Build a getting-started checklist for new clients */
 /**
@@ -1264,6 +1265,13 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
     // Generate narrative
     const narrative = generateNarrative(domain.domain, latest, previous);
 
+    // Citation lift (citation rate at engagement start vs current).
+    // Surfaces the proof case: "you went from N% to M% citation rate
+    // since you started." Block renders nothing when there's no
+    // engagement anchor, so it's safe to compute every render.
+    const citationLift = await computeCitationLift(domain.client_slug, env);
+    const liftHtml = renderCitationLiftBlock(citationLift);
+
     // Plain-English interpretation of the score, so readers (especially
     // agency owners showing this to a client) can answer "is that number
     // good?" without looking anything up.
@@ -1303,6 +1311,8 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
           </div>
         </div>
       </div>
+
+      ${liftHtml ? `<div style="margin:0 0 32px">${liftHtml}</div>` : ""}
 
       <!-- Executive Summary -->
       <div style="margin-bottom:48px">
