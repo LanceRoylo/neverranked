@@ -15,7 +15,12 @@ import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from 
 const RUNS_PER_KEYWORD = 3; // Multiple runs for stability
 const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions";
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions";
-const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+// gemini-2.5-flash works on billing-enabled projects; gemini-2.0-flash
+// has a "FreeTier limit=0" quota oddity that fails even when the
+// project has billing on. Verified via the gemini-probe endpoint
+// 2026-04-29: 2.5-flash returns 503 (transient overload) on the new
+// billing-enabled key, while 2.0-flash returns 429 RESOURCE_EXHAUSTED.
+const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 
 // ---------------------------------------------------------------------------
@@ -168,36 +173,45 @@ async function queryGemini(
   apiKey: string,
   env?: Env,
 ): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
-  const resp = await fetch(GEMINI_ENDPOINT, {
-    method: "POST",
-    headers: {
-      "x-goog-api-key": apiKey,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      contents: [
-        {
-          parts: [
-            {
-              text: `You recommend businesses and services. When asked for recommendations, give specific business names with their websites. Cite your sources.\n\nQuery: ${keyword}`,
-            },
-          ],
-        },
-      ],
-      // Gemini's v1beta API accepts the camelCase form for the
-      // grounding tool. snake_case form silently produces empty
-      // responses on gemini-2.0-flash. Verified via the [gemini-debug]
-      // log on 2026-04-29.
-      tools: [{ googleSearch: {} }],
-      generationConfig: {
-        temperature: 0.4,
-        // Bumped from 1024: grounding metadata + multi-source citations
-        // can push the response payload past the smaller window, which
-        // truncates the visible text portion to empty.
-        maxOutputTokens: 2048,
+  const requestBody = JSON.stringify({
+    contents: [
+      {
+        parts: [
+          {
+            text: `You recommend businesses and services. When asked for recommendations, give specific business names with their websites. Cite your sources.\n\nQuery: ${keyword}`,
+          },
+        ],
       },
-    }),
+    ],
+    // Gemini's v1beta API accepts the camelCase form for the
+    // grounding tool. snake_case form silently produces empty
+    // responses on gemini-2.0-flash.
+    tools: [{ googleSearch: {} }],
+    generationConfig: {
+      temperature: 0.4,
+      // Bumped from 1024: grounding metadata + multi-source citations
+      // can push the response payload past the smaller window, which
+      // truncates the visible text portion to empty.
+      maxOutputTokens: 2048,
+    },
   });
+
+  // Single retry on 503 UNAVAILABLE. gemini-2.5-flash hits transient
+  // demand spikes a few times an hour; a 5s sleep + retry usually
+  // succeeds. Without retry we'd lose 5-10% of weekly citation data.
+  let resp = await fetch(GEMINI_ENDPOINT, {
+    method: "POST",
+    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+    body: requestBody,
+  });
+  if (resp.status === 503) {
+    await new Promise(r => setTimeout(r, 5000));
+    resp = await fetch(GEMINI_ENDPOINT, {
+      method: "POST",
+      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+      body: requestBody,
+    });
+  }
 
   if (!resp.ok) {
     const err = await resp.text();
