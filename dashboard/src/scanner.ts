@@ -6,6 +6,7 @@ import type { Env, ScanResult, Domain } from "./types";
 import { buildReport } from "../../packages/aeo-analyzer/src";
 import type { Report } from "../../packages/aeo-analyzer/src";
 import { autoVerifyRoadmap } from "./auto-roadmap";
+import { ingestAuthoritySignals } from "./authority-signals";
 
 const USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36 NeverRanked-AEO-Monitor/1.0";
 
@@ -185,6 +186,13 @@ export async function scanDomain(
       ).bind(domainId).first<Domain>();
       if (domain && !domain.is_competitor) {
         await autoVerifyRoadmap(domain, scanResult, env);
+        // Phase 4A: trust-profile + author-bio ingest. Wrapped in
+        // its own try so a failure here doesn't break auto-roadmap.
+        try {
+          await ingestAuthoritySignals(domain, scanResult, env);
+        } catch (e) {
+          console.log(`Authority-signal ingest failed: ${e}`);
+        }
       }
     } catch (e) {
       console.log(`Auto-roadmap check failed: ${e}`);

@@ -128,6 +128,46 @@ export function extractMeta(html: string, targetUrl: string): Signals {
     }
   }
 
+  // Author meta (Phase 4A): <meta name="author" content="...">
+  let authorMeta: string | null = null;
+  const am = html.match(/<meta\s+name=["']author["']\s+content=["']([^"']+)["']/i)
+          || html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']author["']/i);
+  if (am) authorMeta = am[1].trim().slice(0, 200) || null;
+
+  // Person schema (Phase 4A): named-author signal in JSON-LD.
+  const hasPersonSchema = schemaTypes.some(t => t.toLowerCase() === "person");
+
+  // Trust-profile outbound links (Phase 4A). Match canonical platform
+  // domains in the raw href set we already captured. Capture the full
+  // URL so admins can verify the profile is real before trusting it.
+  const TRUST_PLATFORMS: { platform: string; pattern: RegExp }[] = [
+    { platform: "g2",         pattern: /(?:^|\.)g2\.com\//i },
+    { platform: "trustpilot", pattern: /(?:^|\.)trustpilot\.com\//i },
+    { platform: "capterra",   pattern: /(?:^|\.)capterra\.com\//i },
+    { platform: "yelp",       pattern: /(?:^|\.)yelp\.com\/biz\//i },
+    { platform: "bbb",        pattern: /(?:^|\.)bbb\.org\//i },
+    { platform: "google_business", pattern: /(?:^|\.)google\.com\/maps\/place\//i },
+    { platform: "glassdoor",  pattern: /(?:^|\.)glassdoor\.com\/(?:Reviews|Overview)/i },
+    { platform: "clutch",     pattern: /(?:^|\.)clutch\.co\/profile\//i },
+  ];
+  const seenTrust = new Set<string>();
+  const trustProfileLinks: { platform: string; url: string }[] = [];
+  for (const lm of linkMatches) {
+    const hrefMatch = lm.match(/href=["']([^"']+)["']/i);
+    if (!hrefMatch) continue;
+    const href = hrefMatch[1];
+    if (!href.startsWith("http")) continue;
+    for (const tp of TRUST_PLATFORMS) {
+      if (tp.pattern.test(href)) {
+        const key = `${tp.platform}|${href}`;
+        if (seenTrust.has(key)) break;
+        seenTrust.add(key);
+        trustProfileLinks.push({ platform: tp.platform, url: href });
+        break;
+      }
+    }
+  }
+
   // Word count
   const wordCount = countWords(html);
 
@@ -160,5 +200,8 @@ export function extractMeta(html: string, targetUrl: string): Signals {
     word_count: wordCount,
     has_rating_text: hasRatingText,
     has_testimonial_text: hasTestimonialText,
+    author_meta: authorMeta,
+    has_person_schema: hasPersonSchema,
+    trust_profile_links: trustProfileLinks,
   };
 }

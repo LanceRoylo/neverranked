@@ -27,6 +27,14 @@ export interface Signals {
   word_count: number;
   has_rating_text: boolean;
   has_testimonial_text: boolean;
+  // Authority signals (Phase 4A). Per CMU GEO research, named-author
+  // pages see ~2.3x citation lift; trust-platform presence (G2 /
+  // Trustpilot / Capterra / etc.) drives ~3x.
+  author_meta: string | null;
+  has_person_schema: boolean;
+  /** Outbound links matched against the trust-profile platform list,
+   *  deduped, in canonical "platform: url" form. Empty if none found. */
+  trust_profile_links: { platform: string; url: string }[];
 }
 
 export interface Report {

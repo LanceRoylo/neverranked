@@ -75,5 +75,31 @@ export function generateTechnicalSignals(signals: Signals): TechnicalSignal[] {
     status: wcStatus,
   });
 
+  // Authority — named author (Phase 4A). 2.3x citation lift in
+  // CMU GEO research when content has a named author signal.
+  const hasAuthor = !!signals.author_meta || signals.has_person_schema;
+  items.push({
+    label: "Named author",
+    value: hasAuthor
+      ? (signals.author_meta
+          ? `Author: ${signals.author_meta.slice(0, 60)}`
+          : "Person schema present")
+      : "No author meta or Person schema -- AI engines can't attribute authorship",
+    status: hasAuthor ? "good" : "warning",
+  });
+
+  // Authority — trust-profile outbound links (Phase 4A). Brands with
+  // links to G2/Trustpilot/Capterra/etc. on their site see ~3x lift
+  // because AI engines pull review-platform context when answering.
+  const trustCount = signals.trust_profile_links.length;
+  const trustPlatforms = [...new Set(signals.trust_profile_links.map(t => t.platform))];
+  items.push({
+    label: "Trust-platform links",
+    value: trustCount > 0
+      ? `${trustCount} link${trustCount === 1 ? "" : "s"} to ${trustPlatforms.join(", ")}`
+      : "No links to G2 / Trustpilot / Capterra / Yelp / BBB / GBP detected",
+    status: trustCount >= 2 ? "good" : trustCount === 1 ? "warning" : "bad",
+  });
+
   return items;
 }

@@ -32,6 +32,7 @@ import {
 } from "./routes/two-factor";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
+import { handleTrust } from "./routes/trust";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems, handleRefreshRoadmap } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
@@ -668,6 +669,16 @@ export default {
     if (compMatch) {
       const slug = decodeURIComponent(compMatch[1]);
       return handleCompetitors(slug, user, env);
+    }
+
+    // Trust / authority signals (Phase 4A)
+    if (path === "/trust" || path === "/trust/") {
+      if (user.client_slug) return redirect(`/trust/${user.client_slug}`);
+      return renderClientPicker("Authority signals", "trust", user, env);
+    }
+    const trustMatch = path.match(/^\/trust\/([^/]+)$/);
+    if (trustMatch && method === "GET") {
+      return handleTrust(decodeURIComponent(trustMatch[1]), user, env);
     }
 
     // Roadmap
