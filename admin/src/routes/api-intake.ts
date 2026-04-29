@@ -46,6 +46,7 @@ export async function handleApiIntake(request: Request, env: Env): Promise<Respo
   let domain = "";
   let goals = "";
   let honeypot = "";
+  let sourceRaw = "";
 
   const contentType = request.headers.get("Content-Type") ?? "";
   try {
@@ -56,6 +57,7 @@ export async function handleApiIntake(request: Request, env: Env): Promise<Respo
       domain = String(data.domain ?? "").trim();
       goals = String(data.goals ?? "").trim();
       honeypot = String(data.company_website ?? "").trim();
+      sourceRaw = String(data.source ?? "").trim();
     } else {
       const fd = await request.formData();
       name = String(fd.get("name") ?? "").trim();
@@ -63,10 +65,15 @@ export async function handleApiIntake(request: Request, env: Env): Promise<Respo
       domain = String(fd.get("domain") ?? "").trim();
       goals = String(fd.get("goals") ?? "").trim();
       honeypot = String(fd.get("company_website") ?? "").trim();
+      sourceRaw = String(fd.get("source") ?? "").trim();
     }
   } catch {
     return json({ error: "Malformed body" }, { status: 400, headers: cors });
   }
+
+  // Allowlist source values so the column can't be polluted by arbitrary input.
+  const ALLOWED_SOURCES = new Set(["marketing-site-form", "recapture-bar"]);
+  const source = ALLOWED_SOURCES.has(sourceRaw) ? sourceRaw : "marketing-site-form";
 
   // Honeypot tripped → silently "succeed" without inserting
   if (honeypot) {
@@ -95,7 +102,7 @@ export async function handleApiIntake(request: Request, env: Env): Promise<Respo
     email,
     domain,
     goals: goals || null,
-    source: "marketing-site-form",
+    source,
   });
 
   return json({ ok: true }, { headers: cors });
