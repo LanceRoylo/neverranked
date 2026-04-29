@@ -230,10 +230,29 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
     "SELECT * FROM roadmap_phases WHERE client_slug = ? ORDER BY phase_number"
   ).bind(clientSlug).all<RoadmapPhase>()).results;
 
-  // Get all items grouped by phase
+  // Get all items grouped by phase. Hide stale items from the
+  // active view; they remain in the table for history.
   const allItems = (await env.DB.prepare(
-    "SELECT * FROM roadmap_items WHERE client_slug = ? ORDER BY sort_order, created_at"
-  ).bind(clientSlug).all<RoadmapItem>()).results;
+    "SELECT * FROM roadmap_items WHERE client_slug = ? AND COALESCE(stale, 0) = 0 ORDER BY sort_order, created_at"
+  ).bind(clientSlug).all<RoadmapItem & { refresh_source?: string; stale?: number }>()).results;
+
+  // Quarterly refresh banner. Surfaces when the client is past the
+  // 90-day window since their last refresh (or engagement start).
+  // Uses the daysUntilRefresh helper so we know whether to show
+  // "due now" vs "due in N days" framing.
+  const { daysUntilRefresh } = await import("../roadmap-refresh");
+  const daysUntil = await daysUntilRefresh(clientSlug, env);
+  const refreshBanner = (daysUntil !== null && daysUntil <= 0)
+    ? `<div style="margin:0 0 24px;padding:14px 18px;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:6px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+         <div style="font-size:13px;color:var(--text-soft);line-height:1.55;max-width:680px">
+           <strong style="color:var(--gold)">Quarterly refresh due.</strong>
+           AI models retrain every 60-90 days. Click <em>Refresh from drift</em> to scan the last 90 days of citation data, surface new competitors + lost citations + emerging gaps, and add roadmap items for what changed. In-flight items aren't touched.
+         </div>
+         <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/refresh" style="margin:0">
+           <button type="submit" class="btn" style="padding:8px 16px;font-size:11px">Refresh now</button>
+         </form>
+       </div>`
+    : "";
 
   // Map roadmap_item_id -> schema_injection. When present, the item is
   // "handled by NeverRanked" -- we ship the fix via the snippet rather
@@ -462,6 +481,9 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
       <div style="display:flex;align-items:flex-end;gap:16px">
         ${user.role === "admin" ? `
           <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/refresh" title="Run drift detection against the last 90 days of citation data and add new items for new competitors, lost citations, and emerging gaps. Doesn't touch existing in-flight items.">
+              <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Refresh from drift</button>
+            </form>
             <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/regenerate" onsubmit="return confirm('This will replace all existing roadmap items with a fresh plan based on the latest scan. Continue?')">
               <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Regenerate</button>
             </form>
@@ -478,6 +500,8 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
         </div>
       </div>
     </div>
+
+    ${refreshBanner}
 
     ${totalItems > 0 ? renderImpactStrip([
       { value: totalDone, suffix: `/ ${totalItems}`, label: "items delivered", accent: "var(--text)" },
@@ -895,4 +919,20 @@ export async function handleRegenerateRoadmap(clientSlug: string, user: User, en
   }
 
   return redirect(`/roadmap/${clientSlug}`);
+}
+
+/** Run the 90-day citation-drift refresh on demand. Adds new roadmap
+ *  items based on what's changed in the citation landscape since the
+ *  last refresh (or since engagement start). Doesn't touch existing
+ *  in-flight items. */
+export async function handleRefreshRoadmap(clientSlug: string, user: User, env: Env): Promise<Response> {
+  if (!(await canAccessClient(env, user, clientSlug))) return redirect("/");
+  // Admins + agency_admins can trigger a refresh on behalf of a
+  // client. Clients can trigger their own refresh.
+  const { runRoadmapRefresh } = await import("../roadmap-refresh");
+  const result = await runRoadmapRefresh(clientSlug, env);
+  const flash = result.itemsAdded > 0
+    ? `Quarterly refresh complete. Added ${result.itemsAdded} new item${result.itemsAdded === 1 ? "" : "s"} based on citation drift.`
+    : `Quarterly refresh ran. ${result.reason}`;
+  return redirect(`/roadmap/${clientSlug}?flash=${encodeURIComponent(flash)}`);
 }

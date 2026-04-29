@@ -9,6 +9,7 @@
 import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { runContentPipeline, runContentOutcomeScan } from "./content-pipeline";
 import { runScanStreakCheck, runRoadmapStallCheck } from "./safety-sweeps";
+import { runRoadmapRefresh, isRefreshDue } from "./roadmap-refresh";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
@@ -251,6 +252,11 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.
   await runSchemaDriftSweep(env);
+  // Quarterly roadmap refresh: per CMU GEO research, AEO strategies
+  // need re-evaluation every 60-90 days as AI models retrain. The
+  // sweep self-throttles (only runs the expensive drift detection
+  // on clients past the 90-day threshold).
+  await runQuarterlyRoadmapRefreshSweep(env);
   // Monthly recap: only fires on day 1 of the month, self-guards
   // against re-fire via email_delivery_log.
   await maybeSendMonthlyRecaps(env);
@@ -1097,6 +1103,75 @@ export async function maybeSendMonthlyRecaps(env: Env): Promise<void> {
 //
 // Each decision goes through runAutomation() so the global pause switch
 // controls it and every action leaves an audit row.
+
+/**
+ * Quarterly roadmap refresh sweep.
+ *
+ * Per CMU GEO research, AEO strategies need re-evaluation every 60-90
+ * days as AI models retrain and competitor citation patterns shift.
+ * For each active client past the 90-day threshold (since their last
+ * refresh OR their engagement start), run drift detection and add
+ * any new roadmap items the data justifies.
+ *
+ * Self-throttling: isRefreshDue() returns false for any client refreshed
+ * less than 90 days ago, so this is safe to call daily.
+ *
+ * Logs every refresh to automation_log. Doesn't email -- the customer
+ * sees the new items on their next /roadmap visit.
+ */
+export async function runQuarterlyRoadmapRefreshSweep(env: Env): Promise<void> {
+  const clients = (await env.DB.prepare(
+    `SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0`
+  ).all<{ client_slug: string }>()).results;
+
+  let refreshed = 0;
+  let skipped = 0;
+  let errors = 0;
+
+  for (const c of clients) {
+    try {
+      const due = await isRefreshDue(c.client_slug, env);
+      if (!due) { skipped++; continue; }
+
+      const result = await runRoadmapRefresh(c.client_slug, env);
+      refreshed++;
+
+      // Audit row + admin alert when items were added so they show
+      // up in the inbox.
+      const now = Math.floor(Date.now() / 1000);
+      try {
+        await env.DB.prepare(
+          `INSERT INTO automation_log (kind, target_type, target_slug, reason, detail, created_at)
+           VALUES ('quarterly_roadmap_refresh', 'roadmap', ?, ?, ?, ?)`
+        ).bind(
+          c.client_slug,
+          result.reason,
+          JSON.stringify({ itemsAdded: result.itemsAdded, drift: result.drift }),
+          now,
+        ).run();
+      } catch { /* non-fatal */ }
+
+      if (result.itemsAdded > 0) {
+        try {
+          await env.DB.prepare(
+            `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+             VALUES (?, 'roadmap_refreshed', ?, ?, ?)`
+          ).bind(
+            c.client_slug,
+            `${result.itemsAdded} new roadmap item${result.itemsAdded === 1 ? "" : "s"} from quarterly refresh`,
+            result.reason,
+            now,
+          ).run();
+        } catch { /* non-fatal */ }
+      }
+    } catch (e) {
+      console.log(`[quarterly-refresh] failed for ${c.client_slug}: ${e}`);
+      errors++;
+    }
+  }
+
+  console.log(`[quarterly-refresh] sweep: ${refreshed} refreshed, ${skipped} not yet due, ${errors} errors`);
+}
 
 export async function runMissingRoadmapSweep(env: Env): Promise<void> {
   // Find active primary clients with >= 1 successful scan and 0 roadmap items.

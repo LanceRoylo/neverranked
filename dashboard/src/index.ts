@@ -32,7 +32,7 @@ import {
 } from "./routes/two-factor";
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
-import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems } from "./routes/roadmap";
+import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems, handleRefreshRoadmap } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
 import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handlePublishingDelete, handlePublishingRestrictions, handlePublishingUnpause } from "./routes/publishing";
@@ -690,6 +690,10 @@ export default {
     const roadmapRegenMatch = path.match(/^\/roadmap\/([^/]+)\/regenerate$/);
     if (roadmapRegenMatch && method === "POST" && user.role === "admin") {
       return handleRegenerateRoadmap(decodeURIComponent(roadmapRegenMatch[1]), user, env);
+    }
+    const roadmapRefreshMatch = path.match(/^\/roadmap\/([^/]+)\/refresh$/);
+    if (roadmapRefreshMatch && method === "POST") {
+      return handleRefreshRoadmap(decodeURIComponent(roadmapRefreshMatch[1]), user, env);
     }
     const roadmapBulkStartMatch = path.match(/^\/roadmap\/([^/]+)\/bulk-start$/);
     if (roadmapBulkStartMatch && method === "POST" && user.role === "admin") {
