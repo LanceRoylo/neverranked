@@ -1739,6 +1739,176 @@ h1,h2,h3,h4{
   margin:0 auto;
   line-height:1.55;
 }
+/* ---------- Deliverables (Top 5 per tier) ---------- */
+
+.deliverables{
+  padding:120px 0 100px;
+  position:relative;
+}
+.deliverables-head{
+  max-width:760px;
+  margin-bottom:64px;
+}
+.deliverables-head h2{
+  font-size:clamp(36px,5vw,64px);
+  margin-bottom:16px;
+}
+.deliverables-head p{
+  font-family:var(--mono);
+  font-size:14px;
+  color:var(--text-soft);
+  line-height:1.7;
+  margin:0;
+}
+.deliverables-grid{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:24px;
+  max-width:1240px;
+  margin:0 auto;
+}
+@media(min-width:1000px){
+  .deliverables-grid{
+    grid-template-columns:1fr 1.1fr 1fr;
+    gap:0;
+    align-items:stretch;
+  }
+}
+.del-tier{
+  border:1px solid var(--line);
+  padding:36px 32px 36px;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  transition:background .5s var(--ease),border-color .5s var(--ease);
+}
+.del-tier:hover{background:var(--bg-lift)}
+@media(min-width:1000px){
+  .del-tier + .del-tier{border-left:none}
+}
+.del-tier.featured{
+  border-color:var(--gold-dim);
+  background:linear-gradient(180deg,rgba(201,168,76,.05),rgba(201,168,76,.01) 60%,transparent);
+  padding-top:54px;
+  z-index:2;
+}
+.del-tier.featured:hover{background:linear-gradient(180deg,rgba(201,168,76,.08),rgba(201,168,76,.02) 60%,transparent)}
+@media(min-width:1000px){
+  .del-tier.featured{
+    margin-top:-16px;
+    margin-bottom:-16px;
+    border:1px solid var(--gold-dim);
+  }
+}
+.del-flag{
+  position:absolute;
+  top:-1px;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--gold);
+  color:var(--bg);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  font-weight:600;
+  padding:6px 14px;
+  white-space:nowrap;
+}
+.del-tier-meta{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.18em;
+  font-size:10px;
+  color:var(--text-mute);
+  margin-bottom:14px;
+}
+.del-tier-meta b{color:var(--gold);font-weight:500}
+.del-tier h3{
+  font-family:var(--serif);
+  font-size:42px;
+  font-style:italic;
+  font-weight:400;
+  line-height:1;
+  margin:0 0 8px;
+  color:var(--text);
+}
+.del-tier-price{
+  font-family:var(--serif);
+  font-size:32px;
+  color:var(--text);
+  margin-bottom:28px;
+  display:flex;
+  align-items:baseline;
+  gap:6px;
+}
+.del-tier-price .sym{font-size:18px;color:var(--text-faint);transform:translateY(-6px);align-self:flex-start}
+.del-tier-price .per{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-left:8px;letter-spacing:.05em;text-transform:uppercase;align-self:center;line-height:1.4}
+.del-list{
+  list-style:none;
+  padding:0;
+  margin:0 0 32px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  flex:1;
+}
+.del-list li{
+  display:grid;
+  grid-template-columns:28px 1fr;
+  gap:14px;
+  font-size:13.5px;
+  line-height:1.55;
+  color:var(--text-soft);
+  padding-bottom:18px;
+  border-bottom:1px solid var(--line);
+}
+.del-list li:last-child{border-bottom:none;padding-bottom:0}
+.del-list li strong{
+  color:var(--text);
+  font-weight:500;
+  display:block;
+  margin-bottom:4px;
+}
+.del-num{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.18em;
+  color:var(--gold);
+  padding-top:2px;
+}
+.del-cta{
+  display:inline-block;
+  text-align:center;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  padding:14px 24px;
+  border:1px solid var(--gold-dim);
+  color:var(--gold);
+  text-decoration:none;
+  margin-top:auto;
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease);
+}
+.del-cta:hover{
+  background:var(--gold);
+  color:var(--bg);
+  border-color:var(--gold);
+}
+.del-tier.featured .del-cta{
+  background:var(--gold);
+  color:var(--bg);
+  border-color:var(--gold);
+}
+.del-tier.featured .del-cta:hover{
+  background:var(--gold-dim);
+  border-color:var(--gold-dim);
+}
+
 .pricing-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -3892,6 +4062,165 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </div>
 
+  <!-- ============ DELIVERABLES (TOP 5 PER TIER) ============ -->
+  <section class="deliverables" id="deliverables">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§</span>
+        <span>What you get</span>
+        <span class="rule"></span>
+        <span>three plans / five things each</span>
+      </div>
+
+      <div class="deliverables-head">
+        <h2 class="reveal">Five things, <em>per plan.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          We get the question a lot. So here it is, plain. Audit is the one-time diagnosis. Signal is the ongoing AI visibility system. Amplify is Signal plus a content production engine that turns dashboard insight into shipped pages.
+        </p>
+      </div>
+
+      <div class="deliverables-grid reveal-stagger">
+
+        <!-- AUDIT -->
+        <div class="del-tier">
+          <div class="del-tier-meta"><span>§00 / Start here</span><b>One-time</b></div>
+          <h3>Audit</h3>
+          <div class="del-tier-price"><span class="sym">$</span>500<span class="per">once · 48-hour delivery</span></div>
+          <ol class="del-list">
+            <li>
+              <span class="del-num">01</span>
+              <div>
+                <strong>See where AI is recommending you and your competitors.</strong>
+                We run real queries against ChatGPT, Perplexity, Gemini, and Claude in your industry and show you exactly which businesses get cited.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">02</span>
+              <div>
+                <strong>Keyword gap analysis built for AEO, not classic SEO.</strong>
+                The queries your competitors get cited for that you don't, with the competitor names attached and grouped by intent.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">03</span>
+              <div>
+                <strong>Technical and schema audit specific to AI citation.</strong>
+                Your structured data, content shape, and entity signals graded against what AI engines actually pick up. Not a 2018-era SEO checklist.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">04</span>
+              <div>
+                <strong>A 90-day roadmap, phased and prioritized.</strong>
+                Yours to keep. Execute in-house, hand it to your current agency, or hand it to us. Not a 90-page PDF nobody reads.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">05</span>
+              <div>
+                <strong>Honest answers.</strong>
+                Delivered in 48 hours. If the audit says you don't need ongoing work, we tell you.
+              </div>
+            </li>
+          </ol>
+          <a href="https://app.neverranked.com/checkout/audit" class="del-cta">Book the audit</a>
+        </div>
+
+        <!-- SIGNAL -->
+        <div class="del-tier featured">
+          <span class="del-flag">Most teams start here</span>
+          <div class="del-tier-meta"><span>§01 / Tier I</span><b>Featured</b></div>
+          <h3>Signal</h3>
+          <div class="del-tier-price"><span class="sym">$</span>2,000<span class="per">/mo · 3-month minimum</span></div>
+          <ol class="del-list">
+            <li>
+              <span class="del-num">01</span>
+              <div>
+                <strong>Weekly citation tracking across ChatGPT, Perplexity, Gemini, and AI Overviews.</strong>
+                A keyword-by-competitor matrix shows exactly who gets cited for what. Green where you win. Red where you don't.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">02</span>
+              <div>
+                <strong>Schema fixes that ship to your live site without dev work.</strong>
+                One snippet pasted in your site's head once. Every improvement we make pushes within an hour. No CMS access needed.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">03</span>
+              <div>
+                <strong>A live dashboard that refreshes every Monday.</strong>
+                AEO score, projected ceiling, citation share, and Google Search Console clicks in one tab. Movement over time, not a one-time snapshot.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">04</span>
+              <div>
+                <strong>A 90-day roadmap that updates itself.</strong>
+                Items auto-complete as fixes land. New gaps surface as your site evolves. The plan is always current.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">05</span>
+              <div>
+                <strong>A Monday digest you can forward.</strong>
+                What changed last week, the one thing that mattered most, and the recommended next move. Plain English. No PDF theatre.
+              </div>
+            </li>
+          </ol>
+          <a href="https://app.neverranked.com/checkout/signal" class="del-cta">Choose Signal</a>
+        </div>
+
+        <!-- AMPLIFY -->
+        <div class="del-tier">
+          <div class="del-tier-meta"><span>§02 / Tier II</span><b>Full cover</b></div>
+          <h3>Amplify</h3>
+          <div class="del-tier-price"><span class="sym">$</span>4,500<span class="per">/mo · everything in Signal, plus:</span></div>
+          <ol class="del-list">
+            <li>
+              <span class="del-num">01</span>
+              <div>
+                <strong>Brand voice trained on your existing writing.</strong>
+                Paste samples or point us at a URL. Future drafts inherit the fingerprint automatically. Founder edits drop from 60% to 5%.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">02</span>
+              <div>
+                <strong>Citation-shaped content drafted in your voice.</strong>
+                When the dashboard surfaces a gap, our pipeline drafts the page. Service pages, FAQ entries, pillar articles, structured menu pages -- whatever your business actually publishes. You approve before it ships.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">03</span>
+              <div>
+                <strong>Auto-publish to WordPress, Webflow, or Shopify.</strong>
+                Approved drafts push directly to your CMS on their scheduled date. On Squarespace, Wix, or custom platforms, drafts arrive ready-to-paste with HTML, meta description, and schema.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">04</span>
+              <div>
+                <strong>A content calendar that fills itself.</strong>
+                Drafts queue against the roadmap so you always know what's shipping next. No planning meeting. No content audit.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">05</span>
+              <div>
+                <strong>The full loop, closed.</strong>
+                Most agencies stop at the report. Amplify finishes the loop: gap surfaced &rarr; draft generated &rarr; reviewed &rarr; published. Without you assembling a content team.
+              </div>
+            </li>
+          </ol>
+          <a href="https://app.neverranked.com/checkout/amplify" class="del-cta">Start Amplify</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PROBLEM ============ -->
   <section class="problem" id="problem">
     <div class="wrap">
@@ -4771,12 +5100,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="price"><span class="sym">$</span>2,000<span class="per">/mo</span></div>
           <div class="divider"></div>
           <ul>
-            <li>Monthly technical &amp; AEO audit</li>
-            <li>Schema monitoring and maintenance</li>
-            <li>Citation tracking across <b>ChatGPT, Perplexity, Gemini, and Google AIO</b></li>
-            <li>Live dashboard, refreshed daily</li>
-            <li>Monthly founder Loom recap</li>
-            <li>Email support, <b>12 business hour</b> SLA</li>
+            <li>Weekly citation tracking across <b>ChatGPT, Perplexity, Gemini, and AI Overviews</b></li>
+            <li>Schema fixes auto-pushed to your live site within an hour</li>
+            <li>Live dashboard, refreshed every Monday</li>
+            <li>Auto-updating 90-day roadmap</li>
+            <li>Forward-ready Monday digest</li>
             <li><b>Three-month</b> minimum, then month-to-month</li>
           </ul>
           <a href="https://app.neverranked.com/checkout/signal" class="choose">Choose Signal</a>
@@ -4791,10 +5119,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="divider"></div>
           <ul>
             <li>Everything in Signal, plus:</li>
-            <li>Digest upgrades to <b>weekly</b></li>
-            <li>Quarterly deep-dive strategy session</li>
-            <li>Content drafts on request</li>
-            <li>Email support, <b>6 business hour</b> SLA</li>
+            <li>Brand voice fingerprint trained on your existing writing</li>
+            <li>Citation-shaped content drafted in your voice</li>
+            <li>Auto-publish to <b>WordPress, Webflow, or Shopify</b></li>
+            <li>Self-filling content calendar</li>
             <li><b>Three-month</b> minimum, then month-to-month</li>
           </ul>
           <a href="https://app.neverranked.com/checkout/amplify" class="choose">Start Amplify</a>
