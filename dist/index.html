@@ -1560,7 +1560,13 @@ h1,h2,h3,h4{
   padding:11px 14px;
   font-family:var(--mono);font-size:13px;color:var(--text);
 }
-.recapture-form input::placeholder{color:rgba(240,236,227,.3)}
+.recapture-form input::placeholder{color:rgba(240,236,227,.5)}
+.recapture-form input + input{
+  border-left:1px solid rgba(232,199,103,.18);
+}
+.recapture-honey{
+  position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;
+}
 .recapture-form button[type=submit]{
   background:var(--gold);color:var(--bg);
   border:0;padding:0 20px;
@@ -1578,11 +1584,16 @@ h1,h2,h3,h4{
   transition:color .2s var(--ease);
 }
 .recapture-dismiss:hover{color:var(--text)}
+@media (max-width:720px){
+  .recapture-form{flex-wrap:wrap}
+  .recapture-form input{flex:1 1 100%;border-bottom:1px solid rgba(232,199,103,.18)}
+  .recapture-form input + input{border-left:0}
+  .recapture-form button[type=submit]{flex:1 1 100%;padding:11px 14px}
+}
 @media (max-width:600px){
   .recapture{padding:10px 12px}
   .recapture-inner{gap:10px}
   .recapture-label{display:none}
-  .recapture-form button[type=submit]{padding:0 14px}
 }
 
 /* ---------- insights preview ---------- */
@@ -3856,6 +3867,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   </section>
 
   <!-- ============ MARQUEE ============ -->
+  <!-- Only the platforms we actually track or measurably affect:
+       AI Overviews (via Google Search Console) and the four engines
+       in the citation tracker (ChatGPT, Perplexity, Gemini, Claude).
+       Copilot / Brave / You.com were removed 2026-04-28 because we
+       don't substantiate any work for them. -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
       <span>AI Overviews</span>
@@ -3863,17 +3879,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <span>Perplexity</span>
       <span>Gemini</span>
       <span>Claude</span>
-      <span>Copilot</span>
-      <span>Brave</span>
-      <span>You.com</span>
       <span>AI Overviews</span>
       <span>ChatGPT Search</span>
       <span>Perplexity</span>
       <span>Gemini</span>
       <span>Claude</span>
-      <span>Copilot</span>
-      <span>Brave</span>
-      <span>You.com</span>
+      <span>AI Overviews</span>
+      <span>ChatGPT Search</span>
+      <span>Perplexity</span>
+      <span>Gemini</span>
+      <span>Claude</span>
     </div>
   </div>
 
@@ -5105,6 +5120,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <span class="recapture-label">§ Still here?</span>
       <form class="recapture-form" id="recaptureForm" autocomplete="off" novalidate>
         <input type="text" id="recaptureInput" placeholder="yourdomain.com" spellcheck="false" autocapitalize="off" autocorrect="off" inputmode="url" aria-label="Your domain" />
+        <input type="email" id="recaptureEmail" placeholder="email (optional)" spellcheck="false" autocapitalize="off" autocorrect="off" inputmode="email" aria-label="Email (optional, get the report)" />
+        <div class="recapture-honey" aria-hidden="true">
+          <label>Company website <input type="text" id="recaptureHoney" tabindex="-1" autocomplete="off" /></label>
+        </div>
         <button type="submit" aria-label="Check your site">Check my site →</button>
       </form>
       <button type="button" class="recapture-dismiss" id="recaptureDismiss" aria-label="Dismiss">&times;</button>
@@ -5641,10 +5660,13 @@ window.scrollTo(0,0);
   if(sessionStorage.getItem(KEY)==='1') return;
   var form=document.getElementById('recaptureForm');
   var input=document.getElementById('recaptureInput');
+  var emailInput=document.getElementById('recaptureEmail');
+  var honeyInput=document.getElementById('recaptureHoney');
   var dismiss=document.getElementById('recaptureDismiss');
   var hero=document.getElementById('urlCheck');
   var heroForm=document.getElementById('checkForm');
   var heroInput=document.getElementById('checkInput');
+  var EMAIL_RE=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   var shown=false, ticking=false;
   function check(){
@@ -5672,10 +5694,37 @@ window.scrollTo(0,0);
   }
   dismiss.addEventListener('click', hide);
 
+  function normalizeDomain(v){
+    return v.replace(/^https?:\/\//,'').replace(/\/.*$/,'').toLowerCase();
+  }
+
   form.addEventListener('submit', function(e){
     e.preventDefault();
     var v=(input.value||'').trim();
     if(!v || !hero || !heroForm || !heroInput) return;
+
+    var email=(emailInput && emailInput.value||'').trim();
+    var honey=(honeyInput && honeyInput.value||'').trim();
+
+    // Optional email capture: only POST when a valid email is provided and the honeypot is empty.
+    // Domain validation is loose here; the API normalizes and re-validates server-side.
+    if(email && EMAIL_RE.test(email) && !honey){
+      try {
+        fetch('https://admin.neverranked.com/api/intake', {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body: JSON.stringify({
+            email: email,
+            domain: normalizeDomain(v),
+            goals: 'Ran the AEO check from the recapture bar.',
+            source: 'recapture-bar',
+            company_website: ''
+          }),
+          keepalive: true
+        }).catch(function(){ /* fire-and-forget */ });
+      } catch(_){}
+    }
+
     heroInput.value=v;
     hero.scrollIntoView({behavior:'smooth', block:'start'});
     // Give the smooth scroll a moment so the animated score is visible when scan resolves
