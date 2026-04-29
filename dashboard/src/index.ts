@@ -35,6 +35,8 @@ import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, h
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleTrust } from "./routes/trust";
 import { handleReddit } from "./routes/reddit";
+import { handleBenchmark } from "./routes/benchmark";
+import { recomputeIndustryBenchmarks } from "./industry-benchmarks";
 import { backfillRedditCitations, maybeAddRedditRoadmapItems } from "./reddit-citations";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems, handleRefreshRoadmap } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
@@ -704,6 +706,22 @@ export default {
     if (compMatch) {
       const slug = decodeURIComponent(compMatch[1]);
       return handleCompetitors(slug, user, env);
+    }
+
+    // Industry benchmark (Phase 6A)
+    if (path === "/benchmark" || path === "/benchmark/") {
+      if (user.client_slug) return redirect(`/benchmark/${user.client_slug}`);
+      return renderClientPicker("Industry benchmark", "benchmark", user, env);
+    }
+    const benchmarkMatch = path.match(/^\/benchmark\/([^/]+)$/);
+    if (benchmarkMatch && method === "GET") {
+      return handleBenchmark(decodeURIComponent(benchmarkMatch[1]), user, env);
+    }
+    // Phase 6A admin: trigger an immediate benchmark recompute
+    // without waiting for the nightly cron.
+    if (path === "/admin/benchmark-recompute" && method === "GET" && user.role === "admin") {
+      const r = await recomputeIndustryBenchmarks(env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
 
     // Reddit presence (Phase 5)

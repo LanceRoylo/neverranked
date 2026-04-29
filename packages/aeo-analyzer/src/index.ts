@@ -32,3 +32,8 @@ export {
 
 // Full report builder
 export { buildReport } from "./report";
+
+// Schema completeness grader (Phase 6B: shared between dashboard +
+// public schema-check Worker)
+export { gradeSchema, gradeBucket } from "./schema-grader";
+export type { SchemaGrade } from "./schema-grader";

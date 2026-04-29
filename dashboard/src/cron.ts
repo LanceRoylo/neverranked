@@ -257,6 +257,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // sweep self-throttles (only runs the expensive drift detection
   // on clients past the 90-day threshold).
   await runQuarterlyRoadmapRefreshSweep(env);
+  // Phase 6A: Recompute industry benchmark percentiles from latest
+  // scan + citation_snapshot per tagged client. Industries with n<5
+  // are skipped (their stale rows are deleted to avoid the dashboard
+  // showing rollups computed against a smaller pool).
+  try {
+    const { recomputeIndustryBenchmarks } = await import("./industry-benchmarks");
+    const r = await recomputeIndustryBenchmarks(env);
+    console.log(`[cron] industry-benchmarks: ${r.industriesComputed} computed, ${r.industriesSkipped} skipped (n<5)`);
+  } catch (e) {
+    console.log(`[cron] industry-benchmarks failed: ${e}`);
+  }
   // Monthly recap: only fires on day 1 of the month, self-guards
   // against re-fire via email_delivery_log.
   await maybeSendMonthlyRecaps(env);

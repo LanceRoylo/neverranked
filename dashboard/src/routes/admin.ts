@@ -262,10 +262,11 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
         ${await (async () => {
           const rows = (await env.DB.prepare(
             `SELECT d.client_slug, COALESCE(cs.avg_deal_value, 0) as avg_deal_value
+             , cs.industry as industry
              FROM (SELECT DISTINCT client_slug FROM domains WHERE active = 1 AND is_competitor = 0) d
              LEFT JOIN client_settings cs ON cs.client_slug = d.client_slug
              ORDER BY d.client_slug`
-          ).all<{ client_slug: string; avg_deal_value: number }>()).results;
+          ).all<{ client_slug: string; avg_deal_value: number; industry: string | null }>()).results;
           if (rows.length === 0) {
             return '<div style="font-size:12px;color:var(--text-faint)">No clients yet.</div>';
           }
@@ -280,6 +281,8 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
                   <span style="color:var(--text-faint);font-size:13px">$</span>
                   <input type="number" name="avg_deal_value" value="${dollars}" placeholder="5000" min="0" step="1" style="width:120px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px">
                 </div>
+                <label style="font-size:11px;color:var(--text-faint)">Industry</label>
+                <input type="text" name="industry" value="${esc(r.industry || "")}" placeholder="saas / agency / ecom / local-services / ..." style="width:200px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:13px;padding:6px 10px;border-radius:2px">
                 <button type="submit" class="btn" style="padding:6px 14px;font-size:11px">Save</button>
               </form>
             `;
@@ -567,6 +570,7 @@ export async function handleClientSettings(request: Request, user: User, env: En
   const form = await request.formData();
   const clientSlug = (form.get("client_slug") as string || "").trim().toLowerCase();
   const rawDealValue = (form.get("avg_deal_value") as string || "").trim();
+  const rawIndustry = (form.get("industry") as string || "").trim().toLowerCase();
 
   if (!clientSlug) {
     return redirect("/admin/manage#client-settings");
@@ -579,13 +583,19 @@ export async function handleClientSettings(request: Request, user: User, env: En
       dealValueCents = parsed * 100;
     }
   }
+  // Industry: normalize to slug-like lowercase. Empty string saves as
+  // NULL so the client falls back out of the benchmark pool.
+  const industry = rawIndustry ? rawIndustry.replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "") : null;
 
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
-    `INSERT INTO client_settings (client_slug, avg_deal_value, created_at, updated_at)
-     VALUES (?, ?, ?, ?)
-     ON CONFLICT(client_slug) DO UPDATE SET avg_deal_value = excluded.avg_deal_value, updated_at = excluded.updated_at`
-  ).bind(clientSlug, dealValueCents, now, now).run();
+    `INSERT INTO client_settings (client_slug, avg_deal_value, industry, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?)
+     ON CONFLICT(client_slug) DO UPDATE SET
+       avg_deal_value = excluded.avg_deal_value,
+       industry       = excluded.industry,
+       updated_at     = excluded.updated_at`
+  ).bind(clientSlug, dealValueCents, industry, now, now).run();
 
   return redirect("/admin/manage#client-settings");
 }
