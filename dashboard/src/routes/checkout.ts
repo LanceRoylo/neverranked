@@ -159,9 +159,25 @@ export async function handleCheckout(
   const url = new URL(request.url);
   const origin = url.origin;
 
-  // Pre-fill email and domain from query params if provided
-  const prefillEmail = url.searchParams.get("email") || "";
-  const prefillDomain = url.searchParams.get("domain") || "";
+  // Pre-fill email and domain from query params if provided.
+  //
+  // Defensive validation: URL-decoding turns `+` into a space, so a
+  // gmail-style alias like `lance+test@x.com` arrives here as
+  // `lance test@x.com` and breaks Stripe's customer_email validation.
+  // Rather than try to guess the user's intent, we validate the
+  // email shape and SKIP the prefill if it looks malformed -- Stripe
+  // will collect it from the user instead, which is preferable to
+  // failing the entire checkout creation.
+  const rawEmail = url.searchParams.get("email") || "";
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const prefillEmail = EMAIL_RE.test(rawEmail) ? rawEmail : "";
+
+  // Domain prefill: similar defensive check. Strip protocol/path,
+  // require something that looks like a domain. Bad value = no prefill.
+  const rawDomain = (url.searchParams.get("domain") || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+  const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+  const prefillDomain = DOMAIN_RE.test(rawDomain) ? rawDomain : "";
 
   // Build checkout session params using pre-created Stripe Price IDs
   const params: Record<string, string> = {
@@ -172,12 +188,6 @@ export async function handleCheckout(
     "line_items[0][quantity]": "1",
     "payment_method_types[0]": "card",
     "allow_promotion_codes": "true",
-    // Skip payment method collection when the initial invoice is $0 (e.g.
-    // a 100%-off comp coupon). Paying customers still have amount_due > 0
-    // and are always required to enter a card. If the comp expires and a
-    // renewal invoice hits, Stripe fails the charge and eventually cancels
-    // the sub, which our customer.subscription.deleted webhook handles.
-    "payment_method_collection": "if_required",
     "metadata[plan]": plan,
     // Ask for the domain to monitor during checkout
     "custom_fields[0][key]": "domain",
@@ -185,6 +195,19 @@ export async function handleCheckout(
     "custom_fields[0][label][custom]": "Domain to monitor (e.g. yourbusiness.com)",
     "custom_fields[0][type]": "text",
   };
+
+  // Skip payment method collection when the initial invoice is $0 (e.g.
+  // a 100%-off comp coupon on a subscription). Paying customers still
+  // have amount_due > 0 and are always required to enter a card. If the
+  // comp expires and a renewal invoice hits, Stripe fails the charge
+  // and eventually cancels the sub, which the webhook handles.
+  //
+  // Stripe only allows `payment_method_collection` on subscription-mode
+  // sessions. Setting it on a one-time `payment` session (audit) is a
+  // hard 400. So we gate it behind the mode.
+  if (config.mode === "subscription") {
+    params["payment_method_collection"] = "if_required";
+  }
 
   if (prefillDomain) {
     params["custom_fields[0][text][default_value]"] = prefillDomain;
@@ -427,7 +450,11 @@ export async function handleStripeWebhook(
       // Send welcome email with magic link to customer
       if (env.RESEND_API_KEY) {
         try {
-          const magicToken = await createMagicLink(email, env);
+          // 72-hour TTL for the post-checkout welcome email. A new
+          // customer who paid but doesn't open their inbox until the
+          // next day shouldn't get locked out of the dashboard they
+          // just bought.
+          const magicToken = await createMagicLink(email, env, 72 * 60 * 60);
           if (magicToken) {
             const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
             const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}`;
@@ -695,7 +722,7 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
       <a href="${loginUrl}" style="display:inline-block;background:#c8a850;color:#0a0a0a;font-size:14px;font-weight:600;text-decoration:none;padding:14px 40px;border-radius:4px;letter-spacing:0.3px">
         Log in to your dashboard
       </a>
-      <p style="font-size:11px;color:#555;margin-top:12px">This link expires in 15 minutes.</p>
+      <p style="font-size:11px;color:#555;margin-top:12px">This link is valid for 72 hours.</p>
     </div>
 
     <div style="border-top:1px solid #1a1a1a;padding-top:24px;font-size:11px;color:#444;line-height:1.6">

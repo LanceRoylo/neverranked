@@ -478,6 +478,74 @@ export default {
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
     }
+    // Billing health check: pings Stripe to verify the three price IDs
+    // are active, the webhook endpoint is registered + receiving events,
+    // and the secret keys all work. Hit /admin/billing-health to get a
+    // structured JSON report. Read-only -- never modifies Stripe state.
+    if (path === "/admin/billing-health" && method === "GET" && user.role === "admin") {
+      try {
+        if (!env.STRIPE_SECRET_KEY) {
+          return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not set" }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+        }
+        const PRICE_IDS = {
+          audit: "price_1TLgcBChs9v2cUMPj5Sd7E0o",
+          signal: "price_1TLgcZChs9v2cUMPgum7Ujgt",
+          amplify: "price_1TLgctChs9v2cUMPFGY47fcC",
+        };
+        const sk = env.STRIPE_SECRET_KEY;
+        const stripeFetch = async (path: string) => {
+          const r = await fetch(`https://api.stripe.com/v1${path}`, {
+            headers: { "Authorization": `Bearer ${sk}` },
+          });
+          return r.json();
+        };
+        const prices: Record<string, unknown> = {};
+        for (const [plan, id] of Object.entries(PRICE_IDS)) {
+          const p = await stripeFetch(`/prices/${id}`) as Record<string, unknown>;
+          prices[plan] = {
+            id: p.id,
+            active: p.active,
+            unit_amount: p.unit_amount,
+            currency: p.currency,
+            recurring: p.recurring,
+            error: p.error || null,
+          };
+        }
+        const couponsResp = await stripeFetch(`/coupons?limit=20`) as Record<string, unknown>;
+        const couponsRaw = Array.isArray(couponsResp.data) ? couponsResp.data as Array<Record<string, unknown>> : [];
+        const coupons_100_off = couponsRaw
+          .filter(c => c.percent_off === 100 && c.valid)
+          .map(c => ({ id: c.id, name: c.name, duration: c.duration, max_redemptions: c.max_redemptions, times_redeemed: c.times_redeemed, valid: c.valid }));
+        const promoCodesResp = await stripeFetch(`/promotion_codes?limit=20&active=true`) as Record<string, unknown>;
+        const promoRaw = Array.isArray(promoCodesResp.data) ? promoCodesResp.data as Array<Record<string, unknown>> : [];
+        const promo_codes_100_off = promoRaw
+          .filter(p => {
+            const c = p.coupon as Record<string, unknown> | undefined;
+            return c?.percent_off === 100 && p.active;
+          })
+          .map(p => ({ code: p.code, coupon_id: (p.coupon as Record<string, unknown>)?.id, max_redemptions: p.max_redemptions, times_redeemed: p.times_redeemed }));
+        const endpoints = await stripeFetch(`/webhook_endpoints?limit=10`) as Record<string, unknown>;
+        const eps = Array.isArray(endpoints.data) ? (endpoints.data as Array<Record<string, unknown>>) : [];
+        const ourEndpoint = eps.find(e => typeof e.url === "string" && (e.url as string).includes("neverranked.com/stripe/webhook"));
+        return new Response(JSON.stringify({
+          stripe_secret_key_works: !endpoints.error,
+          stripe_secret_key_error: endpoints.error || null,
+          prices,
+          webhook_endpoint_registered: !!ourEndpoint,
+          webhook_endpoint: ourEndpoint ? {
+            url: ourEndpoint.url,
+            status: ourEndpoint.status,
+            enabled_events: ourEndpoint.enabled_events,
+          } : null,
+          all_endpoints_count: eps.length,
+          coupons_100_off,
+          promo_codes_100_off,
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e: unknown) {
+        return new Response(JSON.stringify({ error: "billing health check failed", detail: e instanceof Error ? e.message : String(e) }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
+    }
+
     // Phase 4A diagnostic: trigger a fresh scan on a domain and return
     // the authority signals it produced. Useful for verifying the
     // trust-profile + author detection end-to-end without waiting for

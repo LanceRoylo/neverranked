@@ -38,8 +38,16 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
   return row || null;
 }
 
-/** Create a magic link token for an email */
-export async function createMagicLink(email: string, env: Env): Promise<string | null> {
+/** Create a magic link token for an email.
+ *  Default TTL is 15 minutes (login flow). Pass `ttlSeconds` to
+ *  override -- the post-checkout welcome email uses 72 hours so a
+ *  new customer who doesn't open their inbox immediately doesn't
+ *  get locked out of the dashboard they just paid for. */
+export async function createMagicLink(
+  email: string,
+  env: Env,
+  ttlSeconds: number = MAGIC_LINK_TTL,
+): Promise<string | null> {
   // Check user exists
   const user = await env.DB.prepare("SELECT id FROM users WHERE email = ?").bind(email).first();
   if (!user) return null;
@@ -54,7 +62,7 @@ export async function createMagicLink(email: string, env: Env): Promise<string |
 
   // Generate token
   const token = randomHex(32);
-  const expiresAt = now + MAGIC_LINK_TTL;
+  const expiresAt = now + ttlSeconds;
 
   await env.DB.batch([
     env.DB.prepare(
