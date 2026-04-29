@@ -58,6 +58,7 @@ import { handleReport, handleReportIndex, handleSendReport } from "./routes/repo
 import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRoadmap, handleDemoPost } from "./routes/demo";
 import { handleSupport, handleSupportSubmit } from "./routes/support";
 import { handleScanHealth } from "./routes/scan-health";
+import { handleBotAnalytics } from "./routes/bot-analytics";
 import { handleEngagement } from "./routes/engagement";
 import { handleAgencyDashboard, handleAgencyClientsCsv, handleAgencyClientsJson } from "./routes/agency";
 import { handleAgencySettingsGet, handleAgencySettingsPost, handleAgencyAsset } from "./routes/agency-settings";
@@ -199,10 +200,12 @@ export default {
       return handleDemoPost();
     }
 
-    // Schema injection JS (public, cached at edge)
+    // Schema injection JS (public, cached at edge). We pass the
+    // request + ctx so the handler can fire-and-forget bot-analytics
+    // logging without blocking the response.
     const injectMatch = path.match(/^\/inject\/([a-z0-9_-]+)\.js$/);
     if (injectMatch) {
-      return handleInjectScript(injectMatch[1], env);
+      return handleInjectScript(injectMatch[1], env, request, ctx);
     }
 
     // Admin API: leads JSON for the outreach repo to pull warm-fuel.
@@ -466,6 +469,14 @@ export default {
     }
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
+    }
+    // Bot analytics: /bots/:slug -- shows AI + search bot fetches
+    // of the schema injection script for this client. Available to
+    // anyone with canAccessClient on the slug (admin, agency, the
+    // client themselves). The handler does its own access check.
+    const botsMatch = path.match(/^\/bots\/([a-z0-9_-]+)$/);
+    if (botsMatch && method === "GET") {
+      return handleBotAnalytics(botsMatch[1], user, env);
     }
     if (path === "/admin/engagement" && method === "GET" && user.role === "admin") {
       return handleEngagement(user, env);

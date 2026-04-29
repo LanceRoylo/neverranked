@@ -4,14 +4,36 @@
  * GET /inject/:client_slug.js
  * Serves a self-executing JS file that injects approved JSON-LD
  * schema blocks into the client's pages. Cached at the edge.
+ *
+ * Side-effect: every request is inspected for bot user-agents and
+ * logged to bot_hits via ctx.waitUntil(). This powers the dashboard's
+ * "AI bots crawling your site" view. The logging happens off the hot
+ * path so a logging failure can't slow down or break the response.
  */
 
 import type { Env, SchemaInjection, InjectionConfig } from "../types";
+import { logBotHit, refererPath } from "../bot-analytics";
 
 export async function handleInjectScript(
   slug: string,
-  env: Env
+  env: Env,
+  request?: Request,
+  ctx?: ExecutionContext,
 ): Promise<Response> {
+  // Bot-analytics logging is opportunistic: we only have the request
+  // when the route was called from the main fetch handler. The legacy
+  // call signature (slug + env only) is still supported.
+  if (request && ctx) {
+    const ua = request.headers.get("user-agent");
+    const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for");
+    const ref = refererPath(request.headers.get("referer"));
+    ctx.waitUntil(logBotHit(env, {
+      clientSlug: slug,
+      userAgent: ua,
+      ip,
+      refererPath: ref,
+    }));
+  }
   // Get config
   const config = await env.DB.prepare(
     "SELECT * FROM injection_configs WHERE client_slug = ?"
