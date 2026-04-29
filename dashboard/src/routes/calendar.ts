@@ -21,7 +21,7 @@ import type { Env, User, ScheduledDraft } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { canUseDraftingFeature } from "../gating";
-import { getConnection } from "../wordpress";
+import { getConnection } from "../cms";
 
 // ---------- helpers ----------
 
@@ -176,10 +176,10 @@ export async function handleCalendarGet(clientSlug: string, user: User, env: Env
       <div>
         <div class="label" style="margin-bottom:8px"><a href="/" style="color:var(--text-mute)">Dashboard</a> / ${esc(clientSlug)}</div>
         <h1>Content <em>calendar</em></h1>
-        <p class="section-sub" style="margin-top:8px;max-width:720px">Your content runway. Plan the topics, the system drafts them in your voice, QA checks them, you approve, and they publish to WordPress on schedule.</p>
+        <p class="section-sub" style="margin-top:8px;max-width:720px">Your content runway. Plan the topics, the system drafts them in your voice, QA checks them, you approve, and they publish to your CMS (WordPress, Webflow, or Shopify) on schedule.</p>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <a href="/publishing/${esc(clientSlug)}" class="btn btn-ghost">${conn ? "Publishing settings" : "Connect WordPress"}</a>
+        <a href="/publishing/${esc(clientSlug)}" class="btn btn-ghost">${conn ? "Publishing settings" : "Connect CMS"}</a>
         <a href="#add-topic" class="btn" onclick="setTimeout(function(){var el=document.querySelector('#add-topic input[name=title]');if(el)el.focus();},50)">Add topic</a>
       </div>
     </div>
@@ -201,7 +201,7 @@ export async function handleCalendarGet(clientSlug: string, user: User, env: Env
       <div style="margin-bottom:24px;padding:16px 20px;background:rgba(201,168,76,.08);border:1px solid var(--gold-dim);border-radius:3px">
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;justify-content:space-between">
           <div style="font-size:13px;color:var(--text)">
-            <strong>Connect your WordPress site</strong> so approved drafts publish automatically on their scheduled date. Without this, we'll email you the finished drafts.
+            <strong>Connect your CMS</strong> so approved drafts publish automatically on their scheduled date. We support WordPress, Webflow, and Shopify. Without a connection, we'll email you the finished drafts to paste manually.
           </div>
           <a href="/publishing/${esc(clientSlug)}" class="btn btn-ghost" style="white-space:nowrap">Set up publishing &rarr;</a>
         </div>

@@ -107,19 +107,19 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
       cta: voiceDone ? "Generate draft" : "Upload samples",
       done: voiceDone && draftDone,
     });
-    // Publishing step: customer connects WordPress so approved drafts
-    // auto-publish on schedule. Table may not have a row yet, so a
-    // null result = not done.
-    const wpRow = await env.DB.prepare(
-      "SELECT last_test_status FROM wp_connections WHERE client_slug = ?",
+    // Publishing step: customer connects a CMS (WordPress, Webflow, or
+    // Shopify) so approved drafts auto-publish on schedule. Table may
+    // not have a row yet, so a null result = not done.
+    const cmsRow = await env.DB.prepare(
+      "SELECT last_test_status FROM cms_connections WHERE client_slug = ?",
     ).bind(slug).first<{ last_test_status: string | null }>();
     steps.push({
       key: "publishing",
-      label: "Connect your WordPress site",
-      desc: "One-time setup so approved drafts publish to your site on their scheduled date.",
+      label: "Connect your CMS",
+      desc: "One-time setup so approved drafts publish to your site on their scheduled date. WordPress, Webflow, or Shopify.",
       href: `/publishing/${slug}`,
-      cta: "Connect WordPress",
-      done: wpRow?.last_test_status === "ok",
+      cta: "Connect CMS",
+      done: cmsRow?.last_test_status === "ok",
     });
   } else {
     steps.push({

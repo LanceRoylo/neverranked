@@ -21,7 +21,7 @@
 import type { Env, ScheduledDraft, ContentDraft, User, Agency } from "./types";
 import { generateDraftInVoice, scoreDraftAgainstProfile } from "./voice-engine";
 import { runContentQa } from "./content-qa";
-import { getConnection, publishDraft } from "./wordpress";
+import { getConnection, publishDraft } from "./cms";
 import { getAgency } from "./agency";
 import { logEmailDelivery } from "./email";
 
@@ -277,29 +277,35 @@ async function maybeAutoPublish(item: ScheduledDraft, env: Env): Promise<void> {
 
   const conn = await getConnection(item.client_slug, env);
   if (!conn) {
-    // No WordPress connection yet -- email the customer so they can
-    // at least grab the draft manually. Don't mark failed; customer
-    // may set up WP and we'll retry on the next pipeline run.
+    // No CMS connection yet -- email the customer so they can grab
+    // the draft manually. Don't mark failed; customer may connect a
+    // platform later and we'll retry on the next pipeline run.
     await sendDraftReadyEmail(item.client_slug, draft.id, item.title, env);
     return;
   }
 
   try {
-    const { url: liveUrl, postId } = await publishDraft(
+    const { url: liveUrl, externalId } = await publishDraft(
+      item.client_slug,
       {
         title: draft.title,
         content_markdown: draft.body_markdown || "",
-        scheduled_date: null, // ship now, not scheduled-future in WP
+        scheduled_date: null, // ship now, not scheduled-future
       },
-      conn,
       env,
     );
     const now = Math.floor(Date.now() / 1000);
+    // wp_post_id column predates the multi-CMS abstraction. We keep
+    // writing to it for back-compat (it's an INTEGER), parsing the
+    // driver's externalId where possible. Webflow returns a UUID --
+    // those won't fit, so we write 0 and rely on published_url for
+    // routing back. A later migration can rename this column.
+    const wpPostIdNumeric = /^\d+$/.test(externalId) ? Number(externalId) : 0;
     await env.DB.prepare(
       `UPDATE scheduled_drafts
          SET status = 'published', published_url = ?, wp_post_id = ?, published_at = ?, updated_at = ?
          WHERE id = ?`,
-    ).bind(liveUrl, postId, now, now, item.id).run();
+    ).bind(liveUrl, wpPostIdNumeric, now, now, item.id).run();
     await sendContentPublishedEmail(item.client_slug, item.title, liveUrl, env);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "publish failed";
