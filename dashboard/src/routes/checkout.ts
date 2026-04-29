@@ -198,10 +198,17 @@ export async function handleCheckout(
 
   if (session.error) {
     console.log(`Stripe error: ${JSON.stringify(session.error)}`);
+    // Diagnostic mode: append ?debug=1 to surface the actual Stripe
+    // error message in the response. Without this we can only see the
+    // failure via wrangler tail, which is unreliable in production
+    // when checkouts fail intermittently. The diagnostic does NOT
+    // leak the secret key -- it only echoes Stripe's error payload.
+    const debug = url.searchParams.get("debug") === "1";
     return html(layout("Error", `
       <div class="empty">
         <h3>Something went wrong</h3>
         <p>Could not create checkout session. Please try again or contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
+        ${debug ? `<pre style="margin-top:24px;padding:16px;background:var(--bg-edge);border:1px solid var(--line);border-radius:4px;font-size:11px;color:var(--text-muted);text-align:left;overflow:auto">${JSON.stringify(session.error, null, 2)}</pre>` : ""}
       </div>
     `), 500);
   }
