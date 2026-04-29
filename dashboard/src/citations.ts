@@ -634,6 +634,21 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
       });
     }
 
+    // Phase 5: Reddit citation extraction. We do this AFTER the
+    // per-engine inserts (rather than inline in each engine block)
+    // because the backfill helper handles all engines uniformly,
+    // is idempotent on UNIQUE(run_id, thread_url), and keeps the
+    // inline engine code clean. We backfill the last 1 day so
+    // we re-cover any rows inserted in this run regardless of
+    // exact timing.
+    try {
+      const { backfillRedditCitations, maybeAddRedditRoadmapItems } = await import("./reddit-citations");
+      await backfillRedditCitations(clientSlug, 1, env);
+      await maybeAddRedditRoadmapItems(clientSlug, env);
+    } catch (e) {
+      console.log(`Reddit ingest failed for ${clientSlug}: ${e}`);
+    }
+
     // --- Build weekly snapshot ---
 
     const citationShare = totalQueries > 0 ? clientCitations / totalQueries : 0;

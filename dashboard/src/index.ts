@@ -34,6 +34,8 @@ import {
 import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, handleInboxAlertDismiss } from "./routes/inbox";
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleTrust } from "./routes/trust";
+import { handleReddit } from "./routes/reddit";
+import { backfillRedditCitations, maybeAddRedditRoadmapItems } from "./reddit-citations";
 import { handleRoadmap, handleAddRoadmapItem, handleUpdateRoadmapItem, handleAddPhase, handleRegenerateRoadmap, handleBulkStartItems, handleRefreshRoadmap } from "./routes/roadmap";
 import { handleVoicePage, handleVoiceSampleCreate, handleVoiceSampleDelete, handleVoiceBuildProfile } from "./routes/voice";
 import { handleDraftsList, handleDraftDetail, handleDraftCreate, handleDraftSave, handleDraftStatus, handleDraftDelete, handleDraftDownload, handleDraftGenerate, handleDraftCreateAndGenerate, handleDraftRevert, handleDraftPublish } from "./routes/drafts";
@@ -702,6 +704,28 @@ export default {
     if (compMatch) {
       const slug = decodeURIComponent(compMatch[1]);
       return handleCompetitors(slug, user, env);
+    }
+
+    // Reddit presence (Phase 5)
+    if (path === "/reddit" || path === "/reddit/") {
+      if (user.client_slug) return redirect(`/reddit/${user.client_slug}`);
+      return renderClientPicker("Reddit presence", "reddit", user, env);
+    }
+    const redditMatch = path.match(/^\/reddit\/([^/]+)$/);
+    if (redditMatch && method === "GET") {
+      return handleReddit(decodeURIComponent(redditMatch[1]), user, env);
+    }
+    // Phase 5 admin: backfill reddit_citations from historical
+    // citation_runs (one-shot, called once per client after first
+    // deploy). Idempotent.
+    const redditBackfillMatch = path.match(/^\/admin\/reddit-backfill\/([^/]+)$/);
+    if (redditBackfillMatch && method === "GET" && user.role === "admin") {
+      const slug = decodeURIComponent(redditBackfillMatch[1]);
+      const result = await backfillRedditCitations(slug, 90, env);
+      const added = await maybeAddRedditRoadmapItems(slug, env);
+      return new Response(JSON.stringify({ slug, ...result, roadmap_items_added: added }, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
     }
 
     // Trust / authority signals (Phase 4A)
