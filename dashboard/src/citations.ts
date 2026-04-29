@@ -72,10 +72,27 @@ async function queryPerplexity(
 // OpenAI queries (structured output)
 // ---------------------------------------------------------------------------
 
+/**
+ * OpenAI query, web-grounded via gpt-4o-mini-search-preview.
+ *
+ * Pre-2026-04-29 this function used `gpt-4o-mini` (LLM-only, training
+ * data) which represented "what the model knows" -- not "what ChatGPT
+ * cites when answering a live query." That gap meant our "citation
+ * tracking" was actually "training-data tracking" for this engine.
+ *
+ * The search-preview models are designed exactly for this: they
+ * actively retrieve from the live web and return inline url_citation
+ * annotations. This makes our OpenAI tracking comparable to what a
+ * real ChatGPT user sees.
+ *
+ * Note: search-preview models don't accept response_format JSON
+ * schema, so we extract entities the same way we do for Perplexity
+ * (free-text + URL list).
+ */
 async function queryOpenAI(
   keyword: string,
   apiKey: string
-): Promise<{ text: string; entities: CitedEntity[] }> {
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
   const resp = await fetch(OPENAI_ENDPOINT, {
     method: "POST",
     headers: {
@@ -83,43 +100,19 @@ async function queryOpenAI(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini",
+      model: "gpt-4o-mini-search-preview",
+      // Search-preview models include real-time web search by
+      // default. No tools array needed; web_search_options is
+      // the optional config.
+      web_search_options: {},
       messages: [
         {
           role: "system",
           content:
-            "You recommend local businesses and services. Always include specific business names. Return structured JSON with the businesses you would recommend.",
+            "You recommend businesses and services. Always include specific business names and the URLs you find them on. Cite your sources inline.",
         },
         { role: "user", content: keyword },
       ],
-      response_format: {
-        type: "json_schema",
-        json_schema: {
-          name: "BusinessRecommendations",
-          strict: true,
-          schema: {
-            type: "object",
-            properties: {
-              businesses: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    name: { type: "string" },
-                    url: { type: ["string", "null"] },
-                    reason: { type: "string" },
-                  },
-                  required: ["name", "url", "reason"],
-                  additionalProperties: false,
-                },
-              },
-            },
-            required: ["businesses"],
-            additionalProperties: false,
-          },
-        },
-      },
-      temperature: 0.4,
       max_tokens: 1024,
     }),
   });
@@ -127,40 +120,54 @@ async function queryOpenAI(
   if (!resp.ok) {
     const err = await resp.text();
     console.log(`OpenAI error for "${keyword}": ${resp.status} ${err}`);
-    return { text: "", entities: [] };
+    return { text: "", urls: [], entities: [] };
   }
 
+  type OpenAIAnnotation = {
+    type: string;
+    url_citation?: { url: string; title?: string; start_index?: number; end_index?: number };
+  };
   const data = (await resp.json()) as {
-    choices: { message: { content: string } }[];
+    choices: { message: { content: string; annotations?: OpenAIAnnotation[] } }[];
   };
 
-  const rawContent = data.choices?.[0]?.message?.content || "{}";
-  let entities: CitedEntity[] = [];
+  const message = data.choices?.[0]?.message;
+  const text = message?.content || "";
+  // Pull URLs from the inline url_citation annotations the model
+  // returns. These are the actual cited sources.
+  const urls = (message?.annotations || [])
+    .filter(a => a.type === "url_citation" && a.url_citation?.url)
+    .map(a => a.url_citation!.url);
 
-  try {
-    const parsed = JSON.parse(rawContent) as {
-      businesses: { name: string; url: string | null; reason: string }[];
-    };
-    entities = (parsed.businesses || []).map((b) => ({
-      name: b.name,
-      url: b.url,
-      context: b.reason,
-    }));
-  } catch {
-    console.log(`OpenAI JSON parse failed for "${keyword}"`);
-  }
+  // Use the same entity-extraction helper as Perplexity, since both
+  // engines now return free-text + URL list of citations.
+  const entities = extractEntitiesFromText(text, urls);
 
-  return { text: rawContent, entities };
+  return { text, urls, entities };
 }
 
 // ---------------------------------------------------------------------------
 // Gemini queries
 // ---------------------------------------------------------------------------
 
+/**
+ * Gemini query, web-grounded via the google_search tool.
+ *
+ * Pre-2026-04-29 we called Gemini without grounding tools, which
+ * meant the model answered from training data. Now we attach the
+ * google_search tool, so Gemini does live Google Search retrieval
+ * and returns groundingMetadata with the URLs it actually used.
+ *
+ * Note: when grounding is enabled, responseMimeType=application/json
+ * is not supported -- Gemini emits free text with grounding markers.
+ * We extract URLs from groundingChunks the same way we extract from
+ * Perplexity citations and OpenAI url_citation annotations.
+ */
 async function queryGemini(
   keyword: string,
-  apiKey: string
-): Promise<{ text: string; entities: CitedEntity[] }> {
+  apiKey: string,
+  env?: Env,
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
   const resp = await fetch(GEMINI_ENDPOINT, {
     method: "POST",
     headers: {
@@ -172,15 +179,22 @@ async function queryGemini(
         {
           parts: [
             {
-              text: `You recommend local businesses and services. When someone asks for recommendations, always include specific business names and their websites when available.\n\nRespond in JSON format with this exact structure: {"businesses": [{"name": "Business Name", "url": "https://example.com", "reason": "Why you recommend them"}]}\n\nQuery: ${keyword}`,
+              text: `You recommend businesses and services. When asked for recommendations, give specific business names with their websites. Cite your sources.\n\nQuery: ${keyword}`,
             },
           ],
         },
       ],
+      // Gemini's v1beta API accepts the camelCase form for the
+      // grounding tool. snake_case form silently produces empty
+      // responses on gemini-2.0-flash. Verified via the [gemini-debug]
+      // log on 2026-04-29.
+      tools: [{ googleSearch: {} }],
       generationConfig: {
-        responseMimeType: "application/json",
         temperature: 0.4,
-        maxOutputTokens: 1024,
+        // Bumped from 1024: grounding metadata + multi-source citations
+        // can push the response payload past the smaller window, which
+        // truncates the visible text portion to empty.
+        maxOutputTokens: 2048,
       },
     }),
   });
@@ -188,30 +202,40 @@ async function queryGemini(
   if (!resp.ok) {
     const err = await resp.text();
     console.log("Gemini error for \"" + keyword + "\": " + resp.status + " " + err);
-    return { text: "", entities: [] };
+    return { text: "", urls: [], entities: [] };
   }
 
-  const data = (await resp.json()) as {
-    candidates: { content: { parts: { text: string }[] } }[];
+  type GroundingChunk = { web?: { uri?: string; title?: string } };
+  const rawJson = await resp.text();
+  let data: {
+    candidates: {
+      content: { parts: { text: string }[] };
+      groundingMetadata?: { groundingChunks?: GroundingChunk[] };
+      finishReason?: string;
+    }[];
   };
-
-  const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-  let entities: CitedEntity[] = [];
-
   try {
-    const parsed = JSON.parse(rawContent) as {
-      businesses: { name: string; url: string | null; reason: string }[];
-    };
-    entities = (parsed.businesses || []).map((b) => ({
-      name: b.name,
-      url: b.url,
-      context: b.reason,
-    }));
+    data = JSON.parse(rawJson);
   } catch {
-    console.log("Gemini JSON parse failed for \"" + keyword + "\"");
+    console.log("[gemini-debug] non-JSON response: " + rawJson.slice(0, 800));
+    return { text: "", urls: [], entities: [] };
   }
 
-  return { text: rawContent, entities };
+  const cand = data.candidates?.[0];
+  const text = cand?.content?.parts?.map(p => p.text).join("") || "";
+
+  // Extract URLs from groundingChunks. Each chunk has a web.uri
+  // pointing at a real source Google Search returned.
+  const urls: string[] = [];
+  const chunks = cand?.groundingMetadata?.groundingChunks || [];
+  for (const ch of chunks) {
+    if (ch.web?.uri) urls.push(ch.web.uri);
+  }
+
+  // Same entity extraction as Perplexity / OpenAI search-preview.
+  const entities = extractEntitiesFromText(text, urls);
+
+  return { text, urls, entities };
 }
 
 // ---------------------------------------------------------------------------
@@ -413,10 +437,10 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
               }
             }
 
-            // Store run
+            // Store run. Perplexity sonar has always been web-grounded.
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at)
-               VALUES (?, 'perplexity', ?, ?, ?, ?, ?)`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
+               VALUES (?, 'perplexity', ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
@@ -442,7 +466,10 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
         if (env.OPENAI_API_KEY) {
           try {
             const oResult = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
-            const cited = wasClientCited(oResult.entities, [], clientDomain, businessName);
+            // Now web-grounded: pass URLs to wasClientCited so a citation
+            // counts when the live ChatGPT response cites the client's
+            // domain in its url_citation annotations.
+            const cited = wasClientCited(oResult.entities, oResult.urls, clientDomain, businessName);
 
             if (cited) {
               kwCited = true;
@@ -461,13 +488,14 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
             }
 
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at)
-               VALUES (?, 'openai', ?, ?, '[]', ?, ?)`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
+               VALUES (?, 'openai', ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
                 oResult.text.slice(0, 4000),
                 JSON.stringify(oResult.entities),
+                JSON.stringify(oResult.urls),
                 cited ? 1 : 0,
                 now
               )
@@ -485,8 +513,18 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
         // --- Gemini ---
         if (env.GEMINI_API_KEY) {
           try {
-            const gResult = await queryGemini(kw.keyword, env.GEMINI_API_KEY);
-            const cited = wasClientCited(gResult.entities, [], clientDomain, businessName);
+            const gResult = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
+            // Skip persistence when the API returned nothing -- usually
+            // means a 429 quota error (project on free tier without
+            // billing, gemini-2.0-flash limit=0) or a transient 5xx.
+            // Writing empty rows would poison the citation rate
+            // calculation by inflating the denominator with non-runs.
+            if (gResult.text.length === 0 && gResult.urls.length === 0) {
+              // Fall through to the rate-limit sleep at the end of
+              // the Gemini block so we still pace the Anthropic call.
+            } else {
+            // Web-grounded: pass URLs from googleSearch groundingChunks
+            const cited = wasClientCited(gResult.entities, gResult.urls, clientDomain, businessName);
 
             if (cited) {
               kwCited = true;
@@ -504,13 +542,14 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
             }
 
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at)
-               VALUES (?, 'gemini', ?, ?, '[]', ?, ?)`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
+               VALUES (?, 'gemini', ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
                 gResult.text.slice(0, 4000),
                 JSON.stringify(gResult.entities),
+                JSON.stringify(gResult.urls),
                 cited ? 1 : 0,
                 now
               )
@@ -518,6 +557,7 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
 
             totalQueries++;
             if (cited) clientCitations++;
+            }  // end: gResult had data
           } catch (err) {
             console.log(`Gemini query failed for "${kw.keyword}": ${err}`);
           }
@@ -546,9 +586,12 @@ export async function runWeeklyCitations(env: Env): Promise<void> {
               }
             }
 
+            // Anthropic still LLM-only (web search tool integration is
+            // a Phase 3 upgrade). Marked grounding_mode='training' so
+            // analytics can distinguish from grounded engines.
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at)
-               VALUES (?, 'anthropic', ?, ?, '[]', ?, ?)`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
+               VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, 'training')`
             )
               .bind(
                 kw.id,
