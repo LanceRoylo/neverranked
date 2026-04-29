@@ -6,6 +6,7 @@
 
 import type { Env } from "./types";
 import { getUser } from "./auth";
+import { scanDomain as scanDomainImported } from "./scanner";
 import { redirect, html, layout } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
@@ -472,6 +473,38 @@ export default {
     }
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
+    }
+    // Phase 4A diagnostic: trigger a fresh scan on a domain and return
+    // the authority signals it produced. Useful for verifying the
+    // trust-profile + author detection end-to-end without waiting for
+    // the daily cron. Admin-only.
+    const authorityVerifyMatch = path.match(/^\/admin\/authority-verify\/(\d+)$/);
+    if (authorityVerifyMatch && method === "GET" && user.role === "admin") {
+      try {
+        const domainId = Number(authorityVerifyMatch[1]);
+        const dom = await env.DB.prepare("SELECT * FROM domains WHERE id = ?").bind(domainId).first<{ id: number; domain: string; client_slug: string }>();
+        if (!dom) return new Response(JSON.stringify({ error: "domain not found" }), { status: 404, headers: { "content-type": "application/json" } });
+        const scanUrl = `https://${dom.domain}/`;
+        const scan = await scanDomainImported(dom.id, scanUrl, "manual", env);
+        const signals = scan ? JSON.parse(scan.signals_json || "{}") : null;
+        const trust = await env.DB.prepare("SELECT platform, url, last_seen_at FROM trust_profiles WHERE client_slug = ? ORDER BY last_seen_at DESC").bind(dom.client_slug).all();
+        const cov = await env.DB.prepare("SELECT * FROM author_coverage WHERE client_slug = ?").bind(dom.client_slug).first();
+        return new Response(JSON.stringify({
+          domain: dom.domain,
+          client_slug: dom.client_slug,
+          scan_error: scan?.error ?? null,
+          signals_extracted: signals ? {
+            trust_profile_links: signals.trust_profile_links ?? null,
+            author_meta: signals.author_meta ?? null,
+            has_person_schema: signals.has_person_schema ?? null,
+          } : null,
+          trust_profiles_after: trust.results,
+          author_coverage_after: cov,
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? `${e.name}: ${e.message}\n${e.stack || ""}` : String(e);
+        return new Response(JSON.stringify({ error: "verify failed", detail: msg }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
     }
     // Bot analytics: /bots/:slug -- shows AI + search bot fetches
     // of the schema injection script for this client. Available to
