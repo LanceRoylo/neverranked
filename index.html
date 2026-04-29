@@ -530,10 +530,28 @@ h1,h2,h3,h4{
   position:absolute;
   inset:0;
   pointer-events:none;
-  opacity:.035;
+  opacity:.08;
   z-index:1;
   background-image:url("data:image/svg+xml;utf8,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   background-size:200px 200px;
+  /* mix-blend-mode:overlay would crank this further on a colored
+     surface but on near-black it dies, so we leave the noise as a
+     simple semi-opaque overlay. */
+}
+
+/* Soft halation glow at the bottom of the hero -- mimics film grain
+   bloom under bright text. Quiet warm-gold radial gradient anchored
+   off-center so it feels organic, not a vignette. Pointer-events
+   none, sits between the section background and the grain. */
+.hero::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(ellipse 80% 50% at 30% 110%, rgba(201,168,76,.08), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 80% 0%, rgba(201,168,76,.04), transparent 70%);
 }
 
 /* Scroll cue, bottom-right of the hero. Static label with a 48x1px
@@ -545,16 +563,16 @@ h1,h2,h3,h4{
   /* Anchor to the bottom of the initial viewport, not the hero box.
      Hero often grows past 100vh because of content + padding, which
      pushes a `bottom:` anchor below the fold and kills the cue. */
-  top:calc(100vh - 56px);
-  top:calc(100svh - 56px);
+  top:calc(100vh - 72px);
+  top:calc(100svh - 72px);
   display:flex;
   align-items:center;
-  gap:14px;
+  gap:16px;
   font-family:var(--mono);
-  font-size:10px;
-  letter-spacing:.18em;
+  font-size:11px;
+  letter-spacing:.22em;
   text-transform:uppercase;
-  color:var(--text-faint);
+  color:var(--text-soft);
   z-index:3;
   opacity:0;
   transform:translateY(8px);
@@ -563,20 +581,21 @@ h1,h2,h3,h4{
 }
 .hero-scroll-line{
   position:relative;
-  width:48px;
-  height:1px;
-  background:rgba(201,168,76,.18);
+  width:72px;
+  height:2px;
+  background:rgba(201,168,76,.22);
   overflow:hidden;
+  border-radius:1px;
 }
 .hero-scroll-line::after{
   content:"";
   position:absolute;
   top:0;
   left:-100%;
-  width:100%;
-  height:1px;
-  background:var(--gold);
-  animation:scrollLine 2.6s ease-in-out infinite;
+  width:60%;
+  height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold) 50%,transparent);
+  animation:scrollLine 2.4s ease-in-out infinite;
 }
 @keyframes scrollLine{
   0%{left:-100%}
