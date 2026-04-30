@@ -1,0 +1,220 @@
+{
+  "client_slug": "and-scene",
+  "client_name": "And Scene Hawaii",
+  "run_date": "2026-04-30",
+  "comparators": [
+    "THEY improv",
+    "Business Improv",
+    "Koppett",
+    "Hawaii Leadership Academy",
+    "Dale Carnegie",
+    "Outback Team Building"
+  ],
+  "results": [
+    {
+      "query": "best corporate training Honolulu",
+      "engines": [
+        {
+          "engine_id": "chatgpt",
+          "engine_name": "ChatGPT",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "perplexity",
+          "engine_name": "Perplexity",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "gemini",
+          "engine_name": "Gemini",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "google_aio",
+          "engine_name": "Google AI Overviews",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "query": "applied improvisation training corporate",
+      "engines": [
+        {
+          "engine_id": "chatgpt",
+          "engine_name": "ChatGPT",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "perplexity",
+          "engine_name": "Perplexity",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "gemini",
+          "engine_name": "Gemini",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "google_aio",
+          "engine_name": "Google AI Overviews",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "query": "team building workshops Hawaii",
+      "engines": [
+        {
+          "engine_id": "chatgpt",
+          "engine_name": "ChatGPT",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "perplexity",
+          "engine_name": "Perplexity",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "gemini",
+          "engine_name": "Gemini",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "google_aio",
+          "engine_name": "Google AI Overviews",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "query": "improv based corporate training",
+      "engines": [
+        {
+          "engine_id": "chatgpt",
+          "engine_name": "ChatGPT",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "perplexity",
+          "engine_name": "Perplexity",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "gemini",
+          "engine_name": "Gemini",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "google_aio",
+          "engine_name": "Google AI Overviews",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "query": "leadership development training Honolulu Hawaii",
+      "engines": [
+        {
+          "engine_id": "chatgpt",
+          "engine_name": "ChatGPT",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "perplexity",
+          "engine_name": "Perplexity",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "gemini",
+          "engine_name": "Gemini",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        },
+        {
+          "engine_id": "google_aio",
+          "engine_name": "Google AI Overviews",
+          "client_cited": null,
+          "client_position": null,
+          "comparators_cited": [],
+          "answer_summary": "",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
