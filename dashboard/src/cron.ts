@@ -1299,20 +1299,29 @@ export async function runSnippetSweep(env: Env): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   const DAY = 86400;
 
-  // Candidates: agency-owned, active, primary (non-competitor), snippet
-  // delivery email has been sent, and either (a) snippet has never been
-  // detected OR (b) it's been >= 24h since the last check. We scan at
-  // most once per 24h per domain so repeated cron invocations are
-  // still-idempotent.
+  // Candidates: active, primary (non-competitor), and either (a) snippet
+  // has never been detected OR (b) it's been >= 24h since the last check.
+  // We scan at most once per 24h per domain so repeated cron invocations
+  // are idempotent.
+  //
+  // Originally this query gated on agency_id IS NOT NULL, which silently
+  // excluded every direct (non-agency) client from snippet detection,
+  // celebration emails, nudges, and drift alerts. Hawaii Theatre installed
+  // their snippet, our backend was detected as silent, and no celebration
+  // email ever fired -- because the cron didn't even consider them as
+  // candidates. The agency_id filter was a coverage gap, not a feature.
+  // Removed. Direct clients now go through the same lifecycle.
+  //
+  // We also relaxed the snippet_email_sent_at requirement -- some legacy
+  // direct clients were onboarded before that column existed. If they
+  // have a snippet detected in the wild, we should celebrate it.
   const yesterday = now - DAY;
   const candidates = (await env.DB.prepare(`
     SELECT * FROM domains
-      WHERE agency_id IS NOT NULL
-        AND active = 1
+      WHERE active = 1
         AND is_competitor = 0
-        AND snippet_email_sent_at IS NOT NULL
         AND (snippet_last_checked_at IS NULL OR snippet_last_checked_at < ?)
-      ORDER BY snippet_email_sent_at
+      ORDER BY COALESCE(snippet_email_sent_at, created_at)
       LIMIT 200
   `).bind(yesterday).all<Domain>()).results;
 
@@ -1348,9 +1357,15 @@ export async function runSnippetSweep(env: Env): Promise<void> {
               `SELECT email, name FROM users
                 WHERE (role = 'client' AND client_slug = ?) OR role = 'admin'`
             ).bind(d.client_slug).all<{ email: string; name: string | null }>()).results;
-            const agencyRow = await getAgency(env, d.agency_id!);
-            if (agencyRow?.contact_email && !recipients.some((r) => r.email === agencyRow.contact_email)) {
-              recipients.push({ email: agencyRow.contact_email, name: null });
+            // Add the agency contact if this domain is agency-owned. Direct
+            // clients (agency_id IS NULL) skip this whole block; the
+            // agency_id! assertion was the second part of the gap that
+            // would have crashed celebration for any direct client.
+            if (d.agency_id) {
+              const agencyRow = await getAgency(env, d.agency_id);
+              if (agencyRow?.contact_email && !recipients.some((r) => r.email === agencyRow.contact_email)) {
+                recipients.push({ email: agencyRow.contact_email, name: null });
+              }
             }
             const daysSinceDelivery = d.snippet_email_sent_at
               ? Math.floor((now - d.snippet_email_sent_at) / 86400) : 0;
