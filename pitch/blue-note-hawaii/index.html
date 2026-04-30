@@ -152,6 +152,51 @@ p a:hover,ul a:hover{opacity:.8}
 .legal-footer a{transition:color .25s}
 .legal-footer a:hover{color:var(--gold)}
 
+/* print button (screen only) */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:12px 18px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  cursor:pointer;border-radius:2px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);
+  z-index:50;
+}
+.print-btn:hover{background:var(--gold-dim);color:var(--bg)}
+
+/* print stylesheet -- hand Flash a clean printable brief */
+@page{size:letter;margin:.5in}
+@media print{
+  html,body{background:white !important;color:#0a0a0a !important;font-size:10pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:"Playfair Display",Georgia,serif !important}
+  body::before,.grain,.no-print,.print-btn,.nav,.hamburger,.mobile-overlay{display:none !important}
+  .wrap{max-width:none !important;padding:0 !important;width:100% !important}
+  *{position:static !important;box-shadow:none !important}
+  .page-hero{padding:0 0 14pt !important;border-bottom:1px solid #999;margin-bottom:14pt}
+  .page-hero h1{font-size:20pt !important;line-height:1.15 !important;margin:0 0 8pt !important;color:#0a0a0a !important;font-family:"Playfair Display",Georgia,serif !important}
+  .page-hero h1 em{color:#9c7a1f !important;font-style:italic}
+  .page-hero .updated{color:#666 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.12em}
+  .legal-section{padding:12pt 0 !important;border-bottom:1px solid #ccc !important;break-inside:auto;page-break-inside:auto}
+  .legal-section:last-child{border-bottom:none !important}
+  .section-label{margin-bottom:8pt !important;color:#444 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.16em}
+  .section-label .num{color:#9c7a1f !important;font-weight:600}
+  .section-label .rule{background:#ccc !important}
+  h2{font-size:13pt !important;color:#0a0a0a !important;margin:0 0 6pt !important;font-family:"Playfair Display",Georgia,serif !important}
+  h3{font-size:11pt !important;color:#0a0a0a !important;margin:0 0 4pt !important;font-family:"Playfair Display",Georgia,serif !important;font-weight:500}
+  p,ul,ol{color:#1a1a1a !important;max-width:none !important;margin:0 0 6pt !important;orphans:3;widows:3;font-family:Georgia,"Times New Roman",serif !important}
+  ul,ol{padding-left:18pt !important}
+  li{margin-bottom:3pt !important;color:#1a1a1a !important}
+  b,strong{color:#0a0a0a !important;font-weight:600}
+  p a,ul a,li a,a{color:#9c7a1f !important;text-decoration:underline}
+  pre{background:#f4f1e6 !important;color:#1a1a1a !important;border:1px solid #d4cdb8 !important;font-size:7.5pt !important;line-height:1.45 !important;padding:8pt !important;margin:6pt 0 !important;white-space:pre-wrap !important;word-break:break-word !important;overflow:visible !important;page-break-inside:avoid;break-inside:avoid;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  code{background:#f4f1e6 !important;color:#1a1a1a !important;padding:0 3pt;border-radius:2px;font-size:8pt !important;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  div[style*="border:1px solid"]{background:#fafaf5 !important;border-color:#ccc !important;border-radius:0 !important;padding:10pt !important;margin:6pt 0 !important;page-break-inside:avoid;break-inside:avoid}
+  div[style*="background:rgba"]{background:#fafaf5 !important}
+  .legal-footer{display:none !important}
+  a[href^="http"]:after{content:" (" attr(href) ")";font-size:7pt;color:#666;font-family:"DM Mono",monospace;word-break:break-all}
+  a[href^="mailto:"]:after,a[href^="/"]:after,a[href^="#"]:after{content:""}
+}
+
 .hamburger{
   display:none;
   position:fixed;
@@ -431,5 +476,7 @@ Organization          75  gold</pre>
   menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
 })();
 </script>
+
+<button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
 </body>
 </html>
