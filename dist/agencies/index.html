@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>For Agencies -- Reseller Brief -- Never Ranked</title>
+<meta name="description" content="A 1-page reseller brief for agencies whose clients are about to start asking why they're not being cited by AI. Pricing, partnership mechanics, and what your team can carry into client conversations.">
+<link rel="canonical" href="https://neverranked.com/agencies/">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Reseller Brief -- Never Ranked">
+<meta property="og:description" content="You don't need to build an AEO team. You need to add an AEO product. Reseller partnership mechanics, 60/40 split, no annual lock.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/agencies/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "For Agencies",
+      "item": "https://neverranked.com/agencies/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$500 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1>You don't need to build an AEO team.<br><em>You need to add an AEO product.</em></h1>
+    <div class="updated">A reseller brief for agencies. 60/40 split. Monthly billing. No annual lock. Last updated April 2026.</div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>Why now</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Your clients are going to ask within twelve months. Some already are. AEO (Answer Engine Optimization) is the work of getting cited by ChatGPT, Perplexity, Gemini, and Google AI Overviews when their customers ask the questions your clients want to answer.
+    </p>
+    <p>
+      Building this in-house means hiring people who do not exist yet on the open market, buying a tool stack nobody has built, and writing a methodology nobody has tested. Reselling NeverRanked means adding a line item to next month's proposal.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>Who this is for</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <b>Yes, if</b> you run a small-to-mid digital, SEO, or content agency with an existing book of retainer clients. You want to add AEO as a product line under your brand without hiring a specialist.
+    </p>
+    <p>
+      <b>No, if</b> you are a solo freelancer without operational capacity to manage another retainer. You don't currently sell SEO or content (no client overlap to speak of). You need to maintain your own proprietary AEO methodology branding (we sell ours, not yours).
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>How the partnership works</span>
+      <span class="rule"></span>
+    </div>
+    <p><b>01. You introduce.</b> You send us a client. We do not contact them without you.</p>
+    <p><b>02. We onboard in 48 hours.</b> Schema, dashboard, citation tracking, scan setup, baseline. Your client sees your brand.</p>
+    <p><b>03. We execute the work.</b> Schema fixes auto-pushed to their site, weekly citation tracking, quarterly drift refresh, authority audits, content drafts (Amplify). Every recommendation visible in the dashboard so nothing is hidden from your client and nothing is hidden from you.</p>
+    <p><b>04. You forward the Monday digest.</b> Plain English, forward-ready under your brand. What changed last week, what mattered most, what we recommend next. You stay the account lead. You bill the client. We bill you.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>White-label assurance</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Your name is on the dashboard. Your brand is on the digest. We never reach out to your client. If your client cancels, they cancel with you, not us, because we were never in the room. If you cancel the partnership, you keep the client. The relationship was always yours.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>Pricing</span>
+      <span class="rule"></span>
+    </div>
+    <p>You bill the client at retail under your brand. Your share is what you keep monthly per active client. One client unlocks the reseller rate. Billed monthly to you on the active-client count. No annual lock.</p>
+    <ul>
+      <li><b>Audit -- $500 one-time.</b> $500 to you. Priced at retail for everyone, delivered in 48 hours. The audit belongs to the client.</li>
+      <li><b>Signal -- $2,000/mo retail.</b> <span style="color:var(--gold)">$1,200/mo to you</span> (60/40 split, agency / NeverRanked).</li>
+      <li><b>Amplify -- $4,500/mo retail.</b> <span style="color:var(--gold)">$2,700/mo to you</span> (60/40 split, capped at 2 active clients globally).</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>The 30-second pitch (paste-ready into your client emails)</span>
+      <span class="rule"></span>
+    </div>
+    <p style="border-left:2px solid var(--gold-dim);padding-left:18px;color:var(--text-soft);font-style:italic">
+      When your customers ask ChatGPT, Perplexity, or Gemini "best [your category] for [their use case]," the AI picks one or two brands. We track which brands get cited for the queries that matter to you, audit your schema and authority signals against the engines that decide, and ship the fixes through a partner who specializes in nothing else. Same software they run on their own domain. You can verify any line of it.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>Three things your team can carry</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>AEO is a separate category from SEO.</b> Citations from ChatGPT and Perplexity work differently than blue-link rankings. Your existing SEO work isn't replaced. It's extended.</li>
+      <li><b>The platform is built and used in the open.</b> Public codebase, public roadmap, public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Most agencies in the AEO space hide behind opacity. We don't have to.</li>
+      <li><b>It refreshes every 90 days.</b> AI models retrain on a cycle. Citation patterns shift. A static one-time audit goes stale in weeks. Drift detection is built in.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Common client objections</span>
+      <span class="rule"></span>
+    </div>
+    <p><b>"We already have an SEO agency. Why this?"</b><br>AEO is a separate practice. Ask your SEO agency to tell you which queries cite your brand on ChatGPT today. Most can't because they don't have the tooling. We do.</p>
+    <p><b>"Why three months minimum?"</b><br>AI models retrain on a cycle. Schema deployed in month one is absorbed in the next training window and surfaces as citations in month three. The minimum protects you from quitting before the work compounds.</p>
+    <p><b>"What does NeverRanked actually have access to on our site?"</b><br>Read-only schema injection via a 20-line public JavaScript snippet. No cookies, no DOM read, no outbound calls. For Amplify, scoped CMS access to create draft posts only. Nothing auto-publishes without your click. Full breakdown at <a href="/security/">neverranked.com/security</a>.</p>
+    <p><b>"Can you guarantee citations?"</b><br>No. Anyone who guarantees AI citations is selling theater. We guarantee the work. Citations follow when the work is right.</p>
+    <p><b>"What happens if NeverRanked makes a mistake?"</b><br>Every change is auditable in your client's dashboard before and after it ships. If a fix needs to be rolled back, that is one click. There is no version of "we shipped something while you weren't looking."</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>Operational division of labor</span>
+      <span class="rule"></span>
+    </div>
+    <p><b>You do</b> the client relationship, the proposal, the onboarding call, the upsell, the renewal conversation, billing the client, the Monday digest forward, brand-aligned communication.</p>
+    <p><b>We do</b> all the technical execution. Schema design, schema injection, citation tracking infrastructure, drift detection, authority audits, content drafting (Amplify), dashboard maintenance, weekly digest generation, the Monday brief itself.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">09</span>
+      <span>Exit conditions</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Monthly billing on active clients only. No annual lock. No contract penalties. If you decide reselling NeverRanked isn't a fit, you stop sending us new clients. Existing engagements run out their three-month minimum. Your clients stay your clients.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">10</span>
+      <span>Verify any of this in 60 seconds</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <code>check.neverranked.com</code> &mdash; public schema scorer<br>
+      <code>neverranked.com/security</code> &mdash; what we touch and what we don't<br>
+      <code>github.com/lanceroylo/neverranked</code> &mdash; entire codebase, public<br>
+      <code>github.com/lanceroylo/neverranked/blob/main/ROADMAP.md</code> &mdash; what shipped, dated<br>
+      <code>neverranked.com/case-studies/montaic</code> &mdash; case study
+    </p>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">11</span>
+      <span>Your next move</span>
+      <span class="rule"></span>
+    </div>
+    <p>Two paths.</p>
+    <p>
+      <a href="https://app.neverranked.com/agency/apply" style="color:var(--gold);text-decoration:underline"><b>Apply at app.neverranked.com/agency/apply</b></a> if you've already done the math. Setup takes about 24 hours.
+    </p>
+    <p>
+      Or book a 30-minute call first at <a href="mailto:lance@neverranked.com?subject=Reseller%20partnership"><b>lance@neverranked.com</b></a>. Bring your client list. We will tell you which ones are likely to win on this in the first 90 days.
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+</body>
+</html>
