@@ -478,6 +478,87 @@ export default {
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
     }
+    // Admin: issue a fresh magic link for a given email and return the
+    // direct URL. Bypasses email entirely -- useful for verifying
+    // dashboard render after a checkout test, OR for one-off ops
+    // when a magic link expires before a customer can click it.
+    const adminMagicLinkMatch = path.match(/^\/admin\/magic-link\/(.+)$/);
+    if (adminMagicLinkMatch && method === "GET" && user.role === "admin") {
+      try {
+        const targetEmail = decodeURIComponent(adminMagicLinkMatch[1]).trim().toLowerCase();
+        const { createMagicLink } = await import("./auth");
+        const token = await createMagicLink(targetEmail, env, 72 * 60 * 60);
+        if (!token) {
+          return new Response(JSON.stringify({ error: "could not create magic link", reason: "user not found OR rate limited (3 emails per 15min)" }, null, 2), { status: 400, headers: { "content-type": "application/json" } });
+        }
+        const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+        return new Response(JSON.stringify({
+          email: targetEmail,
+          login_url: `${origin}/auth/verify?token=${token}`,
+          ttl_hours: 72,
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e: unknown) {
+        return new Response(JSON.stringify({ error: "magic link issuance failed", detail: e instanceof Error ? e.message : String(e) }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
+    }
+
+    // Resend deliverability check: echoes ADMIN_EMAIL (so we know which
+    // inbox to check), and queries Resend for the most recent emails
+    // sent. Read-only, admin-only. Useful for verifying the welcome
+    // email + admin notification actually got accepted by Resend
+    // without requiring inbox access.
+    if (path === "/admin/email-health" && method === "GET" && user.role === "admin") {
+      try {
+        if (!env.RESEND_API_KEY) {
+          return new Response(JSON.stringify({ error: "RESEND_API_KEY not set" }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+        }
+        const adminEmail = env.ADMIN_EMAIL || "(ADMIN_EMAIL secret not set)";
+        // Resend's API for listing emails. Returns the most recent 100.
+        // We surface the last 15 so you can see the audit-test-001
+        // welcome + admin notification side-by-side.
+        const resp = await fetch("https://api.resend.com/emails?limit=15", {
+          headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}` },
+        });
+        const body = await resp.json() as Record<string, unknown>;
+        const items = Array.isArray(body.data) ? (body.data as Array<Record<string, unknown>>) : [];
+        // Real send test: attempt to send a tiny diagnostic email to
+        // ADMIN_EMAIL using the same code path as the webhook. This
+        // bypasses the silent-401 problem -- we capture the actual
+        // response body so we know whether sending works at all.
+        const testSendResp = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "NeverRanked <reports@neverranked.com>",
+            to: [adminEmail],
+            subject: "Email health diagnostic (smoke test)",
+            html: "<p>This is a diagnostic email triggered by /admin/email-health. If you received it, Resend send is working.</p>",
+          }),
+        });
+        const testSendBody = await testSendResp.json() as Record<string, unknown>;
+        return new Response(JSON.stringify({
+          admin_email_target: adminEmail,
+          resend_api_status: resp.status,
+          resend_api_error: body.error || null,
+          test_send_status: testSendResp.status,
+          test_send_body: testSendBody,
+          recent_emails: items.map(e => ({
+            id: e.id,
+            to: e.to,
+            from: e.from,
+            subject: e.subject,
+            status: e.last_event,
+            created_at: e.created_at,
+          })),
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e: unknown) {
+        return new Response(JSON.stringify({ error: "email health check failed", detail: e instanceof Error ? e.message : String(e) }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
+    }
+
     // Billing health check: pings Stripe to verify the three price IDs
     // are active, the webhook endpoint is registered + receiving events,
     // and the secret keys all work. Hit /admin/billing-health to get a

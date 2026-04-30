@@ -447,7 +447,15 @@ export async function handleStripeWebhook(
         console.log(`Lead conversion tracking failed: ${e}`);
       }
 
-      // Send welcome email with magic link to customer
+      // Send welcome email with magic link to customer.
+      //
+      // CRITICAL: fetch() does not throw on HTTP 4xx/5xx -- only on
+      // network-layer failures. If the Resend API key is ever rotated,
+      // revoked, or rate-limited, the call returns a non-2xx response
+      // body and our previous try/catch would silently log nothing.
+      // Result: paid customer, no welcome email, zero alert. We now
+      // explicitly check resp.ok and treat any non-2xx as a failure
+      // that fires the same admin_alerts row.
       if (env.RESEND_API_KEY) {
         try {
           // 72-hour TTL for the post-checkout welcome email. A new
@@ -460,7 +468,7 @@ export async function handleStripeWebhook(
             const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}`;
             const planConfig = PLANS[plan];
 
-            await fetch("https://api.resend.com/emails", {
+            const welcomeResp = await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: {
                 "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -473,6 +481,12 @@ export async function handleStripeWebhook(
                 html: buildWelcomeEmail(planConfig, loginUrl, plan),
               }),
             });
+            if (!welcomeResp.ok) {
+              const respText = await welcomeResp.text();
+              throw new Error(`Resend send failed: HTTP ${welcomeResp.status} -- ${respText.slice(0, 300)}`);
+            }
+          } else {
+            throw new Error("createMagicLink returned null (rate limited or user not found)");
           }
         } catch (e) {
           console.log(`Welcome email failed: ${e}`);
@@ -493,10 +507,10 @@ export async function handleStripeWebhook(
           }
         }
 
-        // Send notification to admin
+        // Send notification to admin (same explicit-status pattern as above)
         try {
           const planConfig = PLANS[plan];
-          await fetch("https://api.resend.com/emails", {
+          const adminResp = await fetch("https://api.resend.com/emails", {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -509,8 +523,24 @@ export async function handleStripeWebhook(
               html: `<p>New customer: <strong>${email}</strong></p><p>Plan: <strong>${planConfig?.name || plan}</strong> (${planConfig?.priceLabel || ''})</p><p>Stripe customer: ${customerId || 'N/A'}</p><p>Time: ${new Date().toISOString()}</p>`,
             }),
           });
+          if (!adminResp.ok) {
+            const respText = await adminResp.text();
+            throw new Error(`Admin notify send failed: HTTP ${adminResp.status} -- ${respText.slice(0, 300)}`);
+          }
         } catch (e) {
           console.log(`Admin notification failed: ${e}`);
+          // Lower priority than the customer email but still worth a
+          // log row so we can detect API key issues across both paths.
+          try {
+            await env.DB.prepare(
+              `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+                 VALUES ('_system', 'admin_notify_failed', ?, ?, ?)`
+            ).bind(
+              `Admin notification failed for ${email} (${plan})`,
+              `Customer welcome email may also have failed -- check welcome_email_failed alerts. Error: ${String(e).slice(0, 500)}.`,
+              now,
+            ).run();
+          } catch { /* swallow */ }
         }
       }
 
