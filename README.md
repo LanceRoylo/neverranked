@@ -119,12 +119,11 @@ The `audits/montaic/` directory contains the first Never Ranked audit, run again
 
 Never Ranked is deliberately small. One founder, async-first, no standing meetings.
 
-- **Audits:** $500, delivered within 48 hours. Paced deliberately. Currently booking Q2 2026.
-- **Pulse retainer:** $1,500/mo. Monthly audit, schema maintenance, 2 content pieces, live dashboard.
-- **Signal retainer:** $3,000/mo. Everything in Pulse plus 6 content pieces, competitor citation tracking, monthly founder Loom.
-- **Amplify retainer:** $5,000/mo. Limited to 2 clients, currently full. 12 content pieces, biweekly Loom, weekly intelligence digest.
+- **Audit:** $500 one-time, delivered within 48 hours. The starting diagnostic.
+- **Signal retainer:** $2,000/mo, three-month minimum. Web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Claude. Reddit thread monitoring. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits. Industry-percentile benchmarks. Quarterly drift detection. Forward-ready Monday digest.
+- **Amplify retainer:** $4,500/mo, three-month minimum. Limited to 2 active clients. Everything in Signal plus brand-voice fingerprint, citation-shaped content drafted in your voice, auto-publish to WordPress / Webflow / Shopify.
 
-The dashboard is the meeting. Loom recaps replace calls. Email SLAs (24h Pulse / 12h Signal / 6h Amplify) replace Slack channels.
+The dashboard is the meeting. Loom recaps replace calls. Email SLAs replace Slack channels.
 
 ---
 
@@ -138,4 +137,14 @@ The dashboard is the meeting. Loom recaps replace calls. Email SLAs (24h Pulse /
 
 ## License
 
-The Never Ranked marketing site code is proprietary. The audit methodology (the template, the runner script, and the structured deliverables) is also proprietary — but the ideas in the Montaic audit are a case study, freely citable, and published as open evidence of our methodology. If you want to reproduce the methodology on your own site, you're welcome to. If you want us to do it for you, that's the audit offer.
+This repository is **source-available**, not open-source. See [`LICENSE`](./LICENSE) for the full text. In plain language:
+
+- **You can:** read every line, audit it, run it locally, fork it, learn from it, cite it, file issues, send PRs, copy ideas into your own work.
+- **You cannot:** use this code to operate a commercial AEO service (citation tracking, schema grading, drift detection, authority audits, etc.) that competes with NeverRanked.
+- **In four years (April 2030):** the code automatically converts to MIT and the restriction lifts.
+
+The license is modeled on the Business Source License pattern used by MariaDB, Sentry, and CockroachDB. The intent: keep the code open enough that customers can audit our work and security claims, while preventing a clone-and-launch competitor in the early years.
+
+If you want to operate a commercial service using this code before the change date, email **licensing@neverranked.com**.
+
+The "NeverRanked" name and wordmark are trademarks. Forks must be renamed.

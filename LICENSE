@@ -1,0 +1,93 @@
+NeverRanked Source-Available License v1
+========================================
+
+Copyright (c) 2026 Lance Roylo
+
+This license is modeled on the Business Source License pattern used
+by MariaDB, Sentry, CockroachDB, and others. It is written in plain
+language for clarity. For commercial deployments where you need a
+court-tested license, we recommend swapping in the standard BSL 1.1
+text from https://mariadb.com/bsl11/ with the same parameters
+declared below; this plain-language version is intended to make the
+intent obvious to anyone reading the repo.
+
+
+What you CAN do with this code
+------------------------------
+
+- Read every line.
+- Audit it. Fork it. Run it on a laptop. Run it on a staging server.
+- Use it for personal projects, internal tools, evaluation,
+  research, education, and security review.
+- Copy ideas, patterns, and approaches into your own work.
+- Cite this repository in writing, talks, or research.
+- Open issues, submit pull requests, suggest improvements.
+
+
+What you CANNOT do with this code
+---------------------------------
+
+You may not use this code, in whole or in substantial part, to
+operate a commercial AEO Service.
+
+An "AEO Service" is any commercial offering that allows third
+parties (other than your own employees and contractors) to access
+the functionality of this Licensed Work for any of:
+
+  - AI citation tracking across ChatGPT, Perplexity, Gemini, Claude,
+    or comparable answer engines
+  - Schema completeness grading or JSON-LD quality scoring
+  - Citation drift detection between time windows
+  - Authority signal auditing (trust profiles, author bios)
+  - Reddit citation tracking
+  - Industry benchmark percentile reporting
+  - Quarterly roadmap refresh from citation data
+  - Any other primary functionality of NeverRanked as offered at
+    https://neverranked.com
+
+If you want to operate a commercial AEO Service using this code, you
+must obtain a separate commercial license from the Licensor. Contact
+licensing@neverranked.com.
+
+
+Trademarks
+----------
+
+"NeverRanked" is a trademark of Lance Roylo. This license does not
+grant you any right to use the NeverRanked name, the NeverRanked
+wordmark, or any associated branding to identify a derivative
+service. Forks must be renamed.
+
+
+Change Date and Sunset to MIT
+-----------------------------
+
+Change Date:    2030-04-29
+Change License: MIT License
+
+On the Change Date, the restrictions in the "What you CANNOT do"
+section above are removed and this code becomes available under the
+MIT License. This means: 4 years after the publication of this code,
+anyone is free to use it for any purpose, including operating a
+competing AEO Service.
+
+This sunset is deliberate. The intent of the restriction is to give
+the original Licensor a fair window to build a business on this
+work, not to lock the code up forever.
+
+
+No warranty
+-----------
+
+THE LICENSED WORK IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND
+NON-INFRINGEMENT. IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY
+CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM YOUR USE OF THE
+LICENSED WORK.
+
+
+Questions
+---------
+
+Email: licensing@neverranked.com
