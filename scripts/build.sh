@@ -34,6 +34,7 @@ DIRS=(
   case-studies
   for-agencies
   kit
+  pitch
   principles
   privacy
   security
