@@ -209,26 +209,10 @@ p a:hover,ul a:hover{opacity:.8}
 <body>
 <div class="grain"></div>
 
-<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
-<div class="mobile-overlay" id="mobileMenu">
-  <a href="/">Home</a>
-  <a href="/about/">About</a>
-  <a href="/blog/">Insights</a>
-  <a href="/#services">Services</a>
-  <a href="/#pricing">Pricing</a>
-  <a href="https://check.neverranked.com">Free Tool</a>
-  <a href="https://app.neverranked.com">Client Login</a>
-  <a href="/#audit" class="mob-cta">$500 Audit</a>
-  <span class="mob-status">Taking clients Q2</span>
-</div>
-
-<nav class="nav">
-  <a href="/" class="mark">N<sup>R</sup></a>
-  <div class="right">
-    <a href="/about/">About</a>
-    <a href="/blog/">Insights</a>
-    <a href="https://check.neverranked.com">Free Tool</a>
-    <a href="/#audit">The Audit</a>
+<nav class="nav" style="mix-blend-mode:normal;color:var(--text-faint)">
+  <a href="/" class="mark" style="color:var(--text)">N<sup>R</sup></a>
+  <div class="right" style="font-size:10px">
+    <span>Private brief &middot; Mark Cunningham</span>
   </div>
 </nav>
 
@@ -313,7 +297,7 @@ mortgage.asbhawaii.com                               0       NONE</pre>
       <span>What the full audit gives you</span>
       <span class="rule"></span>
     </div>
-    <p>$500, delivered in 48 hours. The audit belongs to ASB regardless of whether we work together after.</p>
+    <p>Delivered in 48 hours. The audit is ASB's regardless of whether we work together after.</p>
     <ul>
       <li><b>The complete citation matrix.</b> I run a list of queries you and the agency would care about (mortgage, business banking, branch locator, wealth, switching banks, "best Hawaii bank for X") against ChatGPT, Perplexity, Gemini, and Claude. You see who currently gets recommended, by query, by engine, with the threads they are cited from on Reddit and the trust profiles they reference.</li>
       <li><b>Per-page schema completeness report</b> across the entire site, not just the four pages I sampled tonight. Every gap with the exact JSON-LD code your team or your agency can paste in.</li>
@@ -333,7 +317,7 @@ mortgage.asbhawaii.com                               0       NONE</pre>
     </div>
     <p>The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one is absorbed in the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater. The minimum protects the work from being judged before it has a chance to compound.</p>
     <ul>
-      <li><b>Days 1-2.</b> Audit delivered. Roadmap and citation matrix are yours.</li>
+      <li><b>Days 1-2.</b> Audit delivered, no charge. Roadmap and citation matrix are yours.</li>
       <li><b>Days 3-30.</b> Schema fixes ship. BankOrCreditUnion deployed across consumer pages, FinancialService schema attached to product pages, location-class schema on /locations and the mortgage subdomain, Person schema for advisors and loan officers (where you provide names), AggregateRating wired to your existing review data.</li>
       <li><b>Days 31-90.</b> Citation tracking runs weekly. The dashboard shows ASB's citation share, by query, by engine, across all four AI engines. You see who you are now appearing alongside, who is still beating you, and where the lift is happening.</li>
       <li><b>Day 90 onward.</b> Monday digest you can forward internally. Quarterly drift detection so the strategy does not go stale as the engines shift.</li>
@@ -352,11 +336,11 @@ mortgage.asbhawaii.com                               0       NONE</pre>
       I do not know who your agency is yet. The work I am proposing does not replace what they do. They handle the brand, the creative, the campaign work, the content production, the paid media, the relationships. I add the AEO product layer on top. The schema infrastructure, the citation tracking, the dashboard, the schema-quality grader that gates anything before it goes live. The agency owns the customer relationship. I own the technical work that makes the engines listen.
     </p>
     <p>
-      Two paths forward, depending on what your agency wants:
+      The audit is already on me. After it lands, two paths depending on what your agency wants:
     </p>
     <ul>
-      <li><b>Direct engagement.</b> ASB engages NeverRanked directly. Audit at $500, then Signal at $2,000/month or Amplify at $4,500/month. Agency stays the lead on everything they currently do. We coordinate on the technical handoff (schema deployment, snippet placement) and the agency forwards the Monday digest to ASB under their brand.</li>
-      <li><b>Reseller partnership.</b> Agency white-labels NeverRanked as part of their AEO offering for ASB and for any other client where this fits. Same software, same dashboard, agency keeps 60% of the recurring revenue. ASB sees the work attributed to their agency. Specifics at <a href="/agencies/">neverranked.com/agencies</a> if they want to read it before the meeting.</li>
+      <li><b>Direct engagement.</b> ASB engages NeverRanked directly. Signal at $2,000/month or Amplify at $4,500/month. Agency stays the lead on everything they currently do. We coordinate on the technical handoff (schema deployment, snippet placement) and the agency forwards the Monday digest to ASB under their brand.</li>
+      <li><b>Reseller partnership.</b> Agency white-labels NeverRanked as part of their AEO offering for ASB and for any other client where this fits. Same software, same dashboard, agency keeps 60% of the recurring revenue per active client. ASB sees the work attributed to their agency. Specifics at <a href="/agencies/">neverranked.com/agencies</a> if they want to read it before the meeting.</li>
     </ul>
     <p>
       Either path works. The right answer is whatever the agency feels best fits their position with ASB. The audit and the work look identical in both cases. I am not trying to land between you and your agency. I am trying to give whichever side wins the work the best possible product to deliver.
@@ -421,16 +405,15 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">08</span>
-      <span>Two ways to take the next step</span>
+      <span>Next step</span>
       <span class="rule"></span>
     </div>
     <p>
-      <a href="https://app.neverranked.com/checkout/audit" style="color:var(--gold);font-weight:500"><b>Book the $500 audit &rarr;</b></a><br>
-      48-hour delivery. Full citation matrix across the queries ASB cares about (you tell me which ones, otherwise I default to the highest-volume Hawaii banking acquisition queries). Per-page schema report. Competitor map. 90-day implementation roadmap. The audit belongs to ASB, regardless of what comes after.
+      The audit is yours. No charge. I'll deliver it within 48 hours of getting confirmation that the scope (queries, business lines, branches in focus) covers what you and the agency want to see. The honest reason there's no fee here: this is the right way to start, and the work compounds. If the audit lands well and we move into Signal or Amplify, we'll figure that out together.
     </p>
-    <p style="margin-top:24px">
-      <a href="mailto:lance@neverranked.com?subject=ASB%20Hawaii%20%E2%80%94%20full%20audit" style="color:var(--gold);font-weight:500"><b>Or reply to schedule the live walkthrough &rarr;</b></a><br>
-      I will walk you and the agency through the findings live. Probably the dashboard on a screen-share, with the citation matrix visible. We can decide together which path (direct or via the agency) makes sense, and what the audit's scope should be.
+    <p style="margin-top:20px">
+      <a href="mailto:lance@neverranked.com?subject=ASB%20Hawaii%20%E2%80%94%20full%20audit" style="color:var(--gold);font-weight:500"><b>Reply to schedule the live walkthrough &rarr;</b></a><br>
+      I'll walk you and the agency through the findings on a screen-share, with the citation matrix visible. We can decide together what path (direct or via the agency) makes sense after.
     </p>
     <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
       Looking forward to it. Thanks for the look.<br>
