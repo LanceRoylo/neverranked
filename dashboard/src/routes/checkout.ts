@@ -383,6 +383,29 @@ export async function handleStripeWebhook(
 
       // Auto-provision: add domain if it doesn't exist yet
       const slug = user.client_slug || clientSlug;
+
+      // Auto-provision the injection_configs row at the same time the
+      // user lands. Without this, the snippet endpoint returns the
+      // "not configured" no-op and the customer's snippet install
+      // silently does nothing. We hit this exact bug with an existing
+      // client (hawaii-theatre) where their team installed the
+      // snippet correctly but our backend was never activated, so
+      // their site loaded our JS and got 35 bytes of comment back
+      // for weeks. Idempotent on the UNIQUE(client_slug) constraint.
+      try {
+        const snippetToken = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+          .map(b => b.toString(16).padStart(2, "0")).join("");
+        await env.DB.prepare(
+          `INSERT INTO injection_configs (client_slug, snippet_token, business_name, business_url)
+             VALUES (?, ?, ?, ?)
+           ON CONFLICT(client_slug) DO NOTHING`
+        ).bind(slug, snippetToken, provisionDomain, `https://${provisionDomain}`).run();
+      } catch (e) {
+        // Don't block checkout if config creation fails. Log it so the
+        // drift-detection cron can pick it up.
+        console.log(`Failed to auto-create injection_config for ${slug}: ${e}`);
+      }
+
       const existingDomain = await env.DB.prepare(
         "SELECT id FROM domains WHERE domain = ? AND client_slug = ?"
       ).bind(provisionDomain, slug).first<{ id: number }>();

@@ -35,11 +35,57 @@ export async function handleInjectScript(
     }));
   }
   // Get config
-  const config = await env.DB.prepare(
+  let config = await env.DB.prepare(
     "SELECT * FROM injection_configs WHERE client_slug = ?"
   )
     .bind(slug)
     .first<InjectionConfig>();
+
+  // Lazy provisioning: if there's no config but this slug exists in
+  // domains (i.e. it's a real client), auto-create one. This closes
+  // the bug where a customer pastes the snippet on their site BEFORE
+  // we've created their injection_configs row -- the snippet would
+  // load forever and silently return a no-op comment with the customer
+  // none the wiser. With this fallback, the first hit creates the
+  // config and subsequent hits serve normally.
+  //
+  // Won't accidentally create configs for arbitrary slugs hitting the
+  // endpoint -- the slug must already exist in domains, which only
+  // happens for real customers we've onboarded.
+  if (!config) {
+    const knownSlug = await env.DB.prepare(
+      "SELECT 1 AS ok FROM domains WHERE client_slug = ? LIMIT 1"
+    ).bind(slug).first<{ ok: number }>();
+    if (knownSlug) {
+      const snippetToken = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+        .map(b => b.toString(16).padStart(2, "0")).join("");
+      try {
+        await env.DB.prepare(
+          `INSERT INTO injection_configs (client_slug, snippet_token)
+             VALUES (?, ?)
+           ON CONFLICT(client_slug) DO NOTHING`
+        ).bind(slug, snippetToken).run();
+        // Surface the auto-creation so we know it happened (not a
+        // user-facing error, but a signal the upstream onboarding
+        // missed a step).
+        try {
+          const now = Math.floor(Date.now() / 1000);
+          await env.DB.prepare(
+            `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+               VALUES (?, 'config_lazy_created', ?, ?, ?)`
+          ).bind(slug, `Lazy-created injection_config for ${slug}`,
+                 `The snippet endpoint received a request for client_slug "${slug}" but no injection_configs row existed. Auto-created one. Upstream onboarding missed a step -- review the path that provisioned this client.`,
+                 now).run();
+        } catch { /* best-effort alert */ }
+        // Re-read the just-created row
+        config = await env.DB.prepare(
+          "SELECT * FROM injection_configs WHERE client_slug = ?"
+        ).bind(slug).first<InjectionConfig>();
+      } catch (e) {
+        console.log(`Lazy config creation failed for ${slug}: ${e}`);
+      }
+    }
+  }
 
   // No config or disabled — return empty JS
   if (!config || !config.enabled) {

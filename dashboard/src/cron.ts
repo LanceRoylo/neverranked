@@ -268,6 +268,52 @@ export async function runDailyTasks(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] industry-benchmarks failed: ${e}`);
   }
+
+  // Onboarding drift check: any real client (slug exists in domains)
+  // that does NOT have an injection_configs row. Caught us off guard
+  // when hawaii-theatre installed the snippet on their site but our
+  // backend was never activated, so their site loaded our JS for
+  // weeks and got a 35-byte no-op back. The Stripe webhook now
+  // auto-creates the config, the inject endpoint now lazy-creates
+  // on first hit, but this drift check is the third belt-and-
+  // suspenders layer in case both miss for any reason. Fires an
+  // admin alert (one per affected slug per day max) so any drift is
+  // visible in the inbox within 24 hours.
+  try {
+    const drift = (await env.DB.prepare(
+      `SELECT DISTINCT d.client_slug FROM domains d
+         LEFT JOIN injection_configs ic ON ic.client_slug = d.client_slug
+         WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0
+           AND ic.client_slug IS NULL
+           AND d.client_slug NOT LIKE '%-test-%'
+           AND d.client_slug NOT LIKE 'e2e-%'`
+    ).all<{ client_slug: string }>()).results;
+    if (drift.length > 0) {
+      const now = Math.floor(Date.now() / 1000);
+      for (const row of drift) {
+        // De-dupe: skip if we already alerted on this slug in the last
+        // 24h, so the cron doesn't spam every morning until ops fixes it.
+        const recent = await env.DB.prepare(
+          `SELECT id FROM admin_alerts
+             WHERE client_slug = ? AND type = 'config_drift_missing'
+               AND created_at > ?`
+        ).bind(row.client_slug, now - 86400).first<{ id: number }>();
+        if (recent) continue;
+        await env.DB.prepare(
+          `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+             VALUES (?, 'config_drift_missing', ?, ?, ?)`
+        ).bind(
+          row.client_slug,
+          `Missing injection_configs row: ${row.client_slug}`,
+          `Client "${row.client_slug}" has domain rows but no injection_configs entry. If they have the snippet on their site, it's currently returning the not-configured no-op. Run /admin/onboarding/heal/${row.client_slug} or insert the row manually. The Stripe webhook auto-creates configs; this drift means either the client was provisioned before that fix landed, or via a non-checkout path.`,
+          now,
+        ).run();
+      }
+      console.log(`[cron] onboarding drift: ${drift.length} client(s) missing injection_configs (alerts fired)`);
+    }
+  } catch (e) {
+    console.log(`[cron] onboarding drift check failed: ${e}`);
+  }
   // Monthly recap: only fires on day 1 of the month, self-guards
   // against re-fire via email_delivery_log.
   await maybeSendMonthlyRecaps(env);
