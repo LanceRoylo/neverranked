@@ -33,6 +33,7 @@ DIRS=(
   blog
   case-studies
   for-agencies
+  kit
   principles
   privacy
   security
