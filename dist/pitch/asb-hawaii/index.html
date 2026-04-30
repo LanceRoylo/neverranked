@@ -152,6 +152,45 @@ p a:hover,ul a:hover{opacity:.8}
 .legal-footer a{transition:color .25s}
 .legal-footer a:hover{color:var(--gold)}
 
+/* print button (screen only) */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:12px 18px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  cursor:pointer;border-radius:2px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);
+  z-index:50;
+}
+.print-btn:hover{background:var(--gold-dim);color:var(--bg)}
+
+/* print stylesheet -- hand Mark a clean printable audit */
+@page{size:letter;margin:.5in}
+@media print{
+  body{background:white;color:#0a0a0a;font-size:10px;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body::before,.grain{display:none !important}
+  .no-print,.print-btn,.nav{display:none !important}
+  .page-hero{padding:0 0 18px;border-bottom:1px solid #ccc}
+  .page-hero h1{font-size:22px;line-height:1.15;margin:0 0 8px;color:#0a0a0a}
+  .page-hero h1 em{color:#9c7a1f}
+  .page-hero .updated{color:#555}
+  .legal-section{padding:18px 0;border-bottom:1px solid #ccc;page-break-inside:avoid}
+  .legal-section:last-child{border-bottom:none}
+  .section-label{margin-bottom:10px;color:#444}
+  .section-label .num{color:#9c7a1f}
+  .section-label .rule{background:#ccc}
+  h2,h3{color:#0a0a0a;margin-bottom:6px}
+  h3{font-size:12px}
+  p{color:#1a1a1a;margin:0 0 8px;max-width:none}
+  ul{color:#1a1a1a;margin:0 0 8px;max-width:none}
+  li{margin-bottom:3px}
+  p a,ul a,a{color:#9c7a1f}
+  pre{background:#f4f1e6 !important;color:#1a1a1a !important;border:1px solid #d4cdb8 !important;font-size:8.5px !important;padding:10px !important}
+  code{background:#f4f1e6;color:#1a1a1a;padding:1px 4px;border-radius:2px}
+  /* Bordered card boxes (priority blocks, gap blocks) -- soften for print */
+  div[style*="border:1px solid var(--line)"]{border-color:#ccc !important;background:#fafaf5 !important;padding:10px !important;page-break-inside:avoid}
+}
+
 .hamburger{
   display:none;
   position:fixed;
@@ -227,14 +266,20 @@ p a:hover,ul a:hover{opacity:.8}
   <div class="wrap">
     <div class="section-label">
       <span class="num">00</span>
-      <span>Hi Mark</span>
+      <span>Executive summary</span>
       <span class="rule"></span>
     </div>
     <p>
-      Quick context. You asked for a full audit, so I ran ASB Hawaii through our public schema scorer and the engines we track. This page is the writeup. It's structured so you (and your agency) can read it before we meet and walk in already knowing what I'd say live. The questions you'd ask are answered toward the bottom in plain language.
+      Mark &mdash; this is the full audit deliverable, not a teaser. You and your agency can read it cold, take it offline, print it for your team. The work below was done against asbhawaii.com directly, including the mortgage subdomain.
     </p>
     <p>
-      The summary up front. ASB has a strong technical baseline relative to most banks I've seen audited (no penalty zones, no broken markup), but several of the highest-value pages for customer acquisition are not legible to AI engines today. The largest gaps are not on the marketing pages. They're on the pages where customers convert: branch locations and the mortgage application subdomain. Both currently publish zero structured data, which means AI engines cannot surface ASB confidently for "ASB branch near me," "Hawaii mortgage rates," or "open a business checking account in Honolulu" type queries. Each of these is a high-LTV acquisition path.
+      <b>The headline.</b> ASB has the technical capability to publish strong structured data &mdash; some pages prove it (your /personal/checking page scores 96 out of 100, ahead of Bank of Hawaii's homepage on a per-page basis). But the implementation is wildly inconsistent across the site, and one page (/personal/savings) is currently in the partial-schema penalty zone, where empirical research shows an 18-percentage-point AI citation penalty versus no schema at all. Several high-LTV conversion pages publish no structured data whatsoever.
+    </p>
+    <p>
+      <b>Where ASB sits competitively.</b> Among Hawaii's main banking competitors, Bank of Hawaii is significantly ahead (95 score, 11 schema nodes, BankOrCreditUnion + Place + Rating). First Hawaiian Bank and Central Pacific Bank both publish zero schema on their homepages. ASB sits in the middle &mdash; not the worst, not the leader. The work I'm describing closes the gap to BoH and pulls away from FHB and CPB.
+    </p>
+    <p>
+      <b>What this audit covers.</b> Schema completeness across 11 sampled ASB pages, deep dives on the three most consequential findings, a competitor benchmark across the five major Hawaii banks and credit unions, an implementation roadmap with example JSON-LD code, and a 90-day timeline if ASB wants to engage. The pre-empted Q&amp;A toward the bottom answers what you and the agency would normally ask in a live walkthrough.
     </p>
   </div>
 </section>
@@ -243,29 +288,30 @@ p a:hover,ul a:hover{opacity:.8}
   <div class="wrap">
     <div class="section-label">
       <span class="num">01</span>
-      <span>What the audit found, page by page</span>
+      <span>Site-wide schema map</span>
       <span class="rule"></span>
     </div>
-    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is gold (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone, where empirical research shows an 18-percentage-point citation penalty versus no schema at all. Here is what asbhawaii.com looks like today:</p>
-    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                                Score    Schema present
-asbhawaii.com (homepage)                            85       Organization only
-asbhawaii.com/personal/                             85       Organization only
-asbhawaii.com/business/                             95       BankOrCreditUnion
-asbhawaii.com/personal/home-loans                   75       MortgageLoan partial
-asbhawaii.com/locations                              0       NONE
-mortgage.asbhawaii.com                               0       NONE</pre>
+    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is the gold zone (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone &mdash; empirical research on AI citation behavior shows an 18-percentage-point penalty in this range versus no schema at all.</p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                          Score   Status        Schema present
+asbhawaii.com (homepage)                      85      green         Organization
+asbhawaii.com/personal/                       85      green         Organization
+asbhawaii.com/personal/checking               96      green         BankAccount, FAQPage
+asbhawaii.com/personal/savings                33      RED, -18pp    BankAccount x7 + 1 broken JSON block
+asbhawaii.com/personal/credit-cards            0      RED           NONE
+asbhawaii.com/personal/home-loans             75      gold          MortgageLoan partial
+asbhawaii.com/business/                       95      green         BankOrCreditUnion
+asbhawaii.com/business/checking                0      RED           NONE
+asbhawaii.com/about-us                        95      green         AboutPage
+asbhawaii.com/locations                        0      RED           NONE
+mortgage.asbhawaii.com                         0      RED           NONE</pre>
     <p>
-      Three observations from this matrix worth sitting with.
+      Three things to sit with from this map:
     </p>
-    <p>
-      <b>One.</b> The homepage and the consumer landing page (/personal/) only publish <code>Organization</code>, while /business/ correctly publishes <code>BankOrCreditUnion</code>. AI engines look at the homepage to define the entity. The inconsistency means engines see ASB as a bank for business queries and as a generic organization for consumer queries. That gap maps directly to where AI traffic is growing fastest (consumer mortgage research, switching banks, opening accounts).
-    </p>
-    <p>
-      <b>Two.</b> The locations page and the mortgage application subdomain publish no structured data at all. These are the pages that matter most for the queries customers actually use ("ASB branch near me," "Hawaii mortgage rates," "best Hawaii bank for first-time homebuyer"). The marketing site is doing the work of being readable. The conversion surfaces are not. AI engines that try to surface ASB for these queries fall back to scraping or, more often, recommending a competitor that does publish the structured data.
-    </p>
-    <p>
-      <b>Three.</b> No <code>Person</code> schema anywhere. ASB has named loan officers, branch managers, and advisors. These are authority signals AI engines actively use when answering "who should I talk to about a Hawaii mortgage." Right now those individuals are searchable by name but not surfaceable as ASB representatives in answer-engine results. Bank-of-Hawaii and First Hawaiian both have specific Person schema patterns I can show during the call.
-    </p>
+    <ul>
+      <li><b>The capability is there but uneven.</b> /personal/checking at 96 is, by itself, ahead of most Hawaii bank pages I've seen. Whoever shipped that page knew what they were doing. The same template, applied to /personal/savings and /personal/credit-cards and /business/checking, would lift those pages immediately.</li>
+      <li><b>Four pages publish no structured data at all.</b> /personal/credit-cards, /business/checking, /locations, and the mortgage application subdomain are the conversion-critical surfaces. AI engines cannot confidently surface ASB on queries that route to these pages.</li>
+      <li><b>Entity inconsistency at the top.</b> The homepage and /personal/ publish only Organization, while /business/ correctly publishes BankOrCreditUnion. AI engines look at the homepage to define the entity. The mismatch means the engines see ASB as a "bank" for business queries and a "generic organization" for consumer queries &mdash; which directly maps to the queries where AI traffic is growing fastest (consumer mortgage research, switching banks, opening accounts).</li>
+    </ul>
   </div>
 </section>
 
@@ -273,19 +319,20 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">02</span>
-      <span>Why this matters now (the marketing-side answer)</span>
+      <span>Headline finding: the savings page penalty</span>
       <span class="rule"></span>
     </div>
     <p>
-      The buying behavior shift in banking is already happening. It is not a forecast. Three concrete changes in the last twelve months that change customer acquisition for ASB:
+      /personal/savings scores 33 out of 100. The grader's per-node detail explains why. ASB ships seven well-formed BankAccount schema nodes on this page, each scoring 95 (green). They also ship one additional JSON-LD block that fails to parse as valid JSON.
     </p>
-    <ul>
-      <li><b>Apple Intelligence and Perplexity in Safari are default-on for millions of iPhone users in Hawaii.</b> Their first question is often a banking decision. ChatGPT and Perplexity sit in front of the click. Their answers are opaque, which means they will not show up in your Google Analytics. They are real traffic sources you cannot currently measure or influence.</li>
-      <li><b>Google AI Overviews surface above the blue links</b> for "best Hawaii bank for [thing]" queries. Even when ASB ranks well in the traditional results, if the AI Overview names a different bank, the click happens there.</li>
-      <li><b>ChatGPT now includes web-grounded search</b> in default responses. Customers researching mortgages, business banking, or switching banks now ask ChatGPT directly. We track this across all four engines (ChatGPT, Perplexity, Gemini, Claude) and can tell you, query by query, who is currently being recommended for ASB's target queries.</li>
-    </ul>
     <p>
-      The bank-specific implication. Banking decisions are high-LTV. A new mortgage customer is worth multiple thousands of dollars over the loan term. Even a few-percent shift in citation share on mortgage and small-business banking queries probably maps to real revenue. The audit will quantify the citation gap by query, so this stops being a thesis and starts being a number.
+      The grader's overall score is weighted as <code>0.6 &times; min(node_scores) + 0.4 &times; mean(node_scores)</code>. The min-skewed weighting is intentional: a single broken block can tank citation behavior because AI engines treating malformed JSON as evidence the page is unreliable. The math: <code>0.6 &times; 0 + 0.4 &times; 83 = 33</code>.
+    </p>
+    <p>
+      <b>The fix.</b> Find and repair the malformed JSON-LD block. The seven BankAccount nodes are fine and should remain. The total work is one developer-hour with a JSON validator. After the fix, this page should jump to ~95 and exit the penalty zone immediately.
+    </p>
+    <p>
+      <b>Why this is the headline finding.</b> Of all the work in this audit, this is the highest impact-per-hour fix. The ratio of effort (single block repair) to lift (exiting an 18pp citation penalty zone) is the best you'll see anywhere on the site. If ASB does nothing else from this audit, do this.
     </p>
   </div>
 </section>
@@ -294,17 +341,21 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">03</span>
-      <span>What the full audit gives you</span>
+      <span>Pages with no structured data at all</span>
       <span class="rule"></span>
     </div>
-    <p>Delivered in 48 hours. The audit is ASB's regardless of whether we work together after.</p>
+    <p>
+      Four pages publish zero JSON-LD. Each is a high-LTV conversion surface where the absence of structured data directly limits AI citation potential.
+    </p>
     <ul>
-      <li><b>The complete citation matrix.</b> I run a list of queries you and the agency would care about (mortgage, business banking, branch locator, wealth, switching banks, "best Hawaii bank for X") against ChatGPT, Perplexity, Gemini, and Claude. You see who currently gets recommended, by query, by engine, with the threads they are cited from on Reddit and the trust profiles they reference.</li>
-      <li><b>Per-page schema completeness report</b> across the entire site, not just the four pages I sampled tonight. Every gap with the exact JSON-LD code your team or your agency can paste in.</li>
-      <li><b>Competitor map</b>. Bank of Hawaii, First Hawaiian, Central Pacific, Hawaiian Telcom Federal Credit Union, and any bank or credit union currently being recommended above ASB in the engines. Named, with links to where they are being cited.</li>
-      <li><b>Authority signal audit.</b> Person schema patterns for loan officers and advisors, AggregateRating, branch-locator schema, FinancialService for products. Banking-specific recommendations.</li>
-      <li><b>90-day implementation roadmap</b> sequenced by acquisition impact, not by easiness. The high-leverage fixes (mortgage subdomain schema, locations page, BankOrCreditUnion on consumer pages) come first.</li>
+      <li><b>/personal/credit-cards</b> &mdash; credit card discovery is one of the highest-volume banking queries on consumer AI search. Customers ask "best credit card for Hawaii residents," "ASB credit card options," "Hawaii bank rewards card." Without FinancialProduct or CreditCard schema, AI engines fall back to scraping or recommending competitor cards.</li>
+      <li><b>/business/checking</b> &mdash; small business banking switch decisions increasingly route through AI search. Without BankAccount or FinancialService schema on this page, "best business checking Hawaii" queries surface alternatives.</li>
+      <li><b>/locations</b> &mdash; this is the page that answers "ASB branch near me." Zero schema means the locations page is invisible to local-intent AI queries, which is most of the foot-traffic acquisition path. Each branch should publish LocalBusiness schema with address, geo coordinates, hours, and phone.</li>
+      <li><b>mortgage.asbhawaii.com</b> &mdash; the mortgage application subdomain is where actual conversions happen. Zero schema. For a product line where customer LTV is in the multiple thousands, this is the single largest gap on the site by acquisition value.</li>
     </ul>
+    <p>
+      <b>Combined fix.</b> Templated JSON-LD per page type. The /personal/checking page already shows ASB's team can ship clean schema; replicating that template across these four pages is a 1-2 day implementation, not a re-architecture.
+    </p>
   </div>
 </section>
 
@@ -312,16 +363,19 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">04</span>
-      <span>The 90-day implementation if we proceed</span>
+      <span>Authority signals are entirely absent</span>
       <span class="rule"></span>
     </div>
-    <p>The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one is absorbed in the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater. The minimum protects the work from being judged before it has a chance to compound.</p>
+    <p>
+      Across all 11 sampled pages, ASB publishes zero <code>Person</code> schema and zero <code>AggregateRating</code> schema. Two implications worth understanding:
+    </p>
     <ul>
-      <li><b>Days 1-2.</b> Audit delivered, no charge. Roadmap and citation matrix are yours.</li>
-      <li><b>Days 3-30.</b> Schema fixes ship. BankOrCreditUnion deployed across consumer pages, FinancialService schema attached to product pages, location-class schema on /locations and the mortgage subdomain, Person schema for advisors and loan officers (where you provide names), AggregateRating wired to your existing review data.</li>
-      <li><b>Days 31-90.</b> Citation tracking runs weekly. The dashboard shows ASB's citation share, by query, by engine, across all four AI engines. You see who you are now appearing alongside, who is still beating you, and where the lift is happening.</li>
-      <li><b>Day 90 onward.</b> Monday digest you can forward internally. Quarterly drift detection so the strategy does not go stale as the engines shift.</li>
+      <li><b>No Person schema means no advisor authority signal.</b> ASB has named loan officers, branch managers, mortgage advisors, and wealth specialists. These are the humans customers want to talk to about high-stakes banking decisions. AI engines actively use Person schema to surface "who should I talk to about a Hawaii mortgage" results. Right now those individuals are findable by direct name search but are not surfaceable as ASB representatives in answer-engine queries. Bank of Hawaii has begun publishing this; ASB has not.</li>
+      <li><b>No AggregateRating means external sources control your review narrative.</b> When customers ask AI engines "is ASB Hawaii a good bank" or compare ASB to alternatives, the engines pull rating data from Yelp, Tripadvisor, Google Business Profile, and others. Each of these can have different scores, sample sizes, and reviewer demographics. AI engines split the difference, and the resulting narrative is whichever external source weights heaviest. With AggregateRating schema published on your own site, the rating you stand behind becomes a canonical signal the engines weight.</li>
     </ul>
+    <p>
+      <b>Implementation note.</b> Publishing AggregateRating requires that the rating be substantiated by reviews on your site or syndicated from an authorized source. This is straightforward for any of the major review platforms ASB already uses, and the rating values used should be defensible to compliance review.
+    </p>
   </div>
 </section>
 
@@ -329,21 +383,27 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">05</span>
-      <span>How this fits with your agency</span>
+      <span>Competitor benchmark</span>
       <span class="rule"></span>
     </div>
     <p>
-      I do not know who your agency is yet. The work I am proposing does not replace what they do. They handle the brand, the creative, the campaign work, the content production, the paid media, the relationships. I add the AEO product layer on top. The schema infrastructure, the citation tracking, the dashboard, the schema-quality grader that gates anything before it goes live. The agency owns the customer relationship. I own the technical work that makes the engines listen.
+      The same audit run against ASB's main Hawaii banking competitors. Numbers are the homepage schema score in each case.
+    </p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Bank                              Homepage    Schema nodes    Schema types
+Bank of Hawaii (boh.com)          95          11              BankOrCreditUnion, Place, Rating, ContactPoint
+Hawaii USA FCU                    95          1               BankOrCreditUnion
+Hawaii State FCU                  82          5               WebSite, Organization, BreadcrumbList, ImageObject
+American Savings Bank (ASB)       85          1               Organization
+First Hawaiian Bank               0           0               NONE
+Central Pacific Bank              0           0               NONE</pre>
+    <p>
+      <b>Read of the cohort.</b> Bank of Hawaii is the leader on AI visibility infrastructure by a meaningful margin. They publish BankOrCreditUnion plus Place schema (which gives them branch-locator strength) plus Rating schema. They are doing the work of being readable by AI engines.
     </p>
     <p>
-      The audit is already on me. After it lands, two paths depending on what your agency wants:
+      Hawaii USA FCU and Hawaii State FCU sit close to ASB on the homepage but with different gaps. ASB's edge over the credit unions is brand awareness; the credit unions' edge over ASB is that ASB's structured data does not yet identify ASB as a bank in the canonical way the engines look for.
     </p>
-    <ul>
-      <li><b>Direct engagement.</b> ASB engages NeverRanked directly. Signal at $2,000/month or Amplify at $4,500/month. Agency stays the lead on everything they currently do. We coordinate on the technical handoff (schema deployment, snippet placement) and the agency forwards the Monday digest to ASB under their brand.</li>
-      <li><b>Reseller partnership.</b> Agency white-labels NeverRanked as part of their AEO offering for ASB and for any other client where this fits. Same software, same dashboard, agency keeps 60% of the recurring revenue per active client. ASB sees the work attributed to their agency. Specifics at <a href="/agencies/">neverranked.com/agencies</a> if they want to read it before the meeting.</li>
-    </ul>
     <p>
-      Either path works. The right answer is whatever the agency feels best fits their position with ASB. The audit and the work look identical in both cases. I am not trying to land between you and your agency. I am trying to give whichever side wins the work the best possible product to deliver.
+      First Hawaiian Bank and Central Pacific Bank publishing zero schema on their homepages is a competitive opportunity for ASB. If ASB closes the gap to BoH in 90 days, ASB pulls clearly ahead of FHB and CPB at the same time. The gap to FHB and CPB doesn't require winning anything. It just requires shipping the work.
     </p>
   </div>
 </section>
@@ -352,33 +412,165 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   <div class="wrap">
     <div class="section-label">
       <span class="num">06</span>
+      <span>Why this matters now (marketing context)</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The buying behavior shift in banking is already happening, not a forecast. Three concrete changes in the last twelve months that change customer acquisition for ASB:
+    </p>
+    <ul>
+      <li><b>Apple Intelligence and Perplexity in Safari are default-on for millions of iPhone users in Hawaii.</b> Their first question is often a banking decision. ChatGPT and Perplexity sit in front of the click. Their answers are opaque, which means they will not show up in your Google Analytics. They are real traffic sources you cannot currently measure or influence.</li>
+      <li><b>Google AI Overviews surface above the blue links</b> for "best Hawaii bank for [thing]" queries. Even when ASB ranks well in the traditional results, if the AI Overview names a different bank, the click happens there.</li>
+      <li><b>ChatGPT now includes web-grounded search</b> in default responses. Customers researching mortgages, business banking, or switching banks now ask ChatGPT directly. We track this across all four engines (ChatGPT, Perplexity, Gemini, Claude) once ASB engages.</li>
+    </ul>
+    <p>
+      <b>The bank-specific implication.</b> Banking decisions are high-LTV. A new mortgage customer is worth multiple thousands of dollars over the loan term. Even a few-percent shift in citation share on mortgage and small-business banking queries probably maps to real revenue. Citation tracking quantifies this query by query.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Implementation roadmap, sequenced by impact</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The fixes below are sequenced by ratio of impact to effort. The savings page penalty fix and the homepage entity correction are at the top because they are the highest-leverage single-day work on the entire site.
+    </p>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 01 &middot; Day 1</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Fix the malformed JSON-LD on /personal/savings</h3>
+      <p style="margin:0">One developer-hour. Validate every JSON-LD block on the page; identify the malformed block; either fix it or remove it. Page should immediately jump from 33 to ~95 and exit the 18pp penalty zone. This is the single most leveraged fix on the site.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 02 &middot; Day 1-2</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Promote homepage entity from Organization to BankOrCreditUnion</h3>
+      <p style="margin:0;margin-bottom:12px">The /business/ page already publishes BankOrCreditUnion correctly. Apply the same identifier to the homepage and /personal/ entity declaration. Below is the minimum viable implementation for the homepage:</p>
+      <pre style="background:var(--bg-edge);padding:14px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:10px;line-height:1.6;color:var(--text-soft);font-family:var(--mono);margin:0">{
+  "@context": "https://schema.org",
+  "@type": "BankOrCreditUnion",
+  "name": "American Savings Bank",
+  "url": "https://www.asbhawaii.com",
+  "logo": "https://www.asbhawaii.com/path/to/logo.png",
+  "address": { "@type": "PostalAddress", "addressLocality": "Honolulu", "addressRegion": "HI", "addressCountry": "US" },
+  "areaServed": "Hawaii",
+  "telephone": "+1-808-...",
+  "sameAs": ["https://www.facebook.com/ASBHawaii", "https://twitter.com/ASBHawaii"]
+}</pre>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 03 &middot; Week 1</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Branch schema across /locations and per-branch pages</h3>
+      <p style="margin:0;margin-bottom:12px">Each ASB branch needs a LocalBusiness or BankOrCreditUnion node with full address, geo coordinates, opening hours, and phone. This unlocks "ASB branch near me" queries on every AI engine that handles local intent. Template:</p>
+      <pre style="background:var(--bg-edge);padding:14px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:10px;line-height:1.6;color:var(--text-soft);font-family:var(--mono);margin:0">{
+  "@context": "https://schema.org",
+  "@type": "BankOrCreditUnion",
+  "name": "American Savings Bank -- Honolulu Main Branch",
+  "branchOf": { "@type": "BankOrCreditUnion", "name": "American Savings Bank" },
+  "address": { "@type": "PostalAddress", "streetAddress": "...", "addressLocality": "Honolulu", "addressRegion": "HI", "postalCode": "...", "addressCountry": "US" },
+  "geo": { "@type": "GeoCoordinates", "latitude": 21.3099, "longitude": -157.8581 },
+  "telephone": "+1-808-...",
+  "openingHoursSpecification": [{ "@type": "OpeningHoursSpecification", "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"], "opens": "09:00", "closes": "16:00" }]
+}</pre>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 04 &middot; Week 2</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Schema for the four zero-schema pages</h3>
+      <p style="margin:0">Apply the same template ASB used on /personal/checking (which already scores 96) to /personal/credit-cards, /personal/savings (after fixing the broken block), /business/checking, and the mortgage application subdomain. Each page should publish FinancialProduct, CreditCard, BankAccount, or MortgageLoan schema as appropriate, plus FAQPage where applicable.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 05 &middot; Week 3</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Person schema for advisors and loan officers</h3>
+      <p style="margin:0">For each named advisor, loan officer, branch manager, or specialist on the ASB site, publish a Person node with name, jobTitle, worksFor, and a sameAs link to their LinkedIn profile. This unlocks AI surfacing for "who should I talk to about a Hawaii mortgage" queries and similar.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 06 &middot; Week 4</div>
+      <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">AggregateRating schema</h3>
+      <p style="margin:0">Wire AggregateRating into the homepage and per-product pages, sourced from a defensible review pipeline (your existing review platform, Google Business Profile, or aggregated from multiple). Compliance-reviewed before deploy.</p>
+    </div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>The 90-day timeline if we engage</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one is absorbed in the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater.
+    </p>
+    <ul>
+      <li><b>Days 1-30.</b> Schema fixes ship per the priority order above. Citation tracking infrastructure goes live: ChatGPT, Perplexity, Gemini, Claude monitored weekly on the queries you and the agency define (mortgage, business banking, branches, switching banks, "best Hawaii bank for X").</li>
+      <li><b>Days 31-90.</b> AI engines absorb the schema changes during their training cycles. The dashboard updates weekly with citation share by query, by engine. You see who's now appearing alongside ASB and who's still beating you.</li>
+      <li><b>Day 90 onward.</b> Monday digest you can forward internally. Quarterly drift detection so the strategy doesn't go stale as the engines shift.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">09</span>
+      <span>How this fits with your agency</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      I do not know who your agency is yet. The work I am proposing does not replace what they do. They handle the brand, the creative, the campaign work, the content production, the paid media, the relationships. I add the AEO product layer on top: schema infrastructure, citation tracking, the dashboard, the schema-quality grader that gates anything before it goes live. The agency owns the customer relationship. I own the technical work that makes the engines listen.
+    </p>
+    <p>
+      The audit is already on me. After it lands, two paths depending on what your agency wants:
+    </p>
+    <ul>
+      <li><b>Direct engagement.</b> ASB engages NeverRanked directly. Signal at $2,000/month or Amplify at $4,500/month. Agency stays the lead on everything they currently do. We coordinate on the technical handoff (schema deployment, snippet placement) and the agency forwards the Monday digest to ASB under their brand.</li>
+      <li><b>Reseller partnership.</b> Agency white-labels NeverRanked as part of their AEO offering for ASB and for any other client where this fits. Same software, same dashboard, agency keeps 60% of the recurring revenue per active client. ASB sees the work attributed to their agency. Specifics at <a href="/agencies/">neverranked.com/agencies</a>.</li>
+    </ul>
+    <p>
+      Either path works. The audit and the work look identical in both cases. I am not trying to land between you and your agency. I'm trying to give whichever side wins the work the best possible product to deliver.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">10</span>
       <span>Questions you would ask, answered</span>
       <span class="rule"></span>
     </div>
 
     <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin:24px 0 8px">For ASB</p>
 
-    <p><b>Is the schema injection snippet safe to put on a regulated bank website?</b><br>Yes. The snippet does exactly one thing: it reads the URL path the visitor is on, matches it against an allow-list of approved pages, and appends a JSON-LD script tag to the &lt;head&gt;. It does not read cookies, does not read forms, does not read DOM contents, and makes no outbound network calls. The full source is public at <a href="https://github.com/lanceroylo/neverranked/blob/main/dashboard/src/routes/inject.ts">github.com/lanceroylo/neverranked</a>. Your security team can audit every line. The full posture is at <a href="/security/">neverranked.com/security</a> with the technical specifics broken out by claim.</p>
+    <p><b>Is the schema injection snippet safe to put on a regulated bank website?</b><br>Yes. The snippet does exactly one thing: reads the URL path the visitor is on, matches it against an allow-list of approved pages, appends a JSON-LD script tag to the &lt;head&gt;. It does not read cookies, does not read forms, does not read DOM contents, and makes no outbound network calls. The full source is public at <a href="https://github.com/lanceroylo/neverranked/blob/main/dashboard/src/routes/inject.ts">github.com/lanceroylo/neverranked</a>. Your security team can audit every line. Full security posture at <a href="/security/">neverranked.com/security</a>.</p>
 
-    <p><b>What about compliance and brand-safe disclosures?</b><br>The work is structured-data only. Nothing user-facing changes on the site. The snippet does not generate marketing claims, product descriptions, or any text a customer reads. It publishes the structured-data equivalent of what is already on your pages, in a form AI engines can parse. Required regulatory disclosures, FDIC language, and compliance-reviewed copy are entirely under your control and not touched by what we do. We will need a thirty-minute review with your compliance team before deployment to confirm scope, but this is significantly lighter than any new content workflow you have shipped in the last year.</p>
+    <p><b>What about compliance and brand-safe disclosures?</b><br>The work is structured-data only. Nothing user-facing changes on the site. The snippet does not generate marketing claims, product descriptions, or any text a customer reads. It publishes the structured-data equivalent of what is already on your pages, in a form AI engines can parse. Required regulatory disclosures, FDIC language, and compliance-reviewed copy stay entirely under your control. We will need a brief review with your compliance team before deployment to confirm scope, but the cognitive load on compliance is significantly lighter than any new content workflow.</p>
 
-    <p><b>What is the realistic lift estimate?</b><br>I will not promise a number. Anyone promising AI citation lift in advance is selling theater. What I will promise is the work: schema graded before deploy, drift detection every quarter, authority audits, a citation tracking matrix that tells you exactly where you stand week over week. The honest framing: the audit will tell you which queries you are currently absent from, the implementation gives ASB the structured signals AI engines look for, and the 90-day window is what AI models need to absorb the changes. The citation share is what we measure. The lift follows.</p>
+    <p><b>What is the realistic lift estimate?</b><br>I will not promise a number. Anyone promising AI citation lift in advance is selling theater. What I promise is the work: schema graded before deploy, drift detection every quarter, authority audits, citation tracking that tells you exactly where you stand week over week. The honest framing: the audit tells you which queries you're absent from, the implementation gives ASB the structured signals AI engines look for, and the 90-day window is what AI models need to absorb the changes. The citation share is what we measure. The lift follows.</p>
 
-    <p><b>How long until we see results?</b><br>Day 1-30: schema is deployed. Day 31-90: AI engines retrain and start absorbing. Day 90 onward: citation share starts moving. The dashboard refreshes weekly so the trajectory is visible from the first scan, and the work compounds over the engagement.</p>
+    <p><b>How long until we see results?</b><br>Day 1-30: schema deployed. Day 31-90: AI engines retrain and start absorbing. Day 90 onward: citation share starts moving. The dashboard refreshes weekly so the trajectory is visible from the first scan, and the work compounds over the engagement.</p>
 
-    <p><b>Do we own the data?</b><br>Yes. Everything in the dashboard is exportable. Citation history, schema snapshots, scan results, roadmap items. If ASB ever cancels, the data leaves with you and the snippet is removed in one paste. There is nothing that you cannot take with you.</p>
+    <p><b>Do we own the data?</b><br>Yes. Everything in the dashboard is exportable. Citation history, schema snapshots, scan results, roadmap items. If ASB ever cancels, the data leaves with you and the snippet is removed in one paste.</p>
 
-    <p><b>What happens if compliance flags something post-deploy?</b><br>Roll-back is one click. Each schema injection is approval-gated and individually revertible. There is no version of "we shipped something while you weren't looking." Your team or your agency sees every approval before it goes live.</p>
+    <p><b>What happens if compliance flags something post-deploy?</b><br>Roll-back is one click. Each schema injection is approval-gated and individually revertible. There is no version of "we shipped something while you weren't looking."</p>
 
-    <p><b>How is this different from the SEO our agency already does?</b><br>AEO is a separate practice. Citations from ChatGPT and Perplexity work differently than blue-link rankings. Most agencies, even good ones, do not currently have the tooling to answer "is ASB cited or not for [specific query] today." The audit answers that. AEO does not replace the SEO work. It runs alongside it on a different surface (answer engines vs. search results pages) with a different methodology.</p>
+    <p><b>How is this different from the SEO our agency already does?</b><br>AEO is a separate practice. Citations from ChatGPT and Perplexity work differently than blue-link rankings. Most agencies do not currently have the tooling to answer "is ASB cited or not for [specific query] today." This audit and the engagement that follows answers that. AEO does not replace SEO. It runs alongside it on a different surface (answer engines vs. search results pages) with a different methodology.</p>
 
     <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin:32px 0 8px">For the agency</p>
 
     <p><b>Are we replaced or extended?</b><br>Extended. The work I do does not overlap with creative, brand, content, paid media, account strategy, or campaign execution. I add a technical product layer on top of what you already deliver. If the agency wants to white-label as a reseller, the relationship stays in your name and you keep 60% of the recurring revenue per active client.</p>
 
-    <p><b>What is our cut if we partner?</b><br>60/40 split, agency / NeverRanked, on Signal and Amplify retainers. Audit is also a 60/40 split: $300 to the agency, $200 to NeverRanked. Billed monthly to the agency on the active-client count. No annual lock. One client unlocks the reseller rate. Specifics at <a href="/agencies/">neverranked.com/agencies</a>.</p>
+    <p><b>What's our cut if we partner?</b><br>60/40 split, agency / NeverRanked, on Signal and Amplify retainers. Audit is also a 60/40 split for any future audits the agency takes through NeverRanked: $300 to the agency, $200 to NeverRanked. The ASB audit specifically is on me, regardless of which path ASB chooses. Specifics at <a href="/agencies/">neverranked.com/agencies</a>.</p>
 
-    <p><b>What does our team have to do operationally?</b><br>You handle the client relationship, the proposal, the brand alignment, the renewal conversation, the Monday digest forward, and any creative integration with your existing content calendar. We handle all the technical execution: schema design, schema injection, citation tracking infrastructure, drift detection, authority audits, dashboard maintenance. The Monday brief itself is generated by us, formatted for forwarding under your brand.</p>
+    <p><b>What does our team have to do operationally?</b><br>You handle the client relationship, the proposal, the brand alignment, the renewal conversation, the Monday digest forward, and any creative integration with your existing content calendar. We handle all the technical execution: schema design, schema injection, citation tracking infrastructure, drift detection, authority audits, dashboard maintenance. The Monday brief is generated by us, formatted for forwarding under your brand.</p>
 
     <p><b>Can we white-label fully?</b><br>Dashboard branding is configurable per agency. The Monday digest goes out under your brand, not ours. The work delivered to ASB is attributed to you. Behind the scenes, the platform identifies as NeverRanked because we are the source of the technical work; in front of the client, you are.</p>
 
@@ -389,14 +581,14 @@ mortgage.asbhawaii.com                               0       NONE</pre>
 <section class="legal-section">
   <div class="wrap">
     <div class="section-label">
-      <span class="num">07</span>
+      <span class="num">11</span>
       <span>Why us, briefly</span>
       <span class="rule"></span>
     </div>
     <ul>
-      <li><b>The platform is built and used in the open.</b> Public codebase at <a href="https://github.com/lanceroylo/neverranked">github.com/lanceroylo/neverranked</a>. Public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Public security page at <a href="/security/">neverranked.com/security</a>. Few agencies in this category will give you that level of visibility into how the work is done. We can because the IP is the methodology, not the code.</li>
-      <li><b>Same software runs on our own domain.</b> When the dashboard says NeverRanked is failing on something, the roadmap auto-generates the same fix it would for any client. Eat your own cooking.</li>
-      <li><b>Source-available license.</b> The codebase is BSL-pattern: anyone can read, audit, learn from. Commercial use that competes with NeverRanked requires a license. Sunsets to MIT in 2030. The code is open enough for ASB's security team to verify the snippet, while protected enough that we can stay an independent business.</li>
+      <li><b>The platform is built and used in the open.</b> Public codebase at <a href="https://github.com/lanceroylo/neverranked">github.com/lanceroylo/neverranked</a>. Public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Public security page at <a href="/security/">neverranked.com/security</a>. Few agencies in this category will give you that level of visibility into how the work is done.</li>
+      <li><b>Same software runs on our own domain.</b> When the dashboard says NeverRanked is failing on something, the roadmap auto-generates the same fix it would for any client.</li>
+      <li><b>Source-available license.</b> Anyone can read, audit, learn from. Commercial competition with NeverRanked requires a license. Sunsets to MIT in 2030. Open enough for ASB security to verify, protected enough that we stay an independent business.</li>
     </ul>
   </div>
 </section>
@@ -404,16 +596,16 @@ mortgage.asbhawaii.com                               0       NONE</pre>
 <section class="legal-section" style="border-bottom:none">
   <div class="wrap">
     <div class="section-label">
-      <span class="num">08</span>
+      <span class="num">12</span>
       <span>Next step</span>
       <span class="rule"></span>
     </div>
     <p>
-      The audit is yours. No charge. I'll deliver it within 48 hours of getting confirmation that the scope (queries, business lines, branches in focus) covers what you and the agency want to see. The honest reason there's no fee here: this is the right way to start, and the work compounds. If the audit lands well and we move into Signal or Amplify, we'll figure that out together.
+      The audit above is yours. Print it, forward it, hand it to your agency, send it to compliance for review. No charge, no strings. The reason there's no fee here: this is the right way to start, and the work compounds. If the audit lands well and we move into Signal or Amplify, we'll figure that out together.
     </p>
     <p style="margin-top:20px">
-      <a href="mailto:lance@neverranked.com?subject=ASB%20Hawaii%20%E2%80%94%20full%20audit" style="color:var(--gold);font-weight:500"><b>Reply to schedule the live walkthrough &rarr;</b></a><br>
-      I'll walk you and the agency through the findings on a screen-share, with the citation matrix visible. We can decide together what path (direct or via the agency) makes sense after.
+      <a href="mailto:lance@neverranked.com?subject=ASB%20Hawaii%20%E2%80%94%20full%20audit%20walkthrough" style="color:var(--gold);font-weight:500"><b>Reply to schedule the live walkthrough &rarr;</b></a><br>
+      I will walk you and the agency through the dashboard live. Probably the citation matrix on a screen-share, with a couple of representative ASB queries already running. We can decide together what path (direct or via the agency) makes sense after.
     </p>
     <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
       Looking forward to it. Thanks for the look.<br>
@@ -429,16 +621,6 @@ mortgage.asbhawaii.com                               0       NONE</pre>
   </div>
 </footer>
 
-<script>
-(function(){
-  var btn = document.getElementById('hamburger');
-  var menu = document.getElementById('mobileMenu');
-  if(!btn||!menu) return;
-  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
-  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
-  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
-  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
-})();
-</script>
+<button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
 </body>
 </html>
