@@ -34,6 +34,7 @@ DIRS=(
   for-agencies
   principles
   privacy
+  security
   terms
   thanks
 )

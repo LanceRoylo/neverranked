@@ -93,6 +93,9 @@ This file has TWO things:
 >
 > **"Can you guarantee citations?"**
 > No. Anyone who guarantees AI citations is selling theater. We guarantee the work — schema graded before deploy, drift detection every 90 days, authority audits, citation-shaped content (Amplify). Citations follow when the work is right.
+>
+> **"What does NeverRanked actually have access to on our site?"**
+> Read-only schema injection via a 20-line public JavaScript snippet (no cookies, no DOM read, no outbound calls — just appends JSON-LD to your <head>). For Amplify, scoped CMS access to create draft posts only — no users, no settings, no themes. Nothing auto-publishes without your click. Full breakdown at neverranked.com/security, including the actual file paths in the public repo so they can verify any claim.
 
 ### Who this is NOT for (the constraining philosophy as a feature)
 

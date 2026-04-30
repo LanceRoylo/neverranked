@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Security -- Never Ranked</title>
+<meta name="description" content="What our schema snippet does, what CMS access we ask for, what we don't touch, and how to verify any of it. The whole codebase is public.">
+<link rel="canonical" href="https://neverranked.com/security/">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Security -- Never Ranked">
+<meta property="og:description" content="What our snippet does. What we don't touch. How to verify it. The codebase is public.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/security/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Security",
+      "item": "https://neverranked.com/security/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$500 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <h1>Security</h1>
+    <div class="updated">What we touch, what we don't, and how to verify any of it. Last updated April 2026.</div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>The honest version</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Most agencies handle "security" with platitudes. We're going to do the opposite. This page tells you exactly what code we run on your site, exactly what permissions we ask of your CMS, exactly what we don't touch, and exactly where you can read every line yourself. If something on this page contradicts the actual code in our public repo, that is a bug worth flagging at <a href="mailto:security@neverranked.com">security@neverranked.com</a>.
+    </p>
+    <p>
+      We are not SOC 2 certified. We are not ISO 27001 certified. Saying so honestly belongs at the top of this page, not buried at the bottom. Those certifications are on a roadmap that activates once we have enterprise customers who require them. Until then, our claim is specificity, transparency, and minimum-scope.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>What our schema snippet does</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The single line you paste in your site's <code>&lt;head&gt;</code> loads a small JavaScript file from our domain (<code>app.neverranked.com/inject/&lt;your-slug&gt;.js</code>). When it runs, it does exactly one thing:
+    </p>
+    <ul>
+      <li>Reads <code>location.pathname</code> (the URL path the visitor is on).</li>
+      <li>Compares that path against an allow-list of pages you and we have explicitly approved.</li>
+      <li>If matched, calls <code>document.createElement("script")</code>, sets <code>type="application/ld+json"</code>, fills it with the structured-data JSON we previously approved, and appends it to <code>document.head</code>.</li>
+    </ul>
+    <p>That is the entire snippet. Twenty lines of JavaScript, no obfuscation, no minification beyond whitespace. You can read the full source generator at <code>dashboard/src/routes/inject.ts</code> in our public repo.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>What the snippet does NOT do</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>It does not read cookies.</b> The word "cookie" appears nowhere in the snippet code.</li>
+      <li><b>It does not read forms.</b> No <code>document.querySelector</code> calls against inputs, no listeners on submit events.</li>
+      <li><b>It does not read DOM contents.</b> Doesn't traverse the page, doesn't read text, doesn't see what your visitors typed.</li>
+      <li><b>It does not make outbound requests.</b> No <code>fetch</code>, no <code>XMLHttpRequest</code>, no <code>navigator.sendBeacon</code>. The snippet is purely DOM-injection.</li>
+      <li><b>It does not run <code>eval</code> or use the <code>Function</code> constructor.</b> The injected JSON is parsed by <code>JSON.stringify</code> on our side and the browser's native <code>application/ld+json</code> handler on yours.</li>
+      <li><b>It does not contain credentials, tokens, or anything that could be used to identify your customer base if leaked.</b> The URL contains a public client_slug. That's it.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>Pre-approval gate on every schema we ship</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Every JSON-LD payload that ships through our snippet has to pass two gates before deploy:
+    </p>
+    <ul>
+      <li><b>Schema completeness grader.</b> Empirical research on AI citations shows partial or generic schema produces a 18-percentage-point citation penalty versus no schema at all. Our grader scores every block against per-type field manifests and blocks anything below a deploy threshold of 60. Same grader powers our public scorer at <a href="https://check.neverranked.com">check.neverranked.com</a> -- you can verify the math against any URL.</li>
+      <li><b>Status flag in our database.</b> The injection endpoint queries <code>WHERE status = 'approved'</code>. Schema cannot reach your live site without an explicit approval mark on our side.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>Per-customer isolation</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Each customer's snippet URL contains a unique <code>client_slug</code>. The endpoint resolves that slug against our database and serves only that customer's schemas. There is no shared payload across customers, no global script, no third-party CDN involved.
+    </p>
+    <p>
+      Compromising any one customer's snippet does not reach any other customer. Our database queries are parameterized (using D1 prepared statements) so the slug cannot be used as an injection vector against the server.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>CMS access (Amplify only)</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Amplify customers connect their content management system so we can publish drafts directly. Below is exactly what we ask for and exactly what we use it for, by platform.
+    </p>
+    <p><b>WordPress.</b> We use WordPress Application Passwords -- per-user, per-app credentials that you can revoke from your WP admin at any time. The password is encrypted at rest in our database with AES-GCM (key: <code>WP_ENCRYPTION_KEY</code>, never logged, never returned via any API endpoint). Our code only hits two REST endpoints:</p>
+    <ul>
+      <li><code>GET /wp-json/wp/v2/users/me</code> -- to verify the credentials work after you save them.</li>
+      <li><code>POST /wp-json/wp/v2/posts</code> -- to create a draft post.</li>
+    </ul>
+    <p>We do not touch <code>/users</code>, <code>/options</code>, <code>/themes</code>, <code>/plugins</code>, <code>/media</code> uploads, or anything else. The full driver is at <code>dashboard/src/cms/drivers/wordpress.ts</code>.</p>
+    <p><b>Webflow.</b> We hit only <code>/sites/{id}</code> (read, to validate site access), <code>/collections/{id}/items</code> (create, to add a draft article), and <code>/collections/{id}/items/{id}/publish</code> (publish, when you approve). No site settings, no DNS, no domains, no other collections.</p>
+    <p><b>Shopify.</b> We hit only <code>/admin/api/.../blogs/{blog_id}/articles.json</code> to create blog articles. No products, no orders, no customers, no themes, no settings.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>Drafts require explicit approval</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      No content auto-publishes. Every Amplify-generated draft sits in a <code>pending_review</code> state in your dashboard until you click approve. The publish endpoint is only called after that explicit click. If you ever want to pause the pipeline entirely, you can flip <code>pipeline_paused_at</code> on your account from settings -- the cron checks that flag before generating any draft.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Your AI keys stay yours (or rather, ours)</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      You never share your OpenAI, Anthropic, Gemini, or Perplexity API keys with us. Our citation tracker uses our own keys to run queries against the engines on your behalf, and we pay for those API costs. This means even if our infrastructure were compromised, the attacker could not pivot into your AI service accounts.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>Where the code lives</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The entire NeverRanked codebase is public on GitHub at <a href="https://github.com/lanceroylo/neverranked" target="_blank" rel="noopener">github.com/lanceroylo/neverranked</a>. The repo is source-available under a Business-Source-pattern license -- you can read every line, audit it, fork it for non-commercial use. Commercial use that competes with NeverRanked requires a license. License auto-converts to MIT on April 29, 2030.
+    </p>
+    <p>
+      Specific files worth reading:
+    </p>
+    <ul>
+      <li><code>dashboard/src/routes/inject.ts</code> -- the entire snippet generator</li>
+      <li><code>dashboard/src/cms/drivers/</code> -- WordPress, Webflow, Shopify drivers</li>
+      <li><code>packages/aeo-analyzer/src/schema-grader.ts</code> -- the schema completeness grader</li>
+      <li><code>dashboard/src/auth.ts</code> -- magic link issuance, session management, rate limiting</li>
+      <li><code>dashboard/src/routes/checkout.ts</code> -- Stripe webhook handler</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">09</span>
+      <span>Infrastructure</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>Hosting:</b> Cloudflare Workers (compute), Cloudflare D1 (database), Cloudflare R2 (object storage). All traffic terminates on Cloudflare's network -- their security posture (DDoS protection, TLS, WAF) covers ours by inheritance.</li>
+      <li><b>Secrets:</b> All API keys, encryption keys, and webhook secrets are stored as Wrangler secrets, never committed to the repo.</li>
+      <li><b>Database access:</b> No direct external database access. All queries go through the Worker, which authenticates the caller via session cookies.</li>
+      <li><b>Email delivery:</b> Resend, with our domain verified for sending. Welcome email magic links expire after 72 hours, login magic links after 15 minutes, with a hard rate limit of 3 per 15-minute window per email.</li>
+      <li><b>Payment processing:</b> Stripe -- we never store card data ourselves. We persist only the Stripe customer ID and subscription ID.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">10</span>
+      <span>What we honestly cannot guarantee</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      A few risks we want named because they're real, not because they're alarming:
+    </p>
+    <ul>
+      <li><b>If our infrastructure is breached, an attacker could push bad schema to all active customer sites simultaneously.</b> Mitigation: all schema passes the completeness grader before serving, and any push triggers an entry in our admin alerts. Detection-then-revert is the layer we currently have. Cryptographic signing of schema payloads is on the roadmap.</li>
+      <li><b>WordPress Application Passwords are revocable but not multi-factor.</b> If your WordPress admin account is breached, the attacker could revoke or replace our credential. Recommend you set up 2FA on your WP admin.</li>
+      <li><b>We do not hold any audited compliance certificate yet.</b> If your procurement process requires SOC 2 or ISO 27001, we are not ready for that engagement. Email us so we know it's on the demand list.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">11</span>
+      <span>How to verify any of this in 60 seconds</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li>The full snippet generator lives at <code>dashboard/src/routes/inject.ts</code> in the public repo. Read it.</li>
+      <li>The CMS drivers live at <code>dashboard/src/cms/drivers/</code>. Read them.</li>
+      <li>Once you're a customer, your live snippet is at <code>https://app.neverranked.com/inject/&lt;your-slug&gt;.js</code>. Open it in a browser tab. The full source loads as plain text.</li>
+      <li>Run any URL through <a href="https://check.neverranked.com">check.neverranked.com</a> -- the schema grader scoring your live snippet's payloads is the same code you'll see in the repo.</li>
+      <li>If a security claim on this page does not match what the code does, we treat that as a bug. Email <a href="mailto:security@neverranked.com">security@neverranked.com</a>. A real reply, not a noreply auto-acknowledge.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">12</span>
+      <span>Reporting a vulnerability</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Email <a href="mailto:security@neverranked.com">security@neverranked.com</a> with reproduction details. We commit to a real human reply within 48 hours and a fix-or-mitigation timeline within 7 days for any verified issue. We do not currently run a paid bug bounty program, but we will publicly credit responsible disclosures (with your permission) on this page.
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+</body>
+</html>
