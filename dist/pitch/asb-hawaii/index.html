@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>For Mark Cunningham / American Savings Bank -- Never Ranked</title>
+<meta name="description" content="A private brief on how ASB Hawaii currently shows up across AI engines, the schema gaps that probably cost you customers, and a 90-day path forward.">
+<link rel="canonical" href="https://neverranked.com/pitch/asb-hawaii/">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="For Mark Cunningham / American Savings Bank">
+<meta property="og:description" content="A private brief. AI visibility findings, the gaps that matter, and a 90-day path forward.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/pitch/asb-hawaii/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pitch / ASB Hawaii",
+      "item": "https://neverranked.com/pitch/asb-hawaii/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$500 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="updated" style="margin-bottom:18px">Private brief &middot; Prepared for Mark Cunningham &middot; April 2026</div>
+    <h1>How American Savings Bank shows up <em>across the AI engines that now route banking decisions.</em></h1>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>Hi Mark</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Quick context. You asked for a full audit, so I ran ASB Hawaii through our public schema scorer and the engines we track. This page is the writeup. It's structured so you (and your agency) can read it before we meet and walk in already knowing what I'd say live. The questions you'd ask are answered toward the bottom in plain language.
+    </p>
+    <p>
+      The summary up front. ASB has a strong technical baseline relative to most banks I've seen audited (no penalty zones, no broken markup), but several of the highest-value pages for customer acquisition are not legible to AI engines today. The largest gaps are not on the marketing pages. They're on the pages where customers convert: branch locations and the mortgage application subdomain. Both currently publish zero structured data, which means AI engines cannot surface ASB confidently for "ASB branch near me," "Hawaii mortgage rates," or "open a business checking account in Honolulu" type queries. Each of these is a high-LTV acquisition path.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>What the audit found, page by page</span>
+      <span class="rule"></span>
+    </div>
+    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is gold (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone, where empirical research shows an 18-percentage-point citation penalty versus no schema at all. Here is what asbhawaii.com looks like today:</p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                                Score    Schema present
+asbhawaii.com (homepage)                            85       Organization only
+asbhawaii.com/personal/                             85       Organization only
+asbhawaii.com/business/                             95       BankOrCreditUnion
+asbhawaii.com/personal/home-loans                   75       MortgageLoan partial
+asbhawaii.com/locations                              0       NONE
+mortgage.asbhawaii.com                               0       NONE</pre>
+    <p>
+      Three observations from this matrix worth sitting with.
+    </p>
+    <p>
+      <b>One.</b> The homepage and the consumer landing page (/personal/) only publish <code>Organization</code>, while /business/ correctly publishes <code>BankOrCreditUnion</code>. AI engines look at the homepage to define the entity. The inconsistency means engines see ASB as a bank for business queries and as a generic organization for consumer queries. That gap maps directly to where AI traffic is growing fastest (consumer mortgage research, switching banks, opening accounts).
+    </p>
+    <p>
+      <b>Two.</b> The locations page and the mortgage application subdomain publish no structured data at all. These are the pages that matter most for the queries customers actually use ("ASB branch near me," "Hawaii mortgage rates," "best Hawaii bank for first-time homebuyer"). The marketing site is doing the work of being readable. The conversion surfaces are not. AI engines that try to surface ASB for these queries fall back to scraping or, more often, recommending a competitor that does publish the structured data.
+    </p>
+    <p>
+      <b>Three.</b> No <code>Person</code> schema anywhere. ASB has named loan officers, branch managers, and advisors. These are authority signals AI engines actively use when answering "who should I talk to about a Hawaii mortgage." Right now those individuals are searchable by name but not surfaceable as ASB representatives in answer-engine results. Bank-of-Hawaii and First Hawaiian both have specific Person schema patterns I can show during the call.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>Why this matters now (the marketing-side answer)</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The buying behavior shift in banking is already happening. It is not a forecast. Three concrete changes in the last twelve months that change customer acquisition for ASB:
+    </p>
+    <ul>
+      <li><b>Apple Intelligence and Perplexity in Safari are default-on for millions of iPhone users in Hawaii.</b> Their first question is often a banking decision. ChatGPT and Perplexity sit in front of the click. Their answers are opaque, which means they will not show up in your Google Analytics. They are real traffic sources you cannot currently measure or influence.</li>
+      <li><b>Google AI Overviews surface above the blue links</b> for "best Hawaii bank for [thing]" queries. Even when ASB ranks well in the traditional results, if the AI Overview names a different bank, the click happens there.</li>
+      <li><b>ChatGPT now includes web-grounded search</b> in default responses. Customers researching mortgages, business banking, or switching banks now ask ChatGPT directly. We track this across all four engines (ChatGPT, Perplexity, Gemini, Claude) and can tell you, query by query, who is currently being recommended for ASB's target queries.</li>
+    </ul>
+    <p>
+      The bank-specific implication. Banking decisions are high-LTV. A new mortgage customer is worth multiple thousands of dollars over the loan term. Even a few-percent shift in citation share on mortgage and small-business banking queries probably maps to real revenue. The audit will quantify the citation gap by query, so this stops being a thesis and starts being a number.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>What the full audit gives you</span>
+      <span class="rule"></span>
+    </div>
+    <p>$500, delivered in 48 hours. The audit belongs to ASB regardless of whether we work together after.</p>
+    <ul>
+      <li><b>The complete citation matrix.</b> I run a list of queries you and the agency would care about (mortgage, business banking, branch locator, wealth, switching banks, "best Hawaii bank for X") against ChatGPT, Perplexity, Gemini, and Claude. You see who currently gets recommended, by query, by engine, with the threads they are cited from on Reddit and the trust profiles they reference.</li>
+      <li><b>Per-page schema completeness report</b> across the entire site, not just the four pages I sampled tonight. Every gap with the exact JSON-LD code your team or your agency can paste in.</li>
+      <li><b>Competitor map</b>. Bank of Hawaii, First Hawaiian, Central Pacific, Hawaiian Telcom Federal Credit Union, and any bank or credit union currently being recommended above ASB in the engines. Named, with links to where they are being cited.</li>
+      <li><b>Authority signal audit.</b> Person schema patterns for loan officers and advisors, AggregateRating, branch-locator schema, FinancialService for products. Banking-specific recommendations.</li>
+      <li><b>90-day implementation roadmap</b> sequenced by acquisition impact, not by easiness. The high-leverage fixes (mortgage subdomain schema, locations page, BankOrCreditUnion on consumer pages) come first.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>The 90-day implementation if we proceed</span>
+      <span class="rule"></span>
+    </div>
+    <p>The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one is absorbed in the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater. The minimum protects the work from being judged before it has a chance to compound.</p>
+    <ul>
+      <li><b>Days 1-2.</b> Audit delivered. Roadmap and citation matrix are yours.</li>
+      <li><b>Days 3-30.</b> Schema fixes ship. BankOrCreditUnion deployed across consumer pages, FinancialService schema attached to product pages, location-class schema on /locations and the mortgage subdomain, Person schema for advisors and loan officers (where you provide names), AggregateRating wired to your existing review data.</li>
+      <li><b>Days 31-90.</b> Citation tracking runs weekly. The dashboard shows ASB's citation share, by query, by engine, across all four AI engines. You see who you are now appearing alongside, who is still beating you, and where the lift is happening.</li>
+      <li><b>Day 90 onward.</b> Monday digest you can forward internally. Quarterly drift detection so the strategy does not go stale as the engines shift.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>How this fits with your agency</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      I do not know who your agency is yet. The work I am proposing does not replace what they do. They handle the brand, the creative, the campaign work, the content production, the paid media, the relationships. I add the AEO product layer on top. The schema infrastructure, the citation tracking, the dashboard, the schema-quality grader that gates anything before it goes live. The agency owns the customer relationship. I own the technical work that makes the engines listen.
+    </p>
+    <p>
+      Two paths forward, depending on what your agency wants:
+    </p>
+    <ul>
+      <li><b>Direct engagement.</b> ASB engages NeverRanked directly. Audit at $500, then Signal at $2,000/month or Amplify at $4,500/month. Agency stays the lead on everything they currently do. We coordinate on the technical handoff (schema deployment, snippet placement) and the agency forwards the Monday digest to ASB under their brand.</li>
+      <li><b>Reseller partnership.</b> Agency white-labels NeverRanked as part of their AEO offering for ASB and for any other client where this fits. Same software, same dashboard, agency keeps 60% of the recurring revenue. ASB sees the work attributed to their agency. Specifics at <a href="/agencies/">neverranked.com/agencies</a> if they want to read it before the meeting.</li>
+    </ul>
+    <p>
+      Either path works. The right answer is whatever the agency feels best fits their position with ASB. The audit and the work look identical in both cases. I am not trying to land between you and your agency. I am trying to give whichever side wins the work the best possible product to deliver.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>Questions you would ask, answered</span>
+      <span class="rule"></span>
+    </div>
+
+    <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin:24px 0 8px">For ASB</p>
+
+    <p><b>Is the schema injection snippet safe to put on a regulated bank website?</b><br>Yes. The snippet does exactly one thing: it reads the URL path the visitor is on, matches it against an allow-list of approved pages, and appends a JSON-LD script tag to the &lt;head&gt;. It does not read cookies, does not read forms, does not read DOM contents, and makes no outbound network calls. The full source is public at <a href="https://github.com/lanceroylo/neverranked/blob/main/dashboard/src/routes/inject.ts">github.com/lanceroylo/neverranked</a>. Your security team can audit every line. The full posture is at <a href="/security/">neverranked.com/security</a> with the technical specifics broken out by claim.</p>
+
+    <p><b>What about compliance and brand-safe disclosures?</b><br>The work is structured-data only. Nothing user-facing changes on the site. The snippet does not generate marketing claims, product descriptions, or any text a customer reads. It publishes the structured-data equivalent of what is already on your pages, in a form AI engines can parse. Required regulatory disclosures, FDIC language, and compliance-reviewed copy are entirely under your control and not touched by what we do. We will need a thirty-minute review with your compliance team before deployment to confirm scope, but this is significantly lighter than any new content workflow you have shipped in the last year.</p>
+
+    <p><b>What is the realistic lift estimate?</b><br>I will not promise a number. Anyone promising AI citation lift in advance is selling theater. What I will promise is the work: schema graded before deploy, drift detection every quarter, authority audits, a citation tracking matrix that tells you exactly where you stand week over week. The honest framing: the audit will tell you which queries you are currently absent from, the implementation gives ASB the structured signals AI engines look for, and the 90-day window is what AI models need to absorb the changes. The citation share is what we measure. The lift follows.</p>
+
+    <p><b>How long until we see results?</b><br>Day 1-30: schema is deployed. Day 31-90: AI engines retrain and start absorbing. Day 90 onward: citation share starts moving. The dashboard refreshes weekly so the trajectory is visible from the first scan, and the work compounds over the engagement.</p>
+
+    <p><b>Do we own the data?</b><br>Yes. Everything in the dashboard is exportable. Citation history, schema snapshots, scan results, roadmap items. If ASB ever cancels, the data leaves with you and the snippet is removed in one paste. There is nothing that you cannot take with you.</p>
+
+    <p><b>What happens if compliance flags something post-deploy?</b><br>Roll-back is one click. Each schema injection is approval-gated and individually revertible. There is no version of "we shipped something while you weren't looking." Your team or your agency sees every approval before it goes live.</p>
+
+    <p><b>How is this different from the SEO our agency already does?</b><br>AEO is a separate practice. Citations from ChatGPT and Perplexity work differently than blue-link rankings. Most agencies, even good ones, do not currently have the tooling to answer "is ASB cited or not for [specific query] today." The audit answers that. AEO does not replace the SEO work. It runs alongside it on a different surface (answer engines vs. search results pages) with a different methodology.</p>
+
+    <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin:32px 0 8px">For the agency</p>
+
+    <p><b>Are we replaced or extended?</b><br>Extended. The work I do does not overlap with creative, brand, content, paid media, account strategy, or campaign execution. I add a technical product layer on top of what you already deliver. If the agency wants to white-label as a reseller, the relationship stays in your name and you keep 60% of the recurring revenue per active client.</p>
+
+    <p><b>What is our cut if we partner?</b><br>60/40 split, agency / NeverRanked, on Signal and Amplify retainers. Audit is also a 60/40 split: $300 to the agency, $200 to NeverRanked. Billed monthly to the agency on the active-client count. No annual lock. One client unlocks the reseller rate. Specifics at <a href="/agencies/">neverranked.com/agencies</a>.</p>
+
+    <p><b>What does our team have to do operationally?</b><br>You handle the client relationship, the proposal, the brand alignment, the renewal conversation, the Monday digest forward, and any creative integration with your existing content calendar. We handle all the technical execution: schema design, schema injection, citation tracking infrastructure, drift detection, authority audits, dashboard maintenance. The Monday brief itself is generated by us, formatted for forwarding under your brand.</p>
+
+    <p><b>Can we white-label fully?</b><br>Dashboard branding is configurable per agency. The Monday digest goes out under your brand, not ours. The work delivered to ASB is attributed to you. Behind the scenes, the platform identifies as NeverRanked because we are the source of the technical work; in front of the client, you are.</p>
+
+    <p><b>What if we want to see the platform first?</b><br>Either Mark or the agency can hit the public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a> for any URL right now. The full source code is public. The security page documents what the platform does and does not touch. We can also run a sample dashboard for a representative ASB query before any commercial conversation.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Why us, briefly</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>The platform is built and used in the open.</b> Public codebase at <a href="https://github.com/lanceroylo/neverranked">github.com/lanceroylo/neverranked</a>. Public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Public security page at <a href="/security/">neverranked.com/security</a>. Few agencies in this category will give you that level of visibility into how the work is done. We can because the IP is the methodology, not the code.</li>
+      <li><b>Same software runs on our own domain.</b> When the dashboard says NeverRanked is failing on something, the roadmap auto-generates the same fix it would for any client. Eat your own cooking.</li>
+      <li><b>Source-available license.</b> The codebase is BSL-pattern: anyone can read, audit, learn from. Commercial use that competes with NeverRanked requires a license. Sunsets to MIT in 2030. The code is open enough for ASB's security team to verify the snippet, while protected enough that we can stay an independent business.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>Two ways to take the next step</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <a href="https://app.neverranked.com/checkout/audit" style="color:var(--gold);font-weight:500"><b>Book the $500 audit &rarr;</b></a><br>
+      48-hour delivery. Full citation matrix across the queries ASB cares about (you tell me which ones, otherwise I default to the highest-volume Hawaii banking acquisition queries). Per-page schema report. Competitor map. 90-day implementation roadmap. The audit belongs to ASB, regardless of what comes after.
+    </p>
+    <p style="margin-top:24px">
+      <a href="mailto:lance@neverranked.com?subject=ASB%20Hawaii%20%E2%80%94%20full%20audit" style="color:var(--gold);font-weight:500"><b>Or reply to schedule the live walkthrough &rarr;</b></a><br>
+      I will walk you and the agency through the findings live. Probably the dashboard on a screen-share, with the citation matrix visible. We can decide together which path (direct or via the agency) makes sense, and what the audit's scope should be.
+    </p>
+    <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
+      Looking forward to it. Thanks for the look.<br>
+      <span style="font-family:var(--serif);font-style:italic">Lance Roylo</span> &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a> &middot; <a href="https://neverranked.com">neverranked.com</a>
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+</body>
+</html>
