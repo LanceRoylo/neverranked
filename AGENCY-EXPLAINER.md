@@ -46,11 +46,11 @@ This file has TWO things:
 
 > Tier — Retail (what you bill the client) — Your share (what you keep monthly per active client)
 >
-> **Audit** — $500 one-time — $500 to you (priced at retail for everyone)
+> **Audit** — $500 retail one-time — **$300 to you** (60/40 split, delivered in 48 hours)
 >
-> **Signal** — $2,000/mo — **$1,200/mo to you** (60/40 split)
+> **Signal** — $2,000/mo retail — **$1,200/mo to you** (60/40 split)
 >
-> **Amplify** — $4,500/mo — **$2,700/mo to you** (60/40 split, capped at 2 active clients globally)
+> **Amplify** — $4,500/mo retail — **$2,700/mo to you** (60/40 split, capped at 6 active clients globally)
 
 > *Billed monthly to you on the active-client count. No annual lock. One client unlocks the reseller rate.*
 

@@ -142,7 +142,11 @@ export async function handleCheckout(
     const activeAmplify = await env.DB.prepare(
       "SELECT COUNT(*) as count FROM users WHERE plan = 'amplify' AND stripe_subscription_id IS NOT NULL"
     ).first<{ count: number }>();
-    if (activeAmplify && activeAmplify.count >= 2) {
+    // Amplify capacity gate. Bumped from 2 -> 6 (2026-04-29):
+    // 2 read as "we're at capacity, don't bother" and dampened
+    // top-of-funnel inbound. 6 reads as deliberate selectivity
+    // while leaving room for the next several customers.
+    if (activeAmplify && activeAmplify.count >= 6) {
       return html(layout("Amplify", `
         <div class="empty">
           <h3>Amplify is at capacity</h3>
