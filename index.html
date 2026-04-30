@@ -929,19 +929,12 @@ h1,h2,h3,h4{
 .featured-work{
   border-top:1px solid var(--line);
   border-bottom:1px solid var(--line);
-  padding:28px 0;
+  padding:24px 0 8px;
   background:rgba(255,255,255,.01);
 }
-.featured-work-link{
-  display:grid;
-  grid-template-columns:auto auto 1fr auto;
-  align-items:center;
-  gap:32px;
-  color:var(--text);
-  transition:color .35s var(--ease);
+.featured-work-head{
+  margin-bottom:14px;
 }
-.featured-work-link:hover{color:var(--gold)}
-.featured-work-link:hover .featured-work-cta .arrow{width:28px}
 .featured-work-eyebrow{
   display:inline-flex;align-items:center;gap:10px;
   font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;
@@ -952,6 +945,22 @@ h1,h2,h3,h4{
   background:var(--gold);
   box-shadow:0 0 0 3px rgba(201,168,76,.18);
 }
+.featured-work-list{
+  display:flex;flex-direction:column;
+}
+.featured-work-link{
+  display:grid;
+  grid-template-columns:minmax(0,auto) 1fr auto;
+  align-items:center;
+  gap:32px;
+  color:var(--text);
+  padding:18px 0;
+  border-top:1px solid var(--line);
+  transition:color .35s var(--ease);
+}
+.featured-work-link:first-child{border-top:0;padding-top:6px}
+.featured-work-link:hover{color:var(--gold)}
+.featured-work-link:hover .featured-work-cta .arrow{width:28px}
 .featured-work-mark{
   font-family:var(--serif);font-style:italic;font-weight:400;
   font-size:clamp(22px,2.4vw,30px);letter-spacing:-.01em;color:var(--text);
@@ -978,10 +987,11 @@ h1,h2,h3,h4{
   transform:rotate(45deg);
 }
 @media(max-width:760px){
-  .featured-work{padding:22px 0}
+  .featured-work{padding:22px 0 14px}
   .featured-work-link{
     grid-template-columns:1fr;
-    gap:10px;
+    gap:8px;
+    padding:16px 0;
   }
   .featured-work-line{font-size:12px}
   .featured-work-cta{justify-self:start}
@@ -4201,20 +4211,34 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <!-- ============ FEATURED WORK ============ -->
   <section class="featured-work" aria-labelledby="featuredWorkLabel">
     <div class="wrap">
-      <a href="/case-studies/montaic/" class="featured-work-link reveal">
+      <div class="featured-work-head">
         <span class="featured-work-eyebrow" id="featuredWorkLabel">
           <span class="dot" aria-hidden="true"></span>
           <span>Featured work</span>
         </span>
-        <span class="featured-work-mark">Montaic</span>
-        <span class="featured-work-line">
-          <b>12 days.</b> Zero AI citations to full schema coverage.
-        </span>
-        <span class="featured-work-cta">
-          Read the case
-          <span class="arrow" aria-hidden="true"></span>
-        </span>
-      </a>
+      </div>
+      <div class="featured-work-list">
+        <a href="/case-studies/montaic/" class="featured-work-link reveal">
+          <span class="featured-work-mark">Montaic</span>
+          <span class="featured-work-line">
+            <b>12 days.</b> Zero AI citations to full schema coverage.
+          </span>
+          <span class="featured-work-cta">
+            Read the case
+            <span class="arrow" aria-hidden="true"></span>
+          </span>
+        </a>
+        <a href="/case-studies/and-scene/" class="featured-work-link reveal" style="transition-delay:.08s">
+          <span class="featured-work-mark">And Scene Hawaii</span>
+          <span class="featured-work-line">
+            <b>Day 1.</b> Eight schema entities, live, documented openly.
+          </span>
+          <span class="featured-work-cta">
+            Read the case
+            <span class="arrow" aria-hidden="true"></span>
+          </span>
+        </a>
+      </div>
     </div>
   </section>
 
