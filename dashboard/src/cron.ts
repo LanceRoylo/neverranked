@@ -249,6 +249,22 @@ export async function runDailyTasks(env: Env): Promise<void> {
   await checkStaleRoadmapItems(env);
   await runSnippetSweep(env);
   await runMissingRoadmapSweep(env);
+  // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
+  // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
+  // turnover is fast enough that daily refresh is the right cadence.
+  // Self-contained: a parser-drift safety check prevents wiping live
+  // schemas if the upstream markup changes.
+  try {
+    const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
+    const r = await refreshHawaiiTheatreEvents(env);
+    console.log(
+      `[cron] htc-events: parsed=${r.parsed} complete=${r.complete} ` +
+      `added=${r.added} removed=${r.removed} unchanged=${r.unchanged}` +
+      (r.error ? ` error=${r.error}` : "")
+    );
+  } catch (e) {
+    console.log(`[cron] htc-events failed: ${e}`);
+  }
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.
   await runSchemaDriftSweep(env);

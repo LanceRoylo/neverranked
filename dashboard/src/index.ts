@@ -872,6 +872,13 @@ export default {
       const r = await recomputeIndustryBenchmarks(env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
+    // Manually trigger the Hawaii Theatre Center upcoming-events
+    // re-scrape without waiting for the daily cron.
+    if (path === "/admin/htc-events-refresh" && method === "GET" && user.role === "admin") {
+      const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
+      const r = await refreshHawaiiTheatreEvents(env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
 
     // Reddit presence (Phase 5)
     if (path === "/reddit" || path === "/reddit/") {
