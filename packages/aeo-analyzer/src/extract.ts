@@ -32,6 +32,17 @@ export function collectSchemaTypes(data: unknown, bucket: string[]): void {
       bucket.push(String(t));
     }
   }
+  // Walk every property to catch nested @type values: AggregateRating
+  // embedded in an Organization, Person inside author, Place inside
+  // location, etc. Without this, schemas authored as nested objects
+  // (the standard pattern) read as missing on scan even when present.
+  // Skip @-prefixed metadata fields -- they have no type to discover.
+  for (const k of Object.keys(obj)) {
+    if (k.startsWith("@")) continue;
+    collectSchemaTypes(obj[k], bucket);
+  }
+  // Keep the explicit @graph walk for clarity; it's redundant given
+  // the loop above but makes the intent obvious.
   const graph = obj["@graph"];
   if (Array.isArray(graph)) {
     for (const item of graph) collectSchemaTypes(item, bucket);
