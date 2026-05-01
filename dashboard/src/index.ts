@@ -135,6 +135,41 @@ export default {
       return handleInstallGuide(installMatch[1], request, env);
     }
 
+    // Public health endpoint for the Hawaii Theatre Event cron.
+    // Read-only counts and timestamps. Used by the scheduled
+    // verifier so it doesn't need an admin session or D1 token.
+    if (path === "/health/htc-events" && method === "GET") {
+      const slug = "hawaii-theatre";
+      const eventRow = await env.DB.prepare(
+        "SELECT COUNT(*) AS n, MAX(approved_at) AS last_refresh_at " +
+        "FROM schema_injections WHERE client_slug = ? AND schema_type = 'Event' AND status = 'approved'"
+      ).bind(slug).first<{ n: number; last_refresh_at: number | null }>();
+      const since = Math.floor(Date.now() / 1000) - 7 * 86400;
+      const alertRow = await env.DB.prepare(
+        "SELECT COUNT(*) AS n FROM admin_alerts WHERE client_slug = ? " +
+        "AND type IN ('htc_events_fetch_failed', 'htc_events_parser_drift') AND created_at > ?"
+      ).bind(slug, since).first<{ n: number }>();
+      const now = Math.floor(Date.now() / 1000);
+      const lastAt = eventRow?.last_refresh_at ?? null;
+      const ageHours = lastAt ? Math.round((now - lastAt) / 3600 * 10) / 10 : null;
+      const body = {
+        client_slug: slug,
+        served_event_count: eventRow?.n ?? 0,
+        last_refresh_at: lastAt,
+        last_refresh_age_hours: ageHours,
+        recent_alerts_7d: alertRow?.n ?? 0,
+        snippet_url: "https://app.neverranked.com/inject/hawaii-theatre.js",
+        source_page: "https://www.hawaiitheatre.com/upcoming-events/",
+        checked_at: now,
+      };
+      return new Response(JSON.stringify(body, null, 2), {
+        headers: {
+          "content-type": "application/json",
+          "cache-control": "public, max-age=60, s-maxage=60",
+        },
+      });
+    }
+
     // Public shared report (no auth)
     const reportMatch = path.match(/^\/report\/([a-f0-9]{32})$/);
     if (reportMatch) {
