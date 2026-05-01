@@ -948,6 +948,8 @@ async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> 
     else if (a.type === "regression" || a.type === "score_change") { icon = "vv"; iconColor = "var(--red)"; }
     else if (a.type === "auto_completed") { icon = "ok"; iconColor = "var(--green)"; }
     else if (a.type === "needs_review") { icon = "??"; iconColor = "var(--yellow)"; }
+    else if (a.type === "deploy") { icon = "[+]"; iconColor = "var(--gold)"; }
+    else if (a.type === "cron_activated") { icon = "==>"; iconColor = "var(--gold)"; }
     events.push({ timestamp: a.created_at, icon, iconColor, title: a.title, detail: a.detail || "", type: "alert" });
   }
 

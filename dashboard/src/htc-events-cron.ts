@@ -248,6 +248,25 @@ export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResul
   }
   await env.DB.batch(stmts);
 
+  // Surface real state changes in the customer-visible activity
+  // feed. Quiet runs (only unchanged) don't write an alert -- no
+  // signal value, just feed noise. createAlertIfFresh dedupes
+  // within 24h so manual triggers don't multi-post.
+  if (result.added > 0 || result.removed > 0) {
+    const parts: string[] = [];
+    if (result.added > 0) parts.push(`${result.added} added`);
+    if (result.removed > 0) parts.push(`${result.removed} removed`);
+    await createAlertIfFresh(env, {
+      clientSlug: CLIENT_SLUG,
+      type: "deploy",
+      title: `Event refresh: ${parts.join(", ")}. ${result.complete} events live.`,
+      detail: result.removed > 0
+        ? "Shows that dropped off /upcoming-events/ (sold out, cancelled, or past) had their schemas removed. New shows on the page got schema deployed."
+        : "New shows added to /upcoming-events/ got Event schema deployed.",
+      windowHours: 1, // tight window so a real same-day change still surfaces
+    });
+  }
+
   console.log(
     `[htc-events] parsed=${result.parsed} complete=${result.complete} ` +
     `added=${result.added} removed=${result.removed} unchanged=${result.unchanged}`
