@@ -134,6 +134,32 @@ const MANIFESTS: Record<string, TypeManifest> = {
       });
     },
   },
+  Event: {
+    // Required reflects schema.org's minimum-viable Event plus what
+    // Google's Event rich result needs at the same time. Without
+    // location an Event is just a date with a name, which AI engines
+    // can't anchor to a venue or local-business entity.
+    required: ["name", "startDate", "location"],
+    recommended: [
+      "image", "description", "endDate", "eventStatus",
+      "eventAttendanceMode", "performer", "organizer", "offers",
+    ],
+    custom: (data, issues) => {
+      // startDate should be ISO 8601. Date-only is fine, datetime
+      // with timezone is better. Non-ISO strings will silently break
+      // calendar rendering in many AI surfaces, so this is a real
+      // quality issue worth a custom-penalty.
+      const sd = data.startDate;
+      if (typeof sd === "string" && !/^\d{4}-\d{2}-\d{2}/.test(sd)) {
+        issues.push(`Event.startDate "${sd}" is not ISO 8601 (YYYY-MM-DD or YYYY-MM-DDTHH:MM:SSZ)`);
+      }
+      // Note on offers: schema.org allows Offer without price, and
+      // many ticketing flows lock pricing behind the URL. We
+      // deliberately do NOT penalize that here -- it's informational
+      // at the AI-engine layer even though Google's rich result
+      // wants both price and priceCurrency.
+    },
+  },
 };
 
 /** Patterns that indicate placeholder / generic content. Any match is
