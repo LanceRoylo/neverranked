@@ -8,7 +8,7 @@
  */
 
 import type { Report } from "./types";
-import { extractMeta } from "./extract";
+import { extractMeta, findInjectSnippetUrls, fetchInjectedSchemas, filterByUrl, injectIntoHtml } from "./extract";
 import { generateRedFlags } from "./flags";
 import { calculateAeoScore, calculateGrade } from "./score";
 import { generateTechnicalSignals, CRITICAL_SCHEMAS } from "./signals";
@@ -51,4 +51,32 @@ export function buildReport(url: string, html: string): Report {
     aeo_score: aeoScore,
     technical_signals: technicalSignals,
   };
+}
+
+/**
+ * Async variant of buildReport that follows NeverRanked inject
+ * snippets, merges the schemas they would inject (filtered by
+ * `pages` match against the scanned URL), and then runs the normal
+ * report pipeline against the augmented HTML.
+ *
+ * This is what the dashboard scanner uses. Sync `buildReport` stays
+ * available for the public schema-scorer at check.neverranked.com,
+ * which doesn't need to follow snippets (the user pastes one URL
+ * at a time and we want pure-HTML scoring there).
+ */
+export async function buildReportFollowingSnippets(
+  url: string,
+  html: string,
+  fetchFn: typeof fetch = fetch,
+): Promise<Report & { injected_schema_count?: number }> {
+  const snippetBases = findInjectSnippetUrls(html);
+  console.log(`[report] ${url}: found ${snippetBases.length} inject snippets: ${JSON.stringify(snippetBases)}`);
+  const allInjected = (await Promise.all(
+    snippetBases.map((b) => fetchInjectedSchemas(b, fetchFn))
+  )).flat();
+  const matched = filterByUrl(allInjected, url);
+  console.log(`[report] ${url}: ${allInjected.length} total injected, ${matched.length} matched this URL`);
+  const augmented = injectIntoHtml(html, matched);
+  const report = buildReport(url, augmented);
+  return { ...report, injected_schema_count: matched.length };
 }

@@ -231,3 +231,104 @@ export function collectPersonNodes(data: unknown, bucket: Record<string, unknown
     if (k in obj) collectPersonNodes(obj[k], bucket);
   }
 }
+
+/**
+ * Detect NeverRanked inject snippet URLs on a page so the scanner
+ * can follow them to discover client-side-injected schemas.
+ *
+ * Why this is needed: our scanner does pure HTTP fetch and never
+ * executes JS. Without this, schemas we deploy via the inject
+ * snippet are invisible to the scanner -- the AEO score, the
+ * auto-roadmap, and the schema-grader all act as if those schemas
+ * weren't there. Following the inject snippet's JSON sibling lets
+ * the scanner see the truth.
+ */
+export interface InjectedSchema {
+  schema_type: string;
+  pages: string | string[];
+  ld: unknown;
+}
+
+const INJECT_SNIPPET_RE = /<script[^>]*\bsrc=["'](https?:\/\/[^"']*\/inject\/[a-z0-9_-]+)\.js["']/gi;
+
+/** Return the set of inject snippet base URLs (without the .js
+ *  suffix) referenced by this HTML. We only follow URLs from our
+ *  own zones -- never recursively fetch arbitrary third-party
+ *  scripts. */
+export function findInjectSnippetUrls(html: string): string[] {
+  const out = new Set<string>();
+  for (const m of html.matchAll(INJECT_SNIPPET_RE)) {
+    const base = m[1];
+    let host: string;
+    try { host = new URL(base + ".js").hostname; } catch { continue; }
+    const trusted = host === "app.neverranked.com"
+      || host.endsWith(".neverranked.com")
+      || host.endsWith(".workers.dev");
+    if (!trusted) continue;
+    out.add(base);
+  }
+  return [...out];
+}
+
+/** Fetch the JSON sibling of an inject snippet and return its
+ *  schemas. Returns [] on any failure -- never throws, since a
+ *  scanner shouldn't fail because the snippet endpoint is briefly
+ *  unreachable. */
+export async function fetchInjectedSchemas(
+  baseUrl: string,
+  fetchFn: typeof fetch,
+): Promise<InjectedSchema[]> {
+  const url = baseUrl + ".json";
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 5000);
+  try {
+    const resp = await fetchFn(url, {
+      signal: controller.signal,
+      headers: { "Accept": "application/json" },
+    });
+    if (!resp.ok) {
+      console.log(`[extract] inject fetch ${url} -> HTTP ${resp.status}`);
+      return [];
+    }
+    const body = await resp.json() as { schemas?: InjectedSchema[] };
+    const schemas = Array.isArray(body.schemas) ? body.schemas : [];
+    console.log(`[extract] inject fetch ${url} -> ${schemas.length} schemas`);
+    return schemas;
+  } catch (e) {
+    console.log(`[extract] inject fetch ${url} failed: ${e}`);
+    return [];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/** Filter a list of injected schemas to those whose `pages` config
+ *  matches the URL being scanned. Mirrors the matcher in the .js
+ *  snippet exactly so the scanner sees what the browser sees. */
+export function filterByUrl(schemas: InjectedSchema[], url: string): InjectedSchema[] {
+  let path: string;
+  try { path = new URL(url).pathname; } catch { return []; }
+  return schemas.filter((s) => {
+    if (s.pages === "*") return true;
+    if (!Array.isArray(s.pages)) return false;
+    return s.pages.some((p) =>
+      p.endsWith("*") ? path.startsWith(p.slice(0, -1)) : path === p
+    );
+  });
+}
+
+/** Append injected JSON-LD blocks to the HTML as inline script
+ *  tags so downstream extraction code (which already handles inline
+ *  JSON-LD) sees them uniformly. Cheap and avoids forking signal
+ *  extraction along an "inline vs injected" axis. */
+export function injectIntoHtml(html: string, schemas: InjectedSchema[]): string {
+  if (schemas.length === 0) return html;
+  const blocks = schemas.map((s) =>
+    `<script type="application/ld+json" data-nr-source="injected">${JSON.stringify(s.ld)}</script>`
+  ).join("\n");
+  // Inject just before </head> if present, otherwise prepend.
+  if (/<\/head>/i.test(html)) {
+    return html.replace(/<\/head>/i, blocks + "\n</head>");
+  }
+  return blocks + "\n" + html;
+}

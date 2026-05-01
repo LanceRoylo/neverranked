@@ -53,7 +53,7 @@ import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks } from "./cron";
 import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
-import { handleInjectScript } from "./routes/inject";
+import { handleInjectScript, handleInjectJson } from "./routes/inject";
 import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
 import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
 import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
@@ -247,6 +247,10 @@ export default {
     const injectMatch = path.match(/^\/inject\/([a-z0-9_-]+)\.js$/);
     if (injectMatch) {
       return handleInjectScript(injectMatch[1], env, request, ctx);
+    }
+    const injectJsonMatch = path.match(/^\/inject\/([a-z0-9_-]+)\.json$/);
+    if (injectJsonMatch) {
+      return handleInjectJson(injectJsonMatch[1], env);
     }
 
     // Admin API: leads JSON for the outreach repo to pull warm-fuel.
@@ -929,6 +933,12 @@ export default {
     // scan. Use this when a client is missing items entirely (Phase
     // exists but no items) -- the reconciler will mark schema items
     // done in the same daily cycle, or via /admin/roadmap-reconcile.
+    // GET-method shortcut for ad-hoc admin scans (the form-POST
+    // version still works). Useful when triggering from other tools.
+    const scanNowMatch = path.match(/^\/admin\/scan-now\/(\d+)$/);
+    if (scanNowMatch && method === "GET" && user.role === "admin") {
+      return handleManualScan(Number(scanNowMatch[1]), user, env);
+    }
     if (path === "/admin/roadmap-regenerate" && method === "GET" && user.role === "admin") {
       const slug = url.searchParams.get("slug");
       if (!slug) return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {

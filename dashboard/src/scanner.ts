@@ -3,7 +3,7 @@
  */
 
 import type { Env, ScanResult, Domain } from "./types";
-import { buildReport } from "../../packages/aeo-analyzer/src";
+import { buildReportFollowingSnippets } from "../../packages/aeo-analyzer/src";
 import type { Report } from "../../packages/aeo-analyzer/src";
 import { autoVerifyRoadmap } from "./auto-roadmap";
 import { ingestAuthoritySignals } from "./authority-signals";
@@ -49,7 +49,7 @@ function loopbackFallbackUrl(originalUrl: string): string | null {
  * when the loopback fallback is in play (fetch workers.dev, report as
  * the public custom domain).
  */
-async function attemptScan(fetchUrl: string, reportUrl: string = fetchUrl): Promise<{ report: Report | null; error: string | null }> {
+async function attemptScan(fetchUrl: string, env: Env, reportUrl: string = fetchUrl): Promise<{ report: Report | null; error: string | null }> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
@@ -67,7 +67,27 @@ async function attemptScan(fetchUrl: string, reportUrl: string = fetchUrl): Prom
       return { report: null, error: `HTTP ${resp.status}` };
     }
     const html = await resp.text();
-    return { report: buildReport(reportUrl, html), error: null };
+    // Custom fetch for snippet-following: when the snippet URL
+    // points at our own inject endpoint (which it always does for
+    // clients we onboarded), bypass HTTP and query D1 directly.
+    // A Worker can't reliably fetch itself over HTTP -- both the
+    // custom domain and workers.dev hit a 522 self-loop. Returning
+    // a synthetic Response with the same JSON shape the public
+    // endpoint serves keeps extract.ts unaware of the optimization.
+    const snippetFetch: typeof fetch = async (input) => {
+      const requestedUrl = typeof input === "string"
+        ? input
+        : (input instanceof URL ? input.toString() : input.url);
+      const m = requestedUrl.match(
+        /^https:\/\/(?:app\.neverranked\.com|[a-z0-9-]+\.workers\.dev)\/inject\/([a-z0-9_-]+)\.json$/
+      );
+      if (!m) return fetch(requestedUrl);
+      const slug = m[1];
+      const { handleInjectJson } = await import("./routes/inject");
+      return handleInjectJson(slug, env);
+    };
+    const report = await buildReportFollowingSnippets(reportUrl, html, snippetFetch);
+    return { report, error: null };
   } catch (err: unknown) {
     if (err instanceof Error && err.name === "AbortError") {
       return { report: null, error: "Timeout (10s)" };
@@ -115,7 +135,7 @@ export async function scanDomain(
   const maxAttempts = 1 + SCAN_RETRY_WAITS_MS.length;
   for (let i = 0; i < maxAttempts; i++) {
     attempts = i + 1;
-    const result = await attemptScan(url);
+    const result = await attemptScan(url, env);
     report = result.report;
     error = result.error;
     if (!error || !isRetryableError(error)) break;
@@ -136,7 +156,7 @@ export async function scanDomain(
       // Fetch via workers.dev but keep canonical URL in the report so
       // signals (canonical tags, base URLs, etc.) reference the public
       // site, not the internal loopback address.
-      const fallback = await attemptScan(fallbackUrl, url);
+      const fallback = await attemptScan(fallbackUrl, env, url);
       if (!fallback.error) {
         report = fallback.report;
         error = null;

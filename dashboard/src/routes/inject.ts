@@ -154,3 +154,61 @@ schemas.forEach(function(s){
     },
   });
 }
+
+/**
+ * JSON sibling for the .js endpoint -- same data, no JS wrapper.
+ *
+ * GET /inject/:client_slug.json
+ * Returns: { client_slug, schemas: [{pages, ld}, ...] }
+ *
+ * Used by our own scanner so it can see schemas we deploy via
+ * injection. Without this, the scanner does pure HTTP fetch and never
+ * executes the .js to discover the JSON-LD blocks. With it, the
+ * scanner gets a clean structured payload with no eval/regex needed.
+ *
+ * pages is either the literal string "*" (every page) or a JSON
+ * array of patterns (each entry exact-match unless ends in "*", in
+ * which case it's a prefix match -- mirrors the .js matcher).
+ */
+export async function handleInjectJson(
+  slug: string,
+  env: Env,
+): Promise<Response> {
+  const config = await env.DB.prepare(
+    "SELECT enabled FROM injection_configs WHERE client_slug = ?"
+  ).bind(slug).first<{ enabled: number }>();
+
+  if (!config || !config.enabled) {
+    return jsonResponse({ client_slug: slug, schemas: [], note: "not configured or disabled" });
+  }
+
+  const injections = (
+    await env.DB.prepare(
+      "SELECT schema_type, json_ld, target_pages FROM schema_injections WHERE client_slug = ? AND status = 'approved' ORDER BY schema_type"
+    ).bind(slug).all<Pick<SchemaInjection, "schema_type" | "json_ld" | "target_pages">>()
+  ).results;
+
+  const schemas = injections.map((inj) => {
+    let pages: string | string[] = "*";
+    if (inj.target_pages !== "*") {
+      try { pages = JSON.parse(inj.target_pages); }
+      catch { pages = "*"; /* malformed -- treat as all-pages so we don't silently drop a schema */ }
+    }
+    let ld: unknown = null;
+    try { ld = JSON.parse(inj.json_ld); }
+    catch { ld = null; }
+    return { schema_type: inj.schema_type, pages, ld };
+  }).filter((s) => s.ld !== null);
+
+  return jsonResponse({ client_slug: slug, schemas });
+}
+
+function jsonResponse(body: unknown): Response {
+  return new Response(JSON.stringify(body), {
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "public, max-age=300, s-maxage=300",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
