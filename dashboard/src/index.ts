@@ -914,6 +914,32 @@ export default {
       const r = await refreshHawaiiTheatreEvents(env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
+    // Manual trigger for the roadmap reconciler. Runs against one
+    // client when ?slug=... is supplied, otherwise across all clients
+    // with approved schema_injections.
+    if (path === "/admin/roadmap-reconcile" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const { reconcileAllRoadmaps, reconcileRoadmapForClient } = await import("./roadmap-reconciler");
+      const r = slug
+        ? { client: slug, marked: await reconcileRoadmapForClient(slug, env) }
+        : await reconcileAllRoadmaps(env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
+    // Force-regenerate the roadmap for a client from their latest
+    // scan. Use this when a client is missing items entirely (Phase
+    // exists but no items) -- the reconciler will mark schema items
+    // done in the same daily cycle, or via /admin/roadmap-reconcile.
+    if (path === "/admin/roadmap-regenerate" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      if (!slug) return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {
+        status: 400, headers: { "content-type": "application/json" }
+      });
+      const { regenerateRoadmap } = await import("./auto-provision");
+      const r = await regenerateRoadmap(slug, env);
+      return new Response(JSON.stringify({ client: slug, ...r }, null, 2), {
+        headers: { "content-type": "application/json" }
+      });
+    }
 
     // Reddit presence (Phase 5)
     if (path === "/reddit" || path === "/reddit/") {

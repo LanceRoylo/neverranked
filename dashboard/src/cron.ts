@@ -254,6 +254,23 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // turnover is fast enough that daily refresh is the right cadence.
   // Self-contained: a parser-drift safety check prevents wiping live
   // schemas if the upstream markup changes.
+  // Roadmap reconciler: mark schema-category roadmap items done
+  // when the corresponding schema_type is in approved
+  // schema_injections. This is the structural fix for the
+  // "we shipped it but the customer roadmap shows 0 progress"
+  // gap -- the scanner can't see client-side-injected schemas, so
+  // the reconciler reads from schema_injections (truth source)
+  // and patches the customer view directly.
+  try {
+    const { reconcileAllRoadmaps } = await import("./roadmap-reconciler");
+    const r = await reconcileAllRoadmaps(env);
+    console.log(
+      `[cron] roadmap-reconciler: scanned=${r.scanned} marked=${r.marked} ` +
+      `byClient=${JSON.stringify(r.byClient)}`
+    );
+  } catch (e) {
+    console.log(`[cron] roadmap-reconciler failed: ${e}`);
+  }
   try {
     const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
     const r = await refreshHawaiiTheatreEvents(env);

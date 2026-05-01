@@ -193,6 +193,21 @@ export async function scanDomain(
         } catch (e) {
           console.log(`Authority-signal ingest failed: ${e}`);
         }
+        // Onboarding gap fix: if this client has no roadmap_items
+        // yet, auto-generate them from this scan. Caught us when
+        // hawaii-theatre had a Phase 1 row but zero items, so the
+        // customer-facing roadmap showed "0 of 0 complete" weeks
+        // after scans had been running. autoGenerateRoadmap is a
+        // no-op when items already exist, so this is safe to call
+        // on every scan.
+        if (domain.client_slug) {
+          try {
+            const { autoGenerateRoadmap } = await import("./auto-provision");
+            await autoGenerateRoadmap(domain.client_slug, scanResult, env);
+          } catch (e) {
+            console.log(`Auto-roadmap generation failed: ${e}`);
+          }
+        }
       }
     } catch (e) {
       console.log(`Auto-roadmap check failed: ${e}`);
