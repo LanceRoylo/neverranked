@@ -55,8 +55,16 @@ done
 
 for d in "${DIRS[@]}"; do
   if [ -d "$ROOT/$d" ]; then
-    rsync -a --delete "$ROOT/$d/" "$DIST/$d/"
-    echo "  dir   $d/"
+    # Exclude internal working folders from public deploy:
+    #  _data        — citation tracking screenshots, raw results JSON
+    #  _engagement* — engagement config (client metadata)
+    #  _meta        — internal notes
+    rsync -a --delete \
+      --exclude='_data' \
+      --exclude='_engagement*' \
+      --exclude='_meta' \
+      "$ROOT/$d/" "$DIST/$d/"
+    echo "  dir   $d/  (internal _data, _engagement, _meta excluded from deploy)"
   else
     echo "  skip  $d/ (not in repo root)"
   fi

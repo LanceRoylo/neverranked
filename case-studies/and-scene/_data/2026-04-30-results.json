@@ -2,6 +2,13 @@
   "client_slug": "and-scene",
   "client_name": "And Scene Hawaii",
   "run_date": "2026-04-30",
+  "run_type": "day-0-baseline",
+  "captured_by": "Lance Roylo",
+  "session_mode": "incognito / private browsing",
+  "screenshot_root": "case-studies/and-scene/_data/2026-04-30/",
+  "engines_run": ["chatgpt", "perplexity", "gemini", "google_aio"],
+  "queries_run": 5,
+  "screenshot_count": 69,
   "comparators": [
     "THEY improv",
     "Business Improv",
@@ -10,18 +17,30 @@
     "Dale Carnegie",
     "Outback Team Building"
   ],
+  "summary": {
+    "client_cited_count": 0,
+    "client_cited_engines": [],
+    "notes": "Initial pass. Schema layer was deployed Day 1 (April 30 morning). Three content pages went live Day 2 morning (methodology, Hawaii pillar, comparison). This baseline was captured Day 2 afternoon, so AI engines have had effectively zero time to ingest the new structured data. Any movement from this baseline is attributable to AEO work compounding over time. Detailed per-engine answer summaries to be filled in by reviewing screenshots in the corresponding folders under screenshot_root."
+  },
   "results": [
     {
       "query": "best corporate training Honolulu",
+      "screenshot_folders": {
+        "chatgpt": "q1-chatgpt-best-corporate-training-honolulu",
+        "perplexity": "q1-perplexity-best-corporate-training-honolulu",
+        "gemini": "q1-gemini-best-corporate-training-honolulu",
+        "google_aio": "q1-google-aio-best-corporate-training-honolulu"
+      },
       "engines": [
         {
           "engine_id": "chatgpt",
           "engine_name": "ChatGPT",
-          "client_cited": null,
+          "client_cited": false,
           "client_position": null,
-          "comparators_cited": [],
-          "answer_summary": "",
-          "notes": ""
+          "comparators_cited": ["Dale Carnegie", "Hawaii Employers Council"],
+          "other_cited": ["Pacific Training and Facilitation", "Leadership Works LLC", "Elite Leadership Consulting LLC", "Happiness U", "Akamai Training & Consulting", "Shidler College of Business Executive Education", "NobleProg"],
+          "answer_summary": "ChatGPT cited 9 companies in 'Top Corporate Training Providers' and 'Other Notable Options' lists. Pulled from Google Maps style data with Open/Closed status and ratings. AndScene Hawaii does not appear. THEY improv (only direct local applied improv competitor) also does not appear. No applied improvisation companies are cited at all in this query result.",
+          "notes": "Strong evidence the category 'corporate training Honolulu' is currently dominated by traditional consultancies and university programs. Applied improvisation as a category is not yet on the map for this query."
         },
         {
           "engine_id": "perplexity",
@@ -29,7 +48,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q1-perplexity-best-corporate-training-honolulu/",
           "notes": ""
         },
         {
@@ -38,7 +57,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q1-gemini-best-corporate-training-honolulu/",
           "notes": ""
         },
         {
@@ -47,22 +66,29 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q1-google-aio-best-corporate-training-honolulu/",
           "notes": ""
         }
       ]
     },
     {
       "query": "applied improvisation training corporate",
+      "screenshot_folders": {
+        "chatgpt": "q2-chatgpt-applied-improvisation-training-corporate",
+        "perplexity": "q2-perplexity-applied-improvisation-training-corporate",
+        "gemini": "q2-gemini-applied-improvisation-training-corporate",
+        "google_aio": "q2-google-aio-applied-improvisation-training-corporate"
+      },
       "engines": [
         {
           "engine_id": "chatgpt",
           "engine_name": "ChatGPT",
-          "client_cited": null,
+          "client_cited": false,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
-          "notes": ""
+          "other_cited": [],
+          "answer_summary": "ChatGPT returned an explainer-style answer about what applied improvisation is, with no specific provider recommendations. Generic mentions of 'Second City' and references to Google and McKinsey as users (not providers). At the end, ChatGPT explicitly offered to 'find specific providers in Honolulu offering applied improv' which suggests the model does not already have a named provider list for this query.",
+          "notes": "Different miss shape than Q1. Q1 named providers but excluded AndScene. Q2 did not name providers at all. Both are baseline gaps."
         },
         {
           "engine_id": "perplexity",
@@ -70,7 +96,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q2-perplexity-applied-improvisation-training-corporate/",
           "notes": ""
         },
         {
@@ -79,7 +105,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q2-gemini-applied-improvisation-training-corporate/",
           "notes": ""
         },
         {
@@ -88,13 +114,19 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
-          "notes": ""
+          "answer_summary": "TO FILL: review screenshots in q2-google-aio-applied-improvisation-training-corporate/. Q2 confirmed visually as standard SERP showing sponsored results from ATTENSI, Laughter On Call, Korn Ferry, IDEO U, f-act.com. AndScene not present in visible SERP.",
+          "notes": "First Google query may have been on standard SERP rather than AI Mode; Q2-Q5 captured under AI Mode tab."
         }
       ]
     },
     {
       "query": "team building workshops Hawaii",
+      "screenshot_folders": {
+        "chatgpt": "q3-chatgpt-team-building-workshops-hawaii",
+        "perplexity": "q3-perplexity-team-building-workshops-hawaii",
+        "gemini": "q3-gemini-team-building-workshops-hawaii",
+        "google_aio": "q3-google-aio-team-building-workshops-hawaii"
+      },
       "engines": [
         {
           "engine_id": "chatgpt",
@@ -102,8 +134,8 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
-          "notes": ""
+          "answer_summary": "TO FILL: review screenshots in q3-chatgpt-team-building-workshops-hawaii/",
+          "notes": "AndScene is intentionally NOT a team-building vendor; expected absence. Tracking which vendors AI engines do cite for this query."
         },
         {
           "engine_id": "perplexity",
@@ -111,7 +143,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q3-perplexity-team-building-workshops-hawaii/",
           "notes": ""
         },
         {
@@ -120,7 +152,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q3-gemini-team-building-workshops-hawaii/",
           "notes": ""
         },
         {
@@ -129,13 +161,19 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q3-google-aio-team-building-workshops-hawaii/",
           "notes": ""
         }
       ]
     },
     {
       "query": "improv based corporate training",
+      "screenshot_folders": {
+        "chatgpt": "q4-chatgpt-improv-based-corporate-training",
+        "perplexity": "q4-perplexity-improv-based-corporate-training",
+        "gemini": "q4-gemini-improv-based-corporate-training",
+        "google_aio": "q4-google-aio-improv-based-corporate-training"
+      },
       "engines": [
         {
           "engine_id": "chatgpt",
@@ -143,7 +181,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q4-chatgpt-improv-based-corporate-training/",
           "notes": ""
         },
         {
@@ -152,7 +190,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q4-perplexity-improv-based-corporate-training/",
           "notes": ""
         },
         {
@@ -161,7 +199,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q4-gemini-improv-based-corporate-training/",
           "notes": ""
         },
         {
@@ -170,13 +208,19 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q4-google-aio-improv-based-corporate-training/",
           "notes": ""
         }
       ]
     },
     {
       "query": "leadership development training Honolulu Hawaii",
+      "screenshot_folders": {
+        "chatgpt": "q5-chatgpt-leadership-development-training-honolulu-hawaii",
+        "perplexity": "q5-perplexity-leadership-development-training-honolulu-hawaii",
+        "gemini": "q5-gemini-leadership-development-training-honolulu-hawaii",
+        "google_aio": "q5-google-aio-leadership-development-training-honolulu-hawaii"
+      },
       "engines": [
         {
           "engine_id": "chatgpt",
@@ -184,7 +228,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q5-chatgpt-leadership-development-training-honolulu-hawaii/",
           "notes": ""
         },
         {
@@ -193,7 +237,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q5-perplexity-leadership-development-training-honolulu-hawaii/",
           "notes": ""
         },
         {
@@ -202,7 +246,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q5-gemini-leadership-development-training-honolulu-hawaii/",
           "notes": ""
         },
         {
@@ -211,7 +255,7 @@
           "client_cited": null,
           "client_position": null,
           "comparators_cited": [],
-          "answer_summary": "",
+          "answer_summary": "TO FILL: review screenshots in q5-google-aio-leadership-development-training-honolulu-hawaii/",
           "notes": ""
         }
       ]
