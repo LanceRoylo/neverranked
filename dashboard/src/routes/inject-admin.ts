@@ -251,10 +251,15 @@ export async function handleInjectAdmin(
   const statusBadge = (status: string) => {
     const colors: Record<string, string> = {
       draft: "#888",
+      pending: "#facc15",
       approved: "#4ade80",
       paused: "#f59e0b",
     };
-    return `<span style="display:inline-block;padding:2px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:${colors[status] || "#888"};background:rgba(${status === "approved" ? "74,222,128" : status === "paused" ? "245,158,11" : "136,136,136"},.12);border-radius:2px">${esc(status)}</span>`;
+    const bgRgb = status === "approved" ? "74,222,128"
+      : status === "paused" ? "245,158,11"
+      : status === "pending" ? "250,204,21"
+      : "136,136,136";
+    return `<span style="display:inline-block;padding:2px 8px;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:${colors[status] || "#888"};background:rgba(${bgRgb},.12);border-radius:2px">${esc(status)}</span>`;
   };
 
   // Snippet URL
@@ -360,7 +365,7 @@ export async function handleInjectAdmin(
                   <span style="font-size:10px;color:var(--text-faint)">${inj.target_pages === "*" ? "All pages" : esc(inj.target_pages)}</span>
                 </div>
                 <div style="display:flex;gap:6px;align-items:center">
-                  ${inj.status === "draft"
+                  ${inj.status === "draft" || inj.status === "pending"
                     ? `<form method="POST" action="/admin/inject/${esc(slug)}/approve/${inj.id}" style="display:inline"><button type="submit" class="btn" style="padding:4px 10px;font-size:9px">Approve</button></form>`
                     : ""
                   }
