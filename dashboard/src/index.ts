@@ -1102,6 +1102,21 @@ export default {
       }
     }
 
+    // Admin: manually backfill sentiment scoring for one client. Daily
+    // cron handles 100 unscored runs per pass automatically -- this is
+    // for forcing a complete catch-up on demand. ?days=N controls window
+    // (default 90).
+    const sentimentBackfillMatch = path.match(/^\/admin\/sentiment-backfill\/([^/]+)$/);
+    if (sentimentBackfillMatch && method === "GET" && user.role === "admin") {
+      const slug = decodeURIComponent(sentimentBackfillMatch[1]);
+      const days = parseInt(url.searchParams.get("days") || "90", 10);
+      const { backfillSentimentForClient } = await import("./sentiment-scorer");
+      const result = await backfillSentimentForClient(env, slug, days);
+      return new Response(JSON.stringify({ slug, days, ...result }, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     // Dry-run: returns what the Gemini coverage report email WOULD say
     // right now. Doesn't send, doesn't mark the flag. Safe to hit any
     // time -- both before May 12 (preview the format) and after (re-run

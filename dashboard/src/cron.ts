@@ -274,6 +274,18 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] gemini-historical-backfill failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Sentiment scoring: process oldest 100 unscored client_cited=1 runs
+  // per cron pass. Catches new ingest within ~24h, also drains historical
+  // backlog. Negative mentions write admin_inbox rows visible in cockpit
+  // + 7am email. Cost capped by batchSize at ~$0.10/day max per client.
+  try {
+    const { backfillUnscoredSentiment } = await import("./sentiment-scorer");
+    const scored = await backfillUnscoredSentiment(env, 100);
+    if (scored > 0) console.log(`[cron] sentiment: scored ${scored} runs`);
+  } catch (e) {
+    console.log(`[cron] sentiment backfill failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
   // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
   // turnover is fast enough that daily refresh is the right cadence.

@@ -548,6 +548,43 @@ export async function handleCitations(
   const lift = await computeCitationLift(slug, env);
   const liftHtml = renderCitationLiftBlock(lift);
 
+  // Sentiment rollup -- how AI engines describe the client across 90d
+  // of citation_runs. Daily cron scores up to 100 unscored runs/day so
+  // recent data flows in within ~24h of ingest.
+  const { getSentimentRollup } = await import("../sentiment-scorer");
+  const sentiment = await getSentimentRollup(env, slug, 90);
+  const sentimentScored = sentiment.positive + sentiment.neutral + sentiment.negative;
+  const sentimentHtml = sentimentScored === 0 ? "" : (() => {
+    const pos = sentiment.positive, neu = sentiment.neutral, neg = sentiment.negative;
+    const posPct = Math.round((pos / sentimentScored) * 100);
+    const neuPct = Math.round((neu / sentimentScored) * 100);
+    const negPct = Math.max(0, 100 - posPct - neuPct);
+    const verdict = negPct >= 15
+      ? `<strong style="color:var(--red)">${negPct}% of mentions read negative.</strong> Review the negative items in <a href="/admin/inbox" style="color:var(--text);text-decoration:underline">your inbox</a> for fixable issues.`
+      : posPct >= 60
+      ? `<strong style="color:var(--green)">Strong positive signal.</strong> ${posPct}% of mentions read favorably.`
+      : `Mostly neutral mentions (${neuPct}%). Most listings are bare facts -- adding distinctive context to your site could shift positioning toward positive framing.`;
+    return `
+      <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="label" style="color:var(--gold)">§ Sentiment (90 days)</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${sentimentScored} mentions scored${sentiment.unscored > 0 ? ` &middot; ${sentiment.unscored} pending` : ""}</div>
+        </div>
+        <div style="display:flex;height:8px;border-radius:2px;overflow:hidden;margin-bottom:12px">
+          <div style="width:${posPct}%;background:var(--green)" title="Positive ${pos} (${posPct}%)"></div>
+          <div style="width:${neuPct}%;background:var(--text-faint);opacity:0.5" title="Neutral ${neu} (${neuPct}%)"></div>
+          <div style="width:${negPct}%;background:var(--red)" title="Negative ${neg} (${negPct}%)"></div>
+        </div>
+        <div style="display:flex;gap:24px;font-size:12px;color:var(--text-mute);margin-bottom:10px">
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Positive ${posPct}% (${pos})</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--text-faint);opacity:0.5;border-radius:50%;margin-right:6px;vertical-align:middle"></span>Neutral ${neuPct}% (${neu})</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Negative ${negPct}% (${neg})</span>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-soft);line-height:1.6">${verdict}</div>
+      </div>
+    `;
+  })();
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
@@ -555,6 +592,8 @@ export async function handleCitations(
     </div>
 
     ${liftHtml ? `<div style="margin-bottom:28px">${liftHtml}</div>` : ""}
+
+    ${sentimentHtml}
 
     <!-- How the page works. Answers "what is citation share and what do
          these numbers mean" once, at the top, so every reader has a frame

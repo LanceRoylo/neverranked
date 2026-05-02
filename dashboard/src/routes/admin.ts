@@ -372,9 +372,13 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
           <span style="color:var(--text)">/admin/reddit-backfill/&lt;slug&gt;</span>
           <span style="color:var(--text-mute);margin-left:8px">One-shot: extracts reddit URLs from last 90d of citation_runs into reddit_citations + roadmap.</span>
         </li>
-        <li style="padding:6px 0">
+        <li style="padding:6px 0;border-bottom:1px dotted var(--line)">
           <span style="color:var(--text)">/admin/gemini-resolve/&lt;slug&gt;?days=90</span>
           <span style="color:var(--text-mute);margin-left:8px">Resolves historical Gemini grounding-redirect URLs in cited_urls, then re-runs reddit extraction.</span>
+        </li>
+        <li style="padding:6px 0">
+          <span style="color:var(--text)">/admin/sentiment-backfill/&lt;slug&gt;?days=90</span>
+          <span style="color:var(--text-mute);margin-left:8px">Manually scores sentiment on all unscored client_cited=1 runs in the window. Daily cron does 100/day automatically.</span>
         </li>
       </ul>
     </div>
