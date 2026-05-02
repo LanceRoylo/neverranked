@@ -719,6 +719,41 @@ export default {
         return new Response(JSON.stringify({ error: "verify failed", detail: msg }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
       }
     }
+    // AI referrer tracking ingest. Public endpoint hit by the inject
+    // snippet from the customer's site when document.referrer is an AI
+    // engine. Authenticated by snippet_token (looked up to slug). No CORS
+    // restriction -- snippet fires from arbitrary customer origins.
+    const refTrackMatch = path.match(/^\/track\/referral\/([a-f0-9]{16,32})$/);
+    if (refTrackMatch && method === "POST") {
+      const token = refTrackMatch[1];
+      const lookup = await env.DB.prepare(
+        "SELECT client_slug FROM injection_configs WHERE snippet_token = ? LIMIT 1",
+      ).bind(token).first<{ client_slug: string }>();
+      if (!lookup) {
+        return new Response("", { status: 204, headers: { "access-control-allow-origin": "*" } });
+      }
+      let body: { h?: string; p?: string };
+      try {
+        body = await request.json() as { h?: string; p?: string };
+      } catch {
+        return new Response("", { status: 204, headers: { "access-control-allow-origin": "*" } });
+      }
+      const { classifyAiReferrer, logReferrerHit } = await import("./referrer-tracking");
+      const engine = classifyAiReferrer(body.h ?? null);
+      if (engine && body.h) {
+        const ip = request.headers.get("cf-connecting-ip") || request.headers.get("x-forwarded-for");
+        ctx.waitUntil(logReferrerHit(env, {
+          clientSlug: lookup.client_slug,
+          engine,
+          referrerHost: body.h.toLowerCase().slice(0, 120),
+          landingPath: body.p ?? null,
+          ip,
+        }));
+      }
+      // Always 204 so the beacon/sendBeacon caller doesn't surface errors.
+      return new Response("", { status: 204, headers: { "access-control-allow-origin": "*" } });
+    }
+
     // Bot analytics: /bots/:slug -- shows AI + search bot fetches
     // of the schema injection script for this client. Available to
     // anyone with canAccessClient on the slug (admin, agency, the

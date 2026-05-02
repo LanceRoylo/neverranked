@@ -13,6 +13,7 @@
 
 import type { Env, SchemaInjection, InjectionConfig } from "../types";
 import { logBotHit, refererPath } from "../bot-analytics";
+import { referrerTrackingSnippet } from "../referrer-tracking";
 
 export async function handleInjectScript(
   slug: string,
@@ -123,6 +124,14 @@ export async function handleInjectScript(
     return `{pages:${pages},ld:${inj.json_ld}}`;
   });
 
+  // Append the AI referrer tracking snippet only when we have a token
+  // (every config has one; the check is defensive). Same domain as the
+  // schema fetch so no CSP/CORS surprises.
+  const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+  const referrerTracker = config.snippet_token
+    ? referrerTrackingSnippet(config.snippet_token, dashboardOrigin)
+    : "";
+
   const js = `(function(){
 var schemas=[${schemas.join(",")}];
 var path=location.pathname;
@@ -141,7 +150,7 @@ schemas.forEach(function(s){
     document.head.appendChild(el);
   }
 });
-})();`;
+})();${referrerTracker}`;
 
   const ttl = config.cache_ttl || 3600;
 

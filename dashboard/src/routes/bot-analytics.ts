@@ -163,6 +163,9 @@ export async function handleBotAnalytics(
       </table>
     </div>
 
+    <!-- AI referrer traffic (humans who arrived from AI engines) -->
+    ${await renderReferrerSection(slug, env)}
+
     <!-- Coverage caveat -->
     <div class="coverage-note">
       <strong style="color:var(--text)">Coverage note:</strong> we count bots that fetch your schema injection script. AI training crawlers that scrape raw HTML without executing JS may not appear here. The most accurate signal is for citation-time crawlers (ChatGPT-User, Perplexity, Claude-Web) that fetch external resources during live answers. Coverage improves as your snippet ships across more pages on your site.
@@ -218,6 +221,71 @@ function renderTrendChart(daily: DayBucket[], rangeStart: number, daySec: number
       ${bars}
       ${labels}
     </svg>
+  `;
+}
+
+async function renderReferrerSection(slug: string, env: Env): Promise<string> {
+  const { getReferrerStats, engineLabel } = await import("../referrer-tracking");
+  const stats = await getReferrerStats(env, slug);
+
+  const empty = stats.totals.hits_30d === 0;
+  const perEngineRows = stats.perEngine.length === 0
+    ? `<tr><td colspan="3" class="empty-row">No human visits from AI engines logged yet. The first hit usually shows within a week of the snippet shipping, once your site is cited in a live answer and someone clicks through.</td></tr>`
+    : stats.perEngine.map(e => `
+        <tr>
+          <td><span class="bot-dot ai"></span><strong>${esc(engineLabel(e.engine))}</strong></td>
+          <td class="num">${e.hits_7d.toLocaleString()}</td>
+          <td class="num">${e.hits_30d.toLocaleString()}</td>
+        </tr>`).join("");
+
+  const topPagesHtml = stats.topLandingPages.length === 0
+    ? ""
+    : `
+      <div style="margin-top:24px">
+        <div class="label" style="margin-bottom:10px">Top landing pages from AI</div>
+        <table class="bot-table">
+          <thead><tr><th>Page</th><th style="text-align:right">30-day hits</th></tr></thead>
+          <tbody>
+            ${stats.topLandingPages.map(p => `
+              <tr>
+                <td style="font-family:var(--mono);font-size:12px">${esc(p.path)}</td>
+                <td class="num">${p.hits_30d.toLocaleString()}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>`;
+
+  return `
+    <div style="margin-top:48px;border-top:1px solid var(--line);padding-top:32px">
+      <h2 style="margin:0 0 8px;font-family:var(--serif);font-size:24px;font-style:italic">Real visits from AI engines</h2>
+      <p style="color:var(--text-mute);font-size:13px;margin:0 0 20px;max-width:680px">
+        Humans who clicked through from an AI answer. Captured by the inject snippet reading <code style="background:var(--bg-edge);padding:1px 5px;border-radius:2px;font-size:12px">document.referrer</code> on every page load. Closes the loop: bots crawl &rarr; model cites &rarr; <strong style="color:var(--text)">visitor lands</strong>.
+      </p>
+
+      <div class="bot-stats" style="margin-bottom:24px">
+        <div class="bot-stat">
+          <div class="bot-stat-num ai">${stats.totals.hits_7d.toLocaleString()}</div>
+          <div class="bot-stat-label">AI visits, 7d</div>
+        </div>
+        <div class="bot-stat">
+          <div class="bot-stat-num ai">${stats.totals.hits_30d.toLocaleString()}</div>
+          <div class="bot-stat-label">AI visits, 30d</div>
+        </div>
+        <div class="bot-stat">
+          <div class="bot-stat-num">${stats.totals.distinctEngines}</div>
+          <div class="bot-stat-label">Distinct engines, 30d</div>
+        </div>
+      </div>
+
+      <table class="bot-table">
+        <thead><tr><th>Engine</th><th style="text-align:right">7d</th><th style="text-align:right">30d</th></tr></thead>
+        <tbody>${perEngineRows}</tbody>
+      </table>
+
+      ${topPagesHtml}
+
+      ${empty ? "" : `<p style="color:var(--text-faint);font-size:11.5px;margin-top:14px;line-height:1.6">Captured client-side via the snippet. Visitors with privacy tools that strip the Referer header won't appear; counts are conservative.</p>`}
+    </div>
   `;
 }
 
