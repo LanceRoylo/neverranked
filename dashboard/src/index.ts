@@ -512,6 +512,26 @@ export default {
     if (path === "/admin" && method === "GET" && user.role === "admin") {
       return handleCockpit(user, env);
     }
+
+    // Admin inbox -- the founder's "what needs my attention" surface
+    if (path === "/admin/inbox" && method === "GET" && user.role === "admin") {
+      const { handleInboxList } = await import("./routes/admin-inbox");
+      return handleInboxList(user, env, url);
+    }
+    const inboxDetailMatch = path.match(/^\/admin\/inbox\/(\d+)$/);
+    if (inboxDetailMatch && method === "GET" && user.role === "admin") {
+      const { handleInboxDetail } = await import("./routes/admin-inbox");
+      return handleInboxDetail(parseInt(inboxDetailMatch[1], 10), user, env);
+    }
+    const inboxActionMatch = path.match(/^\/admin\/inbox\/(\d+)\/(approve|reject|resolve|snooze)$/);
+    if (inboxActionMatch && method === "POST" && user.role === "admin") {
+      const { handleInboxAction } = await import("./routes/admin-inbox");
+      return handleInboxAction(
+        parseInt(inboxActionMatch[1], 10),
+        inboxActionMatch[2] as "approve" | "reject" | "resolve" | "snooze",
+        user, env, request,
+      );
+    }
     if (path === "/admin/manage" && method === "GET" && user.role === "admin") {
       return handleAdminHome(user, env, url);
     }
@@ -1521,7 +1541,27 @@ export default {
     return decorated;
   },
 
-  async scheduled(_event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+  async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
+    // Two cron triggers in wrangler.jsonc -- route by hour:
+    //   06:00 UTC = daily tasks (drips, sweeps, backfills, weekly scans on Mon)
+    //   17:00 UTC = 7am Pacific/Honolulu = founder inbox morning summary
+    const hour = new Date(event.scheduledTime ?? Date.now()).getUTCHours();
+
+    if (hour === 17) {
+      ctx.waitUntil((async () => {
+        try {
+          const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
+          // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
+          // Once existing in_review drafts are surfaced, this is a no-op.
+          await backfillContentDraftsToInbox(env);
+          await sendInboxMorningSummary(env);
+        } catch (e) {
+          console.log(`[cron 17:00] inbox morning summary failed: ${e instanceof Error ? e.message : e}`);
+        }
+      })());
+      return;
+    }
+
     // Daily tasks: auth cleanup, onboarding drip emails
     ctx.waitUntil(cleanupAuth(env));
     ctx.waitUntil(runDailyTasks(env));

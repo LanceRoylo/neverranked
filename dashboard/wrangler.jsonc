@@ -32,7 +32,9 @@
     { "pattern": "app.neverranked.com", "custom_domain": true }
   ],
   "triggers": {
-    "crons": ["0 6 * * *"]
+    // 06:00 UTC = daily tasks (drips, sweeps, backfills, etc.)
+    // 17:00 UTC = 7am Pacific/Honolulu (no DST) = founder inbox morning summary
+    "crons": ["0 6 * * *", "0 17 * * *"]
   },
   "workflows": [
     {

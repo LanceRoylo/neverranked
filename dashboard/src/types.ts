@@ -453,6 +453,29 @@ export interface CitationSnapshot {
   created_at: number;
 }
 
+// ---------- Admin inbox ----------
+
+export type InboxUrgency = "low" | "normal" | "high";
+export type InboxStatus = "pending" | "approved" | "rejected" | "snoozed" | "resolved";
+
+export interface AdminInboxItem {
+  id: number;
+  kind: string;
+  title: string;
+  body: string | null;
+  action_url: string | null;
+  target_type: string | null;
+  target_id: number | null;
+  target_slug: string | null;
+  urgency: InboxUrgency;
+  status: InboxStatus;
+  resolution_note: string | null;
+  resolved_by: number | null;
+  created_at: number;
+  resolved_at: number | null;
+  snoozed_until: number | null;
+}
+
 // ---------- Phase 5B: Reddit reply briefs ----------
 
 export interface RedditBriefData {

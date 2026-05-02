@@ -355,6 +355,54 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
   const stuckItems = await detectStuckItems(env);
   const stuckItemsWidget = renderStuckItemsWidget(stuckItems);
 
+  // Founder inbox: pending items needing approve/reject decisions.
+  // Producers (content drafts, tone-guard failures, voice failures, etc.)
+  // write rows; this surfaces them at the top of the cockpit.
+  const { getPendingInbox: _getPendingInbox, getInboxStats: _getInboxStats } = await import("../admin-inbox");
+  const inboxItems = await _getPendingInbox(env, 5);
+  const inboxStats = await _getInboxStats(env);
+  const inboxNow = Math.floor(Date.now() / 1000);
+  const fmtAge = (s: number) => s < 3600 ? `${Math.floor(s/60)}m` : s < 86400 ? `${Math.floor(s/3600)}h` : `${Math.floor(s/86400)}d`;
+  const inboxBorder = inboxStats.pending_high > 0 ? "var(--red)" : "var(--line)";
+  const inboxCard = inboxStats.pending_total === 0 ? `
+    <div class="card" style="margin-bottom:32px;border:1px solid var(--line);background:rgba(94,199,106,0.04)">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="label" style="margin-bottom:4px;color:var(--green)">Needs your attention</div>
+          <h3 style="margin:0">Inbox zero. Nothing pending.</h3>
+        </div>
+        <a href="/admin/inbox" class="btn btn-ghost" style="padding:6px 12px;font-size:11px">View inbox</a>
+      </div>
+    </div>
+  ` : `
+    <div class="card" style="margin-bottom:32px;border:2px solid ${inboxBorder}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div>
+          <div class="label" style="margin-bottom:4px">Needs your attention</div>
+          <h3 style="margin:0">${inboxStats.pending_total} pending${inboxStats.pending_high > 0 ? ` &middot; <span style="color:var(--red)">${inboxStats.pending_high} HIGH</span>` : ""}</h3>
+        </div>
+        <a href="/admin/inbox" class="btn" style="padding:6px 12px;font-size:11px">Open inbox &rarr;</a>
+      </div>
+      <div>
+        ${inboxItems.map(it => {
+          const age = fmtAge(inboxNow - it.created_at);
+          const tag = it.urgency === "high"
+            ? `<span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:1px 5px;border-radius:2px;margin-right:8px">HIGH</span>`
+            : "";
+          const slug = it.target_slug ? `<span style="color:var(--text-mute);margin-left:8px;font-size:11px">${esc(it.target_slug)}</span>` : "";
+          return `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px dotted var(--line)">
+              <div style="flex:1;min-width:0">
+                ${tag}<a href="/admin/inbox/${it.id}" style="color:var(--text);text-decoration:none;font-size:13px">${esc(it.title)}</a>${slug}
+              </div>
+              <span style="color:var(--text-faint);font-size:11px;margin-left:12px">${age}</span>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+
   const body = `
     <div style="margin-bottom:40px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
       <div>
@@ -371,6 +419,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         ${automationToggleForm}
       </div>
     </div>
+
+    ${inboxCard}
 
     ${stuckItemsWidget}
 
