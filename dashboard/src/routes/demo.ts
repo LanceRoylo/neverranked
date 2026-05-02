@@ -15,6 +15,7 @@ import {
   CITATION_KEYWORDS, CITATION_COMPETITORS, CITATION_MATRIX,
   CONTENT_GAPS, ROADMAP_PHASES, ROADMAP_ITEMS,
   GSC_DATA, PAGE_SCANS,
+  SHARE_OF_VOICE, SHARE_OF_VOICE_TREND_PCT, SENTIMENT,
 } from "../demo-fixtures";
 
 // ---------------------------------------------------------------------------
@@ -493,6 +494,102 @@ function renderDomainPage(): string {
 // Citations page
 // ---------------------------------------------------------------------------
 
+function renderShareOfVoiceSection(): string {
+  const top = SHARE_OF_VOICE.entries.slice(0, 8);
+  const maxShare = top[0]?.share ?? 1;
+  const bars = top.map(e => {
+    const widthPct = (e.share / maxShare) * 100;
+    const labelPct = (e.share * 100).toFixed(1);
+    const color = e.isClient ? "var(--gold)" : e.isCompetitor ? "var(--text-mute)" : "var(--text-faint)";
+    const labelColor = e.isClient ? "var(--gold)" : "var(--text-soft)";
+    const tag = e.isClient
+      ? `<span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-left:8px">You</span>`
+      : e.isCompetitor
+      ? `<span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-left:8px">Competitor</span>`
+      : "";
+    return `
+      <div style="margin-bottom:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px">
+          <span style="color:${labelColor}">${esc(e.name)}${tag}</span>
+          <span style="font-family:var(--mono);font-size:11px;color:var(--text-mute)">${labelPct}% &middot; ${e.mentions}</span>
+        </div>
+        <div style="height:6px;background:var(--bg-edge);border-radius:2px;overflow:hidden">
+          <div style="width:${widthPct.toFixed(1)}%;height:100%;background:${color}"></div>
+        </div>
+      </div>`;
+  }).join("");
+
+  // Trend chart -- simple SVG line chart, oldest -> newest left to right.
+  const points = SHARE_OF_VOICE_TREND_PCT.slice().reverse();
+  const w = 520, h = 110, padX = 10, padY = 12;
+  const innerW = w - padX * 2, innerH = h - padY * 2;
+  const stepX = innerW / (points.length - 1);
+  const maxPct = 35; // cap so client at 17% has room above to grow visually
+  const path = (key: keyof typeof points[0]) => {
+    return points.map((p, i) => {
+      const x = padX + i * stepX;
+      const y = padY + (1 - (p[key] as number) / maxPct) * innerH;
+      return `${i === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    }).join(" ");
+  };
+
+  return `
+    <div style="margin-bottom:36px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="label" style="color:var(--gold)">§ Share of voice (90 days)</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${SHARE_OF_VOICE.totalMentions} mentions across ${SHARE_OF_VOICE.totalRuns} AI responses</div>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-soft);line-height:1.6;margin-bottom:18px">
+        Ranked <strong style="color:var(--text)">#${SHARE_OF_VOICE.clientRank}</strong> across ${SHARE_OF_VOICE.totalMentions} business mentions in your category. Competitive with the leaders.
+      </div>
+      <div>${bars}</div>
+      <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+        <div class="label" style="margin-bottom:10px;color:var(--text-faint)">12-week trend &middot; share of all mentions</div>
+        <svg viewBox="0 0 ${w} ${h + 18}" preserveAspectRatio="none" style="width:100%;height:auto;display:block">
+          <path d="${path("aspen")}"    stroke="rgba(251,248,239,.45)" stroke-width="1.25" fill="none" stroke-linejoin="round"/>
+          <path d="${path("bright")}"   stroke="rgba(251,248,239,.6)"  stroke-width="1.25" fill="none" stroke-linejoin="round"/>
+          <path d="${path("yelp")}"     stroke="rgba(251,248,239,.35)" stroke-width="1.25" fill="none" stroke-linejoin="round"/>
+          <path d="${path("meridian")}" stroke="var(--gold)"           stroke-width="2"    fill="none" stroke-linejoin="round"/>
+        </svg>
+        <div style="margin-top:10px;line-height:1.8">
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px"><span style="display:inline-block;width:10px;height:2px;background:var(--gold)"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-mute)">meridiandental.com</span></span>
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px"><span style="display:inline-block;width:10px;height:2px;background:rgba(251,248,239,.6)"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-mute)">brightsmilesfamily.com</span></span>
+          <span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px"><span style="display:inline-block;width:10px;height:2px;background:rgba(251,248,239,.45)"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-mute)">aspendental.com</span></span>
+          <span style="display:inline-flex;align-items:center;gap:4px"><span style="display:inline-block;width:10px;height:2px;background:rgba(251,248,239,.35)"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-mute)">yelp.com</span></span>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-faint);margin-top:14px;line-height:1.6">Different from citation share. Citation share is "% of YOUR queries where YOU were cited." Share of voice is "% of ALL business mentions across your queries that went to YOU vs everyone else AI keeps naming."</div>
+    </div>
+  `;
+}
+
+function renderSentimentSection(): string {
+  const scored = SENTIMENT.positive + SENTIMENT.neutral + SENTIMENT.negative;
+  if (scored === 0) return "";
+  const posPct = Math.round((SENTIMENT.positive / scored) * 100);
+  const neuPct = Math.round((SENTIMENT.neutral / scored) * 100);
+  const negPct = Math.max(0, 100 - posPct - neuPct);
+  return `
+    <div style="margin-bottom:36px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="label" style="color:var(--gold)">§ Sentiment (90 days)</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${scored} mentions scored</div>
+      </div>
+      <div style="display:flex;height:8px;border-radius:2px;overflow:hidden;margin-bottom:12px">
+        <div style="width:${posPct}%;background:var(--green)"></div>
+        <div style="width:${neuPct}%;background:var(--text-faint);opacity:0.5"></div>
+        <div style="width:${negPct}%;background:var(--red)"></div>
+      </div>
+      <div style="display:flex;gap:24px;font-size:12px;color:var(--text-mute);margin-bottom:10px">
+        <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Positive ${posPct}% (${SENTIMENT.positive})</span>
+        <span><span style="display:inline-block;width:8px;height:8px;background:var(--text-faint);opacity:0.5;border-radius:50%;margin-right:6px;vertical-align:middle"></span>Neutral ${neuPct}% (${SENTIMENT.neutral})</span>
+        <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Negative ${negPct}% (${SENTIMENT.negative})</span>
+      </div>
+      <div style="font-size:12.5px;color:var(--text-soft);line-height:1.6"><strong style="color:var(--green)">Strong positive signal.</strong> ${posPct}% of mentions read favorably. The two negative items relate to outdated office hours -- worth fixing on the contact page so AI re-indexes the correct info.</div>
+    </div>
+  `;
+}
+
 function renderCitationsPage(): string {
   // Share trend (reuse citation snapshot data)
   const latestCit = CITATION_SNAPSHOTS[CITATION_SNAPSHOTS.length - 1];
@@ -530,6 +627,10 @@ function renderCitationsPage(): string {
       <h2 style="font-family:var(--serif);font-size:clamp(20px,3vw,28px);font-weight:400;margin:0">Citation Tracking</h2>
       <div style="font-size:12px;color:var(--text-faint);margin-top:4px">Meridian Dental -- ${CITATION_KEYWORDS.length} tracked keywords</div>
     </div>
+
+    ${renderShareOfVoiceSection()}
+
+    ${renderSentimentSection()}
 
     <!-- Summary -->
     <div class="demo-three-col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px">

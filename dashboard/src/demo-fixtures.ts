@@ -182,6 +182,55 @@ export const ROADMAP_ITEMS = [
   { id: 18, phase_id: 3, title: "Establish backlinks from dental associations", category: "authority", status: "pending", completed_at: null },
 ];
 
+// --- Share of voice (PR 12) ---
+// Distribution of all business mentions in tracked queries. Meridian
+// holds #3 -- realistic mid-market dental practice in a competitive
+// urban market. Trending up over 12 weeks (gaining share).
+export const SHARE_OF_VOICE = {
+  totalMentions: 142,
+  totalRuns: 73,
+  clientRank: 3,
+  entries: [
+    { name: "aspendental.com",        mentions: 38, share: 0.268, isClient: false, isCompetitor: true  },
+    { name: "brightsmilesfamily.com", mentions: 31, share: 0.218, isClient: false, isCompetitor: true  },
+    { name: "meridiandental.com",     mentions: 24, share: 0.169, isClient: true,  isCompetitor: false },
+    { name: "yelp.com",               mentions: 18, share: 0.127, isClient: false, isCompetitor: false },
+    { name: "healthgrades.com",       mentions: 12, share: 0.085, isClient: false, isCompetitor: false },
+    { name: "downtowndentalgroup.com", mentions:  8, share: 0.056, isClient: false, isCompetitor: false },
+    { name: "smiledirectclub.com",    mentions:  6, share: 0.042, isClient: false, isCompetitor: false },
+    { name: "ada.org",                mentions:  5, share: 0.035, isClient: false, isCompetitor: false },
+  ],
+};
+
+// 12-week trend showing client (gold) gaining ground from 6% to 17%
+// while top competitors plateau or slip slightly.
+export const SHARE_OF_VOICE_TREND_PCT: { week: number; meridian: number; aspen: number; bright: number; yelp: number }[] = [
+  { week: 11, meridian:  6, aspen: 32, bright: 24, yelp: 13 },
+  { week: 10, meridian:  7, aspen: 31, bright: 25, yelp: 12 },
+  { week:  9, meridian:  8, aspen: 30, bright: 23, yelp: 13 },
+  { week:  8, meridian: 10, aspen: 31, bright: 22, yelp: 14 },
+  { week:  7, meridian: 11, aspen: 29, bright: 23, yelp: 12 },
+  { week:  6, meridian: 12, aspen: 28, bright: 22, yelp: 13 },
+  { week:  5, meridian: 13, aspen: 28, bright: 22, yelp: 13 },
+  { week:  4, meridian: 14, aspen: 27, bright: 21, yelp: 12 },
+  { week:  3, meridian: 15, aspen: 27, bright: 22, yelp: 13 },
+  { week:  2, meridian: 16, aspen: 26, bright: 22, yelp: 13 },
+  { week:  1, meridian: 16, aspen: 27, bright: 21, yelp: 13 },
+  { week:  0, meridian: 17, aspen: 27, bright: 22, yelp: 13 },
+];
+
+// --- Sentiment rollup (PR 10) ---
+// Mixed positive-leaning distribution typical of an established local
+// practice with mostly factual mentions and a couple of stale-info
+// negatives we'd flag for review.
+export const SENTIMENT = {
+  total: 24,
+  positive: 16,
+  neutral: 6,
+  negative: 2,
+  unscored: 0,
+};
+
 // --- GSC data ---
 export const GSC_DATA = {
   clicks: 1240,
