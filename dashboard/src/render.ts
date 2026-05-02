@@ -64,6 +64,7 @@ export function layout(
         <a href="${slugify('/search')}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
         <a href="${slugify('/competitors')}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="${slugify('/citations')}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+        <a href="${slugify('/discover')}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track, generated from your business context">Discover</a>
         <a href="${slugify('/reddit')}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for your tracked queries">Reddit</a>
         <a href="${slugify('/trust')}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, Google Business, author bios">Authority</a>
         <a href="${slugify('/benchmark')}" class="sidebar-item${active('Industry benchmark')}" title="How you rank vs industry peers (percentile)">Benchmark</a>
@@ -112,6 +113,7 @@ export function layout(
         <a href="/search/${slug}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
         <a href="/competitors/${slug}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="/citations/${slug}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+        <a href="/discover/${slug}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track">Discover</a>
         <a href="/reddit/${slug}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for tracked queries">Reddit</a>
         <a href="/trust/${slug}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, GBP, author bios">Authority</a>
         <a href="/benchmark/${slug}" class="sidebar-item${active('Industry benchmark')}" title="How they rank vs industry peers">Benchmark</a>

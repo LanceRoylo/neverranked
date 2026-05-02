@@ -719,6 +719,33 @@ export default {
         return new Response(JSON.stringify({ error: "verify failed", detail: msg }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
       }
     }
+    // Prompt discovery: customer-accessible review surface for
+    // AI-generated prompt suggestions awaiting one-click accept/dismiss.
+    if (path === "/discover" || path === "/discover/") {
+      if (user.client_slug) return redirect(`/discover/${user.client_slug}`);
+      return renderClientPicker("Discover prompts", "discover", user, env);
+    }
+    const discoverGenMatch = path.match(/^\/discover\/([^/]+)\/generate$/);
+    if (discoverGenMatch && method === "POST") {
+      const { handleDiscoverGenerate } = await import("./routes/discover");
+      return handleDiscoverGenerate(decodeURIComponent(discoverGenMatch[1]), user, env);
+    }
+    const discoverActionMatch = path.match(/^\/discover\/([^/]+)\/(\d+)\/(accept|dismiss)$/);
+    if (discoverActionMatch && method === "POST") {
+      const { handleDiscoverAction } = await import("./routes/discover");
+      return handleDiscoverAction(
+        decodeURIComponent(discoverActionMatch[1]),
+        parseInt(discoverActionMatch[2], 10),
+        discoverActionMatch[3] as "accept" | "dismiss",
+        user, env,
+      );
+    }
+    const discoverListMatch = path.match(/^\/discover\/([^/]+)$/);
+    if (discoverListMatch && method === "GET") {
+      const { handleDiscoverList } = await import("./routes/discover");
+      return handleDiscoverList(decodeURIComponent(discoverListMatch[1]), user, env);
+    }
+
     // AI referrer tracking ingest. Public endpoint hit by the inject
     // snippet from the customer's site when document.referrer is an AI
     // engine. Authenticated by snippet_token (looked up to slug). No CORS
