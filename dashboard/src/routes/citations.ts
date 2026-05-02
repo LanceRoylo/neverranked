@@ -688,26 +688,58 @@ export async function handleCitations(
     `;
   })();
 
-  // Sentiment rollup -- how AI engines describe the client across 90d
-  // of citation_runs. Daily cron scores up to 100 unscored runs/day so
-  // recent data flows in within ~24h of ingest.
+  // Negative-mention monitor -- defensive framing of the sentiment data.
+  //
+  // Why this is framed as a monitor not a scoreboard: scoreboards die
+  // on bad numbers ("78% positive, why isn't it 90?"), monitors survive
+  // them ("the alarm fired, that's the system working"). Sentiment is
+  // not something we can directly move the way schema or content can,
+  // so positioning it as an alert layer (defensive) protects the
+  // relationship better than positioning it as a metric (offensive).
+  //
+  // Sample-size discipline: percentages stay hidden until n>=10 scored
+  // mentions. Below that, small-sample noise (1 negative out of 3 = 33%
+  // negative) reads worse than the underlying data warrants. Same
+  // discipline as industry benchmarks (n<5 hidden) and citation-lift
+  // attribution (n<50 low-confidence flag).
+  const SENTIMENT_MIN_N = 10;
   const { getSentimentRollup } = await import("../sentiment-scorer");
   const sentiment = await getSentimentRollup(env, slug, 90);
   const sentimentScored = sentiment.positive + sentiment.neutral + sentiment.negative;
   const sentimentHtml = sentimentScored === 0 ? "" : (() => {
     const pos = sentiment.positive, neu = sentiment.neutral, neg = sentiment.negative;
+    const buildingBaseline = sentimentScored < SENTIMENT_MIN_N;
+
+    // Below threshold: surface only the negative-mention count if any,
+    // skip the percentage breakdown that would mislead at small n.
+    if (buildingBaseline) {
+      const baselineMsg = neg > 0
+        ? `<strong style="color:var(--red)">${neg} negative mention${neg === 1 ? "" : "s"} flagged.</strong> Review in <a href="/admin/inbox" style="color:var(--text);text-decoration:underline">your inbox</a>. Percentages stay hidden until ${SENTIMENT_MIN_N}+ mentions to avoid small-sample noise.`
+        : `No negative mentions detected. Percentages will surface once ${SENTIMENT_MIN_N}+ mentions are scored (currently ${sentimentScored}).`;
+      return `
+        <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <div class="label" style="color:var(--gold)">§ Negative mention monitor</div>
+            <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">Building baseline &middot; ${sentimentScored}/${SENTIMENT_MIN_N} mentions${sentiment.unscored > 0 ? ` &middot; ${sentiment.unscored} pending` : ""}</div>
+          </div>
+          <div style="font-size:12.5px;color:var(--text-soft);line-height:1.6">${baselineMsg}</div>
+        </div>
+      `;
+    }
+
     const posPct = Math.round((pos / sentimentScored) * 100);
     const neuPct = Math.round((neu / sentimentScored) * 100);
     const negPct = Math.max(0, 100 - posPct - neuPct);
-    const verdict = negPct >= 15
-      ? `<strong style="color:var(--red)">${negPct}% of mentions read negative.</strong> Review the negative items in <a href="/admin/inbox" style="color:var(--text);text-decoration:underline">your inbox</a> for fixable issues.`
-      : posPct >= 60
-      ? `<strong style="color:var(--green)">Strong positive signal.</strong> ${posPct}% of mentions read favorably.`
-      : `Mostly neutral mentions (${neuPct}%). Most listings are bare facts -- adding distinctive context to your site could shift positioning toward positive framing.`;
+
+    // Verdict is framed around alerts, not scores. "% positive" is
+    // shown as context, not as the headline number.
+    const verdict = neg > 0
+      ? `<strong style="color:var(--red)">${neg} negative mention${neg === 1 ? "" : "s"} flagged in the last 90 days.</strong> Review them in <a href="/admin/inbox" style="color:var(--text);text-decoration:underline">your inbox</a> for fixable issues. Negatives are usually addressable -- often a stale review, a competitor's takedown thread, or a content gap on your own site.`
+      : `No negative mentions in the last 90 days. AI engines are describing you neutrally or favorably across all ${sentimentScored} scored mentions.`;
     return `
       <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-          <div class="label" style="color:var(--gold)">§ Sentiment (90 days)</div>
+          <div class="label" style="color:var(--gold)">§ Negative mention monitor</div>
           <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${sentimentScored} mentions scored${sentiment.unscored > 0 ? ` &middot; ${sentiment.unscored} pending` : ""}</div>
         </div>
         <div style="display:flex;height:8px;border-radius:2px;overflow:hidden;margin-bottom:12px">
@@ -716,7 +748,7 @@ export async function handleCitations(
           <div style="width:${negPct}%;background:var(--red)" title="Negative ${neg} (${negPct}%)"></div>
         </div>
         <div style="display:flex;gap:24px;font-size:12px;color:var(--text-mute);margin-bottom:10px">
-          <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Positive ${posPct}% (${pos})</span>
+          <span><span style="display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Favorable ${posPct}% (${pos})</span>
           <span><span style="display:inline-block;width:8px;height:8px;background:var(--text-faint);opacity:0.5;border-radius:50%;margin-right:6px;vertical-align:middle"></span>Neutral ${neuPct}% (${neu})</span>
           <span><span style="display:inline-block;width:8px;height:8px;background:var(--red);border-radius:50%;margin-right:6px;vertical-align:middle"></span>Negative ${negPct}% (${neg})</span>
         </div>
