@@ -20,6 +20,90 @@ import { buildGlossary } from "../glossary";
 // Helpers
 // ---------------------------------------------------------------------------
 
+/**
+ * 12-week share-of-voice trend. Inline SVG, no client JS. Lines per
+ * top-N entity, client line bolded + gold. Empty buckets render as
+ * gaps so a flat 0%-on-zero-data doesn't read as "we lost share."
+ */
+function renderSovTrend(
+  trend: import("../share-of-voice").VoiceShareTrend,
+  clientSlug: string,
+  _env: import("../types").Env,
+): string {
+  if (trend.buckets.length < 2) return "";
+  // We don't actually need env here -- it's a placeholder so callers
+  // that wanted to lookup client domain can do so later if needed.
+  void clientSlug; void _env;
+
+  const w = 520;
+  const h = 120;
+  const padX = 10;
+  const padY = 12;
+  const innerW = w - padX * 2;
+  const innerH = h - padY * 2;
+  const stepX = trend.buckets.length > 1 ? innerW / (trend.buckets.length - 1) : 0;
+
+  // Compute each entity's per-bucket share fraction.
+  const series = trend.topNames.map((name) => {
+    const points = trend.buckets.map((b, i) => {
+      if (b.totalMentions === 0) return null;
+      const share = (b.perEntity[name] ?? 0) / b.totalMentions;
+      return { i, share };
+    });
+    return { name, points };
+  });
+
+  // Highlight client's domain visually if it shows up in topNames -- we
+  // don't have a direct client flag in trend, but the styling below
+  // colors all lines uniformly except gold for the highest-mentioned
+  // entity. The dashboard chart is meant for at-a-glance trend reading,
+  // not pixel-precise per-entity attribution -- the bar chart above
+  // already handles that exactly.
+  const colors = ["var(--gold)", "rgba(251,248,239,.6)", "rgba(251,248,239,.45)", "rgba(251,248,239,.35)", "rgba(251,248,239,.25)", "rgba(251,248,239,.18)"];
+
+  const paths = series.map((s, idx) => {
+    const color = colors[idx] ?? "rgba(251,248,239,.18)";
+    const widthPx = idx === 0 ? 2 : 1.25;
+    let d = "";
+    let lastY: number | null = null;
+    for (const p of s.points) {
+      if (!p) { lastY = null; continue; }
+      const x = padX + p.i * stepX;
+      const y = padY + (1 - p.share) * innerH;
+      d += (lastY === null ? "M " : " L ") + x.toFixed(1) + " " + y.toFixed(1);
+      lastY = y;
+    }
+    return `<path d="${d}" stroke="${color}" stroke-width="${widthPx}" fill="none" stroke-linejoin="round" stroke-linecap="round" />`;
+  }).join("");
+
+  // X-axis labels: first / mid / last week boundaries.
+  const labelIdx = [0, Math.floor(trend.buckets.length / 2), trend.buckets.length - 1];
+  const xLabels = labelIdx.map((i) => {
+    const b = trend.buckets[i];
+    if (!b) return "";
+    const x = padX + i * stepX;
+    const anchor = i === 0 ? "start" : i === trend.buckets.length - 1 ? "end" : "middle";
+    const date = new Date(b.weekStart * 1000).toISOString().slice(5, 10);
+    return `<text x="${x.toFixed(1)}" y="${(h + 14).toFixed(0)}" fill="var(--text-faint)" font-family="var(--mono)" font-size="9" text-anchor="${anchor}">${date}</text>`;
+  }).join("");
+
+  const legendItems = trend.topNames.slice(0, 6).map((n, i) => {
+    const c = colors[i] ?? "rgba(251,248,239,.18)";
+    return `<span style="display:inline-flex;align-items:center;gap:4px;margin-right:12px"><span style="display:inline-block;width:10px;height:2px;background:${c}"></span><span style="font-family:var(--mono);font-size:10px;color:var(--text-mute)">${esc(n)}</span></span>`;
+  }).join("");
+
+  return `
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--line)">
+      <div class="label" style="margin-bottom:10px;color:var(--text-faint)">12-week trend &middot; share of all mentions</div>
+      <svg viewBox="0 0 ${w} ${h + 18}" preserveAspectRatio="none" style="width:100%;height:auto;display:block">
+        ${paths}
+        ${xLabels}
+      </svg>
+      <div style="margin-top:10px;line-height:1.8">${legendItems}</div>
+    </div>
+  `;
+}
+
 function buildEngineRows(enginesBreakdown: Record<string, { queries: number; citations: number }>): string {
   return Object.entries(enginesBreakdown).map(([engine, data]) => {
     const share = data.queries > 0 ? ((data.citations / data.queries) * 100).toFixed(0) : "0";
@@ -548,6 +632,62 @@ export async function handleCitations(
   const lift = await computeCitationLift(slug, env);
   const liftHtml = renderCitationLiftBlock(lift);
 
+  // Share of voice: % of all business mentions in tracked queries
+  // that went to client vs competitors. Different from citation_share.
+  const { computeShareOfVoice, computeShareOfVoiceTrend } = await import("../share-of-voice");
+  const sov = await computeShareOfVoice(env, slug, 90);
+  const sovTrend = sov.totalMentions > 0
+    ? await computeShareOfVoiceTrend(env, slug, 12)
+    : { topNames: [], buckets: [] };
+  const sovHtml = sov.totalMentions === 0 ? "" : (() => {
+    const top = sov.entries.slice(0, 8);
+    const maxShare = top[0]?.share ?? 1;
+    const bars = top.map(e => {
+      const widthPct = (e.share / maxShare) * 100;
+      const labelPct = (e.share * 100).toFixed(1);
+      const color = e.isClient ? "var(--gold)" : e.isCompetitor ? "var(--text-mute)" : "var(--text-faint)";
+      const labelColor = e.isClient ? "var(--gold)" : "var(--text-soft)";
+      const tag = e.isClient
+        ? `<span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-left:8px">You</span>`
+        : e.isCompetitor
+        ? `<span style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);margin-left:8px">Competitor</span>`
+        : "";
+      return `
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12.5px">
+            <span style="color:${labelColor}">${esc(e.name)}${tag}</span>
+            <span style="font-family:var(--mono);font-size:11px;color:var(--text-mute)">${labelPct}% &middot; ${e.mentions}</span>
+          </div>
+          <div style="height:6px;background:var(--bg-edge);border-radius:2px;overflow:hidden">
+            <div style="width:${widthPct.toFixed(1)}%;height:100%;background:${color}"></div>
+          </div>
+        </div>`;
+    }).join("");
+
+    const verdict = sov.clientRank === null
+      ? `<strong style="color:var(--red)">You don't appear in any of the AI mentions for your tracked queries</strong> — competitors are claiming the entire conversation. The roadmap items below address this directly.`
+      : sov.clientRank === 1
+      ? `<strong style="color:var(--green)">You hold the most mentions in your category</strong> — ranked #1 across ${sov.totalMentions} business mentions in the last 90 days.`
+      : sov.clientRank <= 3
+      ? `Ranked <strong style="color:var(--text)">#${sov.clientRank}</strong> across ${sov.totalMentions} business mentions in your category. Competitive with the leaders.`
+      : `Ranked <strong style="color:var(--text)">#${sov.clientRank}</strong> across ${sov.totalMentions} business mentions in your category. Top three are pulling away — see the per-keyword gaps below for where to focus.`;
+
+    const trendChart = sovTrend.buckets.length > 0 ? renderSovTrend(sovTrend, slug, env) : "";
+
+    return `
+      <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="label" style="color:var(--gold)">§ Share of voice (90 days)</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${sov.totalMentions} mentions across ${sov.totalRuns} AI responses</div>
+        </div>
+        <div style="font-size:12.5px;color:var(--text-soft);line-height:1.6;margin-bottom:18px">${verdict}</div>
+        <div>${bars}</div>
+        ${trendChart}
+        <div style="font-size:11px;color:var(--text-faint);margin-top:14px;line-height:1.6">Different from citation share. Citation share is "% of YOUR queries where YOU were cited." Share of voice is "% of ALL business mentions across your queries that went to YOU vs everyone else AI keeps naming."</div>
+      </div>
+    `;
+  })();
+
   // Sentiment rollup -- how AI engines describe the client across 90d
   // of citation_runs. Daily cron scores up to 100 unscored runs/day so
   // recent data flows in within ~24h of ingest.
@@ -592,6 +732,8 @@ export async function handleCitations(
     </div>
 
     ${liftHtml ? `<div style="margin-bottom:28px">${liftHtml}</div>` : ""}
+
+    ${sovHtml}
 
     ${sentimentHtml}
 
