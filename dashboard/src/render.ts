@@ -81,6 +81,7 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+        <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
       </div>
       ${isAdmin ? `
       <div class="sidebar-section">
@@ -125,6 +126,7 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+        <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
       </div>
     </nav>` : '';
 

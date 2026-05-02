@@ -27,6 +27,54 @@ interface Entry {
 
 const ENTRIES: Entry[] = [
   {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Prompt Discovery -- one-click suggestions tuned to your business",
+    body: "New page at /discover/<slug>. We read your business description, latest scan results, schema deployed, and top organic search queries, then generate 15 realistic prompts a real person would type into ChatGPT, Perplexity, Gemini, or Claude. One-click Track or Dismiss. Every candidate runs through the human-tone guard before you see it. Generate button rate-limited to once per 24 hours per client.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Share of voice on the citations page",
+    body: "Different from citation share. Citation share is what percent of YOUR queries cite YOU. Share of voice is what percent of ALL business mentions across your tracked queries went to you vs every competitor AI keeps naming. Horizontal bar chart with you in gold, top 7 competitors in gray, plus a 12-week trend chart so you can see whether your share is climbing or shrinking.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Sentiment scoring on every AI mention",
+    body: "Every AI response that names your business now gets scored: positive, neutral, or negative, with a one-sentence reason. Stacked bar at the top of your citations page shows the distribution. Negative mentions get flagged in your inbox so you can fix the underlying issue (stale fact, missing context, unaddressed complaint) before they compound.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Real visits from AI engines (closes the citation -> traffic loop)",
+    body: "Bots crawl your site, models cite you, visitors click through. The new \"Real visits from AI engines\" section on /bots/<slug> shows the third step: humans who arrived from chat.openai.com, perplexity.ai, gemini.google.com, claude.ai, copilot.microsoft.com, and others. Captured via the schema injection snippet reading document.referrer, no GA4 setup needed.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Reddit reply briefs (Amplify)",
+    body: "When AI cites a Reddit thread for a query you're tracking, Amplify clients can now click \"Generate brief\" and get back a 4-section strategic brief: what's missing from the existing answers, what angle only you can add, what tone the subreddit expects, and what NOT to do. Explicitly NOT a draft -- a real human on your team writes the actual reply. Reddit rewards practitioners speaking from real experience, not pasted AI output.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Shipped",
+    title: "Human-tone guard on every AI-generated piece",
+    body: "Anything we generate on your behalf -- blog drafts, Reddit briefs, FAQ schema, prompt suggestions -- now runs through a hard pattern guard before it lands. Em dashes, semicolons, banned phrases (\"feel free to\", \"delve into\", \"in today's fast-paced\", and 30+ others), hedge openers, and three-adjective lists are blocked. Failures land in our internal review inbox so a human catches them before you ever see them.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Improved",
+    title: "Surfaced 4 features that were hidden in the sidebar",
+    body: "Reddit presence, Authority signals (G2, Trustpilot, Capterra, GBP), Industry-percentile Benchmark, and Bot Analytics were all built but missing from the dashboard nav. Now linked under Measure where they belong.",
+  },
+  {
+    date: "2026-05-01",
+    category: "Improved",
+    title: "Gemini citation tracking now sees Reddit threads (and everything else)",
+    body: "Gemini returns its citation URLs as opaque vertexaisearch.cloud.google.com redirect tokens instead of real source URLs. We now resolve every redirect at ingest time so downstream systems (Reddit extraction, competitor matching, share of voice) see the actual sources. Historical Gemini runs get backfilled automatically over the following days.",
+  },
+  {
     date: "2026-04-19",
     category: "Shipped",
     title: "Citation-lost alerts (the warning side of first-citation)",
