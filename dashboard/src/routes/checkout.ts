@@ -235,7 +235,7 @@ export async function handleCheckout(
       <div class="empty">
         <h3>Something went wrong</h3>
         <p>Could not create checkout session. Please try again or contact <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a></p>
-        ${debug ? `<pre style="margin-top:24px;padding:16px;background:var(--bg-edge);border:1px solid var(--line);border-radius:4px;font-size:11px;color:var(--text-muted);text-align:left;overflow:auto">${JSON.stringify(session.error, null, 2)}</pre>` : ""}
+        ${debug ? `<pre style="margin-top:24px;padding:16px;background:var(--bg-edge);border:1px solid var(--line);border-radius:4px;font-size:11px;color:var(--text-mute);text-align:left;overflow:auto">${JSON.stringify(session.error, null, 2)}</pre>` : ""}
       </div>
     `), 500);
   }

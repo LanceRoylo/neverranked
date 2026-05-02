@@ -78,7 +78,7 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
         if (existingId) {
           briefBtn = `<a href="/reddit/${esc(clientSlug)}/brief/${existingId}" style="margin-left:12px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);padding:2px 6px;border-radius:2px;text-decoration:none">View brief</a>`;
         } else {
-          briefBtn = `<button type="button" data-thread="${esc(t.thread_url)}" class="briefGenBtn" style="margin-left:12px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:1px solid var(--line);padding:2px 6px;border-radius:2px;cursor:pointer">Generate brief</button>`;
+          briefBtn = `<button type="button" data-thread="${esc(t.thread_url)}" class="briefGenBtn" style="margin-left:12px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);background:transparent;border:1px solid var(--line);padding:2px 6px;border-radius:2px;cursor:pointer">Generate brief</button>`;
         }
       }
       return `<li style="padding:6px 0;border-bottom:1px dotted var(--line);font-size:13px;display:flex;align-items:center;flex-wrap:wrap"><span>${tick}<a href="${esc(t.thread_url)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:underline">${esc(t.thread_url.replace("https://www.reddit.com",""))}</a> <span style="color:var(--text-faint);margin-left:8px">${esc(eng)} · ${date}</span></span>${briefBtn}</li>`;
@@ -93,7 +93,7 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
           <div>
             <div style="font-size:18px;font-weight:500">r/${esc(s.subreddit)}</div>
-            <div style="color:var(--text-muted);font-size:13px;margin-top:2px">${total} citation${total === 1 ? "" : "s"} · you in ${present} (${presentPct}%)</div>
+            <div style="color:var(--text-mute);font-size:13px;margin-top:2px">${total} citation${total === 1 ? "" : "s"} · you in ${present} (${presentPct}%)</div>
           </div>
           ${gapBadge}
         </div>
@@ -107,7 +107,7 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
     <div style="margin-bottom:32px">
       <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
       <h1>Reddit <em>presence</em></h1>
-      <p style="color:var(--text-muted);max-width:680px;margin-top:8px">
+      <p style="color:var(--text-mute);max-width:680px;margin-top:8px">
         Reddit threads are one of the heaviest non-corporate citation sources for Perplexity / ChatGPT / Gemini. Subreddits where competitors are cited but you aren't named are the biggest absence gaps -- and the fastest to close. A substantive comment from your team that actually helps the question-asker often gets you cited within a week.
       </p>
     </div>
@@ -116,14 +116,14 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
       <div style="border:1px solid var(--line);border-radius:6px;padding:24px">
         <div class="label" style="margin-bottom:12px">Reddit citations (90d)</div>
         <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em">${summary.totalCitations}</div>
-        <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+        <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
           Distinct reddit threads cited by AI engines for your tracked queries.
         </div>
       </div>
       <div style="border:1px solid var(--line);border-radius:6px;padding:24px">
         <div class="label" style="margin-bottom:12px">Your presence</div>
         <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em;color:${presenceColor}">${presencePct}%</div>
-        <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+        <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
           You were named in ${summary.clientPresentCount} of ${summary.totalCitations} reddit-sourced responses.
         </div>
       </div>
@@ -131,14 +131,14 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
 
     <div style="margin-bottom:16px">
       <h2 style="font-size:20px;margin:0">Subreddits, ranked by absence gap</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-top:4px">
+      <p style="color:var(--text-mute);font-size:13px;margin-top:4px">
         Sorted so the biggest opportunity -- many citations, you absent -- is at the top. Click any thread to read it, find a real comment to engage on, and post as a practitioner not a marketer.
       </p>
     </div>
 
     ${subredditRows}
 
-    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-faint);font-size:13px;color:var(--text-muted);margin-top:24px">
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-lift);font-size:13px;color:var(--text-mute);margin-top:24px">
       <strong style="color:var(--text)">How this is computed.</strong> Every Perplexity / ChatGPT / Gemini response we run for your tracked keywords surfaces a list of cited URLs. We extract reddit.com thread URLs, group them by subreddit, and join them to whether you were cited in the same response. A "present" (✓) row means you were named in the model's answer alongside the reddit thread.${showBriefs ? ` <strong style="color:var(--text)">Generate brief</strong> reads the thread plus the subreddit's rules and produces a 4-section strategic brief -- gap, your angle, tone notes, don't-do list -- so a real human on your team can write a real reply. We never draft the comment itself; that's how Reddit accounts get burned.` : ""}
     </div>
     ${showBriefs ? `<script>

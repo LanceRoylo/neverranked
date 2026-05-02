@@ -58,7 +58,7 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
       <div style="margin-bottom:32px">
         <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
         <h1>Industry <em>benchmark</em></h1>
-        <p style="color:var(--text-muted)">Industry: <strong>${esc(industry)}</strong></p>
+        <p style="color:var(--text-mute)">Industry: <strong>${esc(industry)}</strong></p>
       </div>
       <div class="empty-hero">
         <div class="empty-hero-eyebrow">Sample size too small</div>
@@ -91,7 +91,7 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
     <div style="margin-bottom:32px">
       <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
       <h1>Industry <em>benchmark</em></h1>
-      <p style="color:var(--text-muted);margin-top:8px">
+      <p style="color:var(--text-mute);margin-top:8px">
         Industry pool: <strong>${esc(industry)}</strong> · ${snap.sample_size} client${snap.sample_size === 1 ? "" : "s"} · refreshed ${esc(computedAgo)}
       </p>
     </div>
@@ -100,7 +100,7 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
       <div style="border:1px solid var(--line);border-radius:6px;padding:24px">
         <div class="label" style="margin-bottom:12px">AEO score percentile</div>
         <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em;color:${aeoColor}">${ordinal(aeoPct)}</div>
-        <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+        <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
           Your score (${aeoVal.toFixed(0)}) ranks at the ${ordinal(aeoPct)} percentile among ${snap.sample_size} ${esc(industry)} clients.
         </div>
         <div style="margin-top:16px;font-size:12px;color:var(--text-faint);font-family:var(--mono)">
@@ -111,7 +111,7 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
         <div class="label" style="margin-bottom:12px">Citation share percentile</div>
         ${csPct !== null && csVal !== null ? `
           <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em;color:${csColor}">${ordinal(csPct)}</div>
-          <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+          <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
             Your weekly citation share (${(csVal * 100).toFixed(0)}%) ranks at the ${ordinal(csPct)} percentile.
           </div>
           <div style="margin-top:16px;font-size:12px;color:var(--text-faint);font-family:var(--mono)">
@@ -119,7 +119,7 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
           </div>
         ` : `
           <div style="font-size:32px;font-weight:300;color:var(--text-faint)">—</div>
-          <div style="color:var(--text-muted);font-size:13px;margin-top:8px">Need more citation data in this industry pool before we can rank.</div>
+          <div style="color:var(--text-mute);font-size:13px;margin-top:8px">Need more citation data in this industry pool before we can rank.</div>
         `}
       </div>
     </div>
@@ -128,11 +128,11 @@ export async function handleBenchmark(clientSlug: string, user: User, env: Env):
       <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:24px">
         <div class="label" style="margin-bottom:8px">Industry schema coverage</div>
         <div style="font-size:24px;font-weight:300">${snap.schema_coverage_mean.toFixed(0)}% <span style="color:var(--text-faint);font-size:14px">average across ${esc(industry)} clients</span></div>
-        <p style="color:var(--text-muted);font-size:13px;margin-top:8px">Pure structural coverage of the critical schema types (Organization, WebSite, BreadcrumbList, etc.). Shows what is "table stakes" for the industry; the schema-quality grader is what catches the partial-implementation penalty.</p>
+        <p style="color:var(--text-mute);font-size:13px;margin-top:8px">Pure structural coverage of the critical schema types (Organization, WebSite, BreadcrumbList, etc.). Shows what is "table stakes" for the industry; the schema-quality grader is what catches the partial-implementation penalty.</p>
       </div>
     ` : ""}
 
-    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-faint);font-size:13px;color:var(--text-muted)">
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-lift);font-size:13px;color:var(--text-mute)">
       <strong style="color:var(--text)">How this is computed.</strong> Every night we take the latest non-error scan and the latest weekly citation snapshot per client tagged into your industry, then compute quartiles (p25 / p50 / p75 / p90). Your value is then placed on that distribution by linear interpolation. We hide entire industries until n &ge; 5 to avoid quoting percentiles built from 2 or 3 peers.
     </div>
   `;

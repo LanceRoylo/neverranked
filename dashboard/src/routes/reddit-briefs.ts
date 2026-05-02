@@ -74,7 +74,7 @@ export async function handleBriefView(
   if (!canUseRedditBriefs(user)) {
     return html(layout("Amplify required", `
       <div class="empty"><h3>Reddit reply briefs are an Amplify feature</h3>
-      <p style="color:var(--text-muted)">Upgrade to Amplify to generate per-thread reply briefs for your team.</p></div>`, user), 403);
+      <p style="color:var(--text-mute)">Upgrade to Amplify to generate per-thread reply briefs for your team.</p></div>`, user), 403);
   }
 
   const row = await env.DB.prepare(
@@ -105,15 +105,15 @@ export async function handleBriefView(
   const commentsBlock = snapshot.top_comments.map((c, i) => `
     <div style="border-left:2px solid var(--line);padding:8px 12px;margin:8px 0;font-size:13px">
       <div style="color:var(--text-faint);font-size:11px;margin-bottom:4px">Comment ${i + 1} &middot; ${c.score} pts &middot; u/${esc(c.author)}</div>
-      <div style="white-space:pre-wrap;color:var(--text-muted)">${esc(c.body)}</div>
+      <div style="white-space:pre-wrap;color:var(--text-mute)">${esc(c.body)}</div>
     </div>`).join("");
 
   const body = `
     <div style="margin-bottom:24px">
-      <div class="label" style="margin-bottom:8px"><a href="/reddit/${esc(clientSlug)}" style="color:var(--text-muted)">Reddit presence</a> / Brief</div>
+      <div class="label" style="margin-bottom:8px"><a href="/reddit/${esc(clientSlug)}" style="color:var(--text-mute)">Reddit presence</a> / Brief</div>
       <h1>r/${esc(row.subreddit)} <em>reply brief</em></h1>
-      <p style="color:var(--text-muted);margin-top:8px">
-        <a href="${esc(row.thread_url)}" target="_blank" rel="noopener" style="color:var(--text-muted);text-decoration:underline">${esc(row.thread_url)}</a>
+      <p style="color:var(--text-mute);margin-top:8px">
+        <a href="${esc(row.thread_url)}" target="_blank" rel="noopener" style="color:var(--text-mute);text-decoration:underline">${esc(row.thread_url)}</a>
         <span style="margin-left:12px;font-size:12px">Generated ${updated}</span>
       </p>
     </div>
@@ -148,18 +148,17 @@ export async function handleBriefView(
     </div>
 
     <details style="border:1px solid var(--line);border-radius:6px;padding:16px;margin-bottom:24px">
-      <summary style="cursor:pointer;font-family:var(--label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)">Original thread snapshot (what we read when we wrote this brief)</summary>
+      <summary style="cursor:pointer;font-family:var(--label);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-mute)">Original thread snapshot (what we read when we wrote this brief)</summary>
       <div style="margin-top:16px">
         <div style="font-size:16px;font-weight:500;margin-bottom:8px">${esc(snapshot.op_title)}</div>
-        ${snapshot.op_body ? `<div style="white-space:pre-wrap;font-size:14px;color:var(--text-muted);line-height:1.55">${esc(snapshot.op_body)}</div>` : ""}
+        ${snapshot.op_body ? `<div style="white-space:pre-wrap;font-size:14px;color:var(--text-mute);line-height:1.55">${esc(snapshot.op_body)}</div>` : ""}
         ${snapshot.top_comments.length > 0 ? `<div style="margin-top:16px"><div class="label" style="margin-bottom:8px">Top existing comments</div>${commentsBlock}</div>` : ""}
       </div>
     </details>
 
-    <form method="POST" action="/reddit/${esc(clientSlug)}/brief" id="regenForm" style="margin-top:16px">
-      <input type="hidden" name="thread_url" value="${esc(row.thread_url)}">
+    <div style="margin-top:16px">
       <button type="button" id="regenBtn" class="btn btn-secondary" style="font-size:13px">Regenerate brief</button>
-    </form>
+    </div>
     <script>
       document.getElementById('regenBtn').addEventListener('click', async () => {
         const btn = document.getElementById('regenBtn');

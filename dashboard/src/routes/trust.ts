@@ -45,7 +45,7 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
       <tr>
         <td style="padding:14px 16px;border-bottom:1px solid var(--line);font-weight:500">${esc(meta.label)}</td>
         <td style="padding:14px 16px;border-bottom:1px solid var(--line)">${status}</td>
-        <td style="padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--text-muted)">${detail}</td>
+        <td style="padding:14px 16px;border-bottom:1px solid var(--line);font-size:13px;color:var(--text-mute)">${detail}</td>
       </tr>
     `;
   }).join("");
@@ -67,7 +67,7 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
     <div style="margin-bottom:32px">
       <div class="label" style="margin-bottom:8px">Dashboard / ${esc(clientSlug)}</div>
       <h1>Authority <em>signals</em></h1>
-      <p style="color:var(--text-muted);max-width:680px;margin-top:8px">
+      <p style="color:var(--text-mute);max-width:680px;margin-top:8px">
         AI engines lean heavily on third-party trust platforms (G2, Trustpilot, Capterra, GBP) and named-author signals when deciding who to cite. CMU's GEO research found ~3x lift for brands with at least one tier-1 review profile and ~2.3x lift for content with named authors.
       </p>
     </div>
@@ -76,7 +76,7 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
       <div style="border:1px solid var(--line);border-radius:6px;padding:24px">
         <div class="label" style="margin-bottom:12px">Trust platforms detected</div>
         <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em">${detectedCount} <span style="color:var(--text-faint);font-size:24px">/ ${platforms.length}</span></div>
-        <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+        <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
           ${tier1Detected > 0
             ? `${tier1Detected} tier-1 platform${tier1Detected === 1 ? "" : "s"} (G2 / Trustpilot / Capterra / GBP) linked from your site.`
             : "No tier-1 review platform linked from your site yet. Pick one and link to it from your footer or trust page."}
@@ -85,7 +85,7 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
       <div style="border:1px solid var(--line);border-radius:6px;padding:24px">
         <div class="label" style="margin-bottom:12px">Named-author coverage</div>
         <div style="font-size:48px;font-weight:300;letter-spacing:-0.02em;color:${authorColor}">${authorPct}%</div>
-        <div style="color:var(--text-muted);font-size:13px;margin-top:8px">
+        <div style="color:var(--text-mute);font-size:13px;margin-top:8px">
           ${authorCoverage
             ? `${authorCoverage.pages_with_author} of ${authorCoverage.pages_scanned} scanned page${authorCoverage.pages_scanned === 1 ? "" : "s"} declare a named author (meta tag or schema.org Person).`
             : "No scan data yet. Trust signals populate after the first weekly scan."}
@@ -99,19 +99,19 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
         <div style="flex:1">
           <div class="label" style="margin-bottom:8px">Author completeness</div>
           <div style="font-size:32px;font-weight:300;letter-spacing:-0.02em;color:${completeColor}">${completePct}% complete</div>
-          <p style="color:var(--text-muted);font-size:13px;margin-top:8px">
+          <p style="color:var(--text-mute);font-size:13px;margin-top:8px">
             ${authorCoverage.pages_with_complete_author} of ${authorCoverage.pages_scanned} pages have a Person schema node with the fields AI engines use to evaluate authorship (url or sameAs as an identity anchor, plus jobTitle / worksFor / image).
           </p>
         </div>
         <div style="max-width:380px;font-size:12px;color:var(--text-faint);line-height:1.6">
-          <strong style="color:var(--text-muted)">Why this matters.</strong> A Person node with just <code>{ "name": "Jane" }</code> passes the named-author check but gives AI engines nothing to anchor authorship to. The completeness score uses the same grader as the public schema scorer -- a Person node passes when it scores 60+, which requires identity linkage (url OR sameAs) plus most of the recommended fields.
+          <strong style="color:var(--text-mute)">Why this matters.</strong> A Person node with just <code>{ "name": "Jane" }</code> passes the named-author check but gives AI engines nothing to anchor authorship to. The completeness score uses the same grader as the public schema scorer -- a Person node passes when it scores 60+, which requires identity linkage (url OR sameAs) plus most of the recommended fields.
         </div>
       </div>
     </div>` : ""}
 
     <div style="margin-bottom:16px">
       <h2 style="font-size:20px;margin:0">Trust-platform matrix</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-top:4px">
+      <p style="color:var(--text-mute);font-size:13px;margin-top:4px">
         Detected by scanning outbound links on every page we crawl. If a profile exists but isn't linked from your site, it won't show here -- linking from your footer or trust page is what compounds the signal.
       </p>
     </div>
@@ -127,7 +127,7 @@ export async function handleTrust(clientSlug: string, user: User, env: Env): Pro
       <tbody>${matrixRows}</tbody>
     </table>
 
-    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-faint);font-size:13px;color:var(--text-muted)">
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-lift);font-size:13px;color:var(--text-mute)">
       <strong style="color:var(--text)">How this is computed.</strong> The scanner checks every page in your weekly crawl for outbound links matching known trust-platform URL patterns and for <code>&lt;meta name="author"&gt;</code> + schema.org <code>Person</code> nodes. Items take effect after at least 5 successful scans of pages on your domain so brand-new sites aren't penalized for missing data.
     </div>
   `;

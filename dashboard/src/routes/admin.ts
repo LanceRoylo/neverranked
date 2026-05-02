@@ -355,6 +355,29 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
         </tbody>
       </table>
     </div>
+
+    <div class="card" style="margin-top:24px">
+      <h3 style="margin-bottom:8px">Diagnostics &amp; one-shot tools</h3>
+      <p style="color:var(--text-mute);font-size:12px;margin:0 0 16px">Admin-only utility endpoints. No auth UI -- you're already authenticated by being on this page. Each link opens in a new tab and returns JSON.</p>
+      <ul style="list-style:none;padding:0;margin:0;font-size:13px">
+        <li style="padding:6px 0;border-bottom:1px dotted var(--line)">
+          <a href="/admin/reddit-fetch-test?url=https://www.reddit.com/r/smallbusiness/comments/1szw9q1/" target="_blank" rel="noopener" style="color:var(--text);text-decoration:underline">/admin/reddit-fetch-test?url=&lt;thread&gt;</a>
+          <span style="color:var(--text-mute);margin-left:8px">Confirms Cloudflare Workers can reach Reddit. Returns parsed thread snapshot.</span>
+        </li>
+        <li style="padding:6px 0;border-bottom:1px dotted var(--line)">
+          <a href="/admin/gemini-coverage-preview" target="_blank" rel="noopener" style="color:var(--text);text-decoration:underline">/admin/gemini-coverage-preview</a>
+          <span style="color:var(--text-mute);margin-left:8px">Previews the 2026-05-12 Gemini-resolver validation email without sending.</span>
+        </li>
+        <li style="padding:6px 0;border-bottom:1px dotted var(--line)">
+          <span style="color:var(--text)">/admin/reddit-backfill/&lt;slug&gt;</span>
+          <span style="color:var(--text-mute);margin-left:8px">One-shot: extracts reddit URLs from last 90d of citation_runs into reddit_citations + roadmap.</span>
+        </li>
+        <li style="padding:6px 0">
+          <span style="color:var(--text)">/admin/gemini-resolve/&lt;slug&gt;?days=90</span>
+          <span style="color:var(--text-mute);margin-left:8px">Resolves historical Gemini grounding-redirect URLs in cited_urls, then re-runs reddit extraction.</span>
+        </li>
+      </ul>
+    </div>
   `;
 
   return html(layout("Admin", body, user));
