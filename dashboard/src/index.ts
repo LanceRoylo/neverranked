@@ -965,6 +965,65 @@ export default {
       const r = await generateFaqForPage(slug, sourceUrl, env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
+    // Re-grade every schema_injection for a client. Useful as a
+    // one-shot backfill when rows were inserted via raw SQL and
+    // bypassed the grade path (e.g. the early Hawaii Theatre
+    // Event deploys). Idempotent.
+    if (path === "/admin/regrade-all" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      if (!slug) return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {
+        status: 400, headers: { "content-type": "application/json" }
+      });
+      const { gradeSchema } = await import("../../packages/aeo-analyzer/src/schema-grader");
+      const rows = (await env.DB.prepare(
+        "SELECT id, schema_type, json_ld FROM schema_injections WHERE client_slug = ?"
+      ).bind(slug).all<{ id: number; schema_type: string; json_ld: string }>()).results;
+      const summary: Array<{ id: number; schema_type: string; score: number }> = [];
+      const now = Math.floor(Date.now() / 1000);
+      for (const r of rows) {
+        const grade = gradeSchema(r.json_ld);
+        await env.DB.prepare(
+          "UPDATE schema_injections SET quality_score = ?, quality_issues = ?, quality_graded_at = ? WHERE id = ?"
+        ).bind(grade.score, JSON.stringify(grade.issues), now, r.id).run();
+        summary.push({ id: r.id, schema_type: r.schema_type, score: grade.score });
+      }
+      return new Response(JSON.stringify({ slug, regraded: summary.length, rows: summary }, null, 2), {
+        headers: { "content-type": "application/json" }
+      });
+    }
+    // Generate BreadcrumbList drafts from a customer's homepage
+    // navigation. One breadcrumb per top-level section, derived
+    // deterministically from the page HTML (no LLM cost). All
+    // inserts are 'pending' for review.
+    if (path === "/admin/generate-breadcrumbs" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const homepageUrl = url.searchParams.get("url");
+      if (!slug || !homepageUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?url=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateBreadcrumbsForSite } = await import("./breadcrumb-generator");
+      const r = await generateBreadcrumbsForSite(slug, homepageUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
+    // Generate Article schemas from a sitemap. Discovers article-
+    // like URLs (paths matching /blog/, /news/, /YYYY/MM/, etc.),
+    // fetches each, extracts metadata, and inserts as 'pending'
+    // for review. No auto-trigger -- run manually for blog-heavy
+    // clients via this endpoint.
+    if (path === "/admin/generate-articles" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const sitemapUrl = url.searchParams.get("sitemap");
+      if (!slug || !sitemapUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?sitemap=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateArticlesFromSitemap } = await import("./article-generator");
+      const r = await generateArticlesFromSitemap(slug, sitemapUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
 
     // Reddit presence (Phase 5)
     if (path === "/reddit" || path === "/reddit/") {
@@ -996,6 +1055,31 @@ export default {
       return new Response(JSON.stringify({ slug, ...result, roadmap_items_added: added }, null, 2), {
         headers: { "content-type": "application/json" },
       });
+    }
+
+    // Dry-run: exercises the Reddit thread fetcher against any thread URL
+    // and returns the parsed snapshot as JSON. Confirms whether Cloudflare
+    // Workers can reach Reddit at all (Reddit sometimes throttles or blocks
+    // CF shared egress IPs). Hit this once with a known thread URL before
+    // relying on the brief generator for real Amplify clients.
+    if (path === "/admin/reddit-fetch-test" && method === "GET" && user.role === "admin") {
+      const threadUrl = url.searchParams.get("url") || "";
+      if (!/^https?:\/\/(?:www\.)?reddit\.com\/r\/[^/]+\/comments\/[^/]+/i.test(threadUrl)) {
+        return new Response(JSON.stringify({ error: "missing_or_invalid_url", hint: "?url=https://www.reddit.com/r/<sub>/comments/<id>/..." }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      try {
+        const { fetchRedditThread } = await import("./reddit-briefs");
+        const snapshot = await fetchRedditThread(threadUrl);
+        return new Response(JSON.stringify({ ok: true, snapshot }, null, 2), {
+          headers: { "content-type": "application/json" },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ ok: false, error: e instanceof Error ? e.message : String(e) }, null, 2), {
+          status: 502, headers: { "content-type": "application/json" },
+        });
+      }
     }
 
     // Dry-run: returns what the Gemini coverage report email WOULD say

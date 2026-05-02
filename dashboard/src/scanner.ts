@@ -239,6 +239,15 @@ export async function scanDomain(
           } catch (e) {
             console.log(`FAQ auto-trigger failed: ${e}`);
           }
+          // BreadcrumbList auto-trigger: same pattern as FAQ but
+          // derives breadcrumbs from URL structure rather than
+          // calling an LLM. Cheap, deterministic, dedup'd.
+          try {
+            const { maybeGenerateBreadcrumbsForClient } = await import("./breadcrumb-auto-trigger");
+            await maybeGenerateBreadcrumbsForClient(domain, env);
+          } catch (e) {
+            console.log(`Breadcrumb auto-trigger failed: ${e}`);
+          }
         }
       }
     } catch (e) {
