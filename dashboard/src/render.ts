@@ -64,6 +64,10 @@ export function layout(
         <a href="${slugify('/search')}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
         <a href="${slugify('/competitors')}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="${slugify('/citations')}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+        <a href="${slugify('/reddit')}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for your tracked queries">Reddit</a>
+        <a href="${slugify('/trust')}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, Google Business, author bios">Authority</a>
+        <a href="${slugify('/benchmark')}" class="sidebar-item${active('Industry benchmark')}" title="How you rank vs industry peers (percentile)">Benchmark</a>
+        <a href="${slugify('/bots')}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading your site, when, how often">Bots</a>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-header">Improve</div>
@@ -108,6 +112,10 @@ export function layout(
         <a href="/search/${slug}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
         <a href="/competitors/${slug}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="/citations/${slug}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
+        <a href="/reddit/${slug}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for tracked queries">Reddit</a>
+        <a href="/trust/${slug}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, GBP, author bios">Authority</a>
+        <a href="/benchmark/${slug}" class="sidebar-item${active('Industry benchmark')}" title="How they rank vs industry peers">Benchmark</a>
+        <a href="/bots/${slug}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading the site">Bots</a>
         <a href="/roadmap/${slug}" class="sidebar-item${active('Roadmap')}">Roadmap${roadmapBadge}</a>
         <a href="/voice/${slug}" class="sidebar-item${active('Voice')}" title="Upload writing samples for this client">Voice</a>
         <a href="/drafts/${slug}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="Drafts for this client">Drafts</a>
