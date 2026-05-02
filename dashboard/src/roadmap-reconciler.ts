@@ -88,54 +88,79 @@ function collectTypes(node: unknown, into: Set<string>): void {
 
 export interface ReconcileResult {
   scanned: number;
-  marked: number;
-  byClient: Record<string, number>;
+  markedDone: number;
+  markedInProgress: number;
+  byClient: Record<string, { done: number; in_progress: number }>;
 }
 
 /** Reconcile roadmap_items against schema_injections for one client.
- *  Returns the count marked done in this run. */
+ *  Two passes:
+ *    - approved schemas mark matching items as 'done'
+ *    - pending schemas mark matching items as 'in_progress' (so the
+ *      customer dashboard's "actively in progress" metric reflects
+ *      real work-in-flight, not zero)
+ *  Returns counts of each transition. */
 export async function reconcileRoadmapForClient(
   clientSlug: string,
   env: Env,
-): Promise<number> {
+): Promise<{ markedDone: number; markedInProgress: number }> {
   const items = (await env.DB.prepare(
     "SELECT id, client_slug, title, category, status FROM roadmap_items " +
     "WHERE client_slug = ? AND status != 'done' AND category = 'schema'"
   ).bind(clientSlug).all<ItemRow>()).results;
-  if (items.length === 0) return 0;
+  if (items.length === 0) return { markedDone: 0, markedInProgress: 0 };
 
-  // Pull every approved schema_injection and extract ALL @type
-  // values, including nested ones (e.g. AggregateRating embedded
-  // inside a PerformingArtsTheater schema). Without this, the
-  // reconciler would miss schemas that aren't deployed as their own
-  // top-level row.
+  // Pull both approved AND pending schema_injections. Approved
+  // contributes to "done" matching, pending contributes to
+  // "in_progress" matching.
   const rows = (await env.DB.prepare(
-    "SELECT schema_type, json_ld FROM schema_injections " +
-    "WHERE client_slug = ? AND status = 'approved'"
-  ).bind(clientSlug).all<{ schema_type: string; json_ld: string }>()).results;
-  const typeSet = new Set<string>();
+    "SELECT schema_type, json_ld, status FROM schema_injections " +
+    "WHERE client_slug = ? AND status IN ('approved','pending')"
+  ).bind(clientSlug).all<{ schema_type: string; json_ld: string; status: string }>()).results;
+
+  const approvedTypes = new Set<string>();
+  const pendingTypes = new Set<string>();
   for (const r of rows) {
-    typeSet.add(r.schema_type);
+    const target = r.status === "approved" ? approvedTypes : pendingTypes;
+    target.add(r.schema_type);
     try {
-      collectTypes(JSON.parse(r.json_ld), typeSet);
+      collectTypes(JSON.parse(r.json_ld), target);
     } catch { /* skip malformed json_ld */ }
   }
-  if (typeSet.size === 0) return 0;
+
+  if (approvedTypes.size === 0 && pendingTypes.size === 0) {
+    return { markedDone: 0, markedInProgress: 0 };
+  }
 
   const now = Math.floor(Date.now() / 1000);
-  let marked = 0;
+  let markedDone = 0;
+  let markedInProgress = 0;
   for (const item of items) {
     const mapping = TITLE_TO_TYPES.find((m) => m.titleIncludes.test(item.title));
     if (!mapping) continue;
-    const satisfied = mapping.types.some((t) => typeSet.has(t));
-    if (!satisfied) continue;
-    await env.DB.prepare(
-      "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
-      "completed_by = 'reconciler', updated_at = ? WHERE id = ?"
-    ).bind(now, now, item.id).run();
-    marked++;
+    const satisfiedByApproved = mapping.types.some((t) => approvedTypes.has(t));
+    if (satisfiedByApproved) {
+      await env.DB.prepare(
+        "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
+        "completed_by = 'reconciler', updated_at = ? WHERE id = ?"
+      ).bind(now, now, item.id).run();
+      markedDone++;
+      continue;
+    }
+    // No approved match. If there's a pending one, surface as
+    // in_progress so the customer's "actively in progress" tile
+    // reflects the draft-awaiting-review work. Only flip if the
+    // current status is not already in_progress (avoid churning
+    // updated_at for no reason).
+    const satisfiedByPending = mapping.types.some((t) => pendingTypes.has(t));
+    if (satisfiedByPending && item.status !== "in_progress") {
+      await env.DB.prepare(
+        "UPDATE roadmap_items SET status = 'in_progress', updated_at = ? WHERE id = ?"
+      ).bind(now, item.id).run();
+      markedInProgress++;
+    }
   }
-  return marked;
+  return { markedDone, markedInProgress };
 }
 
 /** Run the reconciler against every client that has at least one
@@ -145,12 +170,20 @@ export async function reconcileAllRoadmaps(env: Env): Promise<ReconcileResult> {
     "SELECT DISTINCT client_slug FROM schema_injections WHERE status = 'approved'"
   ).all<{ client_slug: string }>()).results.map((r) => r.client_slug);
 
-  const result: ReconcileResult = { scanned: slugs.length, marked: 0, byClient: {} };
+  const result: ReconcileResult = {
+    scanned: slugs.length,
+    markedDone: 0,
+    markedInProgress: 0,
+    byClient: {},
+  };
   for (const slug of slugs) {
     try {
-      const n = await reconcileRoadmapForClient(slug, env);
-      if (n > 0) result.byClient[slug] = n;
-      result.marked += n;
+      const r = await reconcileRoadmapForClient(slug, env);
+      if (r.markedDone > 0 || r.markedInProgress > 0) {
+        result.byClient[slug] = { done: r.markedDone, in_progress: r.markedInProgress };
+      }
+      result.markedDone += r.markedDone;
+      result.markedInProgress += r.markedInProgress;
     } catch (e) {
       console.log(`[reconciler] ${slug} failed: ${e}`);
     }

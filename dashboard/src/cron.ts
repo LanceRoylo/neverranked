@@ -276,7 +276,7 @@ export async function runDailyTasks(env: Env): Promise<void> {
     const { reconcileAllRoadmaps } = await import("./roadmap-reconciler");
     const r = await reconcileAllRoadmaps(env);
     console.log(
-      `[cron] roadmap-reconciler: scanned=${r.scanned} marked=${r.marked} ` +
+      `[cron] roadmap-reconciler: scanned=${r.scanned} done=${r.markedDone} in_progress=${r.markedInProgress} ` +
       `byClient=${JSON.stringify(r.byClient)}`
     );
   } catch (e) {

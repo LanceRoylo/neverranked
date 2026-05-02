@@ -926,7 +926,7 @@ export default {
       const slug = url.searchParams.get("slug");
       const { reconcileAllRoadmaps, reconcileRoadmapForClient } = await import("./roadmap-reconciler");
       const r = slug
-        ? { client: slug, marked: await reconcileRoadmapForClient(slug, env) }
+        ? { client: slug, ...(await reconcileRoadmapForClient(slug, env)) }
         : await reconcileAllRoadmaps(env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }

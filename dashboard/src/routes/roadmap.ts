@@ -506,8 +506,15 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
     ${totalItems > 0 ? renderImpactStrip([
       { value: totalDone, suffix: `/ ${totalItems}`, label: "items delivered", accent: "var(--text)" },
       { value: recentlyDelivered, label: "delivered last 30 days", accent: recentlyDelivered > 0 ? "var(--green)" : "var(--text)" },
-      { value: totalInProgress, label: "actively in progress" },
-      { value: stalledCount, label: "stalled 14+ days", accent: stalledCount > 0 ? "var(--red)" : "var(--text)" },
+      // Hide "actively in progress" when zero. Empty roadmap-state
+      // tiles read as "nothing's happening" even when the rest of
+      // the dashboard is showing real momentum, so we only surface
+      // this tile when there's actual in-flight work.
+      ...(totalInProgress > 0 ? [{ value: totalInProgress, label: "actively in progress", accent: "var(--gold)" }] : []),
+      // Same logic for the stalled tile -- only show when something
+      // is actually stalled. A clean dashboard with zero stalls
+      // shouldn't broadcast a zero next to a "stalled" label.
+      ...(stalledCount > 0 ? [{ value: stalledCount, label: "stalled 14+ days", accent: "var(--red)" }] : []),
     ], { eyebrow: "Momentum", caption: `${completedPhases} of ${updatedPhases.length} phases complete` }) : ""}
 
     <!-- Context -->
