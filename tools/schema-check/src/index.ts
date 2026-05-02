@@ -2370,7 +2370,7 @@ export default {
 
       // Extract every JSON-LD block on the page and grade each.
       const blocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi) || [];
-      const graded: { detected_type: string | null; score: number; bucket: "green" | "gold" | "red"; issues: string[]; meets_deploy_threshold: boolean }[] = [];
+      const graded: { detected_type: string | null; score: number; bucket: "green" | "gold" | "red"; issues: string[]; meets_deploy_threshold: boolean; source?: "inline" | "injected" }[] = [];
       for (const b of blocks) {
         const inner = b.replace(/<script[^>]*>/i, "").replace(/<\/script>/i, "").trim();
         try {
@@ -2386,11 +2386,55 @@ export default {
               bucket: gradeBucket(grade.score),
               issues: grade.issues,
               meets_deploy_threshold: grade.meetsDeployThreshold,
+              source: "inline",
             });
           }
         } catch {
-          graded.push({ detected_type: null, score: 0, bucket: "red", issues: ["Block failed to parse as JSON."], meets_deploy_threshold: false });
+          graded.push({ detected_type: null, score: 0, bucket: "red", issues: ["Block failed to parse as JSON."], meets_deploy_threshold: false, source: "inline" });
         }
+      }
+
+      // NeverRanked-injected schema augmentation. We do a raw HTML fetch
+      // (no JS execution), so any schema deployed via our inject snippet
+      // wouldn't appear in the loop above. The page references
+      // app.neverranked.com/inject/<slug>.js (or .json); we fetch the
+      // .json sibling endpoint and grade those blocks too. This makes
+      // the score reflect what the customer actually deployed -- not
+      // just what's in the static HTML. Fail-open: any error keeps the
+      // existing graded set unchanged.
+      let injectionSlug: string | null = null;
+      let injectedCount = 0;
+      const injectMatch = html.match(/app\.neverranked\.com\/inject\/([a-z0-9_-]+)\.(?:js|json)/i);
+      if (injectMatch) {
+        injectionSlug = injectMatch[1].toLowerCase();
+        try {
+          const injCtl = new AbortController();
+          const injTimeout = setTimeout(() => injCtl.abort(), 5_000);
+          const injResp = await fetch(`https://app.neverranked.com/inject/${injectionSlug}.json`, {
+            headers: { "Accept": "application/json" },
+            signal: injCtl.signal,
+          });
+          clearTimeout(injTimeout);
+          if (injResp.ok) {
+            const injData = await injResp.json() as { schemas?: { ld?: unknown }[] };
+            for (const s of (injData.schemas ?? [])) {
+              if (!s || typeof s !== "object" || !("ld" in s) || !s.ld) continue;
+              try {
+                const node = s.ld as object;
+                const grade = gradeSchema(node);
+                graded.push({
+                  detected_type: grade.detectedType,
+                  score: grade.score,
+                  bucket: gradeBucket(grade.score),
+                  issues: grade.issues,
+                  meets_deploy_threshold: grade.meetsDeployThreshold,
+                  source: "injected",
+                });
+                injectedCount++;
+              } catch { /* skip bad node, keep going */ }
+            }
+          }
+        } catch { /* fail open -- network/timeout/parse errors don't break the scan */ }
       }
 
       // Aggregate: overall = average of per-block scores, weighted
@@ -2415,6 +2459,13 @@ export default {
         overall_bucket: overallBucket,
         citation_penalty_pp: penaltyPp,
         per_node: graded,
+        injection: injectionSlug ? {
+          slug: injectionSlug,
+          schemas_added: injectedCount,
+          note: injectedCount > 0
+            ? `${injectedCount} schema block${injectedCount === 1 ? "" : "s"} graded from your NeverRanked injection (not visible to raw HTML scrapers, but real for AI engines that execute JavaScript).`
+            : "NeverRanked injection snippet detected but no schemas returned -- check your /admin/inject configuration.",
+        } : null,
         explanation: penaltyPp === 0
           ? "Schema is in the green zone. AI engines are unlikely to discount citations from this site for schema reasons."
           : penaltyPp === 9
