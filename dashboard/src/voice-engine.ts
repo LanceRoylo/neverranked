@@ -275,7 +275,8 @@ Return STRICT JSON:
 export async function scoreDraftAgainstProfile(
   env: Env,
   clientSlug: string,
-  draftBody: string
+  draftBody: string,
+  minChars = 50,
 ): Promise<{ score: number; justification: string } | null> {
   const fp = await env.DB.prepare(
     "SELECT fingerprint_json FROM voice_fingerprints WHERE client_slug = ?"
@@ -292,10 +293,10 @@ export async function scoreDraftAgainstProfile(
     return null;
   }
 
-  const trimmed = draftBody.slice(0, MAX_DRAFT_CHARS);
-  if (trimmed.trim().length < 50) return null; // too short to score
+  const trimmedDraft = draftBody.slice(0, MAX_DRAFT_CHARS);
+  if (trimmedDraft.trim().length < minChars) return null; // too short to score
 
-  const userMessage = `VOICE PROFILE:\n${JSON.stringify(profile, null, 2)}\n\n---\n\nDRAFT TO SCORE:\n\n${trimmed}`;
+  const userMessage = `VOICE PROFILE:\n${JSON.stringify(profile, null, 2)}\n\n---\n\nDRAFT TO SCORE:\n\n${trimmedDraft}`;
 
   try {
     const resp = await callAnthropic(env, {
@@ -314,4 +315,64 @@ export async function scoreDraftAgainstProfile(
   } catch {
     return null;
   }
+}
+
+/**
+ * Voice-score gate. Wraps scoreDraftAgainstProfile, applies a per-context
+ * threshold, and writes an admin_inbox row on failure so Lance sees it
+ * in the cockpit + morning email. Skipped silently when no fingerprint
+ * exists OR text is too short to score (caller's choice what to do then).
+ */
+export async function assertVoiceScore(
+  env: Env,
+  clientSlug: string,
+  text: string,
+  context: "blog-draft" | "reddit-brief" | "narrative" | "email",
+  meta: { source: string; target_type?: string; target_id?: number },
+): Promise<{ checked: boolean; ok: boolean; score?: number; justification?: string }> {
+  // Per-context thresholds + min-length floor:
+  //   blog-draft     -> 75/100  (long-form, well-trained on samples)
+  //   reddit-brief   -> 60/100  (short text harder to score perfectly)
+  //   narrative      -> 60/100  (sentence-length, judge generously)
+  //   email          -> 65/100  (mid-length, holds tighter than narrative)
+  const cfg = {
+    "blog-draft":   { threshold: 75, minChars: 200 },
+    "reddit-brief": { threshold: 60, minChars: 80 },
+    "narrative":    { threshold: 60, minChars: 50 },
+    "email":        { threshold: 65, minChars: 100 },
+  }[context];
+
+  const result = await scoreDraftAgainstProfile(env, clientSlug, text, cfg.minChars);
+  if (!result) return { checked: false, ok: true }; // no profile or too short -- not a fail
+
+  if (result.score >= cfg.threshold) {
+    return { checked: true, ok: true, score: result.score, justification: result.justification };
+  }
+
+  const { addInboxItem } = await import("./admin-inbox");
+  await addInboxItem(env, {
+    kind: "content_voice_fail",
+    title: `Voice score ${result.score}/100 (need ${cfg.threshold}): ${meta.source}`,
+    body: `**Source:** \`${meta.source}\`
+**Context:** \`${context}\`
+**Client:** \`${clientSlug}\`
+**Score:** ${result.score}/100 (threshold ${cfg.threshold})
+**Judge says:** ${result.justification}
+
+**Generated text:**
+
+${text}
+
+---
+
+This text didn't match the client's voice fingerprint closely enough.
+Either regenerate with the brand voice as feedback, or approve as-is
+if the score is wrong.`,
+    target_type: meta.target_type ?? "ai-text",
+    target_id: meta.target_id ?? 0,
+    target_slug: clientSlug,
+    urgency: "normal",
+  });
+
+  return { checked: true, ok: false, score: result.score, justification: result.justification };
 }

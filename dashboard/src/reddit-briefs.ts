@@ -251,6 +251,13 @@ export async function generateOrGetBrief(
     client_slug: clientSlug,
     target_type: "reddit_brief",
   });
+  // Voice score: only meaningful when we have a fingerprint AND there's
+  // enough text to judge. Wrapper handles both no-ops cleanly.
+  const { assertVoiceScore } = await import("./voice-engine");
+  await assertVoiceScore(env, clientSlug, briefAsText, "reddit-brief", {
+    source: "reddit-briefs.generateOrGetBrief",
+    target_type: "reddit_brief",
+  });
 
   const now = Math.floor(Date.now() / 1000);
   const result = await env.DB.prepare(
