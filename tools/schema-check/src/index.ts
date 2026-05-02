@@ -38,7 +38,7 @@ async function sha256Hex(input: string): Promise<string> {
 
 // ---------- Shared analysis logic (packages/aeo-analyzer) ----------
 
-import { buildReport, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
+import { buildReport, buildReportFollowingSnippets, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
 
 // ---------- HTML UI ----------
 
@@ -2538,7 +2538,12 @@ export default {
         return Response.json({ error: message }, { status: 422, headers: corsHeaders });
       }
 
-      const report = buildReport(targetUrl, html);
+      // Use the snippet-following variant so any schema deployed via
+      // a NeverRanked /inject/<slug>.js snippet on the page is fetched
+      // and graded too. Without this, customers running the free check
+      // on their own snippet-installed sites see a falsely low score
+      // (a raw HTML scrape can't see client-side-injected schema).
+      const report = await buildReportFollowingSnippets(targetUrl, html);
 
       // Log anonymous scan event to KV (with referrer/UTM attribution).
       // Enriched with ip_hash + user-agent so we can dedupe unique humans
