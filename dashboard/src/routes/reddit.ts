@@ -10,6 +10,7 @@
 import type { Env, User } from "../types";
 import { layout, html, esc } from "../render";
 import { canAccessClient } from "../agency";
+import { canUseRedditBriefs } from "../gating";
 import { getRedditSummary } from "../reddit-citations";
 
 const ENGINE_LABELS: Record<string, string> = {
@@ -25,6 +26,17 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
   }
 
   const summary = await getRedditSummary(clientSlug, 90, env);
+  const showBriefs = canUseRedditBriefs(user);
+
+  // Pre-load any existing briefs for these threads so we can link to the
+  // cached view directly instead of re-fetching on click.
+  const existingBriefs = new Map<string, number>();
+  if (showBriefs && summary.totalCitations > 0) {
+    const rows = (await env.DB.prepare(
+      "SELECT id, thread_url FROM reddit_briefs WHERE client_slug = ?",
+    ).bind(clientSlug).all<{ id: number; thread_url: string }>()).results;
+    for (const r of rows) existingBriefs.set(r.thread_url, r.id);
+  }
 
   if (summary.totalCitations === 0) {
     const body = `
@@ -60,7 +72,16 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
       const tick = t.client_cited === 1
         ? `<span style="color:var(--green);margin-right:8px" title="You were cited in the same response">✓</span>`
         : `<span style="color:var(--text-faint);margin-right:8px" title="You were not cited in this response">·</span>`;
-      return `<li style="padding:6px 0;border-bottom:1px dotted var(--line);font-size:13px">${tick}<a href="${esc(t.thread_url)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:underline">${esc(t.thread_url.replace("https://www.reddit.com",""))}</a> <span style="color:var(--text-faint);margin-left:8px">${esc(eng)} · ${date}</span></li>`;
+      let briefBtn = "";
+      if (showBriefs) {
+        const existingId = existingBriefs.get(t.thread_url);
+        if (existingId) {
+          briefBtn = `<a href="/reddit/${esc(clientSlug)}/brief/${existingId}" style="margin-left:12px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);padding:2px 6px;border-radius:2px;text-decoration:none">View brief</a>`;
+        } else {
+          briefBtn = `<button type="button" data-thread="${esc(t.thread_url)}" class="briefGenBtn" style="margin-left:12px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);background:transparent;border:1px solid var(--line);padding:2px 6px;border-radius:2px;cursor:pointer">Generate brief</button>`;
+        }
+      }
+      return `<li style="padding:6px 0;border-bottom:1px dotted var(--line);font-size:13px;display:flex;align-items:center;flex-wrap:wrap"><span>${tick}<a href="${esc(t.thread_url)}" target="_blank" rel="noopener" style="color:var(--text);text-decoration:underline">${esc(t.thread_url.replace("https://www.reddit.com",""))}</a> <span style="color:var(--text-faint);margin-left:8px">${esc(eng)} · ${date}</span></span>${briefBtn}</li>`;
     }).join("");
 
     const moreNote = s.threads.length > 8
@@ -118,8 +139,31 @@ export async function handleReddit(clientSlug: string, user: User, env: Env): Pr
     ${subredditRows}
 
     <div style="border:1px solid var(--line);border-radius:6px;padding:20px;background:var(--bg-faint);font-size:13px;color:var(--text-muted);margin-top:24px">
-      <strong style="color:var(--text)">How this is computed.</strong> Every Perplexity / ChatGPT / Gemini response we run for your tracked keywords surfaces a list of cited URLs. We extract reddit.com thread URLs, group them by subreddit, and join them to whether you were cited in the same response. A "present" (✓) row means you were named in the model's answer alongside the reddit thread.
+      <strong style="color:var(--text)">How this is computed.</strong> Every Perplexity / ChatGPT / Gemini response we run for your tracked keywords surfaces a list of cited URLs. We extract reddit.com thread URLs, group them by subreddit, and join them to whether you were cited in the same response. A "present" (✓) row means you were named in the model's answer alongside the reddit thread.${showBriefs ? ` <strong style="color:var(--text)">Generate brief</strong> reads the thread plus the subreddit's rules and produces a 4-section strategic brief -- gap, your angle, tone notes, don't-do list -- so a real human on your team can write a real reply. We never draft the comment itself; that's how Reddit accounts get burned.` : ""}
     </div>
+    ${showBriefs ? `<script>
+      document.querySelectorAll('.briefGenBtn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const threadUrl = btn.getAttribute('data-thread');
+          const original = btn.textContent;
+          btn.disabled = true; btn.textContent = 'Generating...';
+          try {
+            const r = await fetch('/reddit/${esc(clientSlug)}/brief', {
+              method: 'POST',
+              headers: { 'content-type': 'application/json' },
+              body: JSON.stringify({ thread_url: threadUrl })
+            });
+            const j = await r.json();
+            if (j.view_url) { location.href = j.view_url; return; }
+            btn.textContent = j.error === 'amplify_required' ? 'Amplify only' : 'Failed';
+            setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2500);
+          } catch (e) {
+            btn.textContent = 'Failed';
+            setTimeout(() => { btn.textContent = original; btn.disabled = false; }, 2500);
+          }
+        });
+      });
+    </script>` : ""}
   `;
 
   return html(layout("Reddit presence", body, user, clientSlug));

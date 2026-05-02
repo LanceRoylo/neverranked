@@ -453,6 +453,35 @@ export interface CitationSnapshot {
   created_at: number;
 }
 
+// ---------- Phase 5B: Reddit reply briefs ----------
+
+export interface RedditBriefData {
+  gap: string;        // one sentence: what's missing from the thread's existing answers
+  angle: string;      // one sentence: what only this client can add
+  tone_notes: string[]; // 2-3 bullets on subreddit norms
+  dont_do: string[];  // explicit anti-patterns
+}
+
+export interface RedditThreadSnapshot {
+  op_title: string;
+  op_body: string;
+  top_comments: { author: string; score: number; body: string }[];
+  fetched_at: number;
+}
+
+export interface RedditBrief {
+  id: number;
+  client_slug: string;
+  thread_url: string;
+  subreddit: string;
+  brief_json: string;        // RedditBriefData JSON
+  thread_snapshot: string;   // RedditThreadSnapshot JSON
+  model: string;
+  generated_by: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface RequestContext {
   user: User | null;
   env: Env;

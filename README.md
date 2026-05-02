@@ -121,7 +121,7 @@ Never Ranked is deliberately small. One founder, async-first, no standing meetin
 
 - **Audit:** $500 one-time, delivered within 48 hours. The starting diagnostic.
 - **Signal retainer:** $2,000/mo, three-month minimum. Web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Claude. Reddit thread monitoring. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits. Industry-percentile benchmarks. Quarterly drift detection. Forward-ready Monday digest.
-- **Amplify retainer:** $4,500/mo, three-month minimum. Capped at 6 active clients globally. Everything in Signal plus brand-voice fingerprint, citation-shaped content drafted in your voice, auto-publish to WordPress / Webflow / Shopify.
+- **Amplify retainer:** $4,500/mo, three-month minimum. Capped at 6 active clients globally. Everything in Signal plus brand-voice fingerprint, citation-shaped content drafted in your voice, auto-publish to WordPress / Webflow / Shopify, and Reddit reply briefs (per-thread strategic briefs your team uses to post real human replies — we never draft the comment itself).
 
 The dashboard is the meeting. Loom recaps replace calls. Email SLAs replace Slack channels.
 

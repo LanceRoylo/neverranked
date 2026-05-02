@@ -21,6 +21,14 @@ export function canUseDraftingFeature(user: User): boolean {
   return false;
 }
 
+/**
+ * Reddit reply briefs are Amplify-tier. Same access matrix as drafting:
+ * admins and agency_admins can run them on behalf of any client.
+ */
+export function canUseRedditBriefs(user: User): boolean {
+  return canUseDraftingFeature(user);
+}
+
 /** For plan-agnostic decisions about whether the user is a paying client. */
 export function isPayingClient(user: User): boolean {
   if (user.role !== "client") return false;

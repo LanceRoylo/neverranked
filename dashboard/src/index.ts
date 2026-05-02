@@ -35,6 +35,7 @@ import { handleInbox, handleInboxAgencyAppAction, handleInboxSuggestionAction, h
 import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorFromPage, handleReorderCompetitors } from "./routes/competitors";
 import { handleTrust } from "./routes/trust";
 import { handleReddit } from "./routes/reddit";
+import { handleBriefGenerate, handleBriefView } from "./routes/reddit-briefs";
 import { handleBenchmark } from "./routes/benchmark";
 import { recomputeIndustryBenchmarks } from "./industry-benchmarks";
 import { backfillRedditCitations, maybeAddRedditRoadmapItems } from "./reddit-citations";
@@ -955,6 +956,16 @@ export default {
     if (path === "/reddit" || path === "/reddit/") {
       if (user.client_slug) return redirect(`/reddit/${user.client_slug}`);
       return renderClientPicker("Reddit presence", "reddit", user, env);
+    }
+    // Phase 5B: brief routes -- must come BEFORE the general /reddit/<slug>
+    // matcher so /reddit/<slug>/brief and /reddit/<slug>/brief/<id> resolve.
+    const briefGenMatch = path.match(/^\/reddit\/([^/]+)\/brief$/);
+    if (briefGenMatch && method === "POST") {
+      return handleBriefGenerate(decodeURIComponent(briefGenMatch[1]), user, env, request);
+    }
+    const briefViewMatch = path.match(/^\/reddit\/([^/]+)\/brief\/(\d+)$/);
+    if (briefViewMatch && method === "GET") {
+      return handleBriefView(decodeURIComponent(briefViewMatch[1]), parseInt(briefViewMatch[2], 10), user, env);
     }
     const redditMatch = path.match(/^\/reddit\/([^/]+)$/);
     if (redditMatch && method === "GET") {
