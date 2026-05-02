@@ -82,6 +82,26 @@ export async function logSchemaDeployed(
   });
 }
 
+/** Log that a schema has been DRAFTED and is awaiting review.
+ *  Used when content-generation produces a candidate (FAQPage from
+ *  page text, Article from blog posts, etc.) that should not go
+ *  live until the customer or admin approves it. */
+export async function logSchemaDrafted(
+  env: Env,
+  clientSlug: string,
+  schemaType: string,
+  scope: string,
+  injectionId: number,
+): Promise<void> {
+  await createAlertIfFresh(env, {
+    clientSlug,
+    type: "draft_ready",
+    title: `${schemaType} draft ready for review`,
+    detail: `Generated from ${scope}. Review the questions and answers, edit if needed, then approve to deploy. Draft #${injectionId}.`,
+    windowHours: 1,
+  });
+}
+
 /** Log a cron activation (one-time, when a refresh job is wired
  *  up for a client). Use this from onboarding flows, not the cron
  *  itself. */

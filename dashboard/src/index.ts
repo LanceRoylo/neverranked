@@ -951,6 +951,20 @@ export default {
         headers: { "content-type": "application/json" }
       });
     }
+    // Generate a FAQPage draft from a customer's page content.
+    // Inserted as 'pending' so the customer reviews before live.
+    if (path === "/admin/generate-faq" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const sourceUrl = url.searchParams.get("url");
+      if (!slug || !sourceUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?url=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateFaqForPage } = await import("./faq-generator");
+      const r = await generateFaqForPage(slug, sourceUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
 
     // Reddit presence (Phase 5)
     if (path === "/reddit" || path === "/reddit/") {

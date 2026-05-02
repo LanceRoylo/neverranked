@@ -950,6 +950,7 @@ async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> 
     else if (a.type === "needs_review") { icon = "??"; iconColor = "var(--yellow)"; }
     else if (a.type === "deploy") { icon = "[+]"; iconColor = "var(--gold)"; }
     else if (a.type === "cron_activated") { icon = "==>"; iconColor = "var(--gold)"; }
+    else if (a.type === "draft_ready") { icon = "[?]"; iconColor = "var(--yellow)"; }
     events.push({ timestamp: a.created_at, icon, iconColor, title: a.title, detail: a.detail || "", type: "alert" });
   }
 
