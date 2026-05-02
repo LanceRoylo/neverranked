@@ -37,7 +37,7 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
   const slug = user.client_slug;
   if (!slug) return [];
 
-  const [snippetRow, scanRow, compRow, voiceRow, draftRow] = await Promise.all([
+  const [snippetRow, scanRow, compRow, voiceRow, draftRow, keywordRow] = await Promise.all([
     env.DB.prepare(
       `SELECT COALESCE(snippet_last_detected_at, 0) AS detected
          FROM domains
@@ -60,6 +60,9 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
     ).bind(slug).first<{ cnt: number }>(),
     env.DB.prepare(
       `SELECT COUNT(*) AS cnt FROM content_drafts WHERE client_slug = ?`,
+    ).bind(slug).first<{ cnt: number }>(),
+    env.DB.prepare(
+      `SELECT COUNT(*) AS cnt FROM citation_keywords WHERE client_slug = ? AND active = 1`,
     ).bind(slug).first<{ cnt: number }>(),
   ]);
 
@@ -91,6 +94,14 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
       href: `/competitors/${slug}`,
       cta: "Add competitors",
       done: (compRow?.cnt || 0) >= 3,
+    },
+    {
+      key: "discover_prompts",
+      label: "Track your first AI prompts",
+      desc: "Generate suggested prompts based on your business, then one-click track the ones worth monitoring weekly across ChatGPT, Perplexity, Gemini, and Claude.",
+      href: `/discover/${slug}`,
+      cta: (keywordRow?.cnt || 0) > 0 ? "Add more prompts" : "Generate prompts",
+      done: (keywordRow?.cnt || 0) >= 5,
     },
   ];
 
