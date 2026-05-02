@@ -274,6 +274,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] gemini-historical-backfill failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // SerpApi readiness reminder. Fires HIGH-urgency admin_inbox row the
+  // morning after the first paying client goes active. Permanent no-op
+  // once setup is marked complete via automation_log row of kind
+  // 'serpapi_setup_complete'. Inbox body contains the full PR-12 spec.
+  try {
+    const { maybeRemindSerpApiSetup } = await import("./serpapi-readiness");
+    await maybeRemindSerpApiSetup(env);
+  } catch (e) {
+    console.log(`[cron] serpapi-readiness check failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Sentiment scoring: process oldest 100 unscored client_cited=1 runs
   // per cron pass. Catches new ingest within ~24h, also drains historical
   // backlog. Negative mentions write admin_inbox rows visible in cockpit
