@@ -822,6 +822,10 @@ export default {
     // of the schema injection script for this client. Available to
     // anyone with canAccessClient on the slug (admin, agency, the
     // client themselves). The handler does its own access check.
+    if ((path === "/bots" || path === "/bots/") && method === "GET") {
+      if (user.client_slug) return redirect(`/bots/${user.client_slug}`);
+      return renderClientPicker("Bot analytics", "bots", user, env);
+    }
     const botsMatch = path.match(/^\/bots\/([a-z0-9_-]+)$/);
     if (botsMatch && method === "GET") {
       return handleBotAnalytics(botsMatch[1], user, env);
