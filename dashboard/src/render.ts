@@ -81,6 +81,7 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+        <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
         <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
       </div>
       ${isAdmin ? `
@@ -88,6 +89,7 @@ export function layout(
         <div class="sidebar-section-header">Ops</div>
         <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
+        <a href="/admin/weekly-brief" class="sidebar-item${title === 'Weekly briefs' || title === 'Weekly brief' ? ' active' : ''}">Weekly briefs</a>
         <a href="/admin/content-review" class="sidebar-item${title === 'Content review' ? ' active' : ''}">Content review</a>
         <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>
         <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
@@ -126,6 +128,7 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
+        <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
         <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
       </div>
     </nav>` : '';

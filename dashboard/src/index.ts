@@ -131,6 +131,18 @@ export default {
     if (path === "/changelog" && method === "GET") {
       return handleChangelog(request, env);
     }
+
+    // Public Weekly AEO Brief: archive list + per-brief detail.
+    // Indexable, no auth, JSON-LD Article schema on detail pages.
+    if (path === "/weekly" || path === "/weekly/") {
+      const { handleWeeklyList } = await import("./routes/weekly");
+      return handleWeeklyList(env);
+    }
+    const weeklyDetailMatch = path.match(/^\/weekly\/([a-z0-9-]+)$/);
+    if (weeklyDetailMatch && method === "GET") {
+      const { handleWeeklyDetail } = await import("./routes/weekly");
+      return handleWeeklyDetail(weeklyDetailMatch[1], env);
+    }
     const installMatch = /^\/install\/([a-z0-9-]+)$/.exec(path);
     if (installMatch && method === "GET") {
       return handleInstallGuide(installMatch[1], request, env);
@@ -511,6 +523,31 @@ export default {
     // Admin routes
     if (path === "/admin" && method === "GET" && user.role === "admin") {
       return handleCockpit(user, env);
+    }
+
+    // Weekly AEO Brief admin: list, detail, approve, reject, regenerate
+    if (path === "/admin/weekly-brief" && method === "GET" && user.role === "admin") {
+      const { handleAdminBriefList } = await import("./routes/weekly");
+      return handleAdminBriefList(user, env);
+    }
+    if (path === "/admin/weekly-brief/regenerate" && method === "POST" && user.role === "admin") {
+      const { handleAdminBriefRegenerate } = await import("./routes/weekly");
+      return handleAdminBriefRegenerate(env, request);
+    }
+    const weeklyAdminViewMatch = path.match(/^\/admin\/weekly-brief\/(\d+)$/);
+    if (weeklyAdminViewMatch && method === "GET" && user.role === "admin") {
+      const { handleAdminBriefView } = await import("./routes/weekly");
+      return handleAdminBriefView(parseInt(weeklyAdminViewMatch[1], 10), user, env);
+    }
+    const weeklyAdminApproveMatch = path.match(/^\/admin\/weekly-brief\/(\d+)\/approve$/);
+    if (weeklyAdminApproveMatch && method === "POST" && user.role === "admin") {
+      const { handleAdminBriefApprove } = await import("./routes/weekly");
+      return handleAdminBriefApprove(parseInt(weeklyAdminApproveMatch[1], 10), user, env);
+    }
+    const weeklyAdminRejectMatch = path.match(/^\/admin\/weekly-brief\/(\d+)\/reject$/);
+    if (weeklyAdminRejectMatch && method === "POST" && user.role === "admin") {
+      const { handleAdminBriefReject } = await import("./routes/weekly");
+      return handleAdminBriefReject(parseInt(weeklyAdminRejectMatch[1], 10), user, env);
     }
 
     // Admin inbox -- the founder's "what needs my attention" surface
@@ -1634,6 +1671,21 @@ export default {
           await sendInboxMorningSummary(env);
         } catch (e) {
           console.log(`[cron 17:00] inbox morning summary failed: ${e instanceof Error ? e.message : e}`);
+        }
+
+        // Thursday-only: generate the Weekly AEO Brief draft for last week.
+        // Lance reviews + approves via /admin/weekly-brief/<id>; on approval
+        // it publishes to /weekly/<slug>. Idempotent -- if a draft already
+        // exists for this week the generator returns the existing id.
+        const day = new Date(event.scheduledTime ?? Date.now()).getUTCDay();
+        if (day === 4) {
+          try {
+            const { generateWeeklyBrief } = await import("./weekly-brief-generator");
+            const result = await generateWeeklyBrief(env);
+            console.log(`[cron 17:00 Thu] weekly brief: ${JSON.stringify(result)}`);
+          } catch (e) {
+            console.log(`[cron 17:00 Thu] weekly brief generation failed: ${e instanceof Error ? e.message : e}`);
+          }
         }
       })());
       return;
