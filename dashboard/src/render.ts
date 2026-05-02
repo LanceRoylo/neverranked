@@ -5,6 +5,7 @@
 import { CSS } from "./styles";
 import type { User, BrandingContext } from "./types";
 import { canUseDraftingFeature } from "./gating";
+import { commandPaletteHtml, commandPaletteTrigger, commandPaletteCss, commandPaletteScript } from "./command-palette";
 
 /**
  * Normalize a hex color or CSS color string so we can safely interpolate
@@ -57,18 +58,20 @@ export function layout(
         <a href="/" class="sidebar-item${active('Dashboard')}">Dashboard</a>
         <a href="/alerts" class="sidebar-item${active('Alerts')}">Alerts${alertBadge}</a>
       </div>
-      <div class="sidebar-section">
+      <div class="sidebar-section collapsible" data-section="measure">
         <div class="sidebar-section-header">Measure</div>
         <a href="${slugify('/summary')}" class="sidebar-item${active('Summary')}">Summary</a>
-        <a href="${slugify('/report')}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
-        <a href="${slugify('/search')}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
-        <a href="${slugify('/competitors')}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="${slugify('/citations')}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
-        <a href="${slugify('/discover')}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track, generated from your business context">Discover</a>
-        <a href="${slugify('/reddit')}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for your tracked queries">Reddit</a>
-        <a href="${slugify('/trust')}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, Google Business, author bios">Authority</a>
-        <a href="${slugify('/benchmark')}" class="sidebar-item${active('Industry benchmark')}" title="How you rank vs industry peers (percentile)">Benchmark</a>
-        <a href="${slugify('/bots')}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading your site, when, how often">Bots</a>
+        <a href="${slugify('/search')}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
+        <a href="${slugify('/report')}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
+        <div class="sidebar-overflow">
+          <a href="${slugify('/competitors')}" class="sidebar-item${active('Competitors')}">Competitors</a>
+          <a href="${slugify('/discover')}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track, generated from your business context">Discover</a>
+          <a href="${slugify('/reddit')}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for your tracked queries">Reddit</a>
+          <a href="${slugify('/trust')}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, Google Business, author bios">Authority</a>
+          <a href="${slugify('/benchmark')}" class="sidebar-item${active('Industry benchmark')}" title="How you rank vs industry peers (percentile)">Benchmark</a>
+          <a href="${slugify('/bots')}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading your site, when, how often">Bots</a>
+        </div>
       </div>
       <div class="sidebar-section">
         <div class="sidebar-section-header">Improve</div>
@@ -78,24 +81,28 @@ export function layout(
         ${canDraft ? `<a href="${slugify('/drafts')}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="In-dashboard content drafts, editor, and export">Drafts</a>` : ''}
         ${canDraft ? `<a href="${slugify('/publishing')}" class="sidebar-item${active('Publishing')}" title="WordPress connection for auto-publishing approved drafts">Publishing</a>` : ''}
       </div>
-      <div class="sidebar-section">
+      <div class="sidebar-section collapsible" data-section="learn" data-default-collapsed>
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
-        <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
         <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
+        <div class="sidebar-overflow">
+          <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
+        </div>
       </div>
       ${isAdmin ? `
-      <div class="sidebar-section">
+      <div class="sidebar-section collapsible" data-section="ops">
         <div class="sidebar-section-header">Ops</div>
         <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
         <a href="/admin/weekly-brief" class="sidebar-item${title === 'Weekly briefs' || title === 'Weekly brief' ? ' active' : ''}">Weekly briefs</a>
         <a href="/admin/content-review" class="sidebar-item${title === 'Content review' ? ' active' : ''}">Content review</a>
-        <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>
-        <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
-        <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>
-        <a href="/admin/leads" class="sidebar-item${active('Leads')}">Leads</a>
-        <a href="/admin/free-check" class="sidebar-item${active('Free check activity')}">Free check</a>
+        <div class="sidebar-overflow">
+          <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>
+          <a href="/admin/scans" class="sidebar-item${active('Scan Health')}">Scan Health</a>
+          <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>
+          <a href="/admin/leads" class="sidebar-item${active('Leads')}">Leads</a>
+          <a href="/admin/free-check" class="sidebar-item${active('Free check activity')}">Free check</a>
+        </div>
       </div>` : ''}
     </nav>` : '';
 
@@ -109,27 +116,31 @@ export function layout(
         <a href="/agency/settings" class="sidebar-item${active('Agency Settings')}">Branding</a>
       </div>
       ${slug ? `
-      <div class="sidebar-section">
+      <div class="sidebar-section collapsible" data-section="agency-client">
         <div class="sidebar-section-header">Client: ${esc(slug)}</div>
         <a href="/summary/${slug}" class="sidebar-item${active('Summary')}">Summary</a>
-        <a href="/report/${slug}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
-        <a href="/search/${slug}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
-        <a href="/competitors/${slug}" class="sidebar-item${active('Competitors')}">Competitors</a>
         <a href="/citations/${slug}" class="sidebar-item${active('Citations', 'Citation Keywords')}">Citations</a>
-        <a href="/discover/${slug}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track">Discover</a>
-        <a href="/reddit/${slug}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for tracked queries">Reddit</a>
-        <a href="/trust/${slug}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, GBP, author bios">Authority</a>
-        <a href="/benchmark/${slug}" class="sidebar-item${active('Industry benchmark')}" title="How they rank vs industry peers">Benchmark</a>
-        <a href="/bots/${slug}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading the site">Bots</a>
         <a href="/roadmap/${slug}" class="sidebar-item${active('Roadmap')}">Roadmap${roadmapBadge}</a>
-        <a href="/voice/${slug}" class="sidebar-item${active('Voice')}" title="Upload writing samples for this client">Voice</a>
         <a href="/drafts/${slug}" class="sidebar-item${title === 'Drafts' || title.startsWith('Draft:') ? ' active' : ''}" title="Drafts for this client">Drafts</a>
+        <div class="sidebar-overflow">
+          <a href="/report/${slug}" class="sidebar-item${title.startsWith('Report') ? ' active' : ''}">Reports</a>
+          <a href="/search/${slug}" class="sidebar-item${active('Search Performance', 'Search Console')}">Search</a>
+          <a href="/competitors/${slug}" class="sidebar-item${active('Competitors')}">Competitors</a>
+          <a href="/discover/${slug}" class="sidebar-item${active('Discover')}" title="AI-suggested prompts to track">Discover</a>
+          <a href="/reddit/${slug}" class="sidebar-item${active('Reddit presence')}" title="Reddit threads AI engines cite for tracked queries">Reddit</a>
+          <a href="/trust/${slug}" class="sidebar-item${active('Authority signals')}" title="G2, Trustpilot, Capterra, GBP, author bios">Authority</a>
+          <a href="/benchmark/${slug}" class="sidebar-item${active('Industry benchmark')}" title="How they rank vs industry peers">Benchmark</a>
+          <a href="/bots/${slug}" class="sidebar-item${active('Bot Analytics')}" title="Which AI bots are reading the site">Bots</a>
+          <a href="/voice/${slug}" class="sidebar-item${active('Voice')}" title="Upload writing samples for this client">Voice</a>
+        </div>
       </div>` : ''}
-      <div class="sidebar-section">
+      <div class="sidebar-section collapsible" data-section="agency-learn" data-default-collapsed>
         <div class="sidebar-section-header">Learn</div>
         <a href="/learn" class="sidebar-item${active('Learn')}">Knowledge</a>
-        <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
         <a href="/changelog" class="sidebar-item${active('Changelog')}" title="What's new in NeverRanked">What's new</a>
+        <div class="sidebar-overflow">
+          <a href="/weekly" class="sidebar-item${active('Weekly Brief')}" title="Weekly anonymized observations across all tracked clients">Weekly Brief</a>
+        </div>
       </div>
     </nav>` : '';
 
@@ -224,6 +235,7 @@ export function layout(
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <style>${CSS}</style>
+<style>${commandPaletteCss()}</style>
 ${brandStyleOverride}
 </head>
 <body>
@@ -234,7 +246,10 @@ ${user ? `<header class="topbar">
     <button class="hamburger" onclick="document.getElementById('sidebar').classList.toggle('open');document.getElementById('sidebar-scrim').classList.toggle('on')" aria-label="Menu">&#9776;</button>
     <a href="/" class="mark">${brandMark}</a>
   </div>
-  ${avatarMenu}
+  <div style="display:flex;align-items:center;gap:12px">
+    ${commandPaletteTrigger()}
+    ${avatarMenu}
+  </div>
 </header>
 <div class="sidebar-scrim" id="sidebar-scrim" onclick="document.getElementById('sidebar').classList.remove('open');this.classList.remove('on')"></div>
 <div class="app-shell">
@@ -305,6 +320,9 @@ ${poweredBy}`}
   }
 })();
 </script>
+
+${user ? commandPaletteHtml() : ''}
+${user ? commandPaletteScript({ isAdmin, canDraft, activeSlug: activeSlug || null }) : ''}
 
 </body>
 </html>`;
