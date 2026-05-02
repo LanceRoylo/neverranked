@@ -984,6 +984,56 @@ export default {
       });
     }
 
+    // Phase 5B prep: resolve Gemini grounding-redirect URLs in historical
+    // citation_runs.cited_urls. After resolution, re-runs reddit
+    // extraction so any reddit threads hidden behind opaque tokens get
+    // surfaced. Idempotent: already-resolved URLs pass through unchanged.
+    // ?days=N (default 90) controls the lookback window.
+    const geminiResolveMatch = path.match(/^\/admin\/gemini-resolve\/([^/]+)$/);
+    if (geminiResolveMatch && method === "GET" && user.role === "admin") {
+      const slug = decodeURIComponent(geminiResolveMatch[1]);
+      const days = parseInt(url.searchParams.get("days") || "90", 10);
+      const { resolveGroundingUrls, isGroundingRedirect } = await import("./gemini-resolver");
+      const since = Math.floor(Date.now() / 1000) - days * 86400;
+      const runs = (await env.DB.prepare(
+        `SELECT cr.id, cr.cited_urls
+           FROM citation_runs cr
+           JOIN citation_keywords ck ON ck.id = cr.keyword_id
+           WHERE ck.client_slug = ? AND cr.engine = 'gemini' AND cr.run_at >= ?`
+      ).bind(slug, since).all<{ id: number; cited_urls: string }>()).results;
+
+      let runsScanned = 0;
+      let runsUpdated = 0;
+      let urlsResolved = 0;
+      for (const r of runs) {
+        runsScanned++;
+        let raw: unknown = [];
+        try { raw = JSON.parse(r.cited_urls || "[]"); } catch { continue; }
+        if (!Array.isArray(raw)) continue;
+        const before = (raw as unknown[]).filter((u): u is string => typeof u === "string");
+        const hasRedirect = before.some(isGroundingRedirect);
+        if (!hasRedirect) continue;
+        const after = await resolveGroundingUrls(before);
+        const changed = after.some((u, i) => u !== before[i]);
+        if (!changed) continue;
+        urlsResolved += after.filter((u, i) => u !== before[i]).length;
+        await env.DB.prepare(
+          "UPDATE citation_runs SET cited_urls = ? WHERE id = ?"
+        ).bind(JSON.stringify(after), r.id).run();
+        runsUpdated++;
+      }
+
+      // Re-run reddit extraction so any newly-visible reddit URLs get
+      // ingested into reddit_citations + roadmap.
+      const reddit = await backfillRedditCitations(slug, days, env);
+      const roadmapAdded = await maybeAddRedditRoadmapItems(slug, env);
+
+      return new Response(JSON.stringify({
+        slug, days, runsScanned, runsUpdated, urlsResolved,
+        reddit_backfill: reddit, reddit_roadmap_items_added: roadmapAdded,
+      }, null, 2), { headers: { "content-type": "application/json" } });
+    }
+
     // Trust / authority signals (Phase 4A)
     if (path === "/trust" || path === "/trust/") {
       if (user.client_slug) return redirect(`/trust/${user.client_slug}`);

@@ -7,6 +7,7 @@
  */
 
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
+import { resolveGroundingUrls } from "./gemini-resolver";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -239,12 +240,16 @@ async function queryGemini(
   const text = cand?.content?.parts?.map(p => p.text).join("") || "";
 
   // Extract URLs from groundingChunks. Each chunk has a web.uri
-  // pointing at a real source Google Search returned.
-  const urls: string[] = [];
+  // pointing at a real source Google Search returned -- but Gemini
+  // returns these as opaque vertexaisearch.cloud.google.com redirect
+  // tokens. Resolve them to real URLs so downstream extraction (reddit,
+  // competitor surfacing, citation display) sees the actual sources.
+  const rawUrls: string[] = [];
   const chunks = cand?.groundingMetadata?.groundingChunks || [];
   for (const ch of chunks) {
-    if (ch.web?.uri) urls.push(ch.web.uri);
+    if (ch.web?.uri) rawUrls.push(ch.web.uri);
   }
+  const urls = await resolveGroundingUrls(rawUrls);
 
   // Same entity extraction as Perplexity / OpenAI search-preview.
   const entities = extractEntitiesFromText(text, urls);
