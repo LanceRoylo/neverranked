@@ -955,6 +955,9 @@ export default {
     }
 
     // Schema injection admin
+    if ((path === "/admin/inject" || path === "/admin/inject/") && method === "GET" && user.role === "admin") {
+      return renderClientPicker("Schema injection (admin)", "admin/inject", user, env);
+    }
     const injectAdminMatch = path.match(/^\/admin\/inject\/([^/]+)$/);
     if (injectAdminMatch && method === "GET" && user.role === "admin") {
       return handleInjectAdmin(decodeURIComponent(injectAdminMatch[1]), user, env);
@@ -1466,6 +1469,9 @@ export default {
     }
 
     // Citations -- admin keyword management
+    if ((path === "/admin/citations" || path === "/admin/citations/") && method === "GET" && user.role === "admin") {
+      return renderClientPicker("Keyword management (admin)", "admin/citations", user, env);
+    }
     const citationsAdminMatch = path.match(/^\/admin\/citations\/([^/]+?)\/?$/);
     if (citationsAdminMatch && method === "GET" && user.role === "admin") {
       return handleAdminCitations(decodeURIComponent(citationsAdminMatch[1]), user, env, url);

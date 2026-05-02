@@ -131,6 +131,8 @@ export function commandPaletteScript(opts: { isAdmin: boolean; canDraft: boolean
     { title: "Weekly briefs (admin)", section: "Ops", path: "/admin/weekly-brief", admin: true },
     { title: "Content review", section: "Ops", path: "/admin/content-review", admin: true },
     { title: "Manage clients", section: "Ops", path: "/admin/manage", admin: true },
+    { title: "Schema injection (admin)", section: "Ops", path: "/admin/inject", admin: true, aliases: ["json-ld", "schema admin", "approve schema"] },
+    { title: "Keyword management (admin)", section: "Ops", path: "/admin/citations", admin: true, aliases: ["keywords", "tracked queries", "manage keywords"] },
     { title: "Scan health", section: "Ops", path: "/admin/scans", admin: true },
     { title: "Engagement", section: "Ops", path: "/admin/engagement", admin: true },
     { title: "Leads", section: "Ops", path: "/admin/leads", admin: true },
