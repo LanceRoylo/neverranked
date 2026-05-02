@@ -1073,7 +1073,11 @@ export async function handleManualCitationRun(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  // Run in background via waitUntil so the page responds immediately
-  ctx.waitUntil(runWeeklyCitations(env));
+  // Per-client run only -- previously this called runWeeklyCitations(env)
+  // with no filter, which fired every client's keywords through the AI
+  // engines on every "Run now" click. Burned API budget unnecessarily
+  // and could rate-limit other clients' Monday cron data. Slug-filtered
+  // now so the button does what its location implies.
+  ctx.waitUntil(runWeeklyCitations(env, slug));
   return redirect(`/admin/citations/${slug}?running=1`);
 }

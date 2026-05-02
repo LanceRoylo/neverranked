@@ -381,18 +381,23 @@ function wasClientCited(
 // Main citation scan orchestrator
 // ---------------------------------------------------------------------------
 
-export async function runWeeklyCitations(env: Env): Promise<void> {
+export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise<void> {
   if (!env.PERPLEXITY_API_KEY && !env.OPENAI_API_KEY) {
     console.log("Citation tracking: no API keys configured, skipping");
     return;
   }
 
-  // Get all active clients with keywords
-  const keywords = (
-    await env.DB.prepare(
-      "SELECT * FROM citation_keywords WHERE active = 1 ORDER BY client_slug, id"
-    ).all<CitationKeyword>()
-  ).results;
+  // Get active keywords -- optionally filtered to one client. Filter
+  // exists so the "Run now" admin button on /admin/citations/<slug>
+  // only burns API budget on that one client, not the entire roster.
+  // The Monday cron passes no filter and runs all clients as before.
+  const keywords = slugFilter
+    ? (await env.DB.prepare(
+        "SELECT * FROM citation_keywords WHERE active = 1 AND client_slug = ? ORDER BY id"
+      ).bind(slugFilter).all<CitationKeyword>()).results
+    : (await env.DB.prepare(
+        "SELECT * FROM citation_keywords WHERE active = 1 ORDER BY client_slug, id"
+      ).all<CitationKeyword>()).results;
 
   if (keywords.length === 0) {
     console.log("Citation tracking: no active keywords, skipping");
