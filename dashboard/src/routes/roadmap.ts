@@ -222,6 +222,14 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
 
   const phases = await ensurePhases(clientSlug, env);
 
+  // Load the client's tier so per-item ownership badges can be
+  // tier-aware (content is "We ship this" only at Amplify; at
+  // Signal it shows as "Available at Amplify" upsell).
+  const planRow = await env.DB.prepare(
+    "SELECT plan FROM domains WHERE client_slug = ? AND active = 1 AND is_competitor = 0 LIMIT 1"
+  ).bind(clientSlug).first<{ plan: string | null }>();
+  const clientPlan = planRow?.plan || null;
+
   // Check for auto-completion
   await checkPhaseCompletion(clientSlug, env);
 
@@ -330,7 +338,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
             </div>
           </summary>
           <div style="margin-top:20px;padding-top:20px;border-top:1px solid var(--line)">
-            ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId)}
+            ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId, clientPlan)}
           </div>
         </details>
       `;
@@ -367,7 +375,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
             </div>
           </div>
 
-          ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId)}
+          ${buildItemList(phaseItems, clientSlug, user, now, injectionByItemId, clientPlan)}
         </div>
       `;
     } else {
@@ -616,6 +624,47 @@ function getVerificationMode(item: RoadmapItem, injection?: { status: string }):
   return "manual";
 }
 
+/** Ownership badge: who actually does the work for this item.
+ *  Tier-aware -- content items are "We ship this" only at Amplify;
+ *  at Signal they show as "Available at Amplify" upsell. Schema is
+ *  always us at any paid tier; technical and authority work is
+ *  inherently customer-side (theme edits, GBP claims, real
+ *  backlinks, NAP consistency across directories).
+ *
+ *  Important: this is independent of completion verification mode.
+ *  An item can be "We ship this" AND "auto-verified" (we ship it,
+ *  the scanner confirms). Or "You ship this" AND "auto-verified"
+ *  (customer ships it, scanner confirms). Or "You ship this" AND
+ *  "self-reported" (customer ships it, honor system). All
+ *  combinations are valid. */
+function ownershipBadge(category: string, plan: string | null): string {
+  // Schema is always shipped by NeverRanked at any paid tier.
+  if (category === "schema") {
+    return ownerPill("We ship this", "var(--green)");
+  }
+  // Content writing is included only in Amplify. At Signal/Audit
+  // we surface it as the upsell trigger.
+  if (category === "content") {
+    if (plan === "amplify") return ownerPill("We ship this", "var(--green)");
+    return ownerPill("Available at Amplify", "var(--gold)");
+  }
+  // Technical changes touch the customer's CMS / theme / server.
+  // We don't have direct access to make these (og:image, robots.txt,
+  // page speed, canonical URLs, HTTPS).
+  if (category === "technical") {
+    return ownerPill("You ship this", "var(--text-faint)");
+  }
+  // Authority (GBP claims, NAP consistency, backlink building,
+  // industry-directory listings) is inherently customer-side -- we
+  // can't claim a Google Business Profile on behalf of a business
+  // we don't own, and real backlinks require real relationships.
+  return ownerPill("You ship this", "var(--text-faint)");
+}
+
+function ownerPill(label: string, color: string): string {
+  return `<span style="display:inline-block;padding:2px 8px;border:1px solid ${color};border-radius:999px;font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${color}">${label}</span>`;
+}
+
 function modeBadge(mode: VerificationMode, injectionStatus?: string): string {
   if (mode === "system") {
     const live = injectionStatus === "approved";
@@ -640,7 +689,7 @@ function completionSourceLabel(item: RoadmapItem): string {
   return when ? `Completed ${when}` : "Completed";
 }
 
-function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number, injectionByItemId: Map<number, { status: string }>): string {
+function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now: number, injectionByItemId: Map<number, { status: string }>, plan: string | null): string {
   if (items.length === 0) {
     return `
       <div class="empty" style="padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
@@ -673,6 +722,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <div style="font-size:13px;color:var(--text)">${esc(item.title)}</div>
+              ${ownershipBadge(item.category, plan)}
               ${modeBadge("system", injection?.status)}
             </div>
             ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px">${esc(item.description)}</div>` : ''}
@@ -708,6 +758,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
               <div style="font-size:13px;color:var(--text);${item.status === 'done' ? 'text-decoration:line-through;color:var(--text-faint)' : ''}">${esc(item.title)}</div>
+              ${ownershipBadge(item.category, plan)}
               ${item.status !== "done" ? modeBadge(mode) : ""}
             </div>
             ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
