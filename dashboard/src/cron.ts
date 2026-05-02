@@ -260,6 +260,20 @@ export async function runDailyTasks(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] gemini-coverage-report failed: ${e instanceof Error ? e.message : String(e)}`);
   }
+
+  // Per-client one-shot historical backfill of the Gemini grounding-
+  // redirect resolver. Walks up to 3 unflagged active clients each
+  // morning, resolves opaque vertexaisearch URLs in their
+  // citation_runs.cited_urls, and re-runs reddit extraction. Per-client
+  // automation_log flag prevents repeats. Microsecond no-op once every
+  // active client is processed.
+  try {
+    const { maybeBackfillGeminiHistorical } = await import("./gemini-historical-backfill");
+    await maybeBackfillGeminiHistorical(env);
+  } catch (e) {
+    console.log(`[cron] gemini-historical-backfill failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
   // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
   // turnover is fast enough that daily refresh is the right cadence.
