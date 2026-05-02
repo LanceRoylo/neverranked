@@ -227,6 +227,18 @@ export async function scanDomain(
           } catch (e) {
             console.log(`Auto-roadmap generation failed: ${e}`);
           }
+          // FAQ auto-trigger: if the client has no FAQPage schema
+          // yet, generate a draft from their homepage content.
+          // Inserted as 'pending' so customer reviews before live.
+          // Skipped if a FAQPage row already exists in any state
+          // (pending / approved / paused / archived) so we don't
+          // loop. Async-safe: failure here doesn't break the scan.
+          try {
+            const { maybeGenerateFaqForClient } = await import("./faq-auto-trigger");
+            await maybeGenerateFaqForClient(domain, env);
+          } catch (e) {
+            console.log(`FAQ auto-trigger failed: ${e}`);
+          }
         }
       }
     } catch (e) {
