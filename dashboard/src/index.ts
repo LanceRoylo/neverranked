@@ -951,7 +951,7 @@ export default {
     }
 
     if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
-      return handleAdminFreeCheckStats(user, env);
+      return handleAdminFreeCheckStats(user, env, url);
     }
 
     // Schema injection admin

@@ -36,8 +36,14 @@ interface CaptureEvent {
 const BOT_UA_RE = /playwright|headlesschrome|puppeteer|bot|crawler|spider|curl|wget|python-requests|axios|fetch\//i;
 const KV_LIST_LIMIT = 1000;
 
-export async function handleAdminFreeCheckStats(user: User | null, env: Env): Promise<Response> {
+export async function handleAdminFreeCheckStats(user: User | null, env: Env, url?: URL): Promise<Response> {
   if (!user || user.role !== "admin") return new Response("Forbidden", { status: 403 });
+
+  // Toggle: ?view=most-recent shows individual scan events sorted by
+  // timestamp desc; default ?view=most-scanned shows the per-domain
+  // rollup sorted by scan count desc.
+  const view: "most-scanned" | "most-recent" =
+    url?.searchParams.get("view") === "most-recent" ? "most-recent" : "most-scanned";
 
   // Load scans, captures, and leads in parallel.
   const [scanList, captureList, leadList] = await Promise.all([
@@ -295,14 +301,52 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
     </div>
   `;
 
-  // ---- top domains (with avg score) ----
-  const domainRows = topDomains.length === 0
-    ? `<tr class="empty-row"><td colspan="3" style="padding:24px;text-align:center;color:var(--text-faint)">No scans yet.</td></tr>`
-    : topDomains.map((d) => `<tr>
-        <td><a href="https://${esc(d.domain)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(d.domain)}</a></td>
-        <td style="text-align:right;font-variant-numeric:tabular-nums;color:${scoreColor(d.avgScore)}">${d.avgScore}</td>
-        <td style="text-align:right;font-variant-numeric:tabular-nums">${d.count}</td>
-      </tr>`).join("");
+  // ---- domain table: most-scanned (rollup) OR most-recent (event list) ----
+  const recentScans = [...real]
+    .filter(e => !!e.ts)
+    .sort((a, b) => (b.ts || "").localeCompare(a.ts || ""))
+    .slice(0, 30);
+
+  const fmtDateTime = (iso: string | null | undefined) => {
+    if (!iso) return "";
+    try { return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); }
+    catch { return iso; }
+  };
+  const fmtRel = (iso: string | null | undefined) => {
+    if (!iso) return "";
+    const ms = Date.now() - new Date(iso).getTime();
+    if (isNaN(ms)) return "";
+    const m = Math.floor(ms / 60000);
+    if (m < 1) return "just now";
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    const d = Math.floor(h / 24);
+    return `${d}d ago`;
+  };
+
+  const domainRows = view === "most-scanned"
+    ? (topDomains.length === 0
+        ? `<tr class="empty-row"><td colspan="3" style="padding:24px;text-align:center;color:var(--text-faint)">No scans yet.</td></tr>`
+        : topDomains.map((d) => `<tr>
+            <td><a href="https://${esc(d.domain)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(d.domain)}</a></td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;color:${scoreColor(d.avgScore)}">${d.avgScore}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums">${d.count}</td>
+          </tr>`).join(""))
+    : (recentScans.length === 0
+        ? `<tr class="empty-row"><td colspan="3" style="padding:24px;text-align:center;color:var(--text-faint)">No scans yet.</td></tr>`
+        : recentScans.map((e) => `<tr>
+            <td>${e.domain ? `<a href="https://${esc(e.domain)}" target="_blank" rel="noopener" style="color:var(--text)">${esc(e.domain)}</a>` : `<span style="color:var(--text-faint)">(unknown)</span>`}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;color:${typeof e.score === "number" ? scoreColor(e.score) : "var(--text-faint)"}">${typeof e.score === "number" ? e.score : "—"}</td>
+            <td style="text-align:right;font-variant-numeric:tabular-nums;color:var(--text-mute)" title="${esc(fmtDateTime(e.ts))}">${esc(fmtRel(e.ts))}</td>
+          </tr>`).join(""));
+
+  const toggleHtml = `
+    <div style="display:inline-flex;gap:0;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-top:6px">
+      <a href="?view=most-scanned" style="padding:5px 10px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:${view === "most-scanned" ? "var(--text)" : "var(--text-mute)"};background:${view === "most-scanned" ? "var(--gold-wash)" : "transparent"};border-right:1px solid var(--line)">Most scanned</a>
+      <a href="?view=most-recent" style="padding:5px 10px;font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-decoration:none;color:${view === "most-recent" ? "var(--text)" : "var(--text-mute)"};background:${view === "most-recent" ? "var(--gold-wash)" : "transparent"}">Most recent</a>
+    </div>
+  `;
 
   const refRows = topReferrers.length === 0
     ? `<tr class="empty-row"><td colspan="2" style="padding:24px;text-align:center;color:var(--text-faint)">No referrer data yet.</td></tr>`
@@ -315,12 +359,17 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env): Pr
     <div style="display:grid;grid-template-columns:1.4fr 1fr;gap:20px;margin-bottom:24px">
       <div class="card">
         <div style="padding:14px 16px;border-bottom:1px solid var(--line)">
-          <div class="label">Top domains scanned</div>
-          <div class="muted" style="font-size:11px;margin-top:4px">Domains with avg score under 60 and 2+ scans are hand-raisers. Someone there ran your tool more than once.</div>
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <div>
+              <div class="label">${view === "most-scanned" ? "Top domains scanned" : "Most recent scans"}</div>
+              <div class="muted" style="font-size:11px;margin-top:4px">${view === "most-scanned" ? "Domains with avg score under 60 and 2+ scans are hand-raisers. Someone there ran your tool more than once." : "Last 30 scans, newest first. Spot real-time interest as it happens."}</div>
+            </div>
+            ${toggleHtml}
+          </div>
         </div>
         <div class="table-wrap">
           <table class="data-table">
-            <thead><tr><th>Domain</th><th style="text-align:right">Avg score</th><th style="text-align:right">Scans</th></tr></thead>
+            <thead><tr><th>Domain</th><th style="text-align:right">${view === "most-scanned" ? "Avg score" : "Score"}</th><th style="text-align:right">${view === "most-scanned" ? "Scans" : "When"}</th></tr></thead>
             <tbody>${domainRows}</tbody>
           </table>
         </div>
