@@ -249,6 +249,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
   await checkStaleRoadmapItems(env);
   await runSnippetSweep(env);
   await runMissingRoadmapSweep(env);
+
+  // One-shot internal validation report for the Gemini grounding-redirect
+  // resolver. Microsecond no-op until 2026-05-12, fires once, then no-op
+  // forever via automation_log flag. Wrapped so a Resend failure never
+  // breaks the daily cron. File is safe to delete after firing.
+  try {
+    const { maybeReportGeminiCoverage } = await import("./gemini-coverage-report");
+    await maybeReportGeminiCoverage(env);
+  } catch (e) {
+    console.log(`[cron] gemini-coverage-report failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
   // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
   // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
   // turnover is fast enough that daily refresh is the right cadence.

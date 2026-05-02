@@ -998,6 +998,18 @@ export default {
       });
     }
 
+    // Dry-run: returns what the Gemini coverage report email WOULD say
+    // right now. Doesn't send, doesn't mark the flag. Safe to hit any
+    // time -- both before May 12 (preview the format) and after (re-run
+    // the query to see fresh numbers).
+    if (path === "/admin/gemini-coverage-preview" && method === "GET" && user.role === "admin") {
+      const { previewGeminiCoverage } = await import("./gemini-coverage-report");
+      const preview = await previewGeminiCoverage(env);
+      return new Response(JSON.stringify(preview, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     // Phase 5B prep: resolve Gemini grounding-redirect URLs in historical
     // citation_runs.cited_urls. After resolution, re-runs reddit
     // extraction so any reddit threads hidden behind opaque tokens get
