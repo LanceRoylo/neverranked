@@ -81,6 +81,21 @@ export async function generateFaqForPage(
     return { ok: false, reason: `only ${faqs.length} usable Q&A pairs generated; need 3+` };
   }
 
+  // Human-tone guard: FAQ answers get embedded as schema on the
+  // customer's live site, so they read like marketing copy. Block AI
+  // tells before they ship. On failure we surface to admin_inbox and
+  // refuse the FAQ -- customer can re-trigger generation later.
+  const faqAsText = faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
+  const { assertHumanTone } = await import("./human-tone-guard");
+  const tone = await assertHumanTone(env, faqAsText, "customer-publication", {
+    source: "faq-generator.generateFaqForPage",
+    client_slug: clientSlug,
+    target_type: "faq_schema",
+  });
+  if (!tone.ok) {
+    return { ok: false, reason: `tone-guard blocked ${tone.violations.length} pattern(s) -- see /admin/inbox/${tone.inboxId}` };
+  }
+
   // 4. Wrap as FAQPage JSON-LD.
   const schema = {
     "@context": "https://schema.org",

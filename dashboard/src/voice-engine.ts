@@ -235,7 +235,24 @@ ${(profile.structural_preferences || []).map((x) => "- " + x).join("\n") || "- (
   });
 
   const text = (resp.content[0] && resp.content[0].type === "text") ? resp.content[0].text : "";
-  return { body_markdown: text.trim(), used_profile: true };
+  const trimmed = text.trim();
+
+  // Human-tone guard: block AI tells (em dashes, semicolons, banned
+  // phrases, hedge openers) before the draft lands in content_drafts.
+  // On failure, an admin_inbox row is written and ok=false is returned;
+  // the caller (route handler) decides whether to surface this to Lance
+  // via the existing draft-review flow or block the write entirely.
+  // The check is non-blocking here -- we still return the draft, but
+  // mark used_profile=false on tone failure so the caller knows to set
+  // status='in_review' rather than auto-progressing.
+  const { assertHumanTone } = await import("./human-tone-guard");
+  const tone = await assertHumanTone(env, trimmed, "customer-publication", {
+    source: "voice-engine.generateDraftInVoice",
+    client_slug: clientSlug,
+    target_type: "voice_draft",
+  });
+
+  return { body_markdown: trimmed, used_profile: tone.ok };
 }
 
 // ---------- Phase 4: Score a draft against the profile ----------

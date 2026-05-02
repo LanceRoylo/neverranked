@@ -238,6 +238,20 @@ export async function generateOrGetBrief(
   const raw = await callAnthropic(env, BRIEF_SYSTEM, userMessage);
   const brief = parseBrief(raw);
 
+  // Human-tone guard: brief fields land directly on the customer's
+  // dashboard so they need to read like a human strategist wrote them.
+  // We check the four fields combined; on failure, an admin_inbox row
+  // is written. We still persist the brief (so Lance can see what was
+  // generated and decide), but the caller's UI can show a warning
+  // banner via the inbox link.
+  const briefAsText = [brief.gap, brief.angle, ...brief.tone_notes, ...brief.dont_do].join("\n");
+  const { assertHumanTone } = await import("./human-tone-guard");
+  await assertHumanTone(env, briefAsText, "customer-dashboard", {
+    source: "reddit-briefs.generateOrGetBrief",
+    client_slug: clientSlug,
+    target_type: "reddit_brief",
+  });
+
   const now = Math.floor(Date.now() / 1000);
   const result = await env.DB.prepare(
     `INSERT INTO reddit_briefs
