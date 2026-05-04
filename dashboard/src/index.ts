@@ -1095,6 +1095,20 @@ export default {
     // one-shot backfill when rows were inserted via raw SQL and
     // bypassed the grade path (e.g. the early Hawaii Theatre
     // Event deploys). Idempotent.
+    // NVI report HTML preview. Renders the report template at the
+    // current state of the data so we can iterate on the design and
+    // see real numbers before wiring Cloudflare Browser Rendering for
+    // the actual PDF. Same template will feed PDF generation later.
+    const nviPreviewMatch = path.match(/^\/admin\/nvi\/preview\/(\d+)$/);
+    if (nviPreviewMatch && method === "GET" && user.role === "admin") {
+      const id = parseInt(nviPreviewMatch[1], 10);
+      const { loadReportContext, buildNviReportHtml } = await import("./nvi/template");
+      const ctx = await loadReportContext(env, id);
+      if (!ctx) return new Response("Report not found", { status: 404 });
+      const html = buildNviReportHtml(ctx);
+      return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    }
+
     if (path === "/admin/regrade-all" && method === "GET" && user.role === "admin") {
       const slug = url.searchParams.get("slug");
       if (!slug) return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {
