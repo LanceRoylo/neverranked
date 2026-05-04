@@ -335,20 +335,39 @@ export async function generateWeeklyBrief(env: Env, weekStartsAt?: number): Prom
   }
 
   const userMessage = buildUserMessage(stats);
-  const raw = await callClaude(env, userMessage);
-  const brief = parseBrief(raw);
-  if (!brief) return { ok: false, error: "could not parse brief from model output" };
 
-  // Tone guard pass on the full body (customer-publication context --
-  // strictest checks).
-  const { assertHumanTone } = await import("./human-tone-guard");
-  const tone = await assertHumanTone(env, brief.title + "\n\n" + brief.summary + "\n\n" + brief.body_markdown, "customer-publication", {
-    source: "weekly-brief-generator.generate",
-    target_type: "weekly_brief",
+  // Three-pass validation. Pass A grounds against the stats summary
+  // we passed in (catches numbers the model invented vs ones from
+  // the data). Pass B is tone (customer-publication, strictest).
+  // Pass C is JSON-parseable with title + summary + 200-char body.
+  const callModel = async (extraFeedback: string): Promise<string> => {
+    const um = extraFeedback
+      ? userMessage + "\n\nADDITIONAL CONSTRAINTS FOR THIS ATTEMPT:\n" + extraFeedback
+      : userMessage;
+    return callClaude(env, um);
+  };
+  const initialRaw = await callModel("");
+
+  const { multiPassValidate } = await import("./lib/multi-pass");
+  const validation = await multiPassValidate(env, {
+    generated: initialRaw,
+    sourceContext: userMessage,  // the stats block IS the source
+    toneContext: "customer-publication",
+    qualityGate: (text) => {
+      const parsed = parseBrief(text);
+      if (!parsed) return { ok: false, reason: "could not parse brief JSON (need title + summary + 200-char body)" };
+      return { ok: true };
+    },
+    regenerate: callModel,
+    label: "weekly-brief-generator",
   });
-  if (!tone.ok) {
-    return { ok: false, error: `tone-guard blocked ${tone.violations.length} pattern(s); see /admin/inbox/${tone.inboxId}` };
+
+  if (!validation.ok) {
+    return { ok: false, error: `multi-pass validation stuck after ${validation.attempts} attempts; see /admin/inbox/${validation.inboxId}` };
   }
+
+  const brief = parseBrief(validation.text);
+  if (!brief) return { ok: false, error: "post-validation parse failed (should not happen)" };
 
   // Anonymization verification pass -- belt + suspenders to the
   // system prompt's anonymization rules.

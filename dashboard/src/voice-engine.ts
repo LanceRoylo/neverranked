@@ -227,32 +227,52 @@ ${(profile.structural_preferences || []).map((x) => "- " + x).join("\n") || "- (
     ? `Write a draft titled: "${title}"\n\nBrief / angle:\n${brief}`
     : `Write a draft titled: "${title}"`;
 
-  const resp = await callAnthropic(env, {
-    system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: userMessage }],
-    max_tokens: 3500,
-    temperature: 0.6,
+  // Initial generation
+  const callModel = async (extraFeedback: string): Promise<string> => {
+    const userWithFeedback = extraFeedback
+      ? userMessage + "\n\nADDITIONAL CONSTRAINTS FOR THIS ATTEMPT:\n" + extraFeedback
+      : userMessage;
+    const resp = await callAnthropic(env, {
+      system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: userWithFeedback }],
+      max_tokens: 3500,
+      temperature: 0.6,
+    });
+    const t = (resp.content[0] && resp.content[0].type === "text") ? resp.content[0].text : "";
+    return t.trim();
+  };
+
+  const initial = await callModel("");
+
+  // Three-pass validation: factual (against the brief, if provided),
+  // tone, and structural (min length). Auto-regenerates up to 3
+  // attempts. If all 3 fail, we still return the last attempt with
+  // used_profile=false so the existing review flow surfaces it for
+  // human edit -- voice-driven content is more nuanced than schema
+  // and a stuck case may still be salvageable manually. The inbox
+  // row from multi-pass tells Lance the model couldn't satisfy the
+  // automated checks.
+  const { multiPassValidate } = await import("./lib/multi-pass");
+  const validation = await multiPassValidate(env, {
+    generated: initial,
+    sourceContext: brief || null,  // skip factual if no brief
+    toneContext: "customer-publication",
+    qualityGate: (text) => {
+      if (text.length < 200) return { ok: false, reason: `draft only ${text.length} chars (need 200+)` };
+      return { ok: true };
+    },
+    regenerate: callModel,
+    label: "voice-engine.generateDraftInVoice",
+    clientSlug,
   });
 
-  const text = (resp.content[0] && resp.content[0].type === "text") ? resp.content[0].text : "";
-  const trimmed = text.trim();
-
-  // Human-tone guard: block AI tells (em dashes, semicolons, banned
-  // phrases, hedge openers) before the draft lands in content_drafts.
-  // On failure, an admin_inbox row is written and ok=false is returned;
-  // the caller (route handler) decides whether to surface this to Lance
-  // via the existing draft-review flow or block the write entirely.
-  // The check is non-blocking here -- we still return the draft, but
-  // mark used_profile=false on tone failure so the caller knows to set
-  // status='in_review' rather than auto-progressing.
-  const { assertHumanTone } = await import("./human-tone-guard");
-  const tone = await assertHumanTone(env, trimmed, "customer-publication", {
-    source: "voice-engine.generateDraftInVoice",
-    client_slug: clientSlug,
-    target_type: "voice_draft",
-  });
-
-  return { body_markdown: trimmed, used_profile: tone.ok };
+  return {
+    body_markdown: validation.text,
+    // used_profile flips to false when validation fails so callers
+    // (content-pipeline.ts) keep status='in_review' and don't
+    // auto-progress toward publish.
+    used_profile: validation.ok,
+  };
 }
 
 // ---------- Phase 4: Score a draft against the profile ----------
