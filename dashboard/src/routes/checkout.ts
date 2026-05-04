@@ -49,8 +49,7 @@ const PLANS: Record<string, PlanConfig> = {
     name: "NeverRanked Pulse",
     priceLabel: "$497/mo",
     mode: "subscription",
-    priceId: "",          // Stripe Price not yet created
-    comingSoon: true,
+    priceId: "price_1TTTkvChs9v2cUMPSi4Eupiu",
   },
   signal: {
     name: "NeverRanked Signal",
