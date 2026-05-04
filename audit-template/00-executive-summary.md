@@ -3,7 +3,7 @@
 **Prepared for:** {Client Company Name}
 **Prepared by:** Never Ranked
 **Date:** {YYYY-MM-DD}
-**Deliverable type:** $500 Audit — full SEO & AEO
+**Deliverable type:** $750 Audit — full SEO & AEO
 **Window:** 48 hours
 
 ---
@@ -37,9 +37,9 @@
 
 ---
 
-## The six deliverables in this audit
+## The five deliverables in this audit
 
-This package contains six documents, delivered per the Never Ranked $500 audit offer. Each is a standalone deliverable.
+This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.
 
 ### 1. Technical Audit (`02-technical-audit.md`)
 {One-sentence summary of what this deliverable covers for this client.}

@@ -14,7 +14,7 @@ The audit surfaced seven real gaps. Twelve days later, every Month 1 fix was shi
 
 Every number in this post is real. The audit is real. The implementation is real. The Montaic domain is live, the schema is in view-source, and the case study page at [neverranked.com/case-studies/montaic](https://neverranked.com/case-studies/montaic/) breaks down every action with the receipt.
 
-This post tells the arc. The case study tells the detail. We published both on purpose. An agency selling a $500 audit and a compounding AEO retainer should be willing to show its own work.
+This post tells the arc. The case study tells the detail. We published both on purpose. An agency selling a $750 audit and a compounding AEO retainer should be willing to show its own work.
 
 That's the point.
 

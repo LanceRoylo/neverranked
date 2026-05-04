@@ -71,7 +71,7 @@ Never Ranked
 
 **Subject line:** The businesses starting AEO now will own the answer by Q3
 
-**Goal:** Convert educated lead into paid audit customer. Introduce compounding advantage and the cost of waiting. Mention the $500 audit with specific deliverables.
+**Goal:** Convert educated lead into paid audit customer. Introduce compounding advantage and the cost of waiting. Mention the $750 audit with specific deliverables.
 
 **Creative lever:** Specificity + Tension Hold
 
@@ -91,7 +91,7 @@ AI citation share works like compound interest. Once a model starts citing your 
 
 AEO takes 90 days to show measurable results. That means businesses starting today will see movement by Q3. Businesses starting in Q3 will not see results until Q4. The math is simple but the window is not permanent.
 
-We run a full AEO audit for $500. Six deliverables, 48-hour turnaround:
+We run a full AEO audit for $750. Five deliverables, 48-hour turnaround:
 
   - AI citation share analysis (how often you appear vs competitors)
   - Schema coverage audit (what is missing, what needs fixing)

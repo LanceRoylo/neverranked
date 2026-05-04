@@ -925,7 +925,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       : `<div class="empty" style="padding:40px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
           <h3 style="margin-bottom:10px;font-style:italic">No domains yet</h3>
           <p style="color:var(--text-faint);font-size:13px;line-height:1.65;max-width:600px;margin:0">${user.role === 'admin'
-            ? 'Add a client and their domains from the admin panel. Each domain gets scanned weekly, citation-tracked across four AI engines, and given a live roadmap.'
+            ? 'Add a client and their domains from the admin panel. Each domain gets scanned weekly, citation-tracked across five AI engines, and given a live roadmap.'
             : 'Your account manager is setting up your domain tracking. The first scan fires on the next Monday at 6am UTC once your domain is added. If this has not happened within 24 hours, email <a href="mailto:hello@neverranked.com" style="color:var(--gold)">hello@neverranked.com</a>.'}</p>
         </div>`
     }

@@ -1,7 +1,7 @@
 # Never Ranked — Audit Intake Questionnaire
 
 **For:** Prospective audit clients
-**Purpose:** Gather the context we need to run a meaningful $500 audit in 48 hours. Most of this takes 5 minutes to answer; a few questions take more thought.
+**Purpose:** Gather the context we need to run a meaningful $750 audit in 48 hours. Most of this takes 5 minutes to answer; a few questions take more thought.
 
 ---
 
@@ -19,7 +19,7 @@ Subject line: **Your Never Ranked audit — 5 minutes of setup**
 >
 > Thanks for booking the audit. To deliver within 48 hours I need 5 minutes of context from you. There are 12 questions below — answer whichever you want, skip the ones that don't apply. Reply to this email or send me back a Loom if that's easier.
 >
-> Once I have your answers, I'll start the audit. You'll get six deliverables and a 90-day roadmap, plus a Loom walking through what I found. Yours to keep whether you hire us after or not.
+> Once I have your answers, I'll start the audit. You'll get five deliverables and a 90-day roadmap, plus a Loom walking through what I found. Yours to keep whether you hire us after or not.
 >
 > Lance
 

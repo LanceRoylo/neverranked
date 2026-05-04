@@ -775,7 +775,7 @@ export async function handleCitations(
     <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
       <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 What this page shows</div>
       <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:780px">
-        Every Monday we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, and Claude. Your <strong style="color:var(--text);font-weight:500">citation share</strong> is the percentage of answers that cite your site. 10% means one in ten answers names you. Numbers below come from real AI responses this past week, not simulated traffic.
+        Every Monday we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. Your <strong style="color:var(--text);font-weight:500">citation share</strong> is the percentage of answers that cite your site. 10% means one in ten answers names you. Numbers below come from real AI responses this past week, not simulated traffic.
       </div>
     </div>
 

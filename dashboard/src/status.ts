@@ -200,7 +200,7 @@ export async function computeStatus(user: User, env: Env): Promise<StatusSnapsho
   const weekly = nextWeeklyScan();
   next.push({
     label: "Weekly AEO update",
-    detail: "Full site scan, citation run across four AI engines, Search Console pull, and a fresh brief.",
+    detail: "Full site scan, citation run across five AI engines, Search Console pull, and a fresh brief.",
     timeHint: weekly.hint,
   });
   next.push({

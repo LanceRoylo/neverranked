@@ -148,7 +148,7 @@ Classic SEO hygiene — schema, canonicals, meta tags, breadcrumbs — is necess
 
 If you want to see what your own citation share looks like today, the Montaic audit is open source in the Never Ranked repo. You can read our methodology, steal the queries we used, and run the same test against your own domain in about an hour.
 
-Or, if you want someone to run it for you with a full deliverable and a 90-day roadmap, [Never Ranked is booking Q2 2026 audits now](https://neverranked.com). $500, 48 hours, six deliverables. Paced deliberately. We don't refund. We deliver.
+Or, if you want someone to run it for you with a full deliverable and a 90-day roadmap, [Never Ranked is booking Q2 2026 audits now](https://neverranked.com). $750, 48 hours, five deliverables. Paced deliberately. We don't refund. We deliver.
 
 ---
 

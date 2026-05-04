@@ -31,7 +31,7 @@ const GLOSSARY: GlossaryItem[] = [
   {
     term: "Citation share",
     definition:
-      "When we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, and Claude, what percentage of the answers cite your site. 10% means one in ten answers names you. 0% means you are not yet in the conversation.",
+      "When we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude, what percentage of the answers cite your site. 10% means one in ten answers names you. 0% means you are not yet in the conversation.",
   },
   {
     term: "Red flags",
@@ -61,7 +61,7 @@ const SCHEDULE = [
     when: "Every Monday at 6:00 UTC",
     what: "Weekly AEO update",
     detail:
-      "Full site scan for every tracked domain, citation run across ChatGPT, Perplexity, Gemini, and Claude, Search Console data pull, regression alerts if any score dropped significantly, and the Monday morning brief email to any user who opted in.",
+      "Full site scan for every tracked domain, citation run across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude, Search Console data pull, regression alerts if any score dropped significantly, and the Monday morning brief email to any user who opted in.",
   },
   {
     when: "First or second day of every month",

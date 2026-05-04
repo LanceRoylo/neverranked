@@ -71,7 +71,7 @@ export async function handleDiscoverList(slug: string, user: User, env: Env): Pr
     <div style="border:1px dashed var(--line);border-radius:6px;padding:32px 24px;text-align:center;color:var(--text-mute);font-size:13px">
       <strong style="color:var(--text);font-size:14px;display:block;margin-bottom:6px">No pending suggestions</strong>
       ${trackedCount === 0
-        ? "Click <em>Generate suggestions</em> to get started. We'll read your business context and propose 15 realistic prompts your prospects might type into ChatGPT, Perplexity, Gemini, and Claude."
+        ? "Click <em>Generate suggestions</em> to get started. We'll read your business context and propose 15 realistic prompts your prospects might type into ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude."
         : "All caught up. You can generate more suggestions every 24 hours."}
     </div>
   ` : pending.map(s => `
@@ -109,7 +109,7 @@ export async function handleDiscoverList(slug: string, user: User, env: Env): Pr
       <div class="label" style="margin-bottom:8px"><a href="/citations/${esc(slug)}" style="color:var(--text-mute)">Citations</a> / Discover</div>
       <h1>Discover <em>new prompts</em></h1>
       <p style="color:var(--text-mute);max-width:680px;margin-top:8px">
-        AI-suggested prompts your prospects might type into ChatGPT, Perplexity, Gemini, and Claude. Generated from your business context (description, schema, top organic queries). Review and one-click <strong style="color:var(--text)">Track</strong> the ones worth monitoring.
+        AI-suggested prompts your prospects might type into ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. Generated from your business context (description, schema, top organic queries). Review and one-click <strong style="color:var(--text)">Track</strong> the ones worth monitoring.
       </p>
     </div>
 
