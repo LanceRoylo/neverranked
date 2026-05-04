@@ -48,6 +48,11 @@ export async function generateHowToForPage(
 ): Promise<GenerateHowToResult> {
   if (!env.ANTHROPIC_API_KEY) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
 
+  // 0. Plan quota check. HowTo is gated behind Signal+.
+  const { checkSchemaQuota } = await import("./lib/plan-limits");
+  const quota = await checkSchemaQuota(env, clientSlug, "HowTo");
+  if (!quota.ok) return { ok: false, reason: quota.reason };
+
   // 1. Fetch
   let html: string;
   try {

@@ -43,6 +43,13 @@ export async function generateFaqForPage(
     return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
   }
 
+  // 0. Plan quota check. Pulse customers are capped at 2 schemas/mo
+  //    and FAQPage is in their allowed type list, so this only blocks
+  //    when their monthly cap is hit. Signal/Amplify are uncapped.
+  const { checkSchemaQuota } = await import("./lib/plan-limits");
+  const quota = await checkSchemaQuota(env, clientSlug, "FAQPage");
+  if (!quota.ok) return { ok: false, reason: quota.reason };
+
   // 1. Fetch the source page.
   let html: string;
   try {

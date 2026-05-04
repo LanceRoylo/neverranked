@@ -50,11 +50,14 @@ export async function generateServicesForPage(
 ): Promise<GenerateServicesResult> {
   if (!env.ANTHROPIC_API_KEY) return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
 
-  // Load business name + areaServed default from clients table.
-  const client = await env.DB.prepare(
-    "SELECT business_name FROM agency_clients WHERE slug = ? LIMIT 1"
-  ).bind(clientSlug).first<{ business_name: string | null }>();
-  const providerName = client?.business_name || clientSlug;
+  // 0. Plan quota check. Service is gated behind Signal+.
+  const { checkSchemaQuota } = await import("./lib/plan-limits");
+  const quota = await checkSchemaQuota(env, clientSlug, "Service");
+  if (!quota.ok) return { ok: false, reason: quota.reason };
+
+  // Provider name derived from the slug -- there's no canonical
+  // business_name column today. "hawaii-theatre" -> "Hawaii Theatre".
+  const providerName = clientSlug.replace(/[-_]+/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 
   // 1. Fetch
   let html: string;

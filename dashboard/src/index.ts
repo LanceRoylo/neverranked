@@ -568,6 +568,11 @@ export default {
       const { handleInboxList } = await import("./routes/admin-inbox");
       return handleInboxList(user, env, url);
     }
+    // Plan management — assign Pulse/Signal/Amplify per client + see usage
+    if (path === "/admin/plans" && (method === "GET" || method === "POST") && user.role === "admin") {
+      const { handleAdminPlans } = await import("./routes/admin-plans");
+      return handleAdminPlans(request, env, user);
+    }
     const inboxDetailMatch = path.match(/^\/admin\/inbox\/(\d+)$/);
     if (inboxDetailMatch && method === "GET" && user.role === "admin") {
       const { handleInboxDetail } = await import("./routes/admin-inbox");

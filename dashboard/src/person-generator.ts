@@ -53,6 +53,12 @@ export async function generatePersonsForPage(
     return { ok: false, reason: "ANTHROPIC_API_KEY not set" };
   }
 
+  // 0. Plan quota check. Person is NOT in the Pulse allowed list, so
+  //    Pulse customers see a clean upgrade prompt instead of partial work.
+  const { checkSchemaQuota } = await import("./lib/plan-limits");
+  const quota = await checkSchemaQuota(env, clientSlug, "Person");
+  if (!quota.ok) return { ok: false, reason: quota.reason };
+
   // 1. Fetch
   let html: string;
   try {

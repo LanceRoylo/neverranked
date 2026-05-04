@@ -26,17 +26,22 @@ export async function generateLlmsTxt(
   clientSlug: string,
   env: Env,
 ): Promise<LlmsTxtResult> {
-  // 1. Pull client + domain. Most clients have a single domain row;
-  //    if multiple, prefer the one tagged primary.
-  const client = await env.DB.prepare(
-    "SELECT slug, business_name, vertical FROM agency_clients WHERE slug = ? LIMIT 1"
-  ).bind(clientSlug).first<{ slug: string; business_name: string | null; vertical: string | null }>();
-  if (!client) return { ok: false, reason: `client ${clientSlug} not found` };
-
+  // 1. Pull domain + industry. Business name is derived from the slug
+  //    (no canonical business_name column today) and industry comes
+  //    from client_settings if a row exists.
   const domain = await env.DB.prepare(
     "SELECT domain FROM domains WHERE client_slug = ? ORDER BY id ASC LIMIT 1"
   ).bind(clientSlug).first<{ domain: string }>();
   if (!domain) return { ok: false, reason: `no domain on file for ${clientSlug}` };
+
+  const settings = await env.DB.prepare(
+    "SELECT industry FROM client_settings WHERE client_slug = ? LIMIT 1"
+  ).bind(clientSlug).first<{ industry: string | null }>();
+  const client = {
+    slug: clientSlug,
+    business_name: prettifySlug(clientSlug),
+    vertical: settings?.industry ?? null,
+  };
 
   // 2. Pull all deployed (or pending) schemas. We use these both as
   //    the page list and to tag each page with what kind of structured
@@ -60,7 +65,7 @@ export async function generateLlmsTxt(
     }
   }
 
-  const businessName = client.business_name || prettifySlug(clientSlug);
+  const businessName = client.business_name;
   const baseUrl = `https://${domain.domain.replace(/^https?:\/\//, "").replace(/\/$/, "")}`;
 
   // 4. Build markdown. Order: home first, then alphabetical paths.

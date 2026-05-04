@@ -79,6 +79,17 @@ export async function generateArticlesFromSitemap(
   sitemapUrl: string,
   env: Env,
 ): Promise<GenerateArticlesResult> {
+  // 0. Plan quota check. For Article we check once and pre-decrement
+  //    by counting how many we'd insert, but the per-row check inside
+  //    the loop is the real enforcement -- it stops as soon as the cap
+  //    is hit so partial sitemaps still complete cleanly.
+  const { checkSchemaQuota, getPlanForClient, getPlanLimits, countMonthlySchemas } = await import("./lib/plan-limits");
+  const planEarly = await getPlanForClient(env, clientSlug);
+  const limitsEarly = getPlanLimits(planEarly);
+  if (!limitsEarly.allowedSchemaTypes.includes("Article")) {
+    return { ok: false, reason: `Article schemas are not included on the ${limitsEarly.displayName} plan.` };
+  }
+
   // 1. Fetch sitemap.
   let sitemapXml: string;
   try {
@@ -153,9 +164,22 @@ export async function generateArticlesFromSitemap(
     };
   }
 
-  // 4. Build + grade + insert each Article schema.
+  // 4. Build + grade + insert each Article schema. Re-check quota
+  //    inside the loop so we stop as soon as the monthly cap is hit
+  //    (matters for Pulse: 2/mo budget, sitemap with 25 posts, we
+  //    insert the first 2 and skip the rest with a clear reason).
   const insertedIds: number[] = [];
   for (const meta of extracted) {
+    if (limitsEarly.monthlySchemas !== -1) {
+      const used = await countMonthlySchemas(env, clientSlug);
+      if (used >= limitsEarly.monthlySchemas) {
+        skipped.push({
+          url: meta.url,
+          reason: `monthly schema cap reached (${used}/${limitsEarly.monthlySchemas}) on the ${limitsEarly.displayName} plan`,
+        });
+        continue;
+      }
+    }
     const schema = buildArticleSchema(meta);
     const grade = gradeSchema(schema);
     if (!grade.meetsDeployThreshold) {
