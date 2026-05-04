@@ -43,7 +43,7 @@ const PLANS: Record<string, PlanConfig> = {
     name: "NeverRanked Audit",
     priceLabel: "$750",
     mode: "payment",
-    priceId: "price_1TLgcBChs9v2cUMPj5Sd7E0o",
+    priceId: "price_1TTU3AChs9v2cUMPn3HSrUoC",
   },
   pulse: {
     name: "NeverRanked Pulse",
