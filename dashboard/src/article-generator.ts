@@ -26,8 +26,12 @@ import type { Env } from "./types";
 import { gradeSchema } from "../../packages/aeo-analyzer/src/schema-grader";
 import { logSchemaDrafted } from "./activity-log";
 
+const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
+const DESCRIPTION_MODEL = "claude-haiku-4-5";
 const USER_AGENT = "NeverRanked-Article-Generator/1.0";
 const MAX_POSTS = 25;
+const MIN_DESC_CHARS = 120;
+const MAX_DESC_CHARS = 280;
 
 // Path patterns that suggest a URL is an article post.
 const ARTICLE_PATH_PATTERNS: RegExp[] = [
@@ -121,6 +125,17 @@ export async function generateArticlesFromSitemap(
       if (!meta) {
         skipped.push({ url: p.url, reason: "missing required metadata (headline / author / datePublished / image)" });
         continue;
+      }
+      // If the page lacks an og:description, generate one from body
+      // text via Claude (multi-pass validated). Description isn't
+      // required for Article schema but it lifts rich-result eligibility
+      // and gives AI engines a concise summary to cite.
+      if (!meta.description && env.ANTHROPIC_API_KEY) {
+        const body = extractArticleBody(html);
+        if (body && body.split(/\s+/).length >= 80) {
+          const draft = await generateArticleDescription(env, clientSlug, meta.headline, body);
+          if (draft) meta.description = draft;
+        }
       }
       extracted.push(meta);
     } catch (e) {
@@ -338,4 +353,100 @@ function cleanText(s: string): string {
 function canonicalPath(url: string): string {
   try { return new URL(url).pathname; }
   catch { return "/"; }
+}
+
+/** Strip the article body to plain text. Drops nav/footer/aside/script/style
+ *  blocks and collapses whitespace. Returns up to ~3000 words to keep
+ *  Claude prompts cheap. */
+function extractArticleBody(html: string): string {
+  let h = html.replace(/<script[\s\S]*?<\/script>/gi, " ");
+  h = h.replace(/<style[\s\S]*?<\/style>/gi, " ");
+  h = h.replace(/<nav[\s\S]*?<\/nav>/gi, " ");
+  h = h.replace(/<footer[\s\S]*?<\/footer>/gi, " ");
+  h = h.replace(/<aside[\s\S]*?<\/aside>/gi, " ");
+  h = h.replace(/<header[\s\S]*?<\/header>/gi, " ");
+  // Prefer <article> if present.
+  const art = h.match(/<article[\s\S]*?<\/article>/i);
+  if (art) h = art[0];
+  h = h.replace(/<[^>]+>/g, " ");
+  h = h.replace(/&nbsp;/g, " ").replace(/&amp;/g, "&").replace(/&#39;/g, "'");
+  h = h.replace(/&\w+;/g, " ");
+  h = h.replace(/\s+/g, " ").trim();
+  const words = h.split(/\s+/);
+  return words.slice(0, 3000).join(" ");
+}
+
+/** Ask Claude for a 1-sentence article description grounded in body
+ *  text. Multi-pass validated -- factual grounding catches hallucinated
+ *  claims, tone catches AI-sounding phrasing, length gate enforces the
+ *  120-280 char window. Returns null if validation never converges. */
+async function generateArticleDescription(
+  env: Env,
+  clientSlug: string,
+  headline: string,
+  body: string,
+): Promise<string | null> {
+  const callModel = async (extraFeedback: string): Promise<string> => {
+    const system = "You write concise meta descriptions for article schema. " +
+      "Output ONE sentence between 120 and 280 characters. " +
+      "Summarize what the article is actually about, grounded in the body text provided. " +
+      "Never invent facts not in the body. No em dashes. No semicolons. No filler like 'In this article' or 'Discover'. " +
+      "Output ONLY the sentence -- no quotes, no preamble, no JSON.";
+    const user = `Headline: ${headline}
+
+Article body:
+"""
+${body}
+"""
+
+Write the description.${extraFeedback ? "\n\nADDITIONAL CONSTRAINTS:\n" + extraFeedback : ""}`;
+    const resp = await fetch(ANTHROPIC_ENDPOINT, {
+      method: "POST",
+      headers: {
+        "x-api-key": env.ANTHROPIC_API_KEY!,
+        "anthropic-version": "2023-06-01",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: DESCRIPTION_MODEL,
+        max_tokens: 400,
+        system,
+        messages: [{ role: "user", content: user }],
+      }),
+    });
+    if (!resp.ok) throw new Error(`Claude API ${resp.status}`);
+    const data = await resp.json() as { content?: { type: string; text: string }[] };
+    return (data.content?.find(b => b.type === "text")?.text || "").trim().replace(/^["']|["']$/g, "");
+  };
+
+  let initial: string;
+  try { initial = await callModel(""); }
+  catch { return null; }
+  if (!initial) return null;
+
+  const { multiPassValidate } = await import("./lib/multi-pass");
+  const validation = await multiPassValidate(env, {
+    generated: initial,
+    sourceContext: body,
+    toneContext: "customer-publication",
+    qualityGate: (text) => {
+      const t = text.trim();
+      if (t.length < MIN_DESC_CHARS) return { ok: false, reason: `too short (${t.length} chars; need ${MIN_DESC_CHARS}+)` };
+      if (t.length > MAX_DESC_CHARS) return { ok: false, reason: `too long (${t.length} chars; max ${MAX_DESC_CHARS})` };
+      // Reject obvious filler.
+      if (/^(in this article|discover|learn (?:how|why|about)|welcome to)/i.test(t)) {
+        return { ok: false, reason: "starts with filler phrase" };
+      }
+      // Single sentence -- one terminal punctuation max.
+      const terminals = (t.match(/[.!?]/g) || []).length;
+      if (terminals > 2) return { ok: false, reason: "more than one sentence" };
+      return { ok: true };
+    },
+    regenerate: callModel,
+    label: "article-description",
+    clientSlug,
+  });
+
+  if (!validation.ok) return null;
+  return validation.text.trim().replace(/^["']|["']$/g, "");
 }
