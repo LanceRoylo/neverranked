@@ -25,6 +25,12 @@ export interface Env {
   OPENAI_API_KEY?: string;
   GEMINI_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
+  /** DataForSEO credentials for Google AI Overviews coverage.
+   *  Optional -- when unset, the AIO engine is skipped silently,
+   *  matching how the other engines no-op without their respective
+   *  keys. Both must be set for the integration to activate. */
+  DATAFORSEO_LOGIN?: string;
+  DATAFORSEO_PASSWORD?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   // Used to encrypt per-client secrets at rest in D1 (currently just

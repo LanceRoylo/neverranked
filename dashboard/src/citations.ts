@@ -694,6 +694,65 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
 
           await new Promise((r) => setTimeout(r, 200));
         }
+
+        // --- Google AI Overviews (via DataForSEO) ---
+        // Skipped silently when DATAFORSEO_LOGIN/PASSWORD aren't set,
+        // matching how the other engines no-op without their keys.
+        // When AIO doesn't render for a query (very common), we get
+        // an empty result back -- skip the INSERT so we don't poison
+        // the citation rate denominator with non-runs.
+        if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
+          try {
+            const { queryGoogleAIO } = await import("./citations-google-aio");
+            const aioResult = await queryGoogleAIO(kw.keyword, env);
+            if (aioResult.text.length > 0 || aioResult.urls.length > 0) {
+              const prom = computeProminence(aioResult.entities, aioResult.urls, clientDomain, businessName);
+              const cited = prom !== null;
+
+              if (cited) {
+                kwCited = true;
+                if (!kwEngines.includes("google_ai_overview")) kwEngines.push("google_ai_overview");
+              }
+
+              for (const entity of aioResult.entities) {
+                const eName = entity.name.toLowerCase();
+                if (
+                  eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+                  (!businessName || eName !== businessName.toLowerCase())
+                ) {
+                  competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+                }
+              }
+
+              const insertRes = await env.DB.prepare(
+                `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+                 VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
+              )
+                .bind(
+                  kw.id,
+                  aioResult.text.slice(0, 4000),
+                  JSON.stringify(aioResult.entities),
+                  JSON.stringify(aioResult.urls),
+                  cited ? 1 : 0,
+                  prom,
+                  now
+                )
+                .run();
+
+              await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
+
+              totalQueries++;
+              if (cited) clientCitations++;
+            }
+            // else: no AIO rendered for this query, no row written
+          } catch (err) {
+            console.log(`Google AIO query failed for "${kw.keyword}": ${err}`);
+          }
+
+          // DataForSEO Live Advanced is 2-5s per call. Pace lightly to
+          // be polite to their API and avoid burst rate limits.
+          await new Promise((r) => setTimeout(r, 300));
+        }
       }
 
       keywordResults.push({
