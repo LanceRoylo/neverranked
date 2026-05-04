@@ -1212,6 +1212,23 @@ export default {
     // fetches each, extracts metadata, and inserts as 'pending'
     // for review. No auto-trigger -- run manually for blog-heavy
     // clients via this endpoint.
+    // Generate Person schemas from a customer's About/Team/Leadership
+    // page. Pulls named individuals + links them to a verifiable
+    // identity hook (LinkedIn, bio page). Inserted as 'pending' for
+    // review before live -- people are factual claims that could
+    // embarrass us if wrong.
+    if (path === "/admin/generate-people" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const sourceUrl = url.searchParams.get("url");
+      if (!slug || !sourceUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?url=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generatePersonsForPage } = await import("./person-generator");
+      const r = await generatePersonsForPage(slug, sourceUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
     if (path === "/admin/generate-articles" && method === "GET" && user.role === "admin") {
       const slug = url.searchParams.get("slug");
       const sitemapUrl = url.searchParams.get("sitemap");
