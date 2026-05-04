@@ -1931,6 +1931,275 @@ h1,h2,h3,h4{
   align-items:center;
   gap:14px;
 }
+/* Hero-scale labeled broadcast diagram. The platform in one image.
+   Center node = "YOUR BRAND". Five perimeter nodes labeled with the
+   tracked AI engines. Five arcs draw outward in sequence with
+   endpoint bursts when each "signal" arrives. The orbit ring under
+   the nodes gives depth. The breathing center glow keeps the brand
+   feeling alive between broadcasts.
+   Layout responsive: SVG scales by max-width on the canvas, labels
+   stay readable down to ~360px wide. */
+.broadcast-diagram-section{
+  padding:120px 0 80px;
+  border-bottom:1px solid var(--line);
+  position:relative;
+}
+.broadcast-head{
+  max-width:680px;
+  margin-bottom:60px;
+}
+.broadcast-head h2{
+  font-family:var(--serif);
+  font-weight:400;
+  font-size:clamp(28px,4vw,46px);
+  line-height:1.1;
+  letter-spacing:-.015em;
+  margin:0 0 20px;
+  color:var(--text);
+}
+.broadcast-head h2 em{
+  font-style:italic;
+  color:var(--gold);
+}
+.broadcast-head p{
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.7;
+  color:var(--text-mute);
+  max-width:62ch;
+  margin:0;
+}
+.broadcast-canvas{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:32px;
+  margin:0 auto;
+}
+.broadcast-svg{
+  width:100%;
+  max-width:600px;
+  height:auto;
+  color:var(--gold);
+  overflow:visible;
+}
+.broadcast-svg .orbit-ring{
+  fill:none;
+  stroke:var(--line);
+  stroke-width:1;
+  stroke-dasharray:2 5;
+  opacity:0.4;
+}
+.broadcast-svg .brand-glow{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1;
+  opacity:0.2;
+  animation:bd-brand-breathe 3.6s ease-in-out infinite;
+}
+@keyframes bd-brand-breathe{
+  0%,100%{ r:36; opacity:0.18; }
+  50%{ r:46; opacity:0.32; }
+}
+.broadcast-svg .brand-core{
+  fill:currentColor;
+}
+.broadcast-svg .brand-label{
+  font-family:var(--label);
+  font-size:11px;
+  letter-spacing:.22em;
+  fill:var(--text);
+  font-weight:500;
+}
+.broadcast-svg .brand-sublabel{
+  font-family:var(--mono);
+  font-size:9px;
+  letter-spacing:.12em;
+  fill:var(--text-faint);
+  text-transform:uppercase;
+}
+.broadcast-svg .bd-arc{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.5;
+  stroke-linecap:round;
+  stroke-dasharray:180;
+  stroke-dashoffset:180;
+  opacity:0;
+  animation:bd-arc-broadcast 2.2s ease-in-out infinite;
+}
+.broadcast-svg .bd-endpoint{
+  fill:currentColor;
+  opacity:0;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:bd-endpoint-burst 2.2s ease-in-out infinite;
+}
+.broadcast-svg .engine-label{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:18px;
+  fill:var(--text);
+  font-weight:400;
+}
+.broadcast-svg .engine-sublabel{
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  fill:var(--text-faint);
+}
+@keyframes bd-arc-broadcast{
+  0%   { stroke-dashoffset:180; opacity:0; }
+  6%   { opacity:0.85; }
+  50%  { stroke-dashoffset:0;   opacity:0.85; }
+  85%  { stroke-dashoffset:0;   opacity:0.4; }
+  100% { stroke-dashoffset:0;   opacity:0; }
+}
+@keyframes bd-endpoint-burst{
+  0%,48%   { opacity:0; transform:scale(0); }
+  55%      { opacity:1; transform:scale(1.3); }
+  65%      { opacity:1; transform:scale(1); }
+  100%     { opacity:0; transform:scale(0.5); }
+}
+.broadcast-svg .bd-arc-1, .broadcast-svg .bd-endpoint-1{ animation-delay:0s; }
+.broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2{ animation-delay:0.44s; }
+.broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3{ animation-delay:0.88s; }
+.broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:1.32s; }
+.broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.76s; }
+.broadcast-caption{
+  max-width:60ch;
+  font-family:var(--mono);
+  font-size:12.5px;
+  line-height:1.7;
+  color:var(--text-mute);
+  text-align:center;
+  padding:0 24px;
+}
+.broadcast-caption strong{ color:var(--text); font-weight:400 }
+@media (prefers-reduced-motion: reduce){
+  .broadcast-svg .bd-arc, .broadcast-svg .bd-endpoint, .broadcast-svg .brand-glow{
+    animation:none;
+  }
+  .broadcast-svg .bd-arc{ stroke-dashoffset:0; opacity:0.5; }
+  .broadcast-svg .bd-endpoint{ opacity:0.7; transform:scale(1); }
+}
+@media (max-width: 720px){
+  .broadcast-diagram-section{ padding:80px 0 60px; }
+  /* Smaller engine labels on phone so they fit alongside the diagram. */
+  .broadcast-svg .engine-label{ font-size:14px; }
+  .broadcast-svg .engine-sublabel{ font-size:8.5px; }
+  .broadcast-svg .brand-label{ font-size:9.5px; }
+  .broadcast-svg .brand-sublabel{ font-size:8px; }
+}
+
+/* Hero-eyebrow mini broadcast: tiny 18px version of the pentagon
+   broadcast diagram. Sits in the eyebrow tag where the static gold
+   dot used to live. Same visual system as the tier-icons, scaled
+   down. Five arcs = five tracked engines. */
+.eyebrow-broadcast{
+  width:18px;
+  height:18px;
+  flex-shrink:0;
+  color:var(--gold);
+  margin-right:10px;
+  vertical-align:middle;
+  display:inline-block;
+  overflow:visible;
+}
+.eyebrow-broadcast .core{ fill:currentColor; }
+.eyebrow-broadcast .arc{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:0.9;
+  stroke-linecap:round;
+  stroke-dasharray:7;
+  stroke-dashoffset:7;
+  opacity:0;
+  animation:eyebrow-arc 1.6s ease-in-out infinite;
+}
+.eyebrow-broadcast .endpoint{
+  fill:currentColor;
+  opacity:0;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:eyebrow-burst 1.6s ease-in-out infinite;
+}
+@keyframes eyebrow-arc{
+  0%   { stroke-dashoffset:7; opacity:0; }
+  10%  { opacity:0.8; }
+  50%  { stroke-dashoffset:0; opacity:0.8; }
+  100% { stroke-dashoffset:0; opacity:0; }
+}
+@keyframes eyebrow-burst{
+  0%,48%   { opacity:0; transform:scale(0); }
+  55%      { opacity:1; transform:scale(1); }
+  100%     { opacity:0; transform:scale(0.4); }
+}
+.eyebrow-broadcast .arc-1, .eyebrow-broadcast .endpoint-1{ animation-delay:0s; }
+.eyebrow-broadcast .arc-2, .eyebrow-broadcast .endpoint-2{ animation-delay:0.32s; }
+.eyebrow-broadcast .arc-3, .eyebrow-broadcast .endpoint-3{ animation-delay:0.64s; }
+.eyebrow-broadcast .arc-4, .eyebrow-broadcast .endpoint-4{ animation-delay:0.96s; }
+.eyebrow-broadcast .arc-5, .eyebrow-broadcast .endpoint-5{ animation-delay:1.28s; }
+@media (prefers-reduced-motion: reduce){
+  .eyebrow-broadcast .arc, .eyebrow-broadcast .endpoint{
+    animation:none;
+  }
+  .eyebrow-broadcast .arc{ stroke-dashoffset:0; opacity:0.5; }
+  .eyebrow-broadcast .endpoint{ opacity:0.7; }
+}
+
+/* Audit-callout broadcast: single-arc version that matches the
+   Audit's "one-time diagnostic" nature. One signal goes out, returns,
+   reports back. Slow, deliberate cadence. */
+.audit-broadcast{
+  width:24px;
+  height:24px;
+  flex-shrink:0;
+  color:var(--gold);
+  margin-right:10px;
+  vertical-align:middle;
+  display:inline-block;
+  overflow:visible;
+}
+.audit-broadcast .core{ fill:currentColor; }
+.audit-broadcast .arc{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1;
+  stroke-linecap:round;
+  stroke-dasharray:9;
+  stroke-dashoffset:9;
+  opacity:0;
+  animation:audit-arc 3s ease-in-out infinite;
+}
+.audit-broadcast .endpoint{
+  fill:currentColor;
+  opacity:0;
+  transform-box:fill-box;
+  transform-origin:center;
+  animation:audit-burst 3s ease-in-out infinite;
+}
+@keyframes audit-arc{
+  0%   { stroke-dashoffset:9; opacity:0; }
+  10%  { opacity:0.8; }
+  45%  { stroke-dashoffset:0; opacity:0.8; }
+  90%  { stroke-dashoffset:0; opacity:0.3; }
+  100% { stroke-dashoffset:0; opacity:0; }
+}
+@keyframes audit-burst{
+  0%,42%   { opacity:0; transform:scale(0); }
+  50%      { opacity:1; transform:scale(1); }
+  100%     { opacity:0; transform:scale(0.4); }
+}
+@media (prefers-reduced-motion: reduce){
+  .audit-broadcast .arc, .audit-broadcast .endpoint{
+    animation:none;
+  }
+  .audit-broadcast .arc{ stroke-dashoffset:0; opacity:0.5; }
+  .audit-broadcast .endpoint{ opacity:0.7; }
+}
+
 /* Tier broadcast icon -- a small SVG next to each tier name. The
    metaphor: your brand at center broadcasting citations outward to
    AI engines on the perimeter. Each "arc" is a signal traveling
@@ -4529,6 +4798,73 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <span>Claude</span>
     </div>
   </div>
+
+  <!-- ============ BROADCAST DIAGRAM (HERO-SCALE) ============ -->
+  <section class="broadcast-diagram-section">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§</span>
+        <span>How AEO works</span>
+        <span class="rule"></span>
+        <span>five engines / one signal</span>
+      </div>
+      <div class="broadcast-head">
+        <h2 class="reveal">Your brand, broadcasting to <em>every engine your customers ask.</em></h2>
+        <p class="reveal" style="transition-delay:.1s">
+          Structured data we deploy on your site is what AI engines read first. The tracker watches all five major engines weekly to confirm the work is showing up in answers. The diagram below is the platform in one image.
+        </p>
+      </div>
+      <div class="broadcast-canvas reveal" style="transition-delay:.2s">
+        <svg viewBox="0 0 600 540" class="broadcast-svg" aria-hidden="true">
+          <!-- Faint orbit ring under the nodes for visual depth -->
+          <circle class="orbit-ring" cx="300" cy="270" r="180"/>
+
+          <!-- Center: brand label + core dot + breathing glow -->
+          <circle class="brand-glow" cx="300" cy="270" r="36"/>
+          <circle class="brand-core" cx="300" cy="270" r="6"/>
+          <text class="brand-label" x="300" y="306" text-anchor="middle">YOUR BRAND</text>
+          <text class="brand-sublabel" x="300" y="324" text-anchor="middle">SCHEMA + CITATIONS</text>
+
+          <!-- Five arcs broadcasting outward to engine nodes.
+               Pentagon angles (clockwise from top): 90, 18, 306, 234, 162.
+               Center (300,270), perimeter radius 180. -->
+
+          <!-- Top: ChatGPT (90 degrees) -->
+          <line class="bd-arc bd-arc-1" x1="300" y1="270" x2="300" y2="90"/>
+          <circle class="bd-endpoint bd-endpoint-1" cx="300" cy="90" r="6"/>
+          <text class="engine-label" x="300" y="74" text-anchor="middle">ChatGPT</text>
+          <text class="engine-sublabel" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
+
+          <!-- Upper-right: Claude (18 degrees) -->
+          <line class="bd-arc bd-arc-2" x1="300" y1="270" x2="471" y2="214"/>
+          <circle class="bd-endpoint bd-endpoint-2" cx="471" cy="214" r="6"/>
+          <text class="engine-label" x="490" y="200" text-anchor="start">Claude</text>
+          <text class="engine-sublabel" x="490" y="216" text-anchor="start">Anthropic</text>
+
+          <!-- Lower-right: Gemini (306 degrees) -->
+          <line class="bd-arc bd-arc-3" x1="300" y1="270" x2="406" y2="416"/>
+          <circle class="bd-endpoint bd-endpoint-3" cx="406" cy="416" r="6"/>
+          <text class="engine-label" x="425" y="420" text-anchor="start">Gemini</text>
+          <text class="engine-sublabel" x="425" y="436" text-anchor="start">Google &middot; web-grounded</text>
+
+          <!-- Lower-left: Google AI Overviews (234 degrees) -->
+          <line class="bd-arc bd-arc-4" x1="300" y1="270" x2="194" y2="416"/>
+          <circle class="bd-endpoint bd-endpoint-4" cx="194" cy="416" r="6"/>
+          <text class="engine-label" x="175" y="420" text-anchor="end">Google AI Overviews</text>
+          <text class="engine-sublabel" x="175" y="436" text-anchor="end">SERP &middot; live via DataForSEO</text>
+
+          <!-- Upper-left: Perplexity (162 degrees) -->
+          <line class="bd-arc bd-arc-5" x1="300" y1="270" x2="129" y2="214"/>
+          <circle class="bd-endpoint bd-endpoint-5" cx="129" cy="214" r="6"/>
+          <text class="engine-label" x="110" y="200" text-anchor="end">Perplexity</text>
+          <text class="engine-sublabel" x="110" y="216" text-anchor="end">web-grounded</text>
+        </svg>
+        <div class="broadcast-caption">
+          <strong>Five engines tracked weekly.</strong> Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ============ DELIVERABLES (TOP 5 PER TIER) ============ -->
   <section class="deliverables" id="deliverables">
