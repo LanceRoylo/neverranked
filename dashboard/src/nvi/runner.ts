@@ -119,6 +119,28 @@ export async function runMonthlyNviReport(
          AND keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)`
   ).bind(reportId, runStartedAt, runFinishedAt + 30, clientSlug).run();
 
+  // 7. Write an admin_inbox row so the report surfaces in cockpit
+  //    + 7am founder email + sidebar pending count. The inbox
+  //    item's action_url sends Lance directly to the preview page,
+  //    no hunting required.
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    await env.DB.prepare(
+      `INSERT INTO admin_inbox
+         (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
+       VALUES ('nvi_report_review', ?, ?, ?, 'nvi_report', ?, ?, 'normal', 'pending', ?)`
+    ).bind(
+      `NVI report ready for review: ${clientSlug} (${reportingPeriod})`,
+      `AI Presence Score ${presence.score}/100 (Grade ${presence.grade}). ${presence.promptsCited} of ${presence.promptsTotal} tracked prompts cited across ${presence.enginesCited} engines. Insight + action drafted by Claude Haiku, awaiting your review before customer delivery.`,
+      `/admin/nvi/preview/${reportId}`,
+      reportId,
+      clientSlug,
+      now,
+    ).run();
+  } catch (e) {
+    console.log(`[nvi] inbox write failed (non-fatal): ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   console.log(`[nvi] ${clientSlug} ${reportingPeriod} report #${reportId} ready for review (score=${presence.score})`);
 
   return { ok: true, reportId, score: presence.score };

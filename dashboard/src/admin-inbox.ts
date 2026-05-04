@@ -235,7 +235,28 @@ async function notifyInboxImmediate(env: Env, item: ImmediateNotifyParams): Prom
 export async function sendInboxMorningSummary(env: Env): Promise<void> {
   const items = await getPendingInbox(env, 25);
   const stats = await getInboxStats(env);
-  if (items.length === 0) return;
+
+  // Always send, even on empty days. Silence reads as "either nothing
+  // happened or the system is broken" -- both bad. An empty-state
+  // email is a positive signal: inbox zero, system alive, nothing
+  // requires you today.
+  if (items.length === 0) {
+    const subject = "[NeverRanked] Inbox zero this morning";
+    const text = [
+      "Nothing pending in your admin inbox right now.",
+      "",
+      "Things that would have appeared here:",
+      "  - NVI reports awaiting your approval before customer delivery",
+      "  - Content drafts in 'in_review' status",
+      "  - Tone-guard failures and voice-fingerprint mismatches",
+      "  - Schema deploy issues that need a human call",
+      "  - High-urgency snippet sweep failures",
+      "",
+      "Inbox: " + INBOX_BASE,
+    ].join("\n");
+    await sendAdminEmail(env, subject, text);
+    return;
+  }
 
   const subject = `[NeverRanked] ${stats.pending_total} item${stats.pending_total === 1 ? "" : "s"} need your attention`;
   const lines: string[] = [

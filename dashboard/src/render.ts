@@ -28,7 +28,7 @@ export function layout(
   activeSlug?: string,
   branding?: BrandingContext,
 ): string {
-  const badges = user ? { alerts: user._alertCount || 0, roadmap: user._roadmapInProgress || 0 } : { alerts: 0, roadmap: 0 };
+  const badges = user ? { alerts: user._alertCount || 0, roadmap: user._roadmapInProgress || 0, nviPending: user._nviPending || 0 } : { alerts: 0, roadmap: 0, nviPending: 0 };
   // For slug-dependent nav links: use activeSlug when we're viewing a
   // specific client, otherwise fall back to the logged-in user's own
   // client_slug; admins on list pages use the bare path.
@@ -41,6 +41,7 @@ export function layout(
   // Badge helpers. Kept compact so the sidebar items don't get noisy.
   const alertBadge = badges.alerts ? `<span class="nav-badge">${badges.alerts > 9 ? '9+' : badges.alerts}</span>` : '';
   const roadmapBadge = badges.roadmap ? `<span class="nav-badge">${badges.roadmap}</span>` : '';
+  const nviBadge = badges.nviPending ? `<span class="nav-badge">${badges.nviPending > 9 ? '9+' : badges.nviPending}</span>` : '';
 
   // Active-state helper: returns ' active' if any predicate matches the
   // current title. Keeps the sidebar markup readable instead of repeating
@@ -95,6 +96,7 @@ export function layout(
         <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
         <a href="/admin/weekly-brief" class="sidebar-item${title === 'Weekly briefs' || title === 'Weekly brief' ? ' active' : ''}">Weekly briefs</a>
+        <a href="/admin/nvi" class="sidebar-item${title === 'NVI Inbox' ? ' active' : ''}">NVI Inbox${nviBadge}</a>
         <a href="/admin/content-review" class="sidebar-item${title === 'Content review' ? ' active' : ''}">Content review</a>
         <div class="sidebar-overflow">
           <a href="/admin/manage" class="sidebar-item${title === 'Manage Clients' ? ' active' : ''}">Manage Clients</a>

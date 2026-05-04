@@ -377,6 +377,14 @@ export default {
           "SELECT COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL"
         ).first<{ cnt: number }>();
         user._alertCount = alertCount?.cnt || 0;
+        // NVI pending count: reports awaiting Lance's review before
+        // customer delivery. Surfaces as a badge on the NVI Inbox
+        // sidebar item so manual review is visible without opening
+        // the page first.
+        const nviPending = await env.DB.prepare(
+          "SELECT COUNT(*) as cnt FROM nvi_reports WHERE status = 'pending'"
+        ).first<{ cnt: number }>();
+        user._nviPending = nviPending?.cnt || 0;
       }
     } catch {
       // Non-critical -- don't break routing if badge query fails
@@ -909,6 +917,22 @@ export default {
     if (path === "/admin/automation/toggle" && method === "POST" && user.role === "admin") {
       return handleAutomationToggle(user, env);
     }
+    // Manually fire the 7am morning summary on demand. Useful for
+    // verifying the channel works without waiting for the cron, and
+    // for re-sending after a code change.
+    if (path === "/admin/morning-summary/send-now" && method === "GET" && user.role === "admin") {
+      const { sendInboxMorningSummary } = await import("./admin-inbox");
+      try {
+        await sendInboxMorningSummary(env);
+        return new Response(JSON.stringify({ ok: true, note: "Sent. Check ADMIN_EMAIL inbox." }, null, 2), {
+          headers: { "content-type": "application/json" },
+        });
+      } catch (e) {
+        return new Response(JSON.stringify({ error: String(e) }, null, 2), {
+          status: 500, headers: { "content-type": "application/json" },
+        });
+      }
+    }
     if (path === "/admin/email-test" && method === "GET" && user.role === "admin") {
       return handleEmailTestGet(user, env, url);
     }
@@ -1136,13 +1160,13 @@ export default {
     const nviRunMatch = path.match(/^\/admin\/nvi\/run\/([a-z0-9-]+)$/);
     if (nviRunMatch && method === "POST" && user.role === "admin") {
       const { handleNviRunNow } = await import("./routes/admin-nvi");
-      return handleNviRunNow(nviRunMatch[1], user, env);
+      return handleNviRunNow(nviRunMatch[1], user, env, ctx);
     }
     // GET form for the run-now endpoint (so admin can hit a URL
     // directly from the browser without needing a form submit).
     if (nviRunMatch && method === "GET" && user.role === "admin") {
       const { handleNviRunNow } = await import("./routes/admin-nvi");
-      return handleNviRunNow(nviRunMatch[1], user, env);
+      return handleNviRunNow(nviRunMatch[1], user, env, ctx);
     }
 
     if (path === "/admin/regrade-all" && method === "GET" && user.role === "admin") {

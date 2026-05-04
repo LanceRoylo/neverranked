@@ -41,6 +41,78 @@ function alertTypeLabel(type: string): string {
   }
 }
 
+/**
+ * Map an alert to the page where the user takes action on it.
+ * The title becomes a click-through to this URL so Lance never has
+ * to hunt for the right surface after seeing an alert. Falls back
+ * to the domain detail page (for client roles) or the cockpit
+ * (for admins) when no specific action page applies.
+ */
+function alertActionUrl(a: Alert, isAdmin: boolean): string | null {
+  const slug = a.client_slug;
+
+  // FAQ / breadcrumb / article draft awaiting human review.
+  // The 'draft_ready' alert is written by the schema generators
+  // when a content draft lands in 'pending' status.
+  if (a.type === "draft_ready") {
+    return isAdmin ? `/admin/inject/${slug}` : `/citations/${slug}`;
+  }
+
+  // Schema deploy alerts (e.g. "Deployed FAQPage", "Event refresh: N
+  // added"). Take the user to the inject admin page where deployed
+  // schemas live and can be paused/edited.
+  if (a.type === "deploy") {
+    return isAdmin ? `/admin/inject/${slug}` : `/domain-by-slug/${slug}`;
+  }
+
+  // First-citation milestones, score upgrades, score-band crossings.
+  // Take the user to the citation dashboard or domain detail.
+  if (a.type === "milestone" || a.type === "first_citation") {
+    if (a.title?.toLowerCase().includes("citation")) {
+      return `/citations/${slug}`;
+    }
+    if (a.title?.toLowerCase().includes("roadmap")) {
+      return `/roadmap/${slug}`;
+    }
+    return `/citations/${slug}`;
+  }
+
+  // Score regressions or changes: domain detail page so the user
+  // sees what changed in the latest scan.
+  if (a.type === "regression" || a.type === "score_change") {
+    return `/citations/${slug}`;
+  }
+
+  // Auto-completed roadmap items: the roadmap page.
+  if (a.type === "auto_completed") {
+    return `/roadmap/${slug}`;
+  }
+
+  // Snippet detected on a client site.
+  if (a.type === "snippet_detected") {
+    return isAdmin ? `/admin/inject/${slug}` : `/citations/${slug}`;
+  }
+
+  // Cron-activated, draft_ready, fetch-failed, parser-drift -- send
+  // admin to the relevant inject page.
+  if (a.type === "cron_activated"
+      || a.type === "htc_events_fetch_failed"
+      || a.type === "htc_events_parser_drift"
+      || a.type === "config_lazy_created"
+      || a.type === "config_drift_missing") {
+    return isAdmin ? `/admin/inject/${slug}` : null;
+  }
+
+  // Generic needs_review: send to inbox where it's likely surfaced
+  if (a.type === "needs_review") {
+    return isAdmin ? "/admin/inbox" : null;
+  }
+
+  // Unknown type -- fall back to the citation page (for clients)
+  // or the cockpit (for admins) so we never leave the user stranded.
+  return slug ? `/citations/${slug}` : (isAdmin ? "/admin" : null);
+}
+
 export async function handleAlerts(user: User, env: Env): Promise<Response> {
   const clientSlug = user.role === "admin" ? null : user.client_slug;
 
@@ -57,6 +129,7 @@ export async function handleAlerts(user: User, env: Env): Promise<Response> {
 
   const unreadCount = alerts.filter(a => !a.read_at).length;
 
+  const isAdmin = user.role === "admin";
   const alertRows = alerts.length > 0 ? alerts.map(a => {
     const { icon, color } = alertIcon(a.type);
     const isRead = !!a.read_at;
@@ -64,13 +137,20 @@ export async function handleAlerts(user: User, env: Env): Promise<Response> {
     const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     const opacity = isRead ? "opacity:.55" : "";
+    const actionUrl = alertActionUrl(a, isAdmin);
+    // Title is wrapped in a link to the page where the user takes
+    // action on this alert. Removes the "see alert, hunt for the
+    // right page" friction.
+    const titleHtml = actionUrl
+      ? `<a href="${actionUrl}" style="font-size:14px;color:var(--text);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(a.title)}</a>`
+      : `<span style="font-size:14px;color:var(--text)">${esc(a.title)}</span>`;
 
     return `
       <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid rgba(251,248,239,.06);${opacity}">
         <div style="flex-shrink:0;width:32px;height:32px;border-radius:4px;background:var(--bg-edge);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:500;color:${color}">${icon}</div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            <span style="font-size:14px;color:var(--text);${isRead ? '' : 'font-weight:400'}">${esc(a.title)}</span>
+            ${titleHtml}
             ${!isRead ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0"></span>' : ''}
           </div>
           ${a.detail ? `<div style="font-size:12px;color:var(--text-faint);line-height:1.5;margin-bottom:6px">${esc(a.detail)}</div>` : ''}

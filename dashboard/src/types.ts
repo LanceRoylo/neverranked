@@ -157,6 +157,7 @@ export interface User {
   // Runtime-only fields (not in DB)
   _alertCount?: number;
   _roadmapInProgress?: number;
+  _nviPending?: number;
   _agency?: Agency;
   _branding?: BrandingContext;
 }
