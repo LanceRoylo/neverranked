@@ -72,56 +72,79 @@ export async function generateFaqForPage(
     catch { return sourceUrl; }
   })();
 
-  // Generate + tone-check with auto-regenerate. If tone-guard
-  // catches AI-tells (em dashes, "leverage", "unlock", banned
-  // patterns) we silently regenerate up to 3 times with the
-  // violations fed back into the prompt. Only escalate to admin
-  // inbox if all 3 attempts fail. Removes "Lance opens inbox to
-  // see X failed, regenerates, comes back to see if it passed"
-  // friction for cases where the model just needs a second shot.
-  const { checkHumanTone, assertHumanTone } = await import("./human-tone-guard");
-  const MAX_ATTEMPTS = 3;
-  let faqs: { question: string; answer: string }[] | undefined;
-  let lastViolationsBrief = "";
-  let attempt = 0;
-  for (attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-    const generated = await callClaudeForFaqs(
-      env.ANTHROPIC_API_KEY,
-      businessHost,
-      sourceUrl,
-      inputText,
-      lastViolationsBrief,
-    );
-    if (!generated.ok || !generated.faqs) {
-      // Hard generation failure -- not a tone issue. Surface
-      // immediately, no retry.
-      return { ok: false, reason: generated.reason || "generation failed" };
-    }
-    if (generated.faqs.length < 3) {
-      return { ok: false, reason: `only ${generated.faqs.length} usable Q&A pairs generated; need 3+` };
-    }
-    const candidateText = generated.faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
-    const toneCheck = checkHumanTone(candidateText, "customer-publication");
-    if (toneCheck.ok) {
-      faqs = generated.faqs;
-      break;
-    }
-    // Build feedback for next attempt
-    lastViolationsBrief = "AVOID THESE PATTERNS that the previous attempt used: " +
-      toneCheck.violations.map(v => `"${v.match}" (${v.rule})`).join("; ");
-    console.log(`[faq-gen] attempt ${attempt} tripped tone-guard with ${toneCheck.violations.length} violations, regenerating`);
+  // Generate. The first attempt uses just the page text. The
+  // multi-pass validator below will regenerate with feedback if any
+  // pass fails (factual grounding, tone, or quality).
+  const initial = await callClaudeForFaqs(
+    env.ANTHROPIC_API_KEY,
+    businessHost,
+    sourceUrl,
+    inputText,
+    "",
+  );
+  if (!initial.ok || !initial.faqs) {
+    return { ok: false, reason: initial.reason || "generation failed" };
+  }
+  if (initial.faqs.length < 3) {
+    return { ok: false, reason: `only ${initial.faqs.length} usable Q&A pairs generated; need 3+` };
+  }
+  const initialText = initial.faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
+
+  // Three-pass validation: factual grounding (Pass A) + tone (Pass B)
+  // + structural quality (Pass C, here: at least 3 valid Q&A pairs).
+  // Auto-regenerates up to 3 attempts with violations fed back. Only
+  // escalates to admin inbox if all 3 fail. See lib/multi-pass.ts.
+  const { multiPassValidate } = await import("./lib/multi-pass");
+  const validation = await multiPassValidate(env, {
+    generated: initialText,
+    sourceContext: inputText,
+    toneContext: "customer-publication",
+    qualityGate: (text) => {
+      // Quick structural check: rebuild Q&A pairs from the text
+      // shape (Q line + A line, blank-separated) and ensure at
+      // least 3 valid entries. The text format here is what the
+      // generator produces ("question\nanswer" per pair).
+      const pairs = text.split(/\n\s*\n/).filter(p => p.includes("\n")).length;
+      return pairs >= 3
+        ? { ok: true }
+        : { ok: false, reason: `only ${pairs} valid Q&A pairs detected (need 3+)` };
+    },
+    regenerate: async (feedback) => {
+      const r = await callClaudeForFaqs(
+        env.ANTHROPIC_API_KEY!,
+        businessHost,
+        sourceUrl,
+        inputText,
+        feedback,
+      );
+      if (!r.ok || !r.faqs) throw new Error(r.reason || "regenerate failed");
+      return r.faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
+    },
+    label: "faq-generator",
+    clientSlug,
+  });
+
+  if (!validation.ok) {
+    return {
+      ok: false,
+      reason: `multi-pass validation stuck after ${validation.attempts} attempts -- see /admin/inbox/${validation.inboxId}`,
+    };
   }
 
-  if (!faqs) {
-    // All MAX_ATTEMPTS failed. NOW write the inbox row so an admin
-    // can investigate (model is stuck on this content).
-    const lastText = "(see attempt logs)";
-    const tone = await assertHumanTone(env, lastText, "customer-publication", {
-      source: "faq-generator.generateFaqForPage",
-      client_slug: clientSlug,
-      target_type: "faq_schema",
-    });
-    return { ok: false, reason: `tone-guard blocked all ${MAX_ATTEMPTS} regeneration attempts -- see /admin/inbox/${tone.inboxId}` };
+  // Re-parse the validated text back into the question/answer shape
+  // (the validator works on text, the schema needs structured pairs).
+  const faqs: { question: string; answer: string }[] = validation.text
+    .split(/\n\s*\n/)
+    .map(block => {
+      const lines = block.split("\n");
+      const q = lines[0]?.trim();
+      const a = lines.slice(1).join(" ").trim();
+      return q && a ? { question: q, answer: a } : null;
+    })
+    .filter((qa): qa is { question: string; answer: string } => qa !== null);
+
+  if (faqs.length < 3) {
+    return { ok: false, reason: `post-validation parse yielded only ${faqs.length} pairs` };
   }
 
   // 4. Wrap as FAQPage JSON-LD.

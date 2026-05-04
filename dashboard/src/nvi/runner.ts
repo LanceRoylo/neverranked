@@ -215,7 +215,25 @@ WRITE TWO PARAGRAPHS, returned as JSON with this exact shape:
 
 Output ONLY the JSON object. No surrounding markdown.`;
 
-  try {
+  // Generate-with-3-pass-validation. The source context for the
+  // factual grounding pass is the structured data we passed into
+  // the prompt -- if the model invents a number or quotes a
+  // prompt that isn't in the lists, factual catches it.
+  const sourceForFactCheck = `AI_PRESENCE_SCORE: ${presence.score}
+PREV_MONTH_SCORE: ${presence.prevScore ?? "no previous report"}
+PROMPTS_TRACKED: ${presence.promptsTotal}
+PROMPTS_WHERE_CITED: ${presence.promptsCited}
+ENGINES_CITED_IN: ${presence.enginesCited}
+AEO_READINESS_FROM_LATEST_SCAN: ${scan?.aeo_score ?? "no scan available"}
+PROMPTS_WHERE_CITED:
+${cited.map(r => "  - " + r.keyword).join("\n") || "  (none)"}
+PROMPTS_NOT_CITED:
+${missed.map(r => "  - " + r.keyword).join("\n") || "  (none)"}`;
+
+  const callModel = async (extraFeedback: string): Promise<string> => {
+    const userWithFeedback = extraFeedback
+      ? user + "\n\nADDITIONAL CONSTRAINTS FOR THIS ATTEMPT:\n" + extraFeedback
+      : user;
     const resp = await fetch(ANTHROPIC_ENDPOINT, {
       method: "POST",
       headers: {
@@ -227,21 +245,65 @@ Output ONLY the JSON object. No surrounding markdown.`;
         model: INSIGHT_MODEL,
         max_tokens: 800,
         system,
-        messages: [{ role: "user", content: user }],
+        messages: [{ role: "user", content: userWithFeedback }],
       }),
     });
-    if (!resp.ok) return { insight: "", action: "" };
+    if (!resp.ok) throw new Error(`Claude API ${resp.status}`);
     const data = await resp.json() as { content?: { type: string; text: string }[] };
-    const text = data.content?.find((b) => b.type === "text")?.text || "";
-    const m = text.match(/\{[\s\S]*\}/);
-    if (!m) return { insight: "", action: "" };
+    return data.content?.find(b => b.type === "text")?.text || "";
+  };
+
+  let initial: string;
+  try {
+    initial = await callModel("");
+  } catch (e) {
+    console.log(`[nvi-runner] initial gen failed: ${e}`);
+    return { insight: "", action: "" };
+  }
+
+  // Run multi-pass validation against the raw model output (the JSON
+  // string blob is fine for tone-guard + factual; we parse out the
+  // insight/action fields after validation passes).
+  const { multiPassValidate } = await import("../lib/multi-pass");
+  const validation = await multiPassValidate(env, {
+    generated: initial,
+    sourceContext: sourceForFactCheck,
+    toneContext: "customer-publication",
+    qualityGate: (text) => {
+      const m = text.match(/\{[\s\S]*\}/);
+      if (!m) return { ok: false, reason: "no JSON object found in output" };
+      try {
+        const p = JSON.parse(m[0]);
+        if (typeof p.insight !== "string" || p.insight.trim().length < 30) {
+          return { ok: false, reason: "insight missing or under 30 chars" };
+        }
+        if (typeof p.action !== "string" || p.action.trim().length < 20) {
+          return { ok: false, reason: "action missing or under 20 chars" };
+        }
+        return { ok: true };
+      } catch (e) {
+        return { ok: false, reason: `JSON parse failed: ${e}` };
+      }
+    },
+    regenerate: callModel,
+    label: "nvi-insight-action",
+    clientSlug,
+  });
+
+  // If validation failed but we still have SOME output, use the last
+  // attempt's text as a best-effort fallback so the report has
+  // something. Lance reviews everything before send anyway, so a
+  // soft-fail here is recoverable.
+  const finalText = validation.text;
+  const m = finalText.match(/\{[\s\S]*\}/);
+  if (!m) return { insight: "", action: "" };
+  try {
     const parsed = JSON.parse(m[0]);
     return {
       insight: typeof parsed.insight === "string" ? parsed.insight.trim() : "",
       action: typeof parsed.action === "string" ? parsed.action.trim() : "",
     };
-  } catch (e) {
-    console.log(`[nvi-runner] insight draft failed: ${e}`);
+  } catch {
     return { insight: "", action: "" };
   }
 }
