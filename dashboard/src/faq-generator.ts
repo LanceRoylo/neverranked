@@ -72,28 +72,56 @@ export async function generateFaqForPage(
     catch { return sourceUrl; }
   })();
 
-  const generated = await callClaudeForFaqs(env.ANTHROPIC_API_KEY, businessHost, sourceUrl, inputText);
-  if (!generated.ok || !generated.faqs) {
-    return { ok: false, reason: generated.reason || "generation failed" };
-  }
-  const faqs = generated.faqs;
-  if (faqs.length < 3) {
-    return { ok: false, reason: `only ${faqs.length} usable Q&A pairs generated; need 3+` };
+  // Generate + tone-check with auto-regenerate. If tone-guard
+  // catches AI-tells (em dashes, "leverage", "unlock", banned
+  // patterns) we silently regenerate up to 3 times with the
+  // violations fed back into the prompt. Only escalate to admin
+  // inbox if all 3 attempts fail. Removes "Lance opens inbox to
+  // see X failed, regenerates, comes back to see if it passed"
+  // friction for cases where the model just needs a second shot.
+  const { checkHumanTone, assertHumanTone } = await import("./human-tone-guard");
+  const MAX_ATTEMPTS = 3;
+  let faqs: { question: string; answer: string }[] | undefined;
+  let lastViolationsBrief = "";
+  let attempt = 0;
+  for (attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+    const generated = await callClaudeForFaqs(
+      env.ANTHROPIC_API_KEY,
+      businessHost,
+      sourceUrl,
+      inputText,
+      lastViolationsBrief,
+    );
+    if (!generated.ok || !generated.faqs) {
+      // Hard generation failure -- not a tone issue. Surface
+      // immediately, no retry.
+      return { ok: false, reason: generated.reason || "generation failed" };
+    }
+    if (generated.faqs.length < 3) {
+      return { ok: false, reason: `only ${generated.faqs.length} usable Q&A pairs generated; need 3+` };
+    }
+    const candidateText = generated.faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
+    const toneCheck = checkHumanTone(candidateText, "customer-publication");
+    if (toneCheck.ok) {
+      faqs = generated.faqs;
+      break;
+    }
+    // Build feedback for next attempt
+    lastViolationsBrief = "AVOID THESE PATTERNS that the previous attempt used: " +
+      toneCheck.violations.map(v => `"${v.match}" (${v.rule})`).join("; ");
+    console.log(`[faq-gen] attempt ${attempt} tripped tone-guard with ${toneCheck.violations.length} violations, regenerating`);
   }
 
-  // Human-tone guard: FAQ answers get embedded as schema on the
-  // customer's live site, so they read like marketing copy. Block AI
-  // tells before they ship. On failure we surface to admin_inbox and
-  // refuse the FAQ -- customer can re-trigger generation later.
-  const faqAsText = faqs.map(qa => `${qa.question}\n${qa.answer}`).join("\n\n");
-  const { assertHumanTone } = await import("./human-tone-guard");
-  const tone = await assertHumanTone(env, faqAsText, "customer-publication", {
-    source: "faq-generator.generateFaqForPage",
-    client_slug: clientSlug,
-    target_type: "faq_schema",
-  });
-  if (!tone.ok) {
-    return { ok: false, reason: `tone-guard blocked ${tone.violations.length} pattern(s) -- see /admin/inbox/${tone.inboxId}` };
+  if (!faqs) {
+    // All MAX_ATTEMPTS failed. NOW write the inbox row so an admin
+    // can investigate (model is stuck on this content).
+    const lastText = "(see attempt logs)";
+    const tone = await assertHumanTone(env, lastText, "customer-publication", {
+      source: "faq-generator.generateFaqForPage",
+      client_slug: clientSlug,
+      target_type: "faq_schema",
+    });
+    return { ok: false, reason: `tone-guard blocked all ${MAX_ATTEMPTS} regeneration attempts -- see /admin/inbox/${tone.inboxId}` };
   }
 
   // 4. Wrap as FAQPage JSON-LD.
@@ -176,6 +204,7 @@ async function callClaudeForFaqs(
   businessHost: string,
   sourceUrl: string,
   pageText: string,
+  violationsFeedback: string = "",
 ): Promise<{ ok: boolean; faqs?: Array<{ question: string; answer: string }>; reason?: string }> {
   const system = "You generate FAQ structured data for a business website. " +
     "Generate questions a real customer might ask Google or ChatGPT, with factual answers grounded ONLY in the provided page content. " +
@@ -183,6 +212,10 @@ async function callClaudeForFaqs(
     "Each answer must be 1-3 sentences, factual, and quote-able. " +
     "Respond ONLY with valid JSON in this exact format: " +
     `{"faqs":[{"question":"...","answer":"..."},...]}`;
+
+  const violationsBlock = violationsFeedback
+    ? `\n\nIMPORTANT: ${violationsFeedback}\nDo not use these patterns. Rephrase to convey the same meaning without them.`
+    : "";
 
   const userPrompt = `Source URL: ${sourceUrl}
 Business: ${businessHost}
@@ -192,7 +225,7 @@ Page content:
 ${pageText}
 """
 
-Generate 5-10 high-quality FAQ pairs grounded in this content. Each Q&A should help an AI engine cite this page when a real user asks the question. Output JSON only.`;
+Generate 5-10 high-quality FAQ pairs grounded in this content. Each Q&A should help an AI engine cite this page when a real user asks the question. Output JSON only.${violationsBlock}`;
 
   const resp = await fetch(ANTHROPIC_ENDPOINT, {
     method: "POST",

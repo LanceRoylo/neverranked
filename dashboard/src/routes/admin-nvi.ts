@@ -143,17 +143,39 @@ export async function handleNviApprove(reportId: number, user: User, env: Env): 
   await env.DB.prepare(
     "UPDATE nvi_reports SET status = 'approved', approved_at = ?, approver_user_id = ? WHERE id = ? AND status = 'pending'"
   ).bind(now, user.id, reportId).run();
-  // Auto-render the PDF on approval so admin can immediately review
-  // and send. If render fails, status stays 'approved' but no
-  // pdf_r2_key, and the inbox shows a "Render PDF" button as a retry.
+  // Auto-render the PDF AND send the email. Approve = ship.
+  // If you've already reviewed the insight + action and clicked
+  // approve, the second click to "Send" is pure friction.
+  // If render fails, status stays 'approved' with no pdf_r2_key
+  // and the inbox shows a "Render PDF" retry button.
+  // If send fails after render succeeds, status stays 'approved'
+  // and the inbox shows a "Send" button (legacy retry path).
+  // Also resolves the matching admin_inbox row so the cockpit /
+  // sidebar pending count reflects the action.
   try {
     const { renderAndStoreNviPdf } = await import("../nvi/pdf");
     const r = await renderAndStoreNviPdf(env, reportId);
-    if (!r.ok) console.log(`[nvi-approve] render failed: ${r.reason}`);
+    if (!r.ok) {
+      console.log(`[nvi-approve] render failed: ${r.reason}`);
+      return redirect("/admin/nvi?status=approved");
+    }
+    const { sendNviReport } = await import("../nvi/email");
+    const send = await sendNviReport(env, reportId);
+    if (!send.ok) {
+      console.log(`[nvi-approve] send failed: ${send.reason}`);
+      return redirect("/admin/nvi?status=approved");
+    }
+    // Resolve the inbox row so the cockpit + 7am email don't keep
+    // re-surfacing it
+    await env.DB.prepare(
+      `UPDATE admin_inbox SET status = 'resolved', resolved_at = ?, resolved_by = ?
+         WHERE target_type = 'nvi_report' AND target_id = ? AND status = 'pending'`
+    ).bind(now, user.id, reportId).run();
   } catch (e) {
-    console.log(`[nvi-approve] render exception: ${e}`);
+    console.log(`[nvi-approve] exception: ${e}`);
+    return redirect("/admin/nvi?status=approved");
   }
-  return redirect("/admin/nvi?status=approved");
+  return redirect("/admin/nvi?status=sent");
 }
 
 export async function handleNviRender(reportId: number, user: User, env: Env): Promise<Response> {
@@ -191,19 +213,53 @@ export async function handleNviSend(reportId: number, user: User, env: Env): Pro
   return redirect("/admin/nvi?status=sent");
 }
 
-export async function handleNviRunNow(slug: string, user: User, env: Env): Promise<Response> {
+export async function handleNviRunNow(slug: string, user: User, env: Env, ctx: ExecutionContext): Promise<Response> {
   if (user.role !== "admin") return new Response("Forbidden", { status: 403 });
   const period = currentPeriod();
-  const { runMonthlyNviReport } = await import("../nvi/runner");
-  const r = await runMonthlyNviReport(env, slug, period);
-  if (!r.ok) {
-    return new Response(JSON.stringify({ error: r.reason }, null, 2), {
+
+  // Quick guards that we can return synchronously
+  const sub = await env.DB.prepare(
+    "SELECT tier FROM nvi_subscriptions WHERE client_slug = ? AND active = 1"
+  ).bind(slug).first<{ tier: string }>();
+  if (!sub) {
+    return new Response(JSON.stringify({ error: `no active NVI subscription for ${slug}` }, null, 2), {
       status: 400, headers: { "content-type": "application/json" },
     });
   }
-  return new Response(JSON.stringify({ ok: true, reportId: r.reportId, score: r.score, period }, null, 2), {
-    headers: { "content-type": "application/json" },
-  });
+  const existing = await env.DB.prepare(
+    "SELECT id FROM nvi_reports WHERE client_slug = ? AND reporting_period = ?"
+  ).bind(slug, period).first<{ id: number }>();
+  if (existing) {
+    return new Response(JSON.stringify({
+      error: `report ${existing.id} already exists for ${slug} ${period}`,
+      hint: `Preview at /admin/nvi/preview/${existing.id} or delete the row to re-run.`,
+    }, null, 2), {
+      status: 409, headers: { "content-type": "application/json" },
+    });
+  }
+
+  // Async fire. The runner takes 3-5 min for ~42 queries, far longer
+  // than the Workers fetch-handler wall-clock limit. ctx.waitUntil
+  // hands off to the runtime which gives us up to 15min of background
+  // budget for the actual work.
+  ctx.waitUntil((async () => {
+    try {
+      const { runMonthlyNviReport } = await import("../nvi/runner");
+      const r = await runMonthlyNviReport(env, slug, period);
+      console.log(`[nvi-run-now] ${slug} ${period}: ${r.ok ? `ok report ${r.reportId} score ${r.score}` : `failed: ${r.reason}`}`);
+    } catch (e) {
+      console.log(`[nvi-run-now] ${slug} exception: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  })());
+
+  return new Response(JSON.stringify({
+    ok: true,
+    status: "running",
+    client: slug,
+    period,
+    poll_at: "/admin/nvi",
+    note: "Runner dispatched. Citation queries take 3-5 minutes. Report will appear at /admin/nvi as 'pending' when done.",
+  }, null, 2), { headers: { "content-type": "application/json" } });
 }
 
 function currentPeriod(): string {

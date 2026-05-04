@@ -104,8 +104,12 @@ export async function generateBreadcrumbsForSite(
       continue;
     }
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, quality_score, quality_graded_at) " +
-      "VALUES (?, 'BreadcrumbList', ?, ?, 'pending', ?, unixepoch())"
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, approved_at, quality_score, quality_graded_at) " +
+      // Auto-approved at generation: BreadcrumbList content is
+      // deterministically derived from the URL nav structure --
+      // no LLM, no hallucination risk, no human judgment to add.
+      // The schema-grader gate above already verified quality.
+      "VALUES (?, 'BreadcrumbList', ?, ?, 'approved', unixepoch(), ?, unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),
@@ -119,16 +123,13 @@ export async function generateBreadcrumbsForSite(
     return { ok: false, reason: "no schemas passed the quality gate" };
   }
 
-  // 5. Single activity-log entry summarizing the batch. One alert
-  //    per generation event, not one per breadcrumb -- fewer noise
-  //    in the customer feed.
-  await logSchemaDrafted(
-    env,
-    clientSlug,
-    "BreadcrumbList",
-    `${insertedIds.length} pages (home + ${sections.length} section${sections.length === 1 ? "" : "s"})`,
-    insertedIds[0],
-  );
+  // 5. Activity log: BreadcrumbList auto-deploys (no review queue),
+  //    so log it as a "deploy" entry rather than "draft ready."
+  //    Customer sees it as live work, no action needed.
+  const { logSchemaDeployed } = await import("./activity-log");
+  await logSchemaDeployed(env, clientSlug, [
+    { schema_type: "BreadcrumbList", count: insertedIds.length },
+  ], { scope: `home + ${sections.length} section${sections.length === 1 ? "" : "s"}` });
 
   return {
     ok: true,
