@@ -8,6 +8,31 @@
 
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
 import { resolveGroundingUrls } from "./gemini-resolver";
+import { detectAndRecordAlerts } from "./lib/citation-alerts";
+
+/** After a citation_runs INSERT, fire alert detection for the
+ *  (keyword, engine) tuple. No-op when last_row_id can't be read or
+ *  the client isn't on a plan with realTimeAlerts. */
+async function maybeAlert(
+  env: Env,
+  clientSlug: string,
+  keywordId: number,
+  engine: string,
+  insertRes: { meta?: { last_row_id?: number } },
+  cited: boolean,
+  prominence: number | null,
+): Promise<void> {
+  const newRunId = Number(insertRes.meta?.last_row_id ?? 0);
+  if (newRunId <= 0) return;
+  await detectAndRecordAlerts(env, {
+    client_slug: clientSlug,
+    keyword_id: keywordId,
+    engine,
+    new_run_id: newRunId,
+    new_client_cited: cited ? 1 : 0,
+    new_prominence: prominence,
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -481,7 +506,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             }
 
             // Store run. Perplexity sonar has always been web-grounded.
-            await env.DB.prepare(
+            const insertRes = await env.DB.prepare(
               `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
                VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
             )
@@ -495,6 +520,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 now
               )
               .run();
+
+            // Real-time alert detection (Signal+ only -- internally gated)
+            await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
 
             totalQueries++;
             if (cited) clientCitations++;
@@ -532,7 +560,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
               }
             }
 
-            await env.DB.prepare(
+            const insertRes = await env.DB.prepare(
               `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
                VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
             )
@@ -546,6 +574,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 now
               )
               .run();
+
+            await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
 
             totalQueries++;
             if (cited) clientCitations++;
@@ -588,7 +618,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
               }
             }
 
-            await env.DB.prepare(
+            const insertRes = await env.DB.prepare(
               `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
                VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
             )
@@ -602,6 +632,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 now
               )
               .run();
+
+            await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
 
             totalQueries++;
             if (cited) clientCitations++;
@@ -638,7 +670,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             // Anthropic still LLM-only (web search tool integration is
             // a Phase 3 upgrade). Marked grounding_mode='training' so
             // analytics can distinguish from grounded engines.
-            await env.DB.prepare(
+            const insertRes = await env.DB.prepare(
               `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
                VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
             )
@@ -651,6 +683,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 now
               )
               .run();
+
+            await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
 
             totalQueries++;
             if (cited) clientCitations++;

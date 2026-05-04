@@ -12,6 +12,7 @@ import type { Env, Domain } from "../types";
 import { runWeeklyCitations } from "../citations";
 import { pullGscData } from "../gsc";
 import { runWeeklyBackup } from "../backup";
+import { sendPendingDigests } from "../lib/citation-alerts";
 
 // Same shape as cron.ts uses; declared here to keep imports tight.
 export type WeeklyExtrasParams = Record<string, never>;
@@ -20,6 +21,14 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
   async run(_event: WorkflowEvent<WeeklyExtrasParams>, step: WorkflowStep): Promise<void> {
     await step.do("citations", async () => {
       await runWeeklyCitations(this.env);
+    });
+
+    // Real-time citation alert digests. Citations step writes alert
+    // rows; this step batches them per client and emails Signal+
+    // customers. Separate step so a Resend hiccup retries delivery
+    // without re-running 4-engine citation queries.
+    await step.do("citation-alerts-digest", async () => {
+      await sendPendingDigests(this.env);
     });
 
     await step.do("gsc-pull", async () => {

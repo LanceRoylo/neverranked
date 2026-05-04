@@ -41,6 +41,7 @@ export interface PlanLimits {
     fullDashboard: boolean;       // false = read-only stripped view
     apiAccess: boolean;
     multiUser: boolean;
+    realTimeAlerts: boolean;      // citation gained/lost emails between reports
   };
   /** UI label for the plan. */
   displayName: string;
@@ -71,6 +72,7 @@ const LIMITS: Record<Plan, PlanLimits> = {
       fullDashboard: false,
       apiAccess: false,
       multiUser: false,
+      realTimeAlerts: false,
     },
     displayName: "Pulse",
   },
@@ -89,6 +91,7 @@ const LIMITS: Record<Plan, PlanLimits> = {
       fullDashboard: true,
       apiAccess: false,                // Enterprise-only
       multiUser: false,                // Enterprise-only
+      realTimeAlerts: true,
     },
     displayName: "Signal",
   },
@@ -107,6 +110,7 @@ const LIMITS: Record<Plan, PlanLimits> = {
       fullDashboard: true,
       apiAccess: false,                // Enterprise-only
       multiUser: false,                // Enterprise-only
+      realTimeAlerts: true,
     },
     displayName: "Amplify",
   },
@@ -125,6 +129,7 @@ const LIMITS: Record<Plan, PlanLimits> = {
       fullDashboard: true,
       apiAccess: true,
       multiUser: true,
+      realTimeAlerts: true,
     },
     displayName: "Enterprise",
   },
@@ -237,6 +242,7 @@ export function upgradePromptHtml(
     fullDashboard: "Full dashboard view",
     apiAccess: "API access",
     multiUser: "Multi-user accounts",
+    realTimeAlerts: "Real-time citation alerts",
   };
   // Which tier unlocks each feature.
   const unlocksAt: Record<GatedFeature, Plan> = {
@@ -249,6 +255,7 @@ export function upgradePromptHtml(
     fullDashboard: "signal",
     apiAccess: "enterprise",
     multiUser: "enterprise",
+    realTimeAlerts: "signal",
   };
   const friendly = friendlyNames[feature];
   const required = LIMITS[unlocksAt[feature]];
