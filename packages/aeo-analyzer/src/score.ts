@@ -37,9 +37,10 @@ export function calculateAeoScore(signals: Signals): number {
  *   F   0-39   not AI-readable
  */
 export function calculateGrade(score: number): string {
-  if (score >= 90) return "A";
-  if (score >= 75) return "B";
-  if (score >= 60) return "C";
-  if (score >= 40) return "D";
-  return "F";
+  // Delegates to the shared band utility so all three scoring
+  // systems (schema-grader, AEO Readiness, NVI) stay aligned on
+  // one set of thresholds.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { gradeFor } = require("./grade-bands") as typeof import("./grade-bands");
+  return gradeFor(score);
 }

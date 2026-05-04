@@ -333,9 +333,7 @@ export function gradeSchema(jsonLd: string | object): SchemaGrade {
   return gradeOne(parsed);
 }
 
-/** Turn a score into a UI label. Used by the dashboard renderer. */
-export function gradeBucket(score: number): "green" | "gold" | "red" {
-  if (score >= 80) return "green";
-  if (score >= 60) return "gold";
-  return "red";
-}
+/** Turn a score into a UI label. Used by the dashboard renderer.
+ *  Delegates to the shared grade-bands utility so the green/gold/red
+ *  thresholds stay aligned with the canonical band logic. */
+export { colorBucket as gradeBucket } from "./grade-bands";
