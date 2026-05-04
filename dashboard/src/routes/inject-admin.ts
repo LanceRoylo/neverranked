@@ -282,9 +282,6 @@ export async function handleInjectAdmin(
             ? '<span style="color:#4ade80;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase">LIVE</span>'
             : '<span style="color:#ef4444;font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase">DISABLED</span>'
           }
-          <form method="POST" action="/admin/inject/${esc(slug)}/publish" style="display:inline">
-            <button type="submit" class="btn" style="padding:4px 10px;font-size:9px">Publish changes</button>
-          </form>
         </div>
       </div>
       <div style="background:var(--bg-edge);padding:12px 16px;border-radius:4px;font-family:var(--mono);font-size:12px;color:var(--text-faint);word-break:break-all;margin-bottom:12px">
@@ -293,6 +290,7 @@ export async function handleInjectAdmin(
       <div style="font-size:11px;color:var(--text-faint);line-height:1.6">
         Add this to the client's &lt;head&gt; via Google Tag Manager (Custom HTML tag, All Pages trigger) or paste directly in their site header.
         <strong style="color:var(--text)"> ${injections.filter((i) => i.status === "approved").length} approved schema blocks</strong> will be injected.
+        Schema changes go live automatically on the next request, with up to a 1-hour edge-cache delay before existing visitors see the change.
       </div>
     </div>
 

@@ -59,7 +59,7 @@ import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInje
 import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
 import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
 import { handleSummary } from "./routes/summary";
-import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead } from "./routes/alerts";
+import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead, handleAlertClickThrough } from "./routes/alerts";
 import { handleLearn, handleLearnArticle } from "./routes/learn";
 import { handleReport, handleReportIndex, handleSendReport } from "./routes/report";
 import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRoadmap, handleDemoPost } from "./routes/demo";
@@ -1662,6 +1662,11 @@ export default {
     const alertReadMatch = path.match(/^\/alerts\/read\/(\d+)$/);
     if (alertReadMatch && method === "POST") {
       return handleMarkAlertRead(Number(alertReadMatch[1]), user, env);
+    }
+    // Click-through: mark read AND redirect in one request.
+    const alertClickMatch = path.match(/^\/alerts\/click\/(\d+)$/);
+    if (alertClickMatch && method === "GET") {
+      return handleAlertClickThrough(Number(alertClickMatch[1]), user, env, url);
     }
     if (path === "/alerts/read-all" && method === "POST") {
       return handleMarkAllAlertsRead(user, env);

@@ -138,11 +138,16 @@ export async function handleAlerts(user: User, env: Env): Promise<Response> {
     const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
     const opacity = isRead ? "opacity:.55" : "";
     const actionUrl = alertActionUrl(a, isAdmin);
-    // Title is wrapped in a link to the page where the user takes
-    // action on this alert. Removes the "see alert, hunt for the
-    // right page" friction.
-    const titleHtml = actionUrl
-      ? `<a href="${actionUrl}" style="font-size:14px;color:var(--text);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(a.title)}</a>`
+    // Title is a link to the action page. Routed through
+    // /alerts/click/:id which marks the alert read in one
+    // pass and then redirects -- no manual "Mark read" click
+    // required after click-through. Falls back to inert text
+    // when no action URL exists for the alert type.
+    const clickThroughUrl = actionUrl
+      ? `/alerts/click/${a.id}?next=${encodeURIComponent(actionUrl)}`
+      : null;
+    const titleHtml = clickThroughUrl
+      ? `<a href="${clickThroughUrl}" style="font-size:14px;color:var(--text);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(a.title)}</a>`
       : `<span style="font-size:14px;color:var(--text)">${esc(a.title)}</span>`;
 
     return `
@@ -217,6 +222,26 @@ export async function handleMarkAlertRead(alertId: number, user: User, env: Env)
   }
 
   return redirect("/alerts");
+}
+
+/**
+ * Click-through: marks the alert read AND redirects to its action
+ * page in one request. Removes the "see alert -> click title ->
+ * separately click Mark read" friction. The next= query param is
+ * URL-encoded and validated to start with / so we don't get used
+ * as an open redirect.
+ */
+export async function handleAlertClickThrough(alertId: number, user: User, env: Env, url: URL): Promise<Response> {
+  const now = Math.floor(Date.now() / 1000);
+  if (user.role === "admin") {
+    await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ? AND read_at IS NULL").bind(now, alertId).run();
+  } else if (user.client_slug) {
+    await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ? AND client_slug = ? AND read_at IS NULL").bind(now, alertId, user.client_slug).run();
+  }
+  const next = url.searchParams.get("next") || "/alerts";
+  // Open-redirect guard: only allow same-origin paths
+  const safeNext = next.startsWith("/") && !next.startsWith("//") ? next : "/alerts";
+  return redirect(safeNext);
 }
 
 export async function handleMarkAllAlertsRead(user: User, env: Env): Promise<Response> {
