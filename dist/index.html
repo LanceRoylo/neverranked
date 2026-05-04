@@ -2000,6 +2000,78 @@ h1,h2,h3,h4{
   color:var(--bg);
   border-color:var(--gold);
 }
+/* Audit "Step 0" callout that sits ABOVE the three-card pricing grid.
+   Same visual language as the Enterprise line below the grid (slim band,
+   gold-accented border, mono type) so the pre-tier and post-tier framing
+   bookend the three monthly tiers symmetrically. */
+.audit-callout{
+  margin-bottom:32px;
+  padding:28px 32px;
+  border:1px solid var(--line);
+  border-left:3px solid var(--gold);
+  background:var(--bg-lift);
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+.audit-callout-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+}
+.audit-callout-meta b{color:var(--gold);font-weight:500}
+.audit-callout-body{
+  display:flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-between;
+  gap:32px;
+}
+.audit-callout-text h3{
+  font-family:var(--serif);
+  font-size:32px;
+  font-weight:400;
+  margin:0 0 10px 0;
+  color:var(--text);
+  letter-spacing:-.01em;
+}
+.audit-callout-text p{
+  margin:0;
+  font-size:15px;
+  line-height:1.7;
+  color:var(--text-mute);
+  font-family:var(--mono);
+  max-width:680px;
+}
+.audit-callout-text strong{color:var(--text);font-weight:500}
+.audit-callout-cta{
+  flex-shrink:0;
+  display:inline-block;
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:11px;
+  padding:14px 24px;
+  border:1px solid var(--gold);
+  background:var(--gold);
+  color:var(--bg);
+  text-decoration:none;
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease);
+}
+.audit-callout-cta:hover{
+  background:transparent;
+  color:var(--gold);
+}
+@media (max-width: 720px){
+  .audit-callout-body{flex-direction:column;align-items:flex-start;gap:20px}
+  .audit-callout-text h3{font-size:26px}
+}
+
 /* Enterprise "Coming Soon" line below the deliverables grid.
    Anchors the high end of the ladder without committing to a card. */
 .enterprise-line{
@@ -4350,53 +4422,27 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </p>
       </div>
 
-      <div class="deliverables-grid reveal-stagger">
-
-        <!-- AUDIT -->
-        <div class="del-tier">
-          <div class="del-tier-meta"><span>§00 / Start here</span><b>One-time</b></div>
-          <h3>Audit</h3>
-          <p class="del-tier-tagline">Before you hire anyone, see what's broken.</p>
-          <div class="del-tier-price"><span class="sym">$</span>750<span class="per">once · 48-hour delivery · credited toward any tier within 30 days</span></div>
-          <ol class="del-list">
-            <li>
-              <span class="del-num">01</span>
-              <div>
-                <strong>See where AI is recommending you and your competitors.</strong>
-                We run real queries against ChatGPT, Perplexity, Gemini, and Claude in your industry and show you exactly which businesses get cited. We also break out Reddit specifically &mdash; AI engines lean on reddit.com threads constantly when answering "best X for Y" questions, and the dashboard shows which subreddits your competitors get mentioned in and which they don't, so you know exactly where to engage. Not Copilot, not Brave, not You.com. We track the engines that move the needle and skip the ones that don't &mdash; if Copilot ever starts driving real referrals for your business, we'll add it then.
-              </div>
-            </li>
-            <li>
-              <span class="del-num">02</span>
-              <div>
-                <strong>Keyword gap analysis built for AEO, not classic SEO.</strong>
-                The queries your competitors get cited for that you don't, with the competitor names attached and grouped by intent.
-              </div>
-            </li>
-            <li>
-              <span class="del-num">03</span>
-              <div>
-                <strong>Technical and schema audit specific to AI citation.</strong>
-                Your structured data, content shape, and entity signals graded against what AI engines actually pick up. Not a 2018-era SEO checklist.
-              </div>
-            </li>
-            <li>
-              <span class="del-num">04</span>
-              <div>
-                <strong>A 90-day roadmap, phased and prioritized.</strong>
-                Yours to keep. Execute in-house, hand it to your current agency, or hand it to us. Not a 90-page PDF nobody reads.
-              </div>
-            </li>
-            <li>
-              <span class="del-num">05</span>
-              <div>
-                <strong>Honest answers.</strong>
-                Delivered in 48 hours. If the audit says you don't need ongoing work, we tell you.
-              </div>
-            </li>
-          </ol>
-          <a href="https://app.neverranked.com/checkout/audit" class="del-cta">Book my audit</a>
+      <!-- AUDIT — pre-tier, sits above the three-card grid so the
+           pricing ladder stays visually clean. The full deliverable list
+           lives on /checkout/audit and in the structured data; the homepage
+           keeps it short. -->
+      <div class="audit-callout reveal">
+        <div class="audit-callout-meta">
+          <span>§00 / Start here</span>
+          <b>One-time · $750 · 48-hour delivery</b>
         </div>
+        <div class="audit-callout-body">
+          <div class="audit-callout-text">
+            <h3>Audit</h3>
+            <p>
+              Before you commit to a monthly tier, see what's actually broken. A full citation, schema, and content audit across ChatGPT, Perplexity, Gemini, and Claude. Delivered as a 90-day roadmap within 48 hours. <strong>Fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within 30 days.</strong>
+            </p>
+          </div>
+          <a href="https://app.neverranked.com/checkout/audit" class="audit-callout-cta">Book my audit &rarr;</a>
+        </div>
+      </div>
+
+      <div class="deliverables-grid reveal-stagger">
 
         <!-- PULSE -->
         <div class="del-tier">
