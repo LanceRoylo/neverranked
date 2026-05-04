@@ -601,6 +601,18 @@ Central Pacific Bank              0           0               NONE</pre>
       <li><b>Prominence and sentiment within citations</b>, not just yes/no. Where in the AI's answer were you mentioned (rank 1 hero quote vs rank 8 footnote)? Was the tone positive or negative? That's the next layer of AEO that most platforms have not built yet.</li>
       <li><b>Real-time citation alerts</b> on Signal+: gained or lost citations between monthly reports get emailed within hours. You hear about movement before your competitors do.</li>
     </ul>
+
+    <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin:24px 0 8px">For ASB specifically, the schemas that move the needle</p>
+    <p>
+      The platform ships seven schema generators (FAQ, Article, BreadcrumbList, Person, HowTo, Service, llms.txt). Every one runs through the same multi-pass validation. The four that matter most for ASB:
+    </p>
+    <ul style="font-family:var(--mono);font-size:14px;line-height:1.85;margin:0 0 22px;padding-left:24px;color:var(--text-soft)">
+      <li><b>Service schema</b> on every product page. Personal Banking. Business Banking. Mortgages. Auto Loans. Credit Cards. Wealth Management. Each one becomes a structured Service node with provider (ASB), areaServed (Hawaii), serviceType, and offers (where pricing is publicly disclosed). When ChatGPT answers "best mortgage in Hawaii," ASB's Mortgage service becomes a structured candidate. Right now it is unstructured prose.</li>
+      <li><b>Person schema</b> for executive leadership and named experts. CEO, CFO, COO, branch managers with public profiles, financial advisors who publish content. AI engines use Person nodes to anchor authorship signals and to verify "who works at ASB." Currently zero on the site.</li>
+      <li><b>FAQ schema</b> on every product page covering the questions customers actually call the branch about. Account opening, fees, rates, eligibility. Each FAQ becomes a structured Question/Answer pair that AI engines can cite directly. The schema-grader rejects partial FAQ schema (missing answer, missing question type) so what ships is the kind that pays the citation tax instead of penalizing you.</li>
+      <li><b>HowTo schema</b> for the instructional content scattered across the site. "How to open a savings account online." "How to apply for a mortgage." "How to set up direct deposit." When someone asks ChatGPT "how do I open a checking account at a Hawaii bank," ASB's HowTo becomes a structured step-by-step the engine can paraphrase or quote.</li>
+    </ul>
+
     <p>
       Honest framing. NeverRanked is bootstrapped, founder-led, and currently has a small customer count. That is also the buying advantage: pilot pricing, direct founder access, and the ability to shape the roadmap with your specific use case in mind. As the platform grows, the tier you start at locks in.
     </p>
