@@ -1191,6 +1191,86 @@ export default {
       return handleNviRunNow(nviRunMatch[1], user, env, ctx);
     }
 
+    // One-shot DataForSEO smoke test. Hits the AIO endpoint with one
+    // keyword, returns the parsed result. Does NOT write to DB. Lets
+    // an admin verify credentials + parsing without waiting for the
+    // weekly cron. Costs ~$0.01 of DataForSEO credit per call.
+    if (path === "/admin/dataforseo-test" && method === "GET" && user.role === "admin") {
+      const keyword = url.searchParams.get("q") || "best honolulu theatre";
+      const debug = url.searchParams.get("debug") === "1";
+      if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) {
+        return new Response(JSON.stringify({
+          ok: false,
+          reason: "DATAFORSEO_LOGIN / DATAFORSEO_PASSWORD not set as Wrangler secrets"
+        }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
+
+      // Debug mode: hit DataForSEO directly + return the raw response
+      // so we can see exactly what they're returning. Bypasses our
+      // parser to isolate whether the issue is the request, the API,
+      // or our parsing.
+      if (debug) {
+        const auth = "Basic " + btoa(`${env.DATAFORSEO_LOGIN}:${env.DATAFORSEO_PASSWORD}`);
+        const body = [{
+          keyword,
+          language_code: "en",
+          location_code: 2840,
+          device: "desktop",
+          depth: 10,
+          load_async_ai_overview: true,
+        }];
+        const resp = await fetch("https://api.dataforseo.com/v3/serp/google/organic/live/advanced", {
+          method: "POST",
+          headers: { "Authorization": auth, "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const raw = await resp.text();
+        let parsed: any = null;
+        try { parsed = JSON.parse(raw); } catch { /* keep raw */ }
+        const itemTypes = parsed?.tasks?.[0]?.result?.[0]?.item_types || [];
+        const items = parsed?.tasks?.[0]?.result?.[0]?.items || [];
+        const aioItem = items.find((it: any) => it?.type === "ai_overview");
+        return new Response(JSON.stringify({
+          http_status: resp.status,
+          dfs_status_code: parsed?.status_code,
+          dfs_status_message: parsed?.status_message,
+          task_status_code: parsed?.tasks?.[0]?.status_code,
+          task_status_message: parsed?.tasks?.[0]?.status_message,
+          cost: parsed?.cost,
+          item_types_returned: itemTypes,
+          items_count: items.length,
+          ai_overview_item_present: Boolean(aioItem),
+          ai_overview_item_keys: aioItem ? Object.keys(aioItem) : [],
+          ai_overview_item_preview: aioItem || null,
+          first_few_items: items.slice(0, 3).map((it: any) => ({ type: it?.type, has_text: Boolean(it?.text), has_markdown: Boolean(it?.markdown) })),
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      }
+
+      try {
+        const { queryGoogleAIO } = await import("./citations-google-aio");
+        const result = await queryGoogleAIO(keyword, env);
+        return new Response(JSON.stringify({
+          ok: true,
+          keyword,
+          aio_present: result.text.length > 0 || result.urls.length > 0,
+          text_preview: result.text.slice(0, 400),
+          text_length: result.text.length,
+          url_count: result.urls.length,
+          urls: result.urls.slice(0, 8),
+          entity_count: result.entities.length,
+          entities: result.entities.slice(0, 8),
+          note: result.text.length === 0 && result.urls.length === 0
+            ? "No AIO rendered for this query. Re-run with &debug=1 to see the raw DataForSEO response and confirm whether the issue is upstream (no AIO returned) or our parser."
+            : "AIO data parsed successfully. Integration is working.",
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e) {
+        return new Response(JSON.stringify({
+          ok: false,
+          reason: `${e}`,
+        }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
+      }
+    }
+
     if (path === "/admin/regrade-all" && method === "GET" && user.role === "admin") {
       const slug = url.searchParams.get("slug");
       if (!slug) return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {

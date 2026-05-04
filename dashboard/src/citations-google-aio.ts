@@ -72,10 +72,20 @@ export async function queryGoogleAIO(keyword: string, env: Env): Promise<AIOResu
   const body = [{
     keyword,
     language_code: "en",
-    location_name: "Honolulu, Hawaii, United States",
+    // location_code 2840 = United States (country-level). Safe default
+    // that always works. Per-client Honolulu-specific targeting can be
+    // added later by looking up the actual Honolulu DMA code via
+    // DataForSEO's /v3/serp/google/locations endpoint. Query content
+    // already disambiguates location for most "X in Honolulu" queries.
+    location_code: 2840,
     device: "desktop",
     depth: 10,           // need at least 10 results for AI Overview to render
-    // people_also_ask_click_depth omitted; we only care about AIO
+    // CRITICAL: AI Overview is NOT returned by default. Must opt in.
+    // Costs an extra $0.002 per query, but DataForSEO refunds the
+    // surcharge when no AIO renders ("asynchronous_ai_overview: false"
+    // in the response triggers the refund). Net cost is lower than
+    // the baseline estimate.
+    load_async_ai_overview: true,
   }];
 
   let resp: Response;
