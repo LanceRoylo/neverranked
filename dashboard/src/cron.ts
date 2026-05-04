@@ -297,6 +297,34 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] sentiment backfill failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // NVI monthly report runs.
+  // Each subscription has a delivery_day (1-28). When today's day-
+  // of-month UTC matches, kick off the runner for that subscription.
+  // Multiple subscriptions on the same day fan out one runner each.
+  // Reports land as 'pending' and wait for admin review at /admin/nvi
+  // before customer delivery. Idempotent: runner refuses to create
+  // a second report for the same client+period.
+  try {
+    const todayDay = new Date().getUTCDate();
+    const subs = (await env.DB.prepare(
+      "SELECT client_slug FROM nvi_subscriptions WHERE active = 1 AND delivery_day = ?"
+    ).bind(todayDay).all<{ client_slug: string }>()).results;
+    if (subs.length > 0) {
+      const period = nviCurrentPeriod();
+      const { runMonthlyNviReport } = await import("./nvi/runner");
+      for (const sub of subs) {
+        try {
+          const r = await runMonthlyNviReport(env, sub.client_slug, period);
+          console.log(`[cron] nvi: ${sub.client_slug} ${period} -> ${r.ok ? `report ${r.reportId} score ${r.score}` : `skipped: ${r.reason}`}`);
+        } catch (e) {
+          console.log(`[cron] nvi runner failed for ${sub.client_slug}: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+    }
+  } catch (e) {
+    console.log(`[cron] nvi: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
   // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
   // turnover is fast enough that daily refresh is the right cadence.
@@ -1656,6 +1684,12 @@ export async function runSchemaDriftSweep(env: Env): Promise<void> {
   console.log(
     `[drift-sweep] checked ${candidates.length} previously-live domain(s): ${stillLive} still live, ${drifted} drifted`
   );
+}
+
+/** Current month as 'YYYY-MM' in UTC for NVI report periods. */
+function nviCurrentPeriod(): string {
+  const now = new Date();
+  return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
 }
 
 /** Flag roadmap items stuck in "in_progress" for 14+ days */
