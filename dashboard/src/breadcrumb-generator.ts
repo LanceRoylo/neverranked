@@ -103,20 +103,28 @@ export async function generateBreadcrumbsForSite(
       console.log(`[breadcrumb-gen] skipping ${targetPath}: quality ${grade.score}`);
       continue;
     }
+    const targetPagesJson = JSON.stringify([targetPath]);
+    const { nextVariantLetter, markDeployed } = await import("./lib/schema-variants");
+    const variant = await nextVariantLetter(env, clientSlug, "BreadcrumbList", targetPagesJson);
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, approved_at, quality_score, quality_graded_at) " +
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, approved_at, quality_score, quality_graded_at) " +
       // Auto-approved at generation: BreadcrumbList content is
       // deterministically derived from the URL nav structure --
       // no LLM, no hallucination risk, no human judgment to add.
       // The schema-grader gate above already verified quality.
-      "VALUES (?, 'BreadcrumbList', ?, ?, 'approved', unixepoch(), ?, unixepoch())"
+      "VALUES (?, 'BreadcrumbList', ?, ?, 'approved', ?, unixepoch(), ?, unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),
-      JSON.stringify([targetPath]),
+      targetPagesJson,
+      variant,
       grade.score,
     ).run();
-    insertedIds.push(Number(result.meta?.last_row_id ?? 0));
+    const newId = Number(result.meta?.last_row_id ?? 0);
+    insertedIds.push(newId);
+    // Auto-approved schemas go live immediately -- stamp deployed_at
+    // and supersede the prior variant (if any) right now.
+    if (newId > 0) await markDeployed(env, newId);
   }
 
   if (insertedIds.length === 0) {

@@ -663,6 +663,13 @@ export async function handleInjectApprove(
     .bind(now, now, id, slug)
     .run();
 
+  // Stamp deployed_at + supersede any prior live variant for this
+  // (client, schema_type, target_pages) tuple. This is the moment a
+  // variant goes "live" and citation correlation can attribute runs
+  // to it. Idempotent: re-approving an already-deployed row is a no-op.
+  const { markDeployed } = await import("../lib/schema-variants");
+  await markDeployed(env, id);
+
   // If linked to a roadmap item, set it to in_progress
   const linked = await env.DB.prepare(
     "SELECT roadmap_item_id FROM schema_injections WHERE id = ?"

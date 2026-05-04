@@ -189,13 +189,20 @@ export async function generateFaqForPage(
   const targetPages = JSON.stringify([targetPath]);
 
   // 7. Insert as 'pending' -- customer reviews before live.
+  //    Variant assignment is the foundation of A/B testing: each new
+  //    schema for the same (client, type, target) tuple gets the next
+  //    letter (A, B, C, ...) so we can correlate citation lift to
+  //    specific deployments later.
+  const { nextVariantLetter } = await import("./lib/schema-variants");
+  const variant = await nextVariantLetter(env, clientSlug, "FAQPage", targetPages);
   const result = await env.DB.prepare(
-    "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, quality_score, quality_graded_at) " +
-    "VALUES (?, 'FAQPage', ?, ?, 'pending', ?, unixepoch())"
+    "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
+    "VALUES (?, 'FAQPage', ?, ?, 'pending', ?, ?, unixepoch())"
   ).bind(
     clientSlug,
     JSON.stringify(schema),
     targetPages,
+    variant,
     grade.score,
   ).run();
 

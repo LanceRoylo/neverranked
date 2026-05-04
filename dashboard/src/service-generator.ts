@@ -140,13 +140,17 @@ export async function generateServicesForPage(
       skipped.push(`${s.name}: quality ${grade.score}`);
       continue;
     }
+    const targetPagesJson = JSON.stringify([targetPath]);
+    const { nextVariantLetter } = await import("./lib/schema-variants");
+    const variant = await nextVariantLetter(env, clientSlug, "Service", targetPagesJson);
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, quality_score, quality_graded_at) " +
-      "VALUES (?, 'Service', ?, ?, 'pending', ?, unixepoch())"
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
+      "VALUES (?, 'Service', ?, ?, 'pending', ?, ?, unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),
-      JSON.stringify([targetPath]),
+      targetPagesJson,
+      variant,
       grade.score,
     ).run();
     insertedIds.push(Number(result.meta?.last_row_id ?? 0));
