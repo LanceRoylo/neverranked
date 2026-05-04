@@ -160,10 +160,10 @@ export async function handleCheckout(
           ${config.name} &middot; ${config.priceLabel}
         </div>
         <h1 style="font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.15;margin:0 0 20px 0;letter-spacing:-.01em">
-          Pulse opens to first customers <em>this week.</em>
+          Reserve your <em>Pulse seat.</em>
         </h1>
         <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
-          Drop your email and the domain you want monitored. We will reach out within 24 hours to onboard you manually for the first cohort, lock in your seat, and apply your audit credit if you have one.
+          Drop your email and the domain you want monitored. We will email you a login link within seconds. Two minutes later you are tracking 10 prompts across ChatGPT, Perplexity, Gemini, and Claude. No payment yet -- you are in the founding cohort and we will email a Stripe link once your seat is confirmed.
         </p>
         <form method="POST" action="/checkout/pulse/waitlist" style="display:flex;flex-direction:column;gap:14px">
           <input type="email" name="email" required placeholder="you@yourdomain.com"
@@ -540,7 +540,10 @@ export async function handleStripeWebhook(
           const magicToken = await createMagicLink(email, env, 72 * 60 * 60);
           if (magicToken) {
             const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
-            const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}`;
+            // Pulse customers go straight into the prompt-suggester
+            // onboarding screen. Other plans land on the dashboard.
+            const next = plan === "pulse" ? "/onboard/pulse" : "/";
+            const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent(next)}`;
             const planConfig = PLANS[plan];
 
             const welcomeResp = await fetch("https://api.resend.com/emails", {
@@ -795,9 +798,14 @@ export async function handleBillingPortal(
 
 function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string, plan: string): string {
   const planName = planConfig?.name || "NeverRanked";
-  const whatHappensNext = plan === "audit"
-    ? `<p style="margin:0 0 8px">Your full AEO audit is being prepared and will be delivered within 48 hours. In the meantime, your dashboard is live -- log in now to complete onboarding so we can start immediately.</p>`
-    : `<p style="margin:0 0 8px">Your dashboard is live and ready. Log in now to complete onboarding -- it takes about 2 minutes and helps us tailor everything to your business.</p>`;
+  let whatHappensNext: string;
+  if (plan === "audit") {
+    whatHappensNext = `<p style="margin:0 0 8px">Your full AEO audit is being prepared and will be delivered within 48 hours. In the meantime, your dashboard is live -- log in now to complete onboarding so we can start immediately.</p>`;
+  } else if (plan === "pulse") {
+    whatHappensNext = `<p style="margin:0 0 8px">Your seat is reserved. Click below to log in -- you will land on a 2-minute setup screen with 10 prompts we suggest tracking for you. Edit them, save, and we will run your first citation scan across ChatGPT, Perplexity, Gemini, and Claude in the background. Initial results land in your dashboard within hours.</p>`;
+  } else {
+    whatHappensNext = `<p style="margin:0 0 8px">Your dashboard is live and ready. Log in now to complete onboarding -- it takes about 2 minutes and helps us tailor everything to your business.</p>`;
+  }
 
   return `
 <!DOCTYPE html>
@@ -841,14 +849,25 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
 }
 
 /**
- * POST /checkout/pulse/waitlist — Capture interest while Pulse Stripe
- * isn't wired yet. Writes to admin_inbox so the lead surfaces in the
- * morning summary, and sends a transactional ping to ADMIN_EMAIL so
- * Lance can reach out the same day.
+ * POST /checkout/pulse/waitlist — fully self-serve Pulse onboarding.
  *
- * Once a Stripe Price is created for Pulse and PLANS.pulse.comingSoon
- * is flipped to false, this route becomes dead code that we can leave
- * in place as a fallback or delete in a follow-up cleanup.
+ * Until the Stripe Price for Pulse exists, this is the entry point.
+ * Once Stripe is wired (PLANS.pulse.comingSoon=false + priceId set),
+ * /checkout/pulse routes to Stripe instead and the Stripe webhook
+ * does the same provisioning. Either way, by the time the customer
+ * clicks the magic link they land on /onboard/pulse with their plan
+ * already set.
+ *
+ * Provisioning steps (idempotent on email + domain):
+ *   1. Validate email + domain
+ *   2. Create or find user, set client_slug
+ *   3. Create or update domains row with plan='pulse'
+ *   4. Create injection_configs row (snippet token)
+ *   5. Generate magic link with next=/onboard/pulse
+ *   6. Send welcome email
+ *   7. Drop FYI row into admin_inbox so Lance sees the activity
+ *      (urgency=low -- nothing is blocking on him)
+ *   8. Show "check your email" page
  */
 export async function handlePulseWaitlist(
   request: Request,
@@ -859,12 +878,12 @@ export async function handlePulseWaitlist(
   }
 
   let email = "";
-  let domain = "";
+  let rawDomain = "";
   let note = "";
   try {
     const form = await request.formData();
     email = (form.get("email") || "").toString().trim().toLowerCase();
-    domain = (form.get("domain") || "").toString().trim().toLowerCase()
+    rawDomain = (form.get("domain") || "").toString().trim().toLowerCase()
       .replace(/^https?:\/\//, "").replace(/\/.*$/, "");
     note = (form.get("note") || "").toString().trim().slice(0, 1000);
   } catch (e) {
@@ -874,71 +893,134 @@ export async function handlePulseWaitlist(
   }
 
   const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!EMAIL_RE.test(email) || !domain) {
+  const DOMAIN_RE = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?(\.[a-z0-9]([a-z0-9-]*[a-z0-9])?)+$/;
+  if (!EMAIL_RE.test(email) || !DOMAIN_RE.test(rawDomain)) {
     return html(layout("Missing fields", `
-      <div class="empty"><h3>Email and domain are both required</h3>
+      <div class="empty"><h3>Email and a valid domain are both required</h3>
       <p><a href="/checkout/pulse" style="color:var(--gold)">Try again</a></p></div>
     `), 400);
   }
 
   const now = Math.floor(Date.now() / 1000);
+  const clientSlug = rawDomain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
 
-  // 1. Drop into admin_inbox so it shows up in tomorrow's 7am summary
-  //    AND in the live cockpit. urgency=high because a hot lead is
-  //    time-sensitive.
-  try {
+  // 1. User: find or create, set client_slug + plan=pulse
+  let user = await env.DB.prepare(
+    "SELECT id, client_slug FROM users WHERE email = ?"
+  ).bind(email).first<{ id: number; client_slug: string | null }>();
+
+  if (!user) {
+    const result = await env.DB.prepare(
+      "INSERT INTO users (email, role, plan, client_slug, created_at) VALUES (?, 'client', 'pulse', ?, ?)"
+    ).bind(email, clientSlug, now).run();
+    user = { id: Number(result.meta?.last_row_id ?? 0), client_slug: clientSlug };
+  } else {
+    // Idempotent: existing user re-submitting waitlist gets their
+    // client_slug filled in if missing, plan upgraded to pulse if
+    // they were unset. Won't downgrade Signal/Amplify customers.
     await env.DB.prepare(
-      `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
-       VALUES (?, 'high', ?, ?, ?, ?, ?, 'open')`
-    ).bind(
-      "pulse_waitlist",
-      `Pulse waitlist signup: ${email}`,
-      `Domain: ${domain}\nNote: ${note || "(none)"}\nSubmitted: ${new Date(now * 1000).toISOString()}`,
-      `mailto:${email}?subject=Your%20Pulse%20seat`,
-      domain,
-      now,
-    ).run();
-  } catch (e) {
-    console.log(`pulse_waitlist admin_inbox insert failed: ${e}`);
+      `UPDATE users
+         SET client_slug = COALESCE(client_slug, ?),
+             plan = COALESCE(plan, 'pulse')
+       WHERE id = ?`
+    ).bind(clientSlug, user.id).run();
+    if (!user.client_slug) user.client_slug = clientSlug;
+  }
+  const slug = user.client_slug || clientSlug;
+
+  // 2. Domains row: insert or update plan to pulse
+  const existingDomain = await env.DB.prepare(
+    "SELECT id, plan FROM domains WHERE client_slug = ? AND domain = ? LIMIT 1"
+  ).bind(slug, rawDomain).first<{ id: number; plan: string | null }>();
+  if (!existingDomain) {
+    await env.DB.prepare(
+      `INSERT INTO domains (client_slug, domain, plan, is_competitor, active, created_at, updated_at)
+         VALUES (?, ?, 'pulse', 0, 1, ?, ?)`
+    ).bind(slug, rawDomain, now, now).run();
+  } else if (!existingDomain.plan) {
+    // Don't overwrite a Signal/Amplify plan already set on this domain.
+    await env.DB.prepare(
+      "UPDATE domains SET plan = 'pulse', updated_at = ? WHERE id = ?"
+    ).bind(now, existingDomain.id).run();
   }
 
-  // 2. Transactional ping to ADMIN_EMAIL so Lance gets notified within
-  //    minutes, not hours. Best-effort -- if Resend is down the lead
-  //    is still safe in admin_inbox.
-  if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
+  // 3. Injection config (snippet token) -- idempotent on UNIQUE(client_slug)
+  try {
+    const snippetToken = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+      .map((b) => b.toString(16).padStart(2, "0")).join("");
+    await env.DB.prepare(
+      `INSERT INTO injection_configs (client_slug, snippet_token, business_name, business_url)
+         VALUES (?, ?, ?, ?)
+       ON CONFLICT(client_slug) DO NOTHING`
+    ).bind(slug, snippetToken, rawDomain, `https://${rawDomain}`).run();
+  } catch (e) {
+    console.log(`pulse_waitlist injection_config failed for ${slug}: ${e}`);
+  }
+
+  // 4. Magic link + welcome email -> drops them on /onboard/pulse
+  let emailSent = false;
+  if (env.RESEND_API_KEY) {
     try {
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "NeverRanked <reports@neverranked.com>",
-          to: [env.ADMIN_EMAIL],
-          reply_to: email,
-          subject: `Pulse waitlist: ${email} (${domain})`,
-          html: `<p><strong>${email}</strong> reserved a Pulse seat.</p>
-                 <p>Domain: <strong>${domain}</strong></p>
-                 <p>Note: ${note ? note.replace(/</g, "&lt;") : "<em>(none)</em>"}</p>
-                 <p>Reach out today to confirm the seat and (if applicable) apply their audit credit.</p>`,
-        }),
-      });
+      const magicToken = await createMagicLink(email, env, 72 * 60 * 60);
+      if (magicToken) {
+        const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+        const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent("/onboard/pulse")}`;
+        const welcomeResp = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "NeverRanked <reports@neverranked.com>",
+            to: [email],
+            subject: "Your Pulse seat is ready -- 2 minutes to set up",
+            html: buildWelcomeEmail(PLANS.pulse, loginUrl, "pulse"),
+          }),
+        });
+        emailSent = welcomeResp.ok;
+        if (!welcomeResp.ok) {
+          const respText = await welcomeResp.text();
+          console.log(`Pulse welcome email failed: HTTP ${welcomeResp.status} -- ${respText.slice(0, 300)}`);
+        }
+      }
     } catch (e) {
-      console.log(`pulse_waitlist admin email failed: ${e}`);
+      console.log(`Pulse welcome email exception: ${e}`);
     }
   }
 
-  // 3. Confirmation page
-  return html(layout("Pulse seat reserved", `
+  // 5. Low-urgency FYI in admin_inbox -- no manual action required.
+  //    If the welcome email failed, mark high so Lance can resend.
+  try {
+    await env.DB.prepare(
+      `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`
+    ).bind(
+      "pulse_signup",
+      emailSent ? "low" : "high",
+      emailSent
+        ? `Pulse signup: ${email} (auto-onboarded)`
+        : `Pulse signup: ${email} -- WELCOME EMAIL FAILED, resend manually`,
+      `Domain: ${rawDomain}\nSlug: ${slug}\nNote: ${note || "(none)"}\nWelcome email: ${emailSent ? "sent" : "FAILED"}\nSubmitted: ${new Date(now * 1000).toISOString()}`,
+      `/admin/clients/${encodeURIComponent(slug)}`,
+      slug,
+      now,
+    ).run();
+  } catch (e) {
+    console.log(`pulse_signup admin_inbox insert failed: ${e}`);
+  }
+
+  // 6. Confirmation page
+  return html(layout("Check your email", `
     <div style="max-width:520px;margin:80px auto;padding:0 24px;text-align:center">
       <div style="font-size:42px;color:var(--gold);margin-bottom:16px">&#10003;</div>
-      <h1 style="font-family:var(--serif);font-weight:400;font-size:32px;margin:0 0 16px 0">Seat reserved.</h1>
+      <h1 style="font-family:var(--serif);font-weight:400;font-size:32px;margin:0 0 16px 0">Seat reserved. Check your email.</h1>
       <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 28px 0">
-        We will reach out to <strong>${email.replace(/</g, "&lt;")}</strong> within 24 hours to confirm and onboard you. If you booked an audit in the last 30 days, the $750 credit will be applied to your first month automatically.
+        We sent a login link to <strong>${email.replace(/</g, "&lt;")}</strong>. Click it to land on a 2-minute setup screen with 10 prompts we suggest tracking for <strong>${rawDomain}</strong>. Edit them, save, and your first citation scan kicks off in the background.
       </p>
-      <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">
-        Questions? <a href="mailto:lance@neverranked.com" style="color:var(--gold)">lance@neverranked.com</a>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin:0">
+        No email after a minute? Check spam or
+        <a href="mailto:lance@neverranked.com?subject=Pulse%20welcome%20email%20did%20not%20arrive" style="color:var(--gold)">tell Lance</a>.
       </p>
     </div>
   `));
