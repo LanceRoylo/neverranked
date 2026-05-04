@@ -227,26 +227,42 @@ p{margin:0 0 14px;color:var(--text-soft);max-width:62ch}
 .footer .meta{margin-bottom:8px}
 .footer .meta strong{color:var(--text-mute);font-weight:500}
 
-/* Print: switch to a light theme so paper output is legible */
+/* Print: switch to a light theme so paper output is legible.
+   Uses overrides on the CSS custom properties themselves so any
+   element using var(--text-*) automatically picks up the dark
+   color in print mode -- much more robust than per-element rules.
+   This is the trick that catches inline-styled callout boxes
+   without listing every selector. */
 @media print{
+  :root{
+    --bg:#fff;
+    --bg-lift:#fafaf5;
+    --bg-edge:#f0ede4;
+    --text:#0a0a0a;
+    --text-soft:#1a1a1a;
+    --text-mute:#3a3a3a;
+    --text-faint:#5a5a5a;
+    --line:#d4d0c4;
+    --gold:#9c7a1f;
+    --gold-dim:#8c6c1c;
+    --green:#2d8b3a;
+    --red:#c14a3a;
+  }
   body{background:#fff !important;color:#0a0a0a !important;font-size:10pt}
   .page{padding:0.5in;max-width:none}
   h1,h2,h3{color:#0a0a0a !important}
-  p{color:#1a1a1a !important}
-  .section{border-color:#ddd !important}
-  .section-label{color:#555 !important}
-  .section-label .num{color:#9c7a1f !important}
-  .section-label .rule{background:#ccc !important}
-  .score-number{color:#9c7a1f !important}
-  .score-grade{color:#666 !important}
-  .engine-table th{color:#555 !important;border-color:#ccc !important}
-  .engine-table td{color:#1a1a1a !important;border-color:#eee !important}
-  .engine-bar{background:#eee !important}
+  /* Callout backgrounds are intentionally pale-tinted in dark mode
+     (rgba); on white paper they nearly disappear. Force a slightly
+     stronger tint for print so the green/yellow/red callouts read. */
+  div[style*="background:rgba(74,222,128"]{background:#eaf6ec !important}
+  div[style*="background:rgba(239,68,68"]{background:#fceeec !important}
+  div[style*="background:var(--bg-lift)"]{background:#fafaf5 !important}
+  /* Engine bar fill -- gold reads better on light than the dark-mode
+     yellow gold against white. */
   .engine-bar > span{background:#9c7a1f !important}
-  .callout{background:#fafaf5 !important;border-left-color:#9c7a1f !important}
-  .callout .label{color:#9c7a1f !important}
-  .callout p{color:#0a0a0a !important}
-  .footer{color:#777 !important}
+  .engine-bar{background:#eaeaea !important}
+  /* Footer inline-styled border -- override to print-friendly grey. */
+  .footer{color:#5a5a5a !important;border-top-color:#d4d0c4 !important}
 }
 </style>
 </head>
