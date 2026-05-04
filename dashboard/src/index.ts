@@ -579,6 +579,12 @@ export default {
       const { handleAdminPlans } = await import("./routes/admin-plans");
       return handleAdminPlans(request, env, user);
     }
+    // Schema variant impact viewer -- A/B test results per client.
+    const variantsMatch = path.match(/^\/admin\/variants\/([a-z0-9-]+)$/);
+    if (variantsMatch && method === "GET" && user.role === "admin") {
+      const { handleAdminVariants } = await import("./routes/admin-variants");
+      return handleAdminVariants(decodeURIComponent(variantsMatch[1]), user, env);
+    }
     const inboxDetailMatch = path.match(/^\/admin\/inbox\/(\d+)$/);
     if (inboxDetailMatch && method === "GET" && user.role === "admin") {
       const { handleInboxDetail } = await import("./routes/admin-inbox");
