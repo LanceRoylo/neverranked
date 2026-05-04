@@ -10,6 +10,7 @@ import type { Env, User } from "../types";
 import { layout, html, esc } from "../render";
 import { canAccessClient } from "../agency";
 import { getTrustMatrix } from "../authority-signals";
+import { clientHasFeature, getPlanForClient, upgradePromptHtml } from "../lib/plan-limits";
 
 const PLATFORM_LABELS: Record<string, { label: string; cta: string }> = {
   g2: { label: "G2", cta: "Claim or set up your G2 profile" },
@@ -25,6 +26,12 @@ const PLATFORM_LABELS: Record<string, { label: string; cta: string }> = {
 export async function handleTrust(clientSlug: string, user: User, env: Env): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  // Pulse plan gate -- authority audits are Signal+. Show upgrade.
+  if (!(await clientHasFeature(env, clientSlug, "authorityAudits"))) {
+    const plan = await getPlanForClient(env, clientSlug);
+    return html(layout("Authority signals", upgradePromptHtml("authorityAudits", plan), user));
   }
 
   const { platforms, authorCoverage } = await getTrustMatrix(clientSlug, env);

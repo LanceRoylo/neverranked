@@ -12,6 +12,7 @@ import { layout, html, esc } from "../render";
 import { canAccessClient } from "../agency";
 import { canUseRedditBriefs } from "../gating";
 import { getRedditSummary } from "../reddit-citations";
+import { clientHasFeature, getPlanForClient, upgradePromptHtml } from "../lib/plan-limits";
 
 const ENGINE_LABELS: Record<string, string> = {
   perplexity: "Perplexity",
@@ -23,6 +24,13 @@ const ENGINE_LABELS: Record<string, string> = {
 export async function handleReddit(clientSlug: string, user: User, env: Env): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  // Pulse plan gate -- Reddit tracking is Signal+. Show an upgrade
+  // page instead of the real Reddit content. Doubles as conversion surface.
+  if (!(await clientHasFeature(env, clientSlug, "redditTracking"))) {
+    const plan = await getPlanForClient(env, clientSlug);
+    return html(layout("Reddit presence", upgradePromptHtml("redditTracking", plan), user));
   }
 
   const summary = await getRedditSummary(clientSlug, 90, env);

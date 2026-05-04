@@ -11,10 +11,17 @@ import type { Env, User } from "../types";
 import { layout, html, esc } from "../render";
 import { canAccessClient } from "../agency";
 import { getBenchmark, percentileFor, citationPercentileFor } from "../industry-benchmarks";
+import { clientHasFeature, getPlanForClient, upgradePromptHtml } from "../lib/plan-limits";
 
 export async function handleBenchmark(clientSlug: string, user: User, env: Env): Promise<Response> {
   if (!(await canAccessClient(env, user, clientSlug))) {
     return html(layout("Not Found", `<div class="empty"><h3>Page not found</h3></div>`, user), 404);
+  }
+
+  // Pulse plan gate -- industry percentile is Signal+. Show upgrade.
+  if (!(await clientHasFeature(env, clientSlug, "industryPercentile"))) {
+    const plan = await getPlanForClient(env, clientSlug);
+    return html(layout("Industry benchmark", upgradePromptHtml("industryPercentile", plan), user));
   }
 
   // Industry assignment lives on client_settings.industry. If null,

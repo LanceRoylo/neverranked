@@ -407,6 +407,12 @@ export default {
     if (path === "/onboarding/skip") {
       return handleOnboardingSkip(user, env);
     }
+    // Pulse self-serve onboarding -- generates 10 prompts, customer
+    // edits + saves, first citation run kicks off in the background.
+    if (path === "/onboard/pulse" && (method === "GET" || method === "POST")) {
+      const { handleOnboardPulse } = await import("./routes/onboard-pulse");
+      return handleOnboardPulse(request, env, user);
+    }
 
     // Getting Started checklist dismissal / reopen. Dismiss hides the
     // card on the home Dashboard; reset clears it so the card shows

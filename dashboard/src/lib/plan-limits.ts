@@ -205,6 +205,76 @@ export async function checkSchemaQuota(
   return { ok: true };
 }
 
+/** Type of features that can be plan-gated at the route level. */
+export type GatedFeature = keyof PlanLimits["features"];
+
+/** Returns true if the client's current plan includes the named feature.
+ *  Use this at the entry of any route/operation that should be Signal+
+ *  only (Reddit tracking, authority audits, industry percentile, etc.). */
+export async function clientHasFeature(
+  env: Env,
+  clientSlug: string,
+  feature: GatedFeature,
+): Promise<boolean> {
+  const plan = await getPlanForClient(env, clientSlug);
+  return getPlanLimits(plan).features[feature];
+}
+
+/** Render-ready upgrade prompt body for routes that gate on plan. The
+ *  caller wraps this in their layout() and returns a 200 (not a 403 --
+ *  the user has access to the URL, just not the feature). */
+export function upgradePromptHtml(
+  feature: GatedFeature,
+  currentPlan: Plan,
+): string {
+  const friendlyNames: Record<GatedFeature, string> = {
+    weeklyDigestEmail: "Weekly digest emails",
+    redditTracking: "Reddit thread tracking",
+    authorityAudits: "Authority signal monitoring",
+    industryPercentile: "Industry percentile benchmarks",
+    autoContentDrafts: "Auto-generated content drafts",
+    autoPublishToCMS: "Auto-publish to your CMS",
+    fullDashboard: "Full dashboard view",
+    apiAccess: "API access",
+    multiUser: "Multi-user accounts",
+  };
+  // Which tier unlocks each feature.
+  const unlocksAt: Record<GatedFeature, Plan> = {
+    weeklyDigestEmail: "signal",
+    redditTracking: "signal",
+    authorityAudits: "signal",
+    industryPercentile: "signal",
+    autoContentDrafts: "amplify",
+    autoPublishToCMS: "amplify",
+    fullDashboard: "signal",
+    apiAccess: "enterprise",
+    multiUser: "enterprise",
+  };
+  const friendly = friendlyNames[feature];
+  const required = LIMITS[unlocksAt[feature]];
+  const current = LIMITS[currentPlan];
+  return `
+    <div style="max-width:560px;margin:80px auto;padding:24px;text-align:center">
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:18px">
+        ${required.displayName} feature
+      </div>
+      <h1 style="font-family:var(--serif);font-weight:400;font-size:34px;line-height:1.15;margin:0 0 16px 0;letter-spacing:-.01em">
+        ${friendly} is part of <em>${required.displayName}.</em>
+      </h1>
+      <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
+        You are currently on <strong>${current.displayName}</strong>. Upgrade to ${required.displayName} to unlock ${friendly.toLowerCase()} along with weekly citation tracking, unlimited schemas, and the full dashboard.
+      </p>
+      <a href="https://neverranked.com/#pricing"
+         style="display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 28px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);text-decoration:none">
+        See ${required.displayName} &rarr;
+      </a>
+      <p style="margin-top:24px;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
+        Questions? <a href="mailto:lance@neverranked.com" style="color:var(--gold)">lance@neverranked.com</a>
+      </p>
+    </div>
+  `;
+}
+
 /** One-shot helper for prompt-add flows. */
 export async function checkPromptQuota(
   env: Env,
