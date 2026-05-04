@@ -351,6 +351,8 @@ p{margin:0 0 14px;color:var(--text-soft);max-width:62ch}
     </div>
   </section>
 
+  ${report.tier === "pulse" ? buildPulseUpsell() : ""}
+
   <!-- FOOTER -->
   <div class="footer">
     <div class="meta"><strong>Methodology.</strong> ${report.prompts_evaluated} prompts queried across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Citation share computed as % of prompts where the client name or domain appears in the engine's response. AI Presence Score weights: citation rate (50), engine spread (30), sentiment (20). Sample size disciplined: percentages hidden below n=10 mentions.</div>
@@ -498,4 +500,21 @@ const ENGINE_DISPLAY: Record<string, string> = {
 
 function prettifySlug(slug: string): string {
   return slug.split("-").map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
+}
+
+/** Pulse-only upsell footer. Sits between section 04 and the methodology
+ *  footer, styled as a subtle callout (not a hard sell). The Pulse
+ *  customer sees their report end with "here is what you would also see
+ *  on Signal," which doubles as honest scope-of-tier and conversion. */
+function buildPulseUpsell(): string {
+  return `
+  <section class="section" style="margin-top:36px;padding:24px 28px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
+    <div class="section-label" style="margin-bottom:12px"><span class="num" style="color:var(--gold)">+</span><span>What's not in this report</span><span class="rule"></span></div>
+    <p style="margin:0 0 12px 0;font-size:13px;color:var(--text-mute);line-height:1.7">
+      You're on Pulse, which tracks 10 prompts monthly across the 4 major AI engines. Signal customers also see weekly tracking on 50+ prompts, Reddit thread citations (where AI engines pull "best X for Y" answers from), authority-platform monitoring (G2, Trustpilot, Capterra, GBP), industry-percentile benchmarking, and unlimited schema deployment.
+    </p>
+    <p style="margin:0;font-size:12px;color:var(--text-faint);font-family:var(--mono)">
+      Upgrade anytime at <a href="https://neverranked.com/#pricing" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold)">neverranked.com/#pricing</a> &middot; first-month audit credit still applies.
+    </p>
+  </section>`;
 }

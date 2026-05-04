@@ -16,7 +16,7 @@
 CREATE TABLE IF NOT EXISTS nvi_subscriptions (
   id              INTEGER PRIMARY KEY AUTOINCREMENT,
   client_slug     TEXT NOT NULL UNIQUE,
-  tier            TEXT NOT NULL,             -- 'lite' | 'full'
+  tier            TEXT NOT NULL,             -- 'pulse' | 'lite' | 'full' (lite/full are legacy NVI-add-on names from before Pulse existed; new sign-ups land on 'pulse')
   active          INTEGER NOT NULL DEFAULT 1,
   delivery_email  TEXT NOT NULL,             -- where the PDF goes
   delivery_day    INTEGER NOT NULL DEFAULT 1, -- day of month (1-28)

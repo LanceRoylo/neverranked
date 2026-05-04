@@ -957,7 +957,20 @@ export async function handlePulseWaitlist(
     console.log(`pulse_waitlist injection_config failed for ${slug}: ${e}`);
   }
 
-  // 4. Magic link + welcome email -> drops them on /onboard/pulse
+  // 4. NVI subscription -- without this row the monthly NVI cron
+  //    silently skips Pulse customers. Idempotent on UNIQUE(client_slug).
+  //    delivery_day=1 means report fires on the 1st of every UTC month.
+  try {
+    await env.DB.prepare(
+      `INSERT INTO nvi_subscriptions (client_slug, tier, active, delivery_email, delivery_day)
+         VALUES (?, 'pulse', 1, ?, 1)
+       ON CONFLICT(client_slug) DO UPDATE SET active = 1, delivery_email = excluded.delivery_email`
+    ).bind(slug, email).run();
+  } catch (e) {
+    console.log(`pulse_waitlist nvi_subscription failed for ${slug}: ${e}`);
+  }
+
+  // 5. Magic link + welcome email -> drops them on /onboard/pulse
   let emailSent = false;
   if (env.RESEND_API_KEY) {
     try {
@@ -989,7 +1002,7 @@ export async function handlePulseWaitlist(
     }
   }
 
-  // 5. Low-urgency FYI in admin_inbox -- no manual action required.
+  // 6. Low-urgency FYI in admin_inbox -- no manual action required.
   //    If the welcome email failed, mark high so Lance can resend.
   try {
     await env.DB.prepare(
@@ -1010,7 +1023,7 @@ export async function handlePulseWaitlist(
     console.log(`pulse_signup admin_inbox insert failed: ${e}`);
   }
 
-  // 6. Confirmation page
+  // 7. Confirmation page
   return html(layout("Check your email", `
     <div style="max-width:520px;margin:80px auto;padding:0 24px;text-align:center">
       <div style="font-size:42px;color:var(--gold);margin-bottom:16px">&#10003;</div>
