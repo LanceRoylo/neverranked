@@ -97,12 +97,32 @@
         "itemListElement": [
           {
             "@type": "Offer",
-            "name": "$500 Audit",
-            "description": "Full technical and content audit across classic SEO and AEO. Six deliverables. Delivered within 48 hours.",
-            "price": "500",
+            "name": "$750 Audit",
+            "description": "Full technical and content audit across classic SEO and AEO. Five deliverables. Delivered within 48 hours. Fully credited toward your first month of Pulse, Signal, or Amplify if you upgrade within 30 days.",
+            "price": "750",
             "priceCurrency": "USD",
             "availability": "https://schema.org/InStock",
             "url": "https://neverranked.com/#audit"
+          },
+          {
+            "@type": "Offer",
+            "name": "Pulse",
+            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
+            "price": "497",
+            "priceCurrency": "USD",
+            "priceSpecification": {
+              "@type": "UnitPriceSpecification",
+              "price": "497",
+              "priceCurrency": "USD",
+              "unitCode": "MON"
+            },
+            "eligibleDuration": {
+              "@type": "QuantitativeValue",
+              "value": 3,
+              "unitCode": "MON"
+            },
+            "availability": "https://schema.org/InStock",
+            "url": "https://neverranked.com/#pricing"
           },
           {
             "@type": "Offer",
@@ -1980,6 +2000,51 @@ h1,h2,h3,h4{
   color:var(--bg);
   border-color:var(--gold);
 }
+/* Enterprise "Coming Soon" line below the deliverables grid.
+   Anchors the high end of the ladder without committing to a card. */
+.enterprise-line{
+  margin-top:32px;
+  padding:28px 32px;
+  border:1px solid var(--line);
+  border-left:3px solid var(--gold-dim);
+  background:var(--bg-lift);
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+.enterprise-meta{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  font-family:var(--mono);
+  font-size:11px;
+  letter-spacing:.05em;
+  text-transform:uppercase;
+  color:var(--text-faint);
+}
+.enterprise-meta b{color:var(--gold);font-weight:500}
+.enterprise-line p{
+  margin:0;
+  font-size:15px;
+  line-height:1.7;
+  color:var(--text-mute);
+  font-family:var(--mono);
+}
+.enterprise-line strong{color:var(--text);font-weight:500}
+.enterprise-price{
+  font-family:var(--mono);
+  color:var(--gold);
+  font-weight:500;
+  white-space:nowrap;
+}
+.enterprise-line a{
+  color:var(--gold);
+  text-decoration:none;
+  border-bottom:1px solid var(--gold);
+  margin-left:6px;
+  transition:opacity .2s var(--ease);
+}
+.enterprise-line a:hover{opacity:.7}
 .del-tier.featured .del-cta{
   background:var(--gold);
   color:var(--bg);
@@ -2481,7 +2546,7 @@ h1,h2,h3,h4{
   overflow:hidden;
 }
 .audit::before{
-  content:"$500";
+  content:"$750";
   position:absolute;
   left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -4108,7 +4173,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <a href="/blog/">Insights</a>
   <a href="/principles/">Principles</a>
   <a href="/about/">About</a>
-  <a href="#audit" class="mob-cta">$500 Audit</a>
+  <a href="#audit" class="mob-cta">$750 Audit</a>
   <span class="mob-status">Booking <span data-booking-window>May 2026</span></span>
   <div class="mob-utility">
     <a href="https://app.neverranked.com/demo">Live demo</a>
@@ -4123,7 +4188,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <a href="#pricing" class="nav-link">Pricing</a>
     <a href="/blog/" class="nav-link">Insights</a>
     <a href="/about/" class="nav-link">About</a>
-    <a href="#audit" class="nav-cta">$500 Audit →</a>
+    <a href="#audit" class="nav-cta">$750 Audit →</a>
     <span class="status">Booking <span data-booking-window>May 2026</span></span>
   </div>
 </nav>
@@ -4166,7 +4231,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <div class="microcopy">
               <span>No signup. No email gate.</span>
               <span class="sep">&middot;</span>
-              <a href="#audit">or start with the $500 audit</a>
+              <a href="#audit">or start with the $750 audit</a>
             </div>
             <div class="url-result" id="checkResult" aria-live="polite">
               <div class="result-top">
@@ -4179,7 +4244,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <div class="result-signals" id="resultSignals"></div>
               <div class="result-ctas">
                 <a class="primary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report <span class="arrow"></span></a>
-                <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $500 audit</a>
+                <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $750 audit</a>
                 <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
               </div>
             </div>
@@ -4292,7 +4357,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="del-tier-meta"><span>§00 / Start here</span><b>One-time</b></div>
           <h3>Audit</h3>
           <p class="del-tier-tagline">Before you hire anyone, see what's broken.</p>
-          <div class="del-tier-price"><span class="sym">$</span>500<span class="per">once · 48-hour delivery</span></div>
+          <div class="del-tier-price"><span class="sym">$</span>750<span class="per">once · 48-hour delivery · credited toward any tier within 30 days</span></div>
           <ol class="del-list">
             <li>
               <span class="del-num">01</span>
@@ -4333,10 +4398,56 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <a href="https://app.neverranked.com/checkout/audit" class="del-cta">Book my audit</a>
         </div>
 
+        <!-- PULSE -->
+        <div class="del-tier">
+          <div class="del-tier-meta"><span>§01 / Tier I</span><b>Entry</b></div>
+          <h3>Pulse</h3>
+          <p class="del-tier-tagline">For teams who want to know where they stand.</p>
+          <div class="del-tier-price"><span class="sym">$</span>497<span class="per">/mo · 3-month minimum</span></div>
+          <ol class="del-list">
+            <li>
+              <span class="del-num">01</span>
+              <div>
+                <strong>Monthly Visibility Index, delivered as a PDF.</strong>
+                Your citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">02</span>
+              <div>
+                <strong>Up to 10 tracked prompts, all four engines.</strong>
+                The "best X for Y" queries your customers actually ask. Run monthly, scored, and tracked over time so you can see when something shifts.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">03</span>
+              <div>
+                <strong>Two schemas deployed to your live site every month.</strong>
+                FAQ and Article schemas, generated from your existing content, validated through our quality grader, and pushed via the same one-line snippet Signal uses. No CMS access, no dev work, no partial-schema citation penalty.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">04</span>
+              <div>
+                <strong>The same multi-pass validation as every other tier.</strong>
+                Every AI-generated change runs through factual, tone, and quality checks before it touches your site. The brand promise we make to a $4,500 customer is the same brand promise we make to you. No AI slop. Ever.
+              </div>
+            </li>
+            <li>
+              <span class="del-num">05</span>
+              <div>
+                <strong>A read-only dashboard for the months between reports.</strong>
+                Your AEO score, your tracked prompts, your deployed schemas. Updated when the monthly run happens. When you're ready for weekly cadence, deeper benchmarks, and unlimited schemas, Signal is the next step.
+              </div>
+            </li>
+          </ol>
+          <a href="https://app.neverranked.com/checkout/pulse" class="del-cta">Start Pulse</a>
+        </div>
+
         <!-- SIGNAL -->
         <div class="del-tier featured">
           <span class="del-flag">Most teams start here</span>
-          <div class="del-tier-meta"><span>§01 / Tier I</span><b>Featured</b></div>
+          <div class="del-tier-meta"><span>§02 / Tier II</span><b>Featured</b></div>
           <h3>Signal</h3>
           <p class="del-tier-tagline">For teams ready to be cited.</p>
           <div class="del-tier-price"><span class="sym">$</span>2,000<span class="per">/mo · 3-month minimum</span></div>
@@ -4389,7 +4500,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <!-- AMPLIFY -->
         <div class="del-tier">
-          <div class="del-tier-meta"><span>§02 / Tier II</span><b>Full cover</b></div>
+          <div class="del-tier-meta"><span>§03 / Tier III</span><b>Full cover</b></div>
           <h3>Amplify</h3>
           <p class="del-tier-tagline">For teams ready to ship the work, not just see what's needed.</p>
           <div class="del-tier-price"><span class="sym">$</span>4,500<span class="per">/mo · everything in Signal, plus:</span></div>
@@ -4434,6 +4545,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
 
       </div>
+
+      <div class="enterprise-line reveal">
+        <div class="enterprise-meta"><span>§04 / Tier IV</span><b>Coming Soon</b></div>
+        <p>
+          <strong>Multi-location, brand portfolios, and white-label for agency partners.</strong>
+          Enterprise will start at <span class="enterprise-price">$9,500/mo</span> and add dedicated account lead, monthly strategy session, white-label NVI reports, API access, SSO, 200+ tracked prompts, and a 4-hour crisis-response SLA.
+          <a href="mailto:lance@neverranked.com?subject=Enterprise%20interest">Get early access &rarr;</a>
+        </p>
+      </div>
+
     </div>
   </section>
 
@@ -5230,7 +5351,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
           <div class="roi-ctas">
             <a href="https://check.neverranked.com" class="btn-primary">See your score free</a>
-            <a href="https://app.neverranked.com/checkout/audit" class="btn-secondary">Start with the $500 audit</a>
+            <a href="https://app.neverranked.com/checkout/audit" class="btn-secondary">Start with the $750 audit</a>
           </div>
 
           <div class="roi-adjust">
@@ -5400,7 +5521,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           </details>
           <details>
             <summary>What if the audit says I don't need you?</summary>
-            <p>Then we tell you. The $500 audit is yours to keep whether you hire us after or not. We'd rather lose a retainer than sell work you don't need.</p>
+            <p>Then we tell you. The $750 audit is yours to keep whether you hire us after or not. We'd rather lose a retainer than sell work you don't need.</p>
           </details>
           <details>
             <summary>Do you guarantee citations?</summary>
@@ -5526,7 +5647,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <div>
           <div class="section-label reveal" style="margin-bottom:30px">
             <span class="num">§06</span>
-            <span>The $500 Audit</span>
+            <span>The $750 Audit</span>
             <span class="rule"></span>
           </div>
           <h2 class="reveal">
@@ -5678,7 +5799,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </h2>
       <div class="actions reveal" style="transition-delay:.15s">
         <a href="#audit" class="cta">
-          Start with the $500 audit
+          Start with the $750 audit
           <span class="arrow"></span>
         </a>
         <span class="or">Or</span>
@@ -5953,7 +6074,7 @@ window.scrollTo(0,0);
     var maxBar = Math.max(val, monthly);
 
     numEl.textContent = needed;
-    textEl.innerHTML = 'new ' + d.label + ' covers a full year of Signal ($24,000 = $2,000/mo &times; 12).<br><span style="font-size:12px;color:var(--text-faint)">The $500 audit? ' + (auditNeeded <= 1 ? 'One ' + d.label.replace(/s$/,'') + ' covers it.' : auditNeeded + ' ' + d.label + ' cover it.') + '</span>';
+    textEl.innerHTML = 'new ' + d.label + ' covers a full year of Signal ($24,000 = $2,000/mo &times; 12).<br><span style="font-size:12px;color:var(--text-faint)">The $750 audit? ' + (auditNeeded <= 1 ? 'One ' + d.label.replace(/s$/,'') + ' covers it.' : auditNeeded + ' ' + d.label + ' cover it.') + '</span>';
 
     barCustomer.style.width = ((val / maxBar) * 100) + '%';
     barCost.style.width = ((monthly / maxBar) * 100) + '%';
