@@ -350,31 +350,49 @@ function wasClientCited(
   clientDomain: string,
   businessName: string | null
 ): boolean {
+  return computeProminence(entities, urls, clientDomain, businessName) !== null;
+}
+
+/** Where in the answer was the client mentioned?
+ *  1 = first (hero quote), 10 = last (footnote-tier).
+ *  null = not cited at all.
+ *
+ *  Engines return entities/urls in the order they were referenced in
+ *  the response. We cap at 10 so a result like "ranked 17th of 30"
+ *  doesn't drag the score off a cliff -- past rank 10 you're effectively
+ *  invisible regardless. */
+function computeProminence(
+  entities: CitedEntity[],
+  urls: string[],
+  clientDomain: string,
+  businessName: string | null,
+): number | null {
   const domainNorm = clientDomain.replace(/^www\./, "").toLowerCase();
 
-  // Check URL citations (Perplexity)
-  for (const url of urls) {
+  // Check URL list first (most reliable -- domain match is unambiguous).
+  for (let i = 0; i < urls.length; i++) {
     try {
-      const cited = new URL(url).hostname.replace(/^www\./, "").toLowerCase();
-      if (cited === domainNorm || cited.endsWith("." + domainNorm)) {
-        return true;
+      const host = new URL(urls[i]).hostname.replace(/^www\./, "").toLowerCase();
+      if (host === domainNorm || host.endsWith("." + domainNorm)) {
+        return Math.min(i + 1, 10);
       }
     } catch {
-      // skip
+      // skip malformed
     }
   }
 
-  // Check entity name matches
+  // Then entity name match.
   if (businessName) {
     const nameNorm = businessName.toLowerCase();
-    for (const e of entities) {
-      if (e.name.toLowerCase().includes(nameNorm) || nameNorm.includes(e.name.toLowerCase())) {
-        return true;
+    for (let i = 0; i < entities.length; i++) {
+      const eName = entities[i].name.toLowerCase();
+      if (eName.includes(nameNorm) || nameNorm.includes(eName)) {
+        return Math.min(i + 1, 10);
       }
     }
   }
 
-  return false;
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -446,7 +464,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (env.PERPLEXITY_API_KEY) {
           try {
             const pResult = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
-            const cited = wasClientCited(pResult.entities, pResult.urls, clientDomain, businessName);
+            const prom = computeProminence(pResult.entities, pResult.urls, clientDomain, businessName);
+            const cited = prom !== null;
 
             if (cited) {
               kwCited = true;
@@ -463,8 +482,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
 
             // Store run. Perplexity sonar has always been web-grounded.
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
-               VALUES (?, 'perplexity', ?, ?, ?, ?, ?, 'web')`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+               VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
@@ -472,6 +491,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 JSON.stringify(pResult.entities),
                 JSON.stringify(pResult.urls),
                 cited ? 1 : 0,
+                prom,
                 now
               )
               .run();
@@ -490,10 +510,11 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (env.OPENAI_API_KEY) {
           try {
             const oResult = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
-            // Now web-grounded: pass URLs to wasClientCited so a citation
-            // counts when the live ChatGPT response cites the client's
-            // domain in its url_citation annotations.
-            const cited = wasClientCited(oResult.entities, oResult.urls, clientDomain, businessName);
+            // Now web-grounded: pass URLs to computeProminence so a
+            // citation counts when the live ChatGPT response cites the
+            // client's domain in its url_citation annotations.
+            const prom = computeProminence(oResult.entities, oResult.urls, clientDomain, businessName);
+            const cited = prom !== null;
 
             if (cited) {
               kwCited = true;
@@ -512,8 +533,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             }
 
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
-               VALUES (?, 'openai', ?, ?, ?, ?, ?, 'web')`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+               VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
@@ -521,6 +542,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 JSON.stringify(oResult.entities),
                 JSON.stringify(oResult.urls),
                 cited ? 1 : 0,
+                prom,
                 now
               )
               .run();
@@ -548,7 +570,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
               // the Gemini block so we still pace the Anthropic call.
             } else {
             // Web-grounded: pass URLs from googleSearch groundingChunks
-            const cited = wasClientCited(gResult.entities, gResult.urls, clientDomain, businessName);
+            const prom = computeProminence(gResult.entities, gResult.urls, clientDomain, businessName);
+            const cited = prom !== null;
 
             if (cited) {
               kwCited = true;
@@ -566,8 +589,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             }
 
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
-               VALUES (?, 'gemini', ?, ?, ?, ?, ?, 'web')`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+               VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
             )
               .bind(
                 kw.id,
@@ -575,6 +598,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
                 JSON.stringify(gResult.entities),
                 JSON.stringify(gResult.urls),
                 cited ? 1 : 0,
+                prom,
                 now
               )
               .run();
@@ -593,7 +617,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (env.ANTHROPIC_API_KEY) {
           try {
             const cResult = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
-            const cited = wasClientCited(cResult.entities, [], clientDomain, businessName);
+            const prom = computeProminence(cResult.entities, [], clientDomain, businessName);
+            const cited = prom !== null;
 
             if (cited) {
               kwCited = true;
@@ -614,14 +639,15 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             // a Phase 3 upgrade). Marked grounding_mode='training' so
             // analytics can distinguish from grounded engines.
             await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, run_at, grounding_mode)
-               VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, 'training')`
+              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+               VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
             )
               .bind(
                 kw.id,
                 cResult.text.slice(0, 4000),
                 JSON.stringify(cResult.entities),
                 cited ? 1 : 0,
+                prom,
                 now
               )
               .run();

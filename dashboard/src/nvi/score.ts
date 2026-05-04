@@ -1,17 +1,21 @@
 /**
  * AI Presence Score — the headline metric of the NVI report.
  *
- * Composite 0-100 from four sub-signals (v1 ships with three;
- * prominence wires in v2 once position parsing is wired):
+ * v2 (current). Composite 0-100 from four sub-signals:
  *
- *   citation_rate (50)   % of tracked prompts where the client appears
- *   engine_spread (30)   how many engines cite us at all
- *   sentiment     (20)   positive minus negative share among cited
- *   [v2 prominence (deferred until cited_entities parsing wired)]
+ *   citation_rate (40)   % of tracked prompts where the client appears
+ *   engine_spread (25)   how many engines cite us at all
+ *   prominence    (20)   how high in the cited list we landed
+ *   sentiment     (15)   positive minus negative share among cited
  *
- * v1 sums to 100. v2 will redistribute as 40/25/15/20 once the
- * position component is added (see NVI-SPEC.md "Scoring logic" for
- * the target weights).
+ * Prominence is the position the client appeared in the engine's
+ * answer. 1 = first / hero quote. 10 = last / footnote-tier. NULL =
+ * not cited. We map per-row prominence to (11 - p) / 10 so a hero
+ * mention contributes 1.0 and rank 10 contributes 0.1, then average
+ * across cited rows and scale by the 20-pt cap.
+ *
+ * v1 (previous) used 50/30/20 with no prominence; v2 rebalances now
+ * that citations.ts emits the position column on every run.
  *
  * The function is pure: feed it citation_run rows, get back the
  * score. Easier to unit-test, easier to re-aggregate any past period
@@ -24,13 +28,14 @@ export interface CitationRow {
   engine: string;             // 'openai' | 'perplexity' | 'gemini' | 'google_ai_overview'
   client_cited: number;       // 0 | 1
   sentiment: string | null;   // 'positive' | 'neutral' | 'negative' | null
+  prominence: number | null;  // 1 (first) .. 10 (last) | null (not cited)
 }
 
 export interface ScoreBreakdown {
   citation_rate_pts: number;
   engine_spread_pts: number;
+  prominence_pts: number;
   sentiment_pts: number;
-  // prominence_pts: number;  // v2 -- requires cited_entities parsing
 }
 
 export interface PresenceScore {
@@ -44,12 +49,12 @@ export interface PresenceScore {
   prevScore: number | null;   // previous month's score, for delta
 }
 
-/** v1 cap weights. Sum to 100. Prominence (v2) will rebalance to
- *  citation_rate=40, engine_spread=25, prominence=20, sentiment=15. */
+/** v2 cap weights. Sum to 100. */
 const W = {
-  CITATION_RATE: 50,
-  ENGINE_SPREAD: 30,
-  SENTIMENT: 20,
+  CITATION_RATE: 40,
+  ENGINE_SPREAD: 25,
+  PROMINENCE: 20,
+  SENTIMENT: 15,
 } as const;
 
 /** All engines we count toward the spread bonus. Update if the tracked
@@ -95,9 +100,23 @@ export function scoreFromRows(
   const enginesCited = enginesCitedSet.size;
   const engine_spread_pts = Math.min(W.ENGINE_SPREAD, enginesCited * (W.ENGINE_SPREAD / TRACKED_ENGINES.length));
 
-  // 3. Sentiment (20 pts max in v1)
-  // Net (positive - negative) share of cited rows with a sentiment
-  // scored. Neutral and unscored rows contribute 0.
+  // 3. Prominence (20 pts max). Per-row score = (11 - prominence) / 10
+  // so rank 1 = 1.0 and rank 10 = 0.1. Average across cited rows that
+  // carry a prominence value, then scale by the cap. Rows missing
+  // prominence (legacy data pre-migration 0058) are excluded from the
+  // denominator so we don't penalize history.
+  const promRows = citedRows.filter((r) => r.prominence != null);
+  let prominence_pts = 0;
+  if (promRows.length > 0) {
+    const avgPerRow = promRows.reduce((sum, r) => {
+      const p = Math.max(1, Math.min(10, r.prominence!));
+      return sum + (11 - p) / 10;
+    }, 0) / promRows.length;
+    prominence_pts = avgPerRow * W.PROMINENCE;
+  }
+
+  // 4. Sentiment (15 pts max). Net (positive - negative) share of cited
+  // rows with a sentiment scored. Neutral and unscored contribute 0.
   const scored = citedRows.filter((r) => r.sentiment != null);
   let sentiment_pts = 0;
   if (scored.length > 0) {
@@ -110,12 +129,14 @@ export function scoreFromRows(
   const breakdown: ScoreBreakdown = {
     citation_rate_pts: round2(citation_rate_pts),
     engine_spread_pts: round2(engine_spread_pts),
+    prominence_pts: round2(prominence_pts),
     sentiment_pts: round2(sentiment_pts),
   };
 
   const score = Math.round(
     breakdown.citation_rate_pts +
     breakdown.engine_spread_pts +
+    breakdown.prominence_pts +
     breakdown.sentiment_pts
   );
 
@@ -185,7 +206,7 @@ export async function computeAiPresenceScore(
   // All cited rows for the rest of the math (engine spread, sentiment).
   // Cheap to load -- max ~400 rows for an NVI Full month.
   const rowsResult = await env.DB.prepare(
-    `SELECT cr.engine, cr.client_cited, cr.sentiment
+    `SELECT cr.engine, cr.client_cited, cr.sentiment, cr.prominence
        FROM citation_runs cr
        JOIN citation_keywords ck ON ck.id = cr.keyword_id
        WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`
@@ -206,6 +227,7 @@ export async function computeAiPresenceScore(
   const score = Math.round(
     breakdown.citation_rate_pts +
     breakdown.engine_spread_pts +
+    breakdown.prominence_pts +
     breakdown.sentiment_pts
   );
 
