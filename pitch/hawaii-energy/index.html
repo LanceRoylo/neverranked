@@ -1,0 +1,542 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>For Jeff Dizon / Hawaii Energy -- Never Ranked</title>
+<meta name="description" content="An audit of hawaiienergy.com against the engines that decide. The schema gaps that probably cost you customer connections, and a 90-day path to close them.">
+<link rel="canonical" href="https://neverranked.com/pitch/hawaii-energy/">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="For Jeff Dizon / Hawaii Energy">
+<meta property="og:description" content="A short, specific brief. The gaps the audit found. Ninety days to fix them.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/pitch/hawaii-energy/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.png">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pitch / Hawaii Energy",
+      "item": "https://neverranked.com/pitch/hawaii-energy/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+/* print button (screen only) */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:12px 18px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  cursor:pointer;border-radius:2px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);
+  z-index:50;
+}
+.print-btn:hover{background:var(--gold-dim);color:var(--bg)}
+
+/* print stylesheet -- hand Flash a clean printable brief */
+@page{size:letter;margin:.5in}
+@media print{
+  html,body{background:white !important;color:#0a0a0a !important;font-size:10pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:"Playfair Display",Georgia,serif !important}
+  body::before,.grain,.no-print,.print-btn,.nav,.hamburger,.mobile-overlay{display:none !important}
+  .wrap{max-width:none !important;padding:0 !important;width:100% !important}
+  *{position:static !important;box-shadow:none !important}
+  .page-hero{padding:0 0 14pt !important;border-bottom:1px solid #999;margin-bottom:14pt}
+  .page-hero h1{font-size:20pt !important;line-height:1.15 !important;margin:0 0 8pt !important;color:#0a0a0a !important;font-family:"Playfair Display",Georgia,serif !important}
+  .page-hero h1 em{color:#9c7a1f !important;font-style:italic}
+  .page-hero .updated{color:#666 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.12em}
+  .legal-section{padding:12pt 0 !important;border-bottom:1px solid #ccc !important;break-inside:auto;page-break-inside:auto}
+  .legal-section:last-child{border-bottom:none !important}
+  .section-label{margin-bottom:8pt !important;color:#444 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.16em}
+  .section-label .num{color:#9c7a1f !important;font-weight:600}
+  .section-label .rule{background:#ccc !important}
+  h2{font-size:13pt !important;color:#0a0a0a !important;margin:0 0 6pt !important;font-family:"Playfair Display",Georgia,serif !important}
+  h3{font-size:11pt !important;color:#0a0a0a !important;margin:0 0 4pt !important;font-family:"Playfair Display",Georgia,serif !important;font-weight:500}
+  p,ul,ol{color:#1a1a1a !important;max-width:none !important;margin:0 0 6pt !important;orphans:3;widows:3;font-family:Georgia,"Times New Roman",serif !important}
+  ul,ol{padding-left:18pt !important}
+  li{margin-bottom:3pt !important;color:#1a1a1a !important}
+  b,strong{color:#0a0a0a !important;font-weight:600}
+  p a,ul a,li a,a{color:#9c7a1f !important;text-decoration:underline}
+  pre{background:#f4f1e6 !important;color:#1a1a1a !important;border:1px solid #d4cdb8 !important;font-size:7.5pt !important;line-height:1.45 !important;padding:8pt !important;margin:6pt 0 !important;white-space:pre-wrap !important;word-break:break-word !important;overflow:visible !important;page-break-inside:avoid;break-inside:avoid;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  code{background:#f4f1e6 !important;color:#1a1a1a !important;padding:0 3pt;border-radius:2px;font-size:8pt !important;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  div[style*="border:1px solid"]{background:#fafaf5 !important;border-color:#ccc !important;border-radius:0 !important;padding:10pt !important;margin:6pt 0 !important;page-break-inside:avoid;break-inside:avoid}
+  div[style*="background:rgba"]{background:#fafaf5 !important}
+  .legal-footer{display:none !important}
+  a[href^="http"]:after{content:" (" attr(href) ")";font-size:7pt;color:#666;font-family:"DM Mono",monospace;word-break:break-all}
+  a[href^="mailto:"]:after,a[href^="/"]:after,a[href^="#"]:after{content:""}
+}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:22px;left:var(--gutter);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:28px;height:20px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:9px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$750 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="updated" style="margin-bottom:18px">Private brief &middot; Prepared for Jeff Dizon &middot; May 2026</div>
+    <h1>Six things AI engines can't see <em>about Hawaii Energy</em>, and the rebate-inquiry math behind each one.</h1>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>Why this email exists</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Jeff &mdash; Lance from Never Ranked. I wanted to send you something specific instead of a generic introduction. This is a private brief for you and the Hawaii Energy team, not a marketing blast.
+    </p>
+    <p>
+      The short version. Most rebate-discovery decisions for residential and small-commercial energy upgrades in Hawaii now run through an AI step before they hit a contractor or your application page. Someone realizing their AC died, or planning a heat-pump water heater install, or pricing out a mini-split for a converted garage on Oahu, asks ChatGPT or Perplexity or Apple Intelligence "what rebates can I get for [thing] in Hawaii," gets a short list of programs, and starts there. Hawaii Energy is either in those recommendations or not.
+    </p>
+    <p>
+      I ran hawaiienergy.com through our public schema scorer this morning. The result is a D-45 out of 100, which means there is essentially zero structured data on the site. None of the rebate programs, the Energy Advantage Program, the Clean Energy Allies network, the success stories, or the team page is currently legible to an AI engine as a structured entity. For a publicly funded program whose reason for existing is to inform Hawaii ratepayers, that gap is mission-relevant, not just marketing-relevant. Below is what I found and the path to fix it.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>What you have today</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      hawaiienergy.com loads with zero JSON-LD schema nodes and scores 45/100 on our completeness grader. For context, partial schema (under 60) costs an estimated 18 percentage points of AI citation share. You are well inside that zone. The site is editorially fine, but to an AI engine reading the source, it is mostly invisible.
+    </p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Detected schema           Status
+Organization              none
+WebSite                   none
+BreadcrumbList            none
+LocalBusiness / NonProfit none
+Service (per program)     none
+HowTo (application steps) none
+FAQPage                   none
+Article (success stories) none
+Person (team)             none
+
+Other red flags
+- No og:image (social and AI previews lack visual context)
+- No H1 (heading structure is broken; H2 used as title)
+- Title tag is 13 characters ("Hawaii Energy")
+- No AggregateRating signal AI can attach to</pre>
+    <p>
+      To put it directly, every category of structured data that matters for a public-mission rebate program is absent. The good news is that the underlying content is already strong. The site has rebate program pages, application instructions, success stories, a team page, and a contractor network. None of that content needs to be rewritten. It needs to be made readable to AI engines.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>The six things AI engines can't see</span>
+      <span class="rule"></span>
+    </div>
+    <p>Each gap below maps to a specific class of resident or business query that Hawaii Energy is probably losing today.</p>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 01</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Organization or NonprofitOrganization node.</h3>
+      <p style="margin:0">When ChatGPT, Gemini, or Perplexity is asked "who runs Hawaii's energy efficiency rebate program" or "what is Hawaii Energy," the engines need a structured Organization (or NonprofitOrganization) node to answer authoritatively. Right now there isn't one. The site says "Hawaii Energy" in the title bar and that is roughly all the engines can extract about the entity. The fix is a single JSON-LD block at the root with legal name, alternate name, founder/operator (Leidos), funder reference (Hawaii Public Utilities Commission), description, areaServed (Hawaii state), and full contact details. This is the foundational identity fix that everything else hangs on.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 02</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Service schema for any rebate program.</h3>
+      <p style="margin:0">When someone asks "how do I get a rebate for a heat pump water heater in Hawaii" or "what HVAC rebates are available on Oahu," the AI engines look for Service nodes that match the query intent. Hawaii Energy publishes pages for HVAC rebates, water-heating rebates, lighting rebates, and the business rebate suite. None are structured as Service nodes. Each program should be a Service node with provider (Hawaii Energy), areaServed, serviceType, audience (residential or business), and offers (rebate amount or range). Done correctly, this turns hawaiienergy.com from a page that AI engines summarize into a set of programs they can cite directly by name.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 03</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No HowTo schema for application steps.</h3>
+      <p style="margin:0">The site walks visitors through how to apply for various rebates in plain prose. Useful for humans, invisible to AI engines as structured guidance. Each application process (residential rebate, business rebate, Energy Advantage Program enrollment, Clean Energy Allies sign-up) should be a HowTo node with steps, supplies, and estimated time. This unlocks "how do I apply for [rebate] in Hawaii" queries where the AI cites a step-by-step from your site instead of inferring one or pointing to a contractor.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 04</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No FAQPage schema on rebate or program pages.</h3>
+      <p style="margin:0">Every rebate page contains the obvious questions: who qualifies, how much is the rebate, what equipment is eligible, how long does the application take, what documentation is needed. Right now those questions are answered as prose paragraphs. As FAQ nodes, each Q&A becomes a directly citable answer that AI engines can quote verbatim. FAQ schema is the single highest-yield schema type for educational content based on the 730-citation study we run our roadmaps from.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 05</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Person schema for the team page.</h3>
+      <p style="margin:0">/about/our-team/ exists with named leadership and program managers. To AI engines, those names are unstructured strings on a page. Person schema with name, jobTitle, worksFor (Hawaii Energy), and sameAs (LinkedIn URL) lets AI engines disambiguate authorship and authority. When a journalist or researcher asks "who runs Hawaii's residential rebate program," the engines should be able to name the right person. Right now they can't.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 06</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Article schema on success stories or energy-saving tips.</h3>
+      <p style="margin:0">/about/success-stories/ and /for-homes/tips-to-save-energy/ are real editorial content. Both should ship as Article schema with author, publisher, datePublished, image, and headline. Without it, the engines can quote the prose but cannot cite the article as an authored, dated piece, which is what makes a citation count toward authority signals. The 18-point partial-schema penalty applies hardest to editorial content, which is why this is on the list even though it is the lowest-effort fix.</p>
+    </div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>Why this is happening now</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Three things have shifted in the last 12 months that turn this from a marketing-side nice-to-have into a mission-relevant gap. Public-mission programs in particular are at risk because their entire reason for existing is to inform residents.
+    </p>
+    <ul>
+      <li><b>Google AI Overviews now answers most "rebate" and "incentive" queries directly</b> at the top of the SERP. We just turned on live tracking of Google AI Overviews on May 4, 2026. Queries like "Hawaii heat pump rebate," "Honolulu solar water heater incentive," and "Hawaii efficiency rebates 2026" now return AI-generated summaries that name programs and dollar amounts. Whether those summaries name Hawaii Energy or a different source is a function of structured data on the source pages.</li>
+      <li><b>Apple Intelligence + Perplexity in Safari are now default-on</b> on every recent-model iPhone in Hawaii. The first question a homeowner with a broken AC asks Siri is often "what's the cheapest way to replace my AC in Hawaii." The AI answers from web sources, not from Hawaii Energy's brochure PDF. The answer is opaque to your Google Analytics.</li>
+      <li><b>ChatGPT and Claude now web-ground their default responses</b>. When someone asks ChatGPT about Hawaii rebates, web search runs and citations get returned. We track this directly across all five engines (ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude). For Hawaii Energy today, the citation rate is essentially zero on the queries that matter most.</li>
+    </ul>
+    <p>
+      A representative set of queries Hawaii residents and businesses are asking AI engines right now, where Hawaii Energy should be cited but currently is not:
+    </p>
+    <ul style="font-family:var(--mono);font-size:13px;line-height:1.85;margin:0 0 16px;padding-left:24px;color:var(--text-soft)">
+      <li>"Hawaii heat pump water heater rebate"</li>
+      <li>"How do I get a rebate for a mini-split in Hawaii"</li>
+      <li>"Hawaii efficiency rebates 2026"</li>
+      <li>"How to lower my electric bill on Oahu"</li>
+      <li>"Best EV charging rebate Hawaii residential"</li>
+      <li>"Hawaii small business HVAC rebate"</li>
+      <li>"What energy programs are available for Maui businesses"</li>
+      <li>"Hawaii solar water heater contractor list"</li>
+    </ul>
+    <p>
+      None of these surfaces show up in Google Analytics. They are real customer-acquisition channels for Hawaii Energy that cannot currently be measured or influenced. The schema gaps in section 02 are the levers that make Hawaii Energy appear in these answers.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>Why NeverRanked, honestly</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Most AEO tools tell you what to do. We do it. As of May 2026, NeverRanked is the only platform in market that ships <em>all</em> of the following together:
+    </p>
+    <ul style="font-family:var(--mono);font-size:14px;line-height:1.85;margin:0 0 22px;padding-left:24px;color:var(--text-soft)">
+      <li><b>Five-engine citation tracking</b>: Perplexity, ChatGPT, Gemini, Google AI Overviews (live as of May 2026 via DataForSEO), and Claude. Most competitors track three or four. We just turned on the fifth.</li>
+      <li><b>Done-for-you schema deployment</b> via a one-line snippet. No CMS access, no dev cycle. Profound, Athena HQ, Ahrefs Brand Radar all stop at "here is what to deploy." We deploy it.</li>
+      <li><b>Multi-pass AI validation</b> on every generated output. Factual grounding against the source, tone check, quality gate, three-attempt regeneration. Most "AI content" tools ship Claude's first draft. We refuse to.</li>
+      <li><b>Variant impact attribution</b>: every schema we deploy is tracked as a variant. Citation rate measured 4 weeks before deploy vs 4 weeks after, two-proportion z-test, statistical confidence at p &lt; 0.05. Your monthly Visibility Index includes a "what we deployed and what it did" section. Nobody else does this.</li>
+      <li><b>Prominence and sentiment within citations</b>, not just yes/no. Where in the AI's answer were you mentioned (rank 1 hero quote vs rank 8 footnote)? Was the tone positive or negative? That's the next layer of AEO that most platforms have not built yet.</li>
+      <li><b>Real-time citation alerts</b> on Signal+: gained or lost citations between monthly reports get emailed within hours, color-coded by gain or loss. You hear about movement before your competitors do.</li>
+    </ul>
+    <p>
+      Honest framing. NeverRanked is bootstrapped, founder-led, and currently has a small customer count. That is also the buying advantage: pilot pricing, direct founder access, and the ability to shape the roadmap with your specific use case in mind. As the platform grows, the tier you start at locks in.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>What 90 days looks like if we work together</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one gets absorbed into the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater.
+    </p>
+    <p>What the engagement looks like, concretely:</p>
+    <ul>
+      <li><b>Days 1-2.</b> We deliver the full audit. $750, and the entire $750 is fully credited toward your first month if you decide to keep going on Pulse, Signal, or Amplify within 30 days. You get a 90-day implementation roadmap, a competitor citation matrix (which sources currently win the Hawaii rebate and energy-efficiency queries, named, with the trust profiles they have built), and a schema fix list with exact JSON-LD code your dev team or your WordPress admin can paste in.</li>
+      <li><b>Days 3-30.</b> Schema fixes ship. NonprofitOrganization at the root. Service schema templated for every rebate program (residential HVAC, water heating, lighting, EV charging, business rebates). HowTo schema for the application processes. FAQPage schema on every program page. Person schema for the leadership team. Article schema on success stories and energy-saving tips. Each schema runs through our 3-pass validation (factual grounding, tone, quality) before it touches the live site, and every variant we deploy is tracked so we can prove citation lift over time.</li>
+      <li><b>Days 31-90.</b> AI engines start absorbing the structured data. We track citation share monthly across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude on the rebate and efficiency queries that matter for Hawaii residents and businesses. You see which programs are now being cited, which are still missing, and you get real-time citation alerts (Signal+) when a query gains or loses you in any engine. Monthly Visibility Index PDF delivered the first business day of each month, forwardable to PUC stakeholders or the Leidos team without explanation.</li>
+      <li><b>Day 90 onward.</b> Dashboard refreshes weekly. Quarterly drift detection re-evaluates the landscape so you do not go stale. The Visibility Index now includes a "what we deployed and what it did" section showing the citation lift attributable to each schema variant, with statistical confidence at p &lt; 0.05. For a publicly funded program, this is the kind of measurable mission-impact reporting that actually holds up at a stakeholder briefing.</li>
+    </ul>
+    <p style="margin-top:18px"><b>Pricing after the audit:</b> Pulse at $497/month (entry: monthly Visibility Index, 10 tracked prompts, 2 schemas/month), Signal at $2,000/month (weekly tracking on 50+ prompts, real-time citation alerts, unlimited schemas), or Amplify at $4,500/month (Signal plus brand voice fingerprint, citation-shaped content drafts, auto-publish to your CMS). Three-month minimum on all monthly tiers. The $750 audit credit applies to whichever tier you pick.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>The mission frame, briefly</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Hawaii Energy is funded by Hawaii ratepayers via the Public Utilities Commission, with Leidos as the program administrator. The mission is to help Hawaii residents and businesses use less energy and save money. Every Hawaiian who asks an AI engine "how do I lower my electric bill in Hawaii" or "what rebates can I get for a heat pump" and gets an answer that does not include Hawaii Energy is someone the program exists to serve and is not reaching.
+    </p>
+    <p>
+      That gap is not a marketing failure. It is a mission failure made measurable. The fix, on the technical side, is bounded and tractable: deploy the structured data, track citation share, watch the program show up in answers within 60 to 90 days. The Monthly Visibility Index becomes a stakeholder-readable measurement of mission reach into AI surfaces, alongside the existing rebate-application and energy-savings metrics the program already reports.
+    </p>
+    <p>
+      Worth saying directly. This is exactly the work a publicly funded program should be the first in its category to invest in, not the last. The first state energy-efficiency program that becomes the default cited authority in AI answers about its market sets a benchmark the rest of the country tries to match.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Why us, briefly</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>We built the tools, then ran them on ourselves first.</b> Schema grader, citation tracker, drift detection, authority audits, the public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Same software that audited hawaiienergy.com is what runs on our own domain.</li>
+      <li><b>The codebase is public</b> at <a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>. You or your developer can read every line of what gets injected into the site. For a publicly funded program that has to answer to procurement and IT, transparency at this level is unusual and the right answer.</li>
+      <li><b>Security posture is public too.</b> The schema injection snippet does exactly one thing &mdash; appends JSON-LD to the &lt;head&gt;. No cookies, no DOM read, no outbound calls. Full breakdown at <a href="/security/">neverranked.com/security</a>. Compatible with WordPress, which is what hawaiienergy.com runs on.</li>
+      <li><b>Founder-led and Hawaii-based.</b> I live in Honolulu. The company is small. That means direct access, fast iteration, and pricing that fits a publicly funded program rather than enterprise SaaS pricing built for marketing departments at scale.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>Two ways to take the next step</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <a href="https://app.neverranked.com/checkout/audit" style="color:var(--gold);font-weight:500"><b>Book the $750 audit &rarr;</b></a><br>
+      Delivered in 48 hours. Includes the full citation matrix for Hawaii rebate and energy-efficiency queries (you tell me which programs to prioritize, otherwise I default to residential HVAC, water heating, and EV charging), the per-page schema completeness report, the competitor map (which sources currently win these queries on AI engines), and the 90-day implementation roadmap with copy-paste JSON-LD. The audit is yours regardless of whether we work together after.
+    </p>
+    <p style="margin-top:24px">
+      <a href="mailto:lance@neverranked.com?subject=Hawaii%20Energy%20%E2%80%94%2030%20min" style="color:var(--gold);font-weight:500"><b>Or reply to schedule 30 minutes &rarr;</b></a><br>
+      I will walk you through the findings live, answer questions about the work, and we can decide together whether the audit is the right next move. No deck. Probably the dashboard on a screen-share, with Hawaii Energy queries running against ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude in real time.
+    </p>
+    <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
+      Either way, thank you for reading this far. Happy to send any of this in a format that fits your stakeholder workflow if it helps.<br>
+      <span style="font-family:var(--serif);font-style:italic">Lance Roylo</span> &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a> &middot; <a href="https://neverranked.com">neverranked.com</a>
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+
+<button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
+</body>
+</html>
