@@ -1241,6 +1241,56 @@ export default {
       const r = await generateArticlesFromSitemap(slug, sitemapUrl, env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
+    // HowTo generator: extract a step-by-step procedure from one page.
+    if (path === "/admin/generate-howto" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const sourceUrl = url.searchParams.get("url");
+      if (!slug || !sourceUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?url=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateHowToForPage } = await import("./howto-generator");
+      const r = await generateHowToForPage(slug, sourceUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
+    // Service generator: extract distinct services from a services page.
+    if (path === "/admin/generate-services" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      const sourceUrl = url.searchParams.get("url");
+      if (!slug || !sourceUrl) {
+        return new Response(JSON.stringify({ error: "missing ?slug= and ?url=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateServicesForPage } = await import("./service-generator");
+      const r = await generateServicesForPage(slug, sourceUrl, env);
+      return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
+    }
+    // llms.txt generator: returns the suggested llms.txt body for a client.
+    // Customer copies it into the root of their site (next to robots.txt).
+    if (path === "/admin/llms-txt" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug");
+      if (!slug) {
+        return new Response(JSON.stringify({ error: "missing ?slug=" }, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      const { generateLlmsTxt } = await import("./llms-txt-generator");
+      const r = await generateLlmsTxt(slug, env);
+      if (!r.ok) {
+        return new Response(JSON.stringify(r, null, 2), {
+          status: 400, headers: { "content-type": "application/json" }
+        });
+      }
+      // Plain text so the customer can save the response body directly.
+      return new Response(r.content!, {
+        headers: {
+          "content-type": "text/plain; charset=utf-8",
+          "x-page-count": String(r.pageCount ?? 0),
+        }
+      });
+    }
 
     // Reddit presence (Phase 5)
     if (path === "/reddit" || path === "/reddit/") {

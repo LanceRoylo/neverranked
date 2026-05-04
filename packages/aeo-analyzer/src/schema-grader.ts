@@ -94,6 +94,16 @@ const MANIFESTS: Record<string, TypeManifest> = {
     required: ["name", "image", "description"],
     recommended: ["brand", "sku", "offers", "aggregateRating", "review"],
   },
+  Service: {
+    required: ["name", "provider"],
+    recommended: ["serviceType", "areaServed", "description", "url", "offers", "image"],
+    custom: (data, issues) => {
+      const p = data.provider;
+      if (p && typeof p === "object" && !Array.isArray(p)) {
+        if (!p.name) issues.push("Service.provider.name is missing");
+      }
+    },
+  },
   AggregateRating: {
     required: ["ratingValue", "reviewCount", "itemReviewed"],
     recommended: ["bestRating", "worstRating"],
