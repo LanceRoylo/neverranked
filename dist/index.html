@@ -1931,73 +1931,126 @@ h1,h2,h3,h4{
   align-items:center;
   gap:14px;
 }
-/* Tier rhythm icon -- a small SVG that sits inline with the tier
-   name. Same visual system across Pulse / Signal / Amplify with
-   different ripple counts to mirror each tier's cadence. The
-   cadence-of-icon matches cadence-of-service: Pulse fires monthly
-   so its ripple is slow + single; Signal is weekly with alerts so
-   it has two ripples; Amplify is continuous so it has three. The
-   metaphor: a center dot (the customer) broadcasting outward to
-   AI engines. */
+/* Tier broadcast icon -- a small SVG next to each tier name. The
+   metaphor: your brand at center broadcasting citations outward to
+   AI engines on the perimeter. Each "arc" is a signal traveling
+   from origin to engine. Line draws itself outward, a destination
+   dot bursts when the signal arrives, then both fade and repeat.
+   The number of arcs encodes the tier:
+     Pulse:   1 arc -- entry, single broadcast per cycle
+     Signal:  3 arcs in equilateral triangle -- continuous coverage
+     Amplify: 5 arcs in pentagon -- one per tracked AI engine
+              (ChatGPT, Perplexity, Gemini, Google AIO, Claude).
+              The icon is literally a diagram of what we do. */
 .tier-icon{
-  width:34px;
-  height:34px;
+  width:38px;
+  height:38px;
   flex-shrink:0;
   color:var(--gold);
   margin-top:-2px; /* optical alignment with serif italic h3 */
+  overflow:visible;
 }
-.tier-icon circle.center{ fill:currentColor; }
-.tier-icon circle.ring{
+.tier-icon .core{ fill:currentColor; }
+.tier-icon .core-glow{
   fill:none;
   stroke:currentColor;
-  stroke-width:1.5;
+  stroke-width:0.8;
+  opacity:0.35;
 }
-@keyframes tier-ripple-pulse{
-  0%{ r:3; opacity:0.7; }
-  100%{ r:14; opacity:0; }
+.tier-icon .arc{
+  fill:none;
+  stroke:currentColor;
+  stroke-width:1.2;
+  stroke-linecap:round;
+  stroke-dasharray:14;
+  stroke-dashoffset:14;
+  opacity:0;
 }
-@keyframes tier-ripple-signal{
-  0%{ r:3; opacity:0.7; }
-  100%{ r:15; opacity:0; }
+.tier-icon .endpoint{
+  fill:currentColor;
+  opacity:0;
 }
-@keyframes tier-ripple-amplify{
-  0%{ r:3; opacity:0.75; }
-  100%{ r:16; opacity:0; }
+/* Core-glow breathes subtly so the center dot feels alive even when
+   no arcs are drawing. */
+@keyframes core-breathe{
+  0%,100%{ r:6; opacity:0.18; }
+  50%{ r:7.5; opacity:0.32; }
 }
-/* Pulse: one ripple, slow cadence (matches monthly cadence). */
-.tier-icon-pulse circle.ring{
-  animation:tier-ripple-pulse 2.4s ease-out infinite;
+.tier-icon .core-glow{
+  animation:core-breathe 3.6s ease-in-out infinite;
+}
+/* Each arc has a two-phase animation:
+     0-50%   line draws outward (stroke-dashoffset 14 -> 0)
+     50-60%  endpoint bursts (small dot expands at destination)
+     60-100% line + endpoint fade
+   Different durations per tier make the cadence read differently
+   without changing the underlying mechanism. */
+@keyframes arc-broadcast{
+  0%   { stroke-dashoffset:14; opacity:0; }
+  8%   { opacity:0.85; }
+  50%  { stroke-dashoffset:0;  opacity:0.85; }
+  85%  { stroke-dashoffset:0;  opacity:0.4; }
+  100% { stroke-dashoffset:0;  opacity:0; }
+}
+@keyframes endpoint-burst{
+  0%,48%   { opacity:0; transform:scale(0); }
+  55%      { opacity:1; transform:scale(1); }
+  85%      { opacity:0.6; transform:scale(1); }
+  100%     { opacity:0; transform:scale(0.4); }
+}
+.tier-icon .endpoint{
+  transform-box:fill-box;
   transform-origin:center;
 }
-/* Signal: two ripples staggered, faster cadence (weekly + alerts). */
-.tier-icon-signal circle.ring{
-  animation:tier-ripple-signal 1.8s ease-out infinite;
-  transform-origin:center;
+/* Pulse: 1 arc, slow cadence. Reads as quiet, deliberate. */
+.tier-icon-pulse .arc{
+  animation:arc-broadcast 2.8s ease-in-out infinite;
 }
-.tier-icon-signal circle.ring.delay-1{
-  animation-delay:0.9s;
+.tier-icon-pulse .endpoint{
+  animation:endpoint-burst 2.8s ease-in-out infinite;
 }
-/* Amplify: three ripples continuous wave, fastest cadence
-   (always-on content + automation). */
-.tier-icon-amplify circle.ring{
-  animation:tier-ripple-amplify 1.5s ease-out infinite;
-  transform-origin:center;
+/* Signal: 3 arcs at 90/210/330 degrees, staggered every 0.6s for
+   continuous motion (always at least one arc in flight). */
+.tier-icon-signal .arc,
+.tier-icon-signal .endpoint{
+  animation-duration:1.8s;
+  animation-iteration-count:infinite;
+  animation-timing-function:ease-in-out;
 }
-.tier-icon-amplify circle.ring.delay-1{
-  animation-delay:0.5s;
+.tier-icon-signal .arc{ animation-name:arc-broadcast; }
+.tier-icon-signal .endpoint{ animation-name:endpoint-burst; }
+.tier-icon-signal .arc-1, .tier-icon-signal .endpoint-1{ animation-delay:0s; }
+.tier-icon-signal .arc-2, .tier-icon-signal .endpoint-2{ animation-delay:0.6s; }
+.tier-icon-signal .arc-3, .tier-icon-signal .endpoint-3{ animation-delay:1.2s; }
+/* Amplify: 5 arcs in pentagon (one per tracked AI engine), staggered
+   every 0.3s for a continuous broadcast wave. */
+.tier-icon-amplify .arc,
+.tier-icon-amplify .endpoint{
+  animation-duration:1.5s;
+  animation-iteration-count:infinite;
+  animation-timing-function:ease-in-out;
 }
-.tier-icon-amplify circle.ring.delay-2{
-  animation-delay:1s;
-}
-/* Reduced motion: respect the user's OS-level preference. The icon
-   stays as a static center dot + faded outer ring rather than
-   animating. */
+.tier-icon-amplify .arc{ animation-name:arc-broadcast; }
+.tier-icon-amplify .endpoint{ animation-name:endpoint-burst; }
+.tier-icon-amplify .arc-1, .tier-icon-amplify .endpoint-1{ animation-delay:0s; }
+.tier-icon-amplify .arc-2, .tier-icon-amplify .endpoint-2{ animation-delay:0.3s; }
+.tier-icon-amplify .arc-3, .tier-icon-amplify .endpoint-3{ animation-delay:0.6s; }
+.tier-icon-amplify .arc-4, .tier-icon-amplify .endpoint-4{ animation-delay:0.9s; }
+.tier-icon-amplify .arc-5, .tier-icon-amplify .endpoint-5{ animation-delay:1.2s; }
+/* Reduced motion: animations off, icon shows static state with all
+   arcs visible at low opacity (still communicates the metaphor). */
 @media (prefers-reduced-motion: reduce){
-  .tier-icon-pulse circle.ring,
-  .tier-icon-signal circle.ring,
-  .tier-icon-amplify circle.ring{
+  .tier-icon .arc,
+  .tier-icon .endpoint,
+  .tier-icon .core-glow{
     animation:none;
-    opacity:0.35;
+  }
+  .tier-icon .arc{
+    stroke-dashoffset:0;
+    opacity:0.5;
+  }
+  .tier-icon .endpoint{
+    opacity:0.7;
   }
 }
 .del-tier-tagline{
@@ -4519,7 +4572,12 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <!-- PULSE -->
         <div class="del-tier">
           <div class="del-tier-meta"><span>§01 / Tier I</span><b>Entry</b></div>
-          <h3><svg class="tier-icon tier-icon-pulse" viewBox="0 0 34 34" aria-hidden="true"><circle class="center" cx="17" cy="17" r="2.5"/><circle class="ring" cx="17" cy="17" r="3"/></svg>Pulse</h3>
+          <h3><svg class="tier-icon tier-icon-pulse" viewBox="0 0 38 38" aria-hidden="true">
+            <circle class="core-glow" cx="19" cy="19" r="6"/>
+            <circle class="core" cx="19" cy="19" r="2.5"/>
+            <line class="arc arc-1" x1="19" y1="19" x2="29.6" y2="8.4"/>
+            <circle class="endpoint endpoint-1" cx="29.6" cy="8.4" r="2"/>
+          </svg>Pulse</h3>
           <p class="del-tier-tagline">For teams who want to know where they stand.</p>
           <div class="del-tier-price"><span class="sym">$</span>497<span class="per">/mo · 3-month minimum</span></div>
           <ol class="del-list">
@@ -4566,7 +4624,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <div class="del-tier featured">
           <span class="del-flag">Most teams start here</span>
           <div class="del-tier-meta"><span>§02 / Tier II</span><b>Featured</b></div>
-          <h3><svg class="tier-icon tier-icon-signal" viewBox="0 0 34 34" aria-hidden="true"><circle class="center" cx="17" cy="17" r="2.5"/><circle class="ring" cx="17" cy="17" r="3"/><circle class="ring delay-1" cx="17" cy="17" r="3"/></svg>Signal</h3>
+          <h3><svg class="tier-icon tier-icon-signal" viewBox="0 0 38 38" aria-hidden="true">
+            <circle class="core-glow" cx="19" cy="19" r="6"/>
+            <circle class="core" cx="19" cy="19" r="2.5"/>
+            <line class="arc arc-1" x1="19" y1="19" x2="19" y2="5"/>
+            <circle class="endpoint endpoint-1" cx="19" cy="5" r="2"/>
+            <line class="arc arc-2" x1="19" y1="19" x2="6.88" y2="26"/>
+            <circle class="endpoint endpoint-2" cx="6.88" cy="26" r="2"/>
+            <line class="arc arc-3" x1="19" y1="19" x2="31.12" y2="26"/>
+            <circle class="endpoint endpoint-3" cx="31.12" cy="26" r="2"/>
+          </svg>Signal</h3>
           <p class="del-tier-tagline">For teams ready to be cited.</p>
           <div class="del-tier-price"><span class="sym">$</span>2,000<span class="per">/mo · 3-month minimum</span></div>
           <ol class="del-list">
@@ -4619,7 +4686,20 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <!-- AMPLIFY -->
         <div class="del-tier">
           <div class="del-tier-meta"><span>§03 / Tier III</span><b>Full cover</b></div>
-          <h3><svg class="tier-icon tier-icon-amplify" viewBox="0 0 34 34" aria-hidden="true"><circle class="center" cx="17" cy="17" r="2.5"/><circle class="ring" cx="17" cy="17" r="3"/><circle class="ring delay-1" cx="17" cy="17" r="3"/><circle class="ring delay-2" cx="17" cy="17" r="3"/></svg>Amplify</h3>
+          <h3><svg class="tier-icon tier-icon-amplify" viewBox="0 0 38 38" aria-hidden="true">
+            <circle class="core-glow" cx="19" cy="19" r="6"/>
+            <circle class="core" cx="19" cy="19" r="2.5"/>
+            <line class="arc arc-1" x1="19" y1="19" x2="19" y2="5"/>
+            <circle class="endpoint endpoint-1" cx="19" cy="5" r="2"/>
+            <line class="arc arc-2" x1="19" y1="19" x2="5.68" y2="14.67"/>
+            <circle class="endpoint endpoint-2" cx="5.68" cy="14.67" r="2"/>
+            <line class="arc arc-3" x1="19" y1="19" x2="10.77" y2="30.32"/>
+            <circle class="endpoint endpoint-3" cx="10.77" cy="30.32" r="2"/>
+            <line class="arc arc-4" x1="19" y1="19" x2="27.23" y2="30.32"/>
+            <circle class="endpoint endpoint-4" cx="27.23" cy="30.32" r="2"/>
+            <line class="arc arc-5" x1="19" y1="19" x2="32.32" y2="14.67"/>
+            <circle class="endpoint endpoint-5" cx="32.32" cy="14.67" r="2"/>
+          </svg>Amplify</h3>
           <p class="del-tier-tagline">For teams ready to ship the work, not just see what's needed.</p>
           <div class="del-tier-price"><span class="sym">$</span>4,500<span class="per">/mo · everything in Signal, plus:</span></div>
           <ol class="del-list">
