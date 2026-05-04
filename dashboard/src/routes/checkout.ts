@@ -5,7 +5,8 @@
  * No Stripe SDK -- direct REST API calls to keep bundle small.
  *
  * Plans:
- *   audit    — $500 one-time
+ *   audit    — $750 one-time
+ *   pulse    — $497/mo subscription (waitlist mode until Stripe wired)
  *   signal   — $2,000/mo subscription
  *   amplify  — $4,500/mo subscription
  */
@@ -30,14 +31,26 @@ interface PlanConfig {
   priceLabel: string;
   mode: "payment" | "subscription";
   priceId: string;
+  /** When true, /checkout/<plan> renders a waitlist capture page instead
+   *  of creating a Stripe session. Used for tiers that exist in marketing
+   *  copy but don't yet have a Stripe Price configured. Once the Price is
+   *  created in Stripe, set comingSoon=false and fill in priceId. */
+  comingSoon?: boolean;
 }
 
 const PLANS: Record<string, PlanConfig> = {
   audit: {
     name: "NeverRanked Audit",
-    priceLabel: "$500",
+    priceLabel: "$750",
     mode: "payment",
     priceId: "price_1TLgcBChs9v2cUMPj5Sd7E0o",
+  },
+  pulse: {
+    name: "NeverRanked Pulse",
+    priceLabel: "$497/mo",
+    mode: "subscription",
+    priceId: "",          // Stripe Price not yet created
+    comingSoon: true,
   },
   signal: {
     name: "NeverRanked Signal",
@@ -132,9 +145,44 @@ export async function handleCheckout(
     return html(layout("Not Found", `
       <div class="empty">
         <h3>Plan not found</h3>
-        <p>Valid plans: audit, signal, amplify. <a href="https://neverranked.com/#pricing" style="color:var(--gold)">View pricing</a></p>
+        <p>Valid plans: audit, pulse, signal, amplify. <a href="https://neverranked.com/#pricing" style="color:var(--gold)">View pricing</a></p>
       </div>
     `), 404);
+  }
+
+  // Coming-soon tiers: marketing copy is live but Stripe isn't wired
+  // yet. Capture interest into admin_inbox so Lance can reach out
+  // manually, instead of dropping the lead with a 404 or a Stripe error.
+  if (config.comingSoon) {
+    return html(layout(`${config.name} — coming soon`, `
+      <div style="max-width:560px;margin:80px auto;padding:0 24px">
+        <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">
+          ${config.name} &middot; ${config.priceLabel}
+        </div>
+        <h1 style="font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.15;margin:0 0 20px 0;letter-spacing:-.01em">
+          Pulse opens to first customers <em>this week.</em>
+        </h1>
+        <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
+          Drop your email and the domain you want monitored. We will reach out within 24 hours to onboard you manually for the first cohort, lock in your seat, and apply your audit credit if you have one.
+        </p>
+        <form method="POST" action="/checkout/pulse/waitlist" style="display:flex;flex-direction:column;gap:14px">
+          <input type="email" name="email" required placeholder="you@yourdomain.com"
+            style="font-family:var(--mono);font-size:14px;padding:14px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none">
+          <input type="text" name="domain" required placeholder="yourdomain.com"
+            style="font-family:var(--mono);font-size:14px;padding:14px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none">
+          <textarea name="note" placeholder="Optional: anything you want us to know (current marketing setup, audit reference, etc.)"
+            rows="3"
+            style="font-family:var(--mono);font-size:13px;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none;resize:vertical"></textarea>
+          <button type="submit"
+            style="font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 24px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);cursor:pointer;margin-top:6px">
+            Reserve my Pulse seat &rarr;
+          </button>
+        </form>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:24px 0 0 0;line-height:1.6">
+          No payment yet. We'll email you a Stripe link once your seat is confirmed.
+        </p>
+      </div>
+    `), 200);
   }
 
   // For Amplify, check seat cap
@@ -790,4 +838,108 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
   </div>
 </body>
 </html>`;
+}
+
+/**
+ * POST /checkout/pulse/waitlist — Capture interest while Pulse Stripe
+ * isn't wired yet. Writes to admin_inbox so the lead surfaces in the
+ * morning summary, and sends a transactional ping to ADMIN_EMAIL so
+ * Lance can reach out the same day.
+ *
+ * Once a Stripe Price is created for Pulse and PLANS.pulse.comingSoon
+ * is flipped to false, this route becomes dead code that we can leave
+ * in place as a fallback or delete in a follow-up cleanup.
+ */
+export async function handlePulseWaitlist(
+  request: Request,
+  env: Env
+): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405 });
+  }
+
+  let email = "";
+  let domain = "";
+  let note = "";
+  try {
+    const form = await request.formData();
+    email = (form.get("email") || "").toString().trim().toLowerCase();
+    domain = (form.get("domain") || "").toString().trim().toLowerCase()
+      .replace(/^https?:\/\//, "").replace(/\/.*$/, "");
+    note = (form.get("note") || "").toString().trim().slice(0, 1000);
+  } catch (e) {
+    return html(layout("Bad request", `
+      <div class="empty"><h3>Could not read form</h3><p>Try again or email lance@neverranked.com.</p></div>
+    `), 400);
+  }
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!EMAIL_RE.test(email) || !domain) {
+    return html(layout("Missing fields", `
+      <div class="empty"><h3>Email and domain are both required</h3>
+      <p><a href="/checkout/pulse" style="color:var(--gold)">Try again</a></p></div>
+    `), 400);
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // 1. Drop into admin_inbox so it shows up in tomorrow's 7am summary
+  //    AND in the live cockpit. urgency=high because a hot lead is
+  //    time-sensitive.
+  try {
+    await env.DB.prepare(
+      `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
+       VALUES (?, 'high', ?, ?, ?, ?, ?, 'open')`
+    ).bind(
+      "pulse_waitlist",
+      `Pulse waitlist signup: ${email}`,
+      `Domain: ${domain}\nNote: ${note || "(none)"}\nSubmitted: ${new Date(now * 1000).toISOString()}`,
+      `mailto:${email}?subject=Your%20Pulse%20seat`,
+      domain,
+      now,
+    ).run();
+  } catch (e) {
+    console.log(`pulse_waitlist admin_inbox insert failed: ${e}`);
+  }
+
+  // 2. Transactional ping to ADMIN_EMAIL so Lance gets notified within
+  //    minutes, not hours. Best-effort -- if Resend is down the lead
+  //    is still safe in admin_inbox.
+  if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "NeverRanked <reports@neverranked.com>",
+          to: [env.ADMIN_EMAIL],
+          reply_to: email,
+          subject: `Pulse waitlist: ${email} (${domain})`,
+          html: `<p><strong>${email}</strong> reserved a Pulse seat.</p>
+                 <p>Domain: <strong>${domain}</strong></p>
+                 <p>Note: ${note ? note.replace(/</g, "&lt;") : "<em>(none)</em>"}</p>
+                 <p>Reach out today to confirm the seat and (if applicable) apply their audit credit.</p>`,
+        }),
+      });
+    } catch (e) {
+      console.log(`pulse_waitlist admin email failed: ${e}`);
+    }
+  }
+
+  // 3. Confirmation page
+  return html(layout("Pulse seat reserved", `
+    <div style="max-width:520px;margin:80px auto;padding:0 24px;text-align:center">
+      <div style="font-size:42px;color:var(--gold);margin-bottom:16px">&#10003;</div>
+      <h1 style="font-family:var(--serif);font-weight:400;font-size:32px;margin:0 0 16px 0">Seat reserved.</h1>
+      <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 28px 0">
+        We will reach out to <strong>${email.replace(/</g, "&lt;")}</strong> within 24 hours to confirm and onboard you. If you booked an audit in the last 30 days, the $750 credit will be applied to your first month automatically.
+      </p>
+      <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint)">
+        Questions? <a href="mailto:lance@neverranked.com" style="color:var(--gold)">lance@neverranked.com</a>
+      </p>
+    </div>
+  `));
 }

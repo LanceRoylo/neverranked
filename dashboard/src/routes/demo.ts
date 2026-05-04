@@ -84,7 +84,7 @@ function demoLayout(title: string, body: string, activePage: string): string {
 
 <div class="demo-banner">
   <span>You are viewing sample data. This is what your dashboard looks like as a client.</span>
-  <a href="https://app.neverranked.com/checkout/audit">Start with the $500 audit</a>
+  <a href="https://app.neverranked.com/checkout/audit">Start with the $750 audit</a>
 </div>
 
 <header class="topbar">
@@ -864,8 +864,8 @@ export function handleDemoPost(): Response {
   return demoHtml(demoLayout("Demo Mode", `
     <div style="text-align:center;padding:80px 20px">
       <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold);margin-bottom:16px">Editing is disabled in demo mode</div>
-      <div style="font-size:14px;color:var(--text-faint);margin-bottom:32px">This is a read-only preview. Start with the $500 audit to get your own dashboard with live data.</div>
-      <a href="https://app.neverranked.com/checkout/audit" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500;text-decoration:none;border-radius:4px">Start with the $500 audit</a>
+      <div style="font-size:14px;color:var(--text-faint);margin-bottom:32px">This is a read-only preview. Start with the $750 audit to get your own dashboard with live data.</div>
+      <a href="https://app.neverranked.com/checkout/audit" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500;text-decoration:none;border-radius:4px">Start with the $750 audit</a>
     </div>
   `, "domain"), 403);
 }

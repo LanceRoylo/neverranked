@@ -49,7 +49,7 @@ import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads, handleLeadsJson } from "./routes/leads";
-import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal } from "./routes/checkout";
+import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal, handlePulseWaitlist } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks } from "./cron";
 import { runWeeklyBackup } from "./backup";
@@ -190,7 +190,12 @@ export default {
     }
 
     // Stripe checkout (no auth -- public pricing links)
-    const checkoutMatch = path.match(/^\/checkout\/(audit|signal|amplify)$/);
+    // Pulse waitlist POST — must come BEFORE the general /checkout/<plan>
+    // matcher so the form submit doesn't fall through to handleCheckout.
+    if (path === "/checkout/pulse/waitlist" && method === "POST") {
+      return handlePulseWaitlist(request, env);
+    }
+    const checkoutMatch = path.match(/^\/checkout\/(audit|pulse|signal|amplify)$/);
     if (checkoutMatch && method === "GET") {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       ctx.waitUntil(logEvent(env, { type: "checkout_view", detail: { plan: checkoutMatch[1] }, ipHash: hashIP(ip) }));

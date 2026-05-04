@@ -255,7 +255,7 @@ function buildDay14Email(user: NurtureUser): string {
 
 // ---------------------------------------------------------------------------
 // Day 30 -- "The 90-Day Window"
-// Conversion email. Soft sell for the $500 audit.
+// Conversion email. Soft sell for the $750 audit.
 // Creative lever: Specificity + Tension Hold
 // ---------------------------------------------------------------------------
 
@@ -315,7 +315,7 @@ function buildDay30Email(user: NurtureUser): string {
             <table width="100%" cellpadding="0" cellspacing="0" border="0">
               <tr>
                 <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-                  <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">Full AEO Audit -- $500</div>
+                  <div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">Full AEO Audit -- $750</div>
                   <div style="font-family:Georgia,serif;font-size:13px;color:#b0b0a8;line-height:1.8">
                     Six deliverables. 48-hour turnaround.<br><br>
                     AI citation share analysis<br>
