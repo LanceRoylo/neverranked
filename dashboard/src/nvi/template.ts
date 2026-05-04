@@ -52,6 +52,24 @@ export interface ReportContext {
   top_prompts_cited: PromptResult[];
   top_prompts_missed: PromptResult[];
   aeo_readiness_score: number | null; // from latest scan_results, for cross-ref
+  variant_impacts: VariantImpactRow[]; // top deployed variants with lift, can be empty
+}
+
+/** Lightweight projection of lib/schema-impact.ts::VariantImpact, just
+ *  the fields the report renders. Keeps template.ts independent of the
+ *  full impact module. */
+export interface VariantImpactRow {
+  schema_type: string;
+  variant: string | null;
+  target: string;                  // first path from target_pages
+  deployed_at: number;
+  control_rate: number;            // 0..1
+  test_rate: number;               // 0..1
+  control_runs: number;
+  test_runs: number;
+  lift_pp: number;
+  confidence: "high" | "medium" | "low" | "insufficient";
+  summary: string;
 }
 
 export function buildNviReportHtml(ctx: ReportContext): string {
@@ -351,6 +369,8 @@ p{margin:0 0 14px;color:var(--text-soft);max-width:62ch}
     </div>
   </section>
 
+  ${ctx.variant_impacts.length > 0 ? buildVariantImpactSection(ctx.variant_impacts) : ""}
+
   ${report.tier === "pulse" ? buildPulseUpsell() : ""}
 
   <!-- FOOTER -->
@@ -480,6 +500,38 @@ export async function loadReportContext(env: Env, reportId: number): Promise<Rep
        ORDER BY sr.scanned_at DESC LIMIT 1`
   ).bind(report.client_slug).first<{ aeo_score: number }>();
 
+  // Variant impacts (lift attribution per deployed schema). Best-effort:
+  // if computeAllVariantImpacts errors for any reason we fall back to []
+  // so the report still renders. The block in the template only shows
+  // up when the array is non-empty.
+  let variant_impacts: VariantImpactRow[] = [];
+  try {
+    const { computeAllVariantImpacts } = await import("../lib/schema-impact");
+    const impacts = await computeAllVariantImpacts(env, report.client_slug);
+    variant_impacts = impacts.map((i) => {
+      let target = "";
+      try {
+        const arr = JSON.parse(i.target_pages);
+        target = Array.isArray(arr) && arr.length > 0 ? arr[0] : "";
+      } catch { target = ""; }
+      return {
+        schema_type: i.schema_type,
+        variant: i.variant,
+        target,
+        deployed_at: i.deployed_at,
+        control_rate: i.control.rate,
+        test_rate: i.test.rate,
+        control_runs: i.control.runs,
+        test_runs: i.test.runs,
+        lift_pp: i.lift_pp,
+        confidence: i.confidence,
+        summary: i.summary,
+      };
+    });
+  } catch (e) {
+    console.log(`[nvi] variant_impacts fetch failed (non-fatal): ${e}`);
+  }
+
   return {
     report,
     client_name,
@@ -487,6 +539,7 @@ export async function loadReportContext(env: Env, reportId: number): Promise<Rep
     top_prompts_cited,
     top_prompts_missed,
     aeo_readiness_score: scanRow?.aeo_score ?? null,
+    variant_impacts,
   };
 }
 
@@ -502,10 +555,69 @@ function prettifySlug(slug: string): string {
   return slug.split("-").map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join(" ");
 }
 
-/** Pulse-only upsell footer. Sits between section 04 and the methodology
- *  footer, styled as a subtle callout (not a hard sell). The Pulse
- *  customer sees their report end with "here is what you would also see
- *  on Signal," which doubles as honest scope-of-tier and conversion. */
+/** Section 05: "What we deployed and what it did." Customer-facing
+ *  variant impact view -- shows up to 6 most recent deployed schemas
+ *  with their actual citation lift, confidence band, and a one-line
+ *  human summary. The differentiator: no other AEO service measures
+ *  whether the work worked. We do, and we're honest about confidence. */
+function buildVariantImpactSection(impacts: VariantImpactRow[]): string {
+  // Show up to 6, prioritizing high-confidence wins, then directional
+  // ones, then insufficient (so the customer sees "in flight" deploys
+  // even if we can't score them yet).
+  const order: Record<VariantImpactRow["confidence"], number> = {
+    high: 0, medium: 1, low: 2, insufficient: 3,
+  };
+  const sorted = [...impacts]
+    .sort((a, b) => order[a.confidence] - order[b.confidence] || b.deployed_at - a.deployed_at)
+    .slice(0, 6);
+
+  const rows = sorted.map((v) => {
+    const arrow = v.lift_pp > 0 ? "▲" : v.lift_pp < 0 ? "▼" : "—";
+    const arrowColor = v.lift_pp > 0 ? "var(--green)" : v.lift_pp < 0 ? "var(--red)" : "var(--text-faint)";
+    const borderColor = v.confidence === "high" ? "var(--green)"
+      : v.confidence === "medium" ? "var(--gold)"
+      : "var(--line)";
+    const confLabel = v.confidence === "high" ? "Significant"
+      : v.confidence === "medium" ? "Suggestive"
+      : v.confidence === "low" ? "No effect"
+      : "Pending data";
+    const variantLabel = v.variant ? `${v.schema_type}-${v.variant}` : v.schema_type;
+    const deployed = new Date(v.deployed_at * 1000).toISOString().slice(0, 10);
+
+    return `
+      <div style="padding:14px 18px;background:var(--bg-lift);border:1px solid var(--line);border-left:3px solid ${borderColor};border-radius:0 4px 4px 0;margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
+          <span><strong style="color:var(--text)">${esc(variantLabel)}</strong> &middot; ${esc(v.target || "(no target)")}</span>
+          <span>${deployed} &middot; ${confLabel}</span>
+        </div>
+        ${v.confidence === "insufficient"
+          ? `<p style="margin:0;font-size:12.5px;color:var(--text-soft);line-height:1.6">${esc(v.summary)}</p>`
+          : `<div style="display:flex;gap:18px;align-items:baseline;font-family:var(--mono);font-size:12px;color:var(--text-mute)">
+              <span>before: <strong style="color:var(--text)">${(v.control_rate * 100).toFixed(1)}%</strong></span>
+              <span>after: <strong style="color:var(--text)">${(v.test_rate * 100).toFixed(1)}%</strong></span>
+              <span style="color:${arrowColor};font-size:13px;margin-left:auto">${arrow} ${Math.abs(v.lift_pp).toFixed(1)} pp</span>
+            </div>`
+        }
+      </div>`;
+  }).join("");
+
+  return `
+  <!-- 05 WHAT WE DEPLOYED -->
+  <section class="section">
+    <div class="section-label"><span class="num">05</span><span>What we deployed and what it did</span><span class="rule"></span></div>
+    <p>Schemas pushed to your live site, scored by citation rate before vs. after deploy. Four-week window each side, with a one-week blackout at the boundary so we are measuring the engine response, not the deploy day itself.</p>
+    ${rows}
+    <p style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">
+      <strong style="color:var(--text-mute)">Method.</strong> Two-proportion z-test. We claim significance only at p &lt; 0.05 with at least 20 runs in each window. Below that we say so instead of guessing.
+    </p>
+  </section>`;
+}
+
+/** Pulse-only upsell footer. Sits between section 05 (or 04 if no
+ *  variants) and the methodology footer, styled as a subtle callout
+ *  (not a hard sell). The Pulse customer sees their report end with
+ *  "here is what you would also see on Signal," which doubles as
+ *  honest scope-of-tier and conversion. */
 function buildPulseUpsell(): string {
   return `
   <section class="section" style="margin-top:36px;padding:24px 28px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold);border-radius:0 4px 4px 0">
