@@ -6,6 +6,12 @@ export interface Env {
   DB: D1Database;
   LEADS: KVNamespace;
   AGENCY_ASSETS: R2Bucket;
+  // R2 bucket for NVI report PDFs. Layout: {client_slug}/{YYYY-MM}.pdf
+  NVI_REPORTS?: R2Bucket;
+  // Cloudflare Browser Rendering binding for NVI PDF generation.
+  // Used by dashboard/src/nvi/pdf.ts. Optional so the Worker can boot
+  // without it during local dev.
+  BROWSER?: Fetcher;
   ADMIN_SECRET: string;
   ADMIN_EMAIL: string;
   RESEND_API_KEY?: string;

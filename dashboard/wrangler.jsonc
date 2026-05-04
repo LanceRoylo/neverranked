@@ -3,6 +3,7 @@
   "name": "neverranked-dashboard",
   "main": "src/index.ts",
   "compatibility_date": "2025-04-09",
+  "compatibility_flags": ["nodejs_compat"],
   "workers_dev": true,
   "preview_urls": true,
   "observability": {
@@ -26,8 +27,15 @@
     {
       "binding": "AGENCY_ASSETS",
       "bucket_name": "neverranked-agency-assets"
+    },
+    {
+      "binding": "NVI_REPORTS",
+      "bucket_name": "neverranked-nvi-reports"
     }
   ],
+  "browser": {
+    "binding": "BROWSER"
+  },
   "routes": [
     { "pattern": "app.neverranked.com", "custom_domain": true }
   ],

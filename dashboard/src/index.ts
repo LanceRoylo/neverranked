@@ -1108,6 +1108,42 @@ export default {
       const html = buildNviReportHtml(ctx);
       return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
     }
+    // NVI inbox + actions
+    if (path === "/admin/nvi" && method === "GET" && user.role === "admin") {
+      const { handleNviInbox } = await import("./routes/admin-nvi");
+      return handleNviInbox(user, env, url);
+    }
+    const nviApproveMatch = path.match(/^\/admin\/nvi\/approve\/(\d+)$/);
+    if (nviApproveMatch && method === "POST" && user.role === "admin") {
+      const { handleNviApprove } = await import("./routes/admin-nvi");
+      return handleNviApprove(parseInt(nviApproveMatch[1], 10), user, env);
+    }
+    const nviRenderMatch = path.match(/^\/admin\/nvi\/render\/(\d+)$/);
+    if (nviRenderMatch && method === "POST" && user.role === "admin") {
+      const { handleNviRender } = await import("./routes/admin-nvi");
+      return handleNviRender(parseInt(nviRenderMatch[1], 10), user, env);
+    }
+    const nviSendMatch = path.match(/^\/admin\/nvi\/send\/(\d+)$/);
+    if (nviSendMatch && method === "POST" && user.role === "admin") {
+      const { handleNviSend } = await import("./routes/admin-nvi");
+      return handleNviSend(parseInt(nviSendMatch[1], 10), user, env);
+    }
+    const nviPdfMatch = path.match(/^\/admin\/nvi\/pdf\/(\d+)$/);
+    if (nviPdfMatch && method === "GET" && user.role === "admin") {
+      const { handleNviPdfDownload } = await import("./routes/admin-nvi");
+      return handleNviPdfDownload(parseInt(nviPdfMatch[1], 10), user, env);
+    }
+    const nviRunMatch = path.match(/^\/admin\/nvi\/run\/([a-z0-9-]+)$/);
+    if (nviRunMatch && method === "POST" && user.role === "admin") {
+      const { handleNviRunNow } = await import("./routes/admin-nvi");
+      return handleNviRunNow(nviRunMatch[1], user, env);
+    }
+    // GET form for the run-now endpoint (so admin can hit a URL
+    // directly from the browser without needing a form submit).
+    if (nviRunMatch && method === "GET" && user.role === "admin") {
+      const { handleNviRunNow } = await import("./routes/admin-nvi");
+      return handleNviRunNow(nviRunMatch[1], user, env);
+    }
 
     if (path === "/admin/regrade-all" && method === "GET" && user.role === "admin") {
       const slug = url.searchParams.get("slug");
