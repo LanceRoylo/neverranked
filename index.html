@@ -415,10 +415,10 @@ h1,h2,h3,h4{
 .hamburger{
   display:none;
   position:fixed;
-  top:22px;left:var(--gutter);
+  top:14px;left:calc(var(--gutter) - 8px);
   z-index:200;
   background:none;border:none;cursor:pointer;
-  width:28px;height:20px;
+  width:44px;height:44px;
   padding:0;
   -webkit-tap-highlight-color:transparent;
 }
@@ -432,7 +432,7 @@ h1,h2,h3,h4{
   background:#f0ece3;
   transition:transform .3s var(--ease),opacity .3s var(--ease);
 }
-.hamburger span{top:9px}
+.hamburger span{top:21px;left:8px;right:8px}
 .hamburger span::before{content:"";top:-7px}
 .hamburger span::after{content:"";top:7px}
 .hamburger.active span{background:transparent}
