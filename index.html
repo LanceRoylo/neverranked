@@ -13,14 +13,14 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Never Ranked — AI-native SEO and AEO agency">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Never Ranked — AI-Native SEO & AEO">
 <meta name="twitter:description" content="Search changed. Your visibility didn't. We fix that.">
-<meta name="twitter:image" content="https://neverranked.com/og.png">
+<meta name="twitter:image" content="https://neverranked.com/og.jpg">
 <link rel="alternate" type="application/rss+xml" title="Insights — Never Ranked" href="https://neverranked.com/blog/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
       "logo": {
         "@type": "ImageObject",
         "@id": "https://neverranked.com/#logo",
-        "url": "https://neverranked.com/og.png",
+        "url": "https://neverranked.com/og.jpg",
         "width": 1200,
         "height": 630,
         "caption": "Never Ranked"
@@ -107,7 +107,7 @@
           {
             "@type": "Offer",
             "name": "Pulse",
-            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
+            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
             "price": "497",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -1913,6 +1913,21 @@ h1,h2,h3,h4{
   font-size:10px;
   font-weight:600;
   padding:6px 14px;
+  white-space:nowrap;
+}
+.del-flag-soft{
+  position:absolute;
+  top:-1px;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--bg);
+  color:var(--text-faint);
+  border:1px solid var(--line);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  font-weight:500;
+  padding:5px 13px;
   white-space:nowrap;
 }
 .del-tier-meta{
@@ -4636,6 +4651,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_PARTNER_ID&fmt=gif"/></noscript>
 -->
 
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
+<!-- End Cloudflare Web Analytics -->
 
 </head>
 <body>
@@ -4690,7 +4708,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
         <div class="reveal" style="transition-delay:.15s">
           <p class="hero-sub" style="margin-bottom:36px">
-            <b>When your customer asks ChatGPT, Claude, or Perplexity to find a business, AI picks one or two.</b> We make sure yours is one of them. The agencies you've worked with don't do this work yet.
+            <b>When your customer asks an AI engine to find a business, it picks one or two.</b> We make sure yours is one of them — across all six engines, every week. The agencies you've worked with don't do this work yet.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4709,6 +4727,12 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="sep">&middot;</span>
               <a href="#audit">or start with the $750 audit</a>
             </div>
+            <div class="hero-proof" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(232,199,103,.12);font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.6">
+              <a href="/case-studies/montaic/" style="color:inherit;text-decoration:none;display:block">
+                <span style="color:var(--gold)">&rarr;</span>
+                How <b style="color:var(--text-soft);font-weight:500">Montaic</b> became the #1 AI-cited brand in their fitness category in nine months. <span style="color:var(--gold);text-decoration:underline">Read the case &rarr;</span>
+              </a>
+            </div>
             <div class="url-result" id="checkResult" aria-live="polite">
               <div class="result-top">
                 <div class="result-score"><span id="resultScore">0</span><span class="denom">/100</span></div>
@@ -4719,7 +4743,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               </div>
               <div class="result-signals" id="resultSignals"></div>
               <div class="result-ctas">
-                <a class="primary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report <span class="arrow"></span></a>
+                <a class="primary" id="resultCtaPulse" href="https://app.neverranked.com/checkout/pulse">Fix this for $497/mo with Pulse <span class="arrow"></span></a>
+                <a class="secondary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report</a>
                 <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $750 audit</a>
                 <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
               </div>
@@ -4741,6 +4766,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="stmt">One new client <em>pays for a year.</em></div>
           <div class="tag">ROI</div>
         </div>
+      </div>
+
+      <div class="reveal" style="transition-delay:.45s;margin-top:48px;font-family:var(--mono);font-size:12px;color:var(--text-faint);letter-spacing:.04em;line-height:1.7;max-width:680px">
+        <span style="color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:10px;margin-right:10px">§ Not for</span>
+        Enterprise SaaS with an in-house SEO team. Self-serve tool shoppers. Anyone who wants to wait six months to see movement. <a href="#fit" style="color:var(--gold);text-decoration:underline">Why &rarr;</a>
       </div>
     </div>
     <div class="hero-scroll" aria-hidden="true">
@@ -4885,19 +4915,19 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   </section>
 
   <!-- ============ DELIVERABLES (TOP 5 PER TIER) ============ -->
-  <section class="deliverables" id="deliverables">
+  <section class="deliverables" id="pricing">
     <div class="wrap">
       <div class="section-label reveal">
-        <span class="num">§</span>
-        <span>What you get</span>
+        <span class="num">§05</span>
+        <span>Pricing</span>
         <span class="rule"></span>
-        <span>three plans / five things each</span>
+        <span>four ways in</span>
       </div>
 
       <div class="deliverables-head">
-        <h2 class="reveal">Five things, <em>per plan.</em></h2>
+        <h2 class="reveal">Four ways <em>in.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          We get the question a lot. So here it is, plain. Audit is the one-time diagnosis. Signal is the ongoing AI visibility system. Amplify is Signal plus a content production engine that turns dashboard insight into shipped pages.
+          <strong>Pulse</strong> if you want to know where you stand. <strong>Signal</strong> if you want to be cited. <strong>Amplify</strong> if you want it shipped without you. <strong>Audit</strong> (one-time) before any of them &mdash; fully credited toward your first month if you upgrade within thirty days.
         </p>
       </div>
 
@@ -4925,6 +4955,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <!-- PULSE -->
         <div class="del-tier">
+          <span class="del-flag-soft">Start here</span>
           <div class="del-tier-meta"><span>§01 / Tier I</span><b>Entry</b></div>
           <h3><svg class="tier-icon tier-icon-pulse" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
@@ -4939,7 +4970,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="del-num">01</span>
               <div>
                 <strong>Monthly Visibility Index, delivered as a PDF.</strong>
-                Your citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
+                Your citation share across all six engines: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
               </div>
             </li>
             <li>
@@ -4976,7 +5007,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <!-- SIGNAL -->
         <div class="del-tier featured">
-          <span class="del-flag">Most teams start here</span>
+          <span class="del-flag">Best value</span>
           <div class="del-tier-meta"><span>§02 / Tier II</span><b>Featured</b></div>
           <h3><svg class="tier-icon tier-icon-signal" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
@@ -5583,7 +5614,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </p>
       </div>
 
-      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 5 engines">
+      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 6 engines">
         <div class="dash-mock-chrome">
           <div class="dash-mock-url">
             <b>app.neverranked.com</b><span class="slash">/</span>demo
@@ -5732,7 +5763,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <div class="dash-card">
           <div class="dash-icon">&#10003;</div>
           <div class="dash-title">AI citation tracking</div>
-          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, and Google AI Overviews. See which queries cite you, which cite competitors, and your share of answer over time.</div>
+          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. See which queries cite you, which cite competitors, and your share of answer over time.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9638;</div>
@@ -5982,83 +6013,14 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
-  <!-- ============ PRICING ============ -->
-  <section class="pricing" id="pricing">
+  <!-- ============ PRICING FAQ ============ -->
+  <section class="pricing" id="pricing-faq">
     <div class="wrap">
       <div class="section-label reveal">
-        <span class="num">§05</span>
-        <span>Pricing</span>
+        <span class="num">§05.2</span>
+        <span>FAQ</span>
         <span class="rule"></span>
-        <span>02 / tiers</span>
-      </div>
-
-      <div class="pricing-head">
-        <h2 class="reveal">Two ways <em>to start.</em></h2>
-        <p class="reveal" style="transition-delay:.1s">
-          Three-month minimum, then month-to-month. The price you see is the price you pay. No set-up fees, no onboarding tax, no annual contract you'll quietly resent.
-        </p>
-        <p class="reveal" style="transition-delay:.18s;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
-          The minimum exists because this work compounds. Month one builds the foundation. Month two surfaces signals. Month three is where citations start. Quitting before then is quitting before the return.
-        </p>
-        <p class="reveal" style="transition-delay:.22s;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
-          Concerned about giving us access to your site? <a href="/security/" style="color:var(--gold);text-decoration:underline">Read exactly what we touch and what we don't &rarr;</a>
-        </p>
-      </div>
-
-      <div class="pricing-grid reveal-stagger">
-        <div class="tier">
-          <div class="meta"><span>§00 / Start here</span><b>One-time</b></div>
-          <h3>Audit</h3>
-          <p class="desc">Before you hire anyone, see what's broken.</p>
-          <div class="price"><span class="sym">$</span>500<span class="per">once</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Technical audit</li>
-            <li>Schema review</li>
-            <li>Keyword gap analysis</li>
-            <li>AI citation audit</li>
-            <li>Competitor teardown</li>
-            <li><b>90-day roadmap</b>, yours to keep</li>
-            <li>Delivered in <b>48 hours</b></li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/audit" class="choose">Book my audit</a>
-        </div>
-
-        <div class="tier featured">
-          <span class="flag">Most teams start here</span>
-          <div class="meta"><span>§01 / Tier I</span><b>Featured</b></div>
-          <h3>Signal</h3>
-          <p class="desc">For teams ready to be cited.</p>
-          <div class="price"><span class="sym">$</span>2,000<span class="per">/mo</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Weekly citation tracking across <b>ChatGPT, Perplexity, Gemini, and AI Overviews</b></li>
-            <li>Schema fixes auto-pushed to your live site within an hour</li>
-            <li>Live dashboard, refreshed every Monday</li>
-            <li>Auto-updating 90-day roadmap</li>
-            <li>Forward-ready Monday digest</li>
-            <li><b>Three-month</b> minimum, then month-to-month</li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/signal" class="choose">Start Signal</a>
-        </div>
-
-        <div class="tier limited">
-          <span class="flag full">Limited availability</span>
-          <div class="meta"><span>§02 / Tier II</span><b>Full Cover</b></div>
-          <h3>Amplify</h3>
-          <p class="desc">For teams ready to ship the work, not just see what's needed.</p>
-          <div class="price"><span class="sym">$</span>4,500<span class="per">/mo</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Everything in Signal, plus:</li>
-            <li>Brand voice fingerprint trained on your existing writing</li>
-            <li>Citation-shaped content drafted in your voice</li>
-            <li>Auto-publish to <b>WordPress, Webflow, or Shopify</b></li>
-            <li>Self-filling content calendar</li>
-            <li><b>Three-month</b> minimum, then month-to-month</li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/amplify" class="choose">Start Amplify</a>
-        </div>
+        <span>before the first email</span>
       </div>
 
       <div class="pricing-faq reveal">
@@ -6218,7 +6180,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <div class="audit-body reveal" style="transition-delay:.15s">
           <p>
-            Five hundred dollars. Paid once. A full technical and content audit across classic SEO and AEO, plus a ninety-day roadmap you can execute in-house, hand to your current agency, or hand to us. Whichever makes sense after you read it.
+            Seven hundred fifty dollars. Paid once, fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within thirty days. A full technical and content audit across classic SEO and AEO, plus a ninety-day roadmap you can execute in-house, hand to your current agency, or hand to us. Whichever makes sense after you read it.
           </p>
           <ul class="deliverables">
             <li>Technical Audit</li>

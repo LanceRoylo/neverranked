@@ -134,7 +134,7 @@ Once you've got the Pages site working at `neverranked.pages.dev`, you can conne
 - [ ] Click `Book the audit →` — should open your mail app with a pre-filled email to `hello@neverranked.com`
 - [ ] View page source in devtools and confirm:
   - [ ] `<link rel="canonical">` is present
-  - [ ] `<meta property="og:image">` points to `/og.png`
+  - [ ] `<meta property="og:image">` points to `/og.jpg`
   - [ ] `<script type="application/ld+json">` block is present with Organization, WebSite, ProfessionalService
 - [ ] [LinkedIn Post Inspector](https://www.linkedin.com/post-inspector/) — paste the URL, check the preview card shows the branded og.png
 - [ ] [Twitter Card Validator](https://cards-dev.twitter.com/validator) — same check
@@ -149,7 +149,7 @@ Once you've got the Pages site working at `neverranked.pages.dev`, you can conne
 - Most likely the fonts aren't loading due to a Content-Security-Policy mismatch. Check the browser console. The Google Fonts preconnect should work by default.
 
 **og:image isn't showing in link previews:**
-- The file is at `https://{your-url}/og.png`. Visit that URL directly in a browser — should show the image.
+- The file is at `https://{your-url}/og.jpg`. Visit that URL directly in a browser — should show the image.
 - If the file is there but preview sites don't show it, it might be a cache. Force refresh via LinkedIn Post Inspector's "Inspect" button which busts the cache.
 
 **Schema isn't validating:**
