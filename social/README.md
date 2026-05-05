@@ -1,4 +1,4 @@
-# Never Ranked — Social
+# Never Ranked. Social
 
 Internal working directory for social media posts. Not deployed.
 The build pipeline (scripts/build.sh) only rsyncs the curated DIRS
@@ -64,7 +64,7 @@ social/
 
 ## Skills to invoke
 
-- `/marketing:draft-content` — first draft per platform
-- `/marketing:campaign-plan` — when planning a series
-- `/brand-voice:brand-voice-enforcement` — validate against rules before posting
-- `/sales:create-an-asset` — when the post is also a sales asset
+- `/marketing:draft-content` · first draft per platform
+- `/marketing:campaign-plan` · when planning a series
+- `/brand-voice:brand-voice-enforcement` · validate against rules before posting
+- `/sales:create-an-asset` · when the post is also a sales asset

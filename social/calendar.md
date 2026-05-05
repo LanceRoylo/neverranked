@@ -1,4 +1,4 @@
-# Never Ranked — Social Calendar
+# Never Ranked. Social Calendar
 
 Chronological queue. Most recent on top. Status flags:
 `idea` → `draft` → `scheduled` → `posted` → `archived`.
@@ -16,7 +16,7 @@ Chronological queue. Most recent on top. Status flags:
 
 ## 2026-05
 
-### 2026-05-05 — `2026-05-05-ranking-zero-traffic` `draft`
+### 2026-05-05 · `2026-05-05-ranking-zero-traffic` `draft`
 **Platforms:** LinkedIn (primary), X thread (variant), IG (visual)
 **Lever:** Reframe + Specificity
 **Hook:** "A small business in Orlando ranks number one for every keyword in their category. Their estimated traffic is zero. Here is why."
@@ -24,7 +24,7 @@ Chronological queue. Most recent on top. Status flags:
 The "ranks #1 but gets 0 traffic" paradox. Strong because the
 data is real.
 
-### 2026-05-05 — `2026-05-05-citation-receipt` `draft`
+### 2026-05-05 · `2026-05-05-citation-receipt` `draft`
 **Platforms:** Instagram (primary), LinkedIn carousel slide
 **Lever:** Visible Mechanic + Receipts
 **Hook:** "Five AI engines were asked the same question. Three cited a competitor. Two cited nobody."
@@ -47,4 +47,4 @@ for any client / any vertical. Run in a series.
 
 ## Posted
 
-(empty — first post pending)
+(empty · first post pending)

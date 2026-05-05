@@ -1,4 +1,4 @@
-# Visual brief — ranking #1, traffic zero
+# Visual brief · ranking #1, traffic zero
 
 ## Concept
 

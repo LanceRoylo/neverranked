@@ -1,4 +1,4 @@
-# Never Ranked — Voice Quick Reference
+# Never Ranked. Voice Quick Reference
 
 Distilled from the Hello Momentum tastemaking pipeline at
 `/Users/lanceroylo/Desktop/AI-Agency/hello-momentum-agency/` plus

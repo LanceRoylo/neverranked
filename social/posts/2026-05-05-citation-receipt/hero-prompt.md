@@ -1,11 +1,11 @@
-# Visual brief — citation receipts (five engines)
+# Visual brief · citation receipts (five engines)
 
 ## Concept
 
 A row of five "citation cards," one per engine. Each card shows
 the engine name, the prompt that was asked, the answer, and a
 status tag. The visual format we built for the Stitch
-explorations — receipts as the centerpiece. This is the strongest
+explorations · receipts as the centerpiece. This is the strongest
 visual format Never Ranked has.
 
 ## Layout

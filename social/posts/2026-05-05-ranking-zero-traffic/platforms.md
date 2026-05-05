@@ -1,6 +1,6 @@
-# Platforms — ranking #1, traffic zero
+# Platforms · ranking #1, traffic zero
 
-## LinkedIn — primary
+## LinkedIn · primary
 
 - **Format:** Single image post
 - **Hero:** 1200 × 630 version
@@ -12,7 +12,7 @@
   comment if you want maximum reach)
 - **Tag:** Tag Never Ranked company page
 
-## X / Threads — same day
+## X / Threads · same day
 
 - **Format:** Single post on X. On Threads, can run as a
   2-3 reply chain if you want to expand
@@ -21,7 +21,7 @@
 - **Caption:** X / Threads block from caption.md
 - **Link:** End of the post
 
-## Instagram — same day
+## Instagram · same day
 
 - **Format:** Single feed post (square 1080x1080)
 - **Hero:** Square version
@@ -32,7 +32,7 @@
 - **Story:** Reshare the feed post to story with a "swipe up"
   if you have the link sticker enabled
 
-## Facebook — optional
+## Facebook · optional
 
 - **Format:** Same as LinkedIn but a touch shorter
 - Not a high-priority channel for Never Ranked. Skip unless

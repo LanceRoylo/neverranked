@@ -1,6 +1,6 @@
-# Platforms — citation receipts
+# Platforms · citation receipts
 
-## Instagram — primary
+## Instagram · primary
 
 - **Format:** Single feed post, vertical 1080 × 1350
 - **Hero:** Vertical receipts stack
@@ -11,7 +11,7 @@
   YES / I have no idea." Engagement bait that is also honest.
 - **Link:** Bio link → check.neverranked.com
 
-## LinkedIn — carousel
+## LinkedIn · carousel
 
 - **Format:** 5-slide carousel, one card per slide. Slide 1 is
   the headline. Slides 2-6 are the engine cards. Slide 7 is the
@@ -20,7 +20,7 @@
 - **Hashtags:** None
 - **Link:** First comment
 
-## X / Threads — same day
+## X / Threads · same day
 
 - **Format:** Single post with image attachment (one combined
   card, not the carousel)
