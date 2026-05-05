@@ -52,7 +52,7 @@ brand social fails here.
   *over.*" "*Per plan.*" The italic gold is a signature that
   works as a brand asset by itself.
 - **Negative space.** Most of the canvas empty. Counterintuitively
-  beats density — the brain registers "this is different" before
+  beats density, the brain registers "this is different" before
   it parses content.
 
 ### Visual patterns to refuse (will be ignored)
@@ -70,7 +70,7 @@ brand social fails here.
 
 LinkedIn and Instagram both truncate captions after roughly 125-140
 characters before the "see more" cut. The hook MUST land in that
-window. The visual hook (image first beat) has even less room — the
+window. The visual hook (image first beat) has even less room, the
 viewer is already scrolling past.
 
 ### Hook archetypes that consistently win
@@ -125,23 +125,23 @@ viewer is already scrolling past.
 ### LinkedIn structure (works for both personal and company page)
 
 ```
-[HOOK — first 1-2 lines, must work before the "see more" cut]
+[HOOK, first 1-2 lines, must work before the "see more" cut]
 
 [BLANK LINE]
 
-[CONTEXT — 2-4 lines, the story or specific data]
+[CONTEXT, 2-4 lines, the story or specific data]
 
 [BLANK LINE]
 
-[INSIGHT — 2-3 lines, the reframe / what this actually means]
+[INSIGHT, 2-3 lines, the reframe / what this actually means]
 
 [BLANK LINE]
 
-[CTA — 1-2 lines, soft, action-oriented]
+[CTA, 1-2 lines, soft, action-oriented]
 
 [BLANK LINE]
 
-[QUESTION — optional but powerful, drives comments]
+[QUESTION, optional but powerful, drives comments]
 ```
 
 Every paragraph should be 1-3 lines max. Long paragraphs do not
@@ -150,19 +150,19 @@ get read on mobile feed. Visual rhythm matters as much as content.
 ### Instagram structure
 
 ```
-[HOOK — first ~125 characters, lands before "more" cut]
+[HOOK, first ~125 characters, lands before "more" cut]
 
 [BLANK LINE]
 
-[BODY — 4-8 lines, story or data. Tighter than LinkedIn.]
+[BODY, 4-8 lines, story or data. Tighter than LinkedIn.]
 
 [BLANK LINE]
 
-[CTA — usually "Link in bio" plus context]
+[CTA, usually "Link in bio" plus context]
 
 [BLANK LINE]
 
-[HASHTAGS — 5-8 on their own line]
+[HASHTAGS, 5-8 on their own line]
 ```
 
 IG captions can be longer than people think. The constraint is
@@ -198,7 +198,7 @@ information density per line, not total length.
 - **Reels on Instagram** when the message has motion in it: a
   schema deploy in real time, a citation appearing on a dashboard,
   the constellation network animating. Reels are >50% of all
-  Instagram ad inventory now per Sprout — the algorithm pushes
+  Instagram ad inventory now per Sprout, the algorithm pushes
   them hardest.
 
 ---
@@ -235,7 +235,7 @@ Best for: explaining what AEO actually does mechanically.
 Already exists in the live website hero.
 
 If a post needs a fifth visual archetype, it had better justify
-why none of the four work. Templates compound — repeated patterns
+why none of the four work. Templates compound, repeated patterns
 build the brand.
 
 ---
@@ -363,7 +363,7 @@ the format choice? Iterate the next post.
 
 - Posting the same content type 3 times in a row (algorithm shows
   fatigue)
-- Asking for engagement directly ("Like if you agree" — both
+- Asking for engagement directly ("Like if you agree", both
   platforms penalize this now)
 - Long opening paragraphs that bury the hook below the "see more"
   cut
