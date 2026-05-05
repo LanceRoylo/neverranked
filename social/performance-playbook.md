@@ -1,10 +1,11 @@
 # Social Performance Playbook
 
 What actually drives stop-scroll, eye-catch, info-density, and
-conversion on LinkedIn and Instagram in 2025-2026. Cross-referenced
-from Sprout Social, Buffer, Later, plus established
-performance-marketing fundamentals. Tuned for Never Ranked's
-specific category (B2B + small-business AEO services).
+conversion on LinkedIn, Instagram, and Facebook in 2025-2026.
+Cross-referenced from Sprout Social, Buffer, Later, Hootsuite,
+plus established performance-marketing fundamentals. Tuned for
+Never Ranked's specific category (B2B + small-business AEO
+services) plus Lance's personal Facebook (mixed friend network).
 
 This is the rule layer. Every post built in this directory should
 pass these checks before it ships.
@@ -168,17 +169,53 @@ get read on mobile feed. Visual rhythm matters as much as content.
 IG captions can be longer than people think. The constraint is
 information density per line, not total length.
 
+### Facebook (personal) structure
+
+```
+[HOOK, first 1-2 lines. Personal story angle works best here.]
+
+[BLANK LINE]
+
+[STORY, 3-6 short lines. Conversational, less industry jargon
+than LinkedIn. Drop the data midway, do not lead with it.]
+
+[BLANK LINE]
+
+[INSIGHT, 1-2 lines. The "what this actually means" beat.]
+
+[BLANK LINE]
+
+[INVITATION, 1 line. "Drop a comment if you've seen this"
+or "DM me and I'll take a look." Friend-network appropriate.]
+
+[OPTIONAL: Founder-context closer, 1 line. Sounds like a real
+person, not a brand.]
+```
+
+Facebook personal posts work best when they sound like Lance
+talking to a friend over coffee, not Lance the AEO industry voice.
+Same data, different mouthfeel. The audience is mixed (family,
+ex-Macy's, Hawaii network) and most are not in the AEO category,
+so context matters more than industry shorthand.
+
+No hashtags or 1 maximum. Hashtags do not drive Facebook discovery
+the way they drive Instagram discovery. Including them on a
+personal post reads as performative.
+
+External links suppress reach on Facebook. Keep links to the
+first comment or invite the DM. The post itself stays clean.
+
 ---
 
 ## Format selection by goal
 
-| Goal | LinkedIn | Instagram |
-|---|---|---|
-| **Maximum reach** | Single image post (4:5 portrait) or document carousel PDF | Reels (1080×1920, original audio if possible) |
-| **Maximum dwell time** | Document carousel (1200×1500 PDF, up to 12 slides) | Carousel feed post (1080×1350, 3-7 slides) |
-| **Maximum shares (the top IG signal)** | Strong text-led posts with a quotable line | Reels with a "send this to a friend who..." moment |
-| **Comment-driven engagement** | Single image + question at the end | Carousel with a controversial slide that begs a reply |
-| **Direct conversion** | Single image + scan/audit CTA in caption + bio link | Carousel last slide = explicit CTA + link sticker on story reshare |
+| Goal | LinkedIn | Instagram | Facebook (personal) |
+|---|---|---|---|
+| **Maximum reach** | Single image post (4:5 portrait) or document carousel PDF | Reels (1080×1920, original audio if possible) | Single image (4:5) or short native video. Friend-network engagement in the first hour determines downstream reach. |
+| **Maximum dwell time** | Document carousel (1200×1500 PDF, up to 12 slides) | Carousel feed post (1080×1350, 3-7 slides) | Photo carousel (up to 10 images) |
+| **Maximum shares (the top IG signal)** | Strong text-led posts with a quotable line | Reels with a "send this to a friend who..." moment | Posts that name something specific that friends would tag each other on |
+| **Comment-driven engagement** | Single image + question at the end | Carousel with a controversial slide that begs a reply | Personal-story post + a "drop a comment if..." invitation |
+| **Direct conversion** | Single image + scan/audit CTA in caption + bio link | Carousel last slide = explicit CTA + link sticker on story reshare | Soft mention plus "DM me" path. Outbound links suppressed by Facebook algorithm; keep links to first comment or DM-on-request. |
 
 ### Why we usually default to single image for both
 
@@ -250,6 +287,13 @@ build the brand.
 - Personal Lance posts: usually zero. The algorithm does not
   reward them on personal posts as of late 2025.
 
+### Facebook (personal)
+- **0-1 hashtags.** Usually zero. Hashtags do not drive Facebook
+  discovery, and using them on a personal post reads as performative.
+- If used, place at the end of the caption.
+- The friend-network signal is the entire algorithm on personal
+  posts. Hashtags add nothing.
+
 ### Instagram
 - **5-8 hashtags** ideal.
 - Per Later: "5 or 10 hashtags is better than zero." Quality over
@@ -283,6 +327,24 @@ build the brand.
 - **Stories drive feed reach.** Posting a story right after a feed
   post, with a sticker that re-invites engagement, lifts the feed
   post's reach in the first hour. Critical lever.
+
+### Facebook (personal)
+- **1-3 posts per week** is the sweet spot. Friend-network feeds
+  do not reward daily volume the way professional feeds do, and
+  daily posts to family + ex-coworkers fatigue fast.
+- **Best windows:** Tuesday-Thursday, 9am-11am Pacific (lunch
+  break for East Coast) and 7pm-9pm Pacific (after-dinner scrolling).
+- **The first hour is everything.** Facebook's algorithm weights
+  early-friend engagement more heavily than the other platforms.
+  A post that gets 5 friend reactions and 2 comments in the first
+  hour gets surfaced to second-degree network. A post that gets
+  nothing dies.
+- **Reply to every friend comment fast.** The algorithm reads it
+  as a meaningful interaction signal and pushes the post wider.
+- **Avoid:** posting on Sunday evening (lowest engagement), posting
+  more than once per day (cannibalizes own reach), reposting
+  LinkedIn content verbatim (Meta's "originality" signal will
+  suppress it).
 
 ---
 
@@ -334,6 +396,23 @@ gets killed.
 **Instagram personal:**
 - Lance's personal IG is lower priority but the same patterns work
 - Bio link, story re-share, occasional cross-post
+
+**Facebook personal:**
+- No bio link slot the way IG has one. Conversion path is "DM me"
+  or "comment and I'll send you the link."
+- Outbound URLs in the post body trigger reach suppression. If a
+  link must be shared, drop it in the first comment after posting.
+- The poll-style call to action works well: "Drop a comment if
+  this is happening to your business too." Friends self-identify
+  as prospects without feeling sold to.
+- Tag mutual friends in the comments who would have something to
+  say (NEVER mass tag). Drives the meaningful-interaction signal
+  Meta rewards.
+- For Lance specifically: the audience is a mix of Hawaii network,
+  ex-Macy's Orlando colleagues, family, friends. Many know small
+  business owners or run them themselves. The "an old friend
+  asked me to look at his small business" framing is the right
+  cultural register here.
 
 ---
 

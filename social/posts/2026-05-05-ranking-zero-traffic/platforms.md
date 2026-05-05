@@ -44,11 +44,28 @@
   week? YES / I have no idea." Drives engagement and surfaces
   prospects who want to find out.
 
-## Facebook · optional
+## Facebook (Lance, personal) · same week
 
-- **Format:** Same as LinkedIn but a touch shorter
-- Not a high-priority channel for Never Ranked. Skip unless
-  you have a reason.
+- **Format:** Single image post, 4:5 portrait (1080 × 1350)
+- **Hero:** `hero-instagram.png` — same file ships to Facebook,
+  same dimensions are ideal for FB feed. One asset, three
+  platforms.
+- **Caption:** Facebook (Lance, personal) block from caption.md
+- **Hashtags:** None. Hashtags do not drive Facebook discovery
+  on personal posts and reading them feels performative to a
+  friend network.
+- **Link:** No outbound link in the post body (Facebook
+  algorithm suppresses external-link reach). The "DM me" close
+  routes interested friends to a one-on-one conversation. If
+  someone asks for the link in comments, drop check.neverranked.com
+  there.
+- **First-hour engagement:** Reply to every friend comment within
+  5 minutes. Tag 1-2 specific Hawaii or ex-Macy's friends in the
+  comments who would have something to say (NEVER mass tag).
+- **Cross-post timing:** Post LinkedIn first (Tue-Thu morning),
+  then Facebook later that day or the next day. Posting both
+  simultaneously can look like cross-promotion to the algorithm
+  and to the audience. Spaced posts read as separate thoughts.
 
 ## Status
 

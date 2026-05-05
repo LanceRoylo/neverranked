@@ -1,8 +1,8 @@
 # Social Media Image + Video Sizes
 
-Reference for LinkedIn and Instagram, the two platforms Never
-Ranked is publishing on. Sources cross-referenced May 2026:
-Sprout Social, Buffer, official platform help centers.
+Reference for LinkedIn, Instagram, and Facebook. Sources
+cross-referenced May 2026: Sprout Social, Buffer, Hootsuite,
+official platform help centers.
 
 If a number conflicts between sources, pick the one that
 displays at full quality on a current iPhone (most viewers).
@@ -115,13 +115,34 @@ displays at full quality on a current iPhone (most viewers).
 
 ## Cross-platform reuse
 
-If you want one image to work on both LinkedIn AND Instagram feed,
-**generate it at 1080 × 1350 (4:5 portrait)**. Both platforms accept
-it natively. Both put it at full feed width. The same source file
-can ship to both with no re-export.
+**One image ships to LinkedIn, Instagram, AND Facebook feed if
+generated at 1080 × 1350 (4:5 portrait).** All three platforms
+accept it natively, render at full feed width on mobile, and
+treat it as the dominant feed format. The same source file can
+ship to all three with no re-export. This is the default we
+build for.
 
-For Stories and Reels, you have to commit — those are 1080 × 1920
+For Stories and Reels, you have to commit. Those are 1080 × 1920
 vertical with safe zones. Not interchangeable with feed posts.
+
+## Facebook specifics
+
+- **Feed images:** 1080 × 1350 portrait wins. Same as the others.
+- **Personal profile vs page:** Same dimensions, but personal
+  profile feed reach is more friend-network dependent than page
+  reach. Lance's personal Facebook lives or dies on whether his
+  network engages in the first hour.
+- **Link previews:** Facebook auto-pulls the og:image from a
+  shared URL. The neverranked.com og.jpg is sized for this
+  (1200 × 630). When sharing a URL on Facebook, the link preview
+  takes over and a separate image is not needed.
+- **Stories and Reels are unified with Instagram** at 1080 × 1920.
+  If you make a Reel for Instagram, post the same one to Facebook
+  Reels. Both platforms surface them similarly.
+- **Watermarks from other apps (TikTok especially) hurt reach.**
+  Per Hootsuite: "videos with watermarks from other apps" are
+  algorithmically downranked. Always upload native, no TikTok
+  watermarks carried over.
 
 ---
 

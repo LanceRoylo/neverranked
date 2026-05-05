@@ -114,3 +114,37 @@ Ranked's company page, swap the opener:
 
 Rest of the caption stays the same. Tighter and more personal,
 matching the LinkedIn personal voice above.
+
+
+## Facebook (Lance, personal)
+
+An old friend reached out this week. He runs a small business
+and has been paying for one of those Google ranking trackers.
+He sent me his data because his website traffic has been quietly
+disappearing.
+
+His ranking is the best in his entire category. He sits at #1 or
+#2 on every keyword that matters to him.
+
+His estimated traffic. Zero.
+
+Two of his competitors rank worse than he does and they are
+getting 44 and 72 visitors.
+
+Worse rankings, more traffic.
+
+What is happening: Apple Intelligence, ChatGPT, and Google AI
+Overviews now answer the question before anyone clicks. The rank
+does not matter when the click never happens.
+
+Most small business owners I talk to do not realize this is
+happening. Their traffic is dropping and their tools cannot tell
+them why, because the tools are watching the wrong layer.
+
+If you run a small business and this sounds familiar, drop a
+comment or DM. I will run a free scan on your site and tell you
+what AI engines are actually saying about you when your customers
+ask.
+
+Built this whole thing because the SEO agency I was paying was
+sending me reports for keywords nobody searches anymore.
