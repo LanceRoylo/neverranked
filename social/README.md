@@ -8,18 +8,34 @@ list, and `social/` is intentionally excluded.
 
 ```
 social/
-  README.md             this file
-  calendar.md           the queue (chronological, with status)
-  voice-quickref.md     distilled voice rules for fast reference
-  sizes.md              platform image / video dimensions (the lookup)
+  README.md                this file
+  calendar.md              the queue (chronological, with status)
+  voice-quickref.md        distilled voice rules for fast reference
+  sizes.md                 platform image / video dimensions (the lookup)
+  performance-playbook.md  what stops scrolls, drives engagement, and converts
   posts/
     YYYY-MM-DD-{slug}/
-      caption.md        platform-specific captions
-      hero-prompt.md    visual brief (Stitch prompt or design spec)
-      hero.{png,jpg}    the actual visual once generated
-      alt-text.md       accessibility alt text
-      platforms.md      where it ships (IG / LinkedIn / X / FB / Threads), scheduled date, status
+      caption.md           platform-specific captions
+      hero-prompt.md       visual brief (Stitch prompt or design spec)
+      hero.{png,jpg}       the actual visual once generated
+      alt-text.md          accessibility alt text
+      platforms.md         where it ships (IG / LinkedIn / X / FB / Threads), scheduled date, status
 ```
+
+## Pre-publish checklist (the 5-second check from the playbook)
+
+Every post passes these before it ships:
+
+1. Does the first line / first visual beat stop the scroll?
+2. Does it pass the swap test? (Replace "Never Ranked" with any
+   competitor — does it still make sense? If yes, it is too generic.)
+3. Does it name the creative lever? (Reframe, Specificity,
+   Confession, Tension Hold, Format Surprise, Visible Mechanic.)
+4. Does it have a specific number, name, or quoted phrase?
+5. Is the conversion path clear and low-pressure?
+
+Five for five = ship. See `performance-playbook.md` for the
+full reasoning behind each rule.
 
 ## How to draft a new post in Claude Code
 
