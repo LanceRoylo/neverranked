@@ -103,7 +103,7 @@ Free six-engine scan at check.neverranked.com. Link in bio.
 
 ---
 
-## Instagram (Lance, personal — alternate)
+## Instagram (Lance, personal · alternate)
 
 If posting from Lance's personal Instagram instead of Never
 Ranked's company page, swap the opener:
