@@ -28,7 +28,7 @@
 
 - **Format:** Single feed post, 4:5 portrait (1080 × 1350)
 - **Hero:** `hero-instagram.png` (1080 × 1350, generated via
-  Pillow with the actual brand fonts — Playfair Display, DM
+  Pillow with the actual brand fonts, Playfair Display, DM
   Mono, Barlow Condensed)
 - **Caption:** Instagram (Never Ranked company page) block
   from caption.md (hashtags on their own line at the end)
@@ -47,7 +47,7 @@
 ## Facebook (Lance, personal) · same week
 
 - **Format:** Single image post, 4:5 portrait (1080 × 1350)
-- **Hero:** `hero-instagram.png` — same file ships to Facebook,
+- **Hero:** `hero-instagram.png`, same file ships to Facebook,
   same dimensions are ideal for FB feed. One asset, three
   platforms.
 - **Caption:** Facebook (Lance, personal) block from caption.md

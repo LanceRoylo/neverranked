@@ -9,7 +9,7 @@ displays at full quality on a current iPhone (most viewers).
 
 ---
 
-## TL;DR — what to ask Stitch for
+## TL;DR, what to ask Stitch for
 
 | Use | Size | Aspect | Notes |
 |---|---|---|---|
@@ -19,7 +19,7 @@ displays at full quality on a current iPhone (most viewers).
 | LinkedIn link preview / OG image | 1200 × 627 | 1.91:1 | This is what shows when a URL is pasted, NOT for feed image posts |
 | LinkedIn document carousel | 1200 × 1500 per page | 4:5 PDF | Up to 300 pages, PDF only |
 | LinkedIn video | 1920 × 1080 | 16:9 (or 1:1 / 9:16) | Up to 10 min, MP4 |
-| **Instagram feed, default** | **1080 × 1350** | 4:5 portrait | Same dominant size as LinkedIn — content can match |
+| **Instagram feed, default** | **1080 × 1350** | 4:5 portrait | Same dominant size as LinkedIn, content can match |
 | Instagram feed square | 1080 × 1080 | 1:1 | Older standard, still fine, fills less screen |
 | Instagram feed landscape | 1080 × 566 | 1.91:1 | Smallest in feed, lowest engagement, avoid unless needed |
 | **Instagram Stories** | **1080 × 1920** | 9:16 | Keep 310px safe zone top + bottom (UI overlay) |
