@@ -17,7 +17,7 @@ mkdir -p "$DIST"
 FILES=(
   index.html
   404.html
-  og.png
+  og.jpg
   og-source.html
   favicon.ico
   favicon.png
@@ -52,6 +52,13 @@ for f in "${FILES[@]}"; do
     echo "  skip  $f (not in repo root)"
   fi
 done
+
+# Clean up stale assets that have been replaced.
+# og.png was swapped to og.jpg in May 2026; remove the stale PNG if present.
+if [ -f "$DIST/og.png" ]; then
+  rm -f "$DIST/og.png"
+  echo "  remove dist/og.png (replaced by og.jpg)"
+fi
 
 for d in "${DIRS[@]}"; do
   if [ -d "$ROOT/$d" ]; then
