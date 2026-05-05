@@ -64,9 +64,9 @@ The single-stat visual treatment is a template, not a one-off.
 Future posts can reuse the same Pillow generation pattern with a
 different number, eyebrow, and kicker:
 
-- "1.2 percent" (this post) — what AI Overviews do to blue links
-- "45 to 95" — Hawaii Theatre AEO transformation
-- "Six engines" — multi-engine citation tracking
+- "1.2 percent" (this post), what AI Overviews do to blue links
+- "45 to 95", Hawaii Theatre AEO transformation
+- "Six engines", multi-engine citation tracking
 - Any other single dramatic number Never Ranked surfaces
 
 Run them as a series, weekly or every other week. The repeating

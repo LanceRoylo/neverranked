@@ -56,7 +56,7 @@ NEVERRANKED.COM
 - Cream #fbf8ef for the primary type that is not gold
 - Hairline gold rule for division, never heavy borders
 - Generous vertical negative space top and bottom
-- The "1.2%" should dominate the canvas. Everything else
+- The "1.2%" should sit at the largest scale on the canvas. Everything else
   supports it.
 
 ## Generation
