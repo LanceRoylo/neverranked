@@ -16,8 +16,8 @@ Chronological queue. Most recent on top. Status flags:
 
 ## 2026-05
 
-### 2026-05-05 · `2026-05-05-the-12-percent` `draft`
-**Platforms:** Instagram (Lance personal, primary), LinkedIn (Lance personal), Facebook (Lance personal)
+### 2026-05-05 · `2026-05-05-the-12-percent` `posted (IG)` / `draft (LI, FB)`
+**Platforms:** Instagram (Lance personal) shipped 2026-05-05; LinkedIn + Facebook variants drafted, run later in the week
 **Lever:** Reframe + Specificity (single-stat hot take)
 **Hook:** "When an AI Overview appears above Google's blue links, the click-through to the sites below it is 1.2 percent."
 **Notes:** Generic category-level post, no specific customer
@@ -25,7 +25,8 @@ referenced. Single-stat visual treatment with massive gold italic
 "1.2%" as the hero. Reusable Pillow template for future
 single-stat posts. Built specifically because the rank-zero
 post would have outed Sean (TWS Paperie) on Lance's personal
-feeds.
+feeds. Watch comments + DMs for the first hour, reply to
+every one.
 
 ### 2026-05-05 · `2026-05-05-ranking-zero-traffic` `draft`
 **Platforms:** LinkedIn (primary), X thread (variant), IG (visual)
@@ -58,4 +59,7 @@ for any client / any vertical. Run in a series.
 
 ## Posted
 
-(empty · first post pending)
+### 2026-05-05 · `2026-05-05-the-12-percent` (Instagram, Lance personal)
+- First Never Ranked post shipped through this system
+- Hero: 1080×1350 Pillow-generated single-stat card
+- Watching first-hour engagement to baseline future posts

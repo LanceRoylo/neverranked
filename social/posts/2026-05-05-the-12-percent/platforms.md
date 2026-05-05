@@ -54,9 +54,8 @@
 ## Status
 
 - **Created:** 2026-05-05
-- **Status:** draft (visual + captions ready, not yet posted)
-- **Scheduled for:** TBD
-- **Posted URLs:** (fill in after posting)
+- **Status:** posted to Instagram (Lance personal) on 2026-05-05; LinkedIn and Facebook variants still draft
+- **Posted URLs:** (Instagram URL pending, paste here when convenient for future reference)
 
 ## Reusability note
 
