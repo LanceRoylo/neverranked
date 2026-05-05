@@ -103,17 +103,33 @@ Free six-engine scan at check.neverranked.com. Link in bio.
 
 ---
 
-## Instagram (Lance, personal · alternate)
+## Instagram (Lance, personal)
 
-If posting from Lance's personal Instagram instead of Never
-Ranked's company page, swap the opener:
+An old friend ranks #1 on Google in his category. His estimated
+traffic is zero. Here is what is actually happening.
 
-> "An old friend asked me to take a look at his small business
-> this week. His Google rank tracker says he ranks number one
-> in his category. His estimated traffic. Zero."
+His two closest competitors rank worse and get 44 and 72 visits.
+Worse rank, more traffic.
 
-Rest of the caption stays the same. Tighter and more personal,
-matching the LinkedIn personal voice above.
+He is winning the leaderboard and losing the customer.
+
+Apple Intelligence, ChatGPT, and Google AI Overviews now answer
+the question before anyone clicks the blue links.
+
+The rank does not matter when the click never happens.
+
+His tracker cannot show him this because his tracker watches the
+wrong layer.
+
+If your traffic is dropping while your rankings hold or improve,
+that is the AI search shift on your invoice.
+
+Anyone else seeing this in their data?
+
+Free six-engine scan at check.neverranked.com. Link in bio.
+
+#AEO #AnswerEngineOptimization #AISearch #SEO2026 #SchemaMarkup
+#SmallBusinessSEO #AIcitations
 
 
 ## Facebook (Lance, personal)

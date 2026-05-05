@@ -44,6 +44,16 @@
   week? YES / I have no idea." Drives engagement and surfaces
   prospects who want to find out.
 
+## Instagram (Lance, personal) · alternate to company page
+
+- **Format:** Single feed post, 4:5 portrait (1080 × 1350)
+- **Hero:** `hero-instagram.png` (same file as the company-page version, the visual is brand-neutral enough to ship from either account)
+- **Caption:** Instagram (Lance, personal) block from caption.md
+- **Hashtags:** Seven, on own line: `#AEO #AnswerEngineOptimization #AISearch #SEO2026 #SchemaMarkup #SmallBusinessSEO #AIcitations` (drop `#NeverRanked` since this is from the personal account, not the brand account)
+- **Link:** Bio link points at check.neverranked.com on the day this post is live
+- **Story reshare:** Reshare the feed post to Lance's personal IG story. Add a question sticker: "Has your business traffic dropped while your Google rank held? YES / NO / I have no idea." Drives engagement and surfaces self-identified prospects.
+- **Conflict with company page version:** If the Never Ranked company IG account also posts this content, space the two posts at least 5 days apart. Posting both same-day reads as cross-promotion and dilutes both.
+
 ## Facebook (Lance, personal) · same week
 
 - **Format:** Single image post, 4:5 portrait (1080 × 1350)
