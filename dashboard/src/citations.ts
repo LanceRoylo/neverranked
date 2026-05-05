@@ -753,6 +753,63 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           // be polite to their API and avoid burst rate limits.
           await new Promise((r) => setTimeout(r, 300));
         }
+
+        // --- Bing / Microsoft Copilot (via DataForSEO) ---
+        // Bing's organic SERP is what Copilot draws from for web
+        // answers, plus its own answer_box / featured_snippet surfaces
+        // act as AI-overview equivalents. Same DataForSEO auth as
+        // Google AIO. Cheapest endpoint in the catalog (no AIO
+        // multiplier). Skipped silently when DATAFORSEO creds aren't
+        // set, matching the other engines.
+        if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
+          try {
+            const { queryBing } = await import("./citations-bing");
+            const bingResult = await queryBing(kw.keyword, env);
+            if (bingResult.text.length > 0 || bingResult.urls.length > 0) {
+              const prom = computeProminence(bingResult.entities, bingResult.urls, clientDomain, businessName);
+              const cited = prom !== null;
+
+              if (cited) {
+                kwCited = true;
+                if (!kwEngines.includes("bing")) kwEngines.push("bing");
+              }
+
+              for (const entity of bingResult.entities) {
+                const eName = entity.name.toLowerCase();
+                if (
+                  eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+                  (!businessName || eName !== businessName.toLowerCase())
+                ) {
+                  competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+                }
+              }
+
+              const insertRes = await env.DB.prepare(
+                `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+                 VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
+              )
+                .bind(
+                  kw.id,
+                  bingResult.text.slice(0, 4000),
+                  JSON.stringify(bingResult.entities),
+                  JSON.stringify(bingResult.urls),
+                  cited ? 1 : 0,
+                  prom,
+                  now
+                )
+                .run();
+
+              await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
+
+              totalQueries++;
+              if (cited) clientCitations++;
+            }
+          } catch (err) {
+            console.log(`Bing query failed for "${kw.keyword}": ${err}`);
+          }
+
+          await new Promise((r) => setTimeout(r, 300));
+        }
       }
 
       keywordResults.push({

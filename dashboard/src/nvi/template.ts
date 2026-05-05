@@ -549,6 +549,7 @@ const ENGINE_DISPLAY: Record<string, string> = {
   gemini: "Gemini",
   google_ai_overview: "Google AI Overviews",
   anthropic: "Claude",
+  bing: "Microsoft Copilot",
 };
 
 function prettifySlug(slug: string): string {

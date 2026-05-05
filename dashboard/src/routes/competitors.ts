@@ -628,7 +628,7 @@ async function buildCitationComparison(
       if (engines.length > 0) {
         const engineRows = engines.map(e => {
           const pct = e.total > 0 ? Math.round((e.client_cited / e.total) * 100) : 0;
-          const engineLabel = e.engine === "perplexity" ? "Perplexity" : e.engine === "chatgpt" || e.engine === "openai" ? "ChatGPT" : e.engine === "gemini" ? "Gemini" : e.engine === "anthropic" ? "Claude" : e.engine === "google_ai_overview" ? "Google AI Overviews" : e.engine;
+          const engineLabel = e.engine === "perplexity" ? "Perplexity" : e.engine === "chatgpt" || e.engine === "openai" ? "ChatGPT" : e.engine === "gemini" ? "Gemini" : e.engine === "anthropic" ? "Claude" : e.engine === "google_ai_overview" ? "Google AI Overviews" : e.engine === "bing" ? "Microsoft Copilot" : e.engine;
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06)">' +
             '<div style="font-size:13px;color:var(--text-soft)">' + esc(engineLabel) + '</div>' +
             '<div style="display:flex;align-items:center;gap:12px">' +

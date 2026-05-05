@@ -60,7 +60,7 @@ const W = {
 /** All engines we count toward the spread bonus. Update if the tracked
  *  engine list changes. Excludes Claude because its responses are
  *  training-only (not a citation surface for current-state visibility). */
-const TRACKED_ENGINES = ["openai", "perplexity", "gemini", "google_ai_overview"] as const;
+const TRACKED_ENGINES = ["openai", "perplexity", "gemini", "google_ai_overview", "bing"] as const;
 
 /** Pure scoring function. Takes the raw citation rows for one client
  *  for one period and returns the score. Optional prevScore is used

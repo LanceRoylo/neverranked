@@ -127,7 +127,7 @@
           {
             "@type": "Offer",
             "name": "Signal",
-            "description": "Monthly retainer for teams ready to be cited. Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude with four engines web-grounded for live signals, plus Reddit thread citations broken out separately because that's where AI pulls 'best X for Y' answers from. Schema fixes auto-pushed to your live site, graded for completeness before deploy so you avoid the 18-point partial-schema citation penalty. Authority audits monitor trust-platform presence (G2, Trustpilot, Capterra, Google Business) and author-bio depth including Person schema completeness. Live dashboard with AEO score, citation share, industry-percentile ranking against peers, and GSC clicks, refreshed every Monday. 90-day roadmap that updates itself, with quarterly citation-drift detection surfacing new competitors and lost ground. Forward-ready Monday digest. Three-month minimum engagement.",
+            "description": "Monthly retainer for teams ready to be cited. Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot with four engines web-grounded for live signals, plus Reddit thread citations broken out separately because that's where AI pulls 'best X for Y' answers from. Schema fixes auto-pushed to your live site, graded for completeness before deploy so you avoid the 18-point partial-schema citation penalty. Authority audits monitor trust-platform presence (G2, Trustpilot, Capterra, Google Business) and author-bio depth including Person schema completeness. Live dashboard with AEO score, citation share, industry-percentile ranking against peers, and GSC clicks, refreshed every Monday. 90-day roadmap that updates itself, with quarterly citation-drift detection surfacing new competitors and lost ground. Forward-ready Monday digest. Three-month minimum engagement.",
             "price": "2000",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -147,7 +147,7 @@
           {
             "@type": "Offer",
             "name": "Amplify",
-            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude, Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit reply briefs that tell your team what to write about and what angle only you can take so a human practitioner posts the actual reply. Three-month minimum engagement.",
+            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot, Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit reply briefs that tell your team what to write about and what angle only you can take so a human practitioner posts the actual reply. Three-month minimum engagement.",
             "price": "4500",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -2063,10 +2063,11 @@ h1,h2,h3,h4{
   100%     { opacity:0; transform:scale(0.5); }
 }
 .broadcast-svg .bd-arc-1, .broadcast-svg .bd-endpoint-1{ animation-delay:0s; }
-.broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2{ animation-delay:0.44s; }
-.broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3{ animation-delay:0.88s; }
-.broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:1.32s; }
-.broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.76s; }
+.broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2{ animation-delay:0.37s; }
+.broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3{ animation-delay:0.74s; }
+.broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:1.10s; }
+.broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.47s; }
+.broadcast-svg .bd-arc-6, .broadcast-svg .bd-endpoint-6{ animation-delay:1.84s; }
 .broadcast-caption{
   max-width:60ch;
   font-family:var(--mono);
@@ -2302,10 +2303,11 @@ h1,h2,h3,h4{
 .tier-icon-amplify .arc{ animation-name:arc-broadcast; }
 .tier-icon-amplify .endpoint{ animation-name:endpoint-burst; }
 .tier-icon-amplify .arc-1, .tier-icon-amplify .endpoint-1{ animation-delay:0s; }
-.tier-icon-amplify .arc-2, .tier-icon-amplify .endpoint-2{ animation-delay:0.3s; }
-.tier-icon-amplify .arc-3, .tier-icon-amplify .endpoint-3{ animation-delay:0.6s; }
-.tier-icon-amplify .arc-4, .tier-icon-amplify .endpoint-4{ animation-delay:0.9s; }
-.tier-icon-amplify .arc-5, .tier-icon-amplify .endpoint-5{ animation-delay:1.2s; }
+.tier-icon-amplify .arc-2, .tier-icon-amplify .endpoint-2{ animation-delay:0.25s; }
+.tier-icon-amplify .arc-3, .tier-icon-amplify .endpoint-3{ animation-delay:0.5s; }
+.tier-icon-amplify .arc-4, .tier-icon-amplify .endpoint-4{ animation-delay:0.75s; }
+.tier-icon-amplify .arc-5, .tier-icon-amplify .endpoint-5{ animation-delay:1s; }
+.tier-icon-amplify .arc-6, .tier-icon-amplify .endpoint-6{ animation-delay:1.25s; }
 /* Reduced motion: animations off, icon shows static state with all
    arcs visible at low opacity (still communicates the metaphor). */
 @media (prefers-reduced-motion: reduce){
@@ -4666,7 +4668,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="hero-grain" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-eyebrow reveal">
-        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>CITED IN CHATGPT, CLAUDE, PERPLEXITY &amp; GOOGLE AIO</span>
+        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>CITED IN CHATGPT, CLAUDE, GEMINI, PERPLEXITY, GOOGLE AIO &amp; COPILOT</span>
         <span class="tag">BY APPOINTMENT</span>
       </div>
 
@@ -4775,9 +4777,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   <!-- ============ MARQUEE ============ -->
   <!-- Only the platforms we actually track or measurably affect:
-       AI Overviews (via DataForSEO live SERP) and the five engines
-       in the citation tracker (ChatGPT, Perplexity, Gemini, Claude).
-       Copilot / Brave / You.com were removed 2026-04-28 because we
+       Six engines in the citation tracker (ChatGPT, Perplexity,
+       Gemini, Google AI Overviews via DataForSEO live SERP,
+       Microsoft Copilot via Bing live SERP, Claude).
+       Brave / You.com were removed 2026-04-28 because we
        don't substantiate any work for them. -->
   <div class="marquee" aria-hidden="true">
     <div class="marquee-track">
@@ -4806,12 +4809,12 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span class="num">§</span>
         <span>How AEO works</span>
         <span class="rule"></span>
-        <span>five engines / one signal</span>
+        <span>six engines / one signal</span>
       </div>
       <div class="broadcast-head">
         <h2 class="reveal">Your brand, broadcasting to <em>every engine your customers ask.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          Structured data we deploy on your site is what AI engines read first. The tracker watches all five major engines weekly to confirm the work is showing up in answers. The diagram below is the platform in one image.
+          Structured data we deploy on your site is what AI engines read first. The tracker watches all six major engines weekly to confirm the work is showing up in answers. The diagram below is the platform in one image.
         </p>
       </div>
       <div class="broadcast-canvas reveal" style="transition-delay:.2s">
@@ -4825,9 +4828,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <text class="brand-label" x="300" y="306" text-anchor="middle">YOUR BRAND</text>
           <text class="brand-sublabel" x="300" y="324" text-anchor="middle">SCHEMA + CITATIONS</text>
 
-          <!-- Five arcs broadcasting outward to engine nodes.
-               Pentagon angles (clockwise from top): 90, 18, 306, 234, 162.
-               Center (300,270), perimeter radius 180. -->
+          <!-- Six arcs broadcasting outward to engine nodes.
+               Hexagon angles (clockwise from top): 90, 30, 330, 270, 210, 150.
+               Center (300,270), perimeter radius 180.
+               cos/sin: 30deg = 0.866/0.5, 60deg = 0.5/0.866 -->
 
           <!-- Top: ChatGPT (90 degrees) -->
           <line class="bd-arc bd-arc-1" x1="300" y1="270" x2="300" y2="90"/>
@@ -4835,32 +4839,38 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <text class="engine-label" x="300" y="74" text-anchor="middle">ChatGPT</text>
           <text class="engine-sublabel" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
 
-          <!-- Upper-right: Claude (18 degrees) -->
-          <line class="bd-arc bd-arc-2" x1="300" y1="270" x2="471" y2="214"/>
-          <circle class="bd-endpoint bd-endpoint-2" cx="471" cy="214" r="6"/>
-          <text class="engine-label" x="490" y="200" text-anchor="start">Claude</text>
-          <text class="engine-sublabel" x="490" y="216" text-anchor="start">Anthropic</text>
+          <!-- Upper-right: Claude (30 degrees) -->
+          <line class="bd-arc bd-arc-2" x1="300" y1="270" x2="455.88" y2="180"/>
+          <circle class="bd-endpoint bd-endpoint-2" cx="455.88" cy="180" r="6"/>
+          <text class="engine-label" x="475" y="166" text-anchor="start">Claude</text>
+          <text class="engine-sublabel" x="475" y="182" text-anchor="start">Anthropic</text>
 
-          <!-- Lower-right: Gemini (306 degrees) -->
-          <line class="bd-arc bd-arc-3" x1="300" y1="270" x2="406" y2="416"/>
-          <circle class="bd-endpoint bd-endpoint-3" cx="406" cy="416" r="6"/>
-          <text class="engine-label" x="425" y="420" text-anchor="start">Gemini</text>
-          <text class="engine-sublabel" x="425" y="436" text-anchor="start">Google &middot; web-grounded</text>
+          <!-- Lower-right: Gemini (330 degrees) -->
+          <line class="bd-arc bd-arc-3" x1="300" y1="270" x2="455.88" y2="360"/>
+          <circle class="bd-endpoint bd-endpoint-3" cx="455.88" cy="360" r="6"/>
+          <text class="engine-label" x="475" y="364" text-anchor="start">Gemini</text>
+          <text class="engine-sublabel" x="475" y="380" text-anchor="start">Google &middot; web-grounded</text>
 
-          <!-- Lower-left: Google AI Overviews (234 degrees) -->
-          <line class="bd-arc bd-arc-4" x1="300" y1="270" x2="194" y2="416"/>
-          <circle class="bd-endpoint bd-endpoint-4" cx="194" cy="416" r="6"/>
-          <text class="engine-label" x="175" y="420" text-anchor="end">Google AI Overviews</text>
-          <text class="engine-sublabel" x="175" y="436" text-anchor="end">SERP &middot; live via DataForSEO</text>
+          <!-- Bottom: Google AI Overviews (270 degrees) -->
+          <line class="bd-arc bd-arc-4" x1="300" y1="270" x2="300" y2="450"/>
+          <circle class="bd-endpoint bd-endpoint-4" cx="300" cy="450" r="6"/>
+          <text class="engine-label" x="300" y="478" text-anchor="middle">Google AI Overviews</text>
+          <text class="engine-sublabel" x="300" y="494" text-anchor="middle">SERP &middot; live via DataForSEO</text>
 
-          <!-- Upper-left: Perplexity (162 degrees) -->
-          <line class="bd-arc bd-arc-5" x1="300" y1="270" x2="129" y2="214"/>
-          <circle class="bd-endpoint bd-endpoint-5" cx="129" cy="214" r="6"/>
-          <text class="engine-label" x="110" y="200" text-anchor="end">Perplexity</text>
-          <text class="engine-sublabel" x="110" y="216" text-anchor="end">web-grounded</text>
+          <!-- Lower-left: Microsoft Copilot (210 degrees) -->
+          <line class="bd-arc bd-arc-5" x1="300" y1="270" x2="144.12" y2="360"/>
+          <circle class="bd-endpoint bd-endpoint-5" cx="144.12" cy="360" r="6"/>
+          <text class="engine-label" x="125" y="364" text-anchor="end">Microsoft Copilot</text>
+          <text class="engine-sublabel" x="125" y="380" text-anchor="end">Bing &middot; web-grounded</text>
+
+          <!-- Upper-left: Perplexity (150 degrees) -->
+          <line class="bd-arc bd-arc-6" x1="300" y1="270" x2="144.12" y2="180"/>
+          <circle class="bd-endpoint bd-endpoint-6" cx="144.12" cy="180" r="6"/>
+          <text class="engine-label" x="125" y="166" text-anchor="end">Perplexity</text>
+          <text class="engine-sublabel" x="125" y="182" text-anchor="end">web-grounded</text>
         </svg>
         <div class="broadcast-caption">
-          <strong>Five engines tracked weekly.</strong> Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
+          <strong>Six engines tracked weekly.</strong> Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
         </div>
       </div>
     </div>
@@ -4896,7 +4906,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="audit-callout-text">
             <h3>Audit</h3>
             <p>
-              Before you commit to a monthly tier, see what's actually broken. A full citation, schema, and content audit across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. Delivered as a 90-day roadmap within 48 hours. <strong>Fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within 30 days.</strong>
+              Before you commit to a monthly tier, see what's actually broken. A full citation, schema, and content audit across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Delivered as a 90-day roadmap within 48 hours. <strong>Fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within 30 days.</strong>
             </p>
           </div>
           <a href="https://app.neverranked.com/checkout/audit" class="audit-callout-cta">Book my audit &rarr;</a>
@@ -4927,7 +4937,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <li>
               <span class="del-num">02</span>
               <div>
-                <strong>Up to 10 tracked prompts, all five engines.</strong>
+                <strong>Up to 10 tracked prompts, all six engines.</strong>
                 The "best X for Y" queries your customers actually ask. Run monthly, scored, and tracked over time so you can see when something shifts.
               </div>
             </li>
@@ -4976,7 +4986,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <li>
               <span class="del-num">01</span>
               <div>
-                <strong>Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude.</strong>
+                <strong>Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot.</strong>
                 Four of the five are web-grounded so you see what AI is citing this week, not what it was trained on a year ago. Reddit threads break out separately because that's where AI pulls "best X for Y" answers from. A keyword-by-competitor matrix shows who gets cited for what. Green where you win. Red where you don't.
               </div>
             </li>
@@ -5025,16 +5035,20 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <h3><svg class="tier-icon tier-icon-amplify" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
             <circle class="core" cx="19" cy="19" r="2.5"/>
+            <!-- 6 arcs in hexagon (60 degrees apart): one per tracked engine.
+                 ChatGPT, Claude, Gemini, Google AIO, Microsoft Copilot, Perplexity. -->
             <line class="arc arc-1" x1="19" y1="19" x2="19" y2="5"/>
             <circle class="endpoint endpoint-1" cx="19" cy="5" r="2"/>
-            <line class="arc arc-2" x1="19" y1="19" x2="5.68" y2="14.67"/>
-            <circle class="endpoint endpoint-2" cx="5.68" cy="14.67" r="2"/>
-            <line class="arc arc-3" x1="19" y1="19" x2="10.77" y2="30.32"/>
-            <circle class="endpoint endpoint-3" cx="10.77" cy="30.32" r="2"/>
-            <line class="arc arc-4" x1="19" y1="19" x2="27.23" y2="30.32"/>
-            <circle class="endpoint endpoint-4" cx="27.23" cy="30.32" r="2"/>
-            <line class="arc arc-5" x1="19" y1="19" x2="32.32" y2="14.67"/>
-            <circle class="endpoint endpoint-5" cx="32.32" cy="14.67" r="2"/>
+            <line class="arc arc-2" x1="19" y1="19" x2="31.12" y2="12"/>
+            <circle class="endpoint endpoint-2" cx="31.12" cy="12" r="2"/>
+            <line class="arc arc-3" x1="19" y1="19" x2="31.12" y2="26"/>
+            <circle class="endpoint endpoint-3" cx="31.12" cy="26" r="2"/>
+            <line class="arc arc-4" x1="19" y1="19" x2="19" y2="33"/>
+            <circle class="endpoint endpoint-4" cx="19" cy="33" r="2"/>
+            <line class="arc arc-5" x1="19" y1="19" x2="6.88" y2="26"/>
+            <circle class="endpoint endpoint-5" cx="6.88" cy="26" r="2"/>
+            <line class="arc arc-6" x1="19" y1="19" x2="6.88" y2="12"/>
+            <circle class="endpoint endpoint-6" cx="6.88" cy="12" r="2"/>
           </svg>Amplify</h3>
           <p class="del-tier-tagline">For teams ready to ship the work, not just see what's needed.</p>
           <div class="del-tier-price"><span class="sym">$</span>4,500<span class="per">/mo · everything in Signal, plus:</span></div>

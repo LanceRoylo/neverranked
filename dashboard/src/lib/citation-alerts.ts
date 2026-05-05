@@ -197,6 +197,7 @@ const ENGINE_LABEL: Record<string, string> = {
   gemini: "Gemini",
   anthropic: "Claude",
   google_ai_overview: "Google AI Overviews",
+  bing: "Microsoft Copilot",
 };
 
 function buildSubject(alerts: Array<{ alert_kind: string }>): string {
