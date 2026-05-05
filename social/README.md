@@ -11,6 +11,7 @@ social/
   README.md             this file
   calendar.md           the queue (chronological, with status)
   voice-quickref.md     distilled voice rules for fast reference
+  sizes.md              platform image / video dimensions (the lookup)
   posts/
     YYYY-MM-DD-{slug}/
       caption.md        platform-specific captions
