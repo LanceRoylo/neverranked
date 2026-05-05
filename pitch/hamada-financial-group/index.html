@@ -1,0 +1,550 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>For Shaun Hamada / Hamada Financial Group -- Never Ranked</title>
+<meta name="description" content="An audit of hamadafinancialgroup.com against the AI engines that now decide which Honolulu financial advisor a buyer hires. Five gaps the audit surfaced, the competitor landscape, and a 90-day gameplan.">
+<link rel="canonical" href="https://neverranked.com/pitch/hamada-financial-group/">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="For Shaun Hamada / Hamada Financial Group">
+<meta property="og:description" content="A specific brief. The audit, the competitor landscape, the 90-day gameplan. Prepared for our standing meeting.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/pitch/hamada-financial-group/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pitch / Hamada Financial Group",
+      "item": "https://neverranked.com/pitch/hamada-financial-group/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  min-width:44px;
+  justify-content:flex-start;
+}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:11px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+/* print button (screen only) */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:12px 18px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  cursor:pointer;border-radius:2px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);
+  z-index:50;
+}
+.print-btn:hover{background:var(--gold-dim);color:var(--bg)}
+
+/* print stylesheet -- hand Flash a clean printable brief */
+@page{size:letter;margin:.5in}
+@media print{
+  html,body{background:white !important;color:#0a0a0a !important;font-size:10pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:"Playfair Display",Georgia,serif !important}
+  body::before,.grain,.no-print,.print-btn,.nav,.hamburger,.mobile-overlay{display:none !important}
+  .wrap{max-width:none !important;padding:0 !important;width:100% !important}
+  *{position:static !important;box-shadow:none !important}
+  .page-hero{padding:0 0 14pt !important;border-bottom:1px solid #999;margin-bottom:14pt}
+  .page-hero h1{font-size:20pt !important;line-height:1.15 !important;margin:0 0 8pt !important;color:#0a0a0a !important;font-family:"Playfair Display",Georgia,serif !important}
+  .page-hero h1 em{color:#9c7a1f !important;font-style:italic}
+  .page-hero .updated{color:#666 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.12em}
+  .legal-section{padding:12pt 0 !important;border-bottom:1px solid #ccc !important;break-inside:auto;page-break-inside:auto}
+  .legal-section:last-child{border-bottom:none !important}
+  .section-label{margin-bottom:8pt !important;color:#444 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.16em}
+  .section-label .num{color:#9c7a1f !important;font-weight:600}
+  .section-label .rule{background:#ccc !important}
+  h2{font-size:13pt !important;color:#0a0a0a !important;margin:0 0 6pt !important;font-family:"Playfair Display",Georgia,serif !important}
+  h3{font-size:11pt !important;color:#0a0a0a !important;margin:0 0 4pt !important;font-family:"Playfair Display",Georgia,serif !important;font-weight:500}
+  p,ul,ol{color:#1a1a1a !important;max-width:none !important;margin:0 0 6pt !important;orphans:3;widows:3;font-family:Georgia,"Times New Roman",serif !important}
+  ul,ol{padding-left:18pt !important}
+  li{margin-bottom:3pt !important;color:#1a1a1a !important}
+  b,strong{color:#0a0a0a !important;font-weight:600}
+  p a,ul a,li a,a{color:#9c7a1f !important;text-decoration:underline}
+  pre{background:#f4f1e6 !important;color:#1a1a1a !important;border:1px solid #d4cdb8 !important;font-size:7.5pt !important;line-height:1.45 !important;padding:8pt !important;margin:6pt 0 !important;white-space:pre-wrap !important;word-break:break-word !important;overflow:visible !important;page-break-inside:avoid;break-inside:avoid;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  code{background:#f4f1e6 !important;color:#1a1a1a !important;padding:0 3pt;border-radius:2px;font-size:8pt !important;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  div[style*="border:1px solid"]{background:#fafaf5 !important;border-color:#ccc !important;border-radius:0 !important;padding:10pt !important;margin:6pt 0 !important;page-break-inside:avoid;break-inside:avoid}
+  div[style*="background:rgba"]{background:#fafaf5 !important}
+  .legal-footer{display:none !important}
+  a[href^="http"]:after{content:" (" attr(href) ")";font-size:7pt;color:#666;font-family:"DM Mono",monospace;word-break:break-all}
+  a[href^="mailto:"]:after,a[href^="/"]:after,a[href^="#"]:after{content:""}
+}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:14px;left:calc(var(--gutter) - 8px);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:44px;height:44px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:21px;left:8px;right:8px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$750 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="updated" style="margin-bottom:18px">Private brief &middot; Prepared for Shaun Hamada &middot; May 2026 &middot; For our standing meeting</div>
+    <h1>Five things AI engines can't see <em>about Hamada Financial Group</em>. The audit, the competitor landscape, and a 90-day gameplan. So we have something specific to walk through.</h1>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>Why this brief exists</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Shaun. Lance from Never Ranked. We have a meeting on the calendar in the next few weeks and I wanted to send you something specific to walk through together so the conversation is not generic.
+    </p>
+    <p>
+      The short version. Most "who should I work with for retirement planning in Honolulu" or "best financial advisor near Waikiki for a small business owner" decisions now run through an AI step before anyone reaches a firm's website. Someone in the lobby of an office tower, someone newly arrived from the mainland, someone reviewing their portfolio after a life event, asks ChatGPT or Perplexity or Google AI Overviews. The AI returns one or two specific firm names and a sentence about each. Hamada Financial Group is either in those answers or not.
+    </p>
+    <p>
+      I ran hamadafinancialgroup.com through our public schema scorer and through the queries a Hamada client most likely asks before they pick up the phone. The technical baseline is what we see on most Hawaii financial advisor sites: clean visual brand, professional copy, no structured data the AI engines can read. The Forbes 2022 Best-in-State recognition that should be one of your strongest citation signals is currently invisible to every AI engine because it is not published as schema. Below is the audit, the competitor landscape, and the 90-day gameplan I would run if you said go.
+    </p>
+  </div>
+</section>
+
+<!-- Entity-graph audit: live snapshot of off-site + on-site identity
+     surfaces AI engines weight when deciding to cite a brand. -->
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00.5</span>
+      <span>The picture</span>
+      <span class="rule"></span>
+    </div>
+    <p>Before the gap analysis, the visual. Eight identity signals AI engines lean on when surfacing live-music recommendations. Blue Note Hawaii lights some, misses others. The chart updates live each time this page loads.</p>
+    <div style="margin:24px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0c0c0c">
+      <iframe
+        src="https://app.neverranked.com/embed/entity-audit?brand=Blue+Note+Hawaii&domain=bluenotejazz.com"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        style="width:100%;height:920px;border:0;display:block;background:transparent"
+        title="Entity graph audit for Blue Note Hawaii">
+      </iframe>
+    </div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>The audit</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      hamadafinancialgroup.com loads cleanly. The brand presentation is professional, the team page is comprehensive (Shaun, Shawn Chang, Carol Jones, Kevin Wong, Charity Ballesteros, Morgan Nii, Jennifer Shibuya), the multi-state licensing is disclosed correctly, the New York Life and Eagle Strategies affiliations are documented. The trust signals a human reader needs are mostly present.
+    </p>
+    <p>
+      The structured data signals an AI engine needs are mostly absent. The site scores in the red zone on our completeness grader. For context, partial schema (under 60) costs an estimated 18 percentage points of AI citation share against firms that have it. The Forbes 2022 Best-in-State recognition, which should be one of your strongest citation signals, is currently invisible to ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot because it is not published as structured data anywhere they can read.
+    </p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Detected schema       Status
+LocalBusiness         missing  red
+FinancialService      missing  red
+Person (per advisor)  missing  red
+Service (per offer)   missing  red
+AggregateRating       missing  red
+FAQPage               missing  red
+Award                 missing  red  (Forbes 2022)
+Organization          partial  gold (no address, founder, contactPoint, foundingDate)</pre>
+    <p>
+      The good news. None of these are difficult fixes. Your address, your team, your awards, your services, and your office hours all exist as facts. They just are not published in a form AI engines can read. Closing the gap is a one-time engineering investment, then it compounds quietly in the background as the AI engines retrain on cycles.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>The five gaps the audit surfaced</span>
+      <span class="rule"></span>
+    </div>
+    <p>Each gap maps to a specific class of buyer query you are probably losing right now.</p>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 01</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No FinancialService or LocalBusiness schema.</h3>
+      <p style="margin:0">When someone asks Perplexity "best financial advisor near Bishop Street" or asks Siri "wealth management Honolulu downtown," the engines look for a venue-class schema (LocalBusiness, FinancialService, or InsuranceAgency) with address, hours, geo coordinates, and licensing. The Hamada Financial Group site publishes none of those. The engines fall back to Google Business Profile or Yelp data, both of which sit behind rate limits and stale caches. The single most important fix for "advisor near me" intent in downtown Honolulu is a complete FinancialService schema on the homepage with the 841 Bishop Street suite 2305 location, the 808.529.6319 contact, and the multi-state licensing scope.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 02</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Person schema for any of the seven advisors.</h3>
+      <p style="margin:0">When a prospective client asks ChatGPT "who is Shaun Hamada at New York Life" or "Shaun Hamada Forbes financial advisor Honolulu," the engines need Person schema with name, jobTitle, affiliation, license numbers, awards (Award schema for the Forbes 2022 Best-in-State), and sameAs links to LinkedIn and FINRA's BrokerCheck. Without it, the engines pull whatever fragmented data exists across LinkedIn and BrokerCheck and FINRA disclosures. The Forbes recognition deserves to be the headline citation signal for Shaun specifically. Right now it is buried in body copy where AI engines weight it lower than they should.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 03</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No Service schema for the offerings.</h3>
+      <p style="margin:0">Hamada offers a wide range of services (life insurance, annuities, retirement planning, wealth management, college savings, business financial planning, pension payout guidance) but none of them are published as structured Service schema. When a buyer asks "best annuity advisor in Hawaii" or "fee-based retirement planner Honolulu," the engines have no way to confidently match the buyer's intent to a Hamada service. Each service should have its own Service schema scoped to the page that describes it, with provider, areaServed, and serviceType wired correctly. This unlocks every long-tail query a buyer asks.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 04</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No AggregateRating schema and no FAQ schema.</h3>
+      <p style="margin:0">When a buyer asks "is Hamada Financial Group worth it" or "what does Hamada Financial Group charge," AI engines pull from Google reviews, Yelp, and any third-party rating site that mentions the firm. Those sources often disagree, and the engines split the difference, which usually hurts. AggregateRating schema published on your own site, with the rating you stand behind, becomes the canonical signal. Equally important, FAQPage schema with the actual questions buyers ask before booking (do you charge fees, what is your minimum AUM, do you work with new clients, how do you compare to a fee-only fiduciary) gives the engines structured answers they can quote directly. Most "is X worth it" answers from AI engines today are pulled from FAQ schema first, third-party reviews second.</p>
+    </div>
+
+    <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Gap 05</div>
+      <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;letter-spacing:-.01em;margin:0 0 8px">No owned content the engines can pull from.</h3>
+      <p style="margin:0">For every "best financial advisor in Honolulu" answer we have audited across the six engines, the citation source is some mix of the firm's own site (when it has the schema), Google Business Profile, the Forbes Best-in-State list, and Reddit threads in r/HawaiiPersonalFinance or r/personalfinance. Hamada Financial Group has nothing in the owned-content category beyond the homepage and team bios. A small library of Article schema content (a piece on Hawaii state-tax treatment of annuities, a piece on pension payout decisions for state employees, a piece on small-business retirement plan setup in Hawaii) gives the engines specific, citable, owned signals on the long-tail queries where buyer intent is highest. We generate first drafts from your existing positioning. Your team reviews and approves before anything ships.</p>
+    </div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>The competitor landscape</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The Honolulu financial advisor market is fragmented and most firms have the same schema gap. That is the opening. Whoever closes it first owns the AI-cited share of voice in this market for the next 24 to 36 months until the others catch up.
+    </p>
+    <p>
+      Firms that currently surface for general "financial advisor Honolulu" or "wealth management Hawaii" type queries on the AI engines we track:
+    </p>
+    <ul>
+      <li><b>Edward Jones (multiple Honolulu offices).</b> Strong on Google Business Profile signals, weak on owned schema. Wins citations on basic "find an advisor near me" intent because of profile density. Loses on specialty queries like "annuity advisor" or "pension payout" because the local advisors have minimal individual schema.</li>
+      <li><b>Ameriprise Financial Advisors.</b> Same pattern as Edward Jones. National brand authority carries them on broad queries, individual advisor invisibility on specialty queries.</li>
+      <li><b>E.A. Buck Financial Services.</b> Local Honolulu firm with strong owned content. Wins on retirement-planning intent because they publish content the engines can pull from. Best example of an in-market competitor doing the work.</li>
+      <li><b>SEA Financial Hawaii.</b> Smaller firm, low schema density, low citation share. Punches above weight on local-Hawaii-specific queries because of niche content.</li>
+      <li><b>Infinite Financial, Kala Capital, Agape Wealth Management, Money Menders.</b> All present in Honolulu, all with similar schema gaps to Hamada. The category baseline is "no structured data, hope the brand carries."</li>
+    </ul>
+    <p>
+      The competitor that should worry Hamada most is E.A. Buck. They are publishing the citation-shaped content (retirement-planning explainers, annuity comparisons) that the AI engines reward. They are not bigger than Hamada and they do not have the Forbes recognition, but they are eating share-of-voice on the specialty queries where Hamada should win because of Shaun's credentials and the firm's NYL affiliation.
+    </p>
+    <p>
+      The Forbes 2022 Best-in-State Top Financial Security Professionals award is a citation signal almost none of the local competitors can match. It currently does nothing for you in AI search because it is not published in a form the engines can read. That is the single biggest unforced loss in the audit.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>Why NeverRanked, honestly</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Most AEO tools tell you what to do. We do it. As of May 2026, NeverRanked is the only platform in market that ships <em>all</em> of the following together:
+    </p>
+    <ul style="font-family:var(--mono);font-size:14px;line-height:1.85;margin:0 0 22px;padding-left:24px;color:var(--text-soft)">
+      <li><b>Six-engine citation tracking</b>: Perplexity, ChatGPT, Gemini, Google AI Overviews (live via DataForSEO), Claude, and Microsoft Copilot via Bing (added this week). No other AEO platform tracks all six. Profound and Athena cover three to four. Ahrefs Brand Radar covers four. We are the only ones at six.</li>
+      <li><b>Done-for-you schema deployment</b> via a one-line snippet. No CMS access, no dev cycle. Profound, Athena HQ, Ahrefs Brand Radar all stop at "here is what to deploy." We deploy it.</li>
+      <li><b>Multi-pass AI validation</b> on every generated output. Factual grounding against the source, tone check, quality gate, three-attempt regeneration. Most "AI content" tools ship Claude's first draft. We refuse to.</li>
+      <li><b>Variant impact attribution</b>: every schema we deploy is tracked as a variant. Citation rate measured 4 weeks before deploy vs 4 weeks after, two-proportion z-test, statistical confidence at p &lt; 0.05. Your monthly Visibility Index includes a "what we deployed and what it did" section. Nobody else does this.</li>
+      <li><b>Prominence and sentiment within citations</b>, not just yes/no. Where in the AI's answer were you mentioned (rank 1 hero quote vs rank 8 footnote)? Was the tone positive or negative? That's the next layer of AEO that most platforms have not built yet.</li>
+      <li><b>Real-time citation alerts</b> on Signal+: gained or lost citations between monthly reports get emailed within hours, color-coded by gain or loss. You hear about movement before your competitors do.</li>
+    </ul>
+    <p>
+      Honest framing. NeverRanked is bootstrapped, founder-led, and currently has a small customer count. That is also the buying advantage: pilot pricing, direct founder access, and the ability to shape the roadmap with your specific use case in mind. As the platform grows, the tier you start at locks in.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>The 90-day gameplan</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      The 90-day window is not a sales tactic. AI models retrain on a cycle. Schema deployed in month one gets absorbed into the next training window and surfaces as citations in month three. Anyone promising AI citations in week two is selling theater.
+    </p>
+    <p>What the engagement looks like, concretely:</p>
+    <ul>
+      <li><b>Days 1-2 (the audit, expanded).</b> We deliver the full audit. $750, and the entire $750 is fully credited toward your first month if you continue on Pulse, Signal, or Amplify within 30 days. You get the live competitor citation matrix (the firms above, named, with the queries they win and the source domains and Reddit threads the engines pull from), the per-page schema completeness report on hamadafinancialgroup.com, and a schema fix list with the exact JSON-LD code your dev or your web vendor can paste in. The audit is yours either way.</li>
+      <li><b>Days 3-30 (the schema deploy).</b> FinancialService schema deployed on the homepage with address, contactPoint, areaServed, and the multi-state licensing scope. Person schema for Shaun and each of the seven advisors with credentials, jobTitle, and Award schema for the Forbes 2022 recognition. Service schema templated across every offering page (annuities, retirement, wealth management, business planning, college savings, pension). AggregateRating published with the rating Hamada stands behind. FAQPage schema generated from your existing positioning, 8 to 12 questions, every answer reviewed by Shaun before going live. Each schema runs through our three-pass validation (factual, tone, quality) before it touches the live site.</li>
+      <li><b>Days 31-90 (the citation pickup).</b> AI engines start absorbing the structured data. We track citation share weekly across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot on the queries that matter to a Honolulu financial advisor: "best financial advisor Honolulu," "wealth management Hawaii," "retirement planner near me Honolulu," "Forbes top financial advisor Hawaii," "annuity advisor Hawaii," "small business retirement plan Hawaii," and any other 10-15 prompts you and Shaun want included. You see who Hamada now appears alongside, who is still beating you, and you get real-time citation alerts when a query gains or loses you in any engine.</li>
+      <li><b>Day 90 onward (the compounding).</b> Dashboard refreshes weekly. Quarterly drift detection re-evaluates the competitor landscape so you do not go stale. The Visibility Index includes a "what we deployed and what it did" section showing the citation lift attributable to each schema variant, with statistical confidence at p &lt; 0.05. By month six the citation share against E.A. Buck and the rest of the local field on specialty queries should be measurably different.</li>
+    </ul>
+    <p style="margin-top:18px"><b>Pricing after the audit:</b> Pulse at $497/month (entry: monthly Visibility Index, 10 tracked prompts, 2 schemas/month), Signal at $2,000/month (weekly tracking on 50+ prompts, real-time citation alerts, unlimited schemas), or Amplify at $4,500/month (Signal plus brand-voice fingerprint, citation-shaped content drafts, auto-publish to your CMS). Three-month minimum on all monthly tiers. The $750 audit credit applies to whichever tier you pick.</p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>The multi-state upside</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Hamada is licensed across AZ, CA, FL, HI, ID, MO, NV, and WA for insurance, with a smaller securities and advisory footprint. Hawaii is the right place to start because the local market is small enough to move citation share visibly inside ninety days. But the same FinancialService and Person schema, with areaServed scoped per state, surfaces Hamada on "financial advisor [city]" queries in every market where you are licensed. The mainland California presence specifically (CA insurance license held by both Shaun and Shawn Chang) is an immediate second-market opportunity. Once Hawaii is moving, we can extend the schema scope to the mainland markets without rebuilding the audit.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Why us, briefly</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><b>We built the tools, then ran them on ourselves first.</b> Schema grader, citation tracker, drift detection, authority audits, the public schema scorer at <a href="https://check.neverranked.com">check.neverranked.com</a>. Same software that audited your site is what runs on our own domain.</li>
+      <li><b>The codebase is public</b> at <a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>. You or your IT vendor can read every line of what gets injected into your site before it ships.</li>
+      <li><b>Security and compliance.</b> The schema injection snippet appends JSON-LD to the head and does nothing else. No cookies, no DOM read of forms, no outbound calls. This matters for a regulated firm and we have the documentation a New York Life compliance review would ask for. Full breakdown at <a href="/security/">neverranked.com/security</a>.</li>
+      <li><b>We are local.</b> Honolulu-based. We know the Bishop Street financial district, we know the Hawaii business community, and we know the kind of clients Hamada serves. That matters for the content tier especially, where the difference between generic financial advisor copy and content that references Hawaii state pension specifics or 808 area-code-relevant context is the difference between citation share and silence.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>Two ways to take the next step</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <b>Walk through this brief at our standing meeting.</b><br>
+      Most direct path. Bring this brief to our meeting and we walk through the audit, the competitor landscape, and the gameplan together. Bring any questions you want answered live. If at the end the audit is the right next move I will scope it then. If it is not, you have the brief either way as a snapshot of where Hamada Financial Group stands in AI search today.
+    </p>
+    <p style="margin-top:24px">
+      <a href="https://app.neverranked.com/checkout/audit" style="color:var(--gold);font-weight:500"><b>Or skip ahead. Book the $750 audit now &rarr;</b></a><br>
+      Delivered as a PDF brief in 48 hours, no extra meeting required. The full citation matrix for the Honolulu financial advisor queries above, the per-page schema completeness report on hamadafinancialgroup.com, the competitor map (named firms, named source domains, named Reddit threads), and the JSON-LD code your IT vendor can paste in. The full $750 credits toward Pulse, Signal, or Amplify if you continue within 30 days.
+    </p>
+    <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
+      Looking forward to the meeting.<br>
+      <span style="font-family:var(--serif);font-style:italic">Lance Roylo</span> &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a> &middot; <a href="https://neverranked.com">neverranked.com</a>
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+
+<button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
+</body>
+</html>
