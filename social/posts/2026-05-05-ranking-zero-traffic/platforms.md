@@ -24,16 +24,25 @@
 - **Caption:** X / Threads block from caption.md
 - **Link:** End of the post
 
-## Instagram · same day
+## Instagram (Never Ranked company page) · same day or next day
 
-- **Format:** Single feed post (square 1080x1080)
-- **Hero:** Square version
-- **Caption:** Instagram block from caption.md (with hashtags
-  on their own line at the end)
-- **Link:** Bio link (point at check.neverranked.com or the
-  homepage that day)
-- **Story:** Reshare the feed post to story with a "swipe up"
-  if you have the link sticker enabled
+- **Format:** Single feed post, 4:5 portrait (1080 × 1350)
+- **Hero:** `hero-instagram.png` (1080 × 1350, generated via
+  Pillow with the actual brand fonts — Playfair Display, DM
+  Mono, Barlow Condensed)
+- **Caption:** Instagram (Never Ranked company page) block
+  from caption.md (hashtags on their own line at the end)
+- **Hashtags:** Eight, on own line:
+  `#AEO #AnswerEngineOptimization #AISearch #SEO2026
+  #SchemaMarkup #SmallBusinessSEO #AIcitations #NeverRanked`
+- **Link:** Bio link points at check.neverranked.com on the day
+  this post is live (set the link sticker on the company IG
+  account)
+- **Story reshare:** Reshare the feed post to the company IG
+  story. Add a poll sticker:
+  "Has your business been cited by an AI engine in the last
+  week? YES / I have no idea." Drives engagement and surfaces
+  prospects who want to find out.
 
 ## Facebook · optional
 

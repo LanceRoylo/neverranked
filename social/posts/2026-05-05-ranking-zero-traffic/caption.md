@@ -72,17 +72,45 @@ check.neverranked.com if you want to see your own gap.
 
 ---
 
-## Instagram (caption to pair with the visual)
+## Instagram (Never Ranked company page)
 
-Average position 15.1. Best in his category.
+A small business we recently reviewed ranks number one in their
+category on Google.
 
-Estimated traffic. Zero.
+Their estimated traffic. Zero.
 
-His competitors rank worse and get more visits. The rank tracker
-he pays for does not show why. The why is happening above the
-blue links, in answers a Google rank tracker cannot see.
+Their two closest rivals rank at 26.2 and 28.8. Their traffic.
+44 and 72 visits.
 
-Free scorer at check.neverranked.com. Link in bio.
+Worse rank, more traffic. They are winning the leaderboard and
+losing the customer.
 
-#AEO #AnswerEngineOptimization #AISearch #SEO2026
-#SmallBusinessSEO #SchemaMarkup #AIcitations
+Apple Intelligence is on by default in iPhone Safari. Google AI
+Overviews sit above the blue links for the queries buyers
+actually search. ChatGPT and Perplexity answer the question
+before anyone reaches a results page.
+
+The rank does not matter when the click never happens.
+
+If your traffic is dropping while your rankings hold or improve,
+that is not a mystery. That is the AI search shift on your
+invoice.
+
+Free six-engine scan at check.neverranked.com. Link in bio.
+
+#AEO #AnswerEngineOptimization #AISearch #SEO2026 #SchemaMarkup
+#SmallBusinessSEO #AIcitations #NeverRanked
+
+---
+
+## Instagram (Lance, personal — alternate)
+
+If posting from Lance's personal Instagram instead of Never
+Ranked's company page, swap the opener:
+
+> "An old friend asked me to take a look at his small business
+> this week. His Google rank tracker says he ranks number one
+> in his category. His estimated traffic. Zero."
+
+Rest of the caption stays the same. Tighter and more personal,
+matching the LinkedIn personal voice above.
