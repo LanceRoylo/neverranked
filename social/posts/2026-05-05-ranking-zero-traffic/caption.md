@@ -5,47 +5,50 @@ and IG (as a single-image post with shorter caption).
 
 ---
 
-## LinkedIn (primary)
+## LinkedIn (Lance, personal)
 
-A small business owner I know reached out last week. He runs a
-beautiful operation in his city. He pays for a Google rank
-tracker. He sent me his last 30 days of data.
+An old friend asked me to take a look at his small business this
+week. He has been paying for a Google rank tracker. He sent me
+his last 30 days.
 
-His average keyword position across the 26 terms he tracks is
-15.1. That is the best of any competitor in his category. His
-two closest rivals rank at 26.2 and 28.8.
+Average position 15.1 across 26 keywords. Best in his category.
+His two closest rivals rank at 26.2 and 28.8.
 
-His estimated traffic from those keywords. Zero.
+His estimated traffic. Zero.
 
-The two competitors with worse rankings are getting 44 and 72
-visits. Worse rank, more traffic. He is winning the leaderboard
-and losing the customer.
+Theirs. 44 and 72.
+
+Worse rank, more traffic. He is winning the leaderboard and
+losing the customer.
 
 Here is what is happening. Apple Intelligence is on by default
-in Safari on every recent iPhone. Google AI Overviews now sit
-above the blue links for the queries his buyers actually search.
+in Safari on every recent iPhone. Google AI Overviews sit above
+the blue links for the queries his buyers actually search.
 ChatGPT and Perplexity answer the question before anyone reaches
-a search results page. The rank does not matter if the click
-never happens.
+a results page.
 
-His rank tracker cannot tell him this, because his rank tracker
-tracks Google's blue-link results. The thing that is taking his
-buyers is happening in a layer his tool cannot see.
+The rank does not matter if the click never happens.
 
-The fix is not a better rank tracker. The fix is publishing
-structured data the AI engines can actually read. Restaurant or
-LocalBusiness schema. Menu schema. AggregateRating. OpeningHours
-and Reservation in machine-readable form. Citation-shaped content
-the engines can pull from. Six-engine tracking that shows whether
-his business gets named when a customer asks ChatGPT or Perplexity
-or Gemini or Claude or Google AI Overviews or Microsoft Copilot.
+His tracker cannot show him this, because his tracker watches
+Google's blue-link results. The thing taking his customers is
+happening one layer up, in answers his tool was not built to see.
 
-If you run a small business and your traffic is dropping while
-your Google rankings are holding or improving, that is not a
-mystery. That is the AI search shift, on your invoice.
+If your traffic is dropping while your Google rankings hold or
+improve, that is not a mystery. That is the AI search shift on
+your invoice.
 
-Free schema scorer at check.neverranked.com. Paste your domain.
-Ten seconds. You will see the gap.
+Anyone else seeing this in their data?
+
+(Free schema scorer at check.neverranked.com if you want to see
+where you stand.)
+
+
+## LinkedIn (Never Ranked company page version)
+
+Same story as Lance's personal post above, framed for the company
+page. Less first-person, more "we are seeing this pattern across
+our customer base." Use the personal version first. If the post
+performs, reshape and run from the company page two weeks later.
 
 ---
 

@@ -1,16 +1,19 @@
 # Platforms · ranking #1, traffic zero
 
-## LinkedIn · primary
+## LinkedIn (Lance, personal) · primary
 
 - **Format:** Single image post
-- **Hero:** 1200 × 630 version
-- **Caption:** LinkedIn block from caption.md
-- **Hashtags:** None (LinkedIn algorithm does not reward them anymore)
-- **Link:** Drop `check.neverranked.com` in the caption (LinkedIn
-  no longer aggressively suppresses external links the way it
-  used to a year ago, but you can also drop it in the first
-  comment if you want maximum reach)
-- **Tag:** Tag Never Ranked company page
+- **Hero:** `hero.png` (1376 × 768, close to LinkedIn's 1200 × 630 ratio, will display at full width on desktop and mobile feeds)
+- **Caption:** LinkedIn (Lance, personal) block from caption.md
+- **Hashtags:** None
+- **Link:** Drop `check.neverranked.com` parenthetically in the
+  caption rather than as a standalone link (the LinkedIn
+  algorithm has softened on outbound links recently but still
+  rewards posts that keep the click in-feed; the soft mention
+  reads less promotional). Or drop it in the first comment if
+  you prefer maximum feed reach.
+- **Tag:** Tag the Never Ranked company page in the caption
+  (helps the company page get incidental reach off your post)
 
 ## X / Threads · same day
 
