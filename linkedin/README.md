@@ -29,6 +29,7 @@ Everything you need to launch and run the NeverRanked LinkedIn presence.
 |---|---|---|---|---|
 | Post 01 | ![](images/post-01-scorecard.png) | [images/post-01-scorecard.png](images/post-01-scorecard.png) | [captions/post-01-chatgpt-mock.txt](captions/post-01-chatgpt-mock.txt) | [post-01.md](post-01.md) |
 | Post 02 | ![](images/post-02-truthcard.png) | [images/post-02-truthcard.png](images/post-02-truthcard.png) | [captions/post-02-truth-card.txt](captions/post-02-truth-card.txt) | [post-02.md](post-02.md) |
+| Post 03 | ![](images/post-03-scorecard.png) | [images/post-03-scorecard.png](images/post-03-scorecard.png) | [captions/post-03-aeo-scorecard.txt](captions/post-03-aeo-scorecard.txt) | [post-03.md](post-03.md) |
 
 ---
 

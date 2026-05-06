@@ -13,6 +13,7 @@ const targets = [
   { html: 'cover-source.html',             out: 'images/cover-1128x191.png',     w: 1128, h: 191 },
   { html: 'post-01-scorecard-source.html', out: 'images/post-01-scorecard.png',  w: 1200, h: 1200 },
   { html: 'post-02-truthcard-source.html', out: 'images/post-02-truthcard.png',  w: 1200, h: 1200 },
+  { html: 'post-03-scorecard-source.html', out: 'images/post-03-scorecard.png',  w: 1200, h: 1200 },
 ];
 
 const browser = await chromium.launch();

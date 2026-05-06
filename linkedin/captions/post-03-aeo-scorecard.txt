@@ -1,0 +1,13 @@
+Asked ChatGPT this morning: "best esthetician in Dana Point."
+
+It named three businesses. The one I was testing wasn't on the list.
+
+Her AEO Readiness Score across ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, and Microsoft Copilot came back at 65 of 100. Not bad. Better than most small businesses I run this on. But not enough to be one of the three names AI hands a customer when they ask for a recommendation.
+
+The businesses showing up in those answers aren't the biggest. They're the ones whose websites are formatted in a way AI engines can read with confidence. Wikidata entry. Organization schema on the homepage. Person schema on the founder. A clean sameAs link graph back to LinkedIn, Crunchbase, and any verified sources. Cross-platform listings that match.
+
+Most small businesses light up two of the eight signals that decide this. The ones lighting up six or more are getting handed customers their competitors don't even know they're losing.
+
+Free 30-second check at neverranked.com tells you which signals you're missing across all six engines. No email. No signup.
+
+Run it. Drop your score in the comments. I'll reply with the first thing I'd fix.
