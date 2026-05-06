@@ -9,6 +9,7 @@ list, and `social/` is intentionally excluded.
 ```
 social/
   README.md                this file
+  playbook.md              the production loop applied to NR (start here)
   calendar.md              the queue (chronological, with status)
   voice-quickref.md        distilled voice rules for fast reference
   sizes.md                 platform image / video dimensions (the lookup)
