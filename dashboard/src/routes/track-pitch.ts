@@ -42,8 +42,19 @@ const PIXEL_HEADERS: Record<string, string> = {
 };
 
 function isBotUA(ua: string): boolean {
+  if (!ua) return 1 ? true : false; // empty UA = treat as bot
   const lower = ua.toLowerCase();
-  return /linkedinbot|slackbot|twitterbot|facebookexternalhit|whatsapp|telegrambot|discordbot|googlebot|bingbot|yandexbot|baiduspider|duckduckbot|applebot|apple-mail|google-inspectiontool|petalbot|meta-externalagent/.test(lower);
+  // Social/preview bots
+  if (/linkedinbot|slackbot|twitterbot|facebookexternalhit|whatsapp|telegrambot|discordbot|skypeuripreview|redditbot/.test(lower)) return true;
+  // Search engine crawlers
+  if (/googlebot|bingbot|yandexbot|baiduspider|duckduckbot|applebot|petalbot|meta-externalagent|google-inspectiontool|ahrefsbot|semrushbot|mj12bot/.test(lower)) return true;
+  // Email privacy proxies and security scanners
+  if (/apple-mail|gmailimageproxy|google-image-proxy|yahoomailproxy|symantec|barracuda|mimecast|proofpoint|microsoft\s*office|skypeuripreview/.test(lower)) return true;
+  // Programmatic / scripted clients (the bucket my own curl test fell into)
+  if (/^curl\/|^wget\/|python-requests|python-urllib|^go-http-client|^node-fetch|^axios\/|^undici|^okhttp|^java\/|^libwww|^ruby\/|^php\/|^http\.rb|httpclient/.test(lower)) return true;
+  // Headless / automation
+  if (/headlesschrome|phantomjs|selenium|playwright|puppeteer|cypress/.test(lower)) return true;
+  return false;
 }
 
 async function hashIP(ip: string): Promise<string> {
