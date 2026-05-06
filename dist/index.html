@@ -13,18 +13,20 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Never Ranked — AI-native SEO and AEO agency">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Never Ranked — AI-Native SEO & AEO">
 <meta name="twitter:description" content="Search changed. Your visibility didn't. We fix that.">
-<meta name="twitter:image" content="https://neverranked.com/og.png">
+<meta name="twitter:image" content="https://neverranked.com/og.jpg">
 <link rel="alternate" type="application/rss+xml" title="Insights — Never Ranked" href="https://neverranked.com/blog/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -39,7 +41,7 @@
       "logo": {
         "@type": "ImageObject",
         "@id": "https://neverranked.com/#logo",
-        "url": "https://neverranked.com/og.png",
+        "url": "https://neverranked.com/og.jpg",
         "width": 1200,
         "height": 630,
         "caption": "Never Ranked"
@@ -107,7 +109,7 @@
           {
             "@type": "Offer",
             "name": "Pulse",
-            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
+            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
             "price": "497",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -366,11 +368,16 @@ h1,h2,h3,h4{
   font-style:italic;
   font-size:20px;
   letter-spacing:-.01em;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  min-width:44px;
+  justify-content:flex-start;
 }
 .nav .mark sup{
   font-family:var(--label);
   font-style:normal;
-  font-size:9px;
+  font-size:11px;
   letter-spacing:.2em;
   margin-left:4px;
   vertical-align:super;
@@ -395,6 +402,9 @@ h1,h2,h3,h4{
   font-weight:500;
   letter-spacing:.2em;
   transition:background .35s var(--ease),color .35s var(--ease);
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
 }
 .nav .right .nav-cta:hover{
   background:var(--gold);
@@ -415,10 +425,10 @@ h1,h2,h3,h4{
 .hamburger{
   display:none;
   position:fixed;
-  top:22px;left:var(--gutter);
+  top:14px;left:calc(var(--gutter) - 8px);
   z-index:200;
   background:none;border:none;cursor:pointer;
-  width:28px;height:20px;
+  width:44px;height:44px;
   padding:0;
   -webkit-tap-highlight-color:transparent;
 }
@@ -432,7 +442,7 @@ h1,h2,h3,h4{
   background:#f0ece3;
   transition:transform .3s var(--ease),opacity .3s var(--ease);
 }
-.hamburger span{top:9px}
+.hamburger span{top:21px;left:8px;right:8px}
 .hamburger span::before{content:"";top:-7px}
 .hamburger span::after{content:"";top:7px}
 .hamburger.active span{background:transparent}
@@ -625,7 +635,7 @@ h1,h2,h3,h4{
   to{opacity:1;transform:translateY(0)}
 }
 @media(max-width:720px){
-  .hero-scroll{right:24px;top:calc(100vh - 44px);top:calc(100svh - 44px);font-size:9px}
+  .hero-scroll{right:24px;top:calc(100vh - 44px);top:calc(100svh - 44px);font-size:11px}
   .hero-scroll-line{width:36px}
 }
 @media(prefers-reduced-motion:reduce){
@@ -881,18 +891,24 @@ h1,h2,h3,h4{
 .url-check[data-state="result"] .microcopy{display:none}
 .url-check[data-state="result"] .caption b{color:var(--text-mute)}
 .result-top{
-  display:grid;grid-template-columns:auto 1fr;align-items:end;
-  gap:28px;padding-bottom:22px;border-bottom:1px solid var(--line);
+  display:grid;grid-template-columns:auto 1fr;align-items:center;
+  gap:24px;padding-bottom:22px;border-bottom:1px solid var(--line);
 }
-.result-score{
+.result-gauge{flex-shrink:0;width:200px;height:130px;display:flex;align-items:center;justify-content:center;line-height:0}
+.result-gauge svg{width:100%;height:auto;display:block}
+.result-score-inline{
   font-family:var(--serif);font-style:italic;font-weight:400;
-  color:var(--gold);font-size:clamp(56px,8vw,96px);
+  color:var(--gold);font-size:clamp(36px,5vw,52px);
   line-height:.9;letter-spacing:-.02em;
 }
-.result-score .denom{
-  font-size:.3em;color:var(--text-faint);
+.result-score-inline .denom{
+  font-size:.4em;color:var(--text-faint);
   font-style:normal;font-family:var(--mono);
   margin-left:6px;letter-spacing:.02em;
+}
+@media(max-width:540px){
+  .result-top{grid-template-columns:1fr;gap:16px}
+  .result-gauge{width:180px;height:118px}
 }
 .result-meta{display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
 .result-meta .domain{
@@ -1907,6 +1923,21 @@ h1,h2,h3,h4{
   padding:6px 14px;
   white-space:nowrap;
 }
+.del-flag-soft{
+  position:absolute;
+  top:-1px;left:50%;
+  transform:translate(-50%,-50%);
+  background:var(--bg);
+  color:var(--text-faint);
+  border:1px solid var(--line);
+  font-family:var(--label);
+  text-transform:uppercase;
+  letter-spacing:.2em;
+  font-size:10px;
+  font-weight:500;
+  padding:5px 13px;
+  white-space:nowrap;
+}
 .del-tier-meta{
   display:flex;
   align-items:baseline;
@@ -2013,7 +2044,7 @@ h1,h2,h3,h4{
 }
 .broadcast-svg .brand-sublabel{
   font-family:var(--mono);
-  font-size:9px;
+  font-size:11px;
   letter-spacing:.12em;
   fill:var(--text-faint);
   text-transform:uppercase;
@@ -2068,6 +2099,98 @@ h1,h2,h3,h4{
 .broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:1.10s; }
 .broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.47s; }
 .broadcast-svg .bd-arc-6, .broadcast-svg .bd-endpoint-6{ animation-delay:1.84s; }
+
+/* "The honest comparison" — why we cost more. Names competitors
+   and prices in their own terms, then reframes NeverRanked's price
+   as the feature. Designed to be read as a single deliberate
+   statement, not a feature matrix. The vs-rule between competitor
+   name and claim creates the typographic rhythm of a list while the
+   takeaway block underneath drives the conversion message. */
+.vs-honest{
+  padding:96px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.vs-stack{
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  margin:24px 0 48px;
+  max-width:760px;
+}
+.vs-line{
+  display:flex;
+  align-items:baseline;
+  gap:18px;
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.6;
+  color:var(--text-soft);
+}
+.vs-line .vs-comp{
+  font-family:var(--serif);
+  font-style:italic;
+  font-size:22px;
+  color:var(--gold);
+  font-weight:400;
+  letter-spacing:-.005em;
+  min-width:120px;
+}
+.vs-line .vs-rule{
+  flex:0 0 auto;
+  height:1px;
+  width:32px;
+  background:linear-gradient(90deg,var(--gold-dim),transparent);
+  opacity:0.6;
+}
+.vs-line .vs-claim{
+  flex:1;
+  color:var(--text-soft);
+}
+.vs-divider{
+  width:64px;
+  height:1px;
+  background:var(--gold);
+  opacity:0.4;
+  margin:48px auto 36px;
+}
+.vs-takeaway{
+  text-align:center;
+  max-width:640px;
+  margin:0 auto;
+}
+.vs-takeaway p{
+  font-family:var(--mono);
+  font-size:15px;
+  line-height:1.85;
+  color:var(--text-soft);
+  margin:0 0 24px;
+  max-width:none;
+}
+.vs-takeaway p strong{
+  font-family:var(--serif);
+  font-style:italic;
+  font-weight:400;
+  font-size:32px;
+  color:var(--text);
+  line-height:1.2;
+  letter-spacing:-.01em;
+  display:block;
+  margin:8px 0 12px;
+}
+.vs-takeaway .vs-final{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-mute);
+  margin-top:32px;
+  letter-spacing:.005em;
+}
+@media(max-width:640px){
+  .vs-honest{ padding:64px 0 56px; }
+  .vs-line{ flex-direction:column; gap:6px; align-items:flex-start; }
+  .vs-line .vs-rule{ display:none; }
+  .vs-line .vs-comp{ min-width:0; font-size:18px; }
+  .vs-takeaway p strong{ font-size:24px; }
+}
 .broadcast-caption{
   max-width:60ch;
   font-family:var(--mono);
@@ -3260,7 +3383,7 @@ h1,h2,h3,h4{
   color:var(--gold);
   margin-left:8px;
   letter-spacing:.22em;
-  font-size:9px;
+  font-size:11px;
 }
 .field input,
 .field textarea{
@@ -3426,7 +3549,7 @@ h1,h2,h3,h4{
   .footer .c{text-align:center}
   .footer .r{text-align:right}
 }
-.footer a{color:var(--text-mute);transition:color .3s}
+.footer a{color:var(--text-mute);transition:color .3s;display:inline-block;padding:12px 0}
 .footer a:hover{color:var(--gold)}
 
 /* ---------- reveal ---------- */
@@ -4344,7 +4467,7 @@ h1,h2,h3,h4{
   .dash-mock-body{grid-template-columns:1fr}
   .dash-widget{min-height:auto}
   .dash-widget-stat .big{font-size:44px}
-  .dash-matrix-engines{font-size:9px}
+  .dash-matrix-engines{font-size:11px}
 }
 
 /* ---------- services lede (positioning line) ---------- */
@@ -4398,7 +4521,7 @@ h1,h2,h3,h4{
 .svc-converge .gold{fill:#c9a84c}
 @media(max-width:720px){
   .svc-converge{margin:0 auto 48px}
-  .svc-converge .label{font-size:9px}
+  .svc-converge .label{font-size:11px}
 }
 
 /* ---------- fit (who this is for) ---------- */
@@ -4628,6 +4751,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 <noscript><img height="1" width="1" style="display:none" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_PARTNER_ID&fmt=gif"/></noscript>
 -->
 
+<!-- Cloudflare Web Analytics -->
+<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
+<!-- End Cloudflare Web Analytics -->
 
 </head>
 <body>
@@ -4682,7 +4808,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
         <div class="reveal" style="transition-delay:.15s">
           <p class="hero-sub" style="margin-bottom:36px">
-            <b>When your customer asks ChatGPT, Claude, or Perplexity to find a business, AI picks one or two.</b> We make sure yours is one of them. The agencies you've worked with don't do this work yet.
+            <b>When your customer asks an AI engine to find a business, it picks one or two.</b> We make sure yours is one of them.
+            <br><br>
+            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations monitored across six engines weekly.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4692,7 +4820,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             </div>
             <form class="field" id="checkForm" novalidate>
               <span class="prefix">https://</span>
-              <input type="text" id="checkInput" placeholder="yourdomain.com" autocomplete="off" spellcheck="false" required>
+              <input type="url" id="checkInput" placeholder="yourdomain.com" inputmode="url" autocomplete="url" autocapitalize="off" autocorrect="off" spellcheck="false" required>
               <button type="submit" class="submit">See my score <span class="arrow"></span></button>
             </form>
             <div class="status" id="checkStatus" aria-live="polite"></div>
@@ -4701,17 +4829,25 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="sep">&middot;</span>
               <a href="#audit">or start with the $750 audit</a>
             </div>
+            <div class="hero-proof" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(232,199,103,.12);font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.6">
+              <a href="/case-studies/montaic/" style="color:inherit;text-decoration:none;display:block">
+                <span style="color:var(--gold)">&rarr;</span>
+                How <b style="color:var(--text-soft);font-weight:500">Montaic</b> became the #1 AI-cited brand in their fitness category in nine months. <span style="color:var(--gold);text-decoration:underline">Read the case &rarr;</span>
+              </a>
+            </div>
             <div class="url-result" id="checkResult" aria-live="polite">
               <div class="result-top">
-                <div class="result-score"><span id="resultScore">0</span><span class="denom">/100</span></div>
+                <div class="result-gauge" id="resultGauge" aria-hidden="true"></div>
                 <div class="result-meta">
+                  <div class="result-score-inline"><span id="resultScore">0</span><span class="denom">/100</span></div>
                   <span class="domain" id="resultDomain">yourdomain.com</span>
                   <span class="grade">AEO grade <b id="resultGrade">&mdash;</b></span>
                 </div>
               </div>
               <div class="result-signals" id="resultSignals"></div>
               <div class="result-ctas">
-                <a class="primary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report <span class="arrow"></span></a>
+                <a class="primary" id="resultCtaPulse" href="https://app.neverranked.com/checkout/pulse">Fix this for $497/mo with Pulse <span class="arrow"></span></a>
+                <a class="secondary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report</a>
                 <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $750 audit</a>
                 <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
               </div>
@@ -4733,6 +4869,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="stmt">One new client <em>pays for a year.</em></div>
           <div class="tag">ROI</div>
         </div>
+      </div>
+
+      <div class="reveal" style="transition-delay:.45s;margin-top:48px;font-family:var(--mono);font-size:12px;color:var(--text-faint);letter-spacing:.04em;line-height:1.7;max-width:680px">
+        <span style="color:var(--gold);letter-spacing:.2em;text-transform:uppercase;font-size:10px;margin-right:10px">§ Not for</span>
+        Enterprise SaaS with an in-house SEO team. Self-serve tool shoppers. Anyone who wants to wait six months to see movement. <a href="#fit" style="color:var(--gold);text-decoration:underline">Why &rarr;</a>
       </div>
     </div>
     <div class="hero-scroll" aria-hidden="true">
@@ -4834,41 +4975,42 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
                cos/sin: 30deg = 0.866/0.5, 60deg = 0.5/0.866 -->
 
           <!-- Top: ChatGPT (90 degrees) -->
-          <line class="bd-arc bd-arc-1" x1="300" y1="270" x2="300" y2="90"/>
-          <circle class="bd-endpoint bd-endpoint-1" cx="300" cy="90" r="6"/>
-          <text class="engine-label" x="300" y="74" text-anchor="middle">ChatGPT</text>
-          <text class="engine-sublabel" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
+          <line class="bd-arc bd-arc-1" data-engine="chatgpt" x1="300" y1="270" x2="300" y2="90"/>
+          <circle class="bd-endpoint bd-endpoint-1" data-engine="chatgpt" cx="300" cy="90" r="6"/>
+          <text class="engine-label" data-engine="chatgpt" x="300" y="74" text-anchor="middle">ChatGPT</text>
+          <text class="engine-sublabel" data-engine="chatgpt" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
 
           <!-- Upper-right: Claude (30 degrees) -->
-          <line class="bd-arc bd-arc-2" x1="300" y1="270" x2="455.88" y2="180"/>
-          <circle class="bd-endpoint bd-endpoint-2" cx="455.88" cy="180" r="6"/>
-          <text class="engine-label" x="475" y="166" text-anchor="start">Claude</text>
-          <text class="engine-sublabel" x="475" y="182" text-anchor="start">Anthropic</text>
+          <line class="bd-arc bd-arc-2" data-engine="claude" x1="300" y1="270" x2="455.88" y2="180"/>
+          <circle class="bd-endpoint bd-endpoint-2" data-engine="claude" cx="455.88" cy="180" r="6"/>
+          <text class="engine-label" data-engine="claude" x="475" y="166" text-anchor="start">Claude</text>
+          <text class="engine-sublabel" data-engine="claude" x="475" y="182" text-anchor="start">Anthropic</text>
 
           <!-- Lower-right: Gemini (330 degrees) -->
-          <line class="bd-arc bd-arc-3" x1="300" y1="270" x2="455.88" y2="360"/>
-          <circle class="bd-endpoint bd-endpoint-3" cx="455.88" cy="360" r="6"/>
-          <text class="engine-label" x="475" y="364" text-anchor="start">Gemini</text>
-          <text class="engine-sublabel" x="475" y="380" text-anchor="start">Google &middot; web-grounded</text>
+          <line class="bd-arc bd-arc-3" data-engine="gemini" x1="300" y1="270" x2="455.88" y2="360"/>
+          <circle class="bd-endpoint bd-endpoint-3" data-engine="gemini" cx="455.88" cy="360" r="6"/>
+          <text class="engine-label" data-engine="gemini" x="475" y="364" text-anchor="start">Gemini</text>
+          <text class="engine-sublabel" data-engine="gemini" x="475" y="380" text-anchor="start">Google &middot; web-grounded</text>
 
           <!-- Bottom: Google AI Overviews (270 degrees) -->
-          <line class="bd-arc bd-arc-4" x1="300" y1="270" x2="300" y2="450"/>
-          <circle class="bd-endpoint bd-endpoint-4" cx="300" cy="450" r="6"/>
-          <text class="engine-label" x="300" y="478" text-anchor="middle">Google AI Overviews</text>
-          <text class="engine-sublabel" x="300" y="494" text-anchor="middle">SERP &middot; live via DataForSEO</text>
+          <line class="bd-arc bd-arc-4" data-engine="aio" x1="300" y1="270" x2="300" y2="450"/>
+          <circle class="bd-endpoint bd-endpoint-4" data-engine="aio" cx="300" cy="450" r="6"/>
+          <text class="engine-label" data-engine="aio" x="300" y="478" text-anchor="middle">Google AI Overviews</text>
+          <text class="engine-sublabel" data-engine="aio" x="300" y="494" text-anchor="middle">SERP &middot; live via DataForSEO</text>
 
           <!-- Lower-left: Microsoft Copilot (210 degrees) -->
-          <line class="bd-arc bd-arc-5" x1="300" y1="270" x2="144.12" y2="360"/>
-          <circle class="bd-endpoint bd-endpoint-5" cx="144.12" cy="360" r="6"/>
-          <text class="engine-label" x="125" y="364" text-anchor="end">Microsoft Copilot</text>
-          <text class="engine-sublabel" x="125" y="380" text-anchor="end">Bing &middot; web-grounded</text>
+          <line class="bd-arc bd-arc-5" data-engine="copilot" x1="300" y1="270" x2="144.12" y2="360"/>
+          <circle class="bd-endpoint bd-endpoint-5" data-engine="copilot" cx="144.12" cy="360" r="6"/>
+          <text class="engine-label" data-engine="copilot" x="125" y="364" text-anchor="end">Microsoft Copilot</text>
+          <text class="engine-sublabel" data-engine="copilot" x="125" y="380" text-anchor="end">Bing &middot; web-grounded</text>
 
           <!-- Upper-left: Perplexity (150 degrees) -->
-          <line class="bd-arc bd-arc-6" x1="300" y1="270" x2="144.12" y2="180"/>
-          <circle class="bd-endpoint bd-endpoint-6" cx="144.12" cy="180" r="6"/>
-          <text class="engine-label" x="125" y="166" text-anchor="end">Perplexity</text>
-          <text class="engine-sublabel" x="125" y="182" text-anchor="end">web-grounded</text>
+          <line class="bd-arc bd-arc-6" data-engine="perplexity" x1="300" y1="270" x2="144.12" y2="180"/>
+          <circle class="bd-endpoint bd-endpoint-6" data-engine="perplexity" cx="144.12" cy="180" r="6"/>
+          <text class="engine-label" data-engine="perplexity" x="125" y="166" text-anchor="end">Perplexity</text>
+          <text class="engine-sublabel" data-engine="perplexity" x="125" y="182" text-anchor="end">web-grounded</text>
         </svg>
+
         <div class="broadcast-caption">
           <strong>Six engines tracked weekly.</strong> Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
         </div>
@@ -4876,20 +5018,60 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
-  <!-- ============ DELIVERABLES (TOP 5 PER TIER) ============ -->
-  <section class="deliverables" id="deliverables">
+  <!-- ============ WHY WE COST MORE ============ -->
+  <!-- Direct, named comparison block. Names competitors and prices
+       explicitly so the prospect doesn't have to research; reframes
+       NeverRanked's price as the feature (we ship work, not
+       dashboards). Per Hello Momentum #15 -- knowing what we are not.
+       We are not a tracking dashboard. We are the team that ships. -->
+  <section class="vs-honest">
     <div class="wrap">
       <div class="section-label reveal">
         <span class="num">§</span>
-        <span>What you get</span>
+        <span>The honest comparison</span>
         <span class="rule"></span>
-        <span>three plans / five things each</span>
+        <span>why we cost more</span>
+      </div>
+      <div class="vs-stack reveal">
+        <div class="vs-line">
+          <span class="vs-comp">Otterly</span>
+          <span class="vs-rule"></span>
+          <span class="vs-claim">tracks 4 engines for $29 a month. Gemini and AI Mode are paid add-ons.</span>
+        </div>
+        <div class="vs-line">
+          <span class="vs-comp">Peec</span>
+          <span class="vs-rule"></span>
+          <span class="vs-claim">starts at $89 a month for 3 engines. Each additional engine is a paid add-on.</span>
+        </div>
+        <div class="vs-line">
+          <span class="vs-comp">Profound</span>
+          <span class="vs-rule"></span>
+          <span class="vs-claim">$499 a month tracks ChatGPT only. Multi-engine coverage starts at $2,000 a month.</span>
+        </div>
+      </div>
+      <div class="vs-divider reveal" style="transition-delay:.1s"></div>
+      <div class="vs-takeaway reveal" style="transition-delay:.15s">
+        <p>None of them deploy schemas to your live site.<br>None ship content drafts in your voice.<br>None publish for you.</p>
+        <p><strong>They sell dashboards. We ship the work.</strong></p>
+        <p class="vs-final">NeverRanked Pulse starts at $497 a month. Same band as Peec Enterprise and Profound Lite. We track six engines and we deploy the schema. They track fewer and hand you a report.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DELIVERABLES (TOP 5 PER TIER) ============ -->
+  <section class="deliverables" id="pricing">
+    <div class="wrap">
+      <div class="section-label reveal">
+        <span class="num">§05</span>
+        <span>Pricing</span>
+        <span class="rule"></span>
+        <span>four ways in</span>
       </div>
 
       <div class="deliverables-head">
-        <h2 class="reveal">Five things, <em>per plan.</em></h2>
+        <h2 class="reveal">Four ways <em>in.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          We get the question a lot. So here it is, plain. Audit is the one-time diagnosis. Signal is the ongoing AI visibility system. Amplify is Signal plus a content production engine that turns dashboard insight into shipped pages.
+          <strong>Pulse</strong> if you want to know where you stand. <strong>Signal</strong> if you want to be cited. <strong>Amplify</strong> if you want it shipped without you. <strong>Audit</strong> (one-time) before any of them. Fully credited toward your first month if you upgrade within thirty days.
         </p>
       </div>
 
@@ -4917,6 +5099,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <!-- PULSE -->
         <div class="del-tier">
+          <span class="del-flag-soft">Start here</span>
           <div class="del-tier-meta"><span>§01 / Tier I</span><b>Entry</b></div>
           <h3><svg class="tier-icon tier-icon-pulse" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
@@ -4931,7 +5114,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="del-num">01</span>
               <div>
                 <strong>Monthly Visibility Index, delivered as a PDF.</strong>
-                Your citation share across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
+                Your citation share across all six engines: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
               </div>
             </li>
             <li>
@@ -4968,7 +5151,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <!-- SIGNAL -->
         <div class="del-tier featured">
-          <span class="del-flag">Most teams start here</span>
+          <span class="del-flag">Best value</span>
           <div class="del-tier-meta"><span>§02 / Tier II</span><b>Featured</b></div>
           <h3><svg class="tier-icon tier-icon-signal" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
@@ -4994,7 +5177,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="del-num">02</span>
               <div>
                 <strong>Schema fixes that ship to your live site without dev work.</strong>
-                One snippet pasted in your site's head once. Every improvement pushes within an hour, but only after our quality grader confirms the schema is complete &mdash; partial schema costs 18 percentage points of citation share. No CMS access needed.
+                One snippet pasted in your site's head once. Every improvement pushes within an hour, but only after our quality grader confirms the schema is complete. Partial schema costs 18 percentage points of citation share. No CMS access needed.
               </div>
             </li>
             <li>
@@ -5575,7 +5758,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </p>
       </div>
 
-      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 5 engines">
+      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 6 engines">
         <div class="dash-mock-chrome">
           <div class="dash-mock-url">
             <b>app.neverranked.com</b><span class="slash">/</span>demo
@@ -5724,7 +5907,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <div class="dash-card">
           <div class="dash-icon">&#10003;</div>
           <div class="dash-title">AI citation tracking</div>
-          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, and Google AI Overviews. See which queries cite you, which cite competitors, and your share of answer over time.</div>
+          <div class="dash-desc">Weekly citation runs across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. See which queries cite you, which cite competitors, and your share of answer over time.</div>
         </div>
         <div class="dash-card">
           <div class="dash-icon">&#9638;</div>
@@ -5913,18 +6096,18 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="roi-sources" id="roi-sources">
             <p class="roi-sources-intro">Industry value estimates are derived from the following published sources. Adjust above for your real number.</p>
             <ul class="roi-sources-list">
-              <li><strong>Med Spa:</strong> American Med Spa Association, <em>2024 State of the Medical Spa Industry Report</em> &mdash; avg $504 per patient visit. <a href="https://americanmedspa.org/news/2024-medical-spa-state-of-the-industry-executive-report-recap/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Med Spa:</strong> American Med Spa Association, <em>2024 State of the Medical Spa Industry Report</em>. Avg $504 per patient visit. <a href="https://americanmedspa.org/news/2024-medical-spa-state-of-the-industry-executive-report-recap/" target="_blank" rel="noopener">Source</a>.</li>
               <li><strong>Dentist:</strong> ADA Health Policy Institute, <em>National Dental Expenditures, 2024</em>. <a href="https://www.ada.org/resources/research/health-policy-institute/dental-care-market/national-dental-expenses" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Personal Injury Law:</strong> CasePeer, <em>Personal Injury Settlement Amount Examples 2025</em> &mdash; avg settlements $24K&ndash;$55K, 33% contingency. <a href="https://www.casepeer.com/blog/personal-injury-settlement-amount-examples/" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Family Law:</strong> Nolo, <em>How Much Will My Divorce Cost?</em> &mdash; avg attorney fees $11,300. <a href="https://www.nolo.com/legal-encyclopedia/ctp/cost-of-divorce.html" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Personal Injury Law:</strong> CasePeer, <em>Personal Injury Settlement Amount Examples 2025</em>. Avg settlements $24K&ndash;$55K, 33% contingency. <a href="https://www.casepeer.com/blog/personal-injury-settlement-amount-examples/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Family Law:</strong> Nolo, <em>How Much Will My Divorce Cost?</em> Avg attorney fees $11,300. <a href="https://www.nolo.com/legal-encyclopedia/ctp/cost-of-divorce.html" target="_blank" rel="noopener">Source</a>.</li>
               <li><strong>Real Estate:</strong> RealEstateWitch / RealTrends commission data, 2024. NAR does not set commissions. <a href="https://www.realestatewitch.com/average-real-estate-commission/" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Roofing:</strong> Angi, <em>How Much Does Roof Replacement Cost? 2024&ndash;2025 Data</em> &mdash; national avg $9,540. <a href="https://www.angi.com/articles/how-much-does-roof-replacement-cost.htm" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>HVAC:</strong> HomeAdvisor, <em>HVAC Installation Cost Guide, 2024</em> &mdash; avg replacement $7,500. <a href="https://www.homeadvisor.com/cost/heating-and-cooling/" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Restaurant:</strong> U.S. Bureau of Labor Statistics, <em>Consumer Expenditures &mdash; 2024</em> &mdash; food away from home $3,945/yr per household. <a href="https://www.bls.gov/news.release/cesan.nr0.htm" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Financial Advisor:</strong> Kitces.com, <em>Independent Financial Advisor Fee Comparison, 2024</em> &mdash; median advisor fee 1% AUM. <a href="https://www.kitces.com/blog/independent-financial-advisor-fees-comparison-typical-aum-wealth-management-fee/" target="_blank" rel="noopener">Source</a>.</li>
-              <li><strong>Chiropractic / PT:</strong> Journal of Manipulative and Physiological Therapeutics, 2024 utilization analysis &mdash; $677/yr per patient over 8.2 visits. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2875758/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Roofing:</strong> Angi, <em>How Much Does Roof Replacement Cost? 2024&ndash;2025 Data</em>. National avg $9,540. <a href="https://www.angi.com/articles/how-much-does-roof-replacement-cost.htm" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>HVAC:</strong> HomeAdvisor, <em>HVAC Installation Cost Guide, 2024</em>. Avg replacement $7,500. <a href="https://www.homeadvisor.com/cost/heating-and-cooling/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Restaurant:</strong> U.S. Bureau of Labor Statistics, <em>Consumer Expenditures, 2024</em>. Food away from home $3,945/yr per household. <a href="https://www.bls.gov/news.release/cesan.nr0.htm" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Financial Advisor:</strong> Kitces.com, <em>Independent Financial Advisor Fee Comparison, 2024</em>. Median advisor fee 1% AUM. <a href="https://www.kitces.com/blog/independent-financial-advisor-fees-comparison-typical-aum-wealth-management-fee/" target="_blank" rel="noopener">Source</a>.</li>
+              <li><strong>Chiropractic / PT:</strong> Journal of Manipulative and Physiological Therapeutics, 2024 utilization analysis. $677/yr per patient over 8.2 visits. <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC2875758/" target="_blank" rel="noopener">Source</a>.</li>
             </ul>
-            <p class="roi-sources-disclaimer">All figures are national averages or industry-wide estimates current as of 2024&ndash;2025. Your real numbers will vary by region, practice mix, and customer profile &mdash; use the &ldquo;Adjust assumptions&rdquo; button to model your own.</p>
+            <p class="roi-sources-disclaimer">All figures are national averages or industry-wide estimates current as of 2024&ndash;2025. Your real numbers will vary by region, practice mix, and customer profile. Use the &ldquo;Adjust assumptions&rdquo; button to model your own.</p>
           </div>
         </div>
       </div>
@@ -5974,83 +6157,14 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
-  <!-- ============ PRICING ============ -->
-  <section class="pricing" id="pricing">
+  <!-- ============ PRICING FAQ ============ -->
+  <section class="pricing" id="pricing-faq">
     <div class="wrap">
       <div class="section-label reveal">
-        <span class="num">§05</span>
-        <span>Pricing</span>
+        <span class="num">§05.2</span>
+        <span>FAQ</span>
         <span class="rule"></span>
-        <span>02 / tiers</span>
-      </div>
-
-      <div class="pricing-head">
-        <h2 class="reveal">Two ways <em>to start.</em></h2>
-        <p class="reveal" style="transition-delay:.1s">
-          Three-month minimum, then month-to-month. The price you see is the price you pay. No set-up fees, no onboarding tax, no annual contract you'll quietly resent.
-        </p>
-        <p class="reveal" style="transition-delay:.18s;margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
-          The minimum exists because this work compounds. Month one builds the foundation. Month two surfaces signals. Month three is where citations start. Quitting before then is quitting before the return.
-        </p>
-        <p class="reveal" style="transition-delay:.22s;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--text-faint);max-width:520px;line-height:1.7">
-          Concerned about giving us access to your site? <a href="/security/" style="color:var(--gold);text-decoration:underline">Read exactly what we touch and what we don't &rarr;</a>
-        </p>
-      </div>
-
-      <div class="pricing-grid reveal-stagger">
-        <div class="tier">
-          <div class="meta"><span>§00 / Start here</span><b>One-time</b></div>
-          <h3>Audit</h3>
-          <p class="desc">Before you hire anyone, see what's broken.</p>
-          <div class="price"><span class="sym">$</span>500<span class="per">once</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Technical audit</li>
-            <li>Schema review</li>
-            <li>Keyword gap analysis</li>
-            <li>AI citation audit</li>
-            <li>Competitor teardown</li>
-            <li><b>90-day roadmap</b>, yours to keep</li>
-            <li>Delivered in <b>48 hours</b></li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/audit" class="choose">Book my audit</a>
-        </div>
-
-        <div class="tier featured">
-          <span class="flag">Most teams start here</span>
-          <div class="meta"><span>§01 / Tier I</span><b>Featured</b></div>
-          <h3>Signal</h3>
-          <p class="desc">For teams ready to be cited.</p>
-          <div class="price"><span class="sym">$</span>2,000<span class="per">/mo</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Weekly citation tracking across <b>ChatGPT, Perplexity, Gemini, and AI Overviews</b></li>
-            <li>Schema fixes auto-pushed to your live site within an hour</li>
-            <li>Live dashboard, refreshed every Monday</li>
-            <li>Auto-updating 90-day roadmap</li>
-            <li>Forward-ready Monday digest</li>
-            <li><b>Three-month</b> minimum, then month-to-month</li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/signal" class="choose">Start Signal</a>
-        </div>
-
-        <div class="tier limited">
-          <span class="flag full">Limited availability</span>
-          <div class="meta"><span>§02 / Tier II</span><b>Full Cover</b></div>
-          <h3>Amplify</h3>
-          <p class="desc">For teams ready to ship the work, not just see what's needed.</p>
-          <div class="price"><span class="sym">$</span>4,500<span class="per">/mo</span></div>
-          <div class="divider"></div>
-          <ul>
-            <li>Everything in Signal, plus:</li>
-            <li>Brand voice fingerprint trained on your existing writing</li>
-            <li>Citation-shaped content drafted in your voice</li>
-            <li>Auto-publish to <b>WordPress, Webflow, or Shopify</b></li>
-            <li>Self-filling content calendar</li>
-            <li><b>Three-month</b> minimum, then month-to-month</li>
-          </ul>
-          <a href="https://app.neverranked.com/checkout/amplify" class="choose">Start Amplify</a>
-        </div>
+        <span>before the first email</span>
       </div>
 
       <div class="pricing-faq reveal">
@@ -6210,7 +6324,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
         <div class="audit-body reveal" style="transition-delay:.15s">
           <p>
-            Five hundred dollars. Paid once. A full technical and content audit across classic SEO and AEO, plus a ninety-day roadmap you can execute in-house, hand to your current agency, or hand to us. Whichever makes sense after you read it.
+            Seven hundred fifty dollars. Paid once, fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within thirty days. A full technical and content audit across classic SEO and AEO, plus a ninety-day roadmap you can execute in-house, hand to your current agency, or hand to us. Whichever makes sense after you read it.
           </p>
           <ul class="deliverables">
             <li>Technical Audit</li>
@@ -6738,10 +6852,69 @@ window.scrollTo(0,0);
     var raw = report.url || report.domain || '';
     return raw.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
   }
+
+  // Inline gauge SVG, ported from the dashboard's entity-graph-render
+  // module so the homepage can render the signature gauge instantly
+  // when the URL check completes -- no iframe, no second network call.
+  // Quiet glow + tick marks + glowing terminator dot. Kept compact
+  // (200x130 viewbox) so it fits the URL-check result panel without
+  // dominating the headline.
+  function renderGaugeSvg(score){
+    var s = Math.max(0, Math.min(100, score|0));
+    var pct = s/100;
+    var W=200,H=130,CX=W/2,CY=118,R=84;
+    function pol(a){var r=(a*Math.PI)/180;return{x:CX+R*Math.cos(r),y:CY+R*Math.sin(r)};}
+    function arc(a1,a2){var p=pol(a1),q=pol(a2),L=(a2-a1>180?1:0);
+      return 'M '+p.x.toFixed(2)+' '+p.y.toFixed(2)+' A '+R+' '+R+' 0 '+L+' 1 '+q.x.toFixed(2)+' '+q.y.toFixed(2);}
+    var trackD=arc(180,360);
+    var fillEnd=180+180*pct;
+    var fillD=pct>0?arc(180,fillEnd):'';
+    var tip=pol(fillEnd);
+    var grade=s>=80?'Strong':s>=50?'Building':s>=25?'Weak':'Absent';
+    var gradeColor=s>=80?'#4ade80':s>=50?'#e8c767':'#e88a6e';
+    var ticks='';
+    for(var i=0;i<=4;i++){
+      var a=180+(i/4)*180,r=(a*Math.PI)/180;
+      var ix=CX+(R-15)*Math.cos(r),iy=CY+(R-15)*Math.sin(r);
+      var ox=CX+R*Math.cos(r),oy=CY+R*Math.sin(r);
+      var lit=(i/4)<=pct;
+      ticks+='<line x1="'+ix.toFixed(2)+'" y1="'+iy.toFixed(2)+'" x2="'+ox.toFixed(2)+'" y2="'+oy.toFixed(2)+'" stroke="'+(lit?'#c9a84c':'#222')+'" stroke-width="'+(lit?1.5:1)+'" opacity="'+(lit?0.55:0.4)+'"/>';
+    }
+    return ''
+      +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="AEO score '+s+' out of 100">'
+      +'<defs>'
+      +'<filter id="ggGold" x="-50%" y="-50%" width="200%" height="200%">'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b1"/>'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b2"/>'
+      +  '<feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>'
+      +'</filter>'
+      +'<linearGradient id="ggDial" x1="0%" y1="0%" x2="100%" y2="0%">'
+      +  '<stop offset="0%" stop-color="#c9a84c" stop-opacity="0.85"/>'
+      +  '<stop offset="50%" stop-color="#e8c767" stop-opacity="1"/>'
+      +  '<stop offset="100%" stop-color="#c9a84c" stop-opacity="0.95"/>'
+      +'</linearGradient>'
+      +'</defs>'
+      + ticks
+      +'<path d="'+trackD+'" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round" opacity="0.7"/>'
+      +(fillD?(
+         '<path d="'+fillD+'" fill="none" stroke="#c9a84c" stroke-width="9" stroke-linecap="round" filter="url(#ggGold)" opacity="0.55"/>'
+        +'<path d="'+fillD+'" fill="none" stroke="url(#ggDial)" stroke-width="9" stroke-linecap="round"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="16" fill="#e8c767" opacity="0.08"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="11" fill="#e8c767" opacity="0.18"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="8" fill="#e8c767" opacity="0.4"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="6" fill="#e8c767"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="2.6" fill="#fff" opacity="0.92"/>'
+       ):'')
+      +'<text x="'+CX+'" y="'+(CY+12)+'" text-anchor="middle" font-family="SF Mono, ui-monospace, monospace" font-size="9" fill="'+gradeColor+'" letter-spacing="0.32em" text-transform="uppercase" font-weight="500">— '+grade+' —</text>'
+      +'</svg>';
+  }
+
   function renderResult(report){
     domainEl.textContent=displayUrl(report);
     gradeEl.textContent=report.grade||'—';
     animateNumber(scoreEl, report.aeo_score||0);
+    var gaugeEl=document.getElementById('resultGauge');
+    if(gaugeEl) gaugeEl.innerHTML=renderGaugeSvg(report.aeo_score||0);
     var signals=(report.technical_signals||[]).slice(0,4);
     signalsEl.innerHTML=signals.map(function(s){
       return '<div class="result-signal '+(s.status||'good')+'">'+
@@ -6990,6 +7163,7 @@ window.scrollTo(0,0);
     hide();
   });
 })();
+
 </script>
 
 </body>

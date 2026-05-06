@@ -13,11 +13,13 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/agencies/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -40,6 +42,7 @@
 }
 </script>
 <style>
+code{overflow-wrap:anywhere;word-break:break-word}
 :root{
   --bg:#121212;
   --bg-lift:#1c1c1c;
@@ -106,8 +109,14 @@ body::before{
   padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
   mix-blend-mode:difference;color:#f0ece3;
 }
-.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
-.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  min-width:44px;
+  justify-content:flex-start;
+}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:11px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
 .nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
 .nav .right a{transition:opacity .25s}
 .nav .right a:hover{opacity:.7}
@@ -155,10 +164,10 @@ p a:hover,ul a:hover{opacity:.8}
 .hamburger{
   display:none;
   position:fixed;
-  top:22px;left:var(--gutter);
+  top:14px;left:calc(var(--gutter) - 8px);
   z-index:200;
   background:none;border:none;cursor:pointer;
-  width:28px;height:20px;
+  width:44px;height:44px;
   padding:0;
   -webkit-tap-highlight-color:transparent;
 }
@@ -168,7 +177,7 @@ p a:hover,ul a:hover{opacity:.8}
   display:block;position:absolute;left:0;right:0;height:2px;
   background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
 }
-.hamburger span{top:9px}
+.hamburger span{top:21px;left:8px;right:8px}
 .hamburger span::before{content:"";top:-7px}
 .hamburger span::after{content:"";top:7px}
 .hamburger.active span{background:transparent}
@@ -205,6 +214,7 @@ p a:hover,ul a:hover{opacity:.8}
   .nav .right a{display:none}
 }
 </style>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -307,7 +317,7 @@ p a:hover,ul a:hover{opacity:.8}
     </div>
     <p>You bill the client at retail under your brand. Your share is what you keep monthly per active client. One client unlocks the reseller rate. Billed monthly to you on the active-client count. No annual lock.</p>
     <ul>
-      <li><b>Audit -- $500 retail, one-time.</b> <span style="color:var(--gold)">$300 to you</span> (60/40 split, agency / NeverRanked). Delivered in 48 hours. The audit belongs to the client.</li>
+      <li><b>Audit -- $500 reseller-introduced price ($750 direct), one-time.</b> No referral fee on the audit itself. The audit belongs to the client. The full $500 credits toward their first month if they continue on Pulse, Signal, or Amplify within 30 days. Your value here is the lower entry price you can offer the client and the credit that flows into their first recurring month.</li>
       <li><b>Signal -- $2,000/mo retail.</b> <span style="color:var(--gold)">$1,200/mo to you</span> (60/40 split).</li>
       <li><b>Amplify -- $4,500/mo retail.</b> <span style="color:var(--gold)">$2,700/mo to you</span> (60/40 split, capped at 6 active clients globally).</li>
     </ul>

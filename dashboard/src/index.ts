@@ -107,6 +107,364 @@ export default {
 
     // --- Public routes (no auth required) ---
 
+    // Cold-email open tracking pixel. Replaces the previous local
+    // ngrok-fronted endpoint that broke when ngrok killed free static
+    // subdomains. Verifies the HMAC token (so this can't be spammed by
+    // anyone fabricating a URL), writes one row to email_opens, and
+    // returns the standard 1x1 GIF. Always returns the GIF -- even on
+    // verification failure -- so an attacker can't probe valid IDs by
+    // observing different responses. Cache headers prevent any client
+    // from caching the pixel and missing repeat opens.
+    {
+      const trackMatch = path.match(/^\/track\/open\/(\d+)\/([a-f0-9]{8,32})$/);
+      if (trackMatch && method === "GET") {
+        const prospectId = parseInt(trackMatch[1], 10);
+        const token = trackMatch[2];
+        const PIXEL = Uint8Array.from(atob("R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"), (c) => c.charCodeAt(0));
+
+        const verify = async (): Promise<boolean> => {
+          const secret = (env as any).OUTREACH_UNSUBSCRIBE_SECRET || "";
+          if (!secret) return false;
+          const enc = new TextEncoder();
+          const key = await crypto.subtle.importKey(
+            "raw",
+            enc.encode(secret),
+            { name: "HMAC", hash: "SHA-256" },
+            false,
+            ["sign"],
+          );
+          const sig = await crypto.subtle.sign("HMAC", key, enc.encode(String(prospectId)));
+          const hex = Array.from(new Uint8Array(sig))
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("")
+            .slice(0, 16);
+          // Constant-time comparison so a malicious sender can't byte-walk
+          // their way to a valid token.
+          if (hex.length !== token.length) return false;
+          let diff = 0;
+          for (let i = 0; i < hex.length; i++) diff |= hex.charCodeAt(i) ^ token.charCodeAt(i);
+          return diff === 0;
+        };
+
+        ctx.waitUntil((async () => {
+          try {
+            const ok = await verify();
+            if (!ok) return;
+            const ua = request.headers.get("User-Agent") || "";
+            const rawIp = request.headers.get("CF-Connecting-IP") || "";
+            let ipHash = "";
+            if (rawIp) {
+              const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(rawIp));
+              ipHash = Array.from(new Uint8Array(buf))
+                .slice(0, 6)
+                .map((b) => b.toString(16).padStart(2, "0"))
+                .join("");
+            }
+            await env.DB.prepare(
+              `INSERT INTO email_opens (prospect_id, token, opened_at, ip_hash, ua, vertical)
+               VALUES (?, ?, ?, ?, ?, NULL)`,
+            ).bind(prospectId, token, Math.floor(Date.now() / 1000), ipHash || null, ua.slice(0, 200) || null).run();
+          } catch (e) {
+            console.log(`[track/open] failed: ${e instanceof Error ? e.message : String(e)}`);
+          }
+        })());
+
+        return new Response(PIXEL, {
+          headers: {
+            "Content-Type": "image/gif",
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+          },
+        });
+      }
+    }
+
+    // Manual audit-delivery trigger. ADMIN_SECRET-gated. Mirrors the
+    // automatic flow that fires on Stripe checkout completion, but
+    // callable on demand -- useful for testing the full pipeline
+    // without a real checkout, and for re-firing delivery if something
+    // failed mid-pipeline. Generates synchronously (waits ~60s) so the
+    // caller knows when the audit is delivered. Returns the audit URL.
+    if (path === "/admin/deliver-audit" && method === "POST") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      let body: { email?: string; brand?: string; domain?: string; client_slug?: string; customer_name?: string };
+      try { body = await request.json() as typeof body; } catch {
+        return new Response(JSON.stringify({ error: "invalid JSON body" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      if (!body.email || !body.brand || !body.domain) {
+        return new Response(JSON.stringify({ error: "email, brand, domain are required" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      const clientSlug = body.client_slug || body.domain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+      try {
+        const { generateAndStoreAudit, sendAuditDeliveryEmail } = await import("./audit-delivery");
+        const generated = await generateAndStoreAudit(env, {
+          email: body.email,
+          brand: body.brand,
+          domain: body.domain,
+          clientSlug,
+          customerName: body.customer_name,
+        });
+        // Also send the email by default so the manual trigger mirrors
+        // the automatic flow exactly. Caller can pass ?skipEmail=1 if
+        // they only want to (re)generate without re-emailing.
+        const skipEmail = url.searchParams.get("skipEmail") === "1";
+        let emailResult: { ok: boolean; error?: string } = { ok: true };
+        if (!skipEmail) {
+          emailResult = await sendAuditDeliveryEmail(env, {
+            email: body.email,
+            brand: body.brand,
+            domain: body.domain,
+            clientSlug,
+            customerName: body.customer_name,
+            auditUrl: generated.url,
+          });
+        }
+        return new Response(JSON.stringify({
+          ok: true,
+          token: generated.token,
+          url: generated.url,
+          email_sent: !skipEmail && emailResult.ok,
+          email_error: emailResult.error,
+        }, null, 2), { headers: { "content-type": "application/json" } });
+      } catch (e) {
+        return new Response(JSON.stringify({
+          ok: false, error: e instanceof Error ? e.message : String(e),
+        }), { status: 500, headers: { "content-type": "application/json" } });
+      }
+    }
+
+    // Audit viewer. Customer-facing public route that retrieves a
+    // saved audit deliverable from KV by its HMAC token. The token is
+    // derived per-customer (HMAC of email + client_slug) and embedded
+    // in the post-checkout email link. Tokens are not guessable from
+    // either the email or the slug alone.
+    {
+      const viewMatch = path.match(/^\/audit\/view\/([a-f0-9]{16,32})$/);
+      if (viewMatch && method === "GET") {
+        const token = viewMatch[1];
+        const html = await env.LEADS.get(`audit:${token}`);
+        if (!html) {
+          return new Response(
+            `<!DOCTYPE html><html><body style="font-family:system-ui;padding:48px;background:#0c0c0c;color:#e8e6df">
+            <h1 style="color:#c9a84c;font-family:Georgia,serif;font-style:italic">Audit not found</h1>
+            <p>This link may have expired (audits live for 1 year) or the token is invalid. If you believe this is an error, reply to your delivery email and we'll regenerate it.</p>
+            </body></html>`,
+            { status: 404, headers: { "content-type": "text/html; charset=utf-8" } },
+          );
+        }
+        return new Response(html, {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "private, max-age=300",
+            "x-content-type-options": "nosniff",
+          },
+        });
+      }
+    }
+
+    // $750 audit deliverable generator. Public route gated by
+    // ADMIN_SECRET so Lance (or a deploy script) can hit it without
+    // dashboard auth, but it's not scrape-able by random visitors.
+    // Returns a complete HTML scaffold for a customer audit, with the
+    // entity graph + action priority bar pre-rendered live and prose
+    // sections marked as editable so Lance can save-as, customize,
+    // and send/print.
+    if (path === "/audit-template" && method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      const brand = url.searchParams.get("brand") || "";
+      const domain = url.searchParams.get("domain") || "";
+      const customerName = url.searchParams.get("name") || "";
+      if (!brand || !domain) {
+        return new Response(JSON.stringify({ error: "?brand= and ?domain= required" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      const { buildAuditTemplate } = await import("./audit-template");
+      const html = await buildAuditTemplate(env, { brand, domain, customer_name: customerName });
+      return new Response(html, {
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "no-store",
+        },
+      });
+    }
+
+    // Public iframe-friendly embed of the entity-graph audit visual.
+    // No auth -- the data is derivable from public sources (Wikipedia,
+    // Wikidata, the customer's own homepage HTML). Used in pitch URLs
+    // and the marketing site so prospects can see their entity score
+    // without logging in. Rate limiting via CF edge controls abuse.
+    if (path === "/embed/entity-audit" && method === "GET") {
+      const brand = url.searchParams.get("brand") || "";
+      const domain = url.searchParams.get("domain") || "";
+      const fresh = url.searchParams.get("fresh") === "1";
+      if (!brand) {
+        return new Response("brand= required", { status: 400 });
+      }
+      // Cache the rendered HTML in KV. A live audit takes 3-5s
+      // (Wikidata + Wikipedia + on-page fetch + DataForSEO). For an
+      // iframe in a pitch URL that's a 3-5 second blank rectangle the
+      // prospect interprets as broken. 24h TTL means the first viewer
+      // pays the cost, all subsequent viewers get instant load.
+      // Bypass with ?fresh=1 for testing.
+      const cacheKey = `embed-entity-audit:${brand.toLowerCase().trim()}:${domain.toLowerCase().trim()}`;
+      const cachedHtml = fresh ? null : await env.LEADS.get(cacheKey);
+      if (cachedHtml) {
+        return new Response(cachedHtml, {
+          headers: {
+            "content-type": "text/html; charset=utf-8",
+            "cache-control": "public, max-age=1800, s-maxage=1800",
+            "x-content-type-options": "nosniff",
+            "x-cache": "HIT",
+          },
+        });
+      }
+      const { auditEntityGraphPartial } = await import("./entity-graph");
+      const { renderEntityAuditCard } = await import("./entity-graph-render");
+      const audit = await auditEntityGraphPartial(env, brand, domain);
+      // Iframe-tuned shell: transparent body so the parent page's
+      // background shows through, no min-height fill, tighter padding.
+      // Cache 30 minutes so a popular pitch URL doesn't re-run the
+      // audit on every viewer's page load.
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Entity audit · ${brand}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+<style>
+  html,body{margin:0;padding:0;background:#0c0c0c}
+  body > div{padding:24px !important;max-width:100% !important}
+</style>
+<script>
+  // Iframe context: make backgrounds transparent so host page bg
+  // shows through. Top-level page: keep the dark bg so the embed
+  // URL works both as iframe content and as a standalone link.
+  if (window.self !== window.top) {
+    document.documentElement.style.background = "transparent";
+    document.body.style.background = "transparent";
+    var d = document.body.firstElementChild;
+    if (d) d.style.background = "transparent";
+  }
+</script>
+</head><body>${renderEntityAuditCard(audit)}</body></html>`;
+      // Persist the rendered HTML to KV for 24h. Fire-and-forget via
+      // waitUntil so the response isn't blocked.
+      ctx.waitUntil(
+        env.LEADS.put(cacheKey, html, { expirationTtl: 24 * 60 * 60 })
+          .catch((e) => console.log(`[embed-cache] put failed: ${e}`)),
+      );
+      return new Response(html, {
+        headers: {
+          "content-type": "text/html; charset=utf-8",
+          "cache-control": "public, max-age=1800, s-maxage=1800",
+          "x-content-type-options": "nosniff",
+          "x-cache": "MISS",
+        },
+      });
+    }
+
+    // Entity graph audit — HTML visual viewer. Public route gated by
+    // ADMIN_SECRET, returns the full styled HTML card (gauge + signal
+    // grid). This is the customer-facing visual that turns the JSON
+    // audit into something a prospect can grasp at a glance. Format
+    // override: ?format=json returns the raw audit instead.
+    if (path === "/api/admin/entity-audit-card" && method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      const brand = url.searchParams.get("brand") || "";
+      const domain = url.searchParams.get("domain") || "";
+      if (!brand) {
+        return new Response(JSON.stringify({ error: "?brand= required" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      const { auditEntityGraphPartial } = await import("./entity-graph");
+      const { renderEntityAuditCard } = await import("./entity-graph-render");
+      const audit = await auditEntityGraphPartial(env, brand, domain);
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Entity audit — ${brand}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+<style>body{margin:0;background:#0c0c0c}</style>
+</head><body>${renderEntityAuditCard(audit)}</body></html>`;
+      return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
+    }
+
+    // Entity graph audit (chapter 1: Wikidata + Wikipedia signals).
+    // Public route gated by ADMIN_SECRET so we can call it from the
+    // outreach pipeline + curl it for testing without the dashboard
+    // session-auth dance. Returns the partial audit JSON; future
+    // chapters fill in the remaining 6 signals.
+    if (path === "/api/admin/entity-audit" && method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      const brand = url.searchParams.get("brand") || "";
+      const domain = url.searchParams.get("domain") || "";
+      if (!brand) {
+        return new Response(JSON.stringify({ error: "?brand= required" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      const { auditEntityGraphPartial } = await import("./entity-graph");
+      const result = await auditEntityGraphPartial(env, brand, domain);
+      return new Response(JSON.stringify(result, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    // Recent email-opens feed for the local outreach server. Public
+    // route gated by ADMIN_SECRET (not session auth), mirroring the
+    // pattern on check.neverranked.com/api/admin/recent-events. The
+    // local poller hits this every 60s and reconciles into its own
+    // SQLite prospects table.
+    if (path === "/api/admin/recent-opens" && method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      const since = parseInt(
+        url.searchParams.get("since") || String(Math.floor(Date.now() / 1000) - 86400),
+        10,
+      );
+      const limit = Math.min(parseInt(url.searchParams.get("limit") || "200", 10), 1000);
+      const rows = (await env.DB.prepare(
+        `SELECT prospect_id, opened_at, ip_hash, ua
+           FROM email_opens
+          WHERE opened_at >= ?
+          ORDER BY opened_at DESC
+          LIMIT ?`,
+      ).bind(since, limit).all()).results;
+      return new Response(JSON.stringify({ since, count: rows.length, opens: rows }, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     if (path === "/login" && method === "GET") {
       return handleGetLogin(request, env);
     }
@@ -244,7 +602,7 @@ export default {
     // return 405 explicitly so probes and health checks don't fall
     // through to the auth middleware and get a confusing /login redirect.
     if (path === "/stripe/webhook") {
-      if (method === "POST") return handleStripeWebhook(request, env);
+      if (method === "POST") return handleStripeWebhook(request, env, ctx);
       return new Response("Method Not Allowed", {
         status: 405,
         headers: { "Allow": "POST", "Content-Type": "text/plain" },
@@ -709,11 +1067,16 @@ export default {
         if (!env.STRIPE_SECRET_KEY) {
           return new Response(JSON.stringify({ error: "STRIPE_SECRET_KEY not set" }, null, 2), { status: 500, headers: { "content-type": "application/json" } });
         }
-        const PRICE_IDS = {
-          audit: "price_1TLgcBChs9v2cUMPj5Sd7E0o",
-          signal: "price_1TLgcZChs9v2cUMPgum7Ujgt",
-          amplify: "price_1TLgctChs9v2cUMPFGY47fcC",
-        };
+        // Source of truth for plan price IDs is the PLANS config in
+        // routes/checkout.ts. The previous PRICE_IDS constant here
+        // drifted when audit was bumped from $500 to $750 and when
+        // pulse was added -- the diagnostic was reporting stale and
+        // incomplete data. Importing PLANS keeps a single source.
+        const { PLANS } = await import("./routes/checkout");
+        const PRICE_IDS: Record<string, string> = {};
+        for (const [planName, planCfg] of Object.entries(PLANS)) {
+          PRICE_IDS[planName] = planCfg.priceId;
+        }
         const sk = env.STRIPE_SECRET_KEY;
         const stripeFetch = async (path: string) => {
           const r = await fetch(`https://api.stripe.com/v1${path}`, {
@@ -1478,6 +1841,157 @@ export default {
       return new Response(JSON.stringify({ slug, days, ...result }, null, 2), {
         headers: { "content-type": "application/json" },
       });
+    }
+
+    // Conversation-depth backfill: same shape as sentiment-backfill above.
+    // /admin/depth-backfill/<slug>?days=90 drains all unscored client-cited
+    // runs for that slug right now instead of waiting for the daily cron.
+    // Useful after shipping the depth migration (which scores rows from
+    // scratch) or when re-prompting the model with an updated SYSTEM
+    // prompt.
+    const depthBackfillMatch = path.match(/^\/admin\/depth-backfill\/([^/]+)$/);
+    if (depthBackfillMatch && method === "GET" && user.role === "admin") {
+      const slug = decodeURIComponent(depthBackfillMatch[1]);
+      const days = parseInt(url.searchParams.get("days") || "90", 10);
+      const { backfillDepthForClient } = await import("./conversation-depth");
+      const result = await backfillDepthForClient(env, slug, days);
+      return new Response(JSON.stringify({ slug, days, ...result }, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
+    // Conversation-depth stats viewer. Returns formatted HTML if the
+    // browser asked for HTML, else JSON for programmatic access. The
+    // HTML view is the operator-facing rendering of what the depth
+    // scorer produces -- framing distribution, competitive position,
+    // prominence class, top competitors named, and a sample of the
+    // most recent scored runs with the AI's actual phrasing.
+    const depthStatsMatch = path.match(/^\/admin\/depth-stats\/([^/]+)$/);
+    if (depthStatsMatch && method === "GET" && user.role === "admin") {
+      const slug = decodeURIComponent(depthStatsMatch[1]);
+      const days = parseInt(url.searchParams.get("days") || "90", 10);
+      const wantsJson = url.searchParams.get("format") === "json"
+        || (request.headers.get("accept") || "").includes("application/json");
+      const { getDepthRollup } = await import("./conversation-depth");
+      const rollup = await getDepthRollup(env, slug, days);
+      const recent = (await env.DB.prepare(
+        `SELECT cr.engine, cr.run_at, cr.framing, cr.framing_phrase,
+                cr.competitive_position, cr.prominence_class,
+                cr.competitors_mentioned, cr.depth_reason, ck.keyword
+           FROM citation_runs cr
+           JOIN citation_keywords ck ON ck.id = cr.keyword_id
+          WHERE ck.client_slug = ?
+            AND cr.client_cited = 1
+            AND cr.framing IS NOT NULL
+          ORDER BY cr.run_at DESC LIMIT 20`,
+      ).bind(slug).all()).results as Array<{
+        engine: string; run_at: number; framing: string; framing_phrase: string;
+        competitive_position: string; prominence_class: string;
+        competitors_mentioned: string; depth_reason: string; keyword: string;
+      }>;
+
+      if (wantsJson) {
+        return new Response(JSON.stringify({ slug, days, rollup, recent }, null, 2), {
+          headers: { "content-type": "application/json" },
+        });
+      }
+
+      // ---- HTML viewer ----
+      const escHtml = (s: string) => String(s).replace(/[&<>"']/g, (c) => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;",
+      }[c]!));
+
+      const ENGINE_LABEL: Record<string, string> = {
+        openai: "ChatGPT", anthropic: "Claude", perplexity: "Perplexity",
+        gemini: "Gemini", google_ai_overview: "Google AIO", bing: "Microsoft Copilot",
+      };
+
+      const total = rollup.total || 0;
+      const pct = (n: number) => total ? Math.round((n / total) * 100) : 0;
+
+      const framingBars = Object.entries(rollup.by_framing)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => `<tr><td>${escHtml(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:#888">${pct(n)}%</td></tr>`)
+        .join("");
+
+      const positionBars = Object.entries(rollup.by_position)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => `<tr><td>${escHtml(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:#888">${pct(n)}%</td></tr>`)
+        .join("");
+
+      const prominenceBars = Object.entries(rollup.by_prominence)
+        .sort((a, b) => b[1] - a[1])
+        .map(([k, n]) => `<tr><td>${escHtml(k)}</td><td style="text-align:right">${n}</td><td style="text-align:right;color:#888">${pct(n)}%</td></tr>`)
+        .join("");
+
+      const competitorsList = rollup.top_competitors.length
+        ? rollup.top_competitors.map((c) =>
+            `<tr><td>${escHtml(c.name)}</td><td style="text-align:right">${c.count}</td></tr>`,
+          ).join("")
+        : `<tr><td colspan="2" style="color:#888">(none)</td></tr>`;
+
+      const recentRows = recent.length
+        ? recent.map((r) => {
+            let comps: string[] = [];
+            try { comps = JSON.parse(r.competitors_mentioned || "[]"); } catch {}
+            const dt = new Date(r.run_at * 1000).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+            return `<tr>
+              <td style="color:#888;font-size:11px;white-space:nowrap">${dt}</td>
+              <td>${escHtml(ENGINE_LABEL[r.engine] || r.engine)}</td>
+              <td><b>${escHtml(r.framing)}</b><br><span style="color:#888;font-size:11px;font-style:italic">${escHtml(r.framing_phrase || "(no phrase)")}</span></td>
+              <td>${escHtml(r.competitive_position)}<br><span style="color:#888;font-size:11px">${escHtml(r.prominence_class)}</span></td>
+              <td style="font-size:11px">${comps.length ? comps.map(escHtml).join(", ") : "<span style=\"color:#888\">(none)</span>"}</td>
+              <td style="font-size:11px;color:#aaa">${escHtml(r.depth_reason || "")}</td>
+            </tr>`;
+          }).join("")
+        : `<tr><td colspan="6" style="color:#888;text-align:center;padding:24px">No depth-scored runs yet. The daily cron at 17:00 UTC will drain the backlog.</td></tr>`;
+
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Depth: ${escHtml(slug)}</title>
+<style>
+  body { font-family: ui-sans-serif, system-ui, sans-serif; background: #0c0c0c; color: #e8e6df; margin: 0; padding: 24px; }
+  h1 { font-weight: 500; letter-spacing: -0.02em; margin: 0 0 4px; }
+  .meta { color: #888; font-size: 12px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; margin-bottom: 32px; }
+  .card { background: rgba(255,255,255,.02); border: 1px solid #222; border-radius: 6px; padding: 18px 20px; }
+  .card h2 { font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: #c9a84c; margin: 0 0 12px; font-weight: 500; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  td { padding: 6px 8px; border-bottom: 1px solid #1a1a1a; vertical-align: top; }
+  th { padding: 8px; text-align: left; font-weight: 500; color: #888; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid #2a2a2a; }
+  .total { color: #c9a84c; font-size: 24px; font-weight: 500; }
+  .recent table { font-size: 12px; }
+</style></head><body>
+<h1>Conversation depth: ${escHtml(slug)}</h1>
+<div class="meta">last ${days} days · ${total} client-cited runs scored · <a style="color:#c9a84c" href="/admin/depth-backfill/${escHtml(slug)}?days=${days}">force backfill now</a> · <a style="color:#c9a84c" href="/admin/depth-stats/${escHtml(slug)}?format=json&days=${days}">JSON</a></div>
+
+<div class="grid">
+  <div class="card">
+    <h2>Framing</h2>
+    <table>${framingBars || `<tr><td colspan="3" style="color:#888">No data yet</td></tr>`}</table>
+  </div>
+  <div class="card">
+    <h2>Competitive position</h2>
+    <table>${positionBars || `<tr><td colspan="3" style="color:#888">No data yet</td></tr>`}</table>
+  </div>
+  <div class="card">
+    <h2>Prominence</h2>
+    <table>${prominenceBars || `<tr><td colspan="3" style="color:#888">No data yet</td></tr>`}</table>
+  </div>
+  <div class="card">
+    <h2>Top competitors named alongside</h2>
+    <table>${competitorsList}</table>
+  </div>
+</div>
+
+<div class="card recent">
+  <h2>Recent scored runs (latest 20)</h2>
+  <table>
+    <thead><tr><th>When</th><th>Engine</th><th>Framing / Phrase</th><th>Position / Prominence</th><th>Competitors</th><th>Why</th></tr></thead>
+    <tbody>${recentRows}</tbody>
+  </table>
+</div>
+</body></html>`;
+
+      return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
     }
 
     // Dry-run: returns what the Gemini coverage report email WOULD say

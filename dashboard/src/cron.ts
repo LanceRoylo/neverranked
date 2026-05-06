@@ -297,6 +297,116 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] sentiment backfill failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Audit credit expiry sweep. Audit customers get a -$750 entry on
+  // their Stripe balance when they pay; that credit is promised "if
+  // you upgrade within 30 days" but Stripe doesn't auto-expire
+  // customer balance entries. This sweep finds users whose 30-day
+  // window has lapsed without upgrading, posts a +$750 transaction
+  // to zero out the credit, and marks audit_credit_applied_at on
+  // our side so we don't re-process them.
+  //
+  // Honest framing: we honor the promise (30 days), but we don't
+  // leave dangling credits forever. If they upgrade on day 31+, they
+  // pay the full first month -- as the marketing copy stated.
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const expired = (await env.DB.prepare(
+      `SELECT id, stripe_customer_id, audit_credit_amount, audit_credit_expires_at, plan
+         FROM users
+        WHERE audit_credit_amount IS NOT NULL
+          AND audit_credit_applied_at IS NULL
+          AND audit_credit_expires_at < ?
+          AND stripe_customer_id IS NOT NULL`,
+    ).bind(now).all<{
+      id: number; stripe_customer_id: string;
+      audit_credit_amount: number; audit_credit_expires_at: number; plan: string;
+    }>()).results;
+
+    let revoked = 0;
+    let skipped_used = 0;
+    for (const u of expired) {
+      // If the customer subscribed in time, plan moved off "audit"
+      // and Stripe already auto-applied the credit. Mark applied,
+      // skip the revoke transaction.
+      if (u.plan && u.plan !== "audit" && u.plan !== "churned") {
+        await env.DB.prepare(
+          `UPDATE users SET audit_credit_applied_at = ? WHERE id = ?`,
+        ).bind(now, u.id).run();
+        skipped_used++;
+        continue;
+      }
+      try {
+        // M3 fix: query the customer's current Stripe balance and
+        // only revoke whatever credit remains UNUSED. Previously we
+        // posted +$750 unconditionally, which would overshoot if the
+        // customer had already used part of the credit on a partial
+        // invoice (e.g., Pulse $497 against $750 credit leaves $253
+        // remaining; revoking $750 would leave them owed -$253 by us).
+        const balResp = await fetch(
+          `https://api.stripe.com/v1/customers/${encodeURIComponent(u.stripe_customer_id)}`,
+          {
+            headers: { "Authorization": `Bearer ${(env as any).STRIPE_SECRET_KEY}` },
+          },
+        );
+        if (!balResp.ok) {
+          console.log(`[audit-credit-expiry] balance lookup failed for ${u.id}: ${balResp.status}`);
+          continue;
+        }
+        const customer = (await balResp.json()) as { balance?: number };
+        // Stripe balance: negative = credit owed to customer (we owe them),
+        // positive = customer owes us. We want to revoke any remaining
+        // credit, so we add a positive transaction equal to abs(balance)
+        // capped at the original credit amount (don't accidentally
+        // revoke more than we gave). If balance is >= 0, nothing to revoke.
+        const currentBalance = customer.balance ?? 0;
+        if (currentBalance >= 0) {
+          // No credit remaining (already fully consumed or never created).
+          // Mark applied so we stop processing.
+          await env.DB.prepare(
+            `UPDATE users SET audit_credit_applied_at = ? WHERE id = ?`,
+          ).bind(u.audit_credit_expires_at, u.id).run();
+          skipped_used++;
+          continue;
+        }
+        const remainingCredit = Math.min(Math.abs(currentBalance), u.audit_credit_amount);
+        const resp = await fetch(
+          `https://api.stripe.com/v1/customers/${encodeURIComponent(u.stripe_customer_id)}/balance_transactions`,
+          {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${(env as any).STRIPE_SECRET_KEY}`,
+              "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+              amount: String(remainingCredit), // positive = revoke remaining credit only
+              currency: "usd",
+              description: `Audit credit expired (30-day window lapsed). Revoking remaining unused balance of $${(remainingCredit / 100).toFixed(2)}.`,
+              "metadata[reason]": "audit_credit_expired",
+              "metadata[original_amount]": String(u.audit_credit_amount),
+              "metadata[remaining_revoked]": String(remainingCredit),
+            }).toString(),
+          },
+        );
+        if (resp.ok) {
+          await env.DB.prepare(
+            `UPDATE users SET audit_credit_applied_at = ? WHERE id = ?`,
+          ).bind(u.audit_credit_expires_at, u.id).run();
+          revoked++;
+          console.log(`[audit-credit-expiry] revoked $${(remainingCredit / 100).toFixed(2)} of $${(u.audit_credit_amount / 100).toFixed(2)} for user ${u.id}`);
+        } else {
+          console.log(`[audit-credit-expiry] revoke call failed for user ${u.id}: ${resp.status}`);
+        }
+      } catch (e) {
+        console.log(`[audit-credit-expiry] failed for user ${u.id}: ${e instanceof Error ? e.message : e}`);
+      }
+    }
+    if (revoked > 0 || skipped_used > 0) {
+      console.log(`[cron] audit-credit-expiry: revoked ${revoked}, skipped ${skipped_used} already-used`);
+    }
+  } catch (e) {
+    console.log(`[cron] audit-credit-expiry sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // NVI monthly report runs.
   // Each subscription has a delivery_day (1-28). When today's day-
   // of-month UTC matches, kick off the runner for that subscription.

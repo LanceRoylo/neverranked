@@ -13,11 +13,13 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/pitch/asb-hawaii/">
 <meta property="og:site_name" content="Never Ranked">
-<meta property="og:image" content="https://neverranked.com/og.png">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -40,6 +42,7 @@
 }
 </script>
 <style>
+code{overflow-wrap:anywhere;word-break:break-word}
 :root{
   --bg:#121212;
   --bg-lift:#1c1c1c;
@@ -106,8 +109,14 @@ body::before{
   padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
   mix-blend-mode:difference;color:#f0ece3;
 }
-.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
-.nav .mark sup{font-family:var(--label);font-style:normal;font-size:9px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  min-width:44px;
+  justify-content:flex-start;
+}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:11px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
 .nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
 .nav .right a{transition:opacity .25s}
 .nav .right a:hover{opacity:.7}
@@ -237,10 +246,10 @@ p a:hover,ul a:hover{opacity:.8}
 .hamburger{
   display:none;
   position:fixed;
-  top:22px;left:var(--gutter);
+  top:14px;left:calc(var(--gutter) - 8px);
   z-index:200;
   background:none;border:none;cursor:pointer;
-  width:28px;height:20px;
+  width:44px;height:44px;
   padding:0;
   -webkit-tap-highlight-color:transparent;
 }
@@ -250,7 +259,7 @@ p a:hover,ul a:hover{opacity:.8}
   display:block;position:absolute;left:0;right:0;height:2px;
   background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
 }
-.hamburger span{top:9px}
+.hamburger span{top:21px;left:8px;right:8px}
 .hamburger span::before{content:"";top:-7px}
 .hamburger span::after{content:"";top:7px}
 .hamburger.active span{background:transparent}
@@ -287,6 +296,7 @@ p a:hover,ul a:hover{opacity:.8}
   .nav .right a{display:none}
 }
 </style>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -324,6 +334,28 @@ p a:hover,ul a:hover{opacity:.8}
     <p>
       <b>What this audit covers.</b> Schema completeness across 11 sampled ASB pages, deep dives on the three most consequential findings, a competitor benchmark across the five major Hawaii banks and credit unions, an implementation roadmap with example JSON-LD code, and a 90-day timeline if ASB wants to engage. The pre-empted Q&amp;A toward the bottom answers what you and the agency would normally ask in a live walkthrough.
     </p>
+  </div>
+</section>
+
+<!-- Entity-graph audit: live snapshot of off-site + on-site identity
+     surfaces AI engines weight when deciding to cite a brand. -->
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00.5</span>
+      <span>The picture</span>
+      <span class="rule"></span>
+    </div>
+    <p>Before the deep audit, the visual. Eight identity signals AI engines lean on. ASB lights some, misses others. The chart updates live each time this page loads.</p>
+    <div style="margin:24px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0c0c0c">
+      <iframe
+        src="https://app.neverranked.com/embed/entity-audit?brand=American+Savings+Bank&domain=asbhawaii.com"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        style="width:100%;height:920px;border:0;display:block;background:transparent"
+        title="Entity graph audit for American Savings Bank">
+      </iframe>
+    </div>
   </div>
 </section>
 
@@ -701,5 +733,8 @@ Central Pacific Bank              0           0               NONE</pre>
 </footer>
 
 <button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
+
+<!-- pitch open tracker (pixel fires on every page load, logged to dashboard D1) -->
+<img src="https://app.neverranked.com/track/pitch/asb-hawaii" width="1" height="1" alt="" style="position:absolute;left:-9999px;top:-9999px" loading="eager" referrerpolicy="no-referrer">
 </body>
 </html>

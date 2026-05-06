@@ -38,7 +38,7 @@ interface PlanConfig {
   comingSoon?: boolean;
 }
 
-const PLANS: Record<string, PlanConfig> = {
+export const PLANS: Record<string, PlanConfig> = {
   audit: {
     name: "NeverRanked Audit",
     priceLabel: "$750",
@@ -64,6 +64,10 @@ const PLANS: Record<string, PlanConfig> = {
     priceId: "price_1TLgctChs9v2cUMPFGY47fcC",
   },
 };
+
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 // ---------- Stripe API helpers ----------
 
@@ -240,11 +244,15 @@ export async function handleCheckout(
     "payment_method_types[0]": "card",
     "allow_promotion_codes": "true",
     "metadata[plan]": plan,
-    // Ask for the domain to monitor during checkout
+    // Ask for the domain to monitor during checkout. M1 fix: marked
+    // as required so a gmail user can't pay for an audit without
+    // telling us which site to scan -- previously they'd end up with
+    // an audit run against "gmail.com" which is meaningless.
     "custom_fields[0][key]": "domain",
     "custom_fields[0][label][type]": "custom",
     "custom_fields[0][label][custom]": "Domain to monitor (e.g. yourbusiness.com)",
     "custom_fields[0][type]": "text",
+    "custom_fields[0][optional]": "false",
   };
 
   // Skip payment method collection when the initial invoice is $0 (e.g.
@@ -329,7 +337,8 @@ export async function handleCheckoutSuccess(
  */
 export async function handleStripeWebhook(
   request: Request,
-  env: Env
+  env: Env,
+  ctx?: ExecutionContext,
 ): Promise<Response> {
   if (!env.STRIPE_SECRET_KEY || !env.STRIPE_WEBHOOK_SECRET) {
     return new Response("Webhook not configured", { status: 500 });
@@ -346,6 +355,37 @@ export async function handleStripeWebhook(
 
   const event = JSON.parse(payload);
   const now = Math.floor(Date.now() / 1000);
+
+  // ---------- C2 fix: Idempotency check ----------
+  //
+  // Stripe retries failed webhooks (network timeout, non-2xx, worker
+  // crash). Without idempotency, retries duplicate every side effect:
+  // a second audit credit, a second snippet email, a second audit
+  // generation. We record every event ID and short-circuit retries.
+  //
+  // Strategy: INSERT...ON CONFLICT DO NOTHING. If the insert affected
+  // zero rows, this event is a retry of one we already processed --
+  // we return 200 immediately without re-running side effects.
+  if (event.id) {
+    try {
+      const insertResult = await env.DB.prepare(
+        `INSERT INTO stripe_webhook_events (event_id, event_type, received_at, outcome)
+           VALUES (?, ?, ?, 'processing')
+         ON CONFLICT(event_id) DO NOTHING`,
+      ).bind(event.id, event.type || "unknown", now).run();
+      // D1 returns meta.changes = 0 when the conflict triggered (no
+      // insert). That's our "already seen this event" signal.
+      const wasNew = (insertResult.meta?.changes ?? 0) > 0;
+      if (!wasNew) {
+        console.log(`[webhook] duplicate event ${event.id} (${event.type}) -- skipping`);
+        return new Response("OK (duplicate)", { status: 200 });
+      }
+    } catch (e) {
+      // If the idempotency check itself fails, log and continue --
+      // better to risk a duplicate than to fail an event entirely.
+      console.log(`[webhook] idempotency check failed for ${event.id}: ${e instanceof Error ? e.message : e}`);
+    }
+  }
 
   // ---------- Agency event dispatch ----------
   //
@@ -471,39 +511,48 @@ export async function handleStripeWebhook(
         domainId = existingDomain.id;
       }
 
-      // Trigger initial scan + auto-generate roadmap
-      if (domainId) {
-        try {
-          const scanResult = await scanDomain(domainId, `https://${provisionDomain}/`, "onboard", env);
-          if (scanResult && !scanResult.error) {
-            await autoGenerateRoadmap(slug, scanResult, env);
-          }
-        } catch (e) {
-          console.log(`Auto-provision scan failed: ${e}`);
-        }
-
-        // Snippet delivery for self-signup paid plans. Audit is a
-        // one-time deliverable with no ongoing schema injection, so
-        // skip the snippet email for that tier. Signal + Amplify both
-        // include schema auto-injection -- the snippet is required.
-        if (plan === "signal" || plan === "amplify") {
+      // C3 fix: Async scan + roadmap + snippet email so the webhook
+      // returns 200 to Stripe within 30s. The scan itself can take
+      // 5-15 seconds; chained with snippet email and roadmap gen,
+      // a sync path could approach Stripe's webhook timeout.
+      // ctx.waitUntil moves all of this off the response path.
+      if (domainId && ctx) {
+        const finalDomainId = domainId; // capture for closure
+        ctx.waitUntil((async () => {
           try {
-            const domainRow = await env.DB.prepare(
-              "SELECT * FROM domains WHERE id = ?"
-            ).bind(domainId).first<Domain>();
-            if (domainRow && !domainRow.snippet_email_sent_at) {
-              const sent = await sendSnippetDeliveryEmail(env, { domain: domainRow, to: email });
-              if (sent) {
-                await env.DB.prepare(
-                  "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
-                ).bind(now, domainId).run();
-                console.log(`[checkout] snippet email sent to ${email} for ${provisionDomain}`);
-              }
+            const scanResult = await scanDomain(finalDomainId, `https://${provisionDomain}/`, "onboard", env);
+            if (scanResult && !scanResult.error) {
+              await autoGenerateRoadmap(slug, scanResult, env);
             }
           } catch (e) {
-            console.log(`[checkout] snippet email failed for ${email}: ${e}`);
+            console.log(`Auto-provision scan failed: ${e}`);
           }
-        }
+
+          // Snippet delivery for self-signup paid plans. Audit is a
+          // one-time deliverable with no ongoing schema injection.
+          // Pulse + Signal + Amplify all deploy schemas (Pulse:
+          // 2/month, Signal/Amplify: unlimited) -- so all three need
+          // the snippet installed. Previously only Signal+Amplify
+          // got the snippet email, which broke Pulse customers (M4 fix).
+          if (plan === "pulse" || plan === "signal" || plan === "amplify") {
+            try {
+              const domainRow = await env.DB.prepare(
+                "SELECT * FROM domains WHERE id = ?"
+              ).bind(finalDomainId).first<Domain>();
+              if (domainRow && !domainRow.snippet_email_sent_at) {
+                const sent = await sendSnippetDeliveryEmail(env, { domain: domainRow, to: email });
+                if (sent) {
+                  await env.DB.prepare(
+                    "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+                  ).bind(now, finalDomainId).run();
+                  console.log(`[checkout] snippet email sent to ${email} for ${provisionDomain}`);
+                }
+              }
+            } catch (e) {
+              console.log(`[checkout] snippet email failed for ${email}: ${e}`);
+            }
+          }
+        })());
       }
 
       // Mark lead as converted in KV (if they came from free scan)
@@ -521,6 +570,87 @@ export async function handleStripeWebhook(
         console.log(`Lead conversion tracking failed: ${e}`);
       }
 
+      // C1 fix: $750 audit auto-delivery. Without this, the customer
+      // pays for the audit and never receives the deliverable. The
+      // delivery pipeline (audit-delivery.ts) generates the audit,
+      // QA-validates it, stores in KV, and emails the customer with
+      // the link. Runs in waitUntil so the webhook acks Stripe within
+      // 30s while audit generation takes its 35-60s.
+      if (plan === "audit" && ctx) {
+        const fullName = session.customer_details?.name || "";
+        const firstName = fullName.split(/\s+/)[0] || "";
+        const stem = provisionDomain.split(".")[0] || "";
+        // Brand label preference: customer's full name when short
+        // (looks like a personal/individual buyer for audit), else
+        // domain stem capitalized. Avoids inserting "John Smith" as
+        // a brand when they bought the audit for "smithco.com".
+        const brandLabel = rawDomain
+          ? stem.charAt(0).toUpperCase() + stem.slice(1)
+          : (fullName && fullName.length < 40)
+            ? fullName
+            : stem.charAt(0).toUpperCase() + stem.slice(1);
+        try {
+          const { deliverAuditOnCheckout } = await import("../audit-delivery");
+          ctx.waitUntil(deliverAuditOnCheckout(env, {
+            email,
+            brand: brandLabel,
+            domain: provisionDomain,
+            clientSlug: slug,
+            customerName: firstName,
+          }));
+          console.log(`[checkout] audit delivery scheduled for ${email} (${brandLabel} / ${provisionDomain})`);
+        } catch (e) {
+          console.log(`[checkout] audit delivery scheduling failed: ${e instanceof Error ? e.message : e}`);
+        }
+      }
+
+      // $750 audit credit. When an audit is purchased, create a -$750
+      // (i.e. credit) entry on the Stripe customer's balance. Stripe
+      // automatically applies customer balance to the next invoice,
+      // so when this customer subscribes to Pulse/Signal/Amplify
+      // within 30 days, the first invoice gets reduced by up to $750.
+      // No code change is needed at the subscription-checkout step --
+      // Stripe handles the application natively.
+      //
+      // The 30-day expiry is enforced by a daily cron (see cron.ts).
+      // We persist audit_credit_amount + audit_credit_expires_at on
+      // the user row so the cron knows what to expire.
+      if (plan === "audit" && customerId) {
+        const AUDIT_CREDIT_CENTS = 75000;
+        const AUDIT_CREDIT_TTL_DAYS = 30;
+        try {
+          const balanceResp = await fetch(
+            `https://api.stripe.com/v1/customers/${encodeURIComponent(customerId as string)}/balance_transactions`,
+            {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${env.STRIPE_SECRET_KEY}`,
+                "Content-Type": "application/x-www-form-urlencoded",
+              },
+              body: new URLSearchParams({
+                amount: String(-AUDIT_CREDIT_CENTS), // negative = credit owed to customer
+                currency: "usd",
+                description: "$750 audit credit, applies to first month of Pulse/Signal/Amplify if upgraded within 30 days",
+                "metadata[reason]": "audit_credit",
+                "metadata[expires_at]": String(now + AUDIT_CREDIT_TTL_DAYS * 86400),
+              }).toString(),
+            },
+          );
+          if (balanceResp.ok) {
+            const expiresAt = now + AUDIT_CREDIT_TTL_DAYS * 86400;
+            await env.DB.prepare(
+              `UPDATE users SET audit_credit_amount = ?, audit_credit_expires_at = ?, audit_credit_applied_at = NULL WHERE id = ?`,
+            ).bind(AUDIT_CREDIT_CENTS, expiresAt, user.id).run();
+            console.log(`[audit-credit] applied $${AUDIT_CREDIT_CENTS / 100} credit to customer ${customerId}, expires ${new Date(expiresAt * 1000).toISOString()}`);
+          } else {
+            const errText = await balanceResp.text();
+            console.log(`[audit-credit] Stripe balance API failed: ${balanceResp.status} ${errText.slice(0, 200)}`);
+          }
+        } catch (e) {
+          console.log(`[audit-credit] failed: ${e instanceof Error ? e.message : String(e)}`);
+        }
+      }
+
       // Send welcome email with magic link to customer.
       //
       // CRITICAL: fetch() does not throw on HTTP 4xx/5xx -- only on
@@ -532,11 +662,14 @@ export async function handleStripeWebhook(
       // that fires the same admin_alerts row.
       if (env.RESEND_API_KEY) {
         try {
-          // 72-hour TTL for the post-checkout welcome email. A new
-          // customer who paid but doesn't open their inbox until the
-          // next day shouldn't get locked out of the dashboard they
-          // just bought.
-          const magicToken = await createMagicLink(email, env, 72 * 60 * 60);
+          // 7-day TTL for the post-checkout welcome email. Bumped from
+          // 72h after observing real customer behavior: a Friday-night
+          // payer who doesn't check email until the following week
+          // hits an expired link and bounces. 7d covers normal "I'll
+          // get to that" lag without compromising security (the link
+          // is one-time-use and the underlying account exists either
+          // way; magic link expiry just controls the auto-login window).
+          const magicToken = await createMagicLink(email, env, 7 * 24 * 60 * 60);
           if (magicToken) {
             const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
             // Pulse customers go straight into the prompt-suggester
@@ -622,6 +755,158 @@ export async function handleStripeWebhook(
       }
 
       console.log(`Checkout completed: ${email} -> ${plan}`);
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      // Tier upgrade or downgrade. Customer changed their subscription
+      // via the Stripe Billing Portal (or admin updated it via Stripe
+      // dashboard). The event fires for any subscription mutation:
+      // plan change, quantity change, status change, cancel-at-period-
+      // end toggle, etc. We only care about plan changes here.
+      const subscription = event.data.object;
+      const subId = subscription.id;
+      const customerId = subscription.customer;
+
+      // Extract the new plan's price_id from the subscription's first
+      // line item. Stripe sends item changes inline on update.
+      const items = subscription.items?.data || [];
+      const newPriceId = items[0]?.price?.id;
+      if (!newPriceId) {
+        console.log(`[sub-updated] no price_id on subscription ${subId}, skipping`);
+        break;
+      }
+
+      // Reverse-lookup our plan name from the price_id. PLANS is the
+      // canonical config; we trust it as the source of truth.
+      let newPlan: string | null = null;
+      for (const [planName, planCfg] of Object.entries(PLANS)) {
+        if (planCfg.priceId === newPriceId) { newPlan = planName; break; }
+      }
+      if (!newPlan) {
+        console.log(`[sub-updated] price_id ${newPriceId} not found in PLANS config, skipping`);
+        break;
+      }
+
+      // Look up the user. If they don't exist or their plan already
+      // matches, this is a no-op event (status change, period
+      // renewal, etc.) and we exit cleanly.
+      const user = await env.DB.prepare(
+        "SELECT id, email, plan, client_slug FROM users WHERE stripe_subscription_id = ? OR stripe_customer_id = ?"
+      ).bind(subId, customerId).first<{
+        id: number; email: string; plan: string; client_slug: string | null;
+      }>();
+      if (!user) {
+        console.log(`[sub-updated] no user matching subscription ${subId}, skipping`);
+        break;
+      }
+      const oldPlan = user.plan;
+      if (oldPlan === newPlan) {
+        // Plan unchanged. This was a non-tier mutation (renewal, etc.)
+        break;
+      }
+
+      // Tier changed. Sync our DB. M6 fix: also COALESCE the customer
+      // ID from the event in case it changed (rare but possible during
+      // admin-driven account merges or when reusing a customer record
+      // for a re-subscription). Without this the user record could
+      // drift out of sync with Stripe's source of truth.
+      await env.DB.prepare(
+        "UPDATE users SET plan = ?, stripe_subscription_id = ?, stripe_customer_id = COALESCE(?, stripe_customer_id) WHERE id = ?"
+      ).bind(newPlan, subId, customerId || null, user.id).run();
+
+      // Determine direction. Tier order: pulse < signal < amplify.
+      const tierRank: Record<string, number> = { pulse: 1, signal: 2, amplify: 3 };
+      const oldRank = tierRank[oldPlan] ?? 0;
+      const newRank = tierRank[newPlan] ?? 0;
+      const direction = newRank > oldRank ? "upgrade" : newRank < oldRank ? "downgrade" : "lateral";
+
+      console.log(`[sub-updated] ${user.email}: ${oldPlan} -> ${newPlan} (${direction})`);
+
+      // Provisioning side-effects on UPGRADE. These are tier-specific
+      // capabilities the customer just unlocked.
+      if (direction === "upgrade") {
+        // Signal/Amplify needs the snippet email if they didn't have
+        // one yet (e.g., upgrading from Pulse, which doesn't ship a
+        // snippet). Pull their primary domain and check.
+        if ((newPlan === "signal" || newPlan === "amplify") && user.client_slug) {
+          try {
+            const domainRow = await env.DB.prepare(
+              "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 ORDER BY id ASC LIMIT 1"
+            ).bind(user.client_slug).first<Domain>();
+            if (domainRow && !domainRow.snippet_email_sent_at) {
+              const sent = await sendSnippetDeliveryEmail(env, { domain: domainRow, to: user.email });
+              if (sent) {
+                await env.DB.prepare(
+                  "UPDATE domains SET snippet_email_sent_at = ? WHERE id = ?"
+                ).bind(now, domainRow.id).run();
+                console.log(`[sub-updated] snippet email sent to ${user.email} after upgrade to ${newPlan}`);
+              }
+            }
+          } catch (e) {
+            console.log(`[sub-updated] snippet email failed for ${user.email}: ${e}`);
+          }
+        }
+      }
+
+      // Email customer + admin on tier change. Honest, tight copy --
+      // confirms the change and tells them what changes for them.
+      if (env.RESEND_API_KEY) {
+        const subject = direction === "upgrade"
+          ? `Upgraded to ${capitalize(newPlan)} — what's new`
+          : direction === "downgrade"
+            ? `Plan changed to ${capitalize(newPlan)}`
+            : `Plan updated`;
+
+        const upgradeBenefits: Record<string, string> = {
+          signal: "Weekly citation tracking across 6 engines, 50+ tracked prompts, schema fixes auto-pushed to your live site within an hour, Reddit thread monitoring, authority-platform tracking.",
+          amplify: "Everything in Signal, plus brand-voice fingerprint trained on your writing, citation-shaped content drafts in your voice, auto-publish to WordPress/Webflow/Shopify, self-filling content calendar.",
+          pulse: "Monthly Visibility Index PDF, 10 tracked prompts, 2 schemas deployed monthly.",
+        };
+
+        try {
+          const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "NeverRanked <reports@neverranked.com>",
+              to: [user.email],
+              subject,
+              text: `Your plan is now ${capitalize(newPlan)}.
+
+${direction === "upgrade" ? `What's new at ${capitalize(newPlan)}: ${upgradeBenefits[newPlan] || ""}` : direction === "downgrade" ? `What's still active: ${upgradeBenefits[newPlan] || ""}\n\nYou'll keep all your existing tracked prompts and history. The cadence and feature scope adjust to ${capitalize(newPlan)} on your next billing period.` : ""}
+
+Your dashboard: ${dashboardOrigin}/
+
+Reply to this email if you have questions.
+
+Lance Roylo
+NeverRanked`,
+            }),
+          });
+          // Also notify admin
+          await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: "NeverRanked <reports@neverranked.com>",
+              to: [env.ADMIN_EMAIL],
+              subject: `[${direction}] ${user.email}: ${oldPlan} -> ${newPlan}`,
+              text: `${user.email} changed plan from ${oldPlan} to ${newPlan} (${direction}). Stripe subscription: ${subId}.`,
+            }),
+          });
+        } catch (e) {
+          console.log(`[sub-updated] notification email failed: ${e}`);
+        }
+      }
+
       break;
     }
 
@@ -973,7 +1258,7 @@ export async function handlePulseWaitlist(
   let emailSent = false;
   if (env.RESEND_API_KEY) {
     try {
-      const magicToken = await createMagicLink(email, env, 72 * 60 * 60);
+      const magicToken = await createMagicLink(email, env, 7 * 24 * 60 * 60);
       if (magicToken) {
         const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
         const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent("/onboard/pulse")}`;
