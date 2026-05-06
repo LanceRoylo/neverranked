@@ -17,7 +17,9 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -307,6 +309,29 @@ p a:hover,ul a:hover{opacity:.8}
     <p>
       I ran hawaiienergy.com through our public schema scorer this morning. The result is a D-45 out of 100, which means there is essentially zero structured data on the site. None of the rebate programs, the Energy Advantage Program, the Clean Energy Allies network, the success stories, or the team page is currently legible to an AI engine as a structured entity. For a publicly funded program whose reason for existing is to inform Hawaii ratepayers, that gap is mission-relevant, not just marketing-relevant. Below is what I found and the path to fix it.
     </p>
+  </div>
+</section>
+
+<!-- Entity-graph audit visual: live snapshot of the eight off-site
+     and on-site identity surfaces AI engines lean on. Iframed from
+     app.neverranked.com so the audit is current at view time. -->
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00.5</span>
+      <span>The picture</span>
+      <span class="rule"></span>
+    </div>
+    <p>Before the analysis, the visual. Eight identity signals AI engines lean on when deciding to cite a brand. Hawaii Energy currently lights two of them.</p>
+    <div style="margin:24px 0;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:#0c0c0c">
+      <iframe
+        src="https://app.neverranked.com/embed/entity-audit?brand=Hawaii+Energy&domain=hawaiienergy.com"
+        loading="lazy"
+        referrerpolicy="no-referrer"
+        style="width:100%;height:920px;border:0;display:block;background:transparent"
+        title="Entity graph audit for Hawaii Energy">
+      </iframe>
+    </div>
   </div>
 </section>
 

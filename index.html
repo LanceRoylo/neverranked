@@ -24,7 +24,9 @@
 <link rel="alternate" type="application/rss+xml" title="Insights — Never Ranked" href="https://neverranked.com/blog/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
 <script type="application/ld+json">
 {
@@ -889,18 +891,24 @@ h1,h2,h3,h4{
 .url-check[data-state="result"] .microcopy{display:none}
 .url-check[data-state="result"] .caption b{color:var(--text-mute)}
 .result-top{
-  display:grid;grid-template-columns:auto 1fr;align-items:end;
-  gap:28px;padding-bottom:22px;border-bottom:1px solid var(--line);
+  display:grid;grid-template-columns:auto 1fr;align-items:center;
+  gap:24px;padding-bottom:22px;border-bottom:1px solid var(--line);
 }
-.result-score{
+.result-gauge{flex-shrink:0;width:200px;height:130px;display:flex;align-items:center;justify-content:center;line-height:0}
+.result-gauge svg{width:100%;height:auto;display:block}
+.result-score-inline{
   font-family:var(--serif);font-style:italic;font-weight:400;
-  color:var(--gold);font-size:clamp(56px,8vw,96px);
+  color:var(--gold);font-size:clamp(36px,5vw,52px);
   line-height:.9;letter-spacing:-.02em;
 }
-.result-score .denom{
-  font-size:.3em;color:var(--text-faint);
+.result-score-inline .denom{
+  font-size:.4em;color:var(--text-faint);
   font-style:normal;font-family:var(--mono);
   margin-left:6px;letter-spacing:.02em;
+}
+@media(max-width:540px){
+  .result-top{grid-template-columns:1fr;gap:16px}
+  .result-gauge{width:180px;height:118px}
 }
 .result-meta{display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
 .result-meta .domain{
@@ -4735,8 +4743,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             </div>
             <div class="url-result" id="checkResult" aria-live="polite">
               <div class="result-top">
-                <div class="result-score"><span id="resultScore">0</span><span class="denom">/100</span></div>
+                <div class="result-gauge" id="resultGauge" aria-hidden="true"></div>
                 <div class="result-meta">
+                  <div class="result-score-inline"><span id="resultScore">0</span><span class="denom">/100</span></div>
                   <span class="domain" id="resultDomain">yourdomain.com</span>
                   <span class="grade">AEO grade <b id="resultGrade">&mdash;</b></span>
                 </div>
@@ -6708,10 +6717,71 @@ window.scrollTo(0,0);
     var raw = report.url || report.domain || '';
     return raw.replace(/^https?:\/\//i,'').replace(/^www\./i,'').replace(/\/$/,'');
   }
+
+  // Inline gauge SVG, ported from the dashboard's entity-graph-render
+  // module so the homepage can render the signature gauge instantly
+  // when the URL check completes -- no iframe, no second network call.
+  // Quiet glow + tick marks + glowing terminator dot. Kept compact
+  // (200x130 viewbox) so it fits the URL-check result panel without
+  // dominating the headline.
+  function renderGaugeSvg(score){
+    var s = Math.max(0, Math.min(100, score|0));
+    var pct = s/100;
+    var W=200,H=130,CX=W/2,CY=118,R=84;
+    function pol(a){var r=(a*Math.PI)/180;return{x:CX+R*Math.cos(r),y:CY+R*Math.sin(r)};}
+    function arc(a1,a2){var p=pol(a1),q=pol(a2),L=(a2-a1>180?1:0);
+      return 'M '+p.x.toFixed(2)+' '+p.y.toFixed(2)+' A '+R+' '+R+' 0 '+L+' 1 '+q.x.toFixed(2)+' '+q.y.toFixed(2);}
+    var trackD=arc(180,360);
+    var fillEnd=180+180*pct;
+    var fillD=pct>0?arc(180,fillEnd):'';
+    var tip=pol(fillEnd);
+    var grade=s>=80?'Strong':s>=50?'Building':s>=25?'Weak':'Absent';
+    var gradeColor=s>=80?'#4ade80':s>=50?'#e8c767':'#e88a6e';
+    var ticks='';
+    for(var i=0;i<=4;i++){
+      var a=180+(i/4)*180,r=(a*Math.PI)/180;
+      var ix=CX+(R-15)*Math.cos(r),iy=CY+(R-15)*Math.sin(r);
+      var ox=CX+R*Math.cos(r),oy=CY+R*Math.sin(r);
+      var lit=(i/4)<=pct;
+      ticks+='<line x1="'+ix.toFixed(2)+'" y1="'+iy.toFixed(2)+'" x2="'+ox.toFixed(2)+'" y2="'+oy.toFixed(2)+'" stroke="'+(lit?'#c9a84c':'#222')+'" stroke-width="'+(lit?1.5:1)+'" opacity="'+(lit?0.55:0.4)+'"/>';
+    }
+    return ''
+      +'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="AEO score '+s+' out of 100">'
+      +'<defs>'
+      +'<filter id="ggGold" x="-50%" y="-50%" width="200%" height="200%">'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b1"/>'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b2"/>'
+      +  '<feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>'
+      +'</filter>'
+      +'<filter id="ggDot" filterUnits="userSpaceOnUse" x="0" y="0" width="'+W+'" height="'+H+'">'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="b1"/>'
+      +  '<feGaussianBlur in="SourceGraphic" stdDeviation="10" result="b2"/>'
+      +  '<feMerge><feMergeNode in="b2"/><feMergeNode in="b1"/><feMergeNode in="SourceGraphic"/></feMerge>'
+      +'</filter>'
+      +'<linearGradient id="ggDial" x1="0%" y1="0%" x2="100%" y2="0%">'
+      +  '<stop offset="0%" stop-color="#c9a84c" stop-opacity="0.85"/>'
+      +  '<stop offset="50%" stop-color="#e8c767" stop-opacity="1"/>'
+      +  '<stop offset="100%" stop-color="#c9a84c" stop-opacity="0.95"/>'
+      +'</linearGradient>'
+      +'</defs>'
+      + ticks
+      +'<path d="'+trackD+'" fill="none" stroke="#222" stroke-width="9" stroke-linecap="round" opacity="0.7"/>'
+      +(fillD?(
+         '<path d="'+fillD+'" fill="none" stroke="#c9a84c" stroke-width="9" stroke-linecap="round" filter="url(#ggGold)" opacity="0.55"/>'
+        +'<path d="'+fillD+'" fill="none" stroke="url(#ggDial)" stroke-width="9" stroke-linecap="round"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="6" fill="#e8c767" filter="url(#ggDot)" opacity="0.75"/>'
+        +'<circle cx="'+tip.x.toFixed(2)+'" cy="'+tip.y.toFixed(2)+'" r="2.6" fill="#fff" opacity="0.92"/>'
+       ):'')
+      +'<text x="'+CX+'" y="'+(CY+12)+'" text-anchor="middle" font-family="SF Mono, ui-monospace, monospace" font-size="9" fill="'+gradeColor+'" letter-spacing="0.32em" text-transform="uppercase" font-weight="500">— '+grade+' —</text>'
+      +'</svg>';
+  }
+
   function renderResult(report){
     domainEl.textContent=displayUrl(report);
     gradeEl.textContent=report.grade||'—';
     animateNumber(scoreEl, report.aeo_score||0);
+    var gaugeEl=document.getElementById('resultGauge');
+    if(gaugeEl) gaugeEl.innerHTML=renderGaugeSvg(report.aeo_score||0);
     var signals=(report.technical_signals||[]).slice(0,4);
     signalsEl.innerHTML=signals.map(function(s){
       return '<div class="result-signal '+(s.status||'good')+'">'+
