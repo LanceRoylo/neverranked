@@ -1,0 +1,17 @@
+Six engines. Six different problems.
+
+Google AI Overviews. Pulling from top organic, but weighting freshness and structured data over backlink profile. You can be #1 and never appear in the Overview.
+
+ChatGPT Search. Cites from a smaller curated set. If your entity isn't well-defined across the open web, you're paraphrased or skipped.
+
+Perplexity. Fastest-moving citation graph. Rewards explicit source linking and well-scoped FAQ content.
+
+Gemini. Heaviest weight on Google's Knowledge Graph. If your Google Business and Wikidata presence aren't cleaned up, you're invisible here.
+
+Claude. No live web grounding in the public API yet. It answers from training-data snapshots, which means entity coherence across Wikipedia, Wikidata, and your About-page identity matters more than recency. Contradictory sources get you hedged or skipped.
+
+Microsoft Copilot. Rides on the Bing index. Favors editorial and structured content the way classic SEO agencies were built to optimize for. Hidden upside: if you already win Bing organic, you tend to win Copilot too.
+
+Most brands I audit are visible on two of the six, kind-of-visible on one, and missing from three.
+
+The free check at neverranked.com tells you which is which.

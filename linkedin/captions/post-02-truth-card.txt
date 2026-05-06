@@ -10,6 +10,6 @@ Customers asking that exact question today are being handed to your competitors 
 
 This is the quiet part of the shift from Google to AI that most agencies haven't told their clients yet. The old scoreboard (rank #1, drive clicks) got replaced. The new one is just "are you named or not."
 
-Free 30-second check at neverranked.com tells you where you actually stand across ChatGPT, Perplexity, Gemini, and Google AI. No email gate.
+Free 30-second check at neverranked.com tells you where you actually stand across ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, and Microsoft Copilot. No email gate.
 
 Run it. Drop your score. I'll reply with what I'd fix first.

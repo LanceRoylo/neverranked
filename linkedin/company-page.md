@@ -44,7 +44,7 @@ We run our own AEO lab on Montaic, a real-estate AI product we built. Every tech
 
 Start here:
 
-The $500 audit. Six deliverables. 48-hour turnaround. Yours to keep whether you hire us after or not.
+The $750 audit. Six deliverables. 48-hour turnaround. Fully credited toward your first month if you upgrade to a monthly tier within thirty days. Yours to keep either way.
 
 neverranked.com
 hello@neverranked.com
@@ -66,5 +66,5 @@ Post these from the company page in order, one per weekday during launch week. C
 | 1 | Manifesto (launch day) | [captions/company-01-manifesto.txt](captions/company-01-manifesto.txt) |
 | 2 | Stat | [captions/company-02-stat.txt](captions/company-02-stat.txt) |
 | 3 | Proof-of-practice (Montaic) | [captions/company-03-proof.txt](captions/company-03-proof.txt) |
-| 4 | The $500 audit | [captions/company-04-audit.txt](captions/company-04-audit.txt) |
+| 4 | The $750 audit | [captions/company-04-audit.txt](captions/company-04-audit.txt) |
 | 5 | Anti-agency | [captions/company-05-anti-agency.txt](captions/company-05-anti-agency.txt) |

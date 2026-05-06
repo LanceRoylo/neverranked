@@ -6,7 +6,7 @@ They exist because they're easy to produce and they look like progress. They tel
 
 What actually matters now:
 
-Share of answer across the four major AI engines. Quote fidelity (are you being named or paraphrased). Entity recognition (does the model know what your brand is). Schema completeness on the pages you want cited. Velocity of citations over the last 90 days.
+Share of answer across the six AI engines we track (ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, Microsoft Copilot). Quote fidelity (are you being named or paraphrased). Entity recognition (does the model know what your brand is). Schema completeness on the pages you want cited. Velocity of citations over the last 90 days.
 
 None of these show up in an Ahrefs export.
 

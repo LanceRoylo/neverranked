@@ -46,7 +46,7 @@ Everything you need to launch and run the NeverRanked LinkedIn presence.
 | 05 | Contrarian | [captions/personal-05-contrarian.txt](captions/personal-05-contrarian.txt) |
 | 06 | Montaic case | [captions/personal-06-montaic.txt](captions/personal-06-montaic.txt) |
 | 07 | Confession | [captions/personal-07-confession.txt](captions/personal-07-confession.txt) |
-| 08 | Four engines | [captions/personal-08-four-engines.txt](captions/personal-08-four-engines.txt) |
+| 08 | Six engines | [captions/personal-08-six-engines.txt](captions/personal-08-six-engines.txt) |
 | 09 | Reframe | [captions/personal-09-reframe.txt](captions/personal-09-reframe.txt) |
 | 10 | Soft sell | [captions/personal-10-soft-sell.txt](captions/personal-10-soft-sell.txt) |
 

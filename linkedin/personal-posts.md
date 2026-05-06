@@ -19,9 +19,9 @@
 | 5 | Contrarian (keyword reports are theater) | Confession | [captions/personal-05-contrarian.txt](captions/personal-05-contrarian.txt) |
 | 6 | Montaic case study | Confession | [captions/personal-06-montaic.txt](captions/personal-06-montaic.txt) |
 | 7 | What agencies won't say | Confession | [captions/personal-07-confession.txt](captions/personal-07-confession.txt) |
-| 8 | Four engines, four problems | Specificity | [captions/personal-08-four-engines.txt](captions/personal-08-four-engines.txt) |
+| 8 | Six engines, six problems | Specificity | [captions/personal-08-six-engines.txt](captions/personal-08-six-engines.txt) |
 | 9 | Reframe (new scoreboard) | Reframe | [captions/personal-09-reframe.txt](captions/personal-09-reframe.txt) |
-| 10 | Soft-sell recap ($500 audit) | Specificity | [captions/personal-10-soft-sell.txt](captions/personal-10-soft-sell.txt) |
+| 10 | Soft-sell recap ($750 audit) | Specificity | [captions/personal-10-soft-sell.txt](captions/personal-10-soft-sell.txt) |
 
 ---
 
