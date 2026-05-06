@@ -12,18 +12,20 @@ Never deploys.
 
 ## Active triggers
 
-### Outreach follow-up Phase 2: closed-loop variant testing
-- **Trigger:** 100+ sends per touch number across the multi-touch sequence (T1, T2, AND T3 each cross 100), AND reply rate plateau (<20% reply across the sequence over a rolling 30 days). Either condition alone is not enough. The combination is the moment when "which angle works" stops being noise and starts being a real question worth answering.
-- **What to build:**
-  - Variant generation: generator produces 2-3 candidate bodies per touch instead of 1
-  - Outcome attribution: when `reply_detected` fires, log which variant was last sent (the `note_variant` column already exists on `send_log` for this)
-  - Bandit / win-rate weighting: weight future variant selection toward winners. Start simple (Thompson sampling or pure win-rate weighting); upgrade only if needed
-  - Dashboard surfacing: reply rate by touch + variant
-  - Auto-prune: kill variants with >2x worse reply rate after 50+ sends
-- **Effort:** ~6-10 hours Claude Code
+### Outreach Phase 2: closed-loop self-learning system
+
+- **Trigger (revised 2026-05-06):** T1 sends >= 100. Brought forward from "all three touches >= 100" because the 100/day volume ramp gets us to T1=100 in ~2 weeks instead of 6+. Run `node scripts/learning-readiness.js` in the outreach repo any time to check the gap.
+- **What to build (5 learning surfaces, in leverage order):**
+  1. **Subject A/B.** Generate 2-3 subject variants per send. Log which the prospect saw (use existing `send_log.note_variant` column — built but unused). Attribute opens by variant. Bandit weights future variants toward winners.
+  2. **Body angle A/B.** Same shape for body. Generate variants for T0/T1/T2, attribute replies, weight winners.
+  3. **ICP feedback.** Tag every Apollo-fetched prospect with the ICP key it came from (already stored in `notes.apollo_id`; need to also stamp the ICP key). Track reply rate per ICP. Auto-bias future Apollo fetches toward winning ICPs, demote losers. Surfaces which segments are productive vs which are dead.
+  4. **Send-time optimization.** Vary send hour within the daily-pipeline window. Attribute opens by send hour bucket. Auto-shift toward winners.
+  5. **Vertical-shift detection.** Rolling 30-day reply rate per vertical. Alert when it drops >25% week-over-week. Catches saturation / topic fatigue before it tanks results silently.
+- **Effort:** ~6-10 hours Claude Code for #1-#2 (the lift); +2-3 hours for #3-#5 if shipped together.
 - **Run cost:** ~3x API spend per generation (3 candidate bodies vs 1) = ~3¢ per prospect instead of 1¢. Bandit logic runs locally, no infra cost.
-- **Why gated:** Until sample sizes per touch are meaningful (100+ sends), any "winning variant" is noise. Cost of building the prediction layer before there's data to feed it is high — wrong winners get amplified, optimization happens on randomness. Phase 1 collects the baseline; Phase 2 starts when there's a real signal to optimize against.
-- **Phase 1 reference:** Multi-touch sequence shipped 2026-05-06 in `/Users/lanceroylo/Desktop/neverranked-outreach/`. Bodies stored in `packages.followup_dm` (T1 bump), `followup_2` (T2 new hook), `followup_3` (T3 break-up). Cadence T1=+4d / T2=+10d / T3=+18d. Send log actions: `followup_1_sent` / `followup_2_sent` / `followup_3_sent`. The `send_log.note_variant` column is unused today — that's the latent infrastructure waiting for Phase 2.
+- **Why gated:** Until sample sizes per touch are meaningful (100+ sends), any "winning variant" is noise. Premature ML on cold outbound is a known anti-pattern: wrong winners get amplified, optimization happens on randomness, results get worse before they get better. Phase 1 collects the baseline; Phase 2 starts when there is a real signal to optimize against.
+- **Phase 1 reference:** Multi-touch sequence shipped 2026-05-06 in `/Users/lanceroylo/Desktop/neverranked-outreach/`. Bodies stored in `packages.followup_dm` (T1 bump), `followup_2` (T2 new hook), `followup_3` (T3 break-up). Cadence T1=+4d / T2=+10d / T3=+18d. Send log actions: `followup_1_sent` / `followup_2_sent` / `followup_3_sent`. Apollo API automation shipped same day (`scripts/apollo-fetch.js`, daily cron Step 0). `send_log.note_variant` column already exists, unused — that is the latent infrastructure waiting for Phase 2.
+- **Readiness checker:** `node scripts/learning-readiness.js` prints the current gap to the trigger. Run weekly after the 100/day ramp completes (~2026-05-14).
 
 ### Hermes Agent autonomous research layer
 - **Trigger:** First paid customer signs (any tier: $750 audit, Pulse, Signal, Amplify)

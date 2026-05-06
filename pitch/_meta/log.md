@@ -43,6 +43,7 @@ them into Active with a real pitch slug.
 | Date | Prospect | Trigger | Action taken | Status | Notes |
 |---|---|---|---|---|---|
 | 2026-05-06 | Joe Santoro / Personal Property Managers | Ran scan on personalpropertymanagers.com, score 35, ~1h before reach-out | LinkedIn connection request with note acknowledging the scan, no pitch | INVITE SENT | Owner / Co-Founder, Doylestown PA. Property management vertical (tier 2-3 for AEO). 3rd connection. If he accepts and replies, graduate to Active and decide between $750 audit or Pulse. If no response in 2 weeks, mark CLOSED. |
+| 2026-05-06 | Nicolas Ibanez / Drake Real Estate Partners | Ran 3 self-scans on drakerep.com (score 5/100). Already in SMB outreach DB (prospect ID 192). Auto cold T0 sent 06:53 HST today | Personal teardown email naming 3 specific homepage gaps (zero schema, no H1, no og:image), audit comped (normally $750). Sent from `lance@hi.neverranked.com` to thread with cold T0. | TEARDOWN SENT | NYC real estate investment firm focused on value-add and opportunistic investments. The 3 self-scans + low score = strong intent. Comp framed as recognition of his engagement, not desperation. If he replies "send it", deliver the full audit PDF in 48 hours (live citation scan across 6 engines, schema audit, 90-day fix list with exact JSON-LD blocks). If no reply in 7 days, mark CLOSED. |
 
 ---
 
@@ -59,7 +60,7 @@ here with the resolution date and one-sentence why.)
 - **Sent in last 7 days:** 3 (Hamada, Sean, Darrell)
 - **Awaiting first reply:** all 3 of the above
 - **Older, status unknown:** 4 (Hawaii Energy, Ellen, ASB, Blue Note), backfill when Lance has a moment
-- **Inbound signals (no pitch yet):** 1 (Joe Santoro, scan-triggered)
+- **Inbound signals (no pitch yet):** 2 (Joe Santoro LinkedIn invite, Drake teardown email with comped audit)
 
 ---
 
