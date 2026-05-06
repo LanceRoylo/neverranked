@@ -29,26 +29,22 @@ interface PitchRow {
   slug: string;
   sent: string;
   replied: string;
-  outcome: string;
+  read: string;
   notes: string;
 }
 
-function statusBadge(outcome: string): string {
-  const o = outcome.toLowerCase().trim();
-  const palette: Record<string, string> = {
-    open: "var(--yellow)",
-    "live conversation": "var(--text-soft)",
-    "audit booked": "var(--green)",
-    "tier signed": "var(--green)",
-    cold: "var(--text-faint)",
-    declined: "var(--red)",
-    "referred out": "var(--text-mute)",
-  };
-  // Fallback: any "tier signed" variant (signed pulse, signed signal, etc.)
-  let color = palette[o] ?? "var(--text-mute)";
-  if (o.includes("signed") || o.includes("audit booked")) color = "var(--green)";
-  if (o.includes("declined") || o.includes("cold")) color = "var(--red)";
-  return `<span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:${color};border:1px solid ${color};padding:2px 6px;border-radius:2px;white-space:nowrap">${esc(outcome || "open")}</span>`;
+function readBadge(read: string): string {
+  const r = read.toLowerCase().trim();
+  // Not-yet states: dash, em-dash, blank, question mark.
+  if (!r || r === "—" || r === "-" || r === "?") {
+    return `<span style="font-family:var(--mono);font-size:13px;color:var(--text-faint)">—</span>`;
+  }
+  // Affirmative states: anything mentioning "read" gets the green pill.
+  if (r.includes("read") || r.includes("opened") || r === "yes") {
+    return `<span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);padding:2px 6px;border-radius:2px;white-space:nowrap">${esc(read)}</span>`;
+  }
+  // Anything else (custom note, partial state) gets a neutral muted pill.
+  return `<span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);border:1px solid var(--text-mute);padding:2px 6px;border-radius:2px;white-space:nowrap">${esc(read)}</span>`;
 }
 
 function fmtDate(s: string): string {
@@ -103,7 +99,7 @@ function parsePitchTable(markdown: string): PitchRow[] {
       slug: cells[2].replace(/^`|`$/g, ""),
       sent: cells[3],
       replied: cells[4],
-      outcome: cells[5],
+      read: cells[5],
       notes: cells[6],
     });
   }
@@ -152,7 +148,7 @@ export async function handlePitches(user: User, _env: Env): Promise<Response> {
           </td>
           <td style="padding:14px 12px;font-family:var(--mono);font-size:12px;color:var(--text-mute);white-space:nowrap">${fmtDate(r.sent)}</td>
           <td style="padding:14px 12px;font-family:var(--mono);font-size:12px;color:var(--text-mute);white-space:nowrap">${fmtDate(r.replied)}</td>
-          <td style="padding:14px 12px">${statusBadge(r.outcome)}</td>
+          <td style="padding:14px 12px">${readBadge(r.read)}</td>
           <td style="padding:14px 12px 14px 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.5;max-width:32ch">${esc(r.notes)}</td>
         </tr>
       `,
@@ -186,7 +182,7 @@ export async function handlePitches(user: User, _env: Env): Promise<Response> {
               ${headerCell("URL")}
               ${headerCell("Sent")}
               ${headerCell("Replied")}
-              ${headerCell("Status")}
+              ${headerCell("Read")}
               ${headerCell("Notes")}
             </tr>
           </thead>

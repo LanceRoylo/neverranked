@@ -10,9 +10,9 @@ deploys to the live site.
 - **Created** is when the pitch URL was first committed
 - **Sent** is the date the URL went to the prospect
 - **Replied** is the date the prospect responded (any direction)
-- **Outcome:** `open` (no response yet), `live conversation` (engaged
-  but no decision), `audit booked`, `tier signed` (with which tier),
-  `cold` (no response after 30 days), `declined`, `referred out`
+- **Read:** `—` (not opened yet), `Audit Read` (they have viewed the
+  brief, set this when you see evidence: an email open, a calendar
+  reply, a thread response, anything confirming they saw it)
 
 Update this file by hand after every send and after every meaningful
 reply. Costs a minute. Saves the "wait did I send Hamada that brief?"
@@ -22,11 +22,11 @@ moment in three months.
 
 ## Active
 
-| Created | Prospect | Slug | Sent | Replied | Outcome | Notes |
+| Created | Prospect | Slug | Sent | Replied | Read | Notes |
 |---|---|---|---|---|---|---|
-| 2026-05-05 | Shawn Hamada / Hamada Financial Group | `hamada-financial-group` | 2026-05-05 | — | open | Standing meeting in coming weeks. Pitch sent ahead. NYL umbrella addressed in section 05.5. Move is Audit -> Signal. |
-| 2026-05-05 | Sean Levy / TWS Paperie | `sean-levy` | 2026-05-05 | — | open | Old Macy's friend, reconnected via LinkedIn. Asked Lance to look at his Wincher data. Audit comped because of relationship. AEO is moving target framing. |
-| 2026-05-04 | Darrell Chock / restaurant marketing | `darrell-chock` | 2026-05-04 | — | open | Met in person years ago, reconnected via LinkedIn. Reseller pitch (60/40 split), no audit fee. Hawaii restaurants angle, mostly through HRA network. |
+| 2026-05-05 | Shawn Hamada / Hamada Financial Group | `hamada-financial-group` | 2026-05-05 | — | — | Standing meeting in coming weeks. Pitch sent ahead. NYL umbrella addressed in section 05.5. Move is Audit -> Signal. |
+| 2026-05-05 | Sean Levy / TWS Paperie | `sean-levy` | 2026-05-05 | — | — | Old Macy's friend, reconnected via LinkedIn. Asked Lance to look at his Wincher data. Audit comped because of relationship. AEO is moving target framing. |
+| 2026-05-04 | Darrell Chock / restaurant marketing | `darrell-chock` | 2026-05-04 | — | — | Met in person years ago, reconnected via LinkedIn. Reseller pitch (60/40 split), no audit fee. Hawaii restaurants angle, mostly through HRA network. |
 | 2026-05-04 | Jeff Dizon / Hawaii Energy | `hawaii-energy` | ? | ? | ? | Need to backfill from Lance's records. |
 | 2026-05-02 | Ellen | `ellen` | ? | ? | ? | Comparison brief: Seerly vs Never Ranked. Need to backfill. |
 | 2026-04-29 | Mark Cunningham / American Savings Bank | `asb-hawaii` | ? | ? | ? | Need to backfill. |
