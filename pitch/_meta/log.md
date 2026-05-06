@@ -27,10 +27,10 @@ moment in three months.
 | 2026-05-05 | Shawn Hamada / Hamada Financial Group | `hamada-financial-group` | 2026-05-05 | — | — | Standing meeting in coming weeks. Pitch sent ahead. NYL umbrella addressed in section 05.5. Move is Audit -> Signal. |
 | 2026-05-05 | Sean Levy / TWS Paperie | `sean-levy` | 2026-05-05 | — | — | Old Macy's friend, reconnected via LinkedIn. Asked Lance to look at his Wincher data. Audit comped because of relationship. AEO is moving target framing. |
 | 2026-05-04 | Darrell Chock / restaurant marketing | `darrell-chock` | 2026-05-04 | — | — | Met in person years ago, reconnected via LinkedIn. Reseller pitch (60/40 split), no audit fee. Hawaii restaurants angle, mostly through HRA network. |
-| 2026-05-04 | Jeff Dizon / Hawaii Energy | `hawaii-energy` | ? | ? | ? | Need to backfill from Lance's records. |
-| 2026-05-02 | Ellen | `ellen` | ? | ? | ? | Comparison brief: Seerly vs Never Ranked. Need to backfill. |
-| 2026-04-29 | Mark Cunningham / American Savings Bank | `asb-hawaii` | ? | ? | ? | Need to backfill. |
-| 2026-04-29 | Flash Hansen / Blue Note Hawaii | `blue-note-hawaii` | ? | ? | ? | Need to backfill. |
+| 2026-05-04 | Jeff Dizon / Hawaii Energy | `hawaii-energy` | 2026-05-04 | — | — | Sent date inferred from URL commit (12:28 HST). Replied/Read pending Lance review of his records. |
+| 2026-05-02 | Ellen | `ellen` | 2026-05-02 | — | — | Comparison brief: Seerly vs Never Ranked. Sent date inferred from URL commit (09:56 HST). Replied/Read pending Lance review. |
+| 2026-04-29 | Mark Cunningham / American Savings Bank | `asb-hawaii` | 2026-04-29 | — | — | Private brief for Mark. Sent date inferred from URL commit (19:07 HST). Replied/Read pending Lance review. |
+| 2026-04-29 | Flash Hansen / Blue Note Hawaii | `blue-note-hawaii` | 2026-04-29 | — | — | Private brief for Flash. Sent date inferred from URL commit (18:41 HST). Replied/Read pending Lance review. |
 
 ---
 
