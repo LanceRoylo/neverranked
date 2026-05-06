@@ -34,6 +34,18 @@ moment in three months.
 
 ---
 
+## Inbound signals
+
+Prospects who came to us (ran a scan, filled a form, etc.) and got a
+warm reach-out. No custom pitch URL yet. If they engage, graduate
+them into Active with a real pitch slug.
+
+| Date | Prospect | Trigger | Action taken | Status | Notes |
+|---|---|---|---|---|---|
+| 2026-05-06 | Joe Santoro / Personal Property Managers | Ran scan on personalpropertymanagers.com, score 35, ~1h before reach-out | LinkedIn connection request with note acknowledging the scan, no pitch | INVITE SENT | Owner / Co-Founder, Doylestown PA. Property management vertical (tier 2-3 for AEO). 3rd connection. If he accepts and replies, graduate to Active and decide between $750 audit or Pulse. If no response in 2 weeks, mark CLOSED. |
+
+---
+
 ## Posted (closed loop)
 
 (empty so far. When a pitch hits a terminal outcome, move the row
@@ -46,7 +58,8 @@ here with the resolution date and one-sentence why.)
 - **In-flight pitches:** 7
 - **Sent in last 7 days:** 3 (Hamada, Sean, Darrell)
 - **Awaiting first reply:** all 3 of the above
-- **Older, status unknown:** 4 (Hawaii Energy, Ellen, ASB, Blue Note) — backfill when Lance has a moment
+- **Older, status unknown:** 4 (Hawaii Energy, Ellen, ASB, Blue Note), backfill when Lance has a moment
+- **Inbound signals (no pitch yet):** 1 (Joe Santoro, scan-triggered)
 
 ---
 
