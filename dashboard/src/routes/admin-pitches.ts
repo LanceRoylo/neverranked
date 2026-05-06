@@ -33,18 +33,35 @@ interface PitchRow {
   notes: string;
 }
 
-function readBadge(read: string): string {
-  const r = read.toLowerCase().trim();
-  // Not-yet states: dash, em-dash, blank, question mark.
-  if (!r || r === "—" || r === "-" || r === "?") {
+interface OpenStats {
+  opens: number;
+  distinct: number;
+  first_opened: number | null;
+  last_opened: number | null;
+}
+
+function fmtRelative(seconds: number): string {
+  const now = Math.floor(Date.now() / 1000);
+  const diff = now - seconds;
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}d ago`;
+  return `${Math.floor(diff / 604800)}w ago`;
+}
+
+function readBadgeFromOpens(stats: OpenStats | undefined): string {
+  if (!stats || stats.opens === 0) {
     return `<span style="font-family:var(--mono);font-size:13px;color:var(--text-faint)">—</span>`;
   }
-  // Affirmative states: anything mentioning "read" gets the green pill.
-  if (r.includes("read") || r.includes("opened") || r === "yes") {
-    return `<span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);padding:2px 6px;border-radius:2px;white-space:nowrap">${esc(read)}</span>`;
-  }
-  // Anything else (custom note, partial state) gets a neutral muted pill.
-  return `<span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-mute);border:1px solid var(--text-mute);padding:2px 6px;border-radius:2px;white-space:nowrap">${esc(read)}</span>`;
+  const last = stats.last_opened ? fmtRelative(stats.last_opened) : "";
+  const countText = stats.opens === 1 ? "1 open" : `${stats.opens} opens`;
+  return `
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-family:var(--label);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--green);border:1px solid var(--green);padding:2px 6px;border-radius:2px;white-space:nowrap;align-self:flex-start">READ${last ? " · " + esc(last) : ""}</span>
+      <span style="font-family:var(--mono);font-size:10px;color:var(--text-faint)">${esc(countText)}${stats.distinct > 1 ? ` · ${stats.distinct} ips` : ""}</span>
+    </div>
+  `;
 }
 
 function fmtDate(s: string): string {
@@ -127,7 +144,39 @@ async function fetchMarkdown(): Promise<string> {
   return text;
 }
 
-export async function handlePitches(user: User, _env: Env): Promise<Response> {
+async function fetchOpenStats(env: Env, slugs: string[]): Promise<Map<string, OpenStats>> {
+  const stats = new Map<string, OpenStats>();
+  if (slugs.length === 0) return stats;
+  const placeholders = slugs.map(() => "?").join(",");
+  try {
+    const result = await (env as { DB: D1Database }).DB.prepare(
+      `SELECT slug,
+              COUNT(*) as opens,
+              COUNT(DISTINCT ip_hash) as distinct_ips,
+              MIN(opened_at) as first_opened,
+              MAX(opened_at) as last_opened
+         FROM pitch_opens
+        WHERE is_bot = 0 AND slug IN (${placeholders})
+        GROUP BY slug`,
+    )
+      .bind(...slugs)
+      .all<{ slug: string; opens: number; distinct_ips: number; first_opened: number; last_opened: number }>();
+    for (const row of result.results || []) {
+      stats.set(row.slug, {
+        opens: row.opens,
+        distinct: row.distinct_ips,
+        first_opened: row.first_opened,
+        last_opened: row.last_opened,
+      });
+    }
+  } catch {
+    // If the table does not exist yet (migration not applied), return empty stats
+    // and let the badge fall through to "—" for everything.
+  }
+  return stats;
+}
+
+export async function handlePitches(user: User, env: Env): Promise<Response> {
   let rows: PitchRow[] = [];
   let fetchError = "";
   try {
@@ -136,6 +185,8 @@ export async function handlePitches(user: User, _env: Env): Promise<Response> {
   } catch (e) {
     fetchError = e instanceof Error ? e.message : "fetch failed";
   }
+
+  const openStats = await fetchOpenStats(env, rows.map((r) => r.slug));
 
   const tableRows = rows
     .map(
@@ -148,7 +199,7 @@ export async function handlePitches(user: User, _env: Env): Promise<Response> {
           </td>
           <td style="padding:14px 12px;font-family:var(--mono);font-size:12px;color:var(--text-mute);white-space:nowrap">${fmtDate(r.sent)}</td>
           <td style="padding:14px 12px;font-family:var(--mono);font-size:12px;color:var(--text-mute);white-space:nowrap">${fmtDate(r.replied)}</td>
-          <td style="padding:14px 12px">${readBadge(r.read)}</td>
+          <td style="padding:14px 12px">${readBadgeFromOpens(openStats.get(r.slug))}</td>
           <td style="padding:14px 12px 14px 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.5;max-width:32ch">${esc(r.notes)}</td>
         </tr>
       `,

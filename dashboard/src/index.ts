@@ -189,6 +189,15 @@ export default {
       return handlePublicReport(reportMatch[1], env);
     }
 
+    // Pitch tracking pixel (no auth, returns 1x1 GIF either way).
+    // Embedded on every /pitch/* page on the marketing site so we can
+    // see who has actually opened a private pitch URL.
+    const pitchTrackMatch = path.match(/^\/track\/pitch\/([a-z0-9-]{1,80})$/);
+    if (pitchTrackMatch && method === "GET") {
+      const { handleTrackPitch } = await import("./routes/track-pitch");
+      return handleTrackPitch(pitchTrackMatch[1], request, env);
+    }
+
     // Stripe checkout (no auth -- public pricing links)
     // Pulse waitlist POST — must come BEFORE the general /checkout/<plan>
     // matcher so the form submit doesn't fall through to handleCheckout.
