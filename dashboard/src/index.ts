@@ -579,6 +579,11 @@ export default {
       const { handleAdminPlans } = await import("./routes/admin-plans");
       return handleAdminPlans(request, env, user);
     }
+    // Pitches tracker — pulls from pitch/_meta/log.md in the marketing repo
+    if (path === "/admin/pitches" && method === "GET" && user.role === "admin") {
+      const { handlePitches } = await import("./routes/admin-pitches");
+      return handlePitches(user, env);
+    }
     // Schema variant impact viewer -- A/B test results per client.
     const variantsMatch = path.match(/^\/admin\/variants\/([a-z0-9-]+)$/);
     if (variantsMatch && method === "GET" && user.role === "admin") {
