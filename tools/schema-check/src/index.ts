@@ -120,7 +120,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What is the difference between this and the full audit?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is a surface scan of one page. The full $500 audit covers AI citations across ChatGPT, Perplexity, and Gemini, competitor teardown, keyword gap analysis, and produces a 90-day roadmap with six deliverables."
+            "text": "This is a surface scan of one page. The full $750 audit covers AI citations across ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, and Microsoft Copilot, plus competitor teardown, keyword gap analysis, and a 90-day roadmap with six deliverables."
           }
         }
       ]
