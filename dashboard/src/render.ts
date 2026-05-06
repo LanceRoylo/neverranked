@@ -104,6 +104,7 @@ export function layout(
           <a href="/admin/engagement" class="sidebar-item${active('Engagement')}">Engagement</a>
           <a href="/admin/leads" class="sidebar-item${active('Leads')}">Leads</a>
           <a href="/admin/free-check" class="sidebar-item${active('Free check activity')}">Free check</a>
+          <a href="/admin/pitches" class="sidebar-item${title === 'Pitches · Admin' ? ' active' : ''}">Pitches</a>
         </div>
       </div>` : ''}
     </nav>` : '';
