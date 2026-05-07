@@ -1,0 +1,1445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — drake-real-estate-partners</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>Drake Real Estate Partners</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        Drake Real Estate Partners
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-07
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-drake-real-estate-partners-audit">The Drake Real Estate Partners Audit</h1>
+<p><strong>Prepared for:</strong> Drake Real Estate Partners
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-07
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>Drake Real Estate Partners is a New York-based real estate investment firm with 19 employees, focusing on value-add and opportunistic investments across U.S. markets. The domain https://drakerep.com is live, but the homepage is effectively a placeholder: 4 words of body content, no heading structure, no schema markup, and no canonical tag. This is not a site with optimization issues. It is a skeleton page that has never been built out.</p>
+<p>The core finding: <strong>100% of sampled pages are missing every foundational technical and structured data element.</strong> No Organization schema means no entity recognition by Google or LLMs. No H1 means no topical signal. No canonical means no URL consolidation. No alt text on images, no social share images, and a 26-character title tag that wastes SERP real estate. The site is invisible to answer engines and barely legible to traditional search crawlers.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 1 sampled pages have any schema markup (no Organization, no WebSite, no BreadcrumbList)</li>
+<li>0 of 1 sampled pages have canonical tags</li>
+<li>1 of 1 pages missing H1 tags (100%)</li>
+<li>1 of 1 images missing alt text (100%)</li>
+<li>Title tag is 26 characters (under the 30-character minimum, wastes 24+ characters of SERP space)</li>
+<li>Homepage has 4 words of body content (flagged as thin content)</li>
+<li>1.0 average external links per page (weak topical authority signal)</li>
+<li>No og:image or twitter:image deployed (social shares will be blank cards)</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Meta description is well-written and within the 80-160 character range
+- Domain structure is clean (no subdirectories or messy URL patterns to untangle)
+- og:title, og:description, og:type, and twitter:card tags are present
+- Site is live and crawlable (no robots.txt blocks or noindex tags detected)</p>
+<p><strong>The 90-day target:</strong> Homepage has Organization and WebSite schema deployed, canonical tags on all pages, full H1/H2/H3 hierarchy, 500+ words of content describing investment focus and differentiation, and all images have descriptive alt text. Schema validation passes in Google Search Console with zero errors.</p>
+<p><strong>The single most important action for this week:</strong> Add Organization schema to the homepage with name, logo, url, address, contactPoint, and sameAs fields. This unlocks entity recognition and is the foundation for every other structured data improvement.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Covers canonical tags, meta tags, heading structure, alt text, title length, and content depth across the sampled homepage.</p>
+<p><strong>Top finding:</strong> The homepage has no H1 tag, no canonical, and only 4 words of body content. Every foundational on-page element is missing.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Analyzes JSON-LD structured data coverage, including Organization, WebSite, BreadcrumbList, and FAQPage schema.</p>
+<p><strong>Top finding:</strong> Zero schema markup exists on the homepage. No Organization schema means no entity recognition by Google or LLMs.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Identifies high-intent queries in the real estate investment space where Drake Real Estate Partners should rank but currently has no visibility.</p>
+<p><strong>Top finding:</strong> No content targeting investor-focused queries like “value add real estate strategy” or “opportunistic real estate investments” exists on the homepage.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Tests whether Drake Real Estate Partners appears in Perplexity, ChatGPT, and Google AI Overviews for relevant queries about real estate investment firms in New York.</p>
+<p><strong>Top finding:</strong> Drake Real Estate Partners has 0% citation share in answer engine results for real estate investment queries due to missing schema and thin content.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Analyzes 3 direct competitors in the real estate investment space to identify schema, content depth, and structured data patterns that drive their visibility.</p>
+<p><strong>Top finding:</strong> Competitors deploy Organization schema, 1,000+ word homepages with clear investment thesis statements, and FAQPage schema to capture long-tail investor queries.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month action plan to deploy schema, add content, fix technical gaps, and build AEO citation hooks.</p>
+<p><strong>Top recommendation:</strong> Month 1 focuses on deploying Organization and WebSite schema, adding canonical tags, writing a proper H1, and expanding homepage content to 500+ words.</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 1 representative page (homepage) given the site’s minimal structure.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction (none found).</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries in the real estate investment vertical. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3 direct competitors in real estate investment. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-drake-real-estate-partners">Technical Audit — Drake Real Estate Partners</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Pages sampled:</strong> 1 representative page (homepage)</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Drake Real Estate Partners’ homepage is live but structurally incomplete. No schema markup, no H1, no canonical tag, and only 4 words of body content. The page appears to be a placeholder or a splash screen rather than a functional landing page. Every foundational technical element needs implementation.</p>
+<p><strong>Overall grade: F</strong> (Critical gaps across every measured dimension. This is effectively a skeleton page.)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="zero-schema-markup-on-the-homepage-high-priority">1. Zero schema markup on the homepage ⚠ HIGH PRIORITY</h3>
+<p>The homepage at https://drakerep.com has no JSON-LD schema blocks. No Organization, no WebSite, no BreadcrumbList. Google and other engines have no structured data to build an entity profile, no SearchAction hook for sitelinks search box, and no breadcrumb eligibility in SERPs.</p>
+<p><strong>Impact:</strong> Without Organization schema, Drake Real Estate Partners cannot be recognized as a named entity. AI engines like Perplexity and ChatGPT have no authoritative profile to cite. No rich results are possible. This is a total blackout for structured data.</p>
+<p><strong>Fix:</strong> Add Organization schema to the homepage with name, logo, url, sameAs (social profiles), address (if applicable), and contactPoint. Add WebSite schema with potentialAction SearchAction to enable sitelinks search box. Example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@graph&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners&quot;</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com&quot;</span><span class="fu">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;https://www.linkedin.com/company/drakerep&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com&quot;</span><span class="fu">,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners&quot;</span><span class="fu">,</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/?s={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h3 id="missing-canonical-tag-on-homepage-high-priority">2. Missing canonical tag on homepage ⚠ HIGH PRIORITY</h3>
+<p>The homepage has no <code>&lt;link rel="canonical"&gt;</code> tag. This leaves Google to guess the preferred URL variant (www vs. non-www, trailing slash, query parameters).</p>
+<p><strong>Impact:</strong> Without a canonical, duplicate URL variants can split signals. If the site later adds UTM parameters or subdomain variants, Google may index multiple versions and dilute authority.</p>
+<p><strong>Fix:</strong> Add self-referencing canonical to the <code>&lt;head&gt;</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://drakerep.com&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Ensure consistency: if you redirect www to non-www, the canonical should match the final resolved URL.</p>
+<hr />
+<h3 id="no-h1-on-homepage-high-priority">3. No H1 on homepage ⚠ HIGH PRIORITY</h3>
+<p>The homepage has zero H1 tags. No heading hierarchy exists (0 H1, 0 H2, 0 H3).</p>
+<p><strong>Impact:</strong> The H1 is the primary on-page relevance signal. Without it, search engines have no clear topic declaration. This is especially damaging for a homepage that should declare “Drake Real Estate Partners is a real estate investment firm focused on value-add and opportunistic investments.”</p>
+<p><strong>Fix:</strong> Add a single H1 to the homepage that clearly states the business name and core offer:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Drake Real Estate Partners — Value-Add Real Estate Investments<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Follow with H2 subheadings for each major section (Investment Focus, Markets, Team, etc.).</p>
+<hr />
+<h3 id="title-tag-under-30-characters-medium-priority">4. Title tag under 30 characters ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage title is “Drake Real Estate Partners” (26 characters). This wastes 39 characters of available space (Google typically displays 50-60 characters).</p>
+<p><strong>Impact:</strong> The title tag is the single most important on-page SEO element. A 26-character title misses the opportunity to include differentiators, location, or investment focus. It’s also a weak AEO signal because it provides no context for AI summarization.</p>
+<p><strong>Fix:</strong> Expand the title to 50-60 characters with core keywords:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Drake Real Estate Partners | Value-Add Real Estate Investing<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Or, if New York focus is key:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Drake Real Estate Partners | NYC Real Estate Investment Firm<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<hr />
+<h3 id="no-open-graph-image-medium-priority">5. No Open Graph image ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage has <code>og:title</code>, <code>og:description</code>, and <code>og:type</code> but no <code>og:image</code> or <code>twitter:image</code>. When the URL is shared on LinkedIn, Slack, or Twitter, no visual appears.</p>
+<p><strong>Impact:</strong> Social shares with no image get 80% less engagement. For a financial services firm, a professional share card with logo and brand colors is table stakes for credibility.</p>
+<p><strong>Fix:</strong> Add <code>og:image</code> and <code>twitter:image</code> tags pointing to a 1200x630 PNG or JPG:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://drakerep.com/og-image.png&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://drakerep.com/og-image.png&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:card&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;summary_large_image&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Ensure the image is hosted at an absolute URL and is at least 1200x630 pixels.</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>1 of 1 pages sampled have no H1. This is a complete failure of heading structure.</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text — ⚠ ISSUES</h3>
+<p>1 of 1 images on the homepage are missing alt text. This is a 100% failure rate for accessibility and image SEO.</p>
+<p><strong>Fix:</strong> Add descriptive alt text to every image. For logos:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;logo.png&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Drake Real Estate Partners logo&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>For photos of buildings or team members, describe the content concisely.</p>
+<hr />
+<h3 id="word-counts-critical">8. Word counts — ⚠ CRITICAL</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://drakerep.com</td>
+<td>4</td>
+<td>Thin (under 300)</td>
+</tr>
+</tbody>
+</table>
+<p>The homepage contains only 4 words of body content. This is not a functional page. It reads as a placeholder or splash screen.</p>
+<p><strong>Impact:</strong> Google’s quality rater guidelines explicitly penalize thin content. A homepage with 4 words cannot satisfy any informational query. AI engines have nothing to summarize or cite.</p>
+<p><strong>Fix:</strong> Expand the homepage to at least 300 words. Include sections on investment strategy, target markets, deal types, track record, and team credentials. Each section should be a paragraph of 50-100 words with clear H2 subheadings.</p>
+<hr />
+<h2 id="priority-list-technical">Priority list (technical)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization and WebSite schema to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add H1 and heading hierarchy to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add canonical tag to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Expand homepage body content to 300+ words</td>
+<td>HIGH</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add alt text to all images</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Expand title tag to 50-60 characters</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Add Open Graph image</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="raw-data-captured">Raw data captured</h2>
+<p>The following files are in <code>raw/</code> for auditor reference:</p>
+<ul>
+<li><code>home.html</code> — homepage HTML</li>
+<li><code>robots.txt</code> — robots directives</li>
+<li><code>sitemap.xml</code> — URL inventory</li>
+</ul>
+<p>Technical extraction ran via <code>scripts/run-audit.py</code> — see <code>raw/intake-report.json</code> for the full per-page signal data.</p>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-drake-real-estate-partners">Schema Review — Drake Real Estate Partners</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>Drake Real Estate Partners has zero schema markup deployed. The homepage carries no Organization schema (critical for entity recognition), no WebSite schema (blocking SearchAction sitelinks), and no structured data of any kind. In financial services, where trust signals and authority are paramount, this leaves LLMs and Google with no structured way to cite credentials, extract facts, or surface the firm in answer engines. We sampled one page and found a completely blank slate.</p>
+<p><strong>Schema grade: F</strong> (No structured data exists. Missing every foundational schema type.)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>FAQPage</th>
+<th>SoftwareApplication</th>
+<th>Article</th>
+<th>Organization</th>
+<th>BreadcrumbList</th>
+<th>HowTo</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings-1">Findings</h2>
+<h3 id="missing-organization-schema-high">1. Missing Organization schema ⚠ HIGH</h3>
+<p>Drake Real Estate Partners has no Organization schema on the homepage. This is the single most important structured data type for a financial services firm. Without it, Google and LLMs cannot reliably connect the brand name, logo, contact information, and social profiles into a single entity. Entity recognition is the foundation of AEO. When Perplexity or ChatGPT scan the site, they see unstructured text with no authoritative metadata to cite. Organization schema also powers the Google Knowledge Panel and rich result eligibility.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com&quot;</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners is a real estate investment firm focused on value-add and opportunistic investments across U.S. markets.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;New York&quot;</span><span class="fu">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;NY&quot;</span><span class="fu">,</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;contactPoint&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ContactPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;contactType&quot;</span><span class="fu">:</span> <span class="st">&quot;Investor Relations&quot;</span><span class="fu">,</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;info@drakerep.com&quot;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/drake-real-estate-partners&quot;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> We use <code>@id</code> to create a reusable entity reference that other schemas can link to. The <code>logo</code> field powers Knowledge Panel images. <code>address</code> signals geographic focus without triggering LocalBusiness schema (which would be wrong for an investment firm). <code>contactPoint</code> provides a structured way for LLMs to extract contact methods. Add real social URLs to <code>sameAs</code> to strengthen entity consolidation across the web.</p>
+<hr />
+<h3 id="missing-website-schema-with-searchaction-high">2. Missing WebSite schema with SearchAction ⚠ HIGH</h3>
+<p>No WebSite schema means Google cannot display a sitelinks search box in SERPs. More importantly, LLMs scanning the site have no structured signal that this is the canonical homepage or that internal search exists. SearchAction markup tells engines how to query the site programmatically, which can surface in AI-generated answers that link directly to search results pages.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>publisher</code> property references the Organization schema via <code>@id</code>, linking the two entities. If the site has no search function, remove <code>potentialAction</code> entirely but keep the WebSite schema. The <code>target</code> URL should match the actual search endpoint (update <code>/search?q=</code> to the real parameter). This schema belongs in the site-wide header or footer so it appears on every page.</p>
+<hr />
+<h3 id="missing-breadcrumblist-schema-medium">3. Missing BreadcrumbList schema ⚠ MEDIUM</h3>
+<p>Breadcrumb schema is absent. Once the site adds interior pages (portfolio, team, insights), breadcrumbs provide hierarchical context that helps LLMs understand site architecture and page relationships. Rich result breadcrumbs in Google SERPs also improve click-through rates by showing the page’s place in the information hierarchy.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com&quot;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Portfolio&quot;</span><span class="fu">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/portfolio&quot;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> represents one breadcrumb level. <code>position</code> must be sequential starting at 1. The final item (current page) can omit the <code>item</code> property per schema.org guidelines, but we include it for consistency. Generate this dynamically per page. On the homepage, you would only have one item pointing to itself.</p>
+<hr />
+<h3 id="no-aggregaterating-or-review-schema-medium">4. No AggregateRating or Review schema ⚠ MEDIUM</h3>
+<p>The site has no structured reviews or ratings. In financial services, trust is currency. If Drake Real Estate Partners has client testimonials, case study results, or third-party ratings, wrapping them in Review or AggregateRating schema gives LLMs a citation-ready social proof hook. Without it, qualitative praise lives in unstructured text that AI engines are less likely to extract or cite.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Drake Real Estate Partners&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;12&quot;</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;worstRating&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> This nests inside the existing Organization schema (merge with Finding #1). <code>ratingValue</code> and <code>reviewCount</code> must reflect real data. Google may ignore or penalize fabricated ratings. If the firm has individual client testimonials on the site, mark each one up with a standalone Review schema that references the Organization via <code>itemReviewed</code>.</p>
+<hr />
+<h3 id="no-service-or-financialservice-schema-low">5. No Service or FinancialService schema ⚠ LOW</h3>
+<p>Drake Real Estate Partners offers investment services (value-add, opportunistic strategies), but none of that is structured. Service schema (or the more specific FinancialService type) allows each offering to be marked up with <code>serviceType</code>, <code>areaServed</code>, and <code>provider</code>. This helps LLMs answer queries like “real estate investment firms focused on value-add in New York” by matching structured service metadata.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Value-Add Real Estate Investment&quot;</span><span class="fu">,</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/services/value-add&quot;</span><span class="fu">,</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;provider&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://drakerep.com/#organization&quot;</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;serviceType&quot;</span><span class="fu">:</span> <span class="st">&quot;Real Estate Investment&quot;</span><span class="fu">,</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Country&quot;</span><span class="fu">,</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;United States&quot;</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Opportunistic and value-add real estate investment strategies across U.S. markets.&quot;</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each service offering should get its own FinancialService block on the relevant service detail page. <code>provider</code> links back to the Organization entity. <code>areaServed</code> can be Country, State, or City depending on geographic focus. If the firm has separate pages for each strategy (value-add, opportunistic, core-plus), deploy one schema block per page with the specific <code>name</code> and <code>url</code>.</p>
+<hr />
+<h2 id="priority-list-schema">Priority list (schema)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization schema to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add WebSite schema with SearchAction</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add BreadcrumbList to all interior pages</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add AggregateRating (if reviews exist)</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add FinancialService schema per offering</td>
+<td>LOW</td>
+<td>MEDIUM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="validation-checklist">Validation checklist</h2>
+<p>After the client implements the recommended schema fixes:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />Google Rich Results Test passes on home page</label></li>
+<li><label><input type="checkbox" />Schema.org Validator shows no warnings</label></li>
+<li><label><input type="checkbox" />Organization + WebSite schemas present in site-wide layout</label></li>
+<li><label><input type="checkbox" />BreadcrumbList on every non-home page</label></li>
+<li><label><input type="checkbox" />Per-page-type schemas (FinancialService on service pages, Article on insights/blog)</label></li>
+<li><label><input type="checkbox" /><code>@graph</code> with <code>@id</code> references linking schemas together</label></li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-3">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-drake-real-estate-partners">90-Day Roadmap — Drake Real Estate Partners</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-07
+<strong>Window:</strong> Months 1–3 (by 2026-08-07)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-07):</strong>
+- 0 of 1 sampled pages have canonical tags
+- 0 of 1 sampled pages have any schema markup
+- 0 of 1 sampled pages have H1 tags
+- 1 of 1 images missing alt text (100%)
+- Homepage has 4 words of body content (thin content, no heading structure)</p>
+<p><strong>90-day target:</strong>
+- Organization and WebSite schema deployed on homepage and all core pages
+- All pages have self-referencing canonical tags
+- All pages have proper H1/H2/H3 hierarchy
+- All images have descriptive alt text
+- Homepage has 500+ words of content with clear value proposition and service descriptions</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-07-2026-06-07">MONTH 1 — FOUNDATION (2026-05-07 – 2026-06-07)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the skeleton. Add schema, canonicals, H1 structure, and make the homepage functional.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add Organization schema to homepage with name, logo, url, address, contactPoint, and sameAs</td>
+<td>Schema Review, Section 1</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Add WebSite schema to homepage with SearchAction (or without potentialAction if no search exists)</td>
+<td>Schema Review, Section 2</td>
+<td>0.5 hours</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add self-referencing canonical tag to homepage (<code>&lt;link rel="canonical" href="https://drakerep.com" /&gt;</code>)</td>
+<td>Technical Audit, Section 2</td>
+<td>0.25 hours</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Write and deploy H1 tag on homepage (e.g., “Drake Real Estate Partners — Value-Add Real Estate Investments”)</td>
+<td>Technical Audit, Section 3</td>
+<td>0.5 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Expand title tag from 26 to 50-60 characters (e.g., “Drake Real Estate Partners — Value-Add Investments in U.S. Markets”)</td>
+<td>Technical Audit, Section 4</td>
+<td>0.25 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Add alt text to the 1 image on homepage with descriptive, keyword-appropriate text</td>
+<td>Technical Audit, Section 5</td>
+<td>0.25 hours</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Write 500+ words of homepage body content: intro paragraph, investment focus, markets served, differentiators</td>
+<td>Technical Audit, Section 6</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Add H2 subheadings to homepage content (e.g., “Investment Focus,” “Markets,” “Our Approach”)</td>
+<td>Technical Audit, Section 3</td>
+<td>0.5 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~6.25 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add og:image and twitter:image tags with a branded 1200x630 social card</li>
+<li>Create a simple internal linking structure if other pages exist (portfolio, team, contact)</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows Organization schema validated with zero errors
+- Homepage has H1, H2 structure visible in rendered HTML
+- Homepage title tag appears in SERPs with full 50+ character text</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-07-2026-07-07">MONTH 2 — CONTENT CITATION HOOKS (2026-06-07 – 2026-07-07)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Build citable content pages and extend schema to all major templates.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Create “Investment Strategy” page (800+ words) explaining value-add and opportunistic focus, criteria, and case studies</td>
+<td>Technical Audit (thin content finding)</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Create “Markets” page listing U.S. markets served, with geographic focus and market commentary</td>
+<td>Technical Audit (external link finding, AEO authority)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Add BreadcrumbList schema to all interior pages (Investment Strategy, Markets, Team, etc.)</td>
+<td>Schema Review (BreadcrumbList missing)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add FAQPage schema to Investment Strategy page with 5-7 investor FAQs (e.g., “What is value-add real estate?”)</td>
+<td>Schema Review (FAQPage missing)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Link from homepage to new content pages and ensure all pages have canonical tags and H1 structure</td>
+<td>Technical Audit, Section 2 and 3</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~11 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- 3-5 content pages live with H1, canonical, and schema markup
+- FAQPage schema validated in Google Search Console with zero errors</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-07-2026-08-07">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-07 – 2026-08-07)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Add external authority signals, track indexing, and measure structured data coverage.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Secure 3-5 relevant external backlinks (industry publications, partner sites, directories) to address low external link count</td>
+<td>Technical Audit, Section 8</td>
+<td>5 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Add 2-3 outbound links per page to authoritative sources (NCREIF, Urban Land Institute, market data sources)</td>
+<td>Technical Audit, Section 8</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Set up Google Search Console and submit sitemap with all new pages</td>
+<td>Technical Audit (indexing baseline)</td>
+<td>0.5 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Run schema validator on all pages and fix any errors or warnings</td>
+<td>Schema Review (validation check)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Document baseline metrics: indexed pages, schema coverage, H1 coverage, canonical coverage</td>
+<td>Technical Audit (starting position)</td>
+<td>0.5 hours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- All core pages indexed in Google Search Console
+- Schema coverage at 100% for Organization, WebSite, BreadcrumbList, FAQPage across sampled pages</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Launch case study pages with portfolio examples and add AggregateRating schema if testimonials exist</li>
+<li><strong>Month 5:</strong> Build thought leadership content (blog or insights section) targeting investor education keywords</li>
+<li><strong>Month 6:</strong> Add video content (team intros, market overviews) with VideoObject schema and YouTube embedding</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Add Organization schema to the homepage (Section 1 of Schema Review, ready-to-paste code provided). This unblocks entity recognition, Knowledge Panel eligibility, and gives LLMs a structured profile to cite. Without this, Drake Real Estate Partners does not exist as a named entity in the eyes of search engines and AI answer engines.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Homepage and 3-5 core pages fully structured with schema, canonicals, H1 hierarchy, and 500+ words per page
+- Organization schema validated and surfacing in Google Knowledge Graph API
+- 5-10 new backlinks from industry-relevant sources</p>
+<p><strong>Optimistic case:</strong>
+- All core pages indexed and eligible for rich results (FAQPage snippets, sitelinks search box)
+- Homepage ranking for branded queries with rich Knowledge Panel
+- 1-2 unlinked brand mentions converted to citations in Perplexity or ChatGPT</p>
+<p><strong>Conservative case:</strong>
+- Homepage schema deployed and validated with zero errors
+- H1 and canonical coverage at 100% across sampled pages
+- Content word count increased from 4 to 2,000+ across site</p>
+
+
+</body>
+</html>

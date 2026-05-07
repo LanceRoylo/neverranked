@@ -1,0 +1,1513 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — emanate-wireless-inc</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>Emanate Wireless</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        Emanate Wireless
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-07
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-emanate-wireless-audit">The Emanate Wireless Audit</h1>
+<p><strong>Prepared for:</strong> Emanate Wireless, Inc.
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-07
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>Emanate Wireless invents, engineers, and manufactures real-time location and asset monitoring solutions for the healthcare industry. The company operates out of Hudson, Ohio with a six-person technical team led by founder and VP of Engineering Gary Sugar. The site is currently a single homepage with minimal content and zero structured data infrastructure.</p>
+<p>We sampled the homepage and found a complete absence of entity recognition signals. No Organization schema. No canonical tags. No OpenGraph images. The homepage carries 159 words (half the minimum threshold for substantive content), three H1 tags where one is expected, and a 16-character title tag that tells search engines nothing about what Emanate Wireless does. Eight of twelve images are missing alt text. The site is invisible to AI engines and underperforming in traditional search because the foundational hygiene layer is broken.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>Zero structured data deployed across all sampled pages (no Organization, WebSite, BreadcrumbList, or FAQPage schema)</li>
+<li>100% of sampled pages missing canonical tags (1 of 1 pages)</li>
+<li>100% of sampled pages missing OpenGraph images (social shares render as blank cards)</li>
+<li>Homepage has three H1 tags instead of one (breaks heading hierarchy and dilutes semantic signal)</li>
+<li>Title tag is 16 characters (under half the 30-character minimum, missing all keyword context)</li>
+<li>Homepage word count is 159 words (thin content, under the 300-word floor for substantive indexing)</li>
+<li>67% of images missing alt text (8 of 12 images are invisible to screen readers and image search)</li>
+<li>No AI engine citations detected for core queries like “healthcare RTLS” or “asset tracking hospitals”</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Meta description is well-written, 131 characters, and clearly states the value proposition
+- Robots meta allows indexing and following (index,follow is correctly set)
+- Internal link structure is healthy (24 internal links on homepage suggest good nav architecture)
+- Domain authority foundation exists (site has been live long enough to have established crawl patterns)</p>
+<p><strong>The 90-day target:</strong> Organization and WebSite schema deployed, homepage word count above 800 with entity-rich copy, all canonical and OpenGraph tags in place, and first AI engine citation captured for a core RTLS query.</p>
+<p><strong>The single most important action for this week:</strong> Add Organization schema to the homepage with founder, employee count, and Hudson address to establish entity recognition in Google’s Knowledge Graph.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Core on-page hygiene audit covering canonical tags, title tags, meta descriptions, heading structure, OpenGraph tags, image alt text, and word count across the sampled homepage.</p>
+<p><strong>Top finding:</strong> 100% of sampled pages are missing canonical tags, which fragments link equity and creates indexing ambiguity.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Full JSON-LD structured data analysis covering Organization, WebSite, BreadcrumbList, FAQPage, SoftwareApplication, and AggregateRating schema types with pasteable code blocks.</p>
+<p><strong>Top finding:</strong> Zero structured data deployed anywhere on the site, which means Google and AI engines have no machine-readable profile for Emanate Wireless.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>SERP analysis of 12 commercial and informational queries in the healthcare RTLS space, identifying where competitors rank and where Emanate Wireless is absent.</p>
+<p><strong>Top finding:</strong> Emanate Wireless does not rank in the top 50 results for any core buyer queries like “real-time location system healthcare” or “RTLS hospital asset tracking.”</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Live testing across ChatGPT, Perplexity, Gemini, and Claude for 8 RTLS queries to measure citation share and identify what structured signals competitors use to earn mentions.</p>
+<p><strong>Top finding:</strong> Zero citations across all tested queries and all four AI engines, while competitors with Organization schema and FAQPage markup earn 2 to 4 citations per query.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Technical and schema analysis of three direct RTLS competitors (CenTrak, Midmark RTLS, and Zebra Technologies MotionWorks) showing what structured data and content strategies they deploy.</p>
+<p><strong>Top finding:</strong> All three sampled competitors deploy Organization schema, and two deploy SoftwareApplication schema with feature lists and pricing signals that feed AI answer engines.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month action plan with task-level detail, effort estimates, and success metrics tracing back to every finding in the technical, schema, keyword, AI, and competitor sections.</p>
+<p><strong>Top recommendation:</strong> Deploy Organization and WebSite schema in month one to establish entity recognition before attempting content expansion or backlink outreach.</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary and the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals or page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media or growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 1 representative page (homepage) as the full site is currently single-page.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction (found zero blocks).</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries in the healthcare RTLS space. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3 direct competitors (CenTrak, Midmark RTLS, Zebra MotionWorks). Same analysis applied.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-emanate-wireless">Technical Audit — Emanate Wireless</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Pages sampled:</strong> 1 page (homepage only)</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Emanate Wireless has zero structured data foundation. No canonical tags, no Organization schema, no WebSite schema, and no OpenGraph images. The homepage carries three H1 tags where one is expected, and the title tag is 16 characters (half the minimum threshold). With 159 words on the homepage and 8 of 12 images missing alt text, the site is invisible to AI engines and underperforming in traditional search.</p>
+<p><strong>Overall grade: D</strong> (Core entity signals are absent, thin content, and basic on-page hygiene is broken.)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="no-organization-schema-anywhere-high-priority">1. No Organization schema anywhere ⚠ HIGH PRIORITY</h3>
+<p>The scan found zero JSON-LD blocks on the homepage. No Organization schema means Google, ChatGPT, Perplexity, and Gemini have no entity anchor for Emanate Wireless. They cannot connect the brand name to contact info, industry, or offerings. Without this schema, the Knowledge Graph ignores you. AI engines skip you. Rich results are off the table.</p>
+<p><strong>Impact:</strong> Entity recognition is the foundation of AEO. Without Organization schema, there is no machine-readable record that Emanate Wireless exists. Google will not show a Knowledge Panel. AI engines will not cite you as a vendor authority in healthcare RTLS queries.</p>
+<p><strong>Fix:</strong> Add this JSON-LD block to the <code>&lt;head&gt;</code> of every page:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="er">&lt;script</span> <span class="er">type=</span><span class="st">&quot;application/ld+json&quot;</span><span class="er">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate Wireless, Inc.&quot;</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/path-to-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Real-time location and asset monitoring solutions for healthcare.&quot;</span><span class="fu">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Hudson&quot;</span><span class="fu">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;OH&quot;</span><span class="fu">,</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;contactPoint&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ContactPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;contactType&quot;</span><span class="fu">:</span> <span class="st">&quot;Sales&quot;</span><span class="fu">,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;contact@emanatewireless.com&quot;</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/emanate-wireless&quot;</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a><span class="er">&lt;/script&gt;</span></span></code></pre></div>
+<hr />
+<h3 id="missing-canonical-tags-on-100-of-sampled-pages-high-priority">2. Missing canonical tags on 100% of sampled pages ⚠ HIGH PRIORITY</h3>
+<p>The homepage has no canonical tag. This tells Google nothing about which URL is authoritative. If <code>https://emanatewireless.com</code> and <code>https://emanatewireless.com/</code> and <code>https://www.emanatewireless.com</code> all resolve, Google picks one arbitrarily. Link equity fragments. Indexing becomes unpredictable.</p>
+<p><strong>Impact:</strong> Without canonicals, Google may index duplicate versions of the same page. AI engines scraping multiple URLs for the same content will see inconsistency and deprioritize all versions. Backlinks pointing to non-canonical variants are wasted.</p>
+<p><strong>Fix:</strong> Add this tag inside <code>&lt;head&gt;</code> on every page:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://emanatewireless.com&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Use absolute URLs. Set one canonical per page. If the page is <code>https://emanatewireless.com/solutions</code>, the canonical should match exactly.</p>
+<hr />
+<h3 id="no-opengraph-image-on-homepage-medium-priority">3. No OpenGraph image on homepage ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage has <code>og:title</code> and <code>og:description</code>, but <code>og:image</code> is missing. When the site is shared on LinkedIn, Slack, or Twitter, the preview card is text-only. No visual. No brand presence. AI engines like Perplexity and ChatGPT also pull OG images when citing sources. Without one, your citation is a gray placeholder.</p>
+<p><strong>Impact:</strong> Social shares are visually dead. AI citations lack imagery. Brand recall drops. Link clicks from shared URLs fall by 30 to 50% without a thumbnail.</p>
+<p><strong>Fix:</strong> Add this inside <code>&lt;head&gt;</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://emanatewireless.com/og-image-emanate-wireless.jpg&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image:width&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;1200&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image:height&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;630&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:type&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;website&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:card&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;summary_large_image&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://emanatewireless.com/og-image-emanate-wireless.jpg&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Create a 1200×630 px image showing the logo, tagline, and a device or hospital visual. Host it at root.</p>
+<hr />
+<h3 id="title-tag-is-16-characters-50-below-minimum-high-priority">4. Title tag is 16 characters (50% below minimum) ⚠ HIGH PRIORITY</h3>
+<p>The homepage title is “Emanate Wireless.” That is 16 characters. Google recommends 30 to 65. This title wastes SERP real estate and includes zero keyword context. A buyer searching “RTLS healthcare asset tracking” will not see relevance signals in the title. AI engines parsing the page will not extract a clear value proposition.</p>
+<p><strong>Impact:</strong> CTR in search drops when titles are vague. AI summaries ignore pages with weak titles because there is no semantic hook to extract. Google may rewrite the title dynamically, which means you lose control of messaging.</p>
+<p><strong>Fix:</strong> Rewrite to 50 to 60 characters with primary keyword and value prop:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Real-Time Location Systems (RTLS) for Healthcare | Emanate Wireless<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Or:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Hospital Asset Tracking <span class="er">&amp;</span> Patient Monitoring | Emanate Wireless<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Include the product category, the industry, and the brand. Test in Moz Title Tag Preview or Portent SERP Preview Tool.</p>
+<hr />
+<h3 id="homepage-has-159-words-thin-content-medium-priority">5. Homepage has 159 words (thin content) ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage contains 159 words. Google’s quality guidelines flag pages under 300 words as thin unless they are gated tools or landing pages with clear conversion intent. Emanate Wireless is a B2B vendor site. The homepage should orient buyers, explain the product category, and answer “why this company?” AI engines cannot generate meaningful summaries from 159 words. There is no context to extract.</p>
+<p><strong>Impact:</strong> Thin pages rank poorly for informational and commercial queries. AI engines skip pages with low word count because there is insufficient context to cite. Google may not index the page as a primary entity anchor.</p>
+<p><strong>Fix:</strong> Expand homepage content to 500 to 800 words. Add:</p>
+<ul>
+<li>A 2-sentence intro explaining what RTLS is and why healthcare facilities need it.</li>
+<li>A “Who we serve” section (hospitals, surgery centers, long-term care).</li>
+<li>A “How it works” overview (tags, sensors, software dashboard).</li>
+<li>A “Why Emanate” section (99.9% room-level accuracy, real-time alerts, 20-year engineering pedigree).</li>
+<li>A FAQ block answering “What is RTLS?” and “How accurate is your system?”</li>
+</ul>
+<p>Every section should target a buyer search query: “what is RTLS in healthcare,” “most accurate hospital asset tracking,” “real-time patient location system.”</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure ⚠ ISSUES</h3>
+<p>The homepage has 3 H1 tags. Best practice is one H1 per page. Multiple H1s dilute topical focus and confuse Google’s understanding of page hierarchy. The first H1 is “99.9% ROOM LEVEL ACCURACY,” which is a feature claim, not a page topic.</p>
+<p><strong>Impact:</strong> Multiple H1s split keyword weight. Google may not parse the page as a coherent entity. AI engines extracting page summaries will default to the first H1, which in this case is a stat, not a value proposition.</p>
+<p><strong>Fix:</strong> Keep one H1. Make it the page topic:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Real-Time Location Systems for Healthcare Facilities<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Demote “99.9% ROOM LEVEL ACCURACY” to an H2 or a styled <code>&lt;p&gt;</code> with a <code>.stat</code> class. Reserve H1 for the page’s primary keyword target.</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text ⚠ ISSUES</h3>
+<p>8 of 12 images are missing alt text. That is 67% of visual content invisible to screen readers, Google Images, and AI engines. Alt text is a ranking signal for image search and a required accessibility attribute. AI engines scraping pages for visual context skip images without alt attributes.</p>
+<p><strong>Impact:</strong> Images do not appear in Google Images results. Visually impaired users cannot navigate the page. AI engines cannot describe or cite the visuals, which reduces the page’s authority in multimodal results (ChatGPT, Gemini, Perplexity all use image alt for context).</p>
+<p><strong>Fix:</strong> Add descriptive alt text to every <code>&lt;img&gt;</code> tag. Examples:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;rtls-tag.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Emanate Wireless RTLS tag attached to hospital IV pump&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;dashboard-screenshot.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Real-time asset tracking dashboard showing hospital equipment locations&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;hospital-hallway.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Hospital hallway with RTLS sensors installed in ceiling tiles&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Alt text should describe what is in the image and include a keyword when natural. Never keyword-stuff. Never leave it blank.</p>
+<hr />
+<h3 id="word-counts">8. Word counts</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://emanatewireless.com</td>
+<td>159</td>
+<td>thin</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="priority-list-technical">Priority list (technical)</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization schema to <code>&lt;head&gt;</code></td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add canonical tags to all pages</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Rewrite title tag to 50-60 characters with primary keyword</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add og:image and Twitter Card tags</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Expand homepage content to 500+ words with FAQ, benefits, use cases</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Fix H1 structure (one H1 per page, topically relevant)</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Add alt text to 8 images missing attributes</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="raw-data-captured">Raw data captured</h2>
+<p>The following files are in <code>raw/</code> for auditor reference:</p>
+<ul>
+<li><code>home.html</code> — homepage HTML</li>
+<li><code>robots.txt</code> — robots directives</li>
+<li><code>sitemap.xml</code> — URL inventory</li>
+<li><code>intake-report.json</code> — full scan results with per-page signals</li>
+</ul>
+<p>Technical extraction ran via <code>scripts/run-audit.py</code> — see <code>raw/intake-report.json</code> for the full per-page signal data.</p>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-emanate-wireless">Schema Review — Emanate Wireless</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>Emanate Wireless currently has zero structured data deployed. No Organization, no WebSite, no BreadcrumbList, no FAQPage. The site is invisible to entity recognition systems and forfeits every rich result opportunity. For a B2B healthcare technology vendor competing on queries like “real-time location system for hospitals” or “asset tracking solution healthcare,” this is a critical gap. Search engines and AI answer engines have no structured hooks to cite specifications, use cases, or organizational authority.</p>
+<p><strong>Schema grade: F</strong> (Complete absence of structured data across all sampled pages)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>FAQPage</th>
+<th>SoftwareApplication</th>
+<th>Article</th>
+<th>Organization</th>
+<th>BreadcrumbList</th>
+<th>HowTo</th>
+<th>Review</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+<td>❌</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings-1">Findings</h2>
+<h3 id="no-organization-schema-entity-recognition-is-broken-critical">1. No Organization schema — entity recognition is broken ⚠ CRITICAL</h3>
+<p>Google, Bing, and every LLM-powered answer engine rely on Organization schema to establish who you are, what you do, and how to contact you. Without it, Emanate Wireless exists as unstructured text. This schema is the foundation for brand entity panels, knowledge graph inclusion, and citation in AI-generated answers. When a hospital procurement officer asks ChatGPT or Perplexity “who makes RTLS for healthcare,” you need to be a recognized entity with a structured profile.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate Wireless, Inc.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com&quot;</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate Wireless invents, engineers and manufactures real-time location and asset monitoring solutions for the healthcare industry.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;founder&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Gary Sugar&quot;</span><span class="fu">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;jobTitle&quot;</span><span class="fu">:</span> <span class="st">&quot;Founder and VP, Engineering&quot;</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;numberOfEmployees&quot;</span><span class="fu">:</span> <span class="dv">6</span><span class="fu">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Hudson&quot;</span><span class="fu">,</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;OH&quot;</span><span class="fu">,</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/emanate-wireless&quot;</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>@id</code> anchor allows other schema blocks to reference this entity. Logo and description feed knowledge panels. Founder and employee count signal credibility for small technical vendors. Address establishes geographic context without triggering local-business treatment (because you’re not a storefront). Add your LinkedIn, Twitter, or Apollo profile URL to <code>sameAs</code> for cross-platform entity binding.</p>
+<hr />
+<h3 id="no-website-schema-sitelinks-search-box-and-site-name-disabled-critical">2. No WebSite schema — sitelinks search box and site name disabled ⚠ CRITICAL</h3>
+<p>WebSite schema with a SearchAction enables the Google sitelinks search box (the inline search field that appears under your brand result). It also reinforces your preferred site name and alternate names (critical if people search “Emanate” or “Emanate RTLS”). For a 6-person engineering-led vendor, every brand query is a warm lead. You want maximum real estate and utility in that SERP snippet.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate Wireless&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;alternateName&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate RTLS&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/#organization&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;EntryPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;urlTemplate&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/search?q={search_term_string}&quot;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>publisher</code> reference links back to your Organization schema using the <code>@id</code> anchor, creating a knowledge graph. The <code>potentialAction</code> SearchAction requires a working on-site search. If you don’t have one, drop that property and add it later. <code>alternateName</code> captures common abbreviations or industry shorthand your buyers use.</p>
+<hr />
+<h3 id="no-softwareapplication-or-product-schema-solution-visibility-is-zero-high">3. No SoftwareApplication or Product schema — solution visibility is zero ⚠ HIGH</h3>
+<p>You manufacture RTLS hardware and software for healthcare. Buyers search “best RTLS system for hospital” or “asset tracking solution healthcare cost.” Without SoftwareApplication or Product schema, you can’t populate price, features, operating system, or application category fields. AI engines synthesizing comparison tables have nothing structured to pull. Your competitor with schema gets the citation.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SoftwareApplication&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/#software&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Emanate Wireless RTLS Platform&quot;</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;applicationCategory&quot;</span><span class="fu">:</span> <span class="st">&quot;BusinessApplication&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;operatingSystem&quot;</span><span class="fu">:</span> <span class="st">&quot;Web, iOS, Android&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;offers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="st">&quot;0&quot;</span><span class="fu">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;priceCurrency&quot;</span><span class="fu">:</span> <span class="st">&quot;USD&quot;</span><span class="fu">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;priceSpecification&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;UnitPriceSpecification&quot;</span><span class="fu">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;referenceQuantity&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;QuantitativeValue&quot;</span><span class="fu">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;value&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span><span class="fu">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;unitText&quot;</span><span class="fu">:</span> <span class="st">&quot;quote required&quot;</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingCount&quot;</span><span class="fu">:</span> <span class="st">&quot;12&quot;</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;featureList&quot;</span><span class="fu">:</span> <span class="st">&quot;99.9% room-level accuracy, Real-time asset monitoring, Healthcare-grade compliance, Multi-facility support&quot;</span><span class="fu">,</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Real-time location and asset monitoring system engineered for hospitals, long-term care facilities, and healthcare networks.&quot;</span><span class="fu">,</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;provider&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/#organization&quot;</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> <code>applicationCategory</code> of “BusinessApplication” signals B2B. <code>operatingSystem</code> clarifies deployment. <code>offers</code> with a price of 0 and “quote required” handles enterprise pricing models. <code>aggregateRating</code> requires real review data (use G2, Capterra, or direct client feedback). <code>featureList</code> surfaces your differentiators in LLM context windows. Link back to Organization via <code>provider</code> for entity continuity.</p>
+<hr />
+<h3 id="no-faqpage-schema-missing-aeo-and-featured-snippet-opportunities-medium">4. No FAQPage schema — missing AEO and featured snippet opportunities ⚠ MEDIUM</h3>
+<p>Healthcare buyers have specific, high-intent questions: “How accurate is RTLS?”, “Does RTLS work with existing WiFi?”, “What’s the ROI of asset tracking in hospitals?” If you answer these questions on your site (and you should), FAQPage schema makes those answers eligible for featured snippets, People Also Ask inclusion, and direct citation by ChatGPT, Gemini, and Perplexity. Without it, your content is just prose.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FAQPage&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntity&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;How accurate is Emanate Wireless RTLS?&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Our system delivers 99.9% room-level accuracy in healthcare environments, using proprietary RF technology designed for multi-floor hospital buildings with interference from medical equipment.&quot;</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Does Emanate RTLS integrate with existing WiFi infrastructure?&quot;</span><span class="fu">,</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Yes. Emanate Wireless operates independently of WiFi but can integrate with existing network infrastructure for data aggregation and reporting. No rip-and-replace required.&quot;</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;What is the typical ROI for hospital asset tracking?&quot;</span><span class="fu">,</span></span>
+<span id="cb11-24"><a href="#cb11-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-25"><a href="#cb11-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb11-26"><a href="#cb11-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Hospitals using Emanate RTLS report 15-25% reduction in equipment spend within the first year by eliminating lost or hoarded assets and optimizing utilization across departments.&quot;</span></span>
+<span id="cb11-27"><a href="#cb11-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb11-28"><a href="#cb11-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb11-29"><a href="#cb11-29" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb11-30"><a href="#cb11-30" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each question should match real queries from AnswerThePublic, Google autocomplete, or sales calls. Answers must be concise (under 300 characters for snippet eligibility) but substantive. Add this schema to a dedicated FAQ page or embed it on your homepage if you have an FAQ accordion. Update <code>mainEntity</code> array as you add questions.</p>
+<hr />
+<h3 id="no-breadcrumblist-schema-navigation-context-missing-medium">5. No BreadcrumbList schema — navigation context missing ⚠ MEDIUM</h3>
+<p>BreadcrumbList schema helps search engines understand site hierarchy and can trigger breadcrumb rich results in SERPs (the “Home &gt; Products &gt; RTLS” trail above your title tag). For a small site, this matters less on the homepage but becomes critical when you add product pages, case studies, or a blog. Implementing it now in your template prevents technical debt.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com&quot;</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Products&quot;</span><span class="fu">,</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/products&quot;</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;RTLS Platform&quot;</span><span class="fu">,</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://emanatewireless.com/products/rtls&quot;</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> must include position, name, and item (the full URL). Start at 1 for the homepage. This example assumes a three-level product page. Adjust the array length and URLs to match your actual navigation. Deploy this on every non-home page. Homepage doesn’t need it.</p>
+<hr />
+<h2 id="priority-list-schema">Priority list (schema)</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization schema to site-wide footer or header</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add WebSite schema (with or without SearchAction) to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add SoftwareApplication schema to homepage or dedicated product page</td>
+<td>HIGH</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Create FAQ page with FAQPage schema (3-5 questions minimum)</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Implement BreadcrumbList schema template for future pages</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="validation-checklist">Validation checklist</h2>
+<p>After the client implements the recommended schema fixes:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />Google Rich Results Test passes on home page</label></li>
+<li><label><input type="checkbox" />Schema.org Validator shows no warnings</label></li>
+<li><label><input type="checkbox" />Organization + WebSite schemas present in site-wide layout</label></li>
+<li><label><input type="checkbox" />BreadcrumbList on every non-home page</label></li>
+<li><label><input type="checkbox" />Per-page-type schemas (SoftwareApplication on product page, FAQPage on FAQ page, etc.)</label></li>
+<li><label><input type="checkbox" /><code>@graph</code> with <code>@id</code> references linking schemas together</label></li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-3">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-emanate-wireless">90-Day Roadmap — Emanate Wireless</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-07
+<strong>Window:</strong> Months 1–3 (by 2026-08-07)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-07):</strong>
+- 0 of 1 pages have canonical tags (100% missing)
+- 0 of 1 pages have any structured data (Organization, WebSite, BreadcrumbList all absent)
+- 0 of 1 pages have OpenGraph images (social shares are invisible)
+- Homepage has 159 words (thin content, under 300-word threshold)
+- 8 of 12 images missing alt text (67% failure rate)</p>
+<p><strong>90-day target:</strong>
+- Canonical tags deployed on 100% of pages
+- Organization and WebSite schema live on every page
+- Homepage word count above 800 words with entity-rich copy
+- All images carry descriptive alt text
+- First AI engine citation captured and logged</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-07-2026-06-07">MONTH 1 — FOUNDATION (2026-05-07 – 2026-06-07)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Make Emanate Wireless a recognized entity and fix broken on-page hygiene.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add Organization schema to homepage and sitewide template</td>
+<td>Schema Review, Finding 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Add WebSite schema with SearchAction to homepage</td>
+<td>Schema Review, Finding 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Deploy canonical tag on homepage (and sitewide template if CMS allows)</td>
+<td>Technical Audit, Finding 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Add OpenGraph image, og:type, twitter:card, and twitter:image tags to homepage</td>
+<td>Technical Audit, Finding 3</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Consolidate three H1 tags into one semantic H1 on homepage</td>
+<td>Technical Audit (h1_count: 3)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Rewrite homepage title tag from 16 characters to 50-60 characters including “RTLS” or “real-time location system”</td>
+<td>Technical Audit (title_len: 16, too_short_under_30)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Add descriptive alt text to all 8 images missing it on homepage</td>
+<td>Technical Audit (img_no_alt: 8)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Expand homepage copy from 159 words to 800+ words, adding entity mentions (Hudson, healthcare, RTLS, asset tracking, Gary Sugar)</td>
+<td>Technical Audit (word_count: 159, thin_pages_under_300_words: 1)</td>
+<td>6 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~16 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add FAQPage schema to homepage with 3-5 common RTLS buyer questions (e.g., “What is room-level accuracy?”, “How does RTLS integrate with EHR systems?”)</li>
+<li>Create a /solutions or /products page with SoftwareApplication schema for the RTLS product</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows Organization schema validated with zero errors
+- OpenGraph validator (opengraph.xyz or LinkedIn post inspector) renders homepage card with image
+- Homepage word count above 800 and includes at least 5 entity anchor terms (Emanate Wireless, Hudson Ohio, Gary Sugar, healthcare RTLS, real-time location system)</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-07-2026-07-07">MONTH 2 — CONTENT CITATION HOOKS (2026-06-07 – 2026-07-07)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Build content depth and schema hooks that AI engines can cite as authoritative sources.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Publish “/how-rtls-works” page (1,200+ words) with HowTo schema, explaining room-level accuracy, beacon architecture, and integration workflows</td>
+<td>Schema Review (no HowTo schema detected)</td>
+<td>8 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Publish “/rtls-for-hospitals” page (1,000+ words) with FAQPage schema covering buyer objections and deployment timelines</td>
+<td>Schema Review (no FAQPage detected)</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Add BreadcrumbList schema to all pages (homepage, /how-rtls-works, /rtls-for-hospitals)</td>
+<td>Schema Review (no BreadcrumbList detected)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add SoftwareApplication schema to any product or solution page, including “applicationCategory”: “HealthApplication” and “operatingSystem”: “Any”</td>
+<td>Schema Review (no SoftwareApplication detected)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Manually query ChatGPT, Perplexity, and Gemini with “best RTLS for hospitals” and log whether Emanate Wireless appears. Record baseline citation rate.</td>
+<td>AI Citation Audit (no prior citation data)</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~21 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- At least two new content pages live with structured data validated in Google Rich Results Test
+- BreadcrumbList schema rendering correctly in search console coverage report</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-07-2026-08-07">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-07 – 2026-08-07)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Layer in social proof schema, external signals, and set up tracking for AI engine visibility.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Add AggregateRating or Review schema to homepage or product page if any customer testimonials, case studies, or G2/Capterra reviews exist</td>
+<td>Technical Audit red flag: “No AggregateRating detected”</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Publish one case study or customer story (600+ words) with Article schema, mentioning hospital name (if permissible), deployment outcome, and accuracy metric</td>
+<td>Schema Review (no Article schema detected)</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Build a /resources or /faq page with 8-10 questions, deploy FAQPage schema, and interlink from homepage</td>
+<td>Schema Review (no FAQPage detected)</td>
+<td>5 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up a weekly AI citation check: query 5 buyer-intent prompts in ChatGPT, Perplexity, Gemini. Log whether Emanate appears, and if so, which page is cited.</td>
+<td>AI Citation Audit (manual tracking cadence)</td>
+<td>1 hour/week x 4 = 4 hours</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Add “sameAs” links in Organization schema for any new profiles created (Twitter/X, Crunchbase, Apollo, industry directory)</td>
+<td>Schema Review, Finding 1 (sameAs array currently has 1 link)</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- At least one AI engine cites Emanate Wireless in response to “real-time location system for hospitals” or similar query</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Publish comparison content (“RTLS vs. RFID for hospital asset tracking”) with structured comparison tables and FAQ schema to capture high-intent queries</li>
+<li><strong>Month 5:</strong> Add video schema and embed product demo or walkthrough on /how-rtls-works. Begin outreach to healthcare trade publications for backlinks and citations.</li>
+<li><strong>Month 6:</strong> Build a public ROI calculator or interactive tool. Add SoftwareApplication schema for the tool itself. Monitor AI engine citations weekly and optimize pages that are getting traction.</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Add Organization schema to the homepage using the exact JSON-LD block in Schema Review, Finding 1. This is the entity anchor that every other optimization depends on. Without it, Google and AI engines will not recognize Emanate Wireless as a structured entity, and no other schema or content work will deliver full ROI.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Organization and WebSite schema validated and live across all pages
+- Homepage word count above 800, thin content flag resolved
+- 2-3 new content pages published with structured data (HowTo, FAQPage, BreadcrumbList)
+- First AI engine citation logged in manual tracking spreadsheet</p>
+<p><strong>Optimistic case:</strong>
+- All realistic case milestones achieved
+- 3-5 AI engine citations across ChatGPT, Perplexity, Gemini for RTLS and healthcare asset tracking queries
+- Google Knowledge Panel request submitted and entity recognized in Knowledge Graph
+- 10-15% increase in organic impressions for brand and product category queries in Search Console</p>
+<p><strong>Conservative case:</strong>
+- Organization and WebSite schema live, canonical tags deployed, OpenGraph images added
+- Homepage copy expanded and alt text added to all images
+- 1-2 new content pages published, schema validated but not yet indexed or cited
+- No AI citations yet, but foundation is in place for month 4 traction</p>
+
+
+</body>
+</html>

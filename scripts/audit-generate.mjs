@@ -53,6 +53,7 @@ const args = Object.fromEntries(
 
 const SKIP_SCAN = !!args['skip-scan'];
 const DELIVERY_EMAIL_ONLY = !!args['delivery-email-only'];
+const PDF = !!args['pdf'];
 
 // ---------------------------------------------------------------------------
 // Resolve client info
@@ -368,6 +369,12 @@ async function run() {
   console.log('='.repeat(60));
   console.log(`AUDIT GENERATED: ${auditDir}/`);
   console.log('='.repeat(60));
+  // Optional: render to PDF
+  if (PDF) {
+    console.log('[7/7] Rendering audit.pdf...');
+    spawnSync('node', [resolve(REPO_ROOT, 'scripts', 'audit-pdf.mjs'), auditDir], { stdio: 'inherit' });
+  }
+
   console.log();
   console.log('Auto-populated:');
   console.log('  ✓ 00-executive-summary.md');
@@ -375,6 +382,7 @@ async function run() {
   console.log('  ✓ 03-schema-review.md');
   console.log('  ✓ 07-roadmap.md');
   console.log('  ✓ delivery-email.md (copy-paste into Gmail when shipping)');
+  if (PDF) console.log('  ✓ audit.pdf (single branded deliverable for the prospect)');
   console.log();
   console.log('Templates left for hand-fill (Phase 2 will auto):');
   console.log('  ⌛ 04-keyword-gap.md');
