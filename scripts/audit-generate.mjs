@@ -52,6 +52,7 @@ const args = Object.fromEntries(
 );
 
 const SKIP_SCAN = !!args['skip-scan'];
+const DELIVERY_EMAIL_ONLY = !!args['delivery-email-only'];
 
 // ---------------------------------------------------------------------------
 // Resolve client info
@@ -212,6 +213,46 @@ ${templateContent}
 Return ONLY the populated markdown. No preamble, no explanation. Keep all headers and structure intact. Replace every {placeholder}.`;
 }
 
+async function writeDeliveryEmail(client, auditDir, execSum, roadmap, tech, schema) {
+  const deliveryPrompt = `You are drafting the delivery email Lance Roylo sends to a prospect when handing over a completed NeverRanked audit. The prospect previously replied "send it" (or similar) to a teardown / cold email and is now expecting the deliverable.
+
+${VOICE_RULES}
+
+CLIENT CONTEXT:
+- Business: ${client.name}
+- Contact: ${client.contact || 'unknown'}
+- Email: ${client.email || 'unknown'}
+- Domain: ${client.url}
+- Vertical: ${client.vertical}
+${client.notes?.title ? `- Title: ${client.notes.title}` : ''}
+
+EXECUTIVE SUMMARY (use the headline finding + grade in the email opener, do NOT paste the full summary):
+
+${(execSum || '').slice(0, 4000)}
+
+ROADMAP TOP-LINE (reference the M1 priority in the email):
+
+${(roadmap || '').slice(0, 2500)}
+
+WRITE the email body following this structure:
+
+1. ONE-line opener that pulls a specific finding from the executive summary (no greeting beyond the first name).
+2. ONE paragraph naming the headline grade + the most critical fix from the M1 roadmap, with a number to make it concrete.
+3. ONE paragraph telling them where to find the deliverables and what to look at first (typically the executive summary then the schema review for the paste-ready JSON-LD).
+4. ONE-line offer of a 20-minute walkthrough call if they want to talk through the M1 fixes live (no pressure if they prefer async).
+5. Sign-off "Lance" on its own line.
+
+NO em dashes. NO semicolons. NO banned words. NO "Hope this helps." NO "Looking forward to hearing." Direct, founder-voice. 110-180 words target.
+
+Output the email body ONLY. No subject line, no preamble. Just the body Lance copies into Gmail.`;
+
+  const deliveryEmail = await callClaude(deliveryPrompt, 1200);
+  const subjectLine = `Your NeverRanked audit: ${client.name}`;
+  const deliveryDoc = `# Delivery email — ${client.name}\n\n**To:** ${client.email || 'TBD'}\n**Subject:** ${subjectLine}\n\n---\n\n${deliveryEmail}\n`;
+  writeFileSync(resolve(auditDir, 'delivery-email.md'), deliveryDoc, 'utf8');
+  console.log(`         wrote delivery-email.md (${deliveryEmail.length} chars)`);
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -226,6 +267,19 @@ async function run() {
   console.log(`[audit] client: ${client.name} (${client.slug})`);
   console.log(`[audit] out: ${auditDir}`);
   console.log();
+
+  // Fast path: only regenerate the delivery email from existing audit files.
+  // Reuses populated sections, no scan, no resection regeneration.
+  if (DELIVERY_EMAIL_ONLY) {
+    console.log('[delivery-email-only] reusing existing audit sections');
+    const tech     = readFileSync(resolve(auditDir, '02-technical-audit.md'), 'utf8');
+    const schema   = readFileSync(resolve(auditDir, '03-schema-review.md'), 'utf8');
+    const roadmap  = readFileSync(resolve(auditDir, '07-roadmap.md'), 'utf8');
+    const execSum  = readFileSync(resolve(auditDir, '00-executive-summary.md'), 'utf8');
+    await writeDeliveryEmail(client, auditDir, execSum, roadmap, tech, schema);
+    console.log(`\nDONE: ${auditDir}/delivery-email.md`);
+    return;
+  }
 
   // 1. Run technical scan
   const intakePath = resolve(rawDir, 'intake-report.json');
@@ -306,6 +360,10 @@ async function run() {
     }
   }
 
+  // 6. Delivery email draft — what Lance sends when delivering the audit
+  console.log('[6/6] Drafting delivery email...');
+  await writeDeliveryEmail(client, auditDir, execOut, roadmapOut, tech, schema);
+
   console.log();
   console.log('='.repeat(60));
   console.log(`AUDIT GENERATED: ${auditDir}/`);
@@ -316,6 +374,7 @@ async function run() {
   console.log('  ✓ 02-technical-audit.md');
   console.log('  ✓ 03-schema-review.md');
   console.log('  ✓ 07-roadmap.md');
+  console.log('  ✓ delivery-email.md (copy-paste into Gmail when shipping)');
   console.log();
   console.log('Templates left for hand-fill (Phase 2 will auto):');
   console.log('  ⌛ 04-keyword-gap.md');
