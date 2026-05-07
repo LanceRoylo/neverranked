@@ -1071,22 +1071,19 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="grade-insight" id="grade-insight"></div>
 
     <!-- Email gate: teaser + capture. Hidden once email is captured.
-         Gate copy revised 2026-05-06 against the 1% capture rate
-         baseline. Three changes: (1) replaced "Unlock full report"
-         with "Show me every fix" — the original violated the
-         banned-word rule ("unlock") and was generic. (2) Tightened
-         body copy to name the specific outputs (paste-ready JSON-LD,
-         prioritized fixes, 90-day roadmap) instead of "share with
-         your team." (3) Title "{count} more gaps below this fold"
-         strengthens scarcity vs the original "more issues detected." -->
+         Gate copy revised 2026-05-06 against the 1% capture rate baseline.
+         A/B test added 2026-05-07 — JS picks Variant A or B per visitor
+         and applies via the data-variant elements below. Conversion
+         tracked via /api/gate-impression and /api/send-report (variant
+         field). Stats at /api/ab-stats. -->
     <div class="email-gate" id="email-gate" style="display:none">
       <div class="email-gate-head">
         <div class="email-gate-count" id="email-gate-count">-</div>
-        <div class="email-gate-title">more gaps below this fold</div>
+        <div class="email-gate-title" id="email-gate-title">more gaps below this fold</div>
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p>The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.</p>
+        <p id="email-gate-body-text">The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.</p>
         <div class="email-gate-form">
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
           <button type="button" id="gate-email-btn">Show me every fix</button>
@@ -1639,7 +1636,71 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   var gateEmailBtn = document.getElementById('gate-email-btn');
   var gateCount = document.getElementById('email-gate-count');
   var gateTeaser = document.getElementById('email-gate-teaser');
+  var gateTitle = document.getElementById('email-gate-title');
+  var gateBodyText = document.getElementById('email-gate-body-text');
   var gatedDetails = document.getElementById('gated-details');
+
+  // ── A/B variant assignment ────────────────────────────────────────────────
+  // Per-visitor sticky assignment via localStorage. First visit picks A or B
+  // randomly and persists. Subsequent visits get the same variant so the
+  // measurement is per-unique-visitor, not per-pageview.
+  var GATE_VARIANT_KEY = 'nr_gate_variant';
+  var GATE_IMPRESSION_KEY = 'nr_gate_impression_logged';
+  var gateVariant = (function(){
+    try {
+      var v = localStorage.getItem(GATE_VARIANT_KEY);
+      if (v === 'A' || v === 'B') return v;
+      var pick = Math.random() < 0.5 ? 'A' : 'B';
+      localStorage.setItem(GATE_VARIANT_KEY, pick);
+      return pick;
+    } catch (e) {
+      return 'A'; // fallback if localStorage blocked
+    }
+  })();
+
+  // Variant copy table. Two distinct angles being tested:
+  //   A: "show me every fix" — emphasizes COMPLETENESS (every gap, every fix)
+  //   B: "send me the 90-day fix list" — emphasizes OUTCOME (going from
+  //      grade X to A in 90 days)
+  // Each variant has title (with {count} placeholder), body, and button.
+  var GATE_COPY = {
+    A: {
+      title: 'more gaps below this fold',
+      body: 'The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.',
+      button: 'Show me every fix',
+      buttonInProgress: 'Sending...'
+    },
+    B: {
+      title: "gaps. We will fix them.",
+      body: "Drop your email. We will send the full breakdown: every schema, every fix, priority order, and a 90-day roadmap to move your score toward A.",
+      button: "Send me the 90-day fix list",
+      buttonInProgress: "Sending..."
+    }
+  };
+
+  function applyGateCopy() {
+    var copy = GATE_COPY[gateVariant] || GATE_COPY.A;
+    if (gateTitle) gateTitle.textContent = copy.title;
+    if (gateBodyText) gateBodyText.textContent = copy.body;
+    if (gateEmailBtn) gateEmailBtn.textContent = copy.button;
+  }
+
+  // Log gate impression once per unique visitor (when they FIRST see the gate)
+  function logGateImpression(reportData) {
+    try {
+      if (sessionStorage.getItem(GATE_IMPRESSION_KEY) === '1') return;
+      sessionStorage.setItem(GATE_IMPRESSION_KEY, '1');
+      fetch('/api/gate-impression', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          variant: gateVariant,
+          domain: reportData ? reportData.domain : null,
+          score: reportData ? reportData.aeo_score : null
+        })
+      }).catch(function(){});
+    } catch (e) {}
+  }
 
   function revealGatedDetails(){
     if(gatedDetails) gatedDetails.style.display = 'block';
@@ -1690,9 +1751,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       gatedDetails.style.display = 'none';
       if(gateEmailBtn){
         gateEmailBtn.disabled = false;
-        gateEmailBtn.textContent = 'Unlock full report';
       }
       if(gateEmailInput) gateEmailInput.value = '';
+      // Apply variant copy (A/B test) every time gate is shown — overrides
+      // the static HTML defaults with the variant-specific text.
+      applyGateCopy();
+      // Log gate impression once per session for proper denominator
+      logGateImpression(data);
     }
   }
 
@@ -1702,14 +1767,15 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     if(!email || !email.includes('@') || !email.includes('.')){ gateEmailInput.focus(); return; }
     if(!lastReportData) return;
 
+    var copy = GATE_COPY[gateVariant] || GATE_COPY.A;
     gateEmailBtn.disabled = true;
-    gateEmailBtn.textContent = 'Unlocking...';
+    gateEmailBtn.textContent = copy.buttonInProgress;
 
     try{
       var resp = await fetch('/api/send-report', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: email, report: lastReportData})
+        body: JSON.stringify({email: email, report: lastReportData, variant: gateVariant})
       });
       if(!resp.ok) throw new Error('Failed');
       setCapturedEmail(email);
@@ -2581,13 +2647,100 @@ export default {
     }
 
     // Send report via email + capture lead
+    // ── /api/gate-impression: log that a visitor SAW the email gate ──
+    // Called once per session by the JS in the email gate. Provides the
+    // denominator for A/B conversion rate calculations. Stored as a
+    // discrete event in KV so /api/ab-stats can scan + count.
+    if (url.pathname === "/api/gate-impression" && request.method === "POST") {
+      const ip = request.headers.get("CF-Connecting-IP") || "unknown";
+      if (isRateLimited(ip)) {
+        return Response.json({ ok: false }, { status: 429, headers: corsHeaders });
+      }
+      let imp: { variant?: string; domain?: string; score?: number };
+      try { imp = await request.json(); } catch {
+        return Response.json({ ok: false }, { status: 400, headers: corsHeaders });
+      }
+      const variant = imp.variant === "A" || imp.variant === "B" ? imp.variant : "A";
+      try {
+        const key = `event:gate_impression:${variant}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+        await env.LEADS.put(key, JSON.stringify({
+          type: "gate_impression",
+          variant,
+          domain: imp.domain || null,
+          score: typeof imp.score === "number" ? imp.score : null,
+          ts: new Date().toISOString(),
+        }), { expirationTtl: 90 * 24 * 60 * 60 });
+      } catch (e) {
+        console.error("gate-impression-log-failed", e instanceof Error ? e.message : String(e));
+      }
+      return Response.json({ ok: true }, { headers: corsHeaders });
+    }
+
+    // ── /api/ab-stats: read out gate impression + capture counts per variant ──
+    // Returns { A: { impressions, captures, rate }, B: { ... } }. Public —
+    // no auth, but contains only aggregate counts (no PII).
+    if (url.pathname === "/api/ab-stats" && request.method === "GET") {
+      const counts: Record<string, { impressions: number; captures: number }> = {
+        A: { impressions: 0, captures: 0 },
+        B: { impressions: 0, captures: 0 },
+      };
+      try {
+        // Impressions: scan event:gate_impression:* keys
+        let cursor: string | undefined;
+        do {
+          const list: any = await env.LEADS.list({ prefix: "event:gate_impression:", limit: 1000, cursor });
+          for (const k of list.keys) {
+            const m = k.name.match(/^event:gate_impression:(A|B):/);
+            if (m) counts[m[1]].impressions++;
+          }
+          cursor = list.list_complete ? undefined : list.cursor;
+        } while (cursor);
+        // Captures: scan event:capture:* and read variant field
+        cursor = undefined;
+        do {
+          const list: any = await env.LEADS.list({ prefix: "event:capture:", limit: 1000, cursor });
+          for (const k of list.keys) {
+            try {
+              const raw = await env.LEADS.get(k.name);
+              if (!raw) continue;
+              const v = JSON.parse(raw);
+              const vr = v.variant === "A" || v.variant === "B" ? v.variant : null;
+              if (vr) counts[vr].captures++;
+            } catch {}
+          }
+          cursor = list.list_complete ? undefined : list.cursor;
+        } while (cursor);
+      } catch (e) {
+        return Response.json({ error: e instanceof Error ? e.message : "scan failed" }, { status: 500, headers: corsHeaders });
+      }
+      const result: Record<string, any> = {};
+      for (const v of ["A", "B"]) {
+        const c = counts[v];
+        result[v] = {
+          impressions: c.impressions,
+          captures: c.captures,
+          rate: c.impressions > 0 ? +((c.captures / c.impressions) * 100).toFixed(2) : 0,
+        };
+      }
+      return Response.json({
+        as_of: new Date().toISOString(),
+        variants: result,
+        winner: (() => {
+          if (result.A.impressions < 50 || result.B.impressions < 50) return "INSUFFICIENT_SAMPLE";
+          const diff = Math.abs(result.A.rate - result.B.rate);
+          if (diff < 1) return "TIE";
+          return result.A.rate > result.B.rate ? "A" : "B";
+        })(),
+      }, { headers: corsHeaders });
+    }
+
     if (url.pathname === "/api/send-report" && request.method === "POST") {
       const ip = request.headers.get("CF-Connecting-IP") || "unknown";
       if (isRateLimited(ip)) {
         return Response.json({ error: "Rate limit exceeded." }, { status: 429, headers: corsHeaders });
       }
 
-      let body: { email?: string; report?: any };
+      let body: { email?: string; report?: any; variant?: string };
       try {
         body = await request.json();
       } catch {
@@ -2596,6 +2749,7 @@ export default {
 
       const email = body.email?.trim().toLowerCase();
       const report = body.report;
+      const variant = body.variant === "A" || body.variant === "B" ? body.variant : null;
 
       // Server-side check mirrors client validation -- belt and suspenders.
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !report) {
@@ -2623,6 +2777,7 @@ export default {
           type: "email_captured",
           domain: report.domain,
           score: report.aeo_score,
+          variant: variant,  // A/B test attribution (null on legacy or missing)
           ts: new Date().toISOString(),
         }), { expirationTtl: 90 * 24 * 60 * 60 });
       } catch (e) {
