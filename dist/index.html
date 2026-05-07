@@ -724,7 +724,7 @@ h1,h2,h3,h4{
   font-weight:500;
   position:relative;
   overflow:hidden;
-  transition:color .4s var(--ease);
+  transition:color .35s var(--ease);
 }
 .cta::before{
   content:"";
@@ -732,7 +732,7 @@ h1,h2,h3,h4{
   inset:0;
   background:var(--gold);
   transform:translateY(101%);
-  transition:transform .5s var(--ease);
+  transition:transform .35s var(--ease);
   z-index:-1;
 }
 .cta:hover{color:var(--bg)}
@@ -1251,14 +1251,14 @@ h1,h2,h3,h4{
   font-size:11px;
   color:var(--gold);
   margin-top:8px;
-  transition:gap .3s var(--ease);
 }
-.proof-card .link:hover{gap:20px}
+.proof-card .link:hover .arrow{transform:translateX(6px)}
 .proof-card .link .arrow{
   display:inline-block;
   width:16px;height:1px;
   background:currentColor;
   position:relative;
+  transition:transform .3s var(--ease);
 }
 .proof-card .link .arrow::after{
   content:"";
@@ -2795,7 +2795,7 @@ h1,h2,h3,h4{
   letter-spacing:.22em;
   font-size:11px;
   font-weight:500;
-  transition:all .4s var(--ease);
+  transition:background .25s var(--ease),color .25s var(--ease),border-color .25s var(--ease),transform .15s var(--ease);
   text-align:center;
   display:block;
 }
@@ -4713,6 +4713,63 @@ h1,h2,h3,h4{
   .svc-converge .gold circle,
   .svc-converge .output-label{opacity:1;transform:none;transition:none;stroke-dashoffset:0}
   .proof-viz .proof-viz-panel{opacity:1;transform:none;transition:none}
+}
+
+/* ---------- polish layer (Emil Kowalski review pass, 2026-05-06) ----------
+   :active for tactile press feedback on every CTA. transform:scale at 100ms
+   is brief enough to remain instant feedback even under prefers-reduced-motion;
+   not gated by the reduced-motion media query for that reason.
+   :focus-visible adds a keyboard-only outline so tab navigation has a visible
+   indicator without making mouse clicks look aggressive. */
+.cta,
+.nav .right .nav-cta,
+.url-check button.submit,
+.result-ctas .primary,
+.result-ctas .secondary,
+.tool-banner .btn,
+.tier .choose,
+.cta-btn,
+.audit-callout-cta,
+.featured-work-link,
+.proof-card .link{
+  transition-property:color,background,border-color,transform,opacity,box-shadow;
+}
+.cta:active,
+.nav .right .nav-cta:active,
+.url-check button.submit:active,
+.result-ctas .primary:active,
+.tool-banner .btn:active,
+.tier .choose:active,
+.cta-btn:active,
+.audit-callout-cta:active{
+  transform:scale(.97);
+  transition-duration:.1s;
+}
+.cta:focus-visible,
+.nav .right .nav-cta:focus-visible,
+.url-check button.submit:focus-visible,
+.result-ctas .primary:focus-visible,
+.result-ctas .secondary:focus-visible,
+.tool-banner .btn:focus-visible,
+.tier .choose:focus-visible,
+.cta-btn:focus-visible,
+.audit-callout-cta:focus-visible,
+.featured-work-link:focus-visible,
+.proof-card .link:focus-visible,
+.nav .right a:focus-visible,
+.mob-cta:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:3px;
+  border-radius:2px;
+}
+/* form fields: keyboard-visible focus ring on top of existing :focus-within border */
+.url-check input:focus-visible,
+.field input:focus-visible,
+.field textarea:focus-visible,
+.comp-field input:focus-visible,
+.recapture-form input:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
 }
 </style>
 
