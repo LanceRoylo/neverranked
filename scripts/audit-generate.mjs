@@ -238,7 +238,7 @@ WRITE the email body following this structure:
 
 1. ONE-line opener that pulls a specific finding from the executive summary (no greeting beyond the first name).
 2. ONE paragraph naming the headline grade + the most critical fix from the M1 roadmap, with a number to make it concrete.
-3. ONE paragraph telling them where to find the deliverables and what to look at first (typically the executive summary then the schema review for the paste-ready JSON-LD).
+3. ONE paragraph telling them where to find the deliverables. Reference the EXACT filenames from this list (do not guess section numbers): 00-executive-summary.md, 02-technical-audit.md, 03-schema-review.md, 07-roadmap.md. Tell them to start with 00-executive-summary.md, then jump to 03-schema-review.md for paste-ready JSON-LD blocks.
 4. ONE-line offer of a 20-minute walkthrough call if they want to talk through the M1 fixes live (no pressure if they prefer async).
 5. Sign-off "Lance" on its own line.
 
