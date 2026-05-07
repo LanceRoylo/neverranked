@@ -1070,20 +1070,28 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="grade-section" id="grade-section"></div>
     <div class="grade-insight" id="grade-insight"></div>
 
-    <!-- Email gate: teaser + capture. Hidden once email is captured. -->
+    <!-- Email gate: teaser + capture. Hidden once email is captured.
+         Gate copy revised 2026-05-06 against the 1% capture rate
+         baseline. Three changes: (1) replaced "Unlock full report"
+         with "Show me every fix" — the original violated the
+         banned-word rule ("unlock") and was generic. (2) Tightened
+         body copy to name the specific outputs (paste-ready JSON-LD,
+         prioritized fixes, 90-day roadmap) instead of "share with
+         your team." (3) Title "{count} more gaps below this fold"
+         strengthens scarcity vs the original "more issues detected." -->
     <div class="email-gate" id="email-gate" style="display:none">
       <div class="email-gate-head">
         <div class="email-gate-count" id="email-gate-count">-</div>
-        <div class="email-gate-title">more issues detected</div>
+        <div class="email-gate-title">more gaps below this fold</div>
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p>See every schema gap, technical signal, and priority fix. Delivered free to your inbox so you can share it with your team.</p>
+        <p>The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.</p>
         <div class="email-gate-form">
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
-          <button type="button" id="gate-email-btn">Unlock full report</button>
+          <button type="button" id="gate-email-btn">Show me every fix</button>
         </div>
-        <div class="email-gate-privacy">We email you the full report. No spam. Unsubscribe anytime.</div>
+        <div class="email-gate-privacy">No spam. Unsubscribe anytime.</div>
       </div>
     </div>
 
