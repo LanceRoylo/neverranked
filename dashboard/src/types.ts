@@ -166,6 +166,11 @@ export interface User {
   _nviPending?: number;
   _agency?: Agency;
   _branding?: BrandingContext;
+  // When admin/agency_admin toggles "View as client", we downgrade
+  // `role` to 'client' so all role-gated UI hides, and stash the
+  // real role here so the topbar can render an "Exit client view"
+  // toggle and admin-only routes still work.
+  real_role?: UserRole;
 }
 
 export interface Session {

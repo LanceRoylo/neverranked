@@ -911,6 +911,28 @@ export default {
       return handleCockpit(user, env);
     }
 
+    // View-as-client toggle. Available to admin/agency_admin (checked
+    // via real_role since `role` may have already been downgraded by
+    // a prior toggle). Flips the nr_view_as_client cookie. We bounce
+    // back to the referrer so the toggle is invisible plumbing -- the
+    // page just re-renders in the new mode.
+    if (path === "/admin/view-as-client/toggle" && method === "POST") {
+      const realRole = user.real_role || user.role;
+      if (realRole !== "admin" && realRole !== "agency_admin") {
+        return new Response("Forbidden", { status: 403 });
+      }
+      const cookie = request.headers.get("Cookie") || "";
+      const isOn = cookie.includes("nr_view_as_client=1");
+      const referer = request.headers.get("Referer") || "/";
+      const setCookie = isOn
+        ? "nr_view_as_client=; Path=/; Max-Age=0; SameSite=Lax"
+        : "nr_view_as_client=1; Path=/; Max-Age=86400; SameSite=Lax; Secure";
+      return new Response(null, {
+        status: 303,
+        headers: { Location: referer, "Set-Cookie": setCookie },
+      });
+    }
+
     // Weekly AEO Brief admin: list, detail, approve, reject, regenerate
     if (path === "/admin/weekly-brief" && method === "GET" && user.role === "admin") {
       const { handleAdminBriefList } = await import("./routes/weekly");

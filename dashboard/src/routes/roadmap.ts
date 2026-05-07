@@ -766,22 +766,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
             ${dueStr && item.status !== "done" ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-            ${(user.role === "admin" || user.role === "agency_admin") && item.status !== "done" ? `
-              <form method="POST" action="/drafts/${clientSlug}/new-generated" style="display:inline" title="Create a new draft in your voice using this item's title and description as the brief" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Drafting\u2026';">
-                <input type="hidden" name="title" value="${esc(item.title)}">
-                <input type="hidden" name="brief" value="${esc(item.description || "")}">
-                <input type="hidden" name="kind" value="article">
-                <input type="hidden" name="roadmap_item_id" value="${item.id}">
-                <button type="submit" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--gold)">Draft in voice</button>
-              </form>
-            ` : ""}
-            ${user.role === "admin" ? `
-              <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
-                ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Start">Start</button>` : ''}
-                ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
-                ${item.status === "done" ? `<button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>` : ''}
-              </form>
-            ` : item.status !== "done" ? `
+            ${item.status !== "done" && user.role !== "admin" && user.role !== "agency_admin" ? `
               <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px" title="${esc(st.hint)}">${st.label}</span>
             ` : ""}
           </div>
@@ -798,6 +783,35 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
               <input type="text" name="client_note" value="${hasNote ? esc(item.client_note!) : ''}" placeholder="Leave a note (e.g., done on our end, waiting on dev, need help)" style="flex:1;padding:6px 10px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:11px;border-radius:2px">
               <button type="submit" class="btn" style="padding:6px 12px;font-size:9px">Save</button>
             </form>
+          </details>
+        ` : ''}
+        ${(user.role === "admin" || user.role === "agency_admin") && item.status !== "done" ? `
+          <details style="margin-top:6px;margin-left:34px;opacity:.55" data-admin-only>
+            <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">Admin &middot; ${st.label}</summary>
+            <div style="margin-top:8px;padding:8px 10px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <form method="POST" action="/drafts/${clientSlug}/new-generated" style="display:inline" title="Create a new draft in your voice using this item's title and description as the brief" onsubmit="this.querySelector('button').disabled=true;this.querySelector('button').textContent='Drafting…';">
+                <input type="hidden" name="title" value="${esc(item.title)}">
+                <input type="hidden" name="brief" value="${esc(item.description || "")}">
+                <input type="hidden" name="kind" value="article">
+                <input type="hidden" name="roadmap_item_id" value="${item.id}">
+                <button type="submit" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--gold)">Draft in voice</button>
+              </form>
+              ${user.role === "admin" ? `
+                <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}" style="display:flex;gap:4px">
+                  ${item.status === "pending" ? `<button type="submit" name="status" value="in_progress" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Move to in-progress">Start</button>` : ''}
+                  ${item.status === "in_progress" ? `<button type="submit" name="status" value="blocked" class="btn btn-ghost" style="padding:4px 8px;font-size:9px;color:var(--red)" title="Block">Block</button>` : ''}
+                </form>
+              ` : ''}
+            </div>
+          </details>
+        ` : (user.role === "admin" && item.status === "done") ? `
+          <details style="margin-top:6px;margin-left:34px;opacity:.55" data-admin-only>
+            <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">Admin &middot; done</summary>
+            <div style="margin-top:8px;padding:8px 10px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0">
+              <form method="POST" action="/roadmap/${clientSlug}/update/${item.id}">
+                <button type="submit" name="status" value="pending" class="btn btn-ghost" style="padding:4px 8px;font-size:9px" title="Reopen">Reopen</button>
+              </form>
+            </div>
           </details>
         ` : ''}
       </div>

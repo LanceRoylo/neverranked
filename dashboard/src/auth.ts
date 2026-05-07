@@ -6,7 +6,9 @@ import type { Env, User } from "./types";
 import { logEvent } from "./analytics";
 
 const SESSION_COOKIE = "nr_app";
+const VIEW_AS_CLIENT_COOKIE = "nr_view_as_client";
 const SESSION_MAX_AGE = 30 * 24 * 60 * 60; // 30 days in seconds
+export const VIEW_AS_COOKIE_NAME = VIEW_AS_CLIENT_COOKIE;
 const MAGIC_LINK_TTL = 15 * 60; // 15 minutes
 const RATE_LIMIT_WINDOW = 15 * 60; // 15 minutes
 const RATE_LIMIT_MAX = 3;
@@ -35,7 +37,19 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
      WHERE s.id = ? AND s.expires_at > ?`
   ).bind(token, now).first<User & { totp_verified?: number }>();
 
-  return row || null;
+  if (!row) return null;
+
+  // "View as client" toggle: if the cookie is set AND this user is a
+  // privileged role, downgrade `role` to 'client' so role-gated UI
+  // hides everywhere (admin chrome, ops sidebar, admin-only buttons).
+  // Stash the real role on `real_role` so the topbar can render an
+  // "Exit client view" affordance and the toggle endpoint can verify.
+  if (cookie.includes(`${VIEW_AS_CLIENT_COOKIE}=1`) && (row.role === "admin" || row.role === "agency_admin")) {
+    row.real_role = row.role;
+    row.role = "client";
+  }
+
+  return row;
 }
 
 /** Create a magic link token for an email.

@@ -250,6 +250,18 @@ ${user ? `<header class="topbar">
     <a href="/" class="mark">${brandMark}</a>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
+    ${user.real_role === 'admin' || user.real_role === 'agency_admin' ? `
+      <form method="POST" action="/admin/view-as-client/toggle" style="margin:0">
+        <button type="submit" title="Exit client preview" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--gold-wash);border:1px solid var(--gold);color:var(--gold);font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">
+          <span style="width:6px;height:6px;background:var(--gold);border-radius:50%"></span>
+          Client view &middot; exit
+        </button>
+      </form>
+    ` : (user.role === 'admin' || user.role === 'agency_admin') ? `
+      <form method="POST" action="/admin/view-as-client/toggle" style="margin:0">
+        <button type="submit" title="Hide admin chrome and see what your client sees" style="padding:6px 10px;background:transparent;border:1px solid var(--line);color:var(--text-faint);font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">View as client</button>
+      </form>
+    ` : ''}
     ${commandPaletteTrigger()}
     ${avatarMenu}
   </div>
