@@ -24,6 +24,23 @@ Never deploys.
 - **Why gated on Phase 2:** Two reasons. (1) Spec/test factories work best when there's a measured win condition. Cold email's win condition is reply rate, which Phase 2 will measure properly. Without Phase 2, the spec is "Lance squints and says it looks right," which is the same human-judgment loop we're trying to remove. (2) Adding the pattern to every surface at once is over-engineering. Wait for the first surface beyond cold-email to hit a measurable failure mode that human review keeps catching but agents can't currently — that's the right moment to extend.
 - **Reference:** generator.js validateOutreachOutput already does this for cold email at lines ~404-455. Use it as the canonical pattern when extending.
 
+### Dashboard "hand-raisers to reach out to" recommendation: filter beyond scan count
+
+- **Trigger:** Whenever check.neverranked.com dashboard is being touched, OR when manually-flagged prospects from the recommendation list keep turning out to be ICP mismatches.
+- **Origin:** 2026-05-06. The dashboard recommended reaching out to 8 hand-raisers based on multiple self-scans alone. Of the 4 we generated drafts for (cpb.bank, inpacwealth.com, helloagaincoffee.com, maxssportsbar.com), 3 turned out to be wrong-ICP on review:
+  - **CPB Bank** — publicly traded, decisions go through agency-of-record + procurement. $750 audit is rounding error to them and a procurement nightmare. The "5 scans" was almost certainly an employee or vendor testing the tool, not a buyer.
+  - **Hello Again Coffee** — local coffee shop. AEO matters less than Google Maps + Yelp + Instagram for foot traffic. Owner's not a buyer for $750 audit + monthly retainer.
+  - **Max's Sports Bar** — same problem. Wrong ICP for the offer.
+  - **InPac Wealth** — actually a fit (small RIA, founder reads email), but never sent.
+  - All 4 drafts deleted to keep the work surface clean.
+- **What to build:** Sharpen the recommendation engine. Don't just count scans. Apply ICP filters before flagging:
+  - Headcount under 50 (skip publicly traded, skip enterprises)
+  - Decision-maker title detected (Founder / Owner / Principal / CEO at small biz, NOT distributed enterprise marketing roles)
+  - Vertical match against NR's playbook list (dental, law, financial advisor, real estate, HVAC, restaurant, etc. — not sports bars or coffee shops)
+  - Maybe also: "score below 40" filter (huge improvement headroom matters more than 25 vs 30)
+- **Effort:** ~2-3 hours dashboard worker changes + ICP filter spec.
+- **Why gated:** The recommendation engine is currently low-stakes (it just shows a panel; nothing auto-fires). The cost of bad recommendations is wasted founder time generating drafts for wrong-ICP prospects. Worth fixing when the dashboard is being touched anyway, not as a standalone push.
+
 ### Capture rate optimization on check.neverranked.com
 
 - **Trigger:** Either of these — (a) fix the capture rate before the next 100 scans run (cheap, high ROI), OR (b) hold until we have a baseline of 200+ scans with the current capture flow to run an A/B test on email gate placement.
