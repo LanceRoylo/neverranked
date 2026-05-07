@@ -6,6 +6,7 @@ import { CSS } from "./styles";
 import type { User, BrandingContext } from "./types";
 import { canUseDraftingFeature } from "./gating";
 import { commandPaletteHtml, commandPaletteTrigger, commandPaletteCss, commandPaletteScript } from "./command-palette";
+import { renderPulseChip } from "./system-pulse";
 
 /**
  * Normalize a hex color or CSS color string so we can safely interpolate
@@ -250,6 +251,7 @@ ${user ? `<header class="topbar">
     <a href="/" class="mark">${brandMark}</a>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
+    ${user._pulse ? renderPulseChip(user._pulse) : ''}
     ${user.real_role === 'admin' || user.real_role === 'agency_admin' ? `
       <form method="POST" action="/admin/view-as-client/toggle" style="margin:0">
         <button type="submit" title="Exit client preview" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--gold-wash);border:1px solid var(--gold);color:var(--gold);font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">

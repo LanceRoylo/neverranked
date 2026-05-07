@@ -166,6 +166,7 @@ export interface User {
   _nviPending?: number;
   _agency?: Agency;
   _branding?: BrandingContext;
+  _pulse?: { done: string; now: string; next: string; scope: "client" | "admin" };
   // When admin/agency_admin toggles "View as client", we downgrade
   // `role` to 'client' so all role-gated UI hides, and stash the
   // real role here so the topbar can render an "Exit client view"

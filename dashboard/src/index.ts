@@ -762,6 +762,17 @@ export default {
       // Non-critical -- don't break routing if badge query fails
     }
 
+    // System pulse — three-state heartbeat surfaced in the topbar so
+    // the dashboard never reads as standing still. Per-client by
+    // default, aggregated for admin scope. Failure is non-fatal.
+    try {
+      const { computePulse } = await import("./system-pulse");
+      const pulse = await computePulse(user, env);
+      if (pulse) user._pulse = pulse;
+    } catch {
+      // Non-critical
+    }
+
     // --- Authenticated routes ---
 
     // Onboarding
