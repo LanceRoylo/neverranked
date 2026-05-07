@@ -12,6 +12,30 @@ Never deploys.
 
 ## Active triggers
 
+### AI software factories: spec/test-driven generation across all pipelines
+
+- **Trigger:** Phase 2 (closed-loop variant testing) ships AND post-launch we observe a category of generation failure that's expensive to catch by eye (e.g., a misfire pattern slips through 5+ times before being noticed). At that point spec/test harnesses pay back.
+- **Origin:** YC video "How to build an AI native company from the ground up" (Diana, partner), watched 2026-05-06. Argument: humans write specs + tests, agents generate implementation, agents iterate until tests pass. Strong AI's repo cited as an example of "no handwritten code, just specs and test harnesses."
+- **What to build:**
+  - **Generator factory.** The cold-email generator already has primitive software-factory shape (BANNED_TOKENS check, FAB_PATTERNS_INLINE check, validateOutreachOutput, regenerate-on-fail with feedback). Extend the same pattern to other generation surfaces: audit deliverable narrative, blog post drafts, social captions, schema deployment payloads.
+  - **Schema deployment factory.** When NR ships JSON-LD to a client site, the work currently passes through Lance's eyes. Spec-driven version: prospect URL + scan + ICP -> agent generates schema -> validation harness checks (against schema.org spec, against the prompt-defined ICP rules, against deliverability constraints) -> agent regens until valid -> ship. Same loop pattern.
+  - **Audit deliverable factory.** Once the audit auto-populator ships (separate item below), the per-section content is a candidate for spec/test pattern: the spec defines what each section must contain (e.g., "schema review must list at least 3 missing types with code examples"), tests validate, agent regenerates failing sections.
+- **Effort:** ~6-10 hours per surface to extend the spec/test pattern. Compounds over time — every new generation surface gets the same harness pattern.
+- **Why gated on Phase 2:** Two reasons. (1) Spec/test factories work best when there's a measured win condition. Cold email's win condition is reply rate, which Phase 2 will measure properly. Without Phase 2, the spec is "Lance squints and says it looks right," which is the same human-judgment loop we're trying to remove. (2) Adding the pattern to every surface at once is over-engineering. Wait for the first surface beyond cold-email to hit a measurable failure mode that human review keeps catching but agents can't currently — that's the right moment to extend.
+- **Reference:** generator.js validateOutreachOutput already does this for cold email at lines ~404-455. Use it as the canonical pattern when extending.
+
+### Capture rate optimization on check.neverranked.com
+
+- **Trigger:** Either of these — (a) fix the capture rate before the next 100 scans run (cheap, high ROI), OR (b) hold until we have a baseline of 200+ scans with the current capture flow to run an A/B test on email gate placement.
+- **Origin:** Free-check dashboard flagged 1% capture rate vs 5-15% benchmark on 2026-05-06.
+- **What to build:**
+  - **Move the email gate higher in the report.** Currently gates at the end of the full report. Test gating after one specific high-tension section (e.g., "we found N specific gaps, drop your email to see them and the fix list").
+  - **Test stronger CTA copy.** "Get my full 90-day fix list" or "Send me the 6-engine citation report" beats "Email me the report."
+  - **Add scarcity / specificity to the gate.** "We've run X scans this week. Get in line for the report." (Honest only if the volume claim is real.)
+  - **Track conversion at each gate variant via the dashboard.** Use `send_log.note_variant` pattern from the outreach repo to record which gate variant the visitor saw.
+- **Effort:** ~1-2 hours dashboard worker changes + new gate component.
+- **Why gated:** Lance flagged this from the dashboard recommendation list. It's a fast win whenever we get to it. Doesn't need to wait, just needs prioritization.
+
 ### Outreach Phase 2: closed-loop self-learning system
 
 - **Trigger (revised 2026-05-06):** T1 sends >= 100. Brought forward from "all three touches >= 100" because the 100/day volume ramp gets us to T1=100 in ~2 weeks instead of 6+. Run `node scripts/learning-readiness.js` in the outreach repo any time to check the gap.
