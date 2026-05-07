@@ -380,6 +380,51 @@ p b{font-weight:400;color:var(--text)}
   .data-table{font-size:12px}
   .data-table td,.data-table th{padding:10px 8px}
 }
+
+/* ---------- polish layer (Emil Kowalski review pass, 2026-05-06) ----------
+   Tactile :active press feedback on CTAs (100ms scale not gated by reduced-
+   motion since brief tactile feedback is not perceived as "motion"). And
+   :focus-visible keyboard rings so tab navigation has a visible indicator
+   without aggressive ring on mouse clicks. Class-based selectors are inert
+   on pages that don't use those classes. */
+.cta:active,
+.nav .right .nav-cta:active,
+.url-check button.submit:active,
+.result-ctas .primary:active,
+.tool-banner .btn:active,
+.tier .choose:active,
+.cta-btn:active,
+.audit-callout-cta:active,
+.mob-cta:active,
+.btn:active{
+  transform:scale(.97);
+  transition-duration:.1s;
+}
+.cta:focus-visible,
+.nav .right .nav-cta:focus-visible,
+.url-check button.submit:focus-visible,
+.result-ctas .primary:focus-visible,
+.result-ctas .secondary:focus-visible,
+.tool-banner .btn:focus-visible,
+.tier .choose:focus-visible,
+.cta-btn:focus-visible,
+.audit-callout-cta:focus-visible,
+.featured-work-link:focus-visible,
+.proof-card .link:focus-visible,
+.nav .right a:focus-visible,
+.mob-cta:focus-visible,
+.btn:focus-visible{
+  outline:2px solid var(--gold, #c9a84c);
+  outline-offset:3px;
+  border-radius:2px;
+}
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible{
+  outline:2px solid var(--gold, #c9a84c);
+  outline-offset:2px;
+}
+
 </style>
 <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
 </head>
