@@ -6980,7 +6980,7 @@ window.scrollTo(0,0);
       '</div>';
     }).join('');
     var domainEnc=encodeURIComponent(report.domain||'');
-    ctaPrimary.href='https://check.neverranked.com/?url=&utm_source=homepage&utm_medium=organic'+domainEnc;
+    ctaPrimary.href='https://check.neverranked.com/?url='+domainEnc+'&utm_source=homepage&utm_medium=organic';
     ctaSecondary.href='https://app.neverranked.com/checkout/audit?domain='+domainEnc;
     if(typeof window.__setCheckoutDomain==='function') window.__setCheckoutDomain(report.domain);
     urlCheck.setAttribute('data-state','result');
