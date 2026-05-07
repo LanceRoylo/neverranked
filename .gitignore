@@ -26,3 +26,8 @@ outreach.db
 
 # Raw audit dumps -- regenerated per run, not source
 audits/**/raw/
+
+# Scan dumps from teardown-draft.mjs (raw HTML + intake-report.json)
+# The teardown .md files are committed, but we don't need the
+# 200+ KB of raw scan output in git for each prospect.
+teardowns/_scan/
