@@ -70,6 +70,20 @@ Free six-engine scan at check.neverranked.com.
 
 ---
 
+## Instagram (Lance, personal — looser, contractions, founder-direct)
+
+Six AI engines decide who gets mentioned now. Not Google rank. Not domain authority. Just whether your site gives them structured data they can actually read.
+
+Most sites I scan come back invisible. Not because the business is bad. Because nobody told them the game moved.
+
+I built NeverRanked because I watched it happen to friends. Watched them pour money into SEO tools that couldn't even tell them ChatGPT and Perplexity were eating their inbound.
+
+Want to know if AI actually mentions you? check.neverranked.com (link in bio). Free, 30 seconds, no signup. Or DM me, happy to run it for you.
+
+#AEO #AISearch #SmallBusiness
+
+---
+
 ## LinkedIn (Lance, personal — founder-voice, first-person)
 
 Six engines. One layer of structured data feeding all of them.
