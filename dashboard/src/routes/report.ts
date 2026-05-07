@@ -452,7 +452,7 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
         <a href="/report/${encodeURIComponent(clientSlug)}/${prevSlug}" class="btn btn-ghost no-print" style="padding:6px 12px;font-size:11px">&larr; ${prevSlug}</a>
         ${!isCurrentOrFuture ? `<a href="/report/${encodeURIComponent(clientSlug)}/${nextSlug}" class="btn btn-ghost no-print" style="padding:6px 12px;font-size:11px">${nextSlug} &rarr;</a>` : ''}
         <button onclick="window.print()" class="btn btn-ghost no-print" style="padding:6px 12px;font-size:11px">Print / PDF</button>
-        ${user.role === "admin" ? `
+        ${user.role === "admin" && !user._viewAsClient ? `
           <form method="POST" action="/report/${encodeURIComponent(clientSlug)}/${bounds.slug}/send">
             <button type="submit" class="btn no-print" style="padding:6px 12px;font-size:11px">Email to client</button>
           </form>

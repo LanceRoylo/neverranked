@@ -25,8 +25,10 @@ export interface AutonomyStats {
 }
 
 export async function getAutonomyStats(user: User, env: Env): Promise<AutonomyStats> {
-  const isAdminScope = user.real_role === "admin";
-  const slug = isAdminScope ? null : user.client_slug;
+  // Effective scope (mirrors computePulse / activity feed).
+  const isPreview = !!user._viewAsClient;
+  const isAdminScope = user.role === "admin" && !isPreview && !user._contextSlug;
+  const slug = isAdminScope ? null : (user._contextSlug || user.client_slug);
   const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
 
   const stats: AutonomyStats = {

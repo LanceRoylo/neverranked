@@ -161,7 +161,7 @@ export async function handleAlerts(user: User, env: Env): Promise<Response> {
           ${a.detail ? `<div style="font-size:12px;color:var(--text-faint);line-height:1.5;margin-bottom:6px">${esc(a.detail)}</div>` : ''}
           <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text-faint)">
             <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:9px;color:${color};border:1px solid ${color};padding:1px 6px;border-radius:2px">${alertTypeLabel(a.type)}</span>
-            ${user.role === "admin" ? `<span>${esc(a.client_slug)}</span>` : ''}
+            ${user.role === "admin" && !user._viewAsClient ? `<span>${esc(a.client_slug)}</span>` : ''}
             <span>${dateStr} at ${timeStr}</span>
           </div>
         </div>

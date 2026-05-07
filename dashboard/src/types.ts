@@ -167,11 +167,19 @@ export interface User {
   _agency?: Agency;
   _branding?: BrandingContext;
   _pulse?: { done: string; now: string; next: string; scope: "client" | "admin" };
-  // When admin/agency_admin toggles "View as client", we downgrade
-  // `role` to 'client' so all role-gated UI hides, and stash the
-  // real role here so the topbar can render an "Exit client view"
-  // toggle and admin-only routes still work.
+  // When admin/agency_admin toggles "View as client", we DO NOT flip
+  // role -- auth gates and route guards keep working. We only set
+  // `_viewAsClient = true` so render code can hide admin chrome and
+  // pulse/feed/autonomy can swap to client-scope language. real_role
+  // is preserved for the topbar exit-chip and for any code that
+  // genuinely needs to know "is this user privileged underneath."
   real_role?: UserRole;
+  _viewAsClient?: boolean;
+  // Slug parsed from the request URL (e.g. "and-scene" from
+  // /roadmap/and-scene). Lets middleware-computed surfaces (pulse,
+  // activity feed, autonomy) scope to the page being viewed when an
+  // admin previews a specific client's surface.
+  _contextSlug?: string;
 }
 
 export interface Session {

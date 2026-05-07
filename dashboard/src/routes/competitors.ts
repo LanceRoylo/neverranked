@@ -460,7 +460,7 @@ export async function handleCompetitors(clientSlug: string, user: User, env: Env
     ${schemaMatrix}
     ${flagComparison}
     ${await buildCitationComparison(clientSlug, primary, competitors, env)}
-    ${user.role === "admin" ? await buildCompetitorDiscovery(clientSlug, allRows, env) : ""}
+    ${user.role === "admin" && !user._viewAsClient ? await buildCompetitorDiscovery(clientSlug, allRows, env) : ""}
 
     <!-- Add / manage competitors -->
     ${buildAddCompetitorForm(clientSlug)}

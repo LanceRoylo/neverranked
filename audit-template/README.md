@@ -1,37 +1,64 @@
 # Never Ranked Audit Template
 
-This is the blank template for every Never Ranked client audit. Duplicate this folder, rename to `audits/{client-name}/`, and fill in each file with client-specific findings.
+Source-of-truth template for every Never Ranked client audit. The
+audit auto-populator (`scripts/audit-generate.mjs`) reads from these
+files and uses them as the structural template, so changes here
+propagate to every future generated audit.
 
 ---
 
 ## How to run a new audit
 
-### 1. Create the client folder
+### Fast path (auto-populator, ~5 minutes generation + ~30 minutes review)
+
+If the prospect is in the outreach DB:
+
+```bash
+node scripts/audit-generate.mjs --prospect-id=192 --pdf
+```
+
+If the prospect is NOT in the outreach DB:
+
+```bash
+node scripts/audit-generate.mjs \
+  --url=https://example.com \
+  --client=example-inc \
+  --name="Example Inc" \
+  --vertical=smb \
+  --pdf
+```
+
+This generates everything end-to-end:
+- Runs `scripts/run-audit.py` for the technical scan (~30s)
+- Calls Claude per section to populate 02 / 03 / 07 / 00 (~90s)
+- Writes `delivery-email.md` (the email you paste into Gmail)
+- With `--pdf`: renders `audit.pdf` via Playwright (a single branded deliverable)
+- Sections 04 / 05 / 06 are left as templates with TODO markers (Phase 2)
+
+Output lands in `audits/<client>/`:
+- `00-executive-summary.md` (auto-populated)
+- `02-technical-audit.md` (auto-populated)
+- `03-schema-review.md` (auto-populated, with paste-ready JSON-LD)
+- `04-keyword-gap.md` (template, hand-fill or skip)
+- `05-ai-citations.md` (template, hand-fill or skip)
+- `06-competitor-teardown.md` (template, hand-fill or skip)
+- `07-roadmap.md` (auto-populated)
+- `delivery-email.md` (the email you send when shipping)
+- `audit.pdf` (single branded deliverable)
+- `raw/intake-report.json` (technical scan output)
+
+### Manual path (if you want to write each section by hand)
+
+Still works the way it always did. Duplicate the template:
 
 ```bash
 cp -r audit-template audits/{client-name}
 cd audits/{client-name}
 mkdir raw
-```
-
-### 2. Run the intake script (gathers raw data)
-
-```bash
 python3 ../../scripts/run-audit.py {client-domain} --out raw/
 ```
 
-This will:
-- Fetch the homepage, robots.txt, sitemap.xml
-- Pull 5-10 representative sample pages
-- Extract technical signals (meta, canonical, schema, headings, links)
-- Run baseline SERP tests on category-relevant queries
-- Write findings to `raw/intake-report.json`
-
-### 3. Fill in each deliverable
-
-Work through the numbered files in order. Each has pre-written section headers and guidance on what to fill in.
-
-Total time budget: **4-6 hours of focused work per audit.**
+Then work through the numbered files. Time budget: 4-6 hours of focused work per audit.
 
 | # | File | Expected time |
 |---|---|---|
@@ -44,14 +71,13 @@ Total time budget: **4-6 hours of focused work per audit.**
 | 06 | Competitor teardown | 45 min |
 | 07 | 90-day roadmap | 45 min |
 
-### 4. Package and deliver
+### Delivery
 
-- Final review pass (30 min)
-- Convert to PDF if client wants print-ready (15 min)
-- Loom recording walkthrough (20 min)
-- Email delivery with links
+- Final review pass (~30 min) — check the auto-populated sections for accuracy and tone
+- Email delivery: paste `delivery-email.md` into Gmail, attach `audit.pdf`
+- Optional: Loom recording walkthrough (~20 min) for high-stakes deliveries
 
-**Total client-facing delivery time: ~5 hours**, well within the 48-hour SLA.
+**Total client-facing delivery time with the auto-populator: ~30-45 minutes**, well within the 48-hour SLA.
 
 ---
 

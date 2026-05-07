@@ -47,10 +47,13 @@ function timeAgo(ts: number, nowSec: number): string {
 }
 
 export async function getActivityFeed(user: User, env: Env, limit = 10): Promise<ActivityEvent[]> {
-  const isAdmin = user.real_role === "admin" || user.role === "admin";
-  const slug = (!isAdmin || user.real_role === "admin") ? user.client_slug : null;
-  // When in client mode (incl. admin viewing-as-client), filter by the user's slug.
-  // When real admin and not toggled, show platform-wide.
+  // Effective scope (mirrors computePulse):
+  //  - Admin, not previewing, no slug context → platform-wide
+  //  - Admin previewing a specific slug page  → that slug
+  //  - Otherwise                              → user.client_slug
+  const isPreview = !!user._viewAsClient;
+  const isPlatformAdmin = user.role === "admin" && !isPreview && !user._contextSlug;
+  const slug = isPlatformAdmin ? null : (user._contextSlug || user.client_slug);
   const scopeBySlug = !!slug;
 
   const events: ActivityEvent[] = [];

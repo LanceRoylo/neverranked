@@ -787,7 +787,7 @@ export async function handleCitations(
           ? 'Citation tracking starts once keywords are configured. Your account manager adds these during onboarding based on the questions your prospects are actually asking AI assistants.'
           : 'Citation tracking runs automatically every Monday at 6am UTC. Your first results will appear here after the next Monday scan.'}
       </p>
-      ${user.role === "admin" ? `
+      ${user.role === "admin" && !user._viewAsClient ? `
         <div style="margin-top:16px">
           <a href="/admin/citations/${esc(slug)}" class="btn">Manage keywords</a>
         </div>
@@ -817,7 +817,7 @@ export async function handleCitations(
         `).join("")}
       </div>
       ` : `<p style="color:var(--text-faint);margin-top:12px">No keywords configured yet.</p>`}
-      ${user.role === "admin" ? `
+      ${user.role === "admin" && !user._viewAsClient ? `
       <div style="margin-top:16px">
         <a href="/admin/citations/${esc(slug)}" class="btn">Manage keywords</a>
       </div>

@@ -405,7 +405,7 @@ export async function handleSearchPerformance(
       <div class="empty">
         <h3>Search Console not connected</h3>
         <p>Google Search Console has not been linked for this client yet.</p>
-        ${user.role === "admin" ? '<div style="margin-top:16px"><a href="/admin/gsc" class="btn">Connect Search Console</a></div>' : ''}
+        ${user.role === "admin" && !user._viewAsClient ? '<div style="margin-top:16px"><a href="/admin/gsc" class="btn">Connect Search Console</a></div>' : ''}
       </div>
     `;
     return html(layout("Search Performance", body, user, slug));
@@ -419,7 +419,7 @@ export async function handleSearchPerformance(
       </div>
       <div class="empty">
         <h3>No search data yet</h3>
-        <p>Data will appear after the first pull. ${user.role === "admin" ? 'Pull data from the <a href="/admin/gsc" style="color:var(--gold)">Search Console admin</a>.' : 'Check back soon.'}</p>
+        <p>Data will appear after the first pull. ${user.role === "admin" && !user._viewAsClient ? 'Pull data from the <a href="/admin/gsc" style="color:var(--gold)">Search Console admin</a>.' : 'Check back soon.'}</p>
       </div>
     `;
     return html(layout("Search Performance", body, user, slug));
@@ -433,7 +433,7 @@ export async function handleSearchPerformance(
     ? `<div style="margin-bottom:24px;padding:14px 18px;border:1px solid #c2524d;border-left:3px solid #c2524d;background:rgba(194,82,77,0.08);border-radius:6px;color:var(--text);font-size:14px;line-height:1.5">
          <strong style="color:#e6a4a0">Search Console is disconnected.</strong>
          Weekly pulls have stopped because the Google token expired or was revoked.
-         ${user.role === "admin" ? '<a href="/admin/gsc" class="btn btn-sm" style="margin-left:12px;display:inline-block">Reconnect</a>' : 'Ask your admin to reconnect.'}
+         ${user.role === "admin" && !user._viewAsClient ? '<a href="/admin/gsc" class="btn btn-sm" style="margin-left:12px;display:inline-block">Reconnect</a>' : 'Ask your admin to reconnect.'}
        </div>`
     : "";
 
@@ -592,7 +592,7 @@ export async function handleSearchPerformance(
     </div>
     ` : ""}
 
-    ${user.role === "admin" ? `
+    ${user.role === "admin" && !user._viewAsClient ? `
     <div style="margin-top:16px">
       <a href="/admin/gsc" style="color:var(--gold);font-size:13px">Manage Search Console</a>
     </div>

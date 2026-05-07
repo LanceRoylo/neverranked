@@ -65,13 +65,22 @@ function ago(tsSec: number, nowSec: number): string {
 }
 
 export async function computePulse(user: User, env: Env): Promise<PulseState | null> {
-  const isAdminScope = user.real_role === "admin";
+  // Effective scope:
+  //  - Admin not in view-as-client preview AND no slug context  → platform-wide
+  //  - Admin previewing a specific client's slug page           → that slug's pulse
+  //  - Admin in view-as-client on a generic page                → their own client_slug if any
+  //  - Client                                                   → their own client_slug
+  const isPreview = !!user._viewAsClient;
+  const isPlatformAdmin = user.role === "admin" && !isPreview && !user._contextSlug;
+  const slug = isPlatformAdmin
+    ? null
+    : (user._contextSlug || user.client_slug);
   const nowMs = Date.now();
   const nowSec = Math.floor(nowMs / 1000);
   const nextWeekly = nextWeeklyScan(nowMs);
   const nextDaily = nextDailyCron(nowMs);
 
-  if (isAdminScope) {
+  if (isPlatformAdmin) {
     // Aggregated across all active clients.
     const startOfDay = nowSec - (nowSec % 86400);
     const todayScans = await env.DB.prepare(
@@ -96,8 +105,7 @@ export async function computePulse(user: User, env: Env): Promise<PulseState | n
     return { done, now, next, scope: "admin" };
   }
 
-  // Client scope.
-  const slug = user.client_slug;
+  // Client (or admin previewing a specific slug) scope.
   if (!slug) return null;
 
   const lastScan = await env.DB.prepare(

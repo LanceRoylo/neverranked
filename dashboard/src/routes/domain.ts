@@ -1419,7 +1419,7 @@ export async function handleDomainDetail(domainId: number, user: User, env: Env,
       <div class="empty" style="padding:32px 28px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;max-width:720px">
         <h3 style="margin-bottom:10px;font-style:italic">No scans yet</h3>
         <p style="color:var(--text-soft);font-size:13px;line-height:1.7;margin:0 0 16px">This domain was just added and has not been scanned yet. The first scan will fire automatically on the next weekly run (every Monday at 6am UTC). If you want to see the report sooner, trigger a manual scan.</p>
-        ${user.role === "admin" ? `
+        ${user.role === "admin" && !user._viewAsClient ? `
           <form method="POST" action="/admin/scan/${domain.id}" style="margin:0">
             <button type="submit" class="btn">Run a scan now</button>
           </form>

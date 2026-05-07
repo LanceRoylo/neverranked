@@ -421,7 +421,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
   // renders when ?advanced=1 is in the URL.
   const advancedMode = url?.searchParams.get("advanced") === "1";
   const activePhase = updatedPhases.find(p => p.status === "active");
-  const addForm = user.role === "admin" && advancedMode ? `
+  const addForm = user.role === "admin" && !user._viewAsClient && advancedMode ? `
     <div class="card" style="margin-top:32px">
       <h3 style="margin-bottom:20px">Add roadmap <em>item</em></h3>
       <form method="POST" action="/roadmap/${clientSlug}/add">
@@ -487,7 +487,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
         <h1>AEO <em>Roadmap</em></h1>
       </div>
       <div style="display:flex;align-items:flex-end;gap:16px">
-        ${user.role === "admin" ? `
+        ${user.role === "admin" && !user._viewAsClient ? `
           <div style="display:flex;gap:6px;flex-wrap:wrap">
             <form method="POST" action="/roadmap/${encodeURIComponent(clientSlug)}/refresh" title="Run drift detection against the last 90 days of citation data and add new items for new competitors, lost citations, and emerging gaps. Doesn't touch existing in-flight items.">
               <button type="submit" class="btn btn-ghost" style="padding:6px 12px;font-size:9px">Refresh from drift</button>
@@ -544,7 +544,7 @@ export async function handleRoadmap(clientSlug: string, user: User, env: Env, ur
     ${phaseSections}
     ${movingTargetCallout}
     ${addForm}
-    ${user.role === "admin" ? `
+    ${user.role === "admin" && !user._viewAsClient ? `
       <div style="margin-top:24px;text-align:right">
         ${advancedMode
           ? `<a href="/roadmap/${esc(clientSlug)}" style="font-size:11px;color:var(--text-faint);text-decoration:none">Hide advanced</a>`
@@ -694,7 +694,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
     return `
       <div class="empty" style="padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
         <p style="color:var(--text-soft);font-size:12px;line-height:1.7;margin:0;max-width:680px">
-          ${user.role === "admin"
+          ${user.role === "admin" && !user._viewAsClient
             ? "No items added for this phase yet. Use the admin panel to add items manually, or trigger an auto-provision from the latest scan."
             : "Items for this phase are being prepared. The system generates phase items automatically from each weekly scan. If this phase stays empty after your next Monday scan, email your account manager."}
         </p>
@@ -766,7 +766,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
             ${dueStr && item.status !== "done" ? `<span style="font-size:10px;font-family:var(--label);letter-spacing:.1em;${overdue ? 'color:var(--red)' : 'color:var(--text-faint)'}">${overdue ? 'OVERDUE ' : ''}${dueStr}</span>` : ''}
-            ${item.status !== "done" && user.role !== "admin" && user.role !== "agency_admin" ? `
+            ${item.status !== "done" && (user._viewAsClient || (user.role !== "admin" && user.role !== "agency_admin")) ? `
               <span class="status status-${item.status === 'in_progress' ? 'in_progress' : 'pending'}" style="font-size:9px" title="${esc(st.hint)}">${st.label}</span>
             ` : ""}
           </div>
@@ -785,7 +785,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
             </form>
           </details>
         ` : ''}
-        ${(user.role === "admin" || user.role === "agency_admin") && item.status !== "done" ? `
+        ${(user.role === "admin" || user.role === "agency_admin") && !user._viewAsClient && item.status !== "done" ? `
           <details style="margin-top:6px;margin-left:34px;opacity:.55" data-admin-only>
             <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">Admin &middot; ${st.label}</summary>
             <div style="margin-top:8px;padding:8px 10px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
@@ -804,7 +804,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
               ` : ''}
             </div>
           </details>
-        ` : (user.role === "admin" && item.status === "done") ? `
+        ` : (user.role === "admin" && !user._viewAsClient && item.status === "done") ? `
           <details style="margin-top:6px;margin-left:34px;opacity:.55" data-admin-only>
             <summary style="cursor:pointer;font-size:10px;color:var(--text-faint);font-family:var(--label);letter-spacing:.1em;text-transform:uppercase">Admin &middot; done</summary>
             <div style="margin-top:8px;padding:8px 10px;background:rgba(232,199,103,.04);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0">

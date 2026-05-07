@@ -39,14 +39,15 @@ export async function getUser(request: Request, env: Env): Promise<User | null> 
 
   if (!row) return null;
 
-  // "View as client" toggle: if the cookie is set AND this user is a
-  // privileged role, downgrade `role` to 'client' so role-gated UI
-  // hides everywhere (admin chrome, ops sidebar, admin-only buttons).
-  // Stash the real role on `real_role` so the topbar can render an
-  // "Exit client view" affordance and the toggle endpoint can verify.
+  // "View as client" toggle. Setting this flag DOES NOT flip
+  // user.role -- that would break every admin route guard
+  // (`user.role === "admin"`) and 404 admins out of the very pages
+  // they're trying to QA. Instead we leave role untouched and set
+  // _viewAsClient so render code can hide admin chrome while auth
+  // and routing keep working normally.
   if (cookie.includes(`${VIEW_AS_CLIENT_COOKIE}=1`) && (row.role === "admin" || row.role === "agency_admin")) {
     row.real_role = row.role;
-    row.role = "client";
+    row._viewAsClient = true;
   }
 
   return row;

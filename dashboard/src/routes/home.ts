@@ -909,7 +909,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
         ${roadmapLinks}
         ${compLinks}
-        ${user.role === "admin" ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
+        ${user.role === "admin" && !user._viewAsClient ? '<a href="/admin" class="btn btn-ghost">Admin</a>' : ''}
       </div>
     </div>
 
@@ -920,7 +920,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     ${renderActivityFeed(await getActivityFeed(user, env, 10), { admin: user.role === "admin" })}
     ${changeBanner}
     ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
-    ${user.role === "admin" ? await buildClientHealth(env) : await buildWeeklySummary(user, env)}
+    ${user.role === "admin" && !user._viewAsClient ? await buildClientHealth(env) : await buildWeeklySummary(user, env)}
     ${user.role === "client" && user.client_slug && gscMap.has(user.client_slug) ? await buildTopQuestionsPanel(user, env) : ""}
 
     ${domainCards.length > 0

@@ -34,9 +34,12 @@ export function layout(
   // specific client, otherwise fall back to the logged-in user's own
   // client_slug; admins on list pages use the bare path.
   const slug = activeSlug || user?.client_slug || '';
+  // View-as-client preview: hide admin/agency chrome from render
+  // without touching user.role. Auth gates upstream keep working.
+  const inViewAsClient = !!user?._viewAsClient;
   const slugify = (path: string) => user?.role === 'admin' && !activeSlug ? path : (slug ? `${path}/${slug}` : path);
-  const isAgencyAdmin = user?.role === 'agency_admin';
-  const isAdmin = user?.role === 'admin';
+  const isAgencyAdmin = user?.role === 'agency_admin' && !inViewAsClient;
+  const isAdmin = user?.role === 'admin' && !inViewAsClient;
   const canDraft = user ? canUseDraftingFeature(user) : false;
 
   // Badge helpers. Kept compact so the sidebar items don't get noisy.
@@ -252,7 +255,7 @@ ${user ? `<header class="topbar">
   </div>
   <div style="display:flex;align-items:center;gap:12px">
     ${user._pulse ? renderPulseChip(user._pulse) : ''}
-    ${user.real_role === 'admin' || user.real_role === 'agency_admin' ? `
+    ${inViewAsClient ? `
       <form method="POST" action="/admin/view-as-client/toggle" style="margin:0">
         <button type="submit" title="Exit client preview" style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;background:var(--gold-wash);border:1px solid var(--gold);color:var(--gold);font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border-radius:2px;cursor:pointer">
           <span style="width:6px;height:6px;background:var(--gold);border-radius:50%"></span>

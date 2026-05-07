@@ -762,6 +762,21 @@ export default {
       // Non-critical -- don't break routing if badge query fails
     }
 
+    // Parse a client slug from the URL when present (e.g. "and-scene"
+    // from /roadmap/and-scene). Used by middleware-computed surfaces
+    // -- pulse, activity feed, autonomy panel -- so an admin previewing
+    // a specific client's page sees that client's data scope.
+    {
+      const segs = path.split("/").filter(Boolean);
+      // Path shapes we care about: /<page>/<slug>[/...]. Skip API and admin routes.
+      if (segs.length >= 2 && !["api", "admin", "agency", "auth", "logout", "login"].includes(segs[0])) {
+        const candidate = segs[1];
+        if (/^[a-z0-9-]+$/.test(candidate) && candidate.length >= 2 && candidate.length <= 64) {
+          user._contextSlug = candidate;
+        }
+      }
+    }
+
     // System pulse — three-state heartbeat surfaced in the topbar so
     // the dashboard never reads as standing still. Per-client by
     // default, aggregated for admin scope. Failure is non-fatal.
