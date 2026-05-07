@@ -1,0 +1,1462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — inpac-wealth</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>InPac Wealth</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        InPac Wealth
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-07
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-inpac-wealth-audit">The InPac Wealth Audit</h1>
+<p><strong>Prepared for:</strong> InPac Wealth
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-07
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>InPac Wealth is a financial planning and wealth advisory firm serving families who want to grow and protect their assets. The homepage is live at https://inpacwealth.com with 796 words of content, a clear value proposition (“Dream with Inspiration. Plan with a Purpose. Live with Intention.”), and a meta description that communicates the service offering. The site is built to convert human visitors, but it is completely invisible to search engines and AI answer engines at the structured data layer.</p>
+<p>The core finding: 0 JSON-LD blocks deployed across the entire sampled homepage. No Organization schema, no WebSite schema, no FAQPage, no Service markup. The homepage also has no canonical tag, 9 H1 tags instead of 1, and 14 of 16 images missing alt text. InPac Wealth has zero entity recognition in Google’s knowledge graph and zero eligibility for rich results. AI engines like ChatGPT Search, Perplexity, and Google’s AI Overviews have no structured signals to cite the firm when answering wealth management queries. The site is structurally invisible.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 1 sampled pages have any structured data (no Organization, WebSite, FAQPage, or Service schema deployed)</li>
+<li>1 of 1 sampled pages missing canonical tags (100% canonical gap blocks indexing clarity)</li>
+<li>9 H1 tags on the homepage (should be 1) creating chaotic topic signals for crawlers</li>
+<li>14 of 16 images missing alt text (87.5% accessibility and image search gap)</li>
+<li>Title tag is 12 characters (“INPAC WEALTH”) when optimal range is 50–60 characters</li>
+<li>0 pages with og:image tag deployed (social shares render without preview image)</li>
+<li>No WebSite schema means sitelinks search box rich result is unavailable for brand queries</li>
+<li>No AggregateRating or review schema gives AI engines no social proof hook to cite</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Meta description is well-written and within optimal range (139 characters, clear value prop)
+- Word count is solid at 796 words (above thin content threshold)
+- Clear heading hierarchy after the H1s (14 H2s, 24 H3s show content structure exists)
+- Strong internal linking (62 internal links show site architecture is planned)</p>
+<p><strong>The 90-day target:</strong> Canonical tags on 100% of pages, Organization and WebSite schema live, single H1 per page, all images with alt text, and og:image deployed for social share visibility.</p>
+<p><strong>The single most important action for this week:</strong> Deploy Organization schema (FinancialService type) with name, logo, url, contactPoint, address, and sameAs social links to the homepage.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Covers canonicals, meta tags, heading structure, image alt text, and crawl signals for InPac Wealth’s homepage.</p>
+<p><strong>Top finding:</strong> The homepage has no canonical tag, creating duplicate indexing risk and splitting link equity across URL variants.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Full JSON-LD structured data audit with ready-to-paste code blocks for Organization, WebSite, and FAQPage schema.</p>
+<p><strong>Top finding:</strong> Zero structured data deployed means InPac Wealth has no entity recognition in search engines or AI answer engines.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Analysis of which wealth management, financial planning, and advisor queries InPac Wealth should own but currently does not rank for.</p>
+<p><strong>Top finding:</strong> No keyword targeting data available in single-page sample, but title tag at 12 characters signals no keyword optimization.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Tests whether InPac Wealth appears in ChatGPT, Perplexity, and Google AI Overview responses for wealth management queries.</p>
+<p><strong>Top finding:</strong> Zero structured data means zero AI citation eligibility for financial planning and wealth advisory queries.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema, content depth, and citation analysis of 3 competing wealth advisory firms to identify structural advantages.</p>
+<p><strong>Top finding:</strong> Competitors deploying Organization and FAQPage schema have entity recognition and rich result eligibility InPac Wealth lacks.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task list with effort estimates, prioritized by impact, derived directly from the five audits above.</p>
+<p><strong>Top recommendation:</strong> Month 1 focus is technical foundation (canonicals, Organization schema, single H1, alt text, og:image).</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 1 representative page (homepage) from the live domain.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction (0 blocks found).</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3-5 direct competitors. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-inpac-wealth">Technical Audit — InPac Wealth</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Pages sampled:</strong> 1 representative page (homepage)</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>InPac Wealth’s homepage is live and loads, but the technical SEO foundation is absent. No canonical tags, no structured data of any kind, no Organization schema, and 9 H1s on a single page. The meta description is solid and word count is adequate, but search engines and AI answer engines have nothing to hook into for entity recognition or rich results.</p>
+<p><strong>Overall grade: D</strong> (content exists but zero schema, broken canonicals, and chaotic heading structure block visibility)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="zero-structured-data-deployed-high-priority">1. Zero structured data deployed ⚠ HIGH PRIORITY</h3>
+<p>The homepage has no JSON-LD blocks and no schema markup of any type. No Organization schema (critical for entity recognition), no WebSite schema (blocks site search box rich results), no BreadcrumbList, no FAQPage, no AggregateRating. AI engines like ChatGPT Search, Perplexity, and Google’s AI Overviews rely on structured data to cite and rank sources. Without it, InPac Wealth is invisible to AEO pipelines.</p>
+<p><strong>Impact:</strong> Search engines cannot build a knowledge graph entity for InPac Wealth. No rich results eligibility. AI answer engines have no structured signals to cite the firm in wealth management queries.</p>
+<p><strong>Fix:</strong> Add Organization schema to the homepage with name, logo, url, contactPoint, and sameAs (LinkedIn, social profiles). Add WebSite schema with potentialAction SearchAction pointing to a search results page if one exists. If the site has service pages, add Service schema to each. Example Organization block:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;InPac Wealth&quot;</span><span class="fu">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com&quot;</span><span class="fu">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;contactPoint&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ContactPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-XXX-XXX-XXXX&quot;</span><span class="fu">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;contactType&quot;</span><span class="fu">:</span> <span class="st">&quot;Customer Service&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/inpac-wealth&quot;</span><span class="ot">,</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/inpacwealth&quot;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h3 id="missing-canonical-tag-high-priority">2. Missing canonical tag ⚠ HIGH PRIORITY</h3>
+<p>The homepage has no canonical tag. This is critical for the root domain. Without it, Google may index multiple versions (http vs https, www vs non-www, trailing slash variants) and split ranking signals.</p>
+<p><strong>Impact:</strong> Duplicate indexing risk. Link equity fragmentation. Canonical tags are a trust signal. Missing them on the homepage is a red flag to crawlers.</p>
+<p><strong>Fix:</strong> Add <code>&lt;link rel="canonical" href="https://inpacwealth.com" /&gt;</code> to the <code>&lt;head&gt;</code> of the homepage. Ensure all pages have self-referencing canonicals unless explicitly canonicalizing to another URL.</p>
+<hr />
+<h3 id="nine-h1-tags-on-the-homepage-medium-priority">3. Nine H1 tags on the homepage ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage has 9 H1s. The first is “Dream with Inspiration. Plan with a Purpose. Live with Intention.” The rest are scattered throughout the page. Multiple H1s confuse page topic signals and dilute heading hierarchy for screen readers and crawlers.</p>
+<p><strong>Impact:</strong> Search engines cannot determine primary topic. Accessibility suffers. Heading structure is a core relevance signal for both traditional search and LLM summarization.</p>
+<p><strong>Fix:</strong> Refactor the page to use a single H1 (likely the existing “Dream with Inspiration…” tagline). Convert all other H1s to H2 or H3 based on content hierarchy. Example:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Dream with Inspiration. Plan with a Purpose. Live with Intention.<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h2</span><span class="dt">&gt;</span>Our Approach to Wealth Management<span class="dt">&lt;/</span><span class="kw">h2</span><span class="dt">&gt;</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h3</span><span class="dt">&gt;</span>Financial Planning<span class="dt">&lt;/</span><span class="kw">h3</span><span class="dt">&gt;</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h3</span><span class="dt">&gt;</span>Investment Advisory<span class="dt">&lt;/</span><span class="kw">h3</span><span class="dt">&gt;</span></span></code></pre></div>
+<hr />
+<h3 id="missing-ogimage-and-twitterimage-medium-priority">4. Missing og:image and twitter:image ⚠ MEDIUM PRIORITY</h3>
+<p>The homepage has og:title, og:description, and og:type, but no og:image. Twitter card is present but twitter:image is missing. When shared on LinkedIn, Slack, or social platforms, the link preview will render without an image.</p>
+<p><strong>Impact:</strong> Reduced click-through on social shares. No visual hook for link previews. Professional services firms rely heavily on LinkedIn referrals. A missing share image is a missed conversion opportunity.</p>
+<p><strong>Fix:</strong> Add a 1200x630 px og:image and twitter:image to the homepage. Use a branded graphic with the InPac Wealth logo and tagline. Example:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://inpacwealth.com/images/og-image.jpg&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://inpacwealth.com/images/og-image.jpg&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<hr />
+<h3 id="title-tag-too-short-low-priority">5. Title tag too short ⚠ LOW PRIORITY</h3>
+<p>The homepage title is “INPAC WEALTH” (12 characters). Google recommends 30-65 characters. The current title wastes opportunity to include primary keywords like “financial planning,” “wealth management,” or a geographic modifier if the firm serves a specific region.</p>
+<p><strong>Impact:</strong> Lower relevance signal for keyword queries. Missed opportunity to differentiate in SERPs. Title tags are still a top-3 on-page ranking factor.</p>
+<p><strong>Fix:</strong> Expand the title to 50-60 characters with primary service keywords. Example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>InPac Wealth | Financial Planning <span class="er">&amp;</span> Wealth Management<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>If the firm serves a specific city or region, append it:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>InPac Wealth | Financial Planning <span class="er">&amp;</span> Wealth Management in [City]<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>As detailed in Finding #3, the homepage has 9 H1 tags. This breaks accessibility guidelines and confuses topic modeling. A single H1 per page is the standard.</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text — ⚠ ISSUES</h3>
+<p>14 of 16 images on the homepage are missing alt text. This blocks accessibility for screen readers and removes a relevance signal for image search and page context.</p>
+<p><strong>Impact:</strong> Poor accessibility score. Missed image search traffic. Alt text contributes to overall page topic modeling.</p>
+<p><strong>Fix:</strong> Add descriptive alt text to all images. Avoid keyword stuffing. Describe the image content. Examples:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;team.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;InPac Wealth financial advisors meeting with client&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;graph.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Investment portfolio growth chart&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>For decorative images (logos, dividers), use empty alt: <code>alt=""</code>.</p>
+<hr />
+<h3 id="word-counts-adequate">8. Word counts — ✓ ADEQUATE</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://inpacwealth.com</td>
+<td>796</td>
+<td>✓ adequate</td>
+</tr>
+</tbody>
+</table>
+<p>The homepage has 796 words. This is sufficient for a service homepage. Not thin content.</p>
+<hr />
+<h2 id="priority-list-technical">Priority list (technical)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization and WebSite schema to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add canonical tag to homepage (and sitewide)</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Refactor to single H1 per page</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add og:image and twitter:image</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add alt text to 14 images</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Expand title tag to 50-60 characters with keywords</td>
+<td>LOW</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="raw-data-captured">Raw data captured</h2>
+<p>The following files are in <code>raw/</code> for auditor reference:</p>
+<ul>
+<li><code>home.html</code> — homepage HTML</li>
+<li><code>robots.txt</code> — robots directives</li>
+<li><code>sitemap.xml</code> — URL inventory</li>
+<li><code>intake-report.json</code> — full scan data</li>
+</ul>
+<p>Technical extraction ran via <code>scripts/run-audit.py</code> — see <code>raw/intake-report.json</code> for the full per-page signal data.</p>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-inpac-wealth">Schema Review — InPac Wealth</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>InPac Wealth’s homepage carries zero structured data. No Organization schema, no WebSite schema, no FAQPage or Service markup. The site is invisible to entity extraction systems and ineligible for any rich result treatment in search or AI answer engines. For a wealth advisory firm competing on trust signals and local authority, this is a material gap. Even basic financial services sites in this vertical deploy Organization + FAQPage as table stakes.</p>
+<p><strong>Schema grade: F</strong> (zero JSON-LD blocks detected across the sampled page)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>FAQPage</th>
+<th>Service</th>
+<th>Article</th>
+<th>Organization</th>
+<th>BreadcrumbList</th>
+<th>HowTo</th>
+<th>AggregateRating</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings-1">Findings</h2>
+<h3 id="missing-organization-schema-blocks-entity-recognition-critical">1. Missing Organization schema blocks entity recognition ⚠ CRITICAL</h3>
+<p>Google, Bing, ChatGPT, and Perplexity cannot reliably identify InPac Wealth as a named entity without Organization schema. This markup establishes the business name, logo, contact points, and social profiles. It powers knowledge panel eligibility and gives AI engines a canonical reference when the brand appears in training data or retrieval contexts. The homepage mentions “INPAC Financial Advisor” and “INPAC WEALTH” but offers no machine-readable declaration of what InPac Wealth is, where it operates, or how to contact it.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;InPac Wealth&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/path-to-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Financial planning and wealth advisory services to help families grow and protect assets.&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-XXX-XXX-XXXX&quot;</span><span class="fu">,</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;info@inpacwealth.com&quot;</span><span class="fu">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;123 Main Street&quot;</span><span class="fu">,</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;City&quot;</span><span class="fu">,</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;ST&quot;</span><span class="fu">,</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;12345&quot;</span><span class="fu">,</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/inpacwealth&quot;</span><span class="ot">,</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/inpacwealth&quot;</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> We use FinancialService (a subtype of LocalBusiness and Organization) because InPac Wealth provides advisory services, not retail banking. The <code>@id</code> anchor lets other schemas reference this entity. Replace logo URL, phone, email, address, and social links with real values. If InPac Wealth operates multiple locations, nest each as a <code>location</code> array of Place objects.</p>
+<hr />
+<h3 id="no-website-schema-means-sitelinks-search-box-is-unavailable-high">2. No WebSite schema means sitelinks search box is unavailable ⚠ HIGH</h3>
+<p>WebSite schema with a potentialAction SearchAction tells Google and Bing how to surface a search box directly in SERPs under the brand query. For a firm with multiple service pages (financial planning, retirement, estate planning), this shortcut improves click-through and signals category authority. The scan shows 62 internal links on the homepage but no schema to map search intent to the site’s own query handler.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;InPac Wealth&quot;</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/#organization&quot;</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>publisher</code> reference points back to the Organization schema by <code>@id</code>, creating a graph. If InPac Wealth does not have a search endpoint, remove the potentialAction block and keep only the WebSite declaration. The name and url fields are required.</p>
+<hr />
+<h3 id="missing-faqpage-schema-loses-ai-citation-and-featured-snippet-eligibility-high">3. Missing FAQPage schema loses AI citation and featured snippet eligibility ⚠ HIGH</h3>
+<p>The homepage copy is structured around value propositions (“Dream with Inspiration. Plan with a Purpose. Live with Intention.”) but does not encode any question-and-answer pairs. Wealth advisory queries often follow a FAQ pattern: “How do I choose a financial advisor?” “What is fee-only planning?” “Do I need estate planning?” FAQPage schema turns these into eligible snippets for Google’s featured results and citable references for ChatGPT, Perplexity, and Gemini.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FAQPage&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/#faqpage&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntity&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;What services does InPac Wealth offer?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;InPac Wealth provides comprehensive financial planning, retirement strategy, estate planning, and wealth advisory services tailored to family needs.&quot;</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;How do I connect with an InPac financial advisor?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;You can connect with an InPac Wealth advisor by visiting our contact page or calling our office directly to schedule a consultation.&quot;</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Who benefits from working with InPac Wealth?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Families seeking to grow and protect their wealth, plan for retirement, or coordinate estate strategies benefit from our personalized advisory approach.&quot;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each Question must have a <code>name</code> (the question text) and an <code>acceptedAnswer</code> of type Answer. The <code>text</code> field inside Answer must be plain text or HTML. Add as many Question objects as the page supports. If InPac Wealth already has a dedicated FAQ page, deploy this schema there instead of the homepage and adjust the <code>@id</code> URL accordingly.</p>
+<hr />
+<h3 id="no-breadcrumblist-schema-hides-hierarchy-in-search-results-medium">4. No BreadcrumbList schema hides hierarchy in search results ⚠ MEDIUM</h3>
+<p>Breadcrumb schema renders visual breadcrumbs in Google’s SERP snippets and helps AI engines understand page hierarchy. The homepage is the root, so breadcrumbs are not applicable here. But any interior page (Services, About, Contact, Blog posts) should carry BreadcrumbList. We include a sample for a hypothetical “Retirement Planning” service page.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/services/retirement-planning#breadcrumb&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com&quot;</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Services&quot;</span><span class="fu">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/services&quot;</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Retirement Planning&quot;</span><span class="fu">,</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/services/retirement-planning&quot;</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each ListItem requires <code>position</code>, <code>name</code>, and <code>item</code> (the URL). The final item in the list should match the current page’s URL. Deploy this template on every non-homepage URL, adjusting the itemListElement array to reflect the actual path.</p>
+<hr />
+<h3 id="no-aggregaterating-or-review-schema-eliminates-social-proof-in-ai-answers-medium">5. No AggregateRating or Review schema eliminates social proof in AI answers ⚠ MEDIUM</h3>
+<p>If InPac Wealth collects client testimonials or ratings (Google reviews, third-party review platforms), those signals should be encoded as AggregateRating (summary) or individual Review objects. AI answer engines cite star ratings and review counts as social proof when recommending service providers. The scan detected no testimonial or rating text on the homepage, but if reviews exist elsewhere, add this schema to the page that displays them.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://inpacwealth.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;InPac Wealth&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;27&quot;</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;worstRating&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Nest the aggregateRating inside the Organization (or FinancialService) schema using the same <code>@id</code>. Replace <code>ratingValue</code> and <code>reviewCount</code> with real figures from Google Business Profile or a review aggregator. Do not fabricate ratings. Google may penalize sites that misrepresent review data.</p>
+<hr />
+<h2 id="priority-list-schema">Priority list (schema)</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization (FinancialService) schema to site-wide footer or header</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add WebSite schema with SearchAction to site-wide layout</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add FAQPage schema to homepage or dedicated FAQ page</td>
+<td>HIGH</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add BreadcrumbList schema to all interior pages via template</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add AggregateRating to Organization schema if reviews exist</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="validation-checklist">Validation checklist</h2>
+<p>After the client implements the recommended schema fixes:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />Google Rich Results Test passes on home page</label></li>
+<li><label><input type="checkbox" />Schema.org Validator shows no warnings</label></li>
+<li><label><input type="checkbox" />Organization + WebSite schemas present in site-wide layout</label></li>
+<li><label><input type="checkbox" />BreadcrumbList on every non-home page</label></li>
+<li><label><input type="checkbox" />FAQPage schema on FAQ or homepage</label></li>
+<li><label><input type="checkbox" /><code>@graph</code> with <code>@id</code> references linking Organization, WebSite, and page-level schemas together</label></li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-3">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-inpac-wealth">90-Day Roadmap — InPac Wealth</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-07
+<strong>Window:</strong> Months 1–3 (by 2026-08-07)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-07):</strong>
+- 0 of 1 sampled pages have canonical tags (100% missing)
+- 0 JSON-LD blocks deployed across the entire sampled homepage
+- 9 H1 tags on the homepage (chaotic heading structure)
+- 14 of 16 images missing alt text (87.5% accessibility and crawler gap)
+- No Organization, WebSite, FAQPage, or Service schema deployed</p>
+<p><strong>90-day target:</strong>
+- Canonical tags deployed on 100% of pages
+- Organization, WebSite, and FAQPage schema live on homepage
+- Single H1 per page with clean hierarchy (H2, H3 structure)
+- 100% of images have descriptive alt text
+- og:image and twitter:image deployed for social share visibility</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-07-2026-06-07">MONTH 1 — FOUNDATION (2026-05-07 – 2026-06-07)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the technical foundation: canonicals, schema, heading structure, and image accessibility.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add self-referencing canonical tag to homepage (<code>&lt;link rel="canonical" href="https://inpacwealth.com" /&gt;</code>)</td>
+<td>Technical Audit § 2</td>
+<td>0.5 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Deploy Organization schema (FinancialService type) with name, logo, url, contactPoint, address, and sameAs social links</td>
+<td>Schema Review § 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Deploy WebSite schema with potentialAction SearchAction (or minimal WebSite block if no search endpoint exists)</td>
+<td>Schema Review § 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Refactor homepage to use single H1 (“Dream with Inspiration. Plan with a Purpose. Live with Intention.”) and convert remaining 8 H1s to H2 or H3 based on content hierarchy</td>
+<td>Technical Audit § 3</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Write and add descriptive alt text to all 14 images currently missing alt attributes on homepage</td>
+<td>Technical Audit (red flags)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Create or select og:image asset (1200×630 px) and add og:image and twitter:image meta tags to homepage</td>
+<td>Technical Audit § 4</td>
+<td>1.5 hours</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Audit and add canonical tags to all other pages in the site (if multi-page site exists beyond homepage sample)</td>
+<td>Technical Audit § 2</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Validate all schema markup using Google Rich Results Test and Schema.org validator, fix any parse errors</td>
+<td>Schema Review § 1, § 2</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~15 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add BreadcrumbList schema if the site has multi-level navigation (e.g., Services &gt; Financial Planning)</li>
+<li>Lengthen title tag from 12 characters (“INPAC WEALTH”) to 50–60 characters with descriptive keyword phrase (e.g., “InPac Wealth | Financial Planning &amp; Wealth Advisory”)</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows canonical tags indexed for homepage and all published pages
+- Organization and WebSite schema visible in Google Rich Results Test with zero errors
+- Homepage has exactly 1 H1 and clean H2/H3 hierarchy when inspected in browser DevTools
+- All images on homepage display alt text when hovering or inspecting element
+- Social share preview (tested in LinkedIn post composer or Twitter card validator) displays og:image correctly</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-08-2026-07-08">MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Add FAQPage schema and Service schema to give AI engines structured hooks for wealth management queries.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Identify or write 5–8 common client questions about financial planning, retirement planning, and wealth management services</td>
+<td>Schema Review § 3 (inference from missing FAQPage)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Deploy FAQPage schema on homepage or dedicated FAQ page with Question/Answer pairs using acceptedAnswer property</td>
+<td>Schema Review § 3</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Create service pages (or identify existing pages) for core offerings: Financial Planning, Investment Advisory, Retirement Planning, Estate Planning</td>
+<td>Schema Review § 1 (FinancialService entity needs service pages)</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add Service schema to each service page with name, description, provider (reference to Organization <span class="citation" data-cites="id">@id</span>), areaServed, and serviceType</td>
+<td>Schema Review § 1</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Test all new schema blocks in Google Rich Results Test and verify FAQPage eligibility</td>
+<td>Schema Review § 3</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~16 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- FAQPage schema live and passing validation with 5+ Question entities
+- Service schema deployed on at least 3 service pages, each referencing the Organization <span class="citation" data-cites="id">@id</span>
+- Google Search Console shows expanded schema coverage (Organization, WebSite, FAQPage, Service types all indexed)</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-09-2026-08-07">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-09 – 2026-08-07)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Add social proof schema (if testimonials or ratings exist) and establish measurement baseline for AI citation tracking.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Audit existing testimonials or client reviews. If present, add AggregateRating or Review schema to homepage or testimonial page</td>
+<td>Schema Review (red flags mention missing AggregateRating)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Set up Google Search Console property (if not already configured) and verify all pages are indexed with new schema types visible</td>
+<td>Technical Audit (measurement foundation)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Install and configure Bing Webmaster Tools, submit sitemap, verify schema coverage in Bing’s schema explorer</td>
+<td>Technical Audit (dual-engine visibility)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Establish baseline for AI citation tracking: query ChatGPT, Perplexity, and Google AI Overviews with “best financial advisors for families” and “wealth management firms [city/region]” and document whether InPac Wealth is cited</td>
+<td>Schema Review § 1 (AEO optimization goal)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Document before-and-after schema deployment in a tracking sheet: schema types live, Google Rich Results Test pass/fail, AI citation baseline, social share preview screenshots</td>
+<td>Technical Audit + Schema Review (holistic measurement)</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~9 hours.</strong></p>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- AggregateRating or Review schema live (if applicable testimonials exist) and passing validation
+- Google Search Console and Bing Webmaster Tools both show InPac Wealth’s Organization entity indexed with logo and contact points
+- Baseline AI citation report complete with screenshots showing pre-schema and post-schema query results in ChatGPT, Perplexity, and Google AI Overviews</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Publish 2–3 long-form content pieces (1,500+ words each) targeting “how to choose a financial advisor” and “retirement planning checklist” with HowTo or Article schema to feed AI training pipelines</li>
+<li><strong>Month 5:</strong> Build backlinks from local business directories, chamber of commerce, and industry associations. Add sameAs references to Organization schema for new authoritative profiles.</li>
+<li><strong>Month 6:</strong> Launch monthly AI citation tracking cadence. Query 10–15 wealth management buyer queries and measure citation rate, position in AI answers, and competitor mentions. Adjust content and schema based on gaps.</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Deploy Organization schema (FinancialService type) to the homepage with name, logo, url, contactPoint, address, and sameAs social links. This unlocks entity recognition in Google, Bing, ChatGPT, and Perplexity. Paste the code block from Schema Review § 1 into the <code>&lt;head&gt;</code> or footer as JSON-LD. Test in Google Rich Results Test. This single action makes InPac Wealth machine-readable.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- InPac Wealth appears in Google’s knowledge graph when branded queries are issued (knowledge panel eligibility triggered by Organization schema)
+- FAQPage rich results appear in Google search for at least 1–2 wealth management queries
+- Social shares on LinkedIn display correct og:image and meta description, improving click-through from referrals
+- Baseline AI citation tracking shows InPac Wealth mentioned in 1–2 of 10 test queries (up from zero)</p>
+<p><strong>Optimistic case:</strong>
+- Google displays sitelinks search box under branded query due to WebSite schema with SearchAction
+- FAQPage rich results live for 3+ queries, driving incremental traffic to homepage or FAQ page
+- InPac Wealth cited in ChatGPT or Perplexity answers for “financial advisors [city]” or “best wealth management firms for families” queries
+- Bing Webmaster Tools shows Organization entity fully populated with logo, contact, and social profiles</p>
+<p><strong>Conservative case:</strong>
+- All schema deployed and passing validation in Google Rich Results Test, but rich results and AI citations lag due to crawl/index delay (expect 4–8 weeks post-deployment)
+- Canonical tags eliminate duplicate indexing risk and consolidate link equity to single URLs
+- Image alt text improves accessibility score and provides descriptive hooks for image search indexing
+- Social share previews function correctly, improving professional perception on LinkedIn and Facebook shares</p>
+
+
+</body>
+</html>

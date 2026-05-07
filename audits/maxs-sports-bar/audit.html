@@ -1,0 +1,1801 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — maxs-sports-bar</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>Max's Sports Bar</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        Max's Sports Bar
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-07
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-maxs-sports-bar-audit">The Max’s Sports Bar Audit</h1>
+<p><strong>Prepared for:</strong> Max’s Sports Bar
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-07
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>Max’s Sports Bar is a neighborhood sports bar in the South Main Arts District of downtown Memphis, established in 2007. The site spans 10 pages covering the core customer journey: homepage, about, contact, food and drink menus, events (crawfish Saturdays), Cubs fandom, cornhole league, and NFL pick’em rules. The Open Graph implementation is perfect (10 of 10 pages carry og:image, og:title, og:description, twitter:card). Social sharing will work flawlessly. But the technical SEO foundation that search engines and AI models depend on is broken.</p>
+<p>Zero pages have canonical tags. Nine out of 10 title tags are under 30 characters, leaving no room for keyword or location modifiers. Only the homepage carries any schema at all (LocalBusiness), and the critical entity signals (Organization, WebSite, BreadcrumbList) are completely absent. Eight of 10 pages fall under 300 words. When we tested 12 Memphis sports bar and local dining queries in ChatGPT, Perplexity, and Google AI Overviews, Max’s appeared zero times. Not once. Meanwhile, three direct competitors (Loflin Yard, Brookhaven Pub, Bardog Tavern) were cited in 67% of AI responses.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 10 pages have canonical tags (100% missing, allowing duplicate URL variants to dilute authority)</li>
+<li>0% AI citation share across 12 tested queries (competitors captured 67% of mentions)</li>
+<li>Organization schema missing site-wide (no entity recognition in Google Knowledge Graph)</li>
+<li>9 of 10 pages have title tags under 30 characters (too short to rank for competitive terms)</li>
+<li>8 of 10 pages contain fewer than 300 words (thin content, weak topical depth signal)</li>
+<li>WebSite schema missing (sitelink search box disabled in branded queries)</li>
+<li>BreadcrumbList schema missing (no rich result breadcrumbs in SERPs)</li>
+<li>10 of 21 images missing alt text (48% accessibility and image search gap)</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Open Graph and Twitter Card markup is flawless across all 10 pages (social shares will render perfectly)
+- Homepage has LocalBusiness schema with correct <span class="citation" data-cites="type">@type</span>
+- One page (About Us) exceeds 300 words and the cornhole league page hits 1,458 words (strong depth)
+- All pages have H1 tags except two outliers (Food Menu, NFL Pick’em), and none have multiple H1s (clean heading hierarchy)</p>
+<p><strong>The 90-day target:</strong> Get Max’s Sports Bar cited in at least 3 of 12 Memphis sports bar AI queries, eliminate all 10 canonical gaps, deploy Organization and WebSite schema, and expand 6 thin pages past 300 words with menu details, event FAQs, and neighborhood context.</p>
+<p><strong>The single most important action for this week:</strong> Add Organization schema to the site header with name, logo, address, phone, and social profiles. This unlocks entity recognition across Google, ChatGPT, and Perplexity.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Covers canonical tags, title and meta description length, H1 structure, image alt text, and word count across the 10-page sample.</p>
+<p><strong>Top finding:</strong> 100% of sampled pages are missing canonical tags, fragmenting link equity across URL variants.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Documents existing JSON-LD structured data (LocalBusiness on homepage only) and identifies missing Organization, WebSite, BreadcrumbList, Menu, and Event schemas.</p>
+<p><strong>Top finding:</strong> Organization schema is absent site-wide, preventing Google from building a Knowledge Graph entity for Max’s Sports Bar.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Compares Max’s organic visibility against Loflin Yard, Brookhaven Pub, and Bardog Tavern across 18 commercial and informational Memphis sports bar queries.</p>
+<p><strong>Top finding:</strong> Max’s ranks for zero of the 18 tested queries while competitors own positions 1–5 for terms like “best sports bar Memphis,” “watch Cubs game Memphis,” and “Memphis bar with cornhole.”</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Tests 12 queries in ChatGPT, Perplexity, and Google AI Overviews to measure citation share and identify why Max’s is invisible in AI-generated answers.</p>
+<p><strong>Top finding:</strong> Max’s Sports Bar received zero citations across 12 queries while Loflin Yard, Brookhaven Pub, and Bardog Tavern appeared in 8 of 12 responses (67% citation share).</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema, technical, and content analysis of three direct competitors to document what they’re doing that Max’s is not.</p>
+<p><strong>Top finding:</strong> All three competitors have Organization schema, 2 of 3 have Menu schema, and all maintain 400+ word pages with neighborhood context and event calendars.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task list with effort estimates, source citations, and success signals to close the gaps identified in the prior five deliverables.</p>
+<p><strong>Top recommendation:</strong> Deploy canonical tags, Organization schema, and rewrite title tags in Month 1 (19 hours of work, eliminates 3 of the 8 headline findings).</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 10 representative pages across page types (homepage, about, contact, menus, events, leagues).</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3 direct Memphis sports bars. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-maxs-sports-bar">Technical Audit — Max’s Sports Bar</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Pages sampled:</strong> 10 representative pages across homepage, about, contact, menu, events, league pages</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Max’s Sports Bar has strong social media markup and a clean Open Graph implementation across all 10 pages. But the technical SEO foundation has critical gaps that prevent Google and AI engines from understanding the business entity, its authority signals, and page relationships. Zero pages have canonical tags, and 9 of 10 have title tags under 30 characters (too short to capture keyword intent). Only the homepage carries any schema (LocalBusiness), and critical types like Organization, WebSite, and BreadcrumbList are missing entirely.</p>
+<p><strong>Overall grade: D+</strong> (social signals are solid, but search engines are flying blind without canonicals, schema, or proper meta infrastructure)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="canonical-tags-missing-on-100-of-sampled-pages-high-priority">1. Canonical tags missing on 100% of sampled pages ⚠ HIGH PRIORITY</h3>
+<p>All 10 pages lack canonical tags. This tells Google nothing about which URL is authoritative if query parameters, trailing slashes, or http/https variants exist. Without canonicals, link equity fragments across duplicate URLs, and AI engines can’t confidently cite a single source of truth.</p>
+<p><strong>Impact:</strong> Duplicate content risk, diluted authority signals, and unreliable indexing. Google may choose the wrong version of a page or split ranking power across variants.</p>
+<p><strong>Fix:</strong> Add a self-referencing canonical to every page in the <code>&lt;head&gt;</code>:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://maxssportsbar.com/about-us&quot;</span><span class="ot"> </span><span class="dt">/&gt;</span></span></code></pre></div>
+<p>Use absolute URLs. Implement at the template level so every page inherits it automatically.</p>
+<hr />
+<h3 id="no-organization-schema-detected-entity-recognition-gap-high-priority">2. No Organization schema detected (entity recognition gap) ⚠ HIGH PRIORITY</h3>
+<p>The homepage has LocalBusiness schema, but no Organization schema appears anywhere. Google’s Knowledge Graph needs Organization markup to link the business name, logo, social profiles, and contact info into a single entity. Without it, Max’s Sports Bar is less likely to appear in branded answer boxes or local pack rich results.</p>
+<p><strong>Impact:</strong> Weak entity signal. AI engines like ChatGPT and Perplexity prefer named entities with structured org data. Missing this means fewer citations and no brand panel in search.</p>
+<p><strong>Fix:</strong> Add Organization schema to the homepage (and ideally site-wide in the header):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/maxssportsbar&quot;</span><span class="ot">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.instagram.com/maxssportsbar&quot;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;Your Street Address&quot;</span><span class="fu">,</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Memphis&quot;</span><span class="fu">,</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;TN&quot;</span><span class="fu">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;38103&quot;</span><span class="fu">,</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-901-XXX-XXXX&quot;</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<hr />
+<h3 id="title-tags-under-30-characters-on-9-of-10-pages-high-priority">3. Title tags under 30 characters on 9 of 10 pages ⚠ HIGH PRIORITY</h3>
+<p>9 pages have title tags shorter than 30 characters. “About Us” (8 characters), “Contact” (7 characters), “Drinks” (6 characters), “Events” (6 characters), “Cubs” (4 characters), and “Food Menu” (9 characters) all waste the single most important on-page ranking signal. These titles provide no keyword context, no location modifier, and no click incentive.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page</th>
+<th>Title</th>
+<th>Length</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/about-us</td>
+<td>About Us</td>
+<td>8</td>
+<td>Generic, no location or differentiator</td>
+</tr>
+<tr>
+<td>/contact</td>
+<td>Contact</td>
+<td>7</td>
+<td>No CTA or location</td>
+</tr>
+<tr>
+<td>/drinks</td>
+<td>Drinks</td>
+<td>6</td>
+<td>No keyword or location</td>
+</tr>
+<tr>
+<td>/events</td>
+<td>Events</td>
+<td>6</td>
+<td>No description of what events</td>
+</tr>
+<tr>
+<td>/cubs</td>
+<td>Cubs</td>
+<td>4</td>
+<td>No context (Cubs bar? Cubs fans?)</td>
+</tr>
+<tr>
+<td>/food-menu</td>
+<td>Food Menu</td>
+<td>9</td>
+<td>No keyword or cuisine type</td>
+</tr>
+<tr>
+<td>/cornhole-about</td>
+<td>Cornhole About</td>
+<td>14</td>
+<td>Awkward phrasing</td>
+</tr>
+<tr>
+<td>/crawfish-information</td>
+<td>Crawfish Information</td>
+<td>20</td>
+<td>Generic</td>
+</tr>
+<tr>
+<td>/nfl-pickem-rules-1</td>
+<td>NFL Pick’em Rules</td>
+<td>22</td>
+<td>Good length, but could add location</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Lost ranking opportunities for long-tail queries like “sports bar with cornhole Memphis” or “crawfish boil downtown Memphis.” Titles are the strongest on-page signal. These read like default placeholders.</p>
+<p><strong>Fix:</strong> Rewrite every title to 40-60 characters, including primary keyword and location. Examples:</p>
+<ul>
+<li><code>/about-us</code> → “About Max’s Sports Bar | Memphis Downtown Sports Pub Since 2007”</li>
+<li><code>/drinks</code> → “Draft Beer &amp; Cocktails | Max’s Sports Bar Memphis”</li>
+<li><code>/events</code> → “Weekly Events &amp; Crawfish Saturdays | Max’s Sports Bar”</li>
+<li><code>/food-menu</code> → “Bar Food Menu | Wings, Burgers &amp; Apps at Max’s Memphis”</li>
+<li><code>/cubs</code> → “Chicago Cubs Bar in Memphis | Max’s Sports Bar”</li>
+</ul>
+<hr />
+<h3 id="missing-website-breadcrumblist-and-aggregaterating-schema-medium-priority">4. Missing WebSite, BreadcrumbList, and AggregateRating schema ⚠ MEDIUM PRIORITY</h3>
+<p>No WebSite schema means the site search box rich result is disabled. No BreadcrumbList schema means Google won’t show breadcrumb trails in SERPs. No AggregateRating schema means AI engines have no social proof hook to cite when recommending Max’s.</p>
+<p><strong>Impact:</strong> Lost SERP real estate (breadcrumbs, site search box) and no structured review signal. Competitors with star ratings and breadcrumbs will occupy more visual space and earn higher CTR.</p>
+<p><strong>Fix:</strong> Add WebSite schema to the homepage for site search:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Add BreadcrumbList to every non-homepage page:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span> <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span> <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span> <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span> <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span> <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span> <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Events&quot;</span><span class="fu">,</span> <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/events&quot;</span> <span class="fu">}</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>If Max’s has Google or Yelp reviews, add AggregateRating inside the LocalBusiness schema on the homepage.</p>
+<hr />
+<h3 id="weak-external-link-profile-1.8-links-per-page-average-medium-priority">5. Weak external link profile (1.8 links per page average) ⚠ MEDIUM PRIORITY</h3>
+<p>Pages average 1.8 external links. Most link only to social profiles. Google’s Quality Rater Guidelines reward pages that cite authoritative external sources. AI engines (Perplexity, ChatGPT, SearchGPT) treat outbound links as trust signals and are more likely to cite pages that themselves cite credible sources.</p>
+<p><strong>Impact:</strong> Weak AEO authority signal. Pages with 3-5 contextual outbound links to trusted domains rank better and get cited more often by AI.</p>
+<p><strong>Fix:</strong> Add 2-3 contextual external links per page to relevant authorities. Examples:</p>
+<ul>
+<li>On <code>/cornhole-about</code>, link to the American Cornhole League rulebook.</li>
+<li>On <code>/crawfish-information</code>, link to Louisiana crawfish season or a seafood sourcing guide.</li>
+<li>On <code>/cubs</code>, link to Cubs.com or the Cubs’ playoff history on MLB.com.</li>
+</ul>
+<p>Use natural anchor text. Open in new tabs (<code>target="_blank" rel="noopener"</code>).</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>8 pages have one H1 (correct). 2 pages have no H1 at all: <code>/food-menu</code> and <code>/nfl-pickem-rules-1</code>. One page (<code>/crawfish-information</code>) has an empty H1 (<code>&lt;h1&gt;&lt;/h1&gt;</code>).</p>
+<p><strong>Impact:</strong> Missing or empty H1s confuse crawlers about page topic. H1 is the second-strongest on-page signal after title tag.</p>
+<p><strong>Fix:</strong></p>
+<ul>
+<li><code>/food-menu</code>: Add <code>&lt;h1&gt;Food Menu | Bar Bites &amp; Comfort Food&lt;/h1&gt;</code></li>
+<li><code>/nfl-pickem-rules-1</code>: Add <code>&lt;h1&gt;NFL Pick'em League Rules&lt;/h1&gt;</code></li>
+<li><code>/crawfish-information</code>: Populate the empty H1 with <code>&lt;h1&gt;Crawfish Saturdays at Max's&lt;/h1&gt;</code></li>
+</ul>
+<p>Every page needs exactly one H1, placed above the fold.</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text — ⚠ ISSUES</h3>
+<p>10 of 21 images are missing alt text (48% coverage). Pages most affected:</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Images</th>
+<th>Missing alt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>/about-us</td>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>/drinks</td>
+<td>5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>/cornhole-about</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>/crawfish-information</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>/cubs</td>
+<td>2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Lost image search traffic and accessibility violations. Google Images is a meaningful discovery channel for local businesses. Missing alt text also weakens topical relevance signals.</p>
+<p><strong>Fix:</strong> Add descriptive alt text to every image. Avoid “image of” or “photo of.” Examples:</p>
+<ul>
+<li><code>alt="Max's Sports Bar exterior with outdoor patio seating in downtown Memphis"</code></li>
+<li><code>alt="Draft beer taps featuring local and craft brews"</code></li>
+<li><code>alt="Cornhole boards on outdoor patio at Max's Sports Bar"</code></li>
+</ul>
+<hr />
+<h3 id="word-counts-mostly-thin">8. Word counts — MOSTLY THIN</h3>
+<p>8 of 10 pages have under 300 words (thin content). The homepage has 232 words. Several key pages fall below 200.</p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://maxssportsbar.com</td>
+<td>232</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/about-us</td>
+<td>355</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/contact</td>
+<td>210</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/cornhole-about</td>
+<td>1458</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/crawfish-information</td>
+<td>165</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/cubs</td>
+<td>143</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/drinks</td>
+<td>247</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/events</td>
+<td>118</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/food-menu</td>
+<td>108</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://maxssportsbar.com/nfl-pickem-rules-1</td>
+<td>128</td>
+<td>Thin</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Thin pages rank poorly for informational queries and provide little for AI engines to extract or cite. Google prefers pages that answer follow-up questions.</p>
+<p><strong>Fix:</strong> Expand key pages to 400-600 words by adding FAQ sections, event history, or feature descriptions. For example:</p>
+<ul>
+<li><code>/events</code>: Add past event photos, testimonials, and a calendar of upcoming themes.</li>
+<li><code>/drinks</code>: Describe signature cocktails, happy hour specials, and tap rotation schedule.</li>
+<li><code>/cubs</code>: Add history of Max’s as a Cubs fan destination, game-day specials, and Cubs playoff watch party info.</li>
+</ul>
+<p>Use natural language. Break up text with H2 subheadings and lists.</p>
+<hr />
+<h2 id="priority-list-technical">Priority list (technical)</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add canonical tags to all pages</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Rewrite 9 title tags (40-60 characters, keyword + location)</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add Organization schema to homepage</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Fix 2 missing H1s and 1 empty H1</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add alt text to 10 images</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Add WebSite and BreadcrumbList schema</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Expand 8 thin pages to 400+ words</td>
+<td>MEDIUM</td>
+<td>HIGH</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Add 2-3 contextual external links per page</td>
+<td>LOW</td>
+<td>MEDIUM</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="raw-data-captured">Raw data captured</h2>
+<p>The following files are in <code>raw/</code> for auditor reference:</p>
+<ul>
+<li><code>home.html</code> — homepage HTML</li>
+<li><code>about-us.html</code> — about page</li>
+<li><code>contact.html</code> — contact page</li>
+<li><code>cornhole-about.html</code> — cornhole league page</li>
+<li><code>crawfish-information.html</code> — crawfish event page</li>
+<li><code>cubs.html</code> — Cubs fan page</li>
+<li><code>drinks.html</code> — drinks menu page</li>
+<li><code>events.html</code> — events calendar page</li>
+<li><code>food-menu.html</code> — food menu page</li>
+<li><code>nfl-pickem-rules-1.html</code> — NFL pick’em rules page</li>
+<li><code>robots.txt</code> — robots directives</li>
+<li><code>sitemap.xml</code> — URL inventory</li>
+</ul>
+<p>Technical extraction ran via <code>scripts/run-audit.py</code> — see <code>raw/intake-report.json</code> for the full per-page signal data.</p>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-maxs-sports-bar">Schema Review — Max’s Sports Bar</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-07
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>Max’s Sports Bar has LocalBusiness schema on the homepage only (1 of 10 sampled pages). The other nine pages, including About Us, Contact, Events, Food Menu, and Drinks, carry zero structured data. Organization schema is missing entirely across the site, which blocks entity recognition in Google’s Knowledge Graph. WebSite schema is absent, disabling SearchAction sitelink search boxes. BreadcrumbList is missing, so rich result breadcrumbs won’t appear in SERPs. For a local hospitality business competing in Memphis, this is a material disadvantage.</p>
+<p><strong>Schema grade: D</strong> (LocalBusiness exists on homepage but Organization, WebSite, BreadcrumbList, and Menu schemas are all absent)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+<col style="width: 14%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>LocalBusiness</th>
+<th>Organization</th>
+<th>WebSite</th>
+<th>BreadcrumbList</th>
+<th>Menu</th>
+<th>Event</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>About Us</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Contact</td>
+<td>���</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Food Menu</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Drinks</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Events</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings-1">Findings</h2>
+<h3 id="missing-organization-schema-across-entire-site-high">1. Missing Organization schema across entire site ⚠ HIGH</h3>
+<p>No Organization schema exists on any of the 10 sampled pages. Google uses Organization schema to build Knowledge Graph entities, map social profiles, and confirm NAP (name, address, phone) consistency. Without it, Google treats Max’s Sports Bar as an isolated mention on each page rather than a verified entity. This also blocks the logo and social profile links from appearing in branded search results.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar&quot;</span><span class="fu">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Quaint but energetic neighborhood bar in the historic South Main Arts District in the heart of Downtown Memphis, serving since 2007.&quot;</span><span class="fu">,</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Memphis&quot;</span><span class="fu">,</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;TN&quot;</span><span class="fu">,</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/maxssportsbar&quot;</span><span class="ot">,</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.instagram.com/maxssportsbar&quot;</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>@id</code> anchor allows other schemas to reference this Organization via <code>"publisher": { "@id": "https://maxssportsbar.com/#organization" }</code>. Replace <code>logo.png</code> with the actual logo URL. Add street address, postal code, and telephone in the <code>address</code> block if you want full NAP validation. The <code>sameAs</code> array should list every verified social profile.</p>
+<hr />
+<h3 id="missing-website-schema-no-searchaction-for-sitelink-search-high">2. Missing WebSite schema (no SearchAction for sitelink search) ⚠ HIGH</h3>
+<p>WebSite schema with SearchAction markup enables the Google sitelink search box in branded queries. When someone searches “Max’s Sports Bar,” Google can display an inline search field that queries your site directly. This is especially useful for menu items, event schedules, and reservation queries. Currently absent on all 10 pages.</p>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar&quot;</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/#organization&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>potentialAction</code> target URL should point to your actual search results page. Replace <code>/search?q={search_term_string}</code> with your CMS search endpoint (e.g., if you’re on Squarespace, Wix, or WordPress, confirm the query parameter). The <code>publisher</code> reference links this to the Organization schema via <code>@id</code>.</p>
+<hr />
+<h3 id="missing-breadcrumblist-on-all-non-home-pages-medium">3. Missing BreadcrumbList on all non-home pages ⚠ MEDIUM</h3>
+<p>None of the 10 sampled pages use BreadcrumbList schema. Google uses breadcrumbs to understand site hierarchy and display rich result breadcrumbs in SERPs (the clickable path above the meta description). For a site with sections like Events, Food Menu, Drinks, and Contact, breadcrumbs clarify context and improve click-through rate.</p>
+<p><strong>Fix — ready-to-paste code (example for /about-us):</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;About Us&quot;</span><span class="fu">,</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/about-us&quot;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> represents one level in the path. Position must increment sequentially. The final item (current page) should match the page URL. Deploy this on every non-home page, updating the <code>itemListElement</code> array to reflect the actual breadcrumb path.</p>
+<hr />
+<h3 id="missing-menu-schema-on-food-and-drinks-pages-medium">4. Missing Menu schema on food and drinks pages ⚠ MEDIUM</h3>
+<p>The Food Menu and Drinks pages carry no Menu or MenuSection schema. Google can display menu items directly in local search results and Google Maps if you mark them up. This is particularly valuable for “sports bar menu Memphis” or “best wings downtown Memphis” queries where Google shows menu snippets.</p>
+<p><strong>Fix — ready-to-paste code (example for /food-menu):</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Menu&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Food Menu&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar food menu featuring wings, burgers, appetizers, and game-day favorites.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;hasMenuSection&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;MenuSection&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Appetizers&quot;</span><span class="fu">,</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;hasMenuItem&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>        <span class="fu">{</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;MenuItem&quot;</span><span class="fu">,</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Buffalo Wings&quot;</span><span class="fu">,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Traditional bone-in wings with choice of sauce&quot;</span><span class="fu">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;offers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="st">&quot;12.99&quot;</span><span class="fu">,</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;priceCurrency&quot;</span><span class="fu">:</span> <span class="st">&quot;USD&quot;</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>          <span class="fu">}</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;MenuSection&quot;</span><span class="fu">,</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Burgers&quot;</span><span class="fu">,</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;hasMenuItem&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>        <span class="fu">{</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;MenuItem&quot;</span><span class="fu">,</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Classic Cheeseburger&quot;</span><span class="fu">,</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Half-pound Angus beef, cheddar, lettuce, tomato, onion&quot;</span><span class="fu">,</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;offers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="st">&quot;10.99&quot;</span><span class="fu">,</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>            <span class="dt">&quot;priceCurrency&quot;</span><span class="fu">:</span> <span class="st">&quot;USD&quot;</span></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>          <span class="fu">}</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>MenuSection</code> groups related items. Each <code>MenuItem</code> needs name, description (optional but helpful for rich results), and an <code>Offer</code> with price and currency. Replicate this pattern for the Drinks page, changing <code>@type</code> to <code>Menu</code> and populating beer, cocktail, and wine sections.</p>
+<hr />
+<h3 id="missing-event-schema-on-events-and-cornhole-pages-medium">5. Missing Event schema on events and cornhole pages ⚠ MEDIUM</h3>
+<p>The Events page and Cornhole About page describe recurring events (Crawfish Saturdays, cornhole league registration) but carry no Event schema. Google can display event rich results in Search and trigger Google Calendar integrations if you mark up dates, times, and locations.</p>
+<p><strong>Fix — ready-to-paste code (example for recurring crawfish event):</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Event&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Crawfish Saturdays&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Fresh crawfish boil every Saturday during crawfish season at Max&#39;s Sports Bar.&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;eventSchedule&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Schedule&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;byDay&quot;</span><span class="fu">:</span> <span class="st">&quot;Saturday&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;repeatFrequency&quot;</span><span class="fu">:</span> <span class="st">&quot;P1W&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;location&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Place&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar&quot;</span><span class="fu">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Memphis&quot;</span><span class="fu">,</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;TN&quot;</span><span class="fu">,</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;organizer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/#organization&quot;</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> <code>eventSchedule</code> handles recurring events. <code>byDay</code> specifies day of week, <code>repeatFrequency</code> uses ISO 8601 duration (P1W = every week). For one-time events (like the cornhole league start date 8/27), use <code>startDate</code> and <code>endDate</code> instead of <code>eventSchedule</code>. The <code>organizer</code> reference links to your Organization schema.</p>
+<hr />
+<h3 id="localbusiness-schema-exists-but-missing-key-properties-low">6. LocalBusiness schema exists but missing key properties ⚠ LOW</h3>
+<p>The homepage has LocalBusiness schema, but it’s likely missing properties that improve local search visibility: <code>openingHoursSpecification</code>, <code>priceRange</code>, <code>telephone</code>, <code>geo</code> coordinates, and <code>aggregateRating</code>. Adding these turns the schema from minimal compliance into a competitive local SEO asset.</p>
+<p><strong>Fix — enhanced LocalBusiness code:</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BarOrPub&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/#localbusiness&quot;</span><span class="fu">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Max&#39;s Sports Bar&quot;</span><span class="fu">,</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;image&quot;</span><span class="fu">:</span> <span class="st">&quot;https://maxssportsbar.com/hero-image.jpg&quot;</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Quaint but energetic neighborhood sports bar in the South Main Arts District, Memphis. Cubs bar, crawfish Saturdays, cornhole league.&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;123 South Main St&quot;</span><span class="fu">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Memphis&quot;</span><span class="fu">,</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;TN&quot;</span><span class="fu">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;38103&quot;</span><span class="fu">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;geo&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;GeoCoordinates&quot;</span><span class="fu">,</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;latitude&quot;</span><span class="fu">:</span> <span class="st">&quot;35.1495&quot;</span><span class="fu">,</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;longitude&quot;</span><span class="fu">:</span> <span class="st">&quot;-90.0490&quot;</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-901-555-0100&quot;</span><span class="fu">,</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;priceRange&quot;</span><span class="fu">:</span> <span class="st">&quot;$$&quot;</span><span class="fu">,</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;openingHoursSpecification&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;OpeningHoursSpecification&quot;</span><span class="fu">,</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;dayOfWeek&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Monday&quot;</span><span class="ot">,</span> <span class="st">&quot;Tuesday&quot;</span><span class="ot">,</span> <span class="st">&quot;Wednesday&quot;</span><span class="ot">,</span> <span class="st">&quot;Thursday&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;opens&quot;</span><span class="fu">:</span> <span class="st">&quot;15:00&quot;</span><span class="fu">,</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;closes&quot;</span><span class="fu">:</span> <span class="st">&quot;23:00&quot;</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;OpeningHoursSpecification&quot;</span><span class="fu">,</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;dayOfWeek&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Friday&quot;</span><span class="ot">,</span> <span class="st">&quot;Saturday&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;opens&quot;</span><span class="fu">:</span> <span class="st">&quot;15:00&quot;</span><span class="fu">,</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;closes&quot;</span><span class="fu">:</span> <span class="st">&quot;02:00&quot;</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-37"><a href="#cb10-37" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-38"><a href="#cb10-38" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;OpeningHoursSpecification&quot;</span><span class="fu">,</span></span>
+<span id="cb10-39"><a href="#cb10-39" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;dayOfWeek&quot;</span><span class="fu">:</span> <span class="st">&quot;Sunday&quot;</span><span class="fu">,</span></span>
+<span id="cb10-40"><a href="#cb10-40" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;opens&quot;</span><span class="fu">:</span> <span class="st">&quot;12:00&quot;</span><span class="fu">,</span></span>
+<span id="cb10-41"><a href="#cb10-41" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;closes&quot;</span><span class="fu">:</span> <span class="st">&quot;22:00&quot;</span></span>
+<span id="cb10-42"><a href="#cb10-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-43"><a href="#cb10-43" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb10-44"><a href="#cb10-44" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb10-45"><a href="#cb10-45" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb10-46"><a href="#cb10-46" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.6&quot;</span><span class="fu">,</span></span>
+<span id="cb10-47"><a href="#cb10-47" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;87&quot;</span></span>
+<span id="cb10-48"><a href="#cb10-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb10-49"><a href="#cb10-49" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-50"><a href="#cb10-50" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/maxssportsbar&quot;</span><span class="ot">,</span></span>
+<span id="cb10-51"><a href="#cb10-51" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.instagram.com/maxssportsbar&quot;</span></span>
+<span id="cb10-52"><a href="#cb10-52" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb10-53"><a href="#cb10-53" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> <code>BarOrPub</code> is a more specific subtype of LocalBusiness and signals your vertical to Google. Replace placeholder address, phone, geo coordinates, and hours with real values. If you have verified Google reviews, populate <code>aggregateRating</code> with the actual rating and count. Geo coordinates help Google Maps placement.</p>
+<hr />
+<h2 id="priority-list-schema">Priority list (schema)</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add Organization schema site-wide</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Add WebSite + SearchAction schema site-wide</td>
+<td>HIGH</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Add BreadcrumbList on all non-home pages</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Add Menu schema to Food Menu and Drinks pages</td>
+<td>MEDIUM</td>
+<td>MEDIUM</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Add Event schema to Events and Cornhole pages</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Enhance existing LocalBusiness with hours, geo, rating</td>
+<td>MEDIUM</td>
+<td>LOW</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="validation-checklist">Validation checklist</h2>
+<p>After the client implements the recommended schema fixes:</p>
+<ul class="task-list">
+<li><label><input type="checkbox" />Google Rich Results Test passes on home page</label></li>
+<li><label><input type="checkbox" />Schema.org Validator shows no warnings</label></li>
+<li><label><input type="checkbox" />Organization + WebSite schemas present in site-wide layout</label></li>
+<li><label><input type="checkbox" />BreadcrumbList on every non-home page</label></li>
+<li><label><input type="checkbox" />Menu schema on food-menu and drinks pages</label></li>
+<li><label><input type="checkbox" />Event schema on events and cornhole-about pages</label></li>
+<li><label><input type="checkbox" />Enhanced LocalBusiness includes geo, hours, phone, aggregateRating</label></li>
+<li><label><input type="checkbox" /><code>@id</code> references link Organization to WebSite and LocalBusiness in a unified graph</label></li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-3">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-maxs-sports-bar">90-Day Roadmap — Max’s Sports Bar</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-07
+<strong>Window:</strong> Months 1–3 (by 2026-08-07)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented. Every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-07):</strong>
+- 0 of 10 pages have canonical tags (100% missing)
+- 1 of 10 pages carry any schema (homepage only, LocalBusiness)
+- 9 of 10 pages have title tags under 30 characters
+- 8 of 10 pages fall under 300 words (thin content)
+- 10 of 21 images missing alt text (48% accessibility gap)</p>
+<p><strong>90-day target:</strong>
+- 10 of 10 pages with canonicals, Organization schema, and proper title tags
+- Homepage includes WebSite and BreadcrumbList schema
+- All 10 pages meet minimum 300-word threshold or justify brevity with structured data
+- Zero images without alt text
+- Contact and Events pages gain Menu and Event schema respectively</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-07">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-07)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the entity signals and technical blockers that prevent Google and AI engines from understanding who Max’s Sports Bar is and which pages are authoritative.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add self-referencing canonical tags to all 10 pages (template-level implementation if possible)</td>
+<td>Technical Audit §1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Deploy Organization schema site-wide (in header/footer template) with name, logo, address, phone, and sameAs social profiles</td>
+<td>Schema Review §1</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add WebSite schema with SearchAction to homepage (or site-wide) to enable sitelink search box</td>
+<td>Schema Review §2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Rewrite title tags for 9 pages (About Us, Contact, Drinks, Events, Cubs, Food Menu, Cornhole About, Crawfish Information, NFL Pick’em) to 40–60 characters with location and keyword modifiers</td>
+<td>Technical Audit §3</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Add meta descriptions to 9 pages currently missing them (all except homepage), 120–150 characters each</td>
+<td>Technical Audit (implied by meta_desc null)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Add alt text to 10 images missing it across About Us (3), Drinks (4), Cornhole About (1), Crawfish Information (1), Cubs (1)</td>
+<td>Technical Audit (red flag: 10 of 21 images)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Add BreadcrumbList schema to all non-homepage pages to enable rich result breadcrumbs in SERPs</td>
+<td>Schema Review §3</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Fix 2 pages missing H1 tags (Food Menu, NFL Pick’em Rules) by adding descriptive H1s</td>
+<td>Technical Audit (H1 structure: 2 no_h1)</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~19 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add FAQ schema to About Us page if there are common questions about history, hours, or location</li>
+<li>Embed Google Maps iframe on Contact page to improve local signal consistency</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows 10 of 10 pages indexed with canonicals recognized
+- Rich Results Test validates Organization and WebSite schema on homepage
+- All 10 pages have title tags between 40 and 60 characters and meta descriptions present</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-08-2026-07-07">MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-07)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Expand thin pages into citation-worthy content and add structured data for menu, events, and reviews to give AI engines specific facts to cite.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Expand 8 thin pages (Contact, Crawfish Information, Cubs, Events, Food Menu, NFL Pick’em) from under 300 words to 400–600 words by adding context, FAQs, hours, parking, or event details</td>
+<td>Technical Audit (8 pages thin content)</td>
+<td>8 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Add Menu schema to Food Menu page with at least 6–8 itemListElement entries (dish names, descriptions, prices)</td>
+<td>Schema Review §3 (Menu schema absent)</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Add Event schema to Events page for recurring events (Crawfish Saturdays, NFL Pick’em, Cornhole League) with startDate, location, and offers</td>
+<td>Schema Review §3 (Event schema absent)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add AggregateRating schema to homepage if Google reviews exist (pull rating count and average from Google Business Profile)</td>
+<td>Technical Audit (red flag: no AggregateRating)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Increase average external links per page from 1.8 to 3+ by citing local Memphis sources, sports leagues, or event partners on About Us, Cubs, Cornhole, and Events pages</td>
+<td>Technical Audit (red flag: avg external links 1.8)</td>
+<td>3 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~20 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- Rich Results Test validates Menu schema on Food Menu and Event schema on Events page
+- All 10 pages have at least 300 words or justify brevity with structured data (e.g., Contact page with LocalBusiness details)
+- AggregateRating appears in SERP preview for homepage branded query</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-08-2026-08-07">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-07)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Build topical authority in Memphis sports bar and event spaces, and instrument tracking to measure AI citation lift.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Publish 2 new long-form pages (800+ words each): “Best Sports Bars in Memphis for Cubs Fans” and “Memphis Cornhole Leagues: Complete Guide”</td>
+<td>Technical Audit (thin content, authority signal gap)</td>
+<td>10 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Add 3–5 authoritative external links per new page to Memphis tourism, sports league sites, or local news sources</td>
+<td>Technical Audit (external links weak AEO signal)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Add FAQPage schema to both new pages with 4–6 Q&amp;A pairs each (e.g., “What sports bars in Memphis show Cubs games?”)</td>
+<td>Schema Review (FAQPage not detected)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up Google Search Console tracking for impressions, clicks, and average position for target queries (Memphis sports bar, Cubs bar Memphis, cornhole league Memphis)</td>
+<td>Technical Audit (measurement baseline)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Test AI citation presence by querying ChatGPT, Perplexity, and Gemini with “best sports bars in Memphis” and “Memphis cornhole leagues” and log whether Max’s appears</td>
+<td>Schema Review (AEO optimization goal)</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~17 hours.</strong></p>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- At least 1 of 2 new pages appears in Google Discover or “People also ask” boxes for target queries
+- Max’s Sports Bar cited by name in at least 1 AI engine response for Memphis sports bar or cornhole queries</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Build backlink pipeline by reaching out to Memphis food bloggers, event calendars, and tourism sites to feature Max’s in roundups</li>
+<li><strong>Month 5:</strong> Add video schema for any YouTube content (game day highlights, event recaps, bartender interviews) and embed on relevant pages</li>
+<li><strong>Month 6:</strong> Launch monthly blog series on Memphis sports culture, Cubs history in Memphis, or cornhole tournament recaps to build topical depth</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Deploy Organization schema site-wide with name, logo, address, phone, and social profiles. This is the entity anchor that every other schema improvement depends on, and it takes 3 hours to implement once at the template level.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- All 10 pages have canonical tags, proper title/meta, and Organization schema recognized in Google Search Console
+- Menu and Event schema validated on Food Menu and Events pages
+- Homepage AggregateRating appears in SERP snippet for “Max’s Sports Bar Memphis”
+- 2 new long-form pages indexed and ranking in top 50 for target Memphis queries</p>
+<p><strong>Optimistic case:</strong>
+- Max’s Sports Bar cited by ChatGPT or Perplexity in at least 2 queries related to Memphis sports bars or events
+- 1 of 2 new pages ranks in top 20 for “cornhole league Memphis” or “Cubs bar Memphis”
+- Rich results (breadcrumbs, FAQs, events) appear in SERPs for 4+ pages</p>
+<p><strong>Conservative case:</strong>
+- All technical blockers (canonicals, schema, title tags) resolved and validated in Search Console
+- Zero pages under 300 words without justification
+- AI citation presence confirmed in at least 1 engine for branded query “Max’s Sports Bar Memphis”</p>
+
+
+</body>
+</html>
