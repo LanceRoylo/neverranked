@@ -9,6 +9,7 @@ import { buildStatusCard } from "../status";
 import { buildGlossary } from "../glossary";
 import { getClientChecklist, renderChecklistCard, shouldShowChecklist } from "../getting-started";
 import { getActivityFeed, renderActivityFeed } from "../activity-feed";
+import { getAutonomyStats, renderAutonomyPanel } from "../weekly-autonomy";
 
 interface HomeGscData {
   clicks: number;
@@ -915,6 +916,7 @@ export async function handleHome(user: User, env: Env): Promise<Response> {
     ${checklistHtml}
     ${await buildStatusCard(user, env)}
     ${user.role === "client" && user.client_slug ? await buildRoiCard(user, env) : ""}
+    ${renderAutonomyPanel(await getAutonomyStats(user, env))}
     ${renderActivityFeed(await getActivityFeed(user, env, 10), { admin: user.role === "admin" })}
     ${changeBanner}
     ${user.role === "client" && user.client_slug && !gscMap.has(user.client_slug) ? buildGscNudge(user, env) : ""}
