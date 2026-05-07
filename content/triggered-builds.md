@@ -12,6 +12,19 @@ Never deploys.
 
 ## Active triggers
 
+### Roadmap copy + dashboard reports: rewrite to the Clarity Principle (HIGH PRIORITY)
+
+- **Trigger:** Hawaii Theatre asks "what does this mean?" once, OR the next paying customer onboards, OR Lance has a focused 2-4 hour block. Whichever comes first.
+- **Why this is high priority:** Hawaii Theatre's roadmap was just reviewed (2026-05-07) and the items read as developer-only. "Add og:title, og:description, og:image to all pages" is gibberish to a small business owner. "YOU SHIP THIS" + jargon they don't understand = customer feels stuck. The dashboard becomes useless and they escalate to Lance asking "what does this mean," which makes Lance the helpdesk.
+- **The principle to apply:** `content/operating-principles.md` — the Clarity Principle.
+- **What to build:**
+  - **Phase 1 (~2 hours, ships first):** Rewrite the top 5 most-frequent roadmap item types using the three-layer pattern (plain English + how-to-by-platform + collapsed technical detail). Top 5: OG tags, Organization schema, FAQPage schema, canonical tags, H1 hierarchy. Hits 80% of what customers actually see on first scan.
+  - **Phase 2 (~4-6 hours, follow-up):** Extend the pattern to the remaining ~25 roadmap item types.
+  - **Phase 3 (~ongoing):** Apply the same lens to the dashboard's other surfaces — citation reports, signal cards, NPS prompts, alerts. Anything customer-facing.
+- **Where the copy lives:** `dashboard/src/routes/roadmap.ts` (item description / fix / why fields), plus the auto-generated content from `lib/aeo-scan.js` red flags. Also the audit auto-populator at `scripts/audit-generate.mjs` — the schema review and roadmap sections it generates need this treatment too.
+- **Effort:** Phase 1 ~2 hrs. Phase 2 ~4-6 hrs. Phase 3 ongoing per surface.
+- **Reference / origin:** Hawaii Theatre dashboard review on 2026-05-07. Three roadmap items shown ("Add Open Graph meta tags," "Fix: No og:image tag," "Fix: No AggregateRating detected") all violated the Clarity Principle. Lance: "If we're not doing the work then we have to make it extremely easy for them to understand. That's what makes us different."
+
 ### AI software factories: spec/test-driven generation across all pipelines
 
 - **Trigger:** Phase 2 (closed-loop variant testing) ships AND post-launch we observe a category of generation failure that's expensive to catch by eye (e.g., a misfire pattern slips through 5+ times before being noticed). At that point spec/test harnesses pay back.
