@@ -50,13 +50,13 @@ function generatePhase1(ctx: ScanContext): RoadmapSeed[] {
   const flagGroups = groupRedFlags(ctx.redFlags);
 
   if (flagGroups.missingTitle) {
-    items.push({ title: "Add missing page titles", description: "Page titles are the most basic metadata. Without them, AI engines have no quick context for the page. Add unique, descriptive titles to every page.", category: "technical", priority: p++ });
+    items.push({ title: "Give every page a clear name", description: "Some pages don't have a title (the bit of text browsers show in the tab and search engines show as the headline). Without it, AI engines have no quick context for what the page is about. Where to add it: WordPress -> page editor -> SEO field; Squarespace -> page settings -> SEO -> Browser Title; Webflow -> page settings -> Title Tag; Wix -> SEO Tools -> Page Title. Custom-coded site: ask your dev to add a <title> tag in the <head> of every page.", category: "technical", priority: p++ });
   }
   if (flagGroups.missingMeta) {
-    items.push({ title: "Write meta descriptions for all pages", description: "Meta descriptions give AI engines a concise summary of each page. Write unique descriptions (120-160 characters) that accurately describe the content.", category: "content", priority: p++ });
+    items.push({ title: "Add a one-line summary to each page", description: "A meta description is the 120-160 character summary search engines and AI assistants show under your link. Without it, they generate one from your page content (often badly). Where to add it: WordPress -> page editor -> SEO meta description field; Squarespace -> page settings -> SEO Description; Webflow -> page settings -> Meta Description; Wix -> SEO Tools -> Meta Description. Custom-coded: ask your dev for a <meta name=\"description\"> tag per page.", category: "content", priority: p++ });
   }
   if (flagGroups.missingH1) {
-    items.push({ title: "Add proper heading hierarchy", description: "Every page needs exactly one H1 tag, followed by H2s and H3s in logical order. AI engines use heading structure to understand content organization.", category: "content", priority: p++ });
+    items.push({ title: "Make sure every page has one clear headline", description: "Every page needs exactly ONE main headline (the H1 tag) followed by smaller subheadings (H2, H3). Right now your pages either have no main headline or have several competing for attention, which confuses AI engines about what the page is actually about. Where to fix it: WordPress / Squarespace / Webflow / Wix -> use the page editor's heading style buttons (Heading 1 = the one main headline; Heading 2 = section titles). Custom-coded: ask your dev to use one <h1> per page, with <h2>s for sections.", category: "content", priority: p++ });
   }
   if (flagGroups.noHttps) {
     items.push({ title: "Enable HTTPS across the entire site", description: "HTTPS is a trust signal for both traditional and AI search engines. Ensure all pages load over HTTPS with a valid certificate.", category: "technical", priority: p++ });
@@ -73,34 +73,39 @@ function generatePhase1(ctx: ScanContext): RoadmapSeed[] {
 
   // Missing critical schema types
   if (!hasSchema(ctx, "Organization") && !hasSchema(ctx, "LocalBusiness")) {
-    items.push({ title: "Add Organization or LocalBusiness schema", description: "This is the foundation schema. It tells AI engines who you are, where you are, and what you do. Every business site needs this. Use LocalBusiness for physical locations, Organization for others.", category: "schema", priority: p++ });
+    items.push({ title: "Tell Google and AI engines who you are", description: "Right now AI engines have no machine-readable way to know your business name, address, services, or hours. They cite competitors who do. This is the single most important fix on the list. Where to add it: WordPress -> install Yoast or Rank Math -> SEO -> Knowledge Graph -> set Organization or Local Business and fill in details; Squarespace -> Settings -> Business Information (auto-generates from these fields); Webflow -> Project Settings -> SEO -> Custom Code -> paste a JSON-LD Organization block in the head; Wix -> SEO Tools -> Structured Data Markup. Custom-coded: ask your dev for an Organization or LocalBusiness JSON-LD block in your sitewide template.", category: "schema", priority: p++ });
   }
   if (!hasSchema(ctx, "WebSite")) {
-    items.push({ title: "Add WebSite schema with search action", description: "WebSite schema identifies your site to AI engines and can include a sitelinks search box. Add it to your homepage.", category: "schema", priority: p++ });
+    items.push({ title: "Identify your site as the official source", description: "WebSite schema is a small block of code that tells search engines and AI assistants \"this domain is the official site for this brand.\" It also enables the search box that sometimes appears under your site in Google results. Most SEO plugins (Yoast on WordPress, Rank Math) add this automatically once enabled. Squarespace and Wix include it by default. Webflow / custom-coded: ask your dev for a WebSite JSON-LD block on the homepage.", category: "schema", priority: p++ });
   }
   if (!hasSchema(ctx, "BreadcrumbList")) {
-    items.push({ title: "Add BreadcrumbList schema", description: "Breadcrumb schema helps AI engines understand your site hierarchy and how pages relate to each other. Add to all pages except the homepage.", category: "schema", priority: p++ });
+    items.push({ title: "Show search engines how your pages connect", description: "Breadcrumbs are the trail like Home > Services > AEO. When you add them as structured data, Google and AI engines understand how your pages relate, and Google sometimes shows breadcrumbs in search results instead of your raw URL. Where to add: most SEO plugins (Yoast, Rank Math, SEOPress) generate this automatically. Webflow and custom-coded: ask your dev for a BreadcrumbList JSON-LD block on every page except the homepage.", category: "schema", priority: p++ });
   }
 
   // Technical signal fixes
   for (const sig of ctx.techSignals) {
     if (sig.status === "bad" || sig.status === "error") {
       if (sig.label.toLowerCase().includes("og") || sig.label.toLowerCase().includes("open graph")) {
-        items.push({ title: "Add Open Graph meta tags", description: "Open Graph tags help AI engines understand your content when it appears in social and aggregation contexts. Add og:title, og:description, og:image to all pages.", category: "technical", priority: p++ });
+        items.push({ title: "Add social preview cards", description: "Right now when your site is shared on LinkedIn, Twitter, Slack, or referenced by ChatGPT, the preview is blank. With this fix, every share shows a proper image, title, and description (the things called Open Graph tags). Where to add: WordPress -> Yoast or Rank Math -> Social tab -> upload a default image; Squarespace -> Settings -> Marketing -> SEO -> enable preview image; Webflow -> Page Settings -> Open Graph -> upload image; Wix -> SEO Tools -> Social Share -> upload image. Custom-coded: ask your dev to add og:title, og:description, og:image meta tags in the head of every page.", category: "technical", priority: p++ });
       } else if (sig.label.toLowerCase().includes("canonical")) {
-        items.push({ title: "Set canonical URLs on all pages", description: "Canonical tags prevent duplicate content confusion. Every page should have a self-referencing canonical URL.", category: "technical", priority: p++ });
+        items.push({ title: "Tell Google which version of each page is the real one", description: "If your site is reachable at multiple URLs (with or without www, with or without trailing slash, with tracking parameters), Google may treat them as separate pages and split your traffic. Canonical tags fix that by naming the official URL for each page. Where to fix: WordPress -> Yoast / Rank Math handle this automatically once installed; Squarespace, Wix, Webflow include them by default. Custom-coded site: ask your dev to add a <link rel=\"canonical\"> tag in the head of every page pointing to that page's preferred URL.", category: "technical", priority: p++ });
       }
     }
   }
 
-  // Remaining red flags not covered by specific items above
+  // Remaining red flags not covered by specific items above. The
+  // generic-fallback description used to read "Address it to remove
+  // the penalty" — vague code-speak that violated the Clarity
+  // Principle. Now: name the gap in plain English and tell the
+  // customer where to start. Even a generic fallback should respect
+  // the principle.
   const coveredPatterns = ["title", "meta description", "heading", "h1", "https", "speed", "slow", "robots", "schema", "invalid", "broken"];
   const uncoveredFlags = ctx.redFlags.filter(f => {
     const lower = f.toLowerCase();
     return !coveredPatterns.some(p => lower.includes(p));
   });
   for (const flag of uncoveredFlags.slice(0, 3)) {
-    items.push({ title: "Fix: " + flag, description: "This issue was detected during your AEO scan and is reducing your score. Address it to remove the penalty.", category: "technical", priority: p++ });
+    items.push({ title: flag, description: "Our scan flagged this on your site and it's reducing your AEO score. If you're not sure where to start, send us a note from the dashboard and we'll point you at the exact place to fix it on your specific platform (WordPress, Squarespace, Webflow, Wix, or custom-coded).", category: "technical", priority: p++ });
   }
 
   return items;
@@ -137,33 +142,33 @@ function generatePhase2(ctx: ScanContext): RoadmapSeed[] {
 
   // Schema types that are good for growth but not critical for foundation
   if (!hasSchema(ctx, "FAQPage")) {
-    items.push({ title: "Create FAQ schema on key service pages", description: "FAQ schema gives AI engines pre-structured Q&A pairs they can cite directly. Write 5-10 real customer questions per major service page.", category: "schema", priority: p++ });
+    items.push({ title: "Turn your FAQs into something AI can quote directly", description: "When you mark up your FAQ section as structured data, ChatGPT, Perplexity, and Google AI Overviews can pull your exact answer and cite you. Without it, they paraphrase a competitor's page instead. Write 5-10 real customer questions per major service page (the questions you actually answer on sales calls). Where to add: WordPress -> most SEO plugins (Yoast, Rank Math) include an FAQ block; Squarespace and Wix -> use their FAQ block which auto-generates the schema; Webflow / custom-coded -> ask your dev for an FAQPage JSON-LD block matching the visible Q&A.", category: "schema", priority: p++ });
   }
   if (!hasSchema(ctx, "Article") && !hasSchema(ctx, "BlogPosting")) {
-    items.push({ title: "Add Article schema to blog and content pages", description: "Article schema marks content as authored, dated, and attributed. This helps AI engines assess freshness and credibility.", category: "schema", priority: p++ });
+    items.push({ title: "Show AI engines who wrote your content and when", description: "Article schema is the small block of code that tells AI assistants this is content with an author, a publish date, and a topic. It helps them assess whether your post is fresh and credible enough to cite. Where to add: WordPress with Yoast or Rank Math handles this automatically for blog posts; Squarespace adds it to blog posts by default; Webflow / custom-coded -> ask your dev for an Article (or BlogPosting) JSON-LD block on every blog/article template.", category: "schema", priority: p++ });
   }
   if (!hasSchema(ctx, "Product") && !hasSchema(ctx, "Service")) {
-    items.push({ title: "Add Product or Service schema", description: "Describe your offerings in machine-readable format. Include pricing, availability, and descriptions so AI engines can recommend them accurately.", category: "schema", priority: p++ });
+    items.push({ title: "Make your offerings machine-readable", description: "Product and Service schema describes what you sell in a structured format AI engines can pull from: name, description, pricing, availability. When someone asks ChatGPT \"what does [your category] cost\" or \"who offers [your service]\", structured data is what lets you appear in the answer. Where to add: e-commerce platforms (Shopify, WooCommerce) generate Product schema automatically; service businesses on WordPress -> use Yoast or Schema Pro plugin to add Service schema per page; Webflow / custom-coded -> ask your dev for Product or Service JSON-LD blocks.", category: "schema", priority: p++ });
   }
   if (!hasSchema(ctx, "AggregateRating") && !hasSchema(ctx, "Review")) {
-    items.push({ title: "Add review and rating schema", description: "AggregateRating and Review schema give AI engines social proof signals. If you have customer reviews, mark them up.", category: "schema", priority: p++ });
+    items.push({ title: "Surface your reviews and ratings as social proof AI can cite", description: "If you have customer reviews on Google, Yelp, Trustpilot, or your own site, AggregateRating and Review schema lets AI engines pull \"4.8 stars, 124 reviews\" into their answers about you. Where to add: review platforms (Trustpilot, Yotpo, Stamped) add this automatically when their widget is embedded; WordPress -> use a review schema plugin; Webflow / custom-coded -> ask your dev for AggregateRating JSON-LD pulling from your real review counts.", category: "schema", priority: p++ });
   }
 
   // Content strategy items
-  items.push({ title: "Write an authoritative FAQ page answering top industry questions", description: "Go beyond basic FAQs. Answer the 15-20 questions people actually ask AI engines about your industry. Use clear, factual language. This becomes a citation magnet.", category: "content", priority: p++ });
+  items.push({ title: "Write the FAQ page that answers what your buyers actually ask AI", description: "Most FAQ pages answer questions you wish customers asked. Instead, answer the 15-20 questions they actually type into ChatGPT, Perplexity, and Google about your industry. Plain factual answers, 2-4 sentences each. This page becomes the source AI engines reach for when summarizing your category. We can help you identify the actual queries to answer if you DM us from the dashboard.", category: "content", priority: p++ });
 
-  items.push({ title: "Publish a definitive guide in your primary topic area", description: "Create a 2,000+ word guide that thoroughly covers your core expertise. AI engines prefer comprehensive, authoritative sources when generating answers.", category: "content", priority: p++ });
+  items.push({ title: "Publish one definitive guide on your core topic", description: "AI engines prefer to cite comprehensive, single-source pages over scattered shorter posts. Pick one topic where you have deep expertise (the thing you'd write if you only got to write one piece) and write a 2,000+ word guide with proper headings, internal links, and a few citations. This becomes the page AI engines reach for first when answering about your area.", category: "content", priority: p++ });
 
   if (ctx.score < 60) {
-    items.push({ title: "Audit and rewrite thin content pages", description: "Pages with less than 300 words of meaningful content are unlikely to be cited by AI engines. Identify thin pages and either expand them or consolidate.", category: "content", priority: p++ });
+    items.push({ title: "Either grow or remove your shortest pages", description: "Pages under 300 words of real content rarely get cited by AI engines (not enough substance to quote). Look at your site, find the thin pages (often About pages, contact pages, category landing pages), and either expand them with real detail or consolidate them with related pages. Where to find them: most CMS dashboards show word count per page in their SEO panel.", category: "content", priority: p++ });
   }
 
   // Authority building
-  items.push({ title: "Claim and optimize Google Business Profile", description: "Your Google Business Profile feeds into AI engines' understanding of your business. Ensure it is complete, accurate, and has recent reviews.", category: "authority", priority: p++ });
+  items.push({ title: "Claim your Google Business Profile and keep it current", description: "Your Google Business Profile feeds Google's AI Overviews and Maps results, and AI engines pull from it for local and business queries. If you have not claimed it, do that first. If you have, make sure your hours, phone, address, and recent photos are current, and ask happy customers for fresh reviews monthly. Manage it at business.google.com.", category: "authority", priority: p++ });
 
-  items.push({ title: "Ensure consistent NAP across all directories", description: "Name, Address, Phone number consistency across the web is how AI models build entity confidence. Audit and fix inconsistencies.", category: "authority", priority: p++ });
+  items.push({ title: "Make sure your name, address, phone are identical everywhere", description: "AI engines build confidence in a business entity when its name, address, and phone number are spelled the same way across the web (your site, Google Business, Yelp, Facebook, industry directories). Even tiny differences (\"St.\" vs \"Street\", with or without a suite number) cost you. Audit your top 10 listings and fix inconsistencies.", category: "authority", priority: p++ });
 
-  items.push({ title: "Build citations on industry-specific directories", description: "Get listed on the top 10 directories in your industry. Each listing reinforces your entity in AI training data.", category: "authority", priority: p++ });
+  items.push({ title: "Get listed in the top directories for your industry", description: "Each listing on a recognized industry directory reinforces your business as a real entity in AI training data. Identify the 5-10 most-cited directories for your category (for dental: Healthgrades, Zocdoc, ADA Find-a-Dentist; for legal: Avvo, Justia, Martindale; for restaurants: OpenTable, Yelp, TripAdvisor). Submit consistent listings to each.", category: "authority", priority: p++ });
 
   return items;
 }
@@ -176,21 +181,21 @@ function generatePhase3(ctx: ScanContext): RoadmapSeed[] {
   const items: RoadmapSeed[] = [];
   let p = 1;
 
-  items.push({ title: "Implement entity-first content architecture", description: "Restructure content around entities (people, places, things, concepts) rather than keywords. Link related entities with schema sameAs and about properties.", category: "content", priority: p++ });
+  items.push({ title: "Restructure your content around the things you sell, not the keywords you target", description: "Most sites organize content by keyword (\"best X services in Y city\"). AI engines understand the world as entities (specific people, places, things, services) and the relationships between them. Restructure your top pages to be about THE THING (your service, your team member, your location) and link related entities together. This is a content strategy shift, not a one-day fix.", category: "content", priority: p++ });
 
-  items.push({ title: "Create comparison and vs content for AI citation queries", description: "AI engines frequently answer comparison queries ('X vs Y', 'best X for Y'). Create definitive comparison content that positions your business.", category: "content", priority: p++ });
+  items.push({ title: "Create comparison content (X vs Y, best X for Y)", description: "AI engines answer a huge volume of comparison queries (\"best CRM for small businesses\", \"X vs Y for [use case]\"). If you have honest comparison content positioning your offering against alternatives, AI engines cite it. Pick the 3-5 comparisons your buyers actually make and write a fair, named, opinionated piece for each.", category: "content", priority: p++ });
 
-  items.push({ title: "Add HowTo schema to instructional content", description: "HowTo schema structures step-by-step content in a format AI engines can cite step-by-step. Add to any tutorial or process content.", category: "schema", priority: p++ });
+  items.push({ title: "Mark up your step-by-step content so AI can quote each step", description: "If you have tutorials, recipes, setup guides, or process content, HowTo schema is the structured format that lets AI engines cite individual steps in answers (\"step 3 of how to do X is...\"). Where to add: WordPress -> use a HowTo schema plugin or a Gutenberg HowTo block; Webflow / custom-coded -> ask your dev for a HowTo JSON-LD block on each tutorial page.", category: "schema", priority: p++ });
 
-  items.push({ title: "Add speakable schema to key pages", description: "Speakable schema tells voice assistants which sections of your content are best suited for audio playback. Target your most-cited content.", category: "schema", priority: p++ });
+  items.push({ title: "Make your key pages voice-assistant friendly", description: "Speakable schema tells voice assistants (Siri, Alexa, Google Assistant) which sections of your page are best suited to read aloud. Most useful for news, FAQ, and how-to content. Where to add: ask your dev for a SpeakableSpecification JSON-LD block referencing the most important text on key pages.", category: "schema", priority: p++ });
 
-  items.push({ title: "Implement cross-platform entity consistency", description: "Ensure your business entity is described identically across your website, social profiles, Wikipedia (if applicable), Wikidata, and industry databases.", category: "authority", priority: p++ });
+  items.push({ title: "Make sure your business is described the same way everywhere on the web", description: "AI engines build confidence in your business entity when its description (what you do, who you serve, where you operate) matches across your site, social profiles, Wikipedia (if you have a page), Wikidata, and industry databases. Audit your top profiles and unify the descriptions to one canonical version.", category: "authority", priority: p++ });
 
-  items.push({ title: "Build topical authority cluster content", description: "Create a network of interlinked content pieces that comprehensively cover your topic area. AI engines prefer sources that demonstrate deep topical expertise.", category: "content", priority: p++ });
+  items.push({ title: "Build a network of interlinked content covering your topic", description: "AI engines prefer sources that demonstrate deep, structured expertise on a single topic over sources with one or two pages. Plan a topic cluster: one pillar page on the core topic, 5-10 supporting pages on subtopics, all interlinked. Over 6-12 months this becomes the source AI reaches for when summarizing your area.", category: "content", priority: p++ });
 
-  items.push({ title: "Optimize for multi-engine AI visibility", description: "Test your content across ChatGPT, Perplexity, Claude, and Gemini. Each engine has different citation patterns. Optimize for the engines most relevant to your audience.", category: "authority", priority: p++ });
+  items.push({ title: "Test your visibility across ChatGPT, Perplexity, Claude, Gemini, Copilot", description: "Each AI engine cites differently (Perplexity is web-grounded and shows links; Claude reasons across more context but cites less; ChatGPT's Search is closer to Perplexity's pattern). Test your top 10 buyer queries in each engine, note where you appear and where you don't, and prioritize the 1-2 engines your buyers use most.", category: "authority", priority: p++ });
 
-  items.push({ title: "Set up ongoing competitive citation monitoring", description: "Track which competitors gain or lose citation share weekly. Identify when a competitor makes a move so you can respond before the gap widens.", category: "technical", priority: p++ });
+  items.push({ title: "Set up weekly competitive citation tracking", description: "Citation share moves weekly. A competitor publishing a comprehensive guide can take your spot in ChatGPT's answers within a single training cycle. Track which competitors gain or lose share, and respond before the gap widens. We do this automatically as part of Pulse, Signal, and Amplify; or you can manually run your top 10 queries weekly across the major AI engines and log the citing sources.", category: "technical", priority: p++ });
 
   return items;
 }
