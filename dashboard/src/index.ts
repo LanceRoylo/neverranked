@@ -952,7 +952,7 @@ export default {
       const referer = request.headers.get("Referer") || "/";
       const setCookie = isOn
         ? "nr_view_as_client=; Path=/; Max-Age=0; SameSite=Lax"
-        : "nr_view_as_client=1; Path=/; Max-Age=86400; SameSite=Lax; Secure";
+        : "nr_view_as_client=1; Path=/; Max-Age=7200; SameSite=Lax; Secure";
       return new Response(null, {
         status: 303,
         headers: { Location: referer, "Set-Cookie": setCookie },
