@@ -725,7 +725,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
               ${ownershipBadge(item.category, plan)}
               ${modeBadge("system", injection?.status)}
             </div>
-            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px">${esc(item.description)}</div>` : ''}
+            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:4px;white-space:pre-wrap;line-height:1.65">${esc(item.description)}</div>` : ''}
           </div>
         </div>
       </div>
@@ -761,7 +761,7 @@ function buildItemList(items: RoadmapItem[], clientSlug: string, user: User, now
               ${ownershipBadge(item.category, plan)}
               ${item.status !== "done" ? modeBadge(mode) : ""}
             </div>
-            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px">${esc(item.description)}</div>` : ''}
+            ${item.description ? `<div style="font-size:11px;color:var(--text-faint);margin-top:3px;white-space:pre-wrap;line-height:1.65">${esc(item.description)}</div>` : ''}
             ${item.status === "done" && sourceLabel ? `<div style="font-size:10px;color:var(--text-faint);margin-top:4px;font-family:var(--label);letter-spacing:.06em">${esc(sourceLabel)}</div>` : ""}
           </div>
           <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
