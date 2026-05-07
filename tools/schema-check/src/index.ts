@@ -2802,6 +2802,76 @@ export default {
       return Response.json({ ok: true }, { headers: corsHeaders });
     }
 
+    // Admin: recent audit-tool events (scans + captures) for the
+    // outreach dashboard's audit-tool activity feed. Returns reverse
+    // chronological with sensible per-event payload (domain, score,
+    // grade, ts, captured-flag, referrer/utm summary).
+    //
+    // Auth: ?key=ADMIN_SECRET (matches the rest of the /api/admin/* family)
+    // Query: ?limit=<N> (default 30, max 200)
+    //
+    // Shape: { events: [{ type, domain, score, grade, ts, captured?,
+    //                     referrer?, utm?, variant? }, ...] }
+    if (url.pathname === "/api/admin/recent-events" && request.method === "GET") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+      const limit = Math.min(parseInt(url.searchParams.get("limit") || "30", 10) || 30, 200);
+
+      try {
+        // Pull both scans and captures, merge, sort by ts desc.
+        const events: any[] = [];
+
+        // KV keys are sorted lexicographically. Our keys embed Date.now()
+        // in millis, so the highest-numbered keys are most recent. We
+        // can't sort within a list call, so pull a generous batch and
+        // sort in-memory.
+        const scanList: any = await env.LEADS.list({ prefix: "event:scan:", limit: 500 });
+        const captureList: any = await env.LEADS.list({ prefix: "event:capture:", limit: 200 });
+
+        // Captured emails by domain so the scan event can be enriched
+        // with a "captured" flag (visible in the dashboard feed)
+        const capturedDomains = new Set<string>();
+        for (const k of captureList.keys) {
+          try {
+            const raw = await env.LEADS.get(k.name);
+            if (!raw) continue;
+            const c = JSON.parse(raw);
+            if (c.domain) capturedDomains.add(String(c.domain).toLowerCase());
+          } catch {}
+        }
+
+        for (const k of scanList.keys) {
+          try {
+            const raw = await env.LEADS.get(k.name);
+            if (!raw) continue;
+            const e = JSON.parse(raw);
+            events.push({
+              type: e.type || "free_scan",
+              domain: e.domain,
+              score: e.score,
+              grade: e.grade,
+              ts: e.ts,
+              referrer: e.referrer || null,
+              utm: e.utm || null,
+              captured: e.domain ? capturedDomains.has(String(e.domain).toLowerCase()) : false,
+            });
+          } catch {}
+        }
+
+        events.sort((a, b) => (b.ts || "").localeCompare(a.ts || ""));
+        return Response.json({
+          as_of: new Date().toISOString(),
+          events: events.slice(0, limit),
+        }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({
+          error: e instanceof Error ? e.message : "scan failed",
+        }, { status: 500, headers: corsHeaders });
+      }
+    }
+
     // Admin: referrer attribution breakdown (last 500 scan events)
     if (url.pathname === "/api/admin/referrers" && request.method === "GET") {
       const secret = url.searchParams.get("key");
