@@ -180,6 +180,51 @@ VOICE RULES (NEVER VIOLATE):
 - Numbers wherever possible. "12 of 25 sampled pages missing canonical" beats "many pages have issues."
 - Write like Lance Roylo: direct, founder-voice, first-person plural for NeverRanked ("we", "our scan").
 - Style: editorial, not corporate. Reads like a thoughtful peer review, not a SaaS auto-report.
+
+THE CLARITY PRINCIPLE (canonical NR operating rule, codified in
+content/operating-principles.md):
+
+The reader is a small business owner with VARIABLE technical depth.
+Some are tech-comfortable founders, some have never edited a meta tag
+in their life. Write so BOTH can act. Use the three-layer pattern on
+every finding that requires the customer to ship the change:
+
+  Layer 1 (the headline): Plain English + business outcome.
+    Lead with what the change is and why it matters. NO jargon.
+    NO schema-spec terms in the first sentence.
+    Example: "Add social preview cards to your website pages.
+    Right now when your site is shared on LinkedIn or referenced
+    by ChatGPT, the preview is blank. With this fix every share
+    shows a proper image and title."
+
+  Layer 2 (how to actually do it): Platform-specific guidance.
+    If you can infer the customer's stack from the scan
+    (WordPress signals, Webflow signals, Squarespace, Wix, etc.),
+    name the specific path. If not, give the four most common
+    paths AS BULLETS, plus a code snippet for custom-coded sites.
+    Example:
+      - WordPress (Yoast or Rank Math): Settings -> Social -> upload default image
+      - Squarespace: Settings -> Marketing -> SEO -> enable preview image
+      - Webflow: Page Settings -> Open Graph -> upload image
+      - Wix: SEO Tools -> Social Share -> upload image
+      - Custom-coded: paste this in <head>: <meta property="og:image" content="...">
+
+  Layer 3 (technical detail for dev/agency): Schema specs, property
+    names, validation tools. Available, never in the way. Place
+    AFTER Layer 1 and Layer 2 in the document order.
+
+Apply the three-layer pattern automatically when a finding requires
+the customer to ship a change. Schema deployment items handled by
+NR's snippet do NOT need Layer 2 (NR ships them). Items the customer
+ships always need all three layers.
+
+ANTI-PATTERNS THAT MUST NEVER APPEAR (these violate the Clarity Principle):
+- "Address it to remove the penalty" (vague, untranslated)
+- A finding that names a schema type without saying what it does
+- Code blocks with no preceding plain-English sentence explaining what they do
+- Tables of "missing X / missing Y" without a "what to do about it" column
+- The phrase "structured data" without a 5-word inline gloss the first
+  time it appears in any deliverable
 `.trim();
 
 function buildSectionPrompt(sectionName, templateContent, scanData, client, extraGuidance = '') {
@@ -305,12 +350,51 @@ async function run() {
     {
       file: '02-technical-audit.md',
       label: 'Technical audit',
-      guidance: 'Find the 3-5 most material technical issues. Lead with the highest-impact one. Each finding needs a code-level fix recommendation. Tables with specific page URLs preferred over generic claims.',
+      guidance: `Apply the Clarity Principle three-layer pattern to each finding. The headline is the OUTCOME (what fixing this changes for the business), not the technical observation. Then explain the gap in plain English. Then give the platform-specific where-to-fix-it guidance (WordPress / Squarespace / Webflow / Wix / custom-coded). THEN the code-level fix.
+
+Find the 3-5 most material technical issues. Lead with the highest-impact one. Tables with specific page URLs preferred over generic claims.
+
+Anti-patterns to AVOID:
+- Heading: "Canonical tags missing"  (this is the diagnostic, not the outcome)
+- Heading: "Make sure Google sees the right version of each page"  (THIS is the outcome, lead with it)
+- Body skipping straight to "Add <link rel='canonical' href='...'>" without explaining what canonical means in 8 words inline
+- "Address it to remove the penalty" — never, ever ship that phrase`,
     },
     {
       file: '03-schema-review.md',
       label: 'Schema review',
-      guidance: 'Critical: each schema gap finding must include a complete, ready-to-paste JSON-LD code block in the "Fix" subsection. Use real values from the scan (the actual business name, URL, etc.) so the client can copy-paste with minimal edits. Include @context, @type, and all required fields per schema.org.',
+      guidance: `Apply the Clarity Principle three-layer pattern to EVERY finding in this section. Each schema gap finding must include:
+
+  LAYER 1 (lead with this): Plain English headline + business outcome.
+    NO schema-spec jargon in the first sentence. Translate first.
+    Example: "Tell Google and AI engines who you are."
+    Then 1-2 sentences explaining the business consequence:
+    "Right now, when ChatGPT or Perplexity is asked about your category,
+    they have no structured way to know your name, address, or services.
+    They cite competitors who do."
+
+  LAYER 2 (where to add it, by platform): Specific guidance based on
+    common CMS / site builder paths. Use the customer's actual stack if
+    inferable from the scan (look at meta generator tags, asset paths,
+    URL patterns). If not inferable, list the most common paths:
+      - WordPress: Yoast / Rank Math / SEOPress plugins typically auto-generate this. Confirm it is on under SEO -> General -> Knowledge Graph (or similar). Add logo URL.
+      - Squarespace: Settings -> Business Information. Most fields populate automatically.
+      - Webflow: Project Settings -> SEO -> Sitewide Schema. Paste the JSON-LD block from below.
+      - Wix: SEO Tools -> Structured Data. Add as JSON-LD.
+      - Custom-coded: Paste the JSON-LD block (Layer 3 below) into the <head> of every page (or use a sitewide template).
+
+  LAYER 3 (the paste-ready code, for dev / agency): Complete JSON-LD
+    block with real values from the scan (business name, URL, address,
+    etc.). Include @context, @type, all required fields per schema.org.
+    Wrap in a markdown code block with the language fence \\\`\\\`\\\`json.
+    BELOW the code block, add 1-2 sentences explaining the design
+    choices (why @id chaining, why specific fields) so the dev knows
+    what to adapt.
+
+Order in the rendered finding: Layer 1 (headline + why), Layer 2 (where), Layer 3 (code + design notes).
+
+DO NOT lead with the schema type name in the heading. The heading is
+the OUTCOME, not the spec. Schema type goes in Layer 3.`,
     },
   ];
 

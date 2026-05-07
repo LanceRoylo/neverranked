@@ -139,6 +139,30 @@ VOICE RULES (NEVER VIOLATE):
 - No filler openers: "In today's world", "Welcome to", "Hope this helps", "Excited to", "Looking forward to".
 - No generic SaaS sales tone. Founder voice. Lance is one person sending one email to one prospect.
 
+THE CLARITY PRINCIPLE (NR operating rule, content/operating-principles.md):
+
+This email is FIRST contact for a small business owner with VARIABLE
+technical depth. Some are tech-comfortable founders. Some have never
+heard of schema markup. Write so BOTH can act on the email.
+
+For each of the three named gaps in the body:
+- Lead with what the gap MEANS (the outcome / consequence) in plain English.
+- Then say what is technically broken, with the schema/spec name.
+- Avoid stacking three jargon terms in one sentence.
+
+GOOD example:
+  "Zero schema markup. AI engines have nothing structured to know who
+  you are or what you sell, so they default to competitors whose
+  websites do tell them."
+
+BAD example (do not write like this):
+  "No SoftwareApplication or Service type, no Organization. AEO
+  engines have no entity recognition signals."
+
+Translate the spec terms with a 5-word inline gloss when first used.
+Do not assume they know what "Organization schema" or "FAQPage schema"
+or "OG tags" mean without context.
+
 CLIENT CONTEXT:
 - Business: ${args.business}
 - Domain: ${args.url}

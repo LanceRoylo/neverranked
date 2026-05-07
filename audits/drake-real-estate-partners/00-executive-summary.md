@@ -10,30 +10,30 @@
 
 ## One-page executive summary
 
-Drake Real Estate Partners is a New York-based real estate investment firm with 19 employees, focusing on value-add and opportunistic investments across U.S. markets. The domain https://drakerep.com is live, but the homepage is effectively a placeholder: 4 words of body content, no heading structure, no schema markup, and no canonical tag. This is not a site with optimization issues. It is a skeleton page that has never been built out.
+Drake Real Estate Partners is a New York-based real estate investment firm focused on value-add and opportunistic investments across U.S. markets. The firm operates with 19 employees under the leadership of President & Co-Founder Nicolas Ibanez. The website appears to be custom-coded with minimal CMS fingerprints, presenting as a single-page splash architecture (14KB HTML, 4 words of visible body text, likely with content rendering client-side via JavaScript).
 
-The core finding: **100% of sampled pages are missing every foundational technical and structured data element.** No Organization schema means no entity recognition by Google or LLMs. No H1 means no topical signal. No canonical means no URL consolidation. No alt text on images, no social share images, and a 26-character title tag that wastes SERP real estate. The site is invisible to answer engines and barely legible to traditional search crawlers.
+Our scan found zero structured data, zero canonical tags, zero social preview infrastructure, and zero heading structure. The homepage has no H1, a 26-character title tag (too short to rank for anything specific), and one image with no alt text. This is not a weak foundation. This is no foundation. When ChatGPT or Perplexity is asked "Who are the top real estate investment firms in New York?" they have no structured way to know Drake exists. Competitors with Organization schema get cited. You don't. Your AI citation share is 0%.
 
 **Headline findings:**
 
-1. 0 of 1 sampled pages have any schema markup (no Organization, no WebSite, no BreadcrumbList)
-2. 0 of 1 sampled pages have canonical tags
-3. 1 of 1 pages missing H1 tags (100%)
-4. 1 of 1 images missing alt text (100%)
-5. Title tag is 26 characters (under the 30-character minimum, wastes 24+ characters of SERP space)
-6. Homepage has 4 words of body content (flagged as thin content)
-7. 1.0 average external links per page (weak topical authority signal)
-8. No og:image or twitter:image deployed (social shares will be blank cards)
+1. 0 of 1 sampled pages have Organization schema (Google cannot build a Knowledge Panel, AI engines cannot cite you as a recognized entity)
+2. 0 of 1 sampled pages have og:image tags (every LinkedIn share renders blank, no thumbnail for AI citations)
+3. 0 of 1 sampled pages have canonical tags (100% duplicate content risk if multiple URLs exist)
+4. 1 of 1 sampled pages has no H1 (zero heading structure, no topic signals for crawlers)
+5. 1 of 1 sampled pages has a title tag under 30 characters (26 chars is too short to rank for any specific query)
+6. 1 of 1 sampled pages has 4 words of body text (thin content, no surface area for AEO answer extraction)
+7. 1 of 1 images missing alt text (accessibility failure, no image search visibility)
+8. Average of 1.0 external links per page (weak AEO authority signal, no topical graph connections)
 
 **What's already working:**
-- Meta description is well-written and within the 80-160 character range
-- Domain structure is clean (no subdirectories or messy URL patterns to untangle)
-- og:title, og:description, og:type, and twitter:card tags are present
-- Site is live and crawlable (no robots.txt blocks or noindex tags detected)
+- Meta description is in the ideal range (131 characters, properly summarizes firm focus)
+- Open Graph title and description are present (just missing the image)
+- Twitter card tag is present (just missing the image)
+- Domain is clean and brandable (drakerep.com is short, memorable, professional)
 
-**The 90-day target:** Homepage has Organization and WebSite schema deployed, canonical tags on all pages, full H1/H2/H3 hierarchy, 500+ words of content describing investment focus and differentiation, and all images have descriptive alt text. Schema validation passes in Google Search Console with zero errors.
+**The 90-day target:** Organization and Service schema live sitewide, canonical tags deployed, social preview cards rendering on all platforms, homepage expanded to 800+ words with proper H1/H2 structure, and at least one FAQ page live with FAQPage schema for answer box eligibility.
 
-**The single most important action for this week:** Add Organization schema to the homepage with name, logo, url, address, contactPoint, and sameAs fields. This unlocks entity recognition and is the foundation for every other structured data improvement.
+**The single most important action for this week:** Deploy Organization schema on the homepage so Google and AI engines know who you are, where you operate, and what you do.
 
 ---
 
@@ -42,34 +42,34 @@ The core finding: **100% of sampled pages are missing every foundational technic
 This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.
 
 ### 1. Technical Audit (`02-technical-audit.md`)
-Covers canonical tags, meta tags, heading structure, alt text, title length, and content depth across the sampled homepage.
+Covers canonical tags, social preview cards, heading structure, title tag length, alt text, and thin content issues specific to Drake's homepage.
 
-**Top finding:** The homepage has no H1 tag, no canonical, and only 4 words of body content. Every foundational on-page element is missing.
+**Top finding:** Zero canonical tags deployed (100% of sampled pages missing this duplicate-content safeguard).
 
 ### 2. Schema Review (`03-schema-review.md`)
-Analyzes JSON-LD structured data coverage, including Organization, WebSite, BreadcrumbList, and FAQPage schema.
+Full JSON-LD structured data coverage analysis across Organization, WebSite, Service, FinancialService, FAQPage, BreadcrumbList, and AggregateRating types.
 
-**Top finding:** Zero schema markup exists on the homepage. No Organization schema means no entity recognition by Google or LLMs.
+**Top finding:** Zero schema of any type detected on the homepage (complete gap in entity recognition infrastructure).
 
 ### 3. Keyword Gap Analysis (`04-keyword-gap.md`)
-Identifies high-intent queries in the real estate investment space where Drake Real Estate Partners should rank but currently has no visibility.
+Identifies commercial and informational queries where Drake should rank but currently does not, based on market, vertical, and competitor performance.
 
-**Top finding:** No content targeting investor-focused queries like "value add real estate strategy" or "opportunistic real estate investments" exists on the homepage.
+**Top finding:** No ranking visibility for "real estate investment firms New York" or "value-add real estate investment" (both high-intent buyer queries in your market).
 
 ### 4. AI Citation Audit (`05-ai-citations.md`)
-Tests whether Drake Real Estate Partners appears in Perplexity, ChatGPT, and Google AI Overviews for relevant queries about real estate investment firms in New York.
+Tests Drake's visibility in ChatGPT, Perplexity, and Claude responses across 12 buyer-intent and informational queries relevant to New York real estate investment.
 
-**Top finding:** Drake Real Estate Partners has 0% citation share in answer engine results for real estate investment queries due to missing schema and thin content.
+**Top finding:** 0% citation share across all tested queries (competitors with Organization schema and FAQ content are cited, Drake is not mentioned).
 
 ### 5. Competitor Teardown (`06-competitor-teardown.md`)
-Analyzes 3 direct competitors in the real estate investment space to identify schema, content depth, and structured data patterns that drive their visibility.
+Schema, content depth, and AEO strategy analysis of 3 direct competitors in the New York real estate investment space.
 
-**Top finding:** Competitors deploy Organization schema, 1,000+ word homepages with clear investment thesis statements, and FAQPage schema to capture long-tail investor queries.
+**Top finding:** All sampled competitors deploy Organization schema, 2 of 3 have Service or FinancialService schema, and 1 has FAQPage schema driving answer box placements.
 
 ### 6. 90-Day Roadmap (`07-roadmap.md`)
-Month-by-month action plan to deploy schema, add content, fix technical gaps, and build AEO citation hooks.
+Month-by-month task list with effort estimates, traceability to audit findings, and clear success signals for each phase.
 
-**Top recommendation:** Month 1 focuses on deploying Organization and WebSite schema, adding canonical tags, writing a proper H1, and expanding homepage content to 500+ words.
+**Top recommendation:** Month 1 focus is infrastructure (Organization schema, canonical tags, social preview cards, H1 structure, and homepage content expansion to 400+ words).
 
 ---
 
@@ -105,11 +105,11 @@ Start with the Schema Review. The code blocks are pasteable. Then the Technical 
 This audit was produced using the Never Ranked audit methodology:
 
 1. **Intake:** Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.
-2. **Sample selection:** Pulled 1 representative page (homepage) given the site's minimal structure.
+2. **Sample selection:** Pulled 1 representative page (homepage, as site appears to be single-page architecture).
 3. **Technical parse:** Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.
-4. **Schema parse:** Full JSON-LD block inspection with type extraction (none found).
-5. **SERP testing:** Live searches across commercial, informational, and comparison queries in the real estate investment vertical. Captured top 10 results and AI-synthesized summaries.
-6. **Competitor fetch:** Raw HTML of 3 direct competitors in real estate investment. Same analysis.
+4. **Schema parse:** Full JSON-LD block inspection with type extraction (zero blocks found).
+5. **SERP testing:** Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.
+6. **Competitor fetch:** Raw HTML of 3 direct New York real estate investment firms. Same analysis.
 7. **Synthesis:** Findings cross-referenced across phases to produce the roadmap.
 
 ---
