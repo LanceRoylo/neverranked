@@ -4904,7 +4904,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <div class="result-signals" id="resultSignals"></div>
               <div class="result-ctas">
                 <a class="primary" id="resultCtaPulse" href="https://app.neverranked.com/checkout/pulse">Fix this for $497/mo with Pulse <span class="arrow"></span></a>
-                <a class="secondary" id="resultCtaPrimary" href="https://check.neverranked.com" target="_blank" rel="noopener">See full report</a>
+                <a class="secondary" id="resultCtaPrimary" href="https://check.neverranked.com?utm_source=homepage&utm_medium=organic" target="_blank" rel="noopener">See full report</a>
                 <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $750 audit</a>
                 <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
               </div>
@@ -6138,7 +6138,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="roi-context" id="roi-context"></div>
 
           <div class="roi-ctas">
-            <a href="https://check.neverranked.com" class="btn-primary">See your score free</a>
+            <a href="https://check.neverranked.com?utm_source=homepage&utm_medium=organic" class="btn-primary">See your score free</a>
             <a href="https://app.neverranked.com/checkout/audit" class="btn-secondary">Start with the $750 audit</a>
           </div>
 
@@ -6467,7 +6467,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               § First reply from the founder, not a sales team. Within <b>24 business hours.</b>
             </p>
             <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:24px;line-height:1.7">
-              Not ready for a brief? <a href="https://check.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">See your AEO score free</a> first.
+              Not ready for a brief? <a href="https://check.neverranked.com?utm_source=homepage&utm_medium=organic" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">See your AEO score free</a> first.
             </p>
             <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin-top:14px;line-height:1.7">
               Enterprise or need to talk first? Email <a href="mailto:lance@hi.neverranked.com" style="color:var(--gold);border-bottom:1px solid var(--gold-dim)">lance@hi.neverranked.com</a> directly.
@@ -6861,7 +6861,7 @@ window.scrollTo(0,0);
 
 /* ---------- hero: inline AEO check ---------- */
 (function(){
-  var API='https://check.neverranked.com/api/check';
+  var API='https://check.neverranked.com/api/check?utm_source=homepage&utm_medium=organic';
   var urlCheck=document.getElementById('urlCheck');
   if(!urlCheck) return;
   var form=document.getElementById('checkForm');
@@ -6980,7 +6980,7 @@ window.scrollTo(0,0);
       '</div>';
     }).join('');
     var domainEnc=encodeURIComponent(report.domain||'');
-    ctaPrimary.href='https://check.neverranked.com/?url='+domainEnc;
+    ctaPrimary.href='https://check.neverranked.com/?url=&utm_source=homepage&utm_medium=organic'+domainEnc;
     ctaSecondary.href='https://app.neverranked.com/checkout/audit?domain='+domainEnc;
     if(typeof window.__setCheckoutDomain==='function') window.__setCheckoutDomain(report.domain);
     urlCheck.setAttribute('data-state','result');
@@ -7029,7 +7029,7 @@ window.scrollTo(0,0);
 
 /* ---------- competitor check (mid-page) ---------- */
 (function(){
-  var API='https://check.neverranked.com/api/check';
+  var API='https://check.neverranked.com/api/check?utm_source=homepage&utm_medium=organic';
   var form=document.getElementById('compForm');
   if(!form) return;
   var input=document.getElementById('compInput');

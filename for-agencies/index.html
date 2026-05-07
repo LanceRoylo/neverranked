@@ -711,7 +711,7 @@ select:focus-visible{
         if (email) params.set('ref_email', email);
         if (phone) params.set('ref_phone', phone);
 
-        var pitchUrl = 'https://check.neverranked.com/?' + params.toString();
+        var pitchUrl = 'https://check.neverranked.com/?&utm_source=for_agencies&utm_medium=organic' + params.toString();
         linkEl.textContent = pitchUrl;
         previewEl.href = pitchUrl;
         output.style.display = 'block';
@@ -737,7 +737,7 @@ select:focus-visible{
     <div class="cta-row">
       <a href="https://app.neverranked.com/agency/apply" class="cta-primary">Apply to partner &rarr;</a>
       <a href="mailto:lance@neverranked.com?subject=Reseller%20partnership%20%E2%80%94%20%5Byour%20agency%20name%5D" class="cta-secondary">Or book a 30-min call first</a>
-      <a href="https://check.neverranked.com/" class="cta-secondary" target="_blank" rel="noopener">Run a scan on a prospect</a>
+      <a href="https://check.neverranked.com/?utm_source=for_agencies&utm_medium=organic" class="cta-secondary" target="_blank" rel="noopener">Run a scan on a prospect</a>
       <a href="/agencies/" class="cta-secondary">Read the reseller brief</a>
     </div>
   </div>
