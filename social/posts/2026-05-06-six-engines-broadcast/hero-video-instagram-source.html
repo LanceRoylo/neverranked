@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked — Six Engines Broadcast (Instagram 4:5)</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap">
+<style>
+  :root {
+    --gold: #e8c767;
+    --gold-dim: #c9a84c;
+    --text: #fbf8ef;
+    --text-soft: #d8d2c0;
+    --text-mute: #aaa49a;
+    --text-faint: #888;
+    --line: rgba(251,248,239,.14);
+    --serif: "Playfair Display", serif;
+    --mono: "DM Mono", monospace;
+    --label: "Barlow Condensed", sans-serif;
+  }
+  html, body {
+    margin: 0; padding: 0;
+    width: 1080px; height: 1350px;
+    background: #080808;
+    overflow: hidden;
+    position: relative;
+    font-family: var(--mono);
+    color: var(--text);
+  }
+
+  .grain {
+    position: absolute; inset: 0;
+    z-index: 1;
+    opacity: .07;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .gold-wash {
+    position: absolute;
+    left: -20%; top: -20%;
+    width: 140%; height: 140%;
+    z-index: 1;
+    background:
+      radial-gradient(ellipse 60% 50% at 50% 18%, rgba(232,199,103,.10) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 50% 92%, rgba(232,199,103,.07) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .vignette {
+    position: absolute; inset: 0;
+    z-index: 10;
+    pointer-events: none;
+    background:
+      radial-gradient(140% 100% at 50% 0%, transparent 75%, rgba(0,0,0,.25) 100%),
+      radial-gradient(120% 100% at 50% 100%, transparent 75%, rgba(0,0,0,.30) 100%);
+  }
+
+  .stage {
+    position: absolute; inset: 0; z-index: 3;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 100px 70px;
+    box-sizing: border-box;
+  }
+
+  .eyebrow {
+    font-family: var(--label);
+    font-weight: 500;
+    font-size: 24px;
+    letter-spacing: 0.32em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-bottom: 60px;
+    text-align: center;
+  }
+
+  .broadcast-svg {
+    width: 100%;
+    max-width: 920px;
+    height: auto;
+    color: var(--gold);
+    overflow: visible;
+  }
+
+  .footer-mark {
+    margin-top: 60px;
+    font-family: var(--label);
+    font-weight: 500;
+    font-size: 17px;
+    letter-spacing: 0.42em;
+    color: rgba(251,248,239,.55);
+    text-transform: uppercase;
+  }
+
+  /* === SVG element styles (lifted from index.html broadcast section) === */
+  .broadcast-svg .orbit-ring {
+    fill: none;
+    stroke: var(--line);
+    stroke-width: 1;
+    stroke-dasharray: 2 5;
+    opacity: 0.4;
+  }
+  .broadcast-svg .brand-glow {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    opacity: 0.2;
+    animation: bd-brand-breathe 8s ease-in-out infinite;
+  }
+  @keyframes bd-brand-breathe {
+    0%, 100% { r: 36; opacity: 0.18; }
+    50%      { r: 46; opacity: 0.32; }
+  }
+  .broadcast-svg .brand-core { fill: currentColor; }
+  .broadcast-svg .brand-label {
+    font-family: var(--label);
+    font-size: 11px;
+    letter-spacing: .22em;
+    fill: var(--text);
+    font-weight: 500;
+  }
+  .broadcast-svg .brand-sublabel {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: .12em;
+    fill: var(--text-faint);
+    text-transform: uppercase;
+  }
+  .broadcast-svg .bd-arc {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-dasharray: 180;
+    stroke-dashoffset: 180;
+    opacity: 0;
+    animation: bd-arc-broadcast 8s ease-in-out infinite;
+  }
+  .broadcast-svg .bd-endpoint {
+    fill: currentColor;
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bd-endpoint-burst 8s ease-in-out infinite;
+  }
+  .broadcast-svg .engine-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 18px;
+    fill: var(--text);
+    font-weight: 400;
+  }
+  .broadcast-svg .engine-sublabel {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    fill: var(--text-faint);
+  }
+  @keyframes bd-arc-broadcast {
+    0%   { stroke-dashoffset: 180; opacity: 0; }
+    6%   { opacity: 0.85; }
+    50%  { stroke-dashoffset: 0;   opacity: 0.85; }
+    85%  { stroke-dashoffset: 0;   opacity: 0.4; }
+    100% { stroke-dashoffset: 0;   opacity: 0; }
+  }
+  @keyframes bd-endpoint-burst {
+    0%, 48% { opacity: 0; transform: scale(0); }
+    55%     { opacity: 1; transform: scale(1.3); }
+    65%     { opacity: 1; transform: scale(1); }
+    100%    { opacity: 0; transform: scale(0.5); }
+  }
+  .broadcast-svg .bd-arc-1, .broadcast-svg .bd-endpoint-1 { animation-delay: 0s; }
+  .broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2 { animation-delay: 1.33s; }
+  .broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3 { animation-delay: 2.66s; }
+  .broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4 { animation-delay: 4.00s; }
+  .broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5 { animation-delay: 5.33s; }
+  .broadcast-svg .bd-arc-6, .broadcast-svg .bd-endpoint-6 { animation-delay: 6.66s; }
+</style>
+</head>
+<body>
+  <div class="gold-wash"></div>
+  <div class="grain"></div>
+
+  <div class="stage">
+    <div class="eyebrow">Six engines tracked weekly</div>
+
+    <svg viewBox="0 0 600 540" class="broadcast-svg" aria-hidden="true">
+      <circle class="orbit-ring" cx="300" cy="270" r="180"/>
+      <circle class="brand-glow" cx="300" cy="270" r="36"/>
+      <circle class="brand-core" cx="300" cy="270" r="6"/>
+      <text class="brand-label" x="300" y="306" text-anchor="middle">YOUR BRAND</text>
+      <text class="brand-sublabel" x="300" y="324" text-anchor="middle">SCHEMA + CITATIONS</text>
+
+      <!-- Top: ChatGPT -->
+      <line class="bd-arc bd-arc-1" data-engine="chatgpt" x1="300" y1="270" x2="300" y2="90"/>
+      <circle class="bd-endpoint bd-endpoint-1" data-engine="chatgpt" cx="300" cy="90" r="6"/>
+      <text class="engine-label" data-engine="chatgpt" x="300" y="74" text-anchor="middle">ChatGPT</text>
+      <text class="engine-sublabel" data-engine="chatgpt" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
+
+      <!-- Upper-right: Claude -->
+      <line class="bd-arc bd-arc-2" data-engine="claude" x1="300" y1="270" x2="455.88" y2="180"/>
+      <circle class="bd-endpoint bd-endpoint-2" data-engine="claude" cx="455.88" cy="180" r="6"/>
+      <text class="engine-label" data-engine="claude" x="475" y="166" text-anchor="start">Claude</text>
+      <text class="engine-sublabel" data-engine="claude" x="475" y="182" text-anchor="start">Anthropic</text>
+
+      <!-- Lower-right: Gemini -->
+      <line class="bd-arc bd-arc-3" data-engine="gemini" x1="300" y1="270" x2="455.88" y2="360"/>
+      <circle class="bd-endpoint bd-endpoint-3" data-engine="gemini" cx="455.88" cy="360" r="6"/>
+      <text class="engine-label" data-engine="gemini" x="475" y="364" text-anchor="start">Gemini</text>
+      <text class="engine-sublabel" data-engine="gemini" x="475" y="380" text-anchor="start">Google &middot; web-grounded</text>
+
+      <!-- Bottom: Google AI Overviews -->
+      <line class="bd-arc bd-arc-4" data-engine="aio" x1="300" y1="270" x2="300" y2="450"/>
+      <circle class="bd-endpoint bd-endpoint-4" data-engine="aio" cx="300" cy="450" r="6"/>
+      <text class="engine-label" data-engine="aio" x="300" y="478" text-anchor="middle">Google AI Overviews</text>
+      <text class="engine-sublabel" data-engine="aio" x="300" y="494" text-anchor="middle">SERP &middot; live via DataForSEO</text>
+
+      <!-- Lower-left: Microsoft Copilot -->
+      <line class="bd-arc bd-arc-5" data-engine="copilot" x1="300" y1="270" x2="144.12" y2="360"/>
+      <circle class="bd-endpoint bd-endpoint-5" data-engine="copilot" cx="144.12" cy="360" r="6"/>
+      <text class="engine-label" data-engine="copilot" x="125" y="364" text-anchor="end">Microsoft Copilot</text>
+      <text class="engine-sublabel" data-engine="copilot" x="125" y="380" text-anchor="end">Bing &middot; web-grounded</text>
+
+      <!-- Upper-left: Perplexity -->
+      <line class="bd-arc bd-arc-6" data-engine="perplexity" x1="300" y1="270" x2="144.12" y2="180"/>
+      <circle class="bd-endpoint bd-endpoint-6" data-engine="perplexity" cx="144.12" cy="180" r="6"/>
+      <text class="engine-label" data-engine="perplexity" x="125" y="166" text-anchor="end">Perplexity</text>
+      <text class="engine-sublabel" data-engine="perplexity" x="125" y="182" text-anchor="end">web-grounded</text>
+    </svg>
+
+    <div class="footer-mark">NEVERRANKED.COM</div>
+  </div>
+
+  <div class="vignette"></div>
+</body>
+</html>
