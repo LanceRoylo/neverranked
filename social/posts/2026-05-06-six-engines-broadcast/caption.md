@@ -70,6 +70,24 @@ Free six-engine scan at check.neverranked.com.
 
 ---
 
+## LinkedIn (Lance, personal — founder-voice, first-person)
+
+Six engines. One layer of structured data feeding all of them.
+
+I've been watching this play out for months. When buyers ask ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, or Google AI Overviews about a category, each engine picks a small handful of sources to cite in the answer. The signal they read first is the structured data on your site. Not your Google ranking. Not your domain authority. Schema.
+
+Most businesses I scan come back invisible. Not because their content is bad. Because nobody told them the citation surface moved.
+
+This animation is the whole business in one diagram. We deploy the schema. We track all six engines weekly. We tell our customers which queries they are showing up in and which they are not.
+
+I built NeverRanked because I watched the SEO tools my friends were paying for fail to tell them why their inbound was sliding. The tools were optimizing for a surface that was not where their customers were anymore.
+
+If you want to know whether ChatGPT or Perplexity actually mentions your business when someone asks about your category, run a scan at check.neverranked.com. Free, 30 seconds, no signup. Or DM me and I will run it for you.
+
+#AEO #AnswerEngineOptimization #AISearch #SmallBusinessSEO
+
+---
+
 ## Facebook (Lance, personal — friend-network voice)
 
 This is the diagram from our homepage and it is also the whole
