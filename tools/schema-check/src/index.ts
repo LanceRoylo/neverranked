@@ -2622,23 +2622,43 @@ export default {
       // Log anonymous scan event to KV (with referrer/UTM attribution).
       // Enriched with ip_hash + user-agent so we can dedupe unique humans
       // and filter out internal/test traffic in the admin report.
+      //
+      // Write-time dedup: when a visitor scans on the marketing homepage
+      // demo and then clicks "See full report" -> check.neverranked.com
+      // auto-runs the same scan a second time with ?url=. Same person,
+      // same domain, two events. We use a short-TTL dedup key
+      // (dedup:scan:<domain>:<ip_hash>, TTL 60s) and skip the second
+      // event if seen recently. Doesn't affect:
+      //   - Different visitors scanning same domain (different ip_hash)
+      //   - Same visitor scanning a different domain
+      //   - Same visitor re-scanning later (TTL expires)
       try {
         const ua = request.headers.get("User-Agent") || "";
         const rawIp = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "";
         const ipHash = rawIp ? await sha256Hex(rawIp) : "";
-        const scanKey = `event:scan:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
-        const eventData: Record<string, unknown> = {
-          type: "free_scan",
-          domain: report.domain,
-          score: report.aeo_score,
-          grade: report.grade,
-          ts: new Date().toISOString(),
-          ip_hash: ipHash,
-          ua,
-        };
-        if (referrer) eventData.referrer = referrer;
-        if (Object.keys(utm).length > 0) eventData.utm = utm;
-        await env.LEADS.put(scanKey, JSON.stringify(eventData), { expirationTtl: 90 * 24 * 60 * 60 });
+
+        // Dedup check: same domain + ip_hash within last 60s = skip
+        const dedupKey = `dedup:scan:${report.domain}:${ipHash}`;
+        const recent = ipHash ? await env.LEADS.get(dedupKey) : null;
+        if (!recent) {
+          const scanKey = `event:scan:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
+          const eventData: Record<string, unknown> = {
+            type: "free_scan",
+            domain: report.domain,
+            score: report.aeo_score,
+            grade: report.grade,
+            ts: new Date().toISOString(),
+            ip_hash: ipHash,
+            ua,
+          };
+          if (referrer) eventData.referrer = referrer;
+          if (Object.keys(utm).length > 0) eventData.utm = utm;
+          await env.LEADS.put(scanKey, JSON.stringify(eventData), { expirationTtl: 90 * 24 * 60 * 60 });
+          // Set dedup marker (only if we have an ip_hash to scope it)
+          if (ipHash) {
+            await env.LEADS.put(dedupKey, "1", { expirationTtl: 60 });
+          }
+        }
       } catch (e) {
         console.error("scan-log-failed", e instanceof Error ? e.message : String(e));
       }
