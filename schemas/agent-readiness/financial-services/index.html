@@ -1,0 +1,264 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Agent-Ready Schema for US Financial Services — Agent-Ready Schema — NeverRanked Schema Marketplace</title>
+<meta name="description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<link rel="canonical" href="https://neverranked.com/schemas/agent-readiness/financial-services/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="Agent-Ready Schema for US Financial Services — Agent-Ready Schema">
+<meta property="og:description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/schemas/agent-readiness/financial-services/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.65}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 16px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:24pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+.lede{color:var(--text-mute);font-size:17px;margin:0 0 40px;line-height:1.6;max-width:640px}
+.cat-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;display:block;transition:border-color .15s}
+.cat-card:hover{border-color:var(--gold)}
+.cat-name{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.cat-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 12px}
+.cat-meta{font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em}
+.template-list{list-style:none;padding:0;margin:24px 0}
+.template-list li{padding:14px 0;border-bottom:1px solid var(--line)}
+.template-list a{display:flex;justify-content:space-between;align-items:center}
+.template-name{color:var(--text);font-size:15px}
+.template-arrow{color:var(--gold);font-family:var(--mono);font-size:13px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.55}
+code{font-family:var(--mono);font-size:13px;color:var(--gold-bright)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.btn{display:inline-block;padding:10px 22px;background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:13px;letter-spacing:.04em;text-decoration:none;border-radius:3px;margin-right:8px}
+.btn-secondary{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.contribute-card{background:var(--gold-wash);border:1px solid var(--gold);border-radius:6px;padding:24px;margin:48px 0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/schemas/" style="color:var(--text-faint)">Schemas</a> · <a href="/schemas/agent-readiness/" style="color:var(--text-faint)">Agent-Ready Schema</a></p>
+  <h1>Agent-Ready Schema for US Financial Services</h1>
+
+<p>The most consequential agent task surface for banks, credit unions,</p>
+<p>and wealth advisors is the *application*. Account opening, loan</p>
+<p>application, credit card application, mortgage pre-qualification.</p>
+<p>Sites that expose these as structured <code>ApplyAction</code> blocks will</p>
+<p>capture the agent-driven application volume; sites that do not will</p>
+<p>lose share to whoever did.</p>
+
+<p>This document is the canonical NeverRanked template set for agent-</p>
+<p>readiness on US financial sites.</p>
+
+<h2>ApplyAction — account opening</h2>
+
+<p>Goes on the dedicated account-opening page (e.g. <code>/personal/checking/open</code>).</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ApplyAction",</p>
+<p>  "name": "Open a Personal Checking Account",</p>
+<p>  "description": "Apply online for a personal checking account. Funded in 1-3 business days. Member FDIC.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example.com/personal/checking/open?source=agent",</p>
+<p>    "actionPlatform": [</p>
+<p>      "https://schema.org/DesktopWebPlatform",</p>
+<p>      "https://schema.org/MobileWebPlatform"</p>
+<p>    ],</p>
+<p>    "httpMethod": "GET",</p>
+<p>    "contentType": "text/html",</p>
+<p>    "encodingType": "application/x-www-form-urlencoded"</p>
+<p>  },</p>
+<p>  "object": {</p>
+<p>    "@type": "BankAccount",</p>
+<p>    "name": "Personal Checking Account",</p>
+<p>    "accountMinimumInflow": {</p>
+<p>      "@type": "MonetaryAmount",</p>
+<p>      "value": 100,</p>
+<p>      "currency": "USD"</p>
+<p>    }</p>
+<p>  },</p>
+<p>  "potentialAction": {</p>
+<p>    "@type": "ProvideAction",</p>
+<p>    "name": "Provide identity verification",</p>
+<p>    "object": [</p>
+<p>      { "@type": "Person", "@id": "#applicant" }</p>
+<p>    ]</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "BankAccount",</p>
+<p>    "name": "Funded checking account, member FDIC"</p>
+<p>  },</p>
+<p>  "agent": {</p>
+<p>    "@type": "Person",</p>
+<p>    "description": "Applicant must be at least 18 years old and a US resident with a valid SSN or ITIN."</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h3>Compliance notes on ApplyAction</h3>
+
+<ul><li>**Identity verification is required for account opening.** The</li>
+</ul>  schema cannot promise that an agent can complete the application
+<p>  end-to-end without a human-in-the-loop step (KYC, OFAC, CIP). The</p>
+<p>  <code>potentialAction</code> field signals the verification gate.</p>
+<ul><li>**State licensing.** If the institution can only accept applicants</li>
+</ul>  in certain states, the EntryPoint should expose <code>eligibleRegion</code>
+<p>  with the licensed states. Agents in unlicensed states will skip the</p>
+<p>  action.</p>
+<ul><li>**Disclosure linking.** The application page itself must link to</li>
+</ul>  Truth in Savings, Truth in Lending, Privacy Policy, and the patriot
+<p>  act customer identification notice. Agent flows must surface these</p>
+<p>  to the user before submission.</p>
+
+<h2>ApplyAction — loan / mortgage pre-qualification</h2>
+
+<p>Goes on the dedicated pre-qualification page.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ApplyAction",</p>
+<p>  "name": "Mortgage Pre-Qualification",</p>
+<p>  "description": "Get pre-qualified for a mortgage. Soft pull only. No impact to credit score. NMLS-licensed loan officers respond within one business day.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example.com/mortgages/prequalify?source=agent",</p>
+<p>    "httpMethod": "GET",</p>
+<p>    "contentType": "text/html"</p>
+<p>  },</p>
+<p>  "object": {</p>
+<p>    "@type": "MortgageLoan",</p>
+<p>    "loanTerm": [</p>
+<p>      {</p>
+<p>        "@type": "QuantitativeValue",</p>
+<p>        "value": 15,</p>
+<p>        "unitText": "year"</p>
+<p>      },</p>
+<p>      {</p>
+<p>        "@type": "QuantitativeValue",</p>
+<p>        "value": 30,</p>
+<p>        "unitText": "year"</p>
+<p>      }</p>
+<p>    ],</p>
+<p>    "loanType": ["Conventional", "FHA", "VA", "USDA"]</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "LoanOrCredit",</p>
+<p>    "name": "Pre-qualification letter"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h2>ContactAction — speak with an advisor</h2>
+
+<p>Goes on the contact page or the wealth-advisory landing page.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ContactAction",</p>
+<p>  "name": "Speak with a Wealth Advisor",</p>
+<p>  "description": "Schedule a 30-minute consultation with a CFP-certified advisor. No fee for the initial conversation.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example.com/wealth/schedule?source=agent",</p>
+<p>    "httpMethod": "GET"</p>
+<p>  },</p>
+<p>  "object": {</p>
+<p>    "@type": "Service",</p>
+<p>    "name": "Initial wealth advisory consultation"</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "Reservation",</p>
+<p>    "reservationStatus": "Pending"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h2>ReserveAction — branch visit appointment</h2>
+
+<p>For banks with appointment-required branch services (notary, safe</p>
+<p>deposit, complex transactions).</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ReserveAction",</p>
+<p>  "name": "Reserve a Branch Appointment",</p>
+<p>  "description": "Book a 30-minute appointment at any branch for notary, safe deposit, or complex transactions.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example.com/branches/appointment?source=agent",</p>
+<p>    "httpMethod": "GET"</p>
+<p>  },</p>
+<p>  "object": {</p>
+<p>    "@type": "Service",</p>
+<p>    "provider": {</p>
+<p>      "@id": "https://www.example.com/#organization"</p>
+<p>    }</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "Reservation",</p>
+<p>    "reservationStatus": "Pending"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h2>What to NEVER expose as agent actions</h2>
+
+<ul><li>**Wire transfers, ACH transfers, or any irrevocable money</li>
+</ul>  movement.** The fraud surface is too large. Banks should require
+<p>  a logged-in session with an authenticated user before any movement</p>
+<p>  of funds; an unauthenticated <code>Action</code> schema invites abuse.</p>
+<ul><li>**Investment trading actions.** Agents executing trades on behalf</li>
+</ul>  of users without explicit per-trade consent is regulated by SEC
+<p>  Rule 15c3-5 and is not safe to ship.</p>
+<ul><li>**Account closure actions.** Same fraud surface as wire transfer.</li>
+</ul>  Closure must require authenticated session + identity confirmation.
+<ul><li>**Loan or credit-decisioning actions that issue a hard pull.**</li>
+</ul>  Agents cannot meaningfully consent to a hard pull on the user's
+<p>  behalf today. The action schema can promise *pre-qualification*</p>
+<p>  (soft pull only) but not *application submission* without an</p>
+<p>  intermediate consent step.</p>
+
+<h2>Customer review / approval workflow</h2>
+
+<p>1. NeverRanked drafts the agent-readiness schema using these templates</p>
+<p>   with customer-specific values and endpoints</p>
+<p>2. Customer engineering team confirms the target URLs are real,</p>
+<p>   reachable, and respect the agent-friendly query parameters</p>
+<p>3. Customer compliance team reviews against their internal</p>
+<p>   regulatory checklist (or against this doc)</p>
+<p>4. NeverRanked snippet deploys schema to live site after sign-off</p>
+<p>5. NeverRanked weekly tracking confirms the schema parses, validates,</p>
+<p>   and is being read by the agent crawlers we observe (currently</p>
+<p>   ChatGPT-User and Anthropic-Claude-User as of May 2026)</p>
+
+<h2>Why this is a moat</h2>
+
+<p>Generic AEO tools are not yet shipping agent-readiness work. The</p>
+<p>Schema.org Action vocabulary is documented but rarely audited. A</p>
+<p>customer who deploys these templates in 2026 with a NeverRanked-</p>
+<p>shaped audit trail will be referenceable in two ways no competitor</p>
+<p>can match:</p>
+
+<p>1. They were *first* in their category to be agent-ready</p>
+<p>2. The templates pass compliance review on day one because we wrote</p>
+<p>   them to anticipate it</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This template is MIT-licensed. Use it freely; attribution appreciated. Need help deploying it on your site? <a href="https://check.neverranked.com">Run a free scan</a> first to see what other gaps exist, or <a href="mailto:lance@neverranked.com">email Lance</a>.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -39,6 +39,7 @@ DIRS=(
   principles
   privacy
   profile
+  schemas
   security
   terms
   thanks

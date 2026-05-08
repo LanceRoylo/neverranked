@@ -1,0 +1,365 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Compliance-Aware Schema for US Financial Services — Compliance-Aware Schema — NeverRanked Schema Marketplace</title>
+<meta name="description" content="Production-ready compliance-aware schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<link rel="canonical" href="https://neverranked.com/schemas/compliance/financial-services/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="Compliance-Aware Schema for US Financial Services — Compliance-Aware Schema">
+<meta property="og:description" content="Production-ready compliance-aware schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/schemas/compliance/financial-services/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.65}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 16px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:24pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+.lede{color:var(--text-mute);font-size:17px;margin:0 0 40px;line-height:1.6;max-width:640px}
+.cat-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;display:block;transition:border-color .15s}
+.cat-card:hover{border-color:var(--gold)}
+.cat-name{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.cat-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 12px}
+.cat-meta{font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em}
+.template-list{list-style:none;padding:0;margin:24px 0}
+.template-list li{padding:14px 0;border-bottom:1px solid var(--line)}
+.template-list a{display:flex;justify-content:space-between;align-items:center}
+.template-name{color:var(--text);font-size:15px}
+.template-arrow{color:var(--gold);font-family:var(--mono);font-size:13px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.55}
+code{font-family:var(--mono);font-size:13px;color:var(--gold-bright)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.btn{display:inline-block;padding:10px 22px;background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:13px;letter-spacing:.04em;text-decoration:none;border-radius:3px;margin-right:8px}
+.btn-secondary{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.contribute-card{background:var(--gold-wash);border:1px solid var(--gold);border-radius:6px;padding:24px;margin:48px 0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/schemas/" style="color:var(--text-faint)">Schemas</a> · <a href="/schemas/compliance/" style="color:var(--text-faint)">Compliance-Aware Schema</a></p>
+  <h1>Compliance-Aware Schema for US Financial Services</h1>
+
+<p>This document is the canonical NeverRanked template set for</p>
+<p>deploying structured data on US bank, credit union, and</p>
+<p>wealth-management websites. Every JSON-LD block here has been</p>
+<p>written to anticipate the questions a bank's compliance team</p>
+<p>will ask before signing off.</p>
+
+<p>If the customer is a state-chartered institution, a national</p>
+<p>bank, or a credit union, swap the placeholder regulatory</p>
+<p>identifiers accordingly. Federal credit unions use NCUA, not</p>
+<p>FDIC. Wealth advisors using SEC or state registration use the</p>
+<p>FinancialService.disambiguatingDescription field to disclose</p>
+<p>their registration status.</p>
+
+<h2>Organization / FinancialService block</h2>
+
+<p>The foundational block. This goes in the site-wide layout</p>
+<p>header. Every page inherits it.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": ["BankOrCreditUnion", "FinancialService"],</p>
+<p>  "@id": "https://www.example.com/#organization",</p>
+<p>  "name": "Example Community Bank",</p>
+<p>  "alternateName": "Example Bank",</p>
+<p>  "url": "https://www.example.com",</p>
+<p>  "logo": {</p>
+<p>    "@type": "ImageObject",</p>
+<p>    "url": "https://www.example.com/static/logo-1200x630.png",</p>
+<p>    "width": 1200,</p>
+<p>    "height": 630</p>
+<p>  },</p>
+<p>  "image": "https://www.example.com/static/og-default.png",</p>
+<p>  "description": "Example Community Bank is a state-chartered commercial bank serving Hawaii since 1925, offering personal banking, business banking, mortgages, and SBA-preferred lending across all Hawaiian Islands.",</p>
+<p>  "foundingDate": "1925",</p>
+<p>  "memberOf": [</p>
+<p>    {</p>
+<p>      "@type": "Organization",</p>
+<p>      "name": "FDIC",</p>
+<p>      "url": "https://www.fdic.gov/"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "Organization",</p>
+<p>      "name": "Federal Reserve System"</p>
+<p>    }</p>
+<p>  ],</p>
+<p>  "isicV4": "6419",</p>
+<p>  "naics": "522110",</p>
+<p>  "address": {</p>
+<p>    "@type": "PostalAddress",</p>
+<p>    "streetAddress": "123 Bishop St",</p>
+<p>    "addressLocality": "Honolulu",</p>
+<p>    "addressRegion": "HI",</p>
+<p>    "postalCode": "96813",</p>
+<p>    "addressCountry": "US"</p>
+<p>  },</p>
+<p>  "telephone": "+1-808-555-0100",</p>
+<p>  "areaServed": {</p>
+<p>    "@type": "State",</p>
+<p>    "name": "Hawaii"</p>
+<p>  },</p>
+<p>  "currenciesAccepted": "USD",</p>
+<p>  "paymentAccepted": ["Cash", "Credit Card", "Debit Card", "ACH", "Wire Transfer"],</p>
+<p>  "knowsAbout": ["Personal Banking", "Business Banking", "SBA Lending", "Residential Mortgage", "Commercial Real Estate Lending"],</p>
+<p>  "slogan": "(brand tagline goes here)",</p>
+<p>  "disambiguatingDescription": "Member FDIC. Equal Housing Lender. NMLS ID #XXXXXXX."</p>
+<p>}</code></pre>
+
+<h3>Compliance notes on this block</h3>
+
+<ul><li><code>disambiguatingDescription</code> carries the FDIC member statement,</li>
+</ul>  Equal Housing Lender designation, and NMLS ID. These are
+<p>  required disclosures under federal law for any external-facing</p>
+<p>  marketing material that names the institution. AI engines also</p>
+<p>  cite this field when asked about regulatory standing.</p>
+<ul><li><code>memberOf</code> makes the FDIC relationship machine-readable. If</li>
+</ul>  a customer asks ChatGPT "is X bank FDIC insured," this is the
+<p>  block that lets the engine answer correctly without</p>
+<p>  hallucinating.</p>
+<ul><li><code>naics</code> (522110 = commercial banking) and <code>isicV4</code> are</li>
+</ul>  optional but help engines disambiguate commercial bank from
+<p>  credit union from broker-dealer.</p>
+<ul><li>For credit unions, replace <code>BankOrCreditUnion</code> with just</li>
+</ul>  <code>BankOrCreditUnion</code> (already correct), and replace FDIC with
+<p>  NCUA in <code>memberOf</code>.</p>
+
+<h2>FAQPage block (rate-disclosure aware)</h2>
+
+<p>For the Common Questions or FAQ page. The trick is that any</p>
+<p>FAQ that mentions a rate, fee, or APY triggers Truth in Savings</p>
+<p>disclosure requirements. The schema must include the disclosure</p>
+<p>within the answer text, not as a separate block.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "FAQPage",</p>
+<p>  "mainEntity": [</p>
+<p>    {</p>
+<p>      "@type": "Question",</p>
+<p>      "name": "What is the current APY on your savings account?",</p>
+<p>      "acceptedAnswer": {</p>
+<p>        "@type": "Answer",</p>
+<p>        "text": "As of the date posted, our standard savings account earns 0.10% APY. Rates are variable and may change at any time without notice. APY assumes interest remains on deposit until maturity. A withdrawal will reduce earnings. See the full Truth in Savings disclosure at /disclosures/savings for current rates, fees, and terms."</p>
+<p>      }</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "Question",</p>
+<p>      "name": "Are deposits FDIC insured?",</p>
+<p>      "acceptedAnswer": {</p>
+<p>        "@type": "Answer",</p>
+<p>        "text": "Yes. Example Community Bank is a Member FDIC. Deposits are insured up to $250,000 per depositor, per insured bank, for each account ownership category. Investment products, including mutual funds and stocks, are not deposits, are not FDIC insured, and may lose value."</p>
+<p>      }</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "Question",</p>
+<p>      "name": "What is your routing number?",</p>
+<p>      "acceptedAnswer": {</p>
+<p>        "@type": "Answer",</p>
+<p>        "text": "Our ABA routing number is XXXXXXXXX. Verify your routing number on your printed checks or in your online banking account before initiating any transfer."</p>
+<p>      }</p>
+<p>    }</p>
+<p>  ]</p>
+<p>}</code></pre>
+
+<h3>Compliance notes on FAQPage</h3>
+
+<ul><li>Every rate or APY answer MUST include the variable-rate</li>
+</ul>  disclosure ("rates are variable and may change at any time
+<p>  without notice") or be qualified as "as of the date posted"</p>
+<p>  with a link to the live disclosure document.</p>
+<ul><li>The investment-products carve-out language ("not FDIC insured,</li>
+</ul>  may lose value") is required by federal law on any FDIC
+<p>  marketing where investment products are mentioned in</p>
+<p>  proximity. Even if your FAQPage doesn't mention investment</p>
+<p>  products, including the carve-out preemptively is a compliance</p>
+<p>  best practice.</p>
+<ul><li>Do NOT put dollar-specific fee amounts in the FAQ schema if</li>
+</ul>  the fees can change. Reference the live fee schedule by URL
+<p>  instead. ("See current fee schedule at /disclosures/fees.")</p>
+
+<h2>FinancialProduct block (per-product page)</h2>
+
+<p>For each product page (savings, checking, CDs, mortgages, SBA).</p>
+<p>This is the highest-leverage block for buyer-stage queries.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "FinancialProduct",</p>
+<p>  "@id": "https://www.example.com/savings/high-yield-savings#product",</p>
+<p>  "name": "High Yield Savings Account",</p>
+<p>  "category": "Savings Account",</p>
+<p>  "description": "A variable-rate savings account with no monthly maintenance fee, $100 minimum opening deposit, and online and mobile access.",</p>
+<p>  "provider": {</p>
+<p>    "@id": "https://www.example.com/#organization"</p>
+<p>  },</p>
+<p>  "url": "https://www.example.com/savings/high-yield-savings",</p>
+<p>  "termsOfService": "https://www.example.com/disclosures/savings",</p>
+<p>  "feesAndCommissionsSpecification": "https://www.example.com/disclosures/fees",</p>
+<p>  "interestRate": {</p>
+<p>    "@type": "QuantitativeValue",</p>
+<p>    "name": "APY",</p>
+<p>    "value": "0.10",</p>
+<p>    "unitText": "% APY"</p>
+<p>  },</p>
+<p>  "isRelatedTo": [</p>
+<p>    {</p>
+<p>      "@type": "FinancialProduct",</p>
+<p>      "name": "Money Market Account",</p>
+<p>      "url": "https://www.example.com/savings/money-market"</p>
+<p>    }</p>
+<p>  ],</p>
+<p>  "annualPercentageRate": {</p>
+<p>    "@type": "QuantitativeValue",</p>
+<p>    "value": "0.10",</p>
+<p>    "unitText": "% APY (variable, as of the date posted)"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h3>Compliance notes on FinancialProduct</h3>
+
+<ul><li>Always tie <code>interestRate</code> and <code>annualPercentageRate</code> to the</li>
+</ul>  live disclosure URL via <code>termsOfService</code>. AI engines that cite
+<p>  the rate will cite the disclosure URL alongside it, which is</p>
+<p>  exactly what compliance wants.</p>
+<ul><li><code>feesAndCommissionsSpecification</code> is a separate URL, not text.</li>
+</ul>  Keep fee schedules out of the schema body so they can be
+<p>  updated without re-deploying schema.</p>
+<ul><li>For mortgages, add <code>loanTerm</code> and <code>loanType</code> (e.g. "30-year</li>
+</ul>  fixed conventional", "VA", "FHA"). These get cited heavily
+<p>  in "best Hawaii mortgage lender" type queries.</p>
+
+<h2>SBA preferred lender disclosure</h2>
+
+<p>If the institution is an SBA Preferred Lender (PLP), this is</p>
+<p>worth its own structured block because AI engines surface PLP</p>
+<p>status in "best SBA loan Hawaii" queries.</p>
+
+<p>Add to the Organization block:</p>
+
+<pre><code>"hasCredential": [
+<p>  {</p>
+<p>    "@type": "EducationalOccupationalCredential",</p>
+<p>    "credentialCategory": "Government Designation",</p>
+<p>    "name": "SBA Preferred Lender",</p>
+<p>    "recognizedBy": {</p>
+<p>      "@type": "GovernmentOrganization",</p>
+<p>      "name": "U.S. Small Business Administration",</p>
+<p>      "url": "https://www.sba.gov/"</p>
+<p>    }</p>
+<p>  }</p>
+<p>]</code></pre>
+
+<h3>Compliance notes on SBA designation</h3>
+
+<ul><li>Only include this block if the institution is currently a PLP.</li>
+</ul>  Status is verifiable via SBA.gov. AI engines cross-check.
+<ul><li>If the institution is also a Community Advantage lender or has</li>
+</ul>  USDA Rural Development authority, add separate
+<p>  <code>hasCredential</code> entries for each.</p>
+
+<h2>Branch / ATM (LocalBusiness per location)</h2>
+
+<p>For multi-branch institutions, deploy a separate LocalBusiness</p>
+<p>block per physical location. AI engines use these heavily for</p>
+<p>"nearest bank Honolulu" type queries.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "BankOrCreditUnion",</p>
+<p>  "@id": "https://www.example.com/branches/bishop-square#branch",</p>
+<p>  "name": "Example Community Bank — Bishop Square Branch",</p>
+<p>  "branchOf": {</p>
+<p>    "@id": "https://www.example.com/#organization"</p>
+<p>  },</p>
+<p>  "address": {</p>
+<p>    "@type": "PostalAddress",</p>
+<p>    "streetAddress": "999 Bishop St",</p>
+<p>    "addressLocality": "Honolulu",</p>
+<p>    "addressRegion": "HI",</p>
+<p>    "postalCode": "96813",</p>
+<p>    "addressCountry": "US"</p>
+<p>  },</p>
+<p>  "geo": {</p>
+<p>    "@type": "GeoCoordinates",</p>
+<p>    "latitude": "21.3099",</p>
+<p>    "longitude": "-157.8581"</p>
+<p>  },</p>
+<p>  "openingHoursSpecification": [</p>
+<p>    {</p>
+<p>      "@type": "OpeningHoursSpecification",</p>
+<p>      "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],</p>
+<p>      "opens": "08:30",</p>
+<p>      "closes": "16:00"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "OpeningHoursSpecification",</p>
+<p>      "dayOfWeek": "Saturday",</p>
+<p>      "opens": "09:00",</p>
+<p>      "closes": "13:00"</p>
+<p>    }</p>
+<p>  ],</p>
+<p>  "amenityFeature": [</p>
+<p>    {"@type": "LocationFeatureSpecification", "name": "Drive-Through ATM", "value": true},</p>
+<p>    {"@type": "LocationFeatureSpecification", "name": "Safe Deposit Boxes", "value": true},</p>
+<p>    {"@type": "LocationFeatureSpecification", "name": "Notary Service", "value": true}</p>
+<p>  ]</p>
+<p>}</code></pre>
+
+<h2>What to NEVER put in financial schema</h2>
+
+<ul><li>Specific marketing claims about rates being "the highest" or</li>
+</ul>  "lowest" — superlative claims require substantiation under
+<p>  the FTC Act and CFPB UDAAP rules</p>
+<ul><li>Customer testimonials with specific dollar outcomes ("saved</li>
+</ul>  $5,000") — triggers endorsement disclosure requirements
+<ul><li>Promotional offers with expiration dates, unless paired with</li>
+</ul>  a <code>validThrough</code> field that the CMS auto-updates
+<ul><li>AggregateRating from third-party review platforms unless</li>
+</ul>  legally licensed to display them
+<ul><li>ABA routing numbers for accounts that are no longer active</li>
+</ul>
+<h2>Customer review / approval workflow</h2>
+
+<p>1. NeverRanked drafts the schema using these templates with</p>
+<p>   customer-specific values from the audit</p>
+<p>2. Customer compliance team reviews against their internal</p>
+<p>   regulatory checklist (or against this doc)</p>
+<p>3. NeverRanked snippet deploys schema to live site only after</p>
+<p>   compliance sign-off in writing</p>
+<p>4. NeverRanked weekly tracking confirms schema is parsing</p>
+<p>   correctly and being cited</p>
+<p>5. Any change to rates, fees, or product terms triggers a</p>
+<p>   schema update via the snippet within 24 hours</p>
+
+<h2>Why this is a moat</h2>
+
+<p>A vendor pitching a bank with generic schema will lose six weeks</p>
+<p>in legal review. A vendor showing up with this template, marked</p>
+<p>up against the bank's specific charter type and pre-approved by</p>
+<p>the bank's compliance team, can deploy in a week. The compliance</p>
+<p>review IS the sales cycle in regulated verticals. Solving it</p>
+<p>upfront is the moat.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This template is MIT-licensed. Use it freely; attribution appreciated. Need help deploying it on your site? <a href="https://check.neverranked.com">Run a free scan</a> first to see what other gaps exist, or <a href="mailto:lance@neverranked.com">email Lance</a>.</p>
+  </div>
+</div>
+</body>
+</html>
