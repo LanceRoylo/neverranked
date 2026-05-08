@@ -24,6 +24,18 @@ Never deploys.
 - **Effort:** 1 day. Light migration, light wiring.
 - **Why gated:** The data lives in KV with 90d TTL today, which is fine for current volume. Moving it to D1 only matters when we have enough scans for cross-customer benchmarks to be statistically meaningful.
 
+### Reverse-engineer citations — Phase 2 worker
+- **Trigger:** First customer with weekly citation tracking running 4+ weeks AND citation_runs has 10+ "competitor cited, client not cited" rows on tracked-corpus prompts
+- **What to build:** Per `content/design/reverse-engineer-citations.md` — diff worker, customer-facing UI route, nightly cron, dashboard tab. Schema already shipped in migration 0067.
+- **Effort:** 2 days when triggered.
+- **Why gated:** Need real data flowing through citation_runs before the diff job has anything meaningful to surface. Building it dry would produce a pretty UI with empty findings.
+
+### Audit-as-content engine — publish first post
+- **Trigger:** Marketing site routing for /blog/ is set up AND audit-to-blog.mjs has been used to generate 3+ teardowns for review
+- **What to build:** Wire `content/blog/*.md` through the marketing site build pipeline. Add /blog/ landing page. Submit sitemap. Schedule monthly publication cadence.
+- **Effort:** 4 hours.
+- **Why gated:** Want a backlog of 3+ posts before launch so the blog has weight on day one.
+
 ### Hawaii community banking leaderboard — publish publicly
 - **Trigger:** ASB meeting concludes + 14-day pre-publication notice window expires (regardless of whether ASB signs)
 - **What to build:** Publish `content/leaderboards/hawaii-community-banking-2026-05.md` and `methodology.md` as `neverranked.com/leaderboards/hawaii-community-banking` and `neverranked.com/leaderboards/methodology`. Add to sitemap. Add a small "Updated weekly" badge linking to the methodology. Wire weekly auto-update from the cron that already runs.
