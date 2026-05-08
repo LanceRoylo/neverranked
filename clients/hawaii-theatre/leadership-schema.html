@@ -1,0 +1,159 @@
+<!--
+  Hawaii Theatre Center - Leadership Schema (JSON-LD)
+
+  Paste the entire <script> block below into the <head> of your
+  WordPress site. Goes in one place; covers all leadership-schema
+  needs across the site.
+
+  Three common WordPress deploy paths (use whichever fits your stack):
+
+    1. SEO plugin (Yoast / Rank Math / AIOSEO):
+       Most have a "Schema" or "JSON-LD" custom field on the
+       homepage editor. Paste the JSON content (without the <script>
+       wrapper) into that field.
+
+    2. "Insert Headers and Footers" plugin:
+       Plugin name varies (also called "Header Footer Code Manager").
+       Paste the entire <script> block including the wrapper into the
+       "Header" section. Saves to all pages by default; restrict to
+       homepage if your plugin supports per-page rules.
+
+    3. Direct theme edit:
+       In Appearance > Theme File Editor, open header.php and paste
+       the entire <script> block before the closing </head>. Works
+       but couples schema to the active theme; plugin paths above are
+       more portable.
+
+  After deploy, verify with:
+    https://search.google.com/test/rich-results?url=https://www.hawaiitheatre.com/
+
+  Should show 1 Organization (PerformingArtsTheater) + 8 Person
+  entities, all valid, no errors.
+-->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": ["PerformingArtsTheater", "NGO"],
+      "@id": "https://www.hawaiitheatre.com/#organization",
+      "name": "Hawaii Theatre Center",
+      "alternateName": "Hawaii Theatre",
+      "url": "https://www.hawaiitheatre.com/",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "1130 Bethel Street",
+        "addressLocality": "Honolulu",
+        "addressRegion": "HI",
+        "postalCode": "96813",
+        "addressCountry": "US"
+      },
+      "nonprofitStatus": "Nonprofit501c3",
+      "employee": [
+        { "@id": "https://www.hawaiitheatre.com/#person/gregory-dunn" },
+        { "@id": "https://www.hawaiitheatre.com/#person/ron-mcdaniel" },
+        { "@id": "https://www.hawaiitheatre.com/#person/shelby-burns" },
+        { "@id": "https://www.hawaiitheatre.com/#person/carl-anderson" }
+      ],
+      "member": [
+        { "@id": "https://www.hawaiitheatre.com/#person/timothy-howell" },
+        { "@id": "https://www.hawaiitheatre.com/#person/coby-barbata" },
+        { "@id": "https://www.hawaiitheatre.com/#person/david-lenoir" },
+        { "@id": "https://www.hawaiitheatre.com/#person/chris-lee" }
+      ]
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/gregory-dunn",
+      "name": "Gregory D. Dunn",
+      "givenName": "Gregory",
+      "familyName": "Dunn",
+      "jobTitle": "President and CEO",
+      "worksFor": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "email": "gregorydunn@hawaiitheatre.com",
+      "sameAs": ["https://www.linkedin.com/in/gregg-dunn/"],
+      "url": "https://www.hawaiitheatre.com/staff-directory/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/ron-mcdaniel",
+      "name": "Ron McDaniel",
+      "givenName": "Ron",
+      "familyName": "McDaniel",
+      "jobTitle": "Marketing and Communications Director",
+      "worksFor": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "email": "ronmcdaniel@hawaiitheatre.com",
+      "sameAs": ["https://www.linkedin.com/in/ron-mcdaniel-a53815137/"],
+      "url": "https://www.hawaiitheatre.com/staff-directory/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/shelby-burns",
+      "name": "Shelby Burns",
+      "givenName": "Shelby",
+      "familyName": "Burns",
+      "jobTitle": "Director of Theatre Operations",
+      "worksFor": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "email": "shelbyburns@hawaiitheatre.com",
+      "sameAs": ["https://www.linkedin.com/in/shelby-burns-b8331548/"],
+      "url": "https://www.hawaiitheatre.com/staff-directory/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/carl-anderson",
+      "name": "Carl Anderson",
+      "givenName": "Carl",
+      "familyName": "Anderson",
+      "jobTitle": "Director of Development",
+      "worksFor": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "email": "carlanderson@hawaiitheatre.com",
+      "sameAs": ["https://www.linkedin.com/in/carlmanderson/"],
+      "url": "https://www.hawaiitheatre.com/staff-directory/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/timothy-howell",
+      "name": "Timothy Howell",
+      "givenName": "Timothy",
+      "familyName": "Howell",
+      "jobTitle": "Board Chair",
+      "memberOf": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "sameAs": ["https://www.linkedin.com/in/timothy-howell-49534aa5/"],
+      "url": "https://www.hawaiitheatre.com/board-of-directors/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/coby-barbata",
+      "name": "Charles \"Coby\" Barbata",
+      "givenName": "Charles",
+      "familyName": "Barbata",
+      "alternateName": "Coby Barbata",
+      "jobTitle": "1st Vice Chair",
+      "memberOf": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "sameAs": ["https://www.linkedin.com/in/coby-barbata-98bbb3/"],
+      "url": "https://www.hawaiitheatre.com/board-of-directors/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/david-lenoir",
+      "name": "David LeNoir",
+      "givenName": "David",
+      "familyName": "LeNoir",
+      "jobTitle": "Treasurer",
+      "memberOf": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "sameAs": ["https://www.linkedin.com/in/davidlenoir/"],
+      "url": "https://www.hawaiitheatre.com/board-of-directors/"
+    },
+    {
+      "@type": "Person",
+      "@id": "https://www.hawaiitheatre.com/#person/chris-lee",
+      "name": "Chris Lee",
+      "givenName": "Chris",
+      "familyName": "Lee",
+      "jobTitle": "Secretary",
+      "memberOf": { "@id": "https://www.hawaiitheatre.com/#organization" },
+      "url": "https://www.hawaiitheatre.com/board-of-directors/"
+    }
+  ]
+}
+</script>
