@@ -34,7 +34,14 @@ interface CaptureEvent {
 }
 
 const BOT_UA_RE = /playwright|headlesschrome|puppeteer|bot|crawler|spider|curl|wget|python-requests|axios|fetch\//i;
+// KV list returns metadata only — that's one subrequest per call.
+// The expensive part is reading each key value, which is one subrequest
+// per get(). Cloudflare Workers have a 1000-subrequest cap per
+// invocation, and we need headroom for the page render itself plus
+// surrounding work. Cap reads at 700 so we stay under 1000 total.
 const KV_LIST_LIMIT = 1000;
+const MAX_SCAN_READS = 700;
+const MAX_CAPTURE_READS = 200;
 
 export async function handleAdminFreeCheckStats(user: User | null, env: Env, url?: URL): Promise<Response> {
   if (!user || user.role !== "admin") return new Response("Forbidden", { status: 403 });
@@ -52,9 +59,16 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, url
     env.LEADS.list({ prefix: "lead:", limit: KV_LIST_LIMIT }),
   ]);
 
+  // KV list returns oldest-first (alphabetical on epoch-prefixed keys).
+  // We want the most recent activity to dominate the stats, so slice
+  // from the end. This caps the number of subrequests we issue.
+  const scanKeys = scanList.keys.slice(-MAX_SCAN_READS);
+  const captureKeys = captureList.keys.slice(-MAX_CAPTURE_READS);
+  const truncatedScans = Math.max(0, scanList.keys.length - scanKeys.length);
+
   const [scanRaws, captureRaws] = await Promise.all([
-    Promise.all(scanList.keys.map((k) => env.LEADS.get(k.name))),
-    Promise.all(captureList.keys.map((k) => env.LEADS.get(k.name))),
+    Promise.all(scanKeys.map((k) => env.LEADS.get(k.name))),
+    Promise.all(captureKeys.map((k) => env.LEADS.get(k.name))),
   ]);
 
   const uniqueIps = new Set<string>();
