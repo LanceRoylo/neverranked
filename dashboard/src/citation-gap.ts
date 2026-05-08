@@ -194,8 +194,11 @@ export function renderCitationGapPanel(report: GapReport | null, opts: { briefLi
  * renderSourceBriefMarkdown emits: ### heading, **bold**, bullet
  * lists, paragraphs. Not a general parser. This avoids pulling in
  * a markdown library for a single panel.
+ *
+ * Exported for testing. The full panel uses it internally; it's
+ * also useful in isolation when adding new brief shapes.
  */
-function mdLiteToHtml(md: string): string {
+export function mdLiteToHtml(md: string): string {
   // Drop the leading ### heading -- the panel summary already shows it.
   const noHeading = md.replace(/^###[^\n]*\n+/, "");
   const lines = noHeading.split("\n");
