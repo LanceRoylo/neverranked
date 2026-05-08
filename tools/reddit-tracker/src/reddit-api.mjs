@@ -11,6 +11,7 @@
 
 const USER_AGENT = "NeverRanked-RedditTracker/0.1 (forward-looking citation discovery)";
 const POLITE_DELAY_MS = 1100; // stays under 60/min unauthed ceiling
+const FETCH_TIMEOUT_MS = 10_000; // a hung reddit response shouldn't block a batch
 
 let lastRequestAt = 0;
 
@@ -24,11 +25,28 @@ async function politeWait() {
 
 async function jsonFetch(url) {
   await politeWait();
-  const res = await fetch(url, { headers: { "User-Agent": USER_AGENT, "Accept": "application/json" } });
-  if (!res.ok) {
-    throw new Error(`Reddit fetch failed: ${res.status} ${res.statusText} for ${url}`);
+  // AbortController gives us a hard ceiling on hung responses. Reddit
+  // can stall under load; without this, a batch discovery would block
+  // the whole pipeline until process death.
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": USER_AGENT, "Accept": "application/json" },
+      signal: ctrl.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`Reddit fetch failed: ${res.status} ${res.statusText} for ${url}`);
+    }
+    return await res.json();
+  } catch (err) {
+    if (err && err.name === "AbortError") {
+      throw new Error(`Reddit fetch timed out after ${FETCH_TIMEOUT_MS}ms: ${url}`);
+    }
+    throw err;
+  } finally {
+    clearTimeout(timer);
   }
-  return res.json();
 }
 
 /**

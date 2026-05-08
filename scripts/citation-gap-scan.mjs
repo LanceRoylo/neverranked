@@ -24,8 +24,17 @@
  */
 
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { dirname, resolve } from "node:path";
 import { analyzeCitationGaps } from "../tools/citation-gap/src/analyze.mjs";
 import { generateSourceBrief, renderSourceBriefMarkdown } from "../tools/citation-gap/src/brief.mjs";
+
+// Resolve the dashboard directory relative to THIS script, not cwd.
+// Lets the CLI run from any working directory; previously hardcoded
+// cwd: "dashboard" which only worked when invoked from repo root.
+const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = resolve(SCRIPT_DIR, "..");
+const DASHBOARD_DIR = resolve(REPO_ROOT, "dashboard");
 
 function parseArgs(argv) {
   const out = {
@@ -115,12 +124,24 @@ Example:
 function runD1Query(db, sql, { remote = true, quiet = false } = {}) {
   if (!quiet) process.stderr.write(`  · running D1 query (${remote ? "remote" : "local"})...\n`);
   const args = ["wrangler", "d1", "execute", db, remote ? "--remote" : "--local", "--json", "--command", sql];
-  const res = spawnSync("npx", args, { cwd: "dashboard", encoding: "utf8" });
+  // cwd is the absolute path to dashboard/, resolved from the script
+  // file location at module load time. Works from any invocation cwd.
+  const res = spawnSync("npx", args, { cwd: DASHBOARD_DIR, encoding: "utf8" });
   if (res.status !== 0) {
     throw new Error(`wrangler d1 execute failed: ${res.stderr || res.stdout}`);
   }
-  // Output is a JSON array of result envelopes; we use the first.
-  const parsed = JSON.parse(res.stdout);
+  // Output is a JSON array of result envelopes. Wrap the parse in a
+  // try/catch so a wrangler warning prefix doesn't surface as
+  // "Unexpected token" with no context -- show the actual stdout.
+  let parsed;
+  try {
+    parsed = JSON.parse(res.stdout);
+  } catch (e) {
+    const head = res.stdout.slice(0, 500);
+    throw new Error(
+      `wrangler returned non-JSON output. First 500 chars:\n${head}\n\nParse error: ${e.message}`
+    );
+  }
   const env = Array.isArray(parsed) ? parsed[0] : parsed;
   if (!env.success) throw new Error(`D1 query unsuccessful: ${JSON.stringify(env.errors || env)}`);
   return env.results || [];

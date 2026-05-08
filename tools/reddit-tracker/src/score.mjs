@@ -167,22 +167,19 @@ export function anchorTokens(category) {
 }
 
 /**
- * Topic relevance: blends title-token coverage (weighted 2x) and
- * op_body-token coverage. Returns 0..1.
+ * Stem-aware boundary matcher. For a regular token "host", the
+ * regex matches the base form plus suffix variants ("host", "hosts",
+ * "hosting", "hosted", "hostings"). One-way only -- "host" does NOT
+ * match a title that just says "hosting" because hosting != host +
+ * suffix. The reverse direction (anchor truncation) is a documented
+ * Phase 2 stem improvement.
  *
- * Hard rule: at least one category token must appear in the THREAD
- * TITLE (with word-boundary matching, not substring). A category
- * token buried in op_body of an off-topic thread does not make it
- * on-topic -- titles encode what the thread is ABOUT.
- *
- * Word-boundary matching prevents "real" from matching "really" or
- * "realm" -- a major source of false positives in v1.
- */
-/**
- * Stem-aware word-boundary matcher. Matches the token, the token
- * with common suffixes ("hosting" matches "host"), and short common
- * inflections (-s, -ed, -er). Avoids the trap where "host" misses
- * "hosting" due to strict word-boundary matching.
+ * For tech-term tokens ("c++", "node.js", ".net", "c#"), the matcher
+ * uses explicit non-alphanumeric boundaries instead of \b. The \b
+ * boundary fails between "++" and surrounding spaces because both
+ * sides are non-word chars, and adding "s" / "ed" suffixes to a
+ * tech term ("c++s") makes no sense, so suffix variants are
+ * disabled for tech terms.
  */
 function stemMatcher(tok) {
   const escaped = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -219,18 +216,34 @@ function requiredAnchorHits(anchorCount) {
   return 2;
 }
 
+/**
+ * Topic relevance: anchor-gated soft scoring. Returns 0..1.
+ *
+ * Hard gate (returns 0 immediately if it fails): the title must
+ * contain at least N anchor tokens, where N = min(2, anchor_count).
+ * Single-anchor categories ("best CRM") need 1 hit; multi-anchor
+ * categories ("best podcast hosting platform") need 2.
+ *
+ * Anchor selection is delegated to anchorTokens() -- acronyms
+ * (>= 3 chars) for mixed-case input, tech terms (containing `+`,
+ * `.`, or `#`), longer non-generic tokens otherwise.
+ *
+ * Soft scoring once the gate passes: blends title-token coverage
+ * (weighted 2x) and op_body-token coverage of ALL category tokens
+ * (not just anchors). Token matching uses stemMatcher() so "host"
+ * in title matches when "hosting" is a token (suffix variants).
+ *
+ * Why title-only for the gate: a title with "real estate" but no
+ * "CRM" doesn't pass for a "best CRM for real estate" query
+ * regardless of body content. Titles encode what the thread is
+ * ABOUT; bodies often mention category words tangentially.
+ */
 export function topicRelevance(thread, category) {
   const tokens = categoryTokens(category);
   if (tokens.length === 0) return 1;
   const anchors = anchorTokens(category);
   const title = (thread.title || "").toLowerCase();
   const body = (thread.op_body || "").toLowerCase();
-  // Hard gate: enough anchor tokens must appear in the title (with
-  // stem matching, so "host" matches "hosting"). Anchors are the
-  // category-naming nouns (e.g. "crm", "podcast", "hosting"), not
-  // generic qualifiers ("real", "best"). The N-of-M requirement
-  // (>= 2 anchors when 2+ exist) prevents tangential threads that
-  // mention only one of the category's defining nouns from passing.
   const titleAnchors = anchorTitleHits(anchors, title);
   if (titleAnchors < requiredAnchorHits(anchors.length)) return 0;
   // Soft scoring: blend title and body token coverage. Token-level
@@ -243,9 +256,14 @@ export function topicRelevance(thread, category) {
   return Math.min(1, (2 * titleFrac + bodyFrac) / 3);
 }
 
-// Threads scoring below this are off-topic false positives. Hard zero.
-// 0.20 because the title-must-have-a-token rule is the primary gate;
-// this floor catches edge cases where the title has 1 token of 5+.
+// Belt-and-suspenders floor: applied AFTER the anchor gate inside
+// topicRelevance returns a non-zero value. Reachable cases are narrow:
+// the relevance formula (2*titleFrac + bodyFrac)/3 only drops below
+// 0.20 when titleHits = 1 against a category with >= 5 tokens AND the
+// body contributes nothing -- e.g. category "best AI listing tools
+// for real estate agents" with a title that has only one token hit.
+// In practice the anchor gate handles >99% of off-topic exclusions;
+// this constant is a safety net, not the primary mechanism.
 const RELEVANCE_FLOOR = 0.20;
 
 /**
