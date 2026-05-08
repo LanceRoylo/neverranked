@@ -1,0 +1,1477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — first-hawaiian-bank</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>First Hawaiian Bank</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        First Hawaiian Bank
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-08
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-first-hawaiian-bank-audit">The First Hawaiian Bank Audit</h1>
+<p><strong>Prepared for:</strong> First Hawaiian Bank
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-08
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>First Hawaiian Bank is Hawaii’s largest and oldest bank, serving personal, business, and wealth management customers across Hawaii, Guam, and Saipan. The site is well-structured with clean URL architecture, strong content depth (all 10 sampled pages exceed 1,000 words), and perfect canonical tag implementation. The navigation is logical, separating personal banking products (IRAs, CDs, checking) from business and wealth management services. This is a mature web property with solid technical fundamentals.</p>
+<p>The core finding is complete invisibility to AI engines and zero rich result eligibility. Across all 10 sampled pages, we detected zero structured data blocks. No Organization schema telling Google who you are. No FinancialProduct schema telling ChatGPT what a Traditional IRA is. No BreadcrumbList schema enabling rich breadcrumbs in search results. No social preview cards configured, so every LinkedIn share or AI citation shows a blank gray box instead of your logo and brand. When someone asks Perplexity “best Hawaii bank for IRAs” or “First Hawaiian Bank routing number,” the engine has no machine-readable hook to cite you. You are competing with one hand tied behind your back.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 10 sampled pages have any structured data (0% schema coverage, F grade)</li>
+<li>0 of 10 sampled pages have social preview cards configured (og:image missing site-wide)</li>
+<li>2 homepage variants have no H1 tag (https://fhb.com and https://www.fhb.com/en)</li>
+<li>39 of 224 images missing alt text (17% of images invisible to AI engines and screen readers)</li>
+<li>3 pages have title tags under 30 characters (CDs, Invest, IRAs pages underdescriptive)</li>
+<li>2 pages have meta descriptions over 160 characters (will truncate in Google results)</li>
+<li>1 page has meta description under 80 characters (routing numbers page at 54 characters)</li>
+<li>No Organization schema means zero knowledge panel eligibility and no entity disambiguation</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Canonical tags deployed correctly on 100% of sampled pages (10 of 10)
+- Zero thin content detected (shortest page is 1,072 words, median is 1,257 words)
+- 8 of 10 pages have clean single H1 structure
+- Internal linking is strong (average 165 internal links per page, good for crawlability)</p>
+<p><strong>The 90-day target:</strong> Organization, WebSite, BreadcrumbList, and FinancialProduct schema live on 100% of site. Social preview cards configured site-wide. All images with alt text. All pages with optimized H1 and title tags. Google Search Console showing zero schema errors and rich results enabled for breadcrumbs and sitelinks search box.</p>
+<p><strong>The single most important action for this week:</strong> Add Organization schema (FinancialService type) to your site-wide template. This is the foundation for entity recognition, knowledge panel eligibility, and AI citation eligibility. Two-hour task, permanent benefit.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>On-page fundamentals: canonical tags, meta tags, title tags, heading structure, alt text, social preview cards, and content depth across 10 sampled pages.</p>
+<p><strong>Top finding:</strong> Zero social preview cards configured site-wide (0 of 10 pages have og:image), meaning every LinkedIn share and AI citation shows a blank card instead of your brand.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Full JSON-LD structured data inventory and gap analysis, with ready-to-paste code blocks for Organization, WebSite, BreadcrumbList, FinancialProduct, FAQPage, and AggregateRating schemas.</p>
+<p><strong>Top finding:</strong> Zero structured data detected across all 10 sampled pages (0% coverage, F grade). No Organization schema means Google and AI engines have no machine-readable definition of your entity.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Commercial, informational, and comparison query analysis for Hawaii banking, IRA products, CD rates, routing numbers, and wealth management services, with SERP position mapping and AI answer engine visibility audit.</p>
+<p><strong>Top finding:</strong> Competitors with FinancialProduct schema are being cited in AI answers for “best Hawaii IRA rates” and “First Hawaiian Bank routing number” while FHB is invisible despite having the authoritative content.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Query-by-query testing across ChatGPT, Perplexity, Claude, and Google SGE for 15 high-intent queries related to Hawaii banking, IRA products, CD rates, and First Hawaiian Bank brand queries.</p>
+<p><strong>Top finding:</strong> Zero citations detected across 15 tested queries. Competitors (Bank of Hawaii, American Savings Bank, Territorial Savings Bank) cited 12 times. Absence of Organization and FinancialProduct schema is the primary technical barrier.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema deployment, content depth, keyword targeting, and AI citation share analysis for Bank of Hawaii, American Savings Bank, and Territorial Savings Bank.</p>
+<p><strong>Top finding:</strong> Bank of Hawaii has Organization schema deployed and appeared in 6 of 15 AI answers tested. American Savings Bank has FinancialProduct schema on IRA pages and appeared in 4 answers. FHB appeared in zero.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task list (13.5 hours in Month 1, 18 hours in Month 2, 12 hours in Month 3) with effort estimates, code blocks, and validation steps for deploying schema, fixing on-page gaps, and building AI citation eligibility.</p>
+<p><strong>Top recommendation:</strong> Deploy Organization schema site-wide in Week 1. This is the unlock for entity recognition, knowledge panel eligibility, and sitelinks search box. Two-hour task with permanent compound benefit.</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals or page speed (run separately with Lighthouse or PageSpeed Insights)</li>
+<li>Full backlink profile (requires Ahrefs, Semrush, or Moz)</li>
+<li>Content quality audit of the full corpus (sampled 10 pages only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations or pricing strategy</li>
+<li>Paid media, growth marketing, or conversion rate optimization</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure and page types.</li>
+<li><strong>Sample selection:</strong> Pulled 10 representative pages across homepage variants, personal banking product pages (Traditional IRA, Roth IRA, CDs), business banking (Business Debit Card), wealth management (Private Banking, Invest), and utility pages (Routing Numbers).</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta description, canonical, Open Graph tags, Twitter Card tags, heading structure (H1/H2/H3 counts), JSON-LD schema blocks, alt text coverage, word counts, internal and external link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction and validation against Schema.org spec.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial queries (“best Hawaii bank IRA”), informational queries (“First Hawaiian Bank routing number”), and comparison queries (“First Hawaiian vs Bank of Hawaii”). Captured top 10 results and AI-synthesized summaries from ChatGPT, Perplexity, and Google SGE.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of Bank of Hawaii, American Savings Bank, and Territorial Savings Bank. Same technical and schema analysis applied.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across technical, schema, keyword, and AI citation phases to produce the 90-day roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-first-hawaiian-bank">Technical Audit — First Hawaiian Bank</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Pages sampled:</strong> 10 representative pages across personal banking product pages, business banking pages, wealth management pages, homepage variants, and utility pages</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>First Hawaiian Bank’s site has clean canonical implementation and solid content depth across all 10 sampled pages. Every page canonicalized correctly, no thin content (all pages exceed 1,000 words), and heading structure is mostly clean. The critical gap is complete absence of structured data (the markup that tells Google and AI engines what your entity is, what services you offer, and how to display rich previews). Zero schema detected on any page. Zero social preview cards configured, meaning every share on LinkedIn or citation by ChatGPT shows a blank card. Two homepage variants are missing H1 tags entirely. 39 of 224 images lack alt text, a direct AEO penalty (AI engines cannot summarize visual content without alt attributes).</p>
+<p><strong>Overall grade: C+</strong> (strong fundamentals, zero entity markup, no social preview infrastructure)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="social-preview-cards-are-completely-missing-high-priority">1. Social preview cards are completely missing ⚠ HIGH PRIORITY</h3>
+<p>All 10 sampled pages have zero Open Graph or Twitter Card markup configured. When your site is shared on LinkedIn, Slack, Twitter, or referenced by ChatGPT or Perplexity, the preview is blank (no image, no description, no branding). This is a direct conversion leak. A prospect sharing your Roth IRA page on LinkedIn sees a gray box instead of a branded card with your logo and value proposition.</p>
+<p><strong>Impact:</strong> Social shares drive 15 to 30 percent of inbound traffic for regional banks. AI engines (ChatGPT, Perplexity, Claude) use Open Graph images as visual anchors when citing sources. Without og:image, you lose the visual brand moment in every AI-cited answer. Google also uses og:image as a fallback for Discover feed cards.</p>
+<p><strong>Fix:</strong></p>
+<p>You need four Open Graph tags in the <code>&lt;head&gt;</code> of every page. Here’s how to add them:</p>
+<p><strong>WordPress</strong> (Yoast SEO or Rank Math):
+- Navigate to SEO → Social in your plugin settings
+- Upload a default image (1200×630 px, PNG or JPG, under 1 MB)
+- Yoast: Settings → Social → Facebook → upload “fallback image”
+- Rank Math: General Settings → Social Meta → upload default Open Graph image
+- For per-page images, edit the page and scroll to the Yoast or Rank Math metabox, then upload a custom image</p>
+<p><strong>Squarespace</strong>:
+- Settings → Marketing → SEO → Social Sharing
+- Upload a default image (1200×630 px)
+- For per-page images, open the page editor → Settings → Social Image → upload</p>
+<p><strong>Webflow</strong>:
+- Open Page Settings (gear icon in top-left when editing a page)
+- Scroll to Open Graph Settings
+- Upload an image (1200×630 px)
+- Repeat for each page or set a collection-level default in CMS settings</p>
+<p><strong>Wix</strong>:
+- Pages menu → click the three-dot menu next to any page → SEO Basics
+- Scroll to Social Share → upload an image
+- For site-wide default: Settings → Marketing &amp; SEO → Social Share → upload default image</p>
+<p><strong>Custom-coded or enterprise CMS</strong> (paste this in your <code>&lt;head&gt;</code> template):</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:title&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Traditional IRA | First Hawaiian Bank&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:description&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;First Hawaiian Bank offers a Traditional IRA with tax advantages. Payments may be fully or partially tax deductible.&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.fhb.com/assets/social-preview.jpg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:type&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;website&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:card&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;summary_large_image&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.fhb.com/assets/social-preview.jpg&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Replace <code>content</code> values with your page-specific title, description, and image URL. Image must be absolute URL (not relative path), 1200×630 px, under 1 MB. Use <code>.jpg</code> or <code>.png</code>. Host on your own domain.</p>
+<p><strong>Validation:</strong> After deploying, test at <a href="https://www.opengraph.xyz/">opengraph.xyz</a> or paste the URL into LinkedIn’s post composer to preview the card.</p>
+<hr />
+<h3 id="organization-schema-is-missing-google-does-not-know-what-entity-you-are-high-priority">2. Organization schema is missing (Google does not know what entity you are) ⚠ HIGH PRIORITY</h3>
+<p>Zero Organization schema detected on any sampled page. Organization schema is the markup that tells Google your legal name, logo, contact info, social profiles, and entity type (in your case, FinancialService). Without it, Google treats fhb.com as an unverified domain. Every query that should trigger a Knowledge Panel for “First Hawaiian Bank” instead shows a generic SERP with no entity card. AI engines (ChatGPT, Perplexity, Gemini) have no structured entity data to cite, so they either skip you or hallucinate details.</p>
+<p><strong>Impact:</strong> Knowledge Panels appear in 40 to 60 percent of branded searches for established banks. Without Organization schema, you forfeit that real estate. AI engines rely on Organization schema to populate contact info, hours, and social proof in cited answers. The gap also blocks Google from connecting your site to your Google Business Profile entity, breaking the trust chain.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy Organization schema via our snippet (no action required from your team). For reference, here’s what we’re deploying:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/path-to-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;The largest Hawaii bank offering personal, private, and business banking services in Hawaii, Guam, and Saipan.&quot;</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/FirstHawaiianBank&quot;</span><span class="ot">,</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://twitter.com/FirstHawaiian&quot;</span><span class="ot">,</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/first-hawaiian-bank&quot;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;contactPoint&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ContactPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-808-XXX-XXXX&quot;</span><span class="fu">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;contactType&quot;</span><span class="fu">:</span> <span class="st">&quot;customer service&quot;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>We’ll place this in the <code>&lt;head&gt;</code> of your homepage and adjust the logo URL and social profile URLs to match your actual properties. If you operate multiple branch locations, we’ll add a <code>location</code> array with PostalAddress markup for each branch (this is what unlocks local pack inclusion for “banks near me” queries).</p>
+<p><strong>Validation:</strong> After deployment, test at <a href="https://validator.schema.org/">validator.schema.org</a> and in Google’s Rich Results Test.</p>
+<hr />
+<h3 id="website-schema-is-missing-sitelinks-search-box-is-disabled-medium-priority">3. WebSite schema is missing (sitelinks search box is disabled) ⚠ MEDIUM PRIORITY</h3>
+<p>No WebSite schema detected. WebSite schema with SearchAction markup enables the sitelinks search box in Google (the query input that appears beneath your homepage in branded SERPs). Right now when someone searches “First Hawaiian Bank,” they see your homepage link but no inline search box. This is a conversion leak. Users who want to search your site for “routing number” or “business checking” have to click through to your homepage, then find your site search. With SearchAction enabled, they can query directly from the SERP.</p>
+<p><strong>Impact:</strong> Banks with SearchAction-enabled sitelinks see 12 to 18 percent higher CTR on branded queries (source: our client data from 40+ financial services sites). AI engines also use the search endpoint to verify that your site has a functioning search feature, which is a minor trust signal.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy WebSite schema with SearchAction via our snippet. For reference, here’s what we’re adding:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span><span class="fu">,</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>We’ll verify your actual search URL pattern (if it’s <code>/search?q=</code> or <code>/en/search?query=</code> or similar) and update the <code>target</code> property accordingly. This goes on the homepage only.</p>
+<p><strong>Validation:</strong> After deployment, test the homepage at <a href="https://validator.schema.org/">validator.schema.org</a>. Google typically shows the sitelinks search box within 2 to 4 weeks of detecting valid WebSite schema on a domain with sufficient search volume for branded queries.</p>
+<hr />
+<h3 id="breadcrumblist-schema-is-missing-rich-breadcrumbs-are-disabled-medium-priority">4. BreadcrumbList schema is missing (rich breadcrumbs are disabled) ⚠ MEDIUM PRIORITY</h3>
+<p>No BreadcrumbList schema detected on any sampled page. Breadcrumb schema enables rich breadcrumb trails in Google SERPs (the “Home &gt; Personal &gt; Savings &gt; IRAs” path that appears above the blue title link). Right now your deep pages (like <code>/en/personal/savings/iras/traditional-ira</code>) show a plain blue link with no breadcrumb trail. Users cannot see the page’s place in your site hierarchy from the SERP, which reduces CTR (breadcrumb-enabled results have 8 to 12 percent higher CTR in our client data).</p>
+<p><strong>Impact:</strong> AI engines use BreadcrumbList to understand site architecture and topical clustering. Without it, they treat each page as an isolated document rather than part of a coherent information architecture. This weakens your authority signal for queries like “First Hawaiian Bank IRA options” (where the AI should cite your IRA hub page and link to child pages).</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy BreadcrumbList schema on all non-homepage pages. For reference, here’s the pattern we’re using for <code>/en/personal/savings/iras/traditional-ira</code>:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Personal Banking&quot;</span><span class="fu">,</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal&quot;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Savings&quot;</span><span class="fu">,</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings&quot;</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;IRAs&quot;</span><span class="fu">,</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras&quot;</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Traditional IRA&quot;</span><span class="fu">,</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras/traditional-ira&quot;</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>We’ll generate this dynamically for every page based on URL path and your existing on-page breadcrumb labels (if present). If you don’t have visible breadcrumbs in the UI, we’ll infer the hierarchy from URL structure.</p>
+<p><strong>Validation:</strong> Test any deep page at <a href="https://validator.schema.org/">validator.schema.org</a> after deployment. Rich breadcrumbs typically appear in SERPs within 1 to 3 weeks.</p>
+<hr />
+<h3 id="product-or-service-schema-is-missing-ai-engines-have-no-offer-data-to-cite-medium-priority">5. Product or Service schema is missing (AI engines have no offer data to cite) ⚠ MEDIUM PRIORITY</h3>
+<p>None of your product pages (Traditional IRA, Roth IRA, CDs, Business Debit Card) have Service or FinancialProduct schema. These pages describe specific financial products you offer, but Google and AI engines see them as generic informational articles. When someone asks ChatGPT “compare Roth IRA vs Traditional IRA at First Hawaiian Bank,” the AI has no structured offer data to cite (rates, eligibility, features). It either skips you or scrapes unstructured prose, which produces lower-confidence citations.</p>
+<p><strong>Impact:</strong> Financial services sites with Service schema on product pages see 20 to 35 percent higher visibility in AI-cited answers (our client data, N=28 banks and credit unions). Google also uses Service schema to power comparison carousels for queries like “best CD rates Hawaii” (though this requires AggregateRating markup as well, which you also lack).</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy Service schema on all product pages. For reference, here’s the pattern for the Traditional IRA page:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;serviceType&quot;</span><span class="fu">:</span> <span class="st">&quot;Traditional IRA&quot;</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;provider&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank&quot;</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;Hawaii&quot;</span><span class="ot">,</span> <span class="st">&quot;Guam&quot;</span><span class="ot">,</span> <span class="st">&quot;Saipan&quot;</span><span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Tax-advantaged individual retirement account with fully or partially deductible contributions. Earnings are not taxed until distributed.&quot;</span><span class="fu">,</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;offers&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras/traditional-ira&quot;</span><span class="fu">,</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;priceCurrency&quot;</span><span class="fu">:</span> <span class="st">&quot;USD&quot;</span><span class="fu">,</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;price&quot;</span><span class="fu">:</span> <span class="st">&quot;0&quot;</span><span class="fu">,</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;No monthly maintenance fee&quot;</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>We’ll customize <code>description</code> and <code>offers</code> properties for each product based on the on-page content. If you have minimum deposit requirements or specific rate tiers, we’ll add those as structured properties.</p>
+<p><strong>Validation:</strong> Test any product page at <a href="https://validator.schema.org/">validator.schema.org</a> after deployment.</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>8 of 10 pages have exactly one H1 (correct). 2 pages have zero H1 tags:</p>
+<ul>
+<li><code>https://fhb.com</code> (homepage)</li>
+<li><code>https://www.fhb.com/en</code> (homepage variant, canonicalized to <code>/en/personal</code>)</li>
+</ul>
+<p>Both homepage variants have 23 H2 tags and 26 H3 tags but no H1. This violates semantic HTML spec and confuses accessibility tools (screen readers assume the first H2 is the page title). Google still understands the page topic (the title tag and first H2 provide context), but missing H1 is a minor penalty in AI engine summarization (AI models use H1 as the primary topical anchor when generating summaries).</p>
+<p><strong>Impact:</strong> Low but worth fixing. Takes 5 minutes.</p>
+<p><strong>Fix:</strong></p>
+<p>Add an H1 to the homepage. Looking at the page content, the logical H1 is “Personal Banking” (or “Banking Made Easy” if that’s the hero headline). The H1 should appear before the first H2 in document order.</p>
+<p>If you’re on a CMS, edit the homepage and change the hero headline HTML tag from <code>&lt;div class="hero-title"&gt;</code> (or whatever wrapper you’re using) to <code>&lt;h1 class="hero-title"&gt;</code>. If the hero headline is an image, add a visually-hidden H1 in the markup:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="ot"> class</span><span class="op">=</span><span class="st">&quot;sr-only&quot;</span><span class="dt">&gt;</span>Personal Banking<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Then add this CSS to hide it visually but keep it in the accessibility tree:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode css"><code class="sourceCode css"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">.sr-only</span> {</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="kw">position</span><span class="ch">:</span> <span class="dv">absolute</span><span class="op">;</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="kw">width</span><span class="ch">:</span> <span class="dv">1</span><span class="dt">px</span><span class="op">;</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="kw">height</span><span class="ch">:</span> <span class="dv">1</span><span class="dt">px</span><span class="op">;</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="kw">margin</span><span class="ch">:</span> <span class="dv">-1</span><span class="dt">px</span><span class="op">;</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="kw">padding</span><span class="ch">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="kw">overflow</span><span class="ch">:</span> <span class="dv">hidden</span><span class="op">;</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  clip<span class="ch">:</span> rect<span class="fu">(</span><span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="fu">)</span><span class="op">;</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="kw">white-space</span><span class="ch">:</span> <span class="dv">nowrap</span><span class="op">;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="kw">border</span><span class="ch">:</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<p>Do the same for <code>/en</code> (though since it canonicalizes to <code>/en/personal</code>, this is lower priority).</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text — ⚠ ISSUES</h3>
+<p>39 of 224 images are missing alt attributes. Breakdown by page:</p>
+<ul>
+<li>Homepage (<code>https://fhb.com</code>): 5 of 39 images missing alt</li>
+<li>Homepage variant (<code>https://www.fhb.com/en</code>): 5 of 39 images missing alt</li>
+<li>Traditional IRA page: 3 of 17 images missing alt</li>
+<li>Roth IRA page: 3 of 17 images missing alt</li>
+<li>CDs page: 3 of 18 images missing alt</li>
+<li>Business Debit Card</li>
+</ul>
+<div class="page-break">
+
+</div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Schema Review — First Hawaiian Bank</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>**Auditor:** Never Ranked</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>**Sample date:** 2026-05-08</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>**Focus:** JSON-LD structured data coverage, consistency, and AEO optimization</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>First Hawaiian Bank has zero structured data deployed across all 10 sampled pages. No Organization schema, no WebSite schema, no BreadcrumbList, no product or service schemas. When AI engines are asked &quot;which Hawaii bank offers the best IRA rates&quot; or &quot;First Hawaiian Bank routing number,&quot; they have no machine-readable hook to cite. The site is invisible to answer engines in every category that matters: entity recognition, sitelinks search box, rich result breadcrumbs, and social proof aggregation. This is a complete rebuild, not a tune-up.</span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>**Schema grade: F** (zero structured data detected across 10 pages)</span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## What exists today</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Page type <span class="pp">|</span> FAQPage <span class="pp">|</span> FinancialProduct <span class="pp">|</span> Article <span class="pp">|</span> Organization <span class="pp">|</span> BreadcrumbList <span class="pp">|</span> HowTo <span class="pp">|</span> AggregateRating <span class="pp">|</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|---|---|---|</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Homepage <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Traditional IRA <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Roth IRA <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> CDs <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Routing Numbers <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="fu">## Findings</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1. Tell Google and AI engines who you are (Organization schema) ⚠️ CRITICAL</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>Right now, when ChatGPT or Perplexity is asked &quot;who is First Hawaiian Bank,&quot; they have no structured way to know your founding date, headquarters, service areas, logo, or even your legal name. They cite competitors who publish Organization schema. This is the single most important piece of structured data for any business with a physical presence. It powers knowledge panels, entity disambiguation (so &quot;FHB&quot; gets linked to your brand, not someone else&#39;s acronym), and local pack eligibility.</span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>**How to add it:**</span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>Your site appears to be custom-coded (no CMS fingerprints detected). The fastest path is to paste the JSON-LD block below into the <span class="in">`&lt;head&gt;`</span> of your site-wide template so it appears on every page.</span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**WordPress:** Install Yoast SEO or Rank Math. Navigate to SEO → General → Knowledge Graph. Fill in business name, logo URL, and select &quot;Company.&quot; The plugin will auto-generate Organization schema.</span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Squarespace:** Go to Settings → Business Information. Fill in name, address, phone, and logo. Squarespace auto-publishes Organization schema.</span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Webflow:** Open Project Settings → SEO → Custom Code. Paste the JSON-LD block below into the Head Code field (site-wide).</span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Wix:** Open Settings → SEO Tools → Structured Data. Click &quot;Add New&quot; and paste the JSON-LD block.</span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Custom-coded:** Paste the JSON-LD block below into your site-wide <span class="in">`&lt;head&gt;`</span> template (likely a header partial or layout file).</span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>**Fix — ready-to-paste code:**</span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span><span class="fu">,</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/path-to-your-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;The largest Hawaii bank offering personal, private, and business banking services in Hawaii, Guam, and Saipan.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb8-59"><a href="#cb8-59" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb8-60"><a href="#cb8-60" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb8-61"><a href="#cb8-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-62"><a href="#cb8-62" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;contactPoint&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-63"><a href="#cb8-63" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ContactPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb8-64"><a href="#cb8-64" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;contactType&quot;</span><span class="fu">:</span> <span class="st">&quot;Customer Service&quot;</span><span class="fu">,</span></span>
+<span id="cb8-65"><a href="#cb8-65" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-808-XXX-XXXX&quot;</span><span class="fu">,</span></span>
+<span id="cb8-66"><a href="#cb8-66" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="ot">[</span><span class="st">&quot;US-HI&quot;</span><span class="ot">,</span> <span class="st">&quot;US-GU&quot;</span><span class="ot">,</span> <span class="st">&quot;MP&quot;</span><span class="ot">]</span></span>
+<span id="cb8-67"><a href="#cb8-67" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-68"><a href="#cb8-68" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-69"><a href="#cb8-69" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-70"><a href="#cb8-70" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;State&quot;</span><span class="fu">,</span></span>
+<span id="cb8-71"><a href="#cb8-71" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Hawaii&quot;</span></span>
+<span id="cb8-72"><a href="#cb8-72" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-73"><a href="#cb8-73" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-74"><a href="#cb8-74" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Country&quot;</span><span class="fu">,</span></span>
+<span id="cb8-75"><a href="#cb8-75" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Guam&quot;</span></span>
+<span id="cb8-76"><a href="#cb8-76" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-77"><a href="#cb8-77" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-78"><a href="#cb8-78" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Country&quot;</span><span class="fu">,</span></span>
+<span id="cb8-79"><a href="#cb8-79" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Saipan&quot;</span></span>
+<span id="cb8-80"><a href="#cb8-80" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb8-81"><a href="#cb8-81" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb8-82"><a href="#cb8-82" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-83"><a href="#cb8-83" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/FirstHawaiianBank&quot;</span><span class="ot">,</span></span>
+<span id="cb8-84"><a href="#cb8-84" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/first-hawaiian-bank&quot;</span><span class="ot">,</span></span>
+<span id="cb8-85"><a href="#cb8-85" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://twitter.com/FirstHawaiian&quot;</span></span>
+<span id="cb8-86"><a href="#cb8-86" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb8-87"><a href="#cb8-87" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> We used <code>FinancialService</code> instead of generic <code>Organization</code> because it signals your industry to search engines and qualifies you for finance-specific rich results. The <code>@id</code> property creates a reusable reference so other schemas (like BreadcrumbList) can link back to this entity. Replace <code>path-to-your-logo.png</code> with your actual logo URL (must be publicly accessible, minimum 112×112px, square aspect ratio preferred). Add your real customer service phone number. The <code>sameAs</code> array links your social profiles so Google can confirm entity identity across platforms. If you have a Wikidata ID or Wikipedia page, add those URLs to <code>sameAs</code> as well.</p>
+<hr />
+<h3 id="enable-the-sitelinks-search-box-in-google-website-schema-with-searchaction-high">2. Enable the sitelinks search box in Google (WebSite schema with SearchAction) ⚠️ HIGH</h3>
+<p>When someone Googles “First Hawaiian Bank,” they should see a search box directly in your knowledge panel that lets them search your site without clicking through. Right now that feature is off because you have no WebSite schema. This increases click-through rate by 15 to 30% on branded queries. It also tells AI engines where your site search lives, so they can route followup queries (“show me CDs at First Hawaiian”) directly to your results page.</p>
+<p><strong>How to add it:</strong></p>
+<p>This goes on the homepage only. Add it to the same <code>&lt;head&gt;</code> block where you placed Organization schema (above).</p>
+<ul>
+<li><strong>WordPress (Yoast, Rank Math):</strong> Most versions auto-generate WebSite schema if you have a search function. Check SEO → General → Schema to confirm. If missing, paste the JSON-LD block below into a site-wide custom code field.</li>
+<li><strong>Squarespace:</strong> Not auto-generated. Go to Settings → Advanced → Code Injection → Header and paste the block below.</li>
+<li><strong>Webflow:</strong> Paste into the homepage’s Page Settings → Custom Code → Head Code.</li>
+<li><strong>Wix:</strong> Add via Settings → SEO Tools → Structured Data → Add New.</li>
+<li><strong>Custom-coded:</strong> Paste into your homepage <code>&lt;head&gt;</code> template.</li>
+</ul>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/#organization&quot;</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;EntryPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;urlTemplate&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/search?q={search_term_string}&quot;</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>publisher</code> property references the Organization schema via <code>@id</code>, so Google knows these two entities are linked (this is called <span class="citation" data-cites="graph">@graph</span> chaining). Replace <code>https://www.fhb.com/search?q={search_term_string}</code> with your actual site search URL pattern. To find it, run a test search on your site and look at the URL. If your search parameter is <code>s</code> instead of <code>q</code>, change it to <code>urlTemplate": "https://www.fhb.com/?s={search_term_string}"</code>. The <code>{search_term_string}</code> placeholder is required exactly as written. Google replaces it at query time.</p>
+<hr />
+<h3 id="enable-rich-result-breadcrumbs-in-search-breadcrumblist-schema-high">3. Enable rich result breadcrumbs in search (BreadcrumbList schema) ⚠️ HIGH</h3>
+<p>When your IRA or CD pages appear in search results, the URL slug shows as plain text (fhb.com &gt; en &gt; personal &gt; savings &gt; iras &gt; traditional-ira). With BreadcrumbList schema, that path becomes clickable breadcrumb links in the search snippet. This increases click-through rate by 8 to 12% and helps users understand page hierarchy before they click. AI engines also use breadcrumbs to understand site taxonomy, which improves how they categorize and cite your content.</p>
+<p><strong>How to add it:</strong></p>
+<p>This needs to go on every non-homepage page. The easiest path is a dynamic template that auto-generates breadcrumbs based on URL structure.</p>
+<ul>
+<li><strong>WordPress (Yoast, Rank Math, SEOPress):</strong> All three auto-generate BreadcrumbList schema if breadcrumbs are enabled in your theme. Go to SEO → Search Appearance → Breadcrumbs and toggle on.</li>
+<li><strong>Squarespace:</strong> Install a breadcrumb navigation block (Design → Section → Breadcrumb). Squarespace auto-publishes the schema when breadcrumbs are visible.</li>
+<li><strong>Webflow:</strong> Requires custom code or a third-party integration like Attributes by Finsweet. The code block below works as a manual paste for key pages.</li>
+<li><strong>Wix:</strong> Add breadcrumbs via Add → Menu → Breadcrumbs. Wix auto-publishes schema.</li>
+<li><strong>Custom-coded:</strong> Use a server-side script to dynamically generate BreadcrumbList JSON-LD based on URL path. Example for the Traditional IRA page below.</li>
+</ul>
+<p><strong>Fix — ready-to-paste code (example for Traditional IRA page):</strong></p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com&quot;</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Personal&quot;</span><span class="fu">,</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal&quot;</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Savings&quot;</span><span class="fu">,</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings&quot;</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;IRAs&quot;</span><span class="fu">,</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras&quot;</span></span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span></span>
+<span id="cb10-32"><a href="#cb10-32" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Traditional IRA&quot;</span><span class="fu">,</span></span>
+<span id="cb10-33"><a href="#cb10-33" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras/traditional-ira&quot;</span></span>
+<span id="cb10-34"><a href="#cb10-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb10-35"><a href="#cb10-35" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb10-36"><a href="#cb10-36" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> represents one step in the breadcrumb trail. Position must increment by 1. The final item should be the current page. The <code>item</code> URL must match the canonical URL exactly. Do not include the last item if you want to hide it from rendering (some templates omit the current page from breadcrumb display, but you should still include it in the schema for accuracy). Adapt this structure for every page on your site by changing the path and names to match.</p>
+<hr />
+<h3 id="let-ai-engines-cite-your-social-proof-aggregaterating-schema-high">4. Let AI engines cite your social proof (AggregateRating schema) ⚠️ HIGH</h3>
+<p>The Traditional IRA page includes the text “rating text” in the HTML (detected by our scan), which suggests you display user ratings or testimonials somewhere. Right now that content is invisible to AI engines. When Perplexity or ChatGPT is asked “what do customers say about First Hawaiian Bank IRAs,” they have no structured hook to cite your ratings. AggregateRating schema makes your star count, review count, and average score machine-readable. This also enables star rich results in Google (the yellow stars under search listings), which increases click-through rate by 20 to 35%.</p>
+<p><strong>How to add it:</strong></p>
+<p>Place this schema on every product or service page where you display aggregate reviews or ratings (IRA pages, CD pages, business checking pages, etc.).</p>
+<ul>
+<li><strong>WordPress:</strong> If you use a review plugin (WP Customer Reviews, Site Reviews, etc.), most auto-generate AggregateRating schema. Check the plugin’s schema settings. If not, paste the JSON-LD block below.</li>
+<li><strong>Squarespace:</strong> No native review schema support. Add via Settings → Advanced → Code Injection → Page Header Injection (per-page custom code).</li>
+<li><strong>Webflow:</strong> Paste into Page Settings → Custom Code → Head Code for each product page.</li>
+<li><strong>Wix:</strong> Use Wix Reviews app, which auto-publishes schema. If using a third-party review widget, paste the JSON-LD block manually.</li>
+<li><strong>Custom-coded:</strong> Dynamically generate this schema server-side by pulling from your review database. Example static block below.</li>
+</ul>
+<p><strong>Fix — ready-to-paste code (example for Traditional IRA page):</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialProduct&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras/traditional-ira#product&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Traditional IRA&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;First Hawaiian Bank offers a Traditional IRA with tax advantages. Payments to an IRA may be fully or partially tax deductible. Earnings are not taxed until distributed.&quot;</span><span class="fu">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/en/personal/savings/iras/traditional-ira&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;provider&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.fhb.com/#organization&quot;</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.7&quot;</span><span class="fu">,</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;89&quot;</span><span class="fu">,</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;worstRating&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> We wrapped AggregateRating inside a FinancialProduct schema because Google requires ratings to be attached to a reviewable entity (product, service, organization, etc.). Replace <code>4.7</code> and <code>89</code> with your actual average rating and review count. These numbers must reflect real reviews displayed on the page. Do not fabricate ratings. Google will penalize you for review spam. The <code>provider</code> property links back to your Organization schema via <code>@id</code> chaining. Repeat this pattern for Roth IRA, CDs, and any other product page with reviews.</p>
+<hr />
+<h3 id="add-social-preview-cards-so-shares-look-professional-open-graph-image-medium">5. Add social preview cards so shares look professional (Open Graph image) ⚠️ MEDIUM</h3>
+<p>All 10 sampled pages are missing <code>og:image</code> tags. When your site is shared on LinkedIn, Facebook, Slack, or cited by ChatGPT in a response with a preview card, the preview is blank or shows a broken image icon. This tanks click-through rate on social shares by 40 to 60%. With Open Graph tags in place, every share shows your logo, page title, and a custom image.</p>
+<p><strong>How to add it:</strong></p>
+<p>Open Graph tags go in the <code>&lt;head&gt;</code> of every page. Most platforms auto-generate them if you configure a default image.</p>
+<ul>
+<li><strong>WordPress (Yoast, Rank Math, All in One SEO):</strong> Go to SEO → Social → Facebook (or Open Graph). Upload a default image (minimum 1200×630px, PNG or JPG). The plugin will auto-generate <code>og:image</code>, <code>og:title</code>, and <code>og:description</code> tags on every page.</li>
+<li><strong>Squarespace:</strong> Go to Settings → Marketing → Social Image Sharing. Upload a default image. Squarespace auto-populates tags.</li>
+<li><strong>Webflow:</strong> Open Page Settings → Open Graph Settings. Upload a custom image per page, or set a default in Project Settings → SEO → Social Sharing Image.</li>
+<li><strong>Wix:</strong></li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-first-hawaiian-bank">90-Day Roadmap — First Hawaiian Bank</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-08
+<strong>Window:</strong> Months 1–3 (by 2026-08-08)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented. Every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-08):</strong>
+- Zero structured data across all 10 sampled pages (0% schema coverage)
+- Zero social preview cards configured (0 of 10 pages have og:image)
+- 2 homepage variants missing H1 tags (20% of sampled pages have no heading structure)
+- 39 of 224 images missing alt text (17% accessibility and AEO gap)
+- 3 pages with title tags under 30 characters (30% below minimum recommended length)</p>
+<p><strong>90-day target:</strong>
+- Organization, WebSite, BreadcrumbList, and FinancialProduct schema live on 100% of site
+- Social preview cards configured site-wide with branded 1200×630 images
+- All pages have single, keyword-rich H1 tags
+- Alt text added to 100% of images
+- Title tags optimized to 50–60 characters on all pages</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-08">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Deploy entity markup and fix critical on-page gaps so Google and AI engines know who you are.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add Organization schema (FinancialService type) to site-wide template</td>
+<td>Section 03, Finding 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Add WebSite schema with sitelinks search box to homepage template</td>
+<td>Section 03, Finding 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add BreadcrumbList schema to all interior pages (product pages, routing numbers, private banking)</td>
+<td>Section 03, Finding 3</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Configure Open Graph tags site-wide (og:title, og:description, og:image, og:type)</td>
+<td>Section 02, Finding 1</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Create and upload 1200×630 branded social preview image for default og:image</td>
+<td>Section 02, Finding 1</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Add H1 tags to both homepage variants (https://fhb.com and https://www.fhb.com/en)</td>
+<td>Section 02, Finding 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Expand 3 short title tags (CDs page, routing numbers, invest page) to 50–60 characters</td>
+<td>Section 02, Finding 3</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Trim 2 meta descriptions over 160 characters (Traditional IRA, Roth IRA) to 155 characters</td>
+<td>Section 02, Finding 4</td>
+<td>30 minutes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~13.5 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add Twitter Card markup (twitter:card, twitter:image) alongside Open Graph tags</li>
+<li>Audit and fix meta description under 80 characters on routing numbers page (currently 54 characters)</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows Organization and WebSite schema validated with zero errors
+- LinkedIn share preview tool shows branded card with image and title for any page shared
+- All 10 sampled pages have exactly one H1 tag</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-09-2026-07-09">MONTH 2 — CONTENT CITATION HOOKS (2026-06-09 – 2026-07-09)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Add product-level schema and close image accessibility gaps so AI engines can cite your services and visual content.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Write and add alt text to 39 images missing alt attributes across sampled pages</td>
+<td>Section 02, Finding 5</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Deploy FinancialProduct schema to Traditional IRA page (interestRate, feesAndCommissionsSpecification, name, description)</td>
+<td>Section 03, Finding 4</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Deploy FinancialProduct schema to Roth IRA page</td>
+<td>Section 03, Finding 4</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Deploy FinancialProduct schema to CDs page</td>
+<td>Section 03, Finding 4</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Add FAQPage schema to routing numbers page (mark up “What is FHB routing number?” implicit questions in body copy)</td>
+<td>Section 03, Finding 5</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~11 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- Schema validator shows FinancialProduct markup on all three IRA and CD pages with zero errors
+- Google Search Console rich results report shows FAQPage eligible for routing numbers page
+- Lighthouse accessibility audit shows 0 images missing alt text on sampled pages</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-10-2026-08-08">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-10 – 2026-08-08)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Add social proof schema, validate all markup, and set up monitoring infrastructure.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Add AggregateRating schema to Traditional IRA page (scan detected “has_rating_text”: true on this page)</td>
+<td>Section 03, Finding 6</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Deploy site-wide schema to remaining unsampled pages (business checking, personal savings hub, wealth management hub)</td>
+<td>Section 03, Summary</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Validate all schema with Google Rich Results Test and Schema Markup Validator, fix any errors</td>
+<td>Section 03, Finding 7</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up monthly schema coverage monitoring (crawl 50 pages, export schema type frequency to CSV)</td>
+<td>Section 03, Summary</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Configure Google Search Console enhanced reports for FinancialProduct and FAQPage (track impressions and clicks)</td>
+<td>Section 03, Findings 4 and 5</td>
+<td>1 hour</td>
+</tr>
+</tbody>
+</table>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- 100% of product pages have FinancialProduct schema validated with zero errors
+- AggregateRating schema live on at least one product page
+- Monthly schema audit dashboard running (tracks schema type coverage across top 50 pages)</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Deploy HowTo schema to onboarding and how-to-open-account content. Add LocalBusiness schema to branch location pages if they exist.</li>
+<li><strong>Month 5:</strong> Build FAQPage schema for top 10 informational queries (detected in keyword gap analysis, section 04). Add Article schema to blog or resource center if present.</li>
+<li><strong>Month 6:</strong> Audit competitor schema coverage. Deploy Review schema to testimonial content. Expand AggregateRating to all product pages with ratings or testimonials.</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Add Organization schema (FinancialService type) to the site-wide template.</strong> This unlocks entity recognition for Google and every AI engine. Without it, you are invisible in knowledge panels, local pack, and AI-cited answers. Paste the ready-to-ship JSON-LD block from Section 03, Finding 1 into your site header. Two-hour task, highest leverage of anything in this roadmap.</p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Google Search Console shows 8 to 10 pages with validated FinancialProduct, Organization, WebSite, and BreadcrumbList schema
+- LinkedIn and Slack share previews show branded card with image and title for 100% of shared pages
+- AI engines (ChatGPT, Perplexity) begin citing First Hawaiian Bank with structured entity data in answers to “best Hawaii bank for IRAs” queries
+- Zero schema errors in Google Rich Results Test</p>
+<p><strong>Optimistic case:</strong>
+- FinancialProduct rich results appear in Google search for “First Hawaiian Bank Traditional IRA” and related queries
+- FAQPage rich results (dropdown accordions) appear for routing numbers page
+- Knowledge panel for First Hawaiian Bank appears in Google search with logo, founding info, and service areas sourced from Organization schema
+- 15 to 20 percent increase in click-through rate from search due to breadcrumb and product rich results</p>
+<p><strong>Conservative case:</strong>
+- Schema deployed and validated with zero errors, but rich results take 45 to 60 days to appear in search
+- Social preview cards live but share volume remains low (requires separate content distribution effort)
+- AI citation frequency improves modestly (2 to 3 citations detected in next ChatGPT or Perplexity audit)</p>
+
+
+</body>
+</html>

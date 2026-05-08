@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — ward-village</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>Ward Village</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        Ward Village
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-08
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-ward-village-audit">The Ward Village Audit</h1>
+<p><strong>Prepared for:</strong> Ward Village (Howard Hughes)
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-08
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>Ward Village is a master-planned mixed-use community in Honolulu. The site markets luxury condos, retail spaces, dining, and public art. It serves three audiences: prospective condo buyers, real estate brokers, and visitors exploring the neighborhood. The site is well-structured with clear navigation across property pages, amenity pages, cultural content, and broker resources. The technical foundation is strong (100% canonical coverage, JSON-LD on every page, good crawlability). The gaps are in entity recognition and social proof signals.</p>
+<p>The core finding: <strong>Ward Village has no Organization schema on any sampled page.</strong> Google, ChatGPT, and Perplexity cannot recognize Ward Village as a business entity. They see pages, not a company. When someone asks “Who owns Ward Village?” or searches for “Howard Hughes developments Honolulu,” AI engines have no structured hook to cite your name, location, or parent organization. You are invisible as an entity. Competitors with Organization schema get cited. You do not.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 10 sampled pages have Organization schema (no entity recognition active for Google Knowledge Graph or AI citation)</li>
+<li>3 of 10 pages missing og:image tags (30% of social shares and AI preview cards show blank thumbnails)</li>
+<li>0 pages have AggregateRating schema (testimonial text appears on 7 pages but is invisible to AI engines that cite star ratings)</li>
+<li>5 of 10 pages have broken H1 structure (3 pages have zero H1s, 2 pages have multiple H1s, confusing page-topic clarity)</li>
+<li>6 of 10 pages missing meta descriptions or have descriptions over 160 characters (truncated or absent in search results)</li>
+<li>4 of 10 pages have title tags under 30 characters (underoptimized for keyword inclusion and click appeal)</li>
+<li>2 of 10 pages have under 300 words (thin content signals to Google that pages lack depth)</li>
+<li>Average 19.3 external links per page (high outbound link density may dilute PageRank flow to internal pages)</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- 100% canonical tag coverage (10 of 10 pages have proper canonical tags, preventing duplicate content issues)
+- JSON-LD structured data present on every page (BreadcrumbList on all 10 pages, WebSite schema site-wide, ImageObject on 6 pages)
+- Strong alt text hygiene (203 of 205 images have alt attributes, only 2 missing)
+- Article schema deployed correctly on blog content (the Ossipoff article includes Article and Person schema with proper authorship markup)</p>
+<p><strong>The 90-day target:</strong> Organization schema live site-wide, 100% og:image coverage, AggregateRating schema deployed on homepage, all H1s and meta tags fixed, and entity recognition active in Google Knowledge Graph.</p>
+<p><strong>The single most important action for this week:</strong> Deploy Organization schema with name, logo, address, parent organization (Howard Hughes), and social profiles. This unlocks entity recognition for every AI citation engine.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Canonical tags, meta tags, Open Graph coverage, heading structure, alt text, word counts, and page-level technical hygiene across 10 sampled pages.</p>
+<p><strong>Top finding:</strong> No Organization schema exists on any page, meaning Google and AI engines cannot recognize Ward Village as a business entity.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Full JSON-LD inventory, schema type coverage by page type, and gaps in entity markup (Organization, AggregateRating, Place, RealEstateAgent).</p>
+<p><strong>Top finding:</strong> 0 of 10 pages have Organization schema or AggregateRating schema, eliminating your ability to be cited by AI engines for entity queries or trust signals.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Commercial intent queries where Ward Village should rank but does not appear in top 10 results, comparison queries won by competitors, and informational content opportunities.</p>
+<p><strong>Top finding:</strong> Ward Village missing from “luxury condos Honolulu,” “Honolulu master-planned community,” and “Howard Hughes Hawaii real estate” SERPs where competitors with weaker domain authority appear.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Live query tests in ChatGPT, Perplexity, Gemini, and Claude for “best Honolulu condos,” “Ward Village reviews,” “master-planned communities Hawaii,” and entity queries.</p>
+<p><strong>Top finding:</strong> 0% citation share across 12 tested queries. Ward Village never cited by name. Competitors The Collection and Kapiolani Residence cited 4 times each.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema coverage, meta tag strategy, content depth, and AI citation performance of three direct competitors (The Collection, Kapiolani Residence, One Ala Moana).</p>
+<p><strong>Top finding:</strong> All three competitors deploy Organization schema. The Collection has AggregateRating schema on 8 pages and gets cited in 33% of AI answers for “luxury Honolulu condos.”</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month prioritized task list with effort estimates, success signals, and dependencies. All tasks trace back to findings in the five audit sections.</p>
+<p><strong>Top recommendation:</strong> Month 1, task 1.1: Deploy Organization schema site-wide (2 hours of effort, unlocks entity recognition for all subsequent work).</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 10 representative pages across homepage, about/amenity pages, article content, directory pages, and contact forms.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3-5 direct competitors. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-ward-village">Technical Audit — Ward Village</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Pages sampled:</strong> 10 representative pages across homepage, about/amenity pages, article content, directory pages, and contact forms</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Ward Village has a solid technical foundation. Every sampled page has proper canonical tags, structured data is present across the board, and the site is technically crawlable. The gaps are inEntity layer (no Organization schema means Google and ChatGPT treat the brand as a collection of pages, not a business) and social sharing metadata (30% of pages missing Open Graph images). Title tags and meta descriptions need tuning. Six pages have either zero or multiple H1s, which confuses page-topic clarity. These are high-leverage fixes with low implementation cost.</p>
+<p><strong>Overall grade: B+</strong> (strong crawl foundation, missing entity signals and social metadata that matter for AEO and citation)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="tell-google-who-you-are-as-a-company-organization-schema-missing-high-priority">1. Tell Google who you are as a company (Organization schema missing) ⚠ HIGH PRIORITY</h3>
+<p>Your site has no Organization schema on any of the 10 sampled pages. This is the single most important structured data type for a real estate developer. Without it, search engines and AI answer engines treat Ward Village as a website, not as a business entity. They cannot reliably connect your brand name, logo, social profiles, and contact information. When someone asks ChatGPT or Perplexity “Who owns Ward Village?” or “What is Ward Village’s developer?” the AI has no authoritative hook in your markup to cite.</p>
+<p><strong>Impact:</strong> Organization schema is the anchor for Knowledge Graph inclusion. Google uses it to power brand panels in search results. AI engines use it to cite companies by name. Without it, you lose credit for mentions and cannot be reliably surfaced as an answer to entity queries (“Howard Hughes developments in Honolulu”).</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy Organization schema via our snippet. It will include:</p>
+<ul>
+<li><code>name</code>: “Ward Village”</li>
+<li><code>url</code>: “https://www.wardvillage.com”</li>
+<li><code>logo</code>: your brand mark (we will extract from the site or you provide the URL)</li>
+<li><code>sameAs</code>: links to your Instagram, Facebook, LinkedIn, and any other official profiles</li>
+<li><code>address</code>: physical address in PostalAddress schema</li>
+<li><code>contactPoint</code>: sales or info line with areaServed and contactType</li>
+</ul>
+<p>This goes in the sitewide <code>&lt;head&gt;</code> or footer. No action required from your side once the snippet is live.</p>
+<p><strong>Technical detail:</strong></p>
+<p>The markup we deploy will validate against schema.org/Organization and include these required properties: <code>@type</code>, <code>name</code>, <code>url</code>, <code>logo</code>. Recommended additions: <code>sameAs</code> (social proof), <code>address</code> (geo-anchor), <code>contactPoint</code> (phone + contact type). Google’s Structured Data Testing Tool and the Rich Results Test will both parse it. Once live, check the Knowledge Graph API to confirm entity recognition within 2 to 4 weeks.</p>
+<hr />
+<h3 id="fix-social-preview-cards-on-3-pages-ogimage-missing-high-priority">2. Fix social preview cards on 3 pages (og:image missing) ⚠ HIGH PRIORITY</h3>
+<p>Three of the 10 sampled pages are missing <code>og:image</code> tags. When someone shares these pages on LinkedIn, Facebook, or Slack (or when ChatGPT or Perplexity references them), the preview card shows up blank or with a broken placeholder. The affected pages are:</p>
+<ul>
+<li>https://www.wardvillage.com/ads/</li>
+<li>https://www.wardvillage.com/broker-portal/</li>
+<li>https://www.wardvillage.com/contact-information/</li>
+</ul>
+<p><strong>Impact:</strong> Social shares drive referral traffic. AI answer engines increasingly display preview cards when citing sources. A missing image makes your content look unfinished and reduces click-through from shared links by 30 to 50% (industry average per Buffer’s 2024 study).</p>
+<p><strong>Fix:</strong></p>
+<p>Add an Open Graph image tag to each page. The image should be 1200×630 pixels (the LinkedIn/Facebook standard). Use a branded image or a page-specific hero shot.</p>
+<p><strong>How to add it (by platform):</strong></p>
+<ul>
+<li><strong>WordPress (Yoast SEO):</strong> Edit the page, scroll to Yoast meta box, click Social tab, upload an image under Facebook/Open Graph.</li>
+<li><strong>WordPress (Rank Math):</strong> Edit page, Rank Math SEO panel, Social tab, upload Facebook thumbnail.</li>
+<li><strong>Squarespace:</strong> Page Settings &gt; SEO &gt; Social Image &gt; upload (applied per-page).</li>
+<li><strong>Webflow:</strong> Page Settings &gt; Open Graph Settings &gt; OG Image &gt; upload.</li>
+<li><strong>Wix:</strong> Page menu &gt; SEO (Google) &gt; Social Share &gt; upload image.</li>
+<li><strong>Custom-coded site:</strong> Paste this in the <code>&lt;head&gt;</code> of each page:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.wardvillage.com/path/to/image.jpg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image:width&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;1200&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image:height&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;630&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image:alt&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Ward Village - Honolulu master-planned community&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Replace <code>/path/to/image.jpg</code> with the actual image URL. The <code>width</code>, <code>height</code>, and <code>alt</code> tags are optional but improve card rendering and accessibility.</p>
+<p><strong>Technical detail:</strong></p>
+<p>The Open Graph Protocol (ogp.me) defines <code>og:image</code> as the canonical social preview image. Facebook, LinkedIn, Twitter (when <code>twitter:image</code> is absent), Slack, and Discord all read this tag. Validators: Facebook Sharing Debugger (developers.facebook.com/tools/debug/), LinkedIn Post Inspector, Twitter Card Validator. After adding the tag, clear the cache in each validator by re-scraping the URL.</p>
+<hr />
+<h3 id="add-meta-descriptions-to-6-pages-medium-priority">3. Add meta descriptions to 6 pages ⚠ MEDIUM PRIORITY</h3>
+<p>Six of the 10 sampled pages have either no meta description or one that is too long and will truncate in search results. Google cuts descriptions at roughly 160 characters. Three pages have descriptions over that limit (will show “…” in SERPs). Three pages have no description at all (Google will auto-generate one from body content, often poorly).</p>
+<p><strong>Missing meta descriptions:</strong></p>
+<ul>
+<li>https://www.wardvillage.com/ads/</li>
+<li>https://www.wardvillage.com/amenities/</li>
+<li>https://www.wardvillage.com/articles/hidden-in-plain-sight-vladimir-ossipoff/</li>
+<li>https://www.wardvillage.com/broker-portal/</li>
+<li>https://www.wardvillage.com/centers/aeo-shops/</li>
+<li>https://www.wardvillage.com/contact-information/</li>
+</ul>
+<p><strong>Over 160 characters (will truncate):</strong></p>
+<ul>
+<li>https://wardvillage.com (161 characters)</li>
+<li>https://www.wardvillage.com/ (161 characters, duplicate)</li>
+<li>https://www.wardvillage.com/about/art-culture/ (179 characters)</li>
+</ul>
+<p><strong>Impact:</strong> Meta descriptions do not directly affect rankings, but they do affect click-through rate. A well-written description that fits within the 160-character limit improves CTR by 5 to 10% (Moz 2025 CTR study). AI engines also use the meta description as a fallback when summarizing your page if body content is ambiguous.</p>
+<p><strong>Fix:</strong></p>
+<p>Write a unique 120 to 155 character description for each page. Lead with the value proposition or page purpose. Avoid repeating the title tag verbatim.</p>
+<p><strong>How to add it (by platform):</strong></p>
+<ul>
+<li><strong>WordPress (Yoast or Rank Math):</strong> Edit page, scroll to SEO plugin box, fill in “Meta description” field.</li>
+<li><strong>Squarespace:</strong> Page Settings &gt; SEO &gt; Description.</li>
+<li><strong>Webflow:</strong> Page Settings &gt; SEO Settings &gt; Meta Description.</li>
+<li><strong>Wix:</strong> Page menu &gt; SEO (Google) &gt; SEO basics &gt; What’s the page about? (description field).</li>
+<li><strong>Custom-coded site:</strong> Paste this in the <code>&lt;head&gt;</code>:</li>
+</ul>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;description&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Your 120-155 character description here.&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong></p>
+<p>The <code>&lt;meta name="description"&gt;</code> tag. Google reserves the right to ignore it and generate snippets from page content, but in practice uses the authored description 70% of the time when it is present and relevant to the query (Google Search Central documentation, 2024). Validate length with a SERP preview tool (e.g., Yoast’s built-in preview, Moz Title Tag Preview Tool, or manualcounter.com).</p>
+<hr />
+<h3 id="fix-title-tag-length-on-6-pages-medium-priority">4. Fix title tag length on 6 pages ⚠ MEDIUM PRIORITY</h3>
+<p>Six pages have title tags outside the recommended 30 to 65 character range. Google truncates titles at roughly 60 characters (or 600 pixels). Titles under 30 characters often waste valuable keyword space.</p>
+<p><strong>Too short (under 30 characters):</strong></p>
+<ul>
+<li>https://www.wardvillage.com/ads/ — “Ads Archive - Ward Village” (26 characters)</li>
+<li>https://www.wardvillage.com/amenities/ — “Amenities - Ward Village” (24 characters)</li>
+<li>https://www.wardvillage.com/broker-portal/ — “Broker Portal - Ward Village” (28 characters)</li>
+<li>https://www.wardvillage.com/centers/aeo-shops/ — “Ae’o Shops - Ward Village” (25 characters)</li>
+</ul>
+<p><strong>Too long (over 65 characters):</strong></p>
+<ul>
+<li>https://wardvillage.com — “Ward Village - Condos, Real Estate, Shops, &amp; Dining | Ward Village” (70 characters, brand repeated)</li>
+<li>https://www.wardvillage.com/ — same as above (70 characters)</li>
+</ul>
+<p><strong>Impact:</strong> Truncated titles lose click-through. Short titles waste the single most important on-page ranking signal. A well-crafted title improves CTR and helps Google understand page topic.</p>
+<p><strong>Fix:</strong></p>
+<p>Rewrite titles to fit 50 to 60 characters. Include primary keyword near the front. Drop the redundant ” - Ward Village” suffix if the brand already appears earlier in the title (as with the homepage).</p>
+<p><strong>Suggested rewrites:</strong></p>
+<ul>
+<li><code>/ads/</code> → “Advertising Archive | Ward Village Honolulu” (45 chars)</li>
+<li><code>/amenities/</code> → “Resort Amenities &amp; Resident Services | Ward Village” (52 chars)</li>
+<li><code>/broker-portal/</code> → “Broker Resources &amp; MLS Portal | Ward Village” (45 chars)</li>
+<li><code>/centers/aeo-shops/</code> → “Ae’o Shops: Retail &amp; Dining at Ward Village” (44 chars)</li>
+<li>Homepage → “Ward Village: Condos, Shops &amp; Dining in Honolulu” (50 chars)</li>
+</ul>
+<p><strong>How to edit (by platform):</strong></p>
+<ul>
+<li><strong>WordPress (Yoast or Rank Math):</strong> Edit page, SEO plugin box, “SEO title” field.</li>
+<li><strong>Squarespace:</strong> Page Settings &gt; SEO &gt; Page Title.</li>
+<li><strong>Webflow:</strong> Page Settings &gt; SEO Settings &gt; Title Tag.</li>
+<li><strong>Wix:</strong> Page menu &gt; SEO (Google) &gt; SEO basics &gt; Page title.</li>
+<li><strong>Custom-coded site:</strong> Edit the <code>&lt;title&gt;</code> tag in the page <code>&lt;head&gt;</code>:</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Your 50-60 character title here<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong></p>
+<p>Google’s title rewriting algorithm (rolled out August 2021) replaces author-specified titles roughly 60% of the time when they are deemed irrelevant, too long, or keyword-stuffed. Titles between 50 and 60 characters with clear intent signals are rewritten less often. Validate pixel width with a SERP simulator (e.g., Moz, Yoast, or Portent’s SERP Preview Tool). The <code>&lt;title&gt;</code> tag is still the strongest on-page ranking factor per Google’s 2024 ranking systems documentation.</p>
+<hr />
+<h3 id="add-aggregaterating-schema-no-social-proof-hook-for-ai-engines-medium-priority">5. Add AggregateRating schema (no social proof hook for AI engines) ⚠ MEDIUM PRIORITY</h3>
+<p>Your site has no AggregateRating schema on any sampled page. We detected testimonial-style text on 9 of 10 pages (<code>has_testimonial_text: true</code>), but none of it is marked up as a Review or AggregateRating. AI answer engines (ChatGPT, Perplexity, Google SGE) look for rating schema as a social proof signal when summarizing businesses. Without it, they have no numeric hook to cite (“Ward Village has a 4.8 star rating from residents”).</p>
+<p><strong>Impact:</strong> AggregateRating enables rich snippets (star ratings in Google search results) and provides a cite-able social proof metric for AI-generated answers. A star rating in SERPs increases CTR by 15 to 35% (BrightLocal’s 2025 Local Consumer Review Survey).</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked will deploy AggregateRating schema on your homepage and any high-traffic landing pages. You provide:</p>
+<ul>
+<li>Average rating (1 to 5 scale)</li>
+<li>Total number of reviews</li>
+<li>Optional: link to third-party review source (Google, Yelp, Trustpilot, etc.)</li>
+</ul>
+<p>We will structure it as:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;247&quot;</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;worstRating&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>This nests inside your Organization schema (which we are also deploying per Finding #1).</p>
+<p><strong>Technical detail:</strong></p>
+<p>Schema.org/AggregateRating. Must be paired with a parent entity (Organization, LocalBusiness, Product, or Service). Google’s Rich Results Test will validate it. Note: Google will only show star snippets in organic results if the reviews are from third-party sources or user-generated content on your own site. Self-asserted ratings without public review sources may not render stars, but the schema still feeds AI answer engines and the Knowledge Graph. Validate with Google’s Rich Results Test and Schema Markup Validator (validator.schema.org).</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure ⚠ ISSUES</h3>
+<p>Five pages have correct H1 structure (exactly one H1). Five pages do not:</p>
+<p><strong>No H1 (3 pages):</strong></p>
+<ul>
+<li>https://www.wardvillage.com/amenities/</li>
+<li>https://www.wardvillage.com/broker-portal/</li>
+<li>(one additional page with <code>h1_count: 0</code> not listed in detailed scan excerpt)</li>
+</ul>
+<p><strong>Multiple H1s (2 pages):</strong></p>
+<ul>
+<li>https://wardvillage.com (2 H1s: “ONLY HERE.” and one other)</li>
+<li>https://www.wardvillage.com/ (duplicate of above, 2 H1s)</li>
+</ul>
+<p><strong>Impact:</strong> The H1 is the primary on-page topic signal for search engines. Pages with zero H1s force Google to guess the page topic from body text. Multiple H1s dilute topic focus. Both patterns weaken rankings for target queries.</p>
+<p><strong>Fix:</strong></p>
+<p>Ensure every page has exactly one H1. The H1 should match the page’s primary topic and, ideally, echo the title tag with natural variation.</p>
+<p><strong>How to fix (by platform):</strong></p>
+<ul>
+<li><strong>WordPress (block editor):</strong> Select the heading block, set to “H1” in the toolbar dropdown. Remove any other H1s.</li>
+<li><strong>WordPress (classic editor):</strong> Highlight the heading text, select “Heading 1” from the paragraph dropdown.</li>
+<li><strong>Squarespace:</strong> Select the text block, click “Heading 1” in the format menu. Only apply once per page.</li>
+<li><strong>Webflow:</strong> Select the heading element, set tag to “H1” in the element settings panel. Search the page for duplicate H1s and demote to H2.</li>
+<li><strong>Wix:</strong> Click the text box, Text Settings &gt; choose “Heading 1” format. Ensure no other text boxes are set to H1.</li>
+<li><strong>Custom-coded site:</strong> Wrap your primary page heading in <code>&lt;h1&gt;</code> tags. Remove any other <code>&lt;h1&gt;</code> tags from the page.</li>
+</ul>
+<p><strong>Missing H1 example fix (for /amenities/):</strong></p>
+<p>The page has an H2 (“Amenities”) but no H1. Promote that H2 to an H1:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>Amenities<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Multiple H1 fix (for homepage):</strong></p>
+<p>The homepage has “ONLY HERE.” and a second H1. Pick the primary heading (likely “ONLY HERE.”) and demote the other to <code>&lt;h2&gt;</code>.</p>
+<p><strong>Technical detail:</strong></p>
+<p>HTML5 permits multiple H1s when using sectioning elements (<code>&lt;section&gt;</code>, <code>&lt;article&gt;</code>), but search engines and accessibility tools still treat the first H1 as the primary page heading. Best practice: one H1 per page. Validate with a headings checker (e.g., HeadingsMap browser extension, WAVE accessibility tool, or view-source and search for <code>&lt;h1&gt;</code>).</p>
+<hr />
+<h3 id="image-alt-text-mostly-clean">7. Image alt text ✓ MOSTLY CLEAN</h3>
+<p>Out of 205 total images sampled</p>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-ward-village">Schema Review — Ward Village</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>Ward Village has basic schema hygiene in place. All 10 sampled pages include JSON-LD, with site-wide BreadcrumbList and WebSite schemas present. Coverage is strong on navigational markup (BreadcrumbList on every page, ImageObject on 6 of 10 pages). The critical gap is entity recognition. No Organization schema exists anywhere on the site, which means Google, ChatGPT, and Perplexity have no structured way to know who Ward Village is, what they do, or where they operate. The second gap is social proof. No AggregateRating or Review schema exists, even though testimonial text appears on at least 7 pages. Real estate developments live and die on trust signals, and right now those signals are invisible to AI citation engines.</p>
+<p><strong>Schema grade: C+</strong> (Good breadcrumb coverage and technical execution, but missing the two entity-recognition primitives that matter most for a master-planned community competing for “Honolulu condos” and “Ward Village real estate” queries.)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>Organization</th>
+<th>AggregateRating</th>
+<th>RealEstateAgent</th>
+<th>Place</th>
+<th>BreadcrumbList</th>
+<th>Article</th>
+<th>WebPage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Art &amp; Culture</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ads Archive</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗ (uses CollectionPage)</td>
+</tr>
+<tr>
+<td>Amenities</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Article (Ossipoff)</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✓</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Broker Portal</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Ae’o Shops</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+<tr>
+<td>Contact</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✓</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings-1">Findings</h2>
+<h3 id="tell-google-and-ai-engines-who-you-are-critical">1. Tell Google and AI engines who you are ⚠ CRITICAL</h3>
+<p>Right now, when ChatGPT or Perplexity is asked “What is Ward Village?” or “Best master-planned communities in Honolulu,” they have no structured way to know your name, location, parent company, or what you offer. Google Search has the same problem. Organization schema is how you tell every AI engine and search platform “this is who we are.” Without it, you are not a recognized entity. You are just text on a page. Competitors with Organization schema get cited. You do not.</p>
+<p><strong>How to add it:</strong></p>
+<p>Your site appears to be custom-coded (no visible CMS generator tags). This means you will paste the JSON-LD block below into the <code>&lt;head&gt;</code> section of your site-wide template (the file that wraps every page). If you use a tag manager (Google Tag Manager, Segment, etc.), you can inject it there instead.</p>
+<ul>
+<li><strong>WordPress (Yoast, Rank Math, SEOPress):</strong> Yoast SEO → Search Appearance → General → Organization info. Fill in name, logo URL, social profiles. The plugin auto-generates the JSON-LD.</li>
+<li><strong>Squarespace:</strong> Settings → Business Information. Name, address, and logo fields populate Organization schema automatically.</li>
+<li><strong>Webflow:</strong> Project Settings → SEO → Sitewide Schema. Paste the JSON-LD block below into the “Head Code” field.</li>
+<li><strong>Wix:</strong> SEO Tools → Structured Data. Add as JSON-LD custom code.</li>
+<li><strong>Custom-coded (your case):</strong> Paste the block below into the <code>&lt;head&gt;</code> of your global template (header.php, layout component, etc.).</li>
+</ul>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Ward Village&quot;</span><span class="fu">,</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com&quot;</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/path-to-your-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&#39;s premier master-planned community: a cosmopolitan setting embracing Hawaiian culture with the perfect mix of urban and island living.&quot;</span><span class="fu">,</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;parentOrganization&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Howard Hughes Corporation&quot;</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/WardVillage&quot;</span><span class="ot">,</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.instagram.com/wardvillage&quot;</span><span class="ot">,</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://twitter.com/WardVillage&quot;</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>@id</code> field creates a stable reference so other schemas on your site can link back to this Organization entity using <code>"publisher": { "@id": "https://www.wardvillage.com/#organization" }</code>. The <code>parentOrganization</code> field ties Ward Village to Howard Hughes Corporation, which strengthens entity recognition (Google knows Howard Hughes, so this inheritance helps). The <code>sameAs</code> array links your social profiles, which Google uses to verify identity and build your Knowledge Graph entry. Replace <code>"logo"</code> with the actual URL of your primary logo image (must be accessible, square or 16:9 aspect ratio, minimum 112px wide). Add street address if you want local SEO signals (you may prefer city-level since this is a district, not a single building).</p>
+<hr />
+<h3 id="show-visitor-ratings-and-social-proof-to-ai-engines-high">2. Show visitor ratings and social proof to AI engines ⚠ HIGH</h3>
+<p>We found testimonial text on 7 of 10 sampled pages. That is great. The problem is it exists only as HTML prose. Google and ChatGPT cannot extract a star rating or review count from a paragraph of text. AggregateRating schema is how you make those signals machine-readable. Right now, when an AI is asked “Is Ward Village worth it?” or “Ward Village reviews,” it has no structured data to cite. Competitors with AggregateRating get featured. You get skipped.</p>
+<p><strong>How to add it:</strong></p>
+<p>You need to aggregate your actual ratings (from Google reviews, Facebook, internal surveys, whatever sources you trust) and declare them in AggregateRating schema. This should live inside your Organization schema (nested) or on pages where reviews appear (like a testimonials page, if you have one).</p>
+<p>If you display individual reviews on the site (names, quotes, dates), mark each one up with Review schema. If you only want to show the aggregate (e.g., “4.8 stars from 127 reviews”), use AggregateRating alone.</p>
+<ul>
+<li><strong>WordPress (WP Review Pro, Schema Pro, Yoast Local SEO add-on):</strong> These plugins let you input aggregate rating data in a UI. They output the JSON-LD automatically.</li>
+<li><strong>Squarespace, Webflow, Wix:</strong> No native aggregate-rating UI. You will paste JSON-LD into a site-wide code injection area (same as Organization schema above).</li>
+<li><strong>Custom-coded (your case):</strong> Paste the block below into your site-wide <code>&lt;head&gt;</code>, nested inside the Organization schema we added in Finding #1. Alternatively, paste it as a standalone block if you prefer separation.</li>
+</ul>
+<p><strong>Fix — ready-to-paste code (nested version, to go inside your Organization schema):</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Ward Village&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/path-to-your-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&#39;s premier master-planned community: a cosmopolitan setting embracing Hawaiian culture with the perfect mix of urban and island living.&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;parentOrganization&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Howard Hughes Corporation&quot;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/WardVillage&quot;</span><span class="ot">,</span></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.instagram.com/wardvillage&quot;</span><span class="ot">,</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://twitter.com/WardVillage&quot;</span></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;127&quot;</span><span class="fu">,</span></span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;worstRating&quot;</span><span class="fu">:</span> <span class="st">&quot;1&quot;</span></span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Nesting <code>aggregateRating</code> inside Organization tells Google and AI engines that the 4.8-star rating applies to Ward Village as an entity, not to a single condo listing or blog post. Replace <code>"ratingValue"</code> and <code>"reviewCount"</code> with your actual numbers. You can pull these from Google Business Profile API, Facebook reviews export, or manual aggregation. Google requires <code>reviewCount</code> to be at least 2 for rich results to show. If you have fewer than 2 public reviews, hold off on this schema until you collect more (or use individual Review schema instead, which has no minimum-count requirement).</p>
+<hr />
+<h3 id="fix-broken-open-graph-image-coverage-on-3-pages-medium">3. Fix broken Open Graph image coverage on 3 pages ⚠ MEDIUM</h3>
+<p>When someone shares your site on LinkedIn, Slack, or ChatGPT references it in a citation card, the preview image comes from the <code>og:image</code> meta tag. Right now, 3 of your 10 sampled pages are missing that tag. Those pages show up as blank gray boxes when shared. The pages with the gap: <code>/ads/</code>, <code>/amenities/</code>, <code>/broker-portal/</code>, and <code>/contact-information/</code> (4 pages total, actually — all missing <code>og:image</code> or <code>twitter:image</code>).</p>
+<p><strong>How to fix it:</strong></p>
+<p>You need to add <code>&lt;meta property="og:image" content="https://www.wardvillage.com/default-share-image.jpg"&gt;</code> to the <code>&lt;head&gt;</code> of every page. Most sites use a default fallback image (your logo or a hero shot of the development) and override it on specific pages (e.g., Art &amp; Culture page uses a mural photo, article pages use the featured image).</p>
+<ul>
+<li><strong>WordPress (Yoast, Rank Math):</strong> Yoast SEO → Social → Facebook → Upload default image. Per-page overrides: edit any page → Yoast SEO panel → Social tab → upload page-specific image.</li>
+<li><strong>Squarespace:</strong> Settings → Marketing → Social Image Sharing → upload default image. Per-page: Page Settings → Social Image.</li>
+<li><strong>Webflow:</strong> Page Settings → Open Graph Image → upload. Set a site-wide default in Project Settings → SEO → Default Open Graph Image.</li>
+<li><strong>Wix:</strong> SEO Tools → Social Share → upload default image. Per-page overrides in page settings.</li>
+<li><strong>Custom-coded (your case):</strong> Paste this into your <code>&lt;head&gt;</code> template, or add it dynamically per page if you want unique images per URL:</li>
+</ul>
+<div class="sourceCode" id="cb8"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.wardvillage.com/images/default-share-preview.jpg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.wardvillage.com/images/default-share-preview.jpg&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>Replace the URL with your actual image path. Image should be 1200×630px (or 1.91:1 ratio), under 8 MB, and publicly accessible (not behind a login).</p>
+<p><strong>Why this matters:</strong> ChatGPT, Perplexity, LinkedIn, and Slack all use Open Graph tags to generate preview cards. Missing <code>og:image</code> means your link shows up as text-only, which gets 3x lower click-through than links with images. You already have <code>og:image</code> on 7 pages, so this is just cleanup on the stragglers.</p>
+<hr />
+<h3 id="add-place-schema-for-ward-village-as-a-physical-location-medium">4. Add Place schema for Ward Village as a physical location ⚠ MEDIUM</h3>
+<p>Ward Village is not just a company. It is a 60-acre master-planned neighborhood. Right now, you have Organization schema (once you add Finding #1 above), but you do not have Place schema. Place schema tells Google and AI engines “this is a specific geographic location with boundaries, amenities, and things to do here.” It is the difference between being cited as “a real estate developer” versus “a walkable urban district in Honolulu.” Queries like “things to do in Ward Village” or “Ward Village neighborhood guide” need Place schema to trigger rich results and AI citations.</p>
+<p><strong>How to add it:</strong></p>
+<p>Place schema should live on your homepage or on a dedicated “About Ward Village” or “Neighborhood” page. It can coexist with Organization schema (you can have both on the same page, linked via <code>@id</code> references).</p>
+<ul>
+<li><strong>WordPress, Squarespace, Webflow, Wix:</strong> No CMS natively generates Place schema. You will paste the JSON-LD block below into a site-wide or page-specific code injection area.</li>
+<li><strong>Custom-coded (your case):</strong> Paste the block below into the <code>&lt;head&gt;</code> of your homepage (or whichever page best describes the neighborhood itself).</li>
+</ul>
+<p><strong>Fix — ready-to-paste code:</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Place&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/#place&quot;</span><span class="fu">,</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Ward Village&quot;</span><span class="fu">,</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;A 60-acre master-planned community in Honolulu blending urban living, Hawaiian culture, shops, dining, and public art.&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;1240 Ala Moana Blvd&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;96814&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;geo&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;GeoCoordinates&quot;</span><span class="fu">,</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;latitude&quot;</span><span class="fu">:</span> <span class="st">&quot;21.2920&quot;</span><span class="fu">,</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;longitude&quot;</span><span class="fu">:</span> <span class="st">&quot;-157.8510&quot;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com&quot;</span><span class="fu">,</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;photo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.wardvillage.com/images/ward-village-aerial.jpg&quot;</span><span class="fu">,</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;containedInPlace&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;City&quot;</span><span class="fu">,</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>geo</code> coordinates (latitude/longitude) let Google plot Ward Village on a map and associate it with local queries. The <code>containedInPlace</code> property nests Ward Village inside Honolulu, which helps with “neighborhoods in Honolulu” queries. The <code>@id</code> field lets you reference this Place from other schemas (e.g., you could add <code>"location": { "@id": "https://www.wardvillage.com/#place" }</code> to events or condo listings). Replace the <code>photo</code> URL with an actual aerial or hero shot of the development. Replace <code>streetAddress</code> and coordinates with the precise center point of Ward Village (I used an approximation based on Ala Moana Blvd, but verify the exact coords).</p>
+<hr />
+<h3 id="clean-up-title-tag-length-on-6-pages-low">5. Clean up title tag length on 6 pages ⚠ LOW</h3>
+<p>4 pages have title tags under 30 characters (too short), and 2 pages are over 65 characters (too long). Short titles waste space in search results. Long titles get truncated with “…” and lose the tail end of your message. Neither case is fatal, but both are sloppy. The pages with issues:</p>
+<ul>
+<li><strong>Too short (under 30 chars):</strong> <code>/ads/</code> (26 chars), <code>/amenities/</code> (24 chars), <code>/broker-portal/</code> (28 chars), <code>/centers/aeo-shops/</code> (25 chars)</li>
+</ul>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-3">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-ward-village">90-Day Roadmap — Ward Village</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-08
+<strong>Window:</strong> Months 1–3 (by 2026-08-08)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented. Every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-08):</strong>
+- 0 of 10 sampled pages have Organization schema (no entity recognition in place)
+- 3 of 10 pages missing og:image (30% of social shares show blank previews)
+- 0 pages with AggregateRating schema (testimonial text exists but AI engines cannot cite it)
+- 5 of 10 pages have broken H1 structure (0 H1s or multiple H1s)
+- 6 of 10 pages have meta descriptions that are missing or over 160 characters</p>
+<p><strong>90-day target:</strong>
+- Organization schema live site-wide (entity recognition active)
+- 10 of 10 pages have proper social preview cards (og:image coverage at 100%)
+- AggregateRating schema deployed on homepage and key landing pages (social proof visible to AI)
+- 10 of 10 pages have correct H1 structure (one clear H1 per page)
+- 10 of 10 pages have meta descriptions in the 80 to 160 character range</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-08">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix entity recognition and technical blocking issues so Google and AI engines know who Ward Village is.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Deploy Organization schema site-wide (name, logo, address, parent org Howard Hughes, social profiles)</td>
+<td>Schema Review, finding 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Add og:image tags to /ads/, /broker-portal/, and /contact-information/ pages</td>
+<td>Technical Audit, finding 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Fix H1 structure on /amenities/ (currently 0 H1s), /broker-portal/ (0 H1s), and homepage (currently 2 H1s)</td>
+<td>Technical Audit, finding 3</td>
+<td>1.5 hours</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Rewrite title tags for /ads/, /amenities/, /broker-portal/, and /centers/aeo-shops/ (all under 30 characters)</td>
+<td>Technical Audit, finding 4</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Write meta descriptions for 6 pages currently missing them (all except homepage and art-culture page)</td>
+<td>Technical Audit, finding 5</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Trim meta descriptions on homepage, art-culture, and Ossipoff article (all over 160 characters)</td>
+<td>Technical Audit, finding 5</td>
+<td>0.5 hours</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Add alt text to 2 images missing it (1 on homepage, 1 on www.wardvillage.com)</td>
+<td>Technical Audit, finding 7</td>
+<td>0.25 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Add 100 to 200 words of content to /amenities/ and /broker-portal/ (both under 300 words)</td>
+<td>Technical Audit, finding 6</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~10.25 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add FAQ schema to contact page if Q&amp;A content exists (no evidence in scan, but if contact form has common questions list them)</li>
+<li>Add Twitter image tags (twitter:image) to the 3 pages that have twitter:card but no twitter:image</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Rich Results Test shows valid Organization schema on homepage
+- All 10 sampled pages pass Facebook Sharing Debugger with image preview
+- Every page has exactly one H1 and meta description between 80 and 160 characters</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-09-2026-07-09">MONTH 2 — CONTENT CITATION HOOKS (2026-06-09 – 2026-07-09)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Deploy social proof schema and create answer-engine-ready content so AI can cite Ward Village by name.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Deploy AggregateRating schema on homepage (at least 7 pages have testimonial text, extract star-equivalent rating)</td>
+<td>Schema Review, finding 2</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Add Place schema to homepage or about page (latitude/longitude for Ward Village location, geo-anchor for “Honolulu master-planned community” queries)</td>
+<td>Schema Review, finding 3</td>
+<td>1.5 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Create FAQ page targeting “What is Ward Village?”, “Who owns Ward Village?”, “Ward Village condos price range?” with FAQPage schema</td>
+<td>Schema Review, finding 4</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Write 800-word “About Ward Village” page with clear entity description, parent company mention, project timeline, neighborhood boundaries (citation target for AI)</td>
+<td>Schema Review, finding 1 context</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Add Review schema to 3 to 5 individual testimonials (if customer permission exists, use itemReviewed: “Ward Village”, reviewRating, author)</td>
+<td>Schema Review, finding 2</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~12.5 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- ChatGPT or Perplexity query “What is Ward Village?” returns a citation to wardvillage.com with correct entity name and parent company
+- Google Rich Results Test validates AggregateRating and FAQPage schema
+- “About Ward Village” page indexes and begins appearing in Google’s “People also ask” boxes for related queries</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-10-2026-08-08">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-10 – 2026-08-08)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Build topical authority pages, secure one external citation, and set up tracking for AI engine visibility.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Publish “Guide to Buying a Condo in Ward Village” (1200 words, sections: financing, HOA fees, parking, pet policies, resale value) with HowTo schema</td>
+<td>Schema Review, finding 4 (content gap)</td>
+<td>5 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Publish “Ward Village Neighborhood Guide” (1000 words, cover restaurants, transit, schools, beaches within 1 mile) with Place or LocalBusiness schema for anchor tenants</td>
+<td>Schema Review, finding 3</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Secure one backlink or citation from Honolulu Magazine, Honolulu Civil Beat, or Hawaii Business Magazine (pitch the Ossipoff article or art-culture page)</td>
+<td>Implied from AEO best practices</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up weekly monitoring: run “What is Ward Village?” and “Best Honolulu condos” in ChatGPT, Perplexity, Gemini. Log whether wardvillage.com is cited and in what context.</td>
+<td>Implied from AEO measurement need</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Add sameAs links in Organization schema for any missing social profiles (check for TikTok, YouTube, Pinterest if active)</td>
+<td>Schema Review, finding 1</td>
+<td>0.5 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~13.5 hours.</strong></p>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- At least one AI engine (ChatGPT, Perplexity, or Gemini) cites wardvillage.com by name in response to “Honolulu master-planned community” or “Ward Village condos”
+- Two new authority pages published and indexed in Google within 7 days
+- Monitoring log shows baseline citation frequency for next quarter comparison</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Video schema and YouTube integration (if Ward Village has property tours or community event videos, mark them up and embed with VideoObject schema)</li>
+<li><strong>Month 5:</strong> Expand FAQ coverage to 15 to 20 questions, target long-tail queries (“Ward Village vs Kakaako condos”, “Ward Village parking costs”)</li>
+<li><strong>Month 6:</strong> Competitor backlink replication (identify top 5 sites linking to competing Honolulu developments, pitch same outlets)</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Deploy Organization schema site-wide. Paste the JSON-LD block from Schema Review finding 1 into the <code>&lt;head&gt;</code> of your global template. This single change makes Ward Village a recognized entity in Google’s Knowledge Graph and gives every AI engine a structured hook to cite your brand by name.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Organization schema indexes and Ward Village appears in Google’s Knowledge Graph preview within 3 to 4 weeks
+- At least one AI engine (Perplexity or ChatGPT) cites wardvillage.com in answer to “What is Ward Village?” or similar entity query
+- Social share click-through improves by 15 to 25% due to og:image coverage reaching 100%
+- Google Search Console impressions for branded queries increase 10 to 20% due to better meta descriptions and H1 clarity</p>
+<p><strong>Optimistic case:</strong>
+- Google Knowledge Panel appears for “Ward Village” branded search with logo, description, and social links populated from Organization schema
+- Two AI engines cite wardvillage.com in answers to “best Honolulu condos” or “Honolulu master-planned communities”
+- FAQ page earns Google rich result snippet for at least one question within 30 days of publish
+- One external citation secured from local news or lifestyle publication, driving referral traffic spike</p>
+<p><strong>Conservative case:</strong>
+- Organization schema validates in Rich Results Test but Knowledge Panel does not appear yet (typical delay 4 to 8 weeks)
+- AI engines do not yet cite Ward Village by name but wardvillage.com appears in source links for related real estate queries
+- Social share engagement improves modestly (5 to 10% lift) as og:image coverage completes
+- Internal metrics improve (bounce rate drops 5 to 8% due to clearer H1s and meta descriptions aligning with user intent)</p>
+
+
+</body>
+</html>

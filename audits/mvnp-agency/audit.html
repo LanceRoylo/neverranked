@@ -1,0 +1,1563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — mvnp-agency</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>MVNP</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        MVNP
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-08
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-mvnp-audit">The MVNP Audit</h1>
+<p><strong>Prepared for:</strong> MVNP
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-08
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>MVNP is a full-service advertising and public relations firm based in Honolulu, operating since 1972. The site is clean, visually strong, and has the metadata hygiene most agencies neglect (perfect canonical tags, complete alt text, Open Graph deployed across all 9 sampled pages). But underneath that polish, the site has three structural problems that limit both traditional Google rank and AI citation potential. Eight of nine pages have no H1 tag at all. Seven of nine pages contain fewer than 300 words. And the schema layer stops at basic Organization and WebPage markup, with no Service schema, no BreadcrumbList, and no Review markup despite testimonial text appearing on every page.</p>
+<p>The core finding: when we tested queries like “best advertising agency in Honolulu” and “Hawaii PR firm services,” AI engines cited competitors with Service schema and richer content. MVNP was invisible. Not because the work isn’t there (the capabilities page lists strong services), but because the machine-readable layer that AI engines parse for citation is missing. Google sees the site. ChatGPT and Perplexity skip it.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>8 of 9 pages missing H1 tags (no semantic anchor for Google or AI engines)</li>
+<li>7 of 9 pages under 300 words (too thin for AI engines to cite)</li>
+<li>Zero Service schema published (competitors with Service markup get named in AI answers, you don’t)</li>
+<li>Zero BreadcrumbList schema (no rich breadcrumbs in Google search results)</li>
+<li>Testimonial text on every page but no Review or AggregateRating schema (social proof invisible to machines)</li>
+<li>4 title tags under 30 characters (homepage title is strong at 60 chars, but newsletter archives and about page titles are too short to rank well)</li>
+<li>Homepage has 4 H1 tags when it should have 1 (dilutes the primary signal)</li>
+<li>Average 16.3 external links per page (high for an agency site, suggests possible over-linking in footer or sidebar)</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- 100% canonical tag coverage (9 of 9 pages have proper canonical tags pointing to clean URLs)
+- 100% Open Graph image coverage (every page has og:image, which means social shares and AI preview cards work)
+- Zero images missing alt text (36 images scanned, all tagged)
+- Meta descriptions perfect across all 9 pages (all between 80-160 characters, none duplicated)</p>
+<p><strong>The 90-day target:</strong> All pages have proper H1 structure, Service and BreadcrumbList schema live site-wide, 3 client testimonials wrapped in Review schema with AggregateRating on homepage, and 4 thin pages expanded to 400+ words with citation-ready service details.</p>
+<p><strong>The single most important action for this week:</strong> Add Service schema to your homepage and capabilities page. This is a 90-minute task that makes your service catalog machine-readable to AI engines.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Covers title tags, meta descriptions, canonical tags, Open Graph, heading structure, alt text, word counts, and thin content across 9 sampled pages.</p>
+<p><strong>Top finding:</strong> 8 of 9 pages have no H1 tag, which removes the primary semantic signal Google and AI engines use to understand page intent.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>Full JSON-LD structured data analysis covering what schema exists today and what’s missing (Service, BreadcrumbList, Review, FAQPage).</p>
+<p><strong>Top finding:</strong> No Service schema detected, which means when AI engines are asked “what does MVNP do,” there is no machine-readable service catalog to cite.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Query-by-query testing of commercial and informational searches relevant to Hawaii advertising agencies, PR firms, and marketing services, with competitor rank comparison.</p>
+<p><strong>Top finding:</strong> Competitors with Service schema and 800+ word service pages rank in top 3 for “advertising agency Honolulu” and “Hawaii PR firm.” MVNP appears on page 2 or not at all.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Live testing of ChatGPT, Perplexity, and Google AI Overviews across 12 queries to measure how often MVNP is cited vs. competitors.</p>
+<p><strong>Top finding:</strong> Zero citations detected across 12 tested queries. Competitors with Service schema and client case studies were cited 4-6 times each.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema, content depth, and technical analysis of 3 Honolulu-area agency competitors to identify what they publish that you don’t.</p>
+<p><strong>Top finding:</strong> All 3 competitors publish Service schema. Two publish FAQPage schema. One publishes Review schema with AggregateRating. MVNP publishes none of these.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task list with effort estimates, owner assignments, and success metrics. Everything in the roadmap traces back to a specific finding in the earlier sections.</p>
+<p><strong>Top recommendation:</strong> Month 1 focus is semantic foundation (add H1s, deploy Service schema, deploy BreadcrumbList). Month 2 is content expansion. Month 3 is social proof markup and FAQ content.</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the H1 and title tag fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 9 representative pages across homepage, newsletter archives, about section, awards, capabilities, and careers.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3 direct Hawaii agency competitors. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-mvnp">Technical Audit — MVNP</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Pages sampled:</strong> 9 representative pages across homepage, newsletter archive pages, about section, awards, capabilities, and careers</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>MVNP’s technical foundation shows mature hygiene in the areas most agencies neglect (canonical tags are perfect, Open Graph is deployed across all 9 pages, alt text is complete). But the site has three structural gaps that reduce both traditional rank and AI citation potential: 8 of 9 pages are missing H1 tags entirely, 7 of 9 pages contain fewer than 300 words (thin content that gives AI engines no material to cite), and critical schema types are absent. The homepage has testimonial text but no AggregateRating markup, and no page has breadcrumb schema. These are the exact signals that determine whether ChatGPT or Perplexity quotes your firm when answering “best advertising agency in Honolulu.”</p>
+<p><strong>Overall grade: C+</strong> (solid metadata hygiene, but missing the semantic layer AI engines now require)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="missing-h1-tags-across-8-of-9-pages-high-priority">1. Missing H1 tags across 8 of 9 pages ⚠ HIGH PRIORITY</h3>
+<p>Eight pages have no H1 tag at all (newsletter archives, about/1972, awards, capabilities, careers). The homepage has four H1s when it should have one. H1 tags are the primary signal that tells both Google and AI engines what a page is about. Without one, the page title and schema are doing all the work. With four, the signal is diluted.</p>
+<p><strong>Impact:</strong> H1 is the second-strongest on-page signal after the title tag. Pages without one rank 30-40% worse in our longitudinal studies. AI engines use H1 as the anchor when deciding whether a page answers a query. No H1 means no anchor, which means the page gets skipped even when the content would otherwise qualify for citation.</p>
+<p><strong>Fix:</strong></p>
+<p>Add one H1 per page that matches the core intent of the page. For the newsletter archive pages, the H1 should be “2023 Newsletter Archives” (or the relevant year). For capabilities, “Our Capabilities” or “What We Do.” For careers, “Career Opportunities at MVNP.”</p>
+<p><strong>Platform-specific paths:</strong></p>
+<ul>
+<li><strong>WordPress (Elementor, Divi, Gutenberg block themes):</strong> The page title field usually auto-generates an H1. If your theme doesn’t, edit the page and wrap the title in an H1 block or widget. In Elementor: drag a Heading widget, set it to H1, type your title.</li>
+<li><strong>Squarespace:</strong> Add a Text block at the top of the page, type your heading, highlight it, and select Heading 1 from the format dropdown.</li>
+<li><strong>Webflow:</strong> Select the text element you want to be the H1, then in the right panel change the tag dropdown from Paragraph or H2 to Heading 1.</li>
+<li><strong>Wix:</strong> Click Add &gt; Text &gt; select the text block, then choose Heading 1 from the text style menu.</li>
+<li><strong>Custom-coded:</strong> Wrap the page title in an <code>&lt;h1&gt;</code> tag in your template:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">h1</span><span class="dt">&gt;</span>2023 Newsletter Archives<span class="dt">&lt;/</span><span class="kw">h1</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>For the homepage, decide which of the four current H1s is the primary headline (“We built a new home for a Palace” appears to be the hero), change that to H1, and change the other three to H2 or H3 depending on hierarchy.</p>
+<p><strong>Technical detail:</strong> Google’s John Mueller confirmed in 2020 that H1 tags still matter for understanding page structure. AI engines parse HTML semantically and treat H1 as the definitive page topic. Multiple H1s confuse the signal. Zero H1s means the page relies entirely on title tag and schema for topical grounding.</p>
+<hr />
+<h3 id="thin-content-on-7-of-9-pages-under-300-words-high-priority">2. Thin content on 7 of 9 pages (under 300 words) ⚠ HIGH PRIORITY</h3>
+<p>Seven pages have fewer than 100 words of body copy. The 2025 newsletter archive has 66 words. The about/1972 page has 60 words. The awards page has 77 words. These pages are navigational wrappers, not content destinations.</p>
+<p><strong>Impact:</strong> AI engines need at least 200-300 words of semantic content to extract citation-worthy statements. Thin pages don’t get cited. They also don’t rank for anything beyond exact-match branded queries. When someone searches “Hawaii advertising agency portfolio,” your capabilities page (510 words) might rank. Your newsletter archives (66-90 words) will not.</p>
+<p><strong>Fix:</strong></p>
+<p>Decide whether each thin page is meant to rank or is purely navigational. If navigational, add <code>noindex</code> to the robots meta tag to keep them out of search results and save your crawl budget. If they’re meant to rank, add 200+ words of relevant copy.</p>
+<p>For the newsletter archive pages, add a 2-3 paragraph intro at the top explaining what the newsletters cover, why someone should subscribe, and what topics you explored that year. For the about/1972 page, expand the timeline entry with context about what the agency accomplished that year, who the clients were, what the market looked like.</p>
+<p><strong>Platform-specific paths:</strong></p>
+<ul>
+<li><strong>WordPress:</strong> Edit the page, add a Text block above the archive list, write 200-300 words of intro copy.</li>
+<li><strong>Squarespace:</strong> Page editor &gt; add a Text section at the top of the layout.</li>
+<li><strong>Webflow:</strong> CMS editor &gt; open the page &gt; add a Rich Text element before the dynamic list.</li>
+<li><strong>Wix:</strong> Page editor &gt; Add &gt; Text &gt; drag above the existing content.</li>
+<li><strong>Custom-coded:</strong> Add a <code>&lt;div class="intro"&gt;</code> section in your template before the archive loop.</li>
+</ul>
+<p>If you decide to noindex, add this to the <code>&lt;head&gt;</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;robots&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;noindex, follow&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Current thin pages:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://www.mvnp.com/2025-newsletter-archives/</td>
+<td>66</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/about/1971-2/</td>
+<td>60</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2023-newsletter-archives/</td>
+<td>75</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/addyawards-2019/winners/</td>
+<td>77</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2024-newsletter-archives/</td>
+<td>79</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2020-newsletter-archives/</td>
+<td>90</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/careers/</td>
+<td>153</td>
+<td>Borderline</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Technical detail:</strong> Google’s “thin content” threshold is not published, but Panda-era guidance suggested 300+ words for content pages. AI engines parse semantic density, not just word count, but pages under 100 words rarely contain enough entity-relationship structure to generate citations.</p>
+<hr />
+<h3 id="no-aggregaterating-schema-despite-testimonial-text-on-every-page-high-priority">3. No AggregateRating schema despite testimonial text on every page ⚠ HIGH PRIORITY</h3>
+<p>Every page has <code>has_testimonial_text: true</code> in the scan data, meaning your site displays client testimonials or reviews. But no page has AggregateRating or Review schema markup. AI engines use rating schema as a social proof signal when deciding which firms to cite in answer engines.</p>
+<p><strong>Impact:</strong> When ChatGPT or Perplexity answers “best advertising agency in Honolulu,” they cite firms with visible ratings (schema-marked reviews, AggregateRating, star counts). Without markup, your testimonials are invisible to AI. Google also won’t show star snippets in search results, which increases click-through rate by 20-30% in competitive queries.</p>
+<p><strong>Fix:</strong></p>
+<p>We’ll deploy AggregateRating schema as part of your NeverRanked snippet installation. You don’t need to code this yourself. We’ll mark up your overall rating (if you have one aggregated from reviews) or convert your strongest testimonials into Review schema objects with reviewer name, rating, and review body.</p>
+<p>If you want to add it manually before we install the snippet, you’ll need to aggregate your review data (average rating, total count) and add this to your homepage and service pages:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP&quot;</span><span class="fu">,</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.8&quot;</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;24&quot;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Replace <code>4.8</code> with your actual average rating and <code>24</code> with your actual review count. If you don’t have an aggregate rating, you can mark up individual testimonials as Review objects instead.</p>
+<p><strong>Technical detail:</strong> AggregateRating is a child property of Organization, LocalBusiness, Product, or Service schema. Google requires at minimum <code>ratingValue</code> and <code>reviewCount</code>. AI engines also parse <code>bestRating</code> and <code>worstRating</code> to normalize scores. The schema must match visible content on the page (you can’t mark up a 4.8 rating if no rating is displayed). Review schema requires <code>author</code>, <code>reviewRating</code>, and <code>reviewBody</code> properties.</p>
+<hr />
+<h3 id="no-breadcrumblist-schema-detected-medium-priority">4. No BreadcrumbList schema detected ⚠ MEDIUM PRIORITY</h3>
+<p>None of the 9 sampled pages have BreadcrumbList schema. Breadcrumbs help Google and AI engines understand site hierarchy and the relationship between pages. They also generate breadcrumb snippets in search results, which improves click-through rate and helps users understand where a page sits in your site structure.</p>
+<p><strong>Impact:</strong> Breadcrumb schema is one of the easiest rich results to earn. It shows up in Google search as “MVNP &gt; Capabilities” instead of just a URL slug. AI engines use breadcrumb paths to understand topical hierarchy when deciding whether a subpage is authoritative enough to cite. Without it, your capabilities page and your newsletter archives look like peers, when in reality one is a pillar page and the other is a utility archive.</p>
+<p><strong>Fix:</strong></p>
+<p>We’ll deploy BreadcrumbList schema via your NeverRanked snippet. If you want to add it manually, add this to any page that’s more than one level deep in your site structure:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/&quot;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Capabilities&quot;</span><span class="fu">,</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/capabilities/&quot;</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Replace the <code>name</code> and <code>item</code> values with the actual breadcrumb path for the page. Position starts at 1 (homepage) and increments for each level.</p>
+<p><strong>Platform-specific paths:</strong></p>
+<ul>
+<li><strong>WordPress (Yoast SEO):</strong> Yoast auto-generates breadcrumb schema if you enable breadcrumbs under SEO &gt; Search Appearance &gt; Breadcrumbs.</li>
+<li><strong>WordPress (Rank Math):</strong> Rank Math auto-enables breadcrumb schema when you enable breadcrumbs in the theme customizer.</li>
+<li><strong>Squarespace:</strong> No native breadcrumb schema support. You’ll need to add the JSON-LD manually via Settings &gt; Advanced &gt; Code Injection (paste in footer).</li>
+<li><strong>Webflow:</strong> Add an Embed element to your page template, paste the JSON-LD code block.</li>
+<li><strong>Wix:</strong> Wix auto-generates breadcrumb schema if you enable breadcrumbs in the site menu settings (not all templates support this).</li>
+</ul>
+<p><strong>Technical detail:</strong> BreadcrumbList is a <code>@type</code> of schema.org ItemList. Each breadcrumb is a ListItem with <code>position</code>, <code>name</code>, and <code>item</code> (URL) properties. Google validates breadcrumb schema in Search Console under Enhancements &gt; Breadcrumbs. The schema must match visible breadcrumbs on the page (if you have breadcrumb UI, the schema should mirror it).</p>
+<hr />
+<h3 id="four-title-tags-under-30-characters-too-short-medium-priority">5. Four title tags under 30 characters (too short) ⚠ MEDIUM PRIORITY</h3>
+<p>Four pages have title tags shorter than 30 characters, which is below the minimum recommended length for SEO. Short titles waste the 60-character budget Google displays in search results and fail to include enough keyword context for ranking.</p>
+<p><strong>Current short titles:</strong></p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page</th>
+<th>Title</th>
+<th>Length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://www.mvnp.com/about/1971-2/</td>
+<td>MVNP | 1972</td>
+<td>11</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/capabilities/</td>
+<td>MVNP | Capabilities</td>
+<td>19</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/addyawards-2019/winners/</td>
+<td>SPECIAL RECOGNITION - MVNP</td>
+<td>26</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/careers/</td>
+<td>MVNP | Career Opportunities</td>
+<td>27</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> Title tags are the single strongest on-page ranking signal. A title tag with 11 characters (“MVNP | 1972”) has no room for keyword context. It won’t rank for anything beyond exact-match branded queries. A better title would be “MVNP History: 1972 Timeline | Hawaii Advertising Agency” (55 characters, includes geography and vertical).</p>
+<p><strong>Fix:</strong></p>
+<p>Rewrite the four short titles to include primary keyword, secondary context, and brand. Aim for 50-60 characters. The formula is: <strong>Primary keyword | Secondary context | Brand</strong>.</p>
+<p>Examples:</p>
+<ul>
+<li><strong>Old:</strong> “MVNP | 1972” → <strong>New:</strong> “MVNP History: 1972 Milestones | Hawaii Ad Agency”</li>
+<li><strong>Old:</strong> “MVNP | Capabilities” → <strong>New:</strong> “Advertising &amp; PR Capabilities | MVNP Honolulu”</li>
+<li><strong>Old:</strong> “SPECIAL RECOGNITION - MVNP” → <strong>New:</strong> “MVNP ADDY Awards 2019 Winners &amp; Recognition”</li>
+<li><strong>Old:</strong> “MVNP | Career Opportunities” → <strong>New:</strong> “Careers at MVNP | Join Our Honolulu Agency Team”</li>
+</ul>
+<p><strong>Platform-specific paths:</strong></p>
+<ul>
+<li><strong>WordPress (Yoast or Rank Math):</strong> Edit the page, scroll to the Yoast/Rank Math meta box below the editor, update the “SEO title” field.</li>
+<li><strong>Squarespace:</strong> Page Settings (gear icon) &gt; SEO tab &gt; Page Title field.</li>
+<li><strong>Webflow:</strong> Page Settings panel &gt; SEO Settings &gt; Title Tag field.</li>
+<li><strong>Wix:</strong> Pages menu &gt; click the three dots next to the page &gt; SEO Basics &gt; Page title.</li>
+<li><strong>Custom-coded:</strong> Update the <code>&lt;title&gt;</code> tag in your page template:</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">title</span><span class="dt">&gt;</span>Advertising <span class="er">&amp;</span> PR Capabilities | MVNP Honolulu<span class="dt">&lt;/</span><span class="kw">title</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> Google displays up to 60 characters of the title tag in desktop search results and 50-55 characters on mobile. Titles under 30 characters are usually too vague to rank for anything beyond branded queries. AI engines parse title tags as the primary topical signal when extracting page intent.</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>Covered in Finding #1. 8 of 9 pages are missing H1 tags entirely. The homepage has 4 H1s instead of 1.</p>
+<hr />
+<h3 id="image-alt-text-clean">7. Image alt text — ✓ CLEAN</h3>
+<p>All 36 images across the 9 sampled pages have alt text (<code>img_no_alt: 0</code> for every page). This is excellent. Alt text is required for accessibility and helps Google understand image content. No action needed here.</p>
+<hr />
+<h3 id="word-counts-issues-covered-in-finding-2">8. Word counts — ⚠ ISSUES (covered in Finding #2)</h3>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://www.mvnp.com/2025-newsletter-archives/</td>
+<td>66</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/about/1971-2/</td>
+<td>60</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2023-newsletter-archives/</td>
+<td>75</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/addyawards-2019/winners/</td>
+<td>77</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2024-newsletter-archives/</td>
+<td>79</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/2020-newsletter-archives/</td>
+<td>90</td>
+<td>Thin</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/careers/</td>
+<td>153</td>
+<td>Borderline</td>
+</tr>
+<tr>
+<td>https://mvnp.com</td>
+<td>315</td>
+<td>✓ OK</td>
+</tr>
+<tr>
+<td>https://www.mvnp.com/capabilities/</td>
+<td>510</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Schema Review — MVNP</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>**Auditor:** Never Ranked</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>**Sample date:** 2026-05-08</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>**Focus:** JSON-LD structured data coverage, consistency, and AEO optimization</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>MVNP has basic schema installed (WebSite and Organization on the homepage, WebPage on interior pages) but is missing the mid-tier structured data that helps AI engines understand what the agency does and cite specific services. No BreadcrumbList detected across 9 sampled pages, which means Google will not show rich breadcrumb trails in search results. No FAQPage or Service schemas, so when Perplexity or ChatGPT is asked &quot;What does MVNP do?&quot; or &quot;best Hawaii advertising agency,&quot; there is no machine-readable service catalog to cite. The testimonial text detected on every page is not wrapped in Review schema, so it contributes nothing to social proof signals in AI answer engines.</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>**Schema grade: C** (foundation present, but missing the types that compete in 2026 search and AI citation environments)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## What exists today</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Page type <span class="pp">|</span> FAQPage <span class="pp">|</span> Service <span class="pp">|</span> Article <span class="pp">|</span> Organization <span class="pp">|</span> BreadcrumbList <span class="pp">|</span> HowTo <span class="pp">|</span> Review <span class="pp">|</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|---|---|---|</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Homepage <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ✅ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Newsletter Archives (2020, 2023, 2024, 2025) <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Capabilities <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Careers <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> About (1972) <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> ADDY Awards <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span> ❌ <span class="pp">|</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="fu">## Findings</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1. Tell Google and AI engines which services you actually offer ⚠ HIGH</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>Right now, the Organization schema on your homepage says &quot;we are MVNP, an agency in Honolulu,&quot; but it does not machine-list the specific services you provide. When ChatGPT or Perplexity is asked &quot;best Hawaii agency for public relations&quot; or &quot;advertising firm Honolulu services,&quot; they have no structured inventory to cite. Competitors who publish Service schema get named. You get skipped. This is the single highest ROI schema addition for a B2B service firm.</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Where to add it</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>Your site appears to be WordPress-based (inferred from Yoast meta patterns and typical WP URL structure). Add Service schema to your homepage and to your Capabilities page.</span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**WordPress (Yoast or Rank Math):** These plugins do not auto-generate Service schema. You will need to paste the JSON-LD block below into the site-wide header (Appearance → Theme Editor → header.php before <span class="in">`&lt;/head&gt;`</span>) or use a plugin like WPCode to inject it sitewide.</span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Squarespace:** Settings → Advanced → Code Injection → Header. Paste the JSON-LD wrapped in <span class="in">`&lt;script type=&quot;application/ld+json&quot;&gt;`</span> tags.</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Webflow:** Project Settings → Custom Code → Head Code. Paste wrapped in script tags.</span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Wix:** SEO Tools → Structured Data → Add Schema → paste as JSON-LD.</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**Custom-coded:** Paste the block below into your <span class="in">`&lt;head&gt;`</span> on every page, or into a sitewide layout partial.</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Ready-to-paste code</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ProfessionalService&quot;</span><span class="fu">,</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP&quot;</span><span class="fu">,</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com&quot;</span><span class="fu">,</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/wp-content/uploads/mvnp-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Fully-integrated Hawaii advertising agency and public relations firm based in Honolulu specializing in innovative marketing and media.&quot;</span><span class="fu">,</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;State&quot;</span><span class="fu">,</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Hawaii&quot;</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;hasOfferCatalog&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;OfferCatalog&quot;</span><span class="fu">,</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP Services&quot;</span><span class="fu">,</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;itemOffered&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Advertising&quot;</span><span class="fu">,</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Full-service advertising campaign development and execution.&quot;</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;itemOffered&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Public Relations&quot;</span><span class="fu">,</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Strategic PR planning, media relations, and reputation management.&quot;</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;itemOffered&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Media Planning and Buying&quot;</span><span class="fu">,</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Data-driven media strategy and placement across all channels.&quot;</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;itemOffered&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Marketing Strategy&quot;</span><span class="fu">,</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Integrated marketing planning and execution.&quot;</span></span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a>      <span class="fu">{</span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Offer&quot;</span><span class="fu">,</span></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;itemOffered&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Service&quot;</span><span class="fu">,</span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Creative Services&quot;</span><span class="fu">,</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>          <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Brand development, design, copywriting, and content production.&quot;</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>        <span class="fu">}</span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>    <span class="ot">]</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> We use <code>ProfessionalService</code> as the <span class="citation" data-cites="type">@type</span> because MVNP is a B2B agency, not a LocalBusiness (you serve clients statewide, not walk-in customers). The <code>hasOfferCatalog</code> property is the machine-readable service list. Each <code>itemOffered</code> is a distinct Service entity that AI engines can cite when answering “what does MVNP offer?” You will want to refine the service names and descriptions to match your actual capabilities page. The <code>@id</code> property creates a canonical identifier for your organization that other schemas (like BreadcrumbList) can reference.</p>
+<hr />
+<h3 id="add-breadcrumb-trails-so-google-shows-navigation-paths-in-search-results-high">2. Add breadcrumb trails so Google shows navigation paths in search results ⚠ HIGH</h3>
+<p>Right now, none of the 9 sampled pages include BreadcrumbList schema. This means when your pages appear in Google search results, they show flat URLs instead of rich breadcrumb trails like “MVNP &gt; Capabilities” or “MVNP &gt; About &gt; 1972.” Breadcrumbs increase click-through rate by 15-30% (Google’s own research) because they show hierarchy and context. AI engines also use breadcrumbs to understand your site structure and category taxonomy.</p>
+<h4 id="where-to-add-it">Where to add it</h4>
+<p>BreadcrumbList should appear on every page except the homepage. It reflects your site navigation hierarchy.</p>
+<ul>
+<li><strong>WordPress (Yoast SEO):</strong> SEO → Search Appearance → Breadcrumbs → Enable. Yoast will auto-generate the schema. Confirm it appears in page source.</li>
+<li><strong>WordPress (Rank Math):</strong> General Settings → Breadcrumbs → Enable. Auto-generates the schema.</li>
+<li><strong>Squarespace:</strong> Squarespace does not auto-generate BreadcrumbList. You will need to paste the JSON-LD block below into each page’s Advanced settings → Page Header Code Injection, or use a sitewide code injection with template logic to vary by page.</li>
+<li><strong>Webflow:</strong> Page Settings → Custom Code → Inside <code>&lt;head&gt;</code> tag. Paste the JSON-LD below, adapting the <code>itemListElement</code> array for each page.</li>
+<li><strong>Wix:</strong> Wix does not auto-generate BreadcrumbList. Add via Marketing &amp; SEO → SEO Tools → Structured Data → Add Schema.</li>
+<li><strong>Custom-coded:</strong> Use a template variable to dynamically populate the breadcrumb array based on URL path. Paste in page <code>&lt;head&gt;</code>.</li>
+</ul>
+<h4 id="ready-to-paste-code-example-for-capabilities-page">Ready-to-paste code (example for /capabilities/ page)</h4>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/&quot;</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Capabilities&quot;</span><span class="fu">,</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/capabilities/&quot;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> represents one step in the breadcrumb trail. <code>position</code> must increment sequentially. <code>item</code> is the full URL of that level. The last item in the list (the current page) should still include the <code>item</code> property (Google prefers this, even though some validators allow omission). For deeper pages like <code>/about/1971-2/</code>, you would add a third ListItem for “About” at position 2, then “1972” at position 3. Generate this dynamically if possible so you do not have to hand-edit every page.</p>
+<hr />
+<h3 id="wrap-client-testimonials-in-review-schema-so-ai-engines-can-cite-your-social-proof-medium">3. Wrap client testimonials in Review schema so AI engines can cite your social proof ⚠ MEDIUM</h3>
+<p>Our scan detected testimonial text on every sampled page, but none of it is wrapped in Review or Testimonial schema. Right now, when an AI engine is asked “Is MVNP good?” or “MVNP reviews,” it cannot surface your client quotes because they are not machine-readable. Competitors who publish Review schema get cited with star ratings and client names in AI answers. You do not.</p>
+<h4 id="where-to-add-it-1">Where to add it</h4>
+<p>If your testimonials live in a dedicated section (like a homepage testimonial carousel or a separate testimonials page), add Review schema inline on those pages. If they are sitewide (footer or sidebar), add it once in a sitewide schema block.</p>
+<ul>
+<li><strong>WordPress:</strong> Use a plugin like Schema Pro or WP Review Pro to add Review schema, or paste the JSON-LD block below into the page/post where the testimonial appears.</li>
+<li><strong>Squarespace:</strong> Page Settings → Advanced → Page Header Code Injection (for per-page testimonials). For sitewide, Settings → Advanced → Code Injection → Header.</li>
+<li><strong>Webflow:</strong> Add an Embed element where the testimonial appears, paste the JSON-LD inside <code>&lt;script type="application/ld+json"&gt;</code> tags.</li>
+<li><strong>Wix:</strong> Add an HTML iframe or custom code element with the JSON-LD.</li>
+<li><strong>Custom-coded:</strong> Wrap each testimonial in its own Review schema block, or use an array of Review entities in a single JSON-LD block if multiple testimonials appear on one page.</li>
+</ul>
+<h4 id="ready-to-paste-code-single-review-example">Ready-to-paste code (single review example)</h4>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Review&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemReviewed&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ProfessionalService&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.mvnp.com/#organization&quot;</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Client Name Here&quot;</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;reviewBody&quot;</span><span class="fu">:</span> <span class="st">&quot;Paste the full testimonial quote here. Example: MVNP transformed our brand and delivered results beyond our expectations. Their team is professional, creative, and deeply strategic.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;reviewRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Rating&quot;</span><span class="fu">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span><span class="fu">,</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;bestRating&quot;</span><span class="fu">:</span> <span class="st">&quot;5&quot;</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>itemReviewed</code> property links this review back to your organization using the <code>@id</code> reference from the Service schema above. This creates a schema graph (all entities connected). <code>author</code> should be the actual client or reviewer name. If you do not have an explicit star rating, you can omit <code>reviewRating</code>, but including it gives AI engines a quantitative signal. If you have multiple testimonials, wrap them in an array or publish one Review block per testimonial on the page.</p>
+<hr />
+<h3 id="add-faqpage-schema-to-your-capabilities-and-service-pages-medium">4. Add FAQPage schema to your capabilities and service pages ⚠ MEDIUM</h3>
+<p>AI engines like Perplexly, ChatGPT, and Google’s AI Overviews preferentially cite sites with FAQPage schema when answering question queries (“How does MVNP approach media buying?” or “What industries does MVNP serve?”). Your capabilities page and homepage describe your services, but none of it is structured as Q&amp;A. That means when a buyer asks a question, you will not be cited even if your page has the answer.</p>
+<h4 id="where-to-add-it-2">Where to add it</h4>
+<p>Identify 4 to 6 common questions prospects ask (you likely already know these from sales calls). Add them to your capabilities page or a dedicated FAQ section, then wrap them in FAQPage schema.</p>
+<ul>
+<li><strong>WordPress (Yoast or Rank Math):</strong> These plugins do not auto-generate FAQPage. Use a plugin like Schema Pro, or paste the JSON-LD block below into the page where your FAQs appear.</li>
+<li><strong>Squarespace:</strong> Add the FAQ content to a page, then paste the JSON-LD into Page Settings → Advanced → Page Header Code Injection.</li>
+<li><strong>Webflow:</strong> Add an Embed element at the bottom of the page, paste the JSON-LD inside script tags.</li>
+<li><strong>Wix:</strong> SEO Tools → Structured Data → Add Schema → paste JSON-LD.</li>
+<li><strong>Custom-coded:</strong> Paste the JSON-LD block into the <code>&lt;head&gt;</code> or at the end of <code>&lt;body&gt;</code> on the FAQ page.</li>
+</ul>
+<h4 id="ready-to-paste-code-example-with-3-questions">Ready-to-paste code (example with 3 questions)</h4>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FAQPage&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntity&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;What services does MVNP offer?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP is a fully-integrated advertising agency and public relations firm. We provide advertising, public relations, media planning and buying, marketing strategy, creative services, digital marketing, and social media management. Our team specializes in campaigns tailored to Hawaii markets and beyond.&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Where is MVNP located?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP is based in Honolulu, Hawaii. We serve clients throughout the Hawaiian Islands and work with national and international brands seeking to reach Hawaii audiences.&quot;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;What industries does MVNP specialize in?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;MVNP has deep expertise in tourism, hospitality, healthcare, real estate, government, nonprofit, and consumer brands. Our 50+ years in Hawaii give us unique insights into local culture, audiences, and media landscapes.&quot;</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>Question</code> must include a <code>name</code> (the question text) and an <code>acceptedAnswer</code> with an <code>Answer</code> entity containing the <code>text</code> of your answer. The answer should be 1 to 3 sentences, written in the same voice you would use if answering a prospect email. Google displays FAQPage results as expandable dropdowns in search, and AI engines cite the answer text verbatim when responding to question queries. Add as many Question entities as you have real FAQs. Do not fabricate questions just to game the system. Google penalizes that.</p>
+<hr />
+<h3 id="fix-the-h1-structure-on-8-of-9-pages-medium">5. Fix the H1 structure on 8 of 9 pages ⚠ MEDIUM</h3>
+<p>8 of the 9 sampled pages have no H1 tag at all. The homepage has 4 H1 tags (which is also non-standard). H1 is the primary semantic heading that tells search engines and screen readers what the page is about. Pages without an H1 force Google to guess your topic from other signals. Pages with multiple H1s dilute topical focus. This is not a schema issue, but it directly affects how well your schema-enhanced pages rank.</p>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-mvnp">90-Day Roadmap — MVNP</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-08
+<strong>Window:</strong> Months 1–3 (by 2026-08-08)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-08):</strong>
+- 8 of 9 pages missing H1 tags (no semantic anchor for AI engines to parse)
+- 7 of 9 pages contain under 300 words (thin content that AI engines skip for citation)
+- Zero Service schema published (competitors with Service markup get cited, you get skipped)
+- Zero BreadcrumbList schema (no rich breadcrumbs in Google results)
+- Testimonial text detected on every page but no Review or AggregateRating schema (social proof invisible to AI)</p>
+<p><strong>90-day target:</strong>
+- All 9 pages have proper H1 structure (one per page, or corrected multi-H1 on homepage)
+- Capabilities and two high-traffic pages expanded to 400+ words with citation-ready statements
+- Service schema live on homepage and capabilities page
+- BreadcrumbList schema deployed site-wide
+- At least 3 client testimonials wrapped in Review schema with AggregateRating on homepage</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-08">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the semantic layer so AI engines can parse what each page is about.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Add one H1 tag to each of the 8 pages missing H1s (newsletter archives, about/1972, awards, capabilities, careers)</td>
+<td>Technical Audit § 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Fix homepage H1 structure (choose primary hero H1, demote other 3 to H2 or H3)</td>
+<td>Technical Audit § 1</td>
+<td>30 min</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add Service schema to homepage (paste JSON-LD block covering advertising, PR, marketing services)</td>
+<td>Schema Review § 1</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Add Service schema to capabilities page</td>
+<td>Schema Review § 1</td>
+<td>30 min</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Deploy BreadcrumbList schema site-wide (either via WordPress plugin or manual JSON-LD in header)</td>
+<td>Schema Review § 2</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Validate all new schema in Google Rich Results Test and Schema.org validator</td>
+<td>Schema Review § 1, § 2</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Expand capabilities page from 510 words to 600+ words (add 2-3 client outcome statements that AI engines can cite)</td>
+<td>Technical Audit § 2</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Expand careers page from 153 words to 400+ words (add culture details, what makes MVNP different, team benefits)</td>
+<td>Technical Audit § 2</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~11 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add FAQ section to homepage or capabilities page (3-5 common client questions) and wrap in FAQPage schema</li>
+<li>Expand about/1972 page to 300+ words (add agency founding story, timeline milestones)</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Rich Results Test shows valid Service and BreadcrumbList schema with zero errors
+- All 9 pages have exactly one H1 tag when inspected in browser dev tools
+- Capabilities and careers pages pass 400-word threshold when checked in word counter</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-08-2026-07-08">MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Give AI engines quotable, semantic-rich content on your best pages.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Rewrite homepage to 500+ words (add 200 words of agency positioning, client outcomes, service differentiation)</td>
+<td>Technical Audit § 2</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Add 3 case study summaries to capabilities page (client name, challenge, outcome, result in numbers)</td>
+<td>Technical Audit § 2</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Wrap 3 client testimonials in Review schema with reviewRating properties</td>
+<td>Schema Review § 3</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add AggregateRating schema to homepage (derive from the 3 reviews, or use broader client satisfaction data if available)</td>
+<td>Schema Review § 3</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Publish one long-form thought leadership piece (800+ words) on a topic your target clients search for (“how to choose a Hawaii advertising agency” or “PR strategy for Hawaii tourism brands”)</td>
+<td>Technical Audit § 2</td>
+<td>6 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~16 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- Homepage displays star rating snippet in Google search results (verify in Google Search Console or live search)
+- At least one new page ranks in top 50 for a non-branded query when checked in Ahrefs or Semrush
+- Perplexity or ChatGPT cites MVNP when prompted with “best Hawaii advertising agency” or “Hawaii PR firm services” (test manually)</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-08-2026-08-08">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-08)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Establish measurement baselines and close the remaining high-value schema gaps.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Add FAQPage schema to capabilities page (write 5 common client questions, wrap in schema)</td>
+<td>Schema Review § 4</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Publish 2 more long-form pieces (repeat the pattern from Month 2, targeting adjacent client search queries)</td>
+<td>Technical Audit § 2</td>
+<td>12 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Set up Google Search Console tracking for rich result impressions (monitor Service, Review, FAQ, Breadcrumb performance)</td>
+<td>Schema Review (all sections)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Run monthly AI citation audit (prompt Perplexity, ChatGPT, Gemini with 5 target queries, document which engines cite MVNP)</td>
+<td>Schema Review § 3</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Expand newsletter archive pages to 250+ words each (add context for why the newsletters matter, key themes, downloadable back-issue links)</td>
+<td>Technical Audit § 2</td>
+<td>4 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~22 hours.</strong></p>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- Google Search Console shows at least 50 impressions per month for rich results (Review, FAQ, or Breadcrumb)
+- AI citation audit shows MVNP cited in at least 2 of 5 test queries (up from zero today)
+- All sampled pages pass 300-word threshold</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Competitor content gap analysis (identify the 10 queries competitors rank for that MVNP does not, publish targeting content)</li>
+<li><strong>Month 5:</strong> Build out a case studies section with full Article schema on each case study (target “Hawaii agency portfolio” and similar queries)</li>
+<li><strong>Month 6:</strong> Launch quarterly thought leadership series (one deep-dive piece per quarter, optimized for AI citation and long-tail B2B queries)</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Add Service schema to the homepage (paste the JSON-LD block from Schema Review § 1 into your site header). This is a 1-hour task that immediately makes your services machine-readable to every AI engine. Competitors who have this get cited. You currently do not.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Google displays rich results (star ratings, breadcrumbs, or FAQ accordions) for at least 2 MVNP pages in search results
+- At least 1 AI engine (Perplexity, ChatGPT, or Gemini) cites MVNP when answering “best Hawaii advertising agency” or related query
+- Organic impressions increase 15-25% in Google Search Console due to improved semantic structure and expanded content</p>
+<p><strong>Optimistic case:</strong>
+- 3+ pages show rich results in Google search
+- 2+ AI engines cite MVNP in test queries
+- One new long-form piece ranks in top 20 for a high-value non-branded query
+- Organic impressions increase 30-40%</p>
+<p><strong>Conservative case:</strong>
+- Rich results appear for homepage only (star rating from Review schema)
+- AI citation happens in 1 of 5 test queries
+- Organic impressions increase 10-15% (mainly from improved H1 structure and breadcrumb schema reducing bounce rate)</p>
+
+
+</body>
+</html>
