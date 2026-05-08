@@ -12,6 +12,24 @@ Never deploys.
 
 ## Active triggers
 
+### Engine changelog: first real entry
+- **Trigger:** Citation tracker has accumulated 4+ consecutive weeks of the same control prompt set across all six engines
+- **What to build:** Run a diff query, identify any prompt where the top-3 cited sources changed week-over-week. For each material change, fill the template at `content/engine-changelog/_template.md` with the actual data. Publish to neverranked.com/engine-changelog as a public proof-of-work feed.
+- **Effort:** 2 hours when triggered. Recurring weekly thereafter.
+- **Why gated:** Cannot publish observations we have not actually measured. Premature entries kill credibility the moment a journalist asks for the underlying data.
+
+### Public scan persistence: migrate scan events from KV (90d) to D1 (permanent)
+- **Trigger:** Scan volume crosses 100/day sustained for 14 days, OR a paying customer asks for industry-wide benchmark numbers we cannot answer with current data.
+- **What to build:** New `public_scans` table in dashboard D1. Schema-check writes to it via shared-secret API on each scan. Industry classifier auto-tags the domain. Backfill from existing KV data before the 90d window expires.
+- **Effort:** 1 day. Light migration, light wiring.
+- **Why gated:** The data lives in KV with 90d TTL today, which is fine for current volume. Moving it to D1 only matters when we have enough scans for cross-customer benchmarks to be statistically meaningful.
+
+### Vertical exclusivity activation
+- **Trigger:** MVNP signs the wholesale pilot.
+- **What to build:** Add a `vertical_lockouts` table tracking which categories are reserved for which agency partner. Update the prospect intake flow to check lockouts before sending outreach. Update the sales pitch to mention the lockouts as a feature, not a limitation.
+- **Effort:** 4 hours.
+- **Why gated:** No partners signed yet. Building the lockout table before there is anything to lock is busywork.
+
 ### Roadmap copy + dashboard reports: rewrite to the Clarity Principle (HIGH PRIORITY)
 
 - **Trigger:** Hawaii Theatre asks "what does this mean?" once, OR the next paying customer onboards, OR Lance has a focused 2-4 hour block. Whichever comes first.

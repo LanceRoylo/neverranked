@@ -245,6 +245,38 @@ roughly $16-32k/mo, on top of any existing retainer. Margin
 splits and exclusivity terms are negotiable for the first
 agency partner.
 
+### "What is the founding partner clause?"
+
+Answer: If MVNP signs the 90-day pilot, we lock Hawaii financial
+services and Hawaii real estate development as MVNP-exclusive
+verticals for 12 months from pilot start. No other agency on the
+island gets wholesale access in those categories. MVNP also gets
+right of first refusal on any new Hawaii vertical we open.
+
+This is structural, not a discount. When a competing agency tries
+to pitch NeverRanked into a Hawaii bank during that 12 months, we
+route them back through MVNP or decline the deal.
+
+It costs us nothing now, costs us something later if the bet works.
+That is what makes it worth offering specifically to a founding
+partner. After 12 months we revisit, and if the partnership is
+producing, we extend or expand.
+
+### "Why offer that exclusivity? What's in it for you?"
+
+Honest answer: Three things.
+
+1. It gives MVNP a real reason to defend NR against competitors
+   entering the territory. We need that defense more than we need
+   the second-best agency partner in Hawaii.
+2. It forces us to focus. If Hawaii banks are MVNP's, we are not
+   tempted to dilute attention by chasing a different agency in
+   the same vertical. We go build the next vertical instead.
+3. It creates a forcing function. The pilot has a hard deadline
+   to prove value because the lockout has a clock on it.
+
+This is not a giveaway. It is structural alignment.
+
 ### "Hawaii queries are a tiny SERP. Is AEO meaningful here?"
 
 Behind it: he's been managing Hawaii accounts long enough to

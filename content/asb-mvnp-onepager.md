@@ -81,6 +81,18 @@ Our 3-month minimum exists to protect customers from quitting before the work ha
 - MVNP would be the first.
 - Being first is the offer: first pick of vertical territory, direct founder access, shaping the program before it opens up. We're not pretending to be at scale we're not at.
 
+### Founding partner clause (offered to MVNP only)
+
+If MVNP signs a 90-day wholesale pilot, we lock the following for 12 months from the pilot start date:
+
+- **Hawaii financial services category** (community banking, credit unions, wealth management) — no other agency on the island gets wholesale access in this vertical.
+- **Hawaii real estate development** (master-planned communities, mixed-use, resort) — same.
+- **Right of first refusal** on any new Hawaii vertical we open before offering it to other agencies.
+
+This is structural, not a discount. It means when a competing agency tries to pitch NeverRanked into a Hawaii bank, we route it back through MVNP or decline the deal.
+
+Costs us nothing now. Costs us something later if the bet works — which is exactly what makes it worth offering to a founding partner.
+
 ---
 
 ## What we'd like out of the meeting

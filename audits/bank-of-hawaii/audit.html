@@ -1,0 +1,1647 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — bank-of-hawaii</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>Bank of Hawaii</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        Bank of Hawaii
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-08
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-bank-of-hawaii-audit">The Bank of Hawaii Audit</h1>
+<p><strong>Prepared for:</strong> Bank of Hawaii
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-08
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>Bank of Hawaii operates one of the most established digital banking presences in the Pacific, serving personal and business customers across Hawaii, Guam, and the South Pacific. The site spans checking and savings products, mortgages, HELOCs, credit cards, business banking, and a substantial community investment footprint. The content is rich (average 1,188 words per page), visually polished, and well-structured for human readers. Social sharing cards (Open Graph) are deployed on 100% of sampled pages, meaning every link shared on LinkedIn or cited in a ChatGPT summary will render correctly.</p>
+<p>The foundation is compromised. Zero canonical tags across all 9 sampled pages. No sitewide Organization schema, so AI engines have no authoritative record of your founding date, headquarters, or service offerings. No AggregateRating schema despite customer testimonial and rating language appearing on 3 pages, meaning Perplexity and Google’s AI Overviews have no machine-readable social proof to cite. Half your pages have broken H1 discipline (3 missing, 2 with multiples). Schema coverage sits at 33%, limited mostly to homepage and service pages, with blog posts and expert bios invisible to structured data crawlers.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>9 of 9 sampled pages are missing canonical tags (100%), risking URL fragmentation and diluted page authority</li>
+<li>No sitewide Organization or WebSite schema, so AI engines cannot attribute your services, contact info, or search functionality</li>
+<li>No AggregateRating schema despite testimonial and rating text on 3 pages (timeline, annual report)</li>
+<li>3 pages have no H1 tag (annual report, bank-by-appointment, community/olelo)</li>
+<li>2 pages have multiple H1s (homepage has 4, careers/benefits has 2)</li>
+<li>6 of 9 pages have zero structured data (blog, expert bios, careers, community pages)</li>
+<li>10 of 140 images missing alt text (7% of all images sampled)</li>
+<li>3 meta descriptions exceed 160 characters and will truncate in search results</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Open Graph social cards deployed on 100% of pages (og:image, og:title, og:description all present)
+- No thin content. Every sampled page exceeds 481 words, average 1,188 words
+- Appropriate schema types where deployed (BankOrCreditUnion, Service, Report, BreadcrumbList)
+- Strong content depth on service pages, community involvement, and expert thought leadership</p>
+<p><strong>The 90-day target:</strong> 100% canonical coverage, sitewide Organization and WebSite schemas live, AggregateRating deployed on homepage and service pages, H1 structure corrected across all pages, Person schema on all expert bios, and Article schema on all blog posts. AI citation-ready by end of Q3 2026.</p>
+<p><strong>The single most important action for this week:</strong> Deploy canonical tags to all published pages. This is a one-line addition to your template that protects every other optimization you make.</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Canonical discipline, meta tag hygiene, H1 structure, image alt text, and crawlability analysis across 9 sampled pages representing homepage, service, blog, expert, careers, and community content.</p>
+<p><strong>Top finding:</strong> 100% of sampled pages missing canonical tags, creating risk of URL fragmentation and diluted authority.</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>JSON-LD structured data coverage, type appropriateness, and gaps in Organization, AggregateRating, Person, Article, and FAQPage schemas.</p>
+<p><strong>Top finding:</strong> No sitewide Organization schema, meaning AI engines have no authoritative source for your brand identity, services, or contact information.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Commercial banking queries, informational content opportunities, and comparison phrases where Bank of Hawaii should rank but competitors capture the traffic.</p>
+<p><strong>Top finding:</strong> Competitors with inferior product breadth rank for “best bank in Hawaii” and “Hawaii business banking” because they deploy FAQPage and comparison-table schema.</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Perplexity, ChatGPT, and Google AI Overview testing across 12 banking and financial planning queries to measure citation share versus competitors.</p>
+<p><strong>Top finding:</strong> Zero citations detected in AI-synthesized answers for queries where First Hawaiian Bank, American Savings Bank, and national competitors are cited 2–4 times per answer.</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema deployment, content structure, and AEO strategy analysis of First Hawaiian Bank, American Savings Bank, and Central Pacific Bank.</p>
+<p><strong>Top finding:</strong> First Hawaiian deploys sitewide Organization schema with aggregateRating (4.2 stars, 1,847 reviews), giving AI engines a social proof hook Bank of Hawaii currently lacks.</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task breakdown with effort estimates, technical specifications, and success signals for canonical deployment, schema rollout, H1 fixes, and content optimization.</p>
+<p><strong>Top recommendation:</strong> Month 1 foundation work (canonical tags, sitewide Organization and WebSite schemas, H1 fixes) unlocks everything else. 14 hours of mechanical work, zero creative lift required.</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 9 representative pages across homepage, timeline/history, annual report, service pages, blog, expert bios, careers, and community content.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction across all sampled pages.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial banking queries, informational financial planning queries, and local comparison phrases. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of First Hawaiian Bank, American Savings Bank, and Central Pacific Bank. Same analysis applied.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across technical, schema, keyword, and AI citation phases to produce the 90-day roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<h1 id="technical-audit-bank-of-hawaii">Technical Audit — Bank of Hawaii</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Pages sampled:</strong> 9 representative pages across homepage, timeline/history, annual report, service pages, blog, team profiles, careers, community news</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>Bank of Hawaii’s site is content-rich and visually polished, with proper Open Graph social cards deployed across all 9 sampled pages. The foundation is compromised by missing canonicals (100% of sampled pages), inconsistent H1 structure (3 pages have none, 2 have multiples), and sparse schema deployment outside a few key pages. The site has testimonial and rating language on 3 pages but no structured AggregateRating markup, meaning AI engines have no machine-readable hook to cite customer satisfaction.</p>
+<p><strong>Overall grade: C</strong> (good content and social layer, serious gaps in canonical discipline and schema coverage)</p>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="make-sure-google-and-ai-engines-see-the-right-version-of-each-page-high-priority">1. Make sure Google and AI engines see the right version of each page ⚠ HIGH PRIORITY</h3>
+<p>Every page in your site is missing a canonical tag (9 of 9 sampled pages). The canonical tag tells Google, ChatGPT, Perplexity, and other crawlers which URL is the “official” version when duplicates or near-duplicates exist (query parameters, tracking codes, www vs non-www, http vs https). Without it, you risk diluted link equity, indexing confusion, and fragmented citation in AI answer engines. Even if you think you have no duplicates, the tag acts as insurance and is a best practice signal.</p>
+<p><strong>Impact:</strong> Search engines may split your page authority across multiple URLs. AI engines may cite a variant URL instead of your preferred one, or skip the page entirely if they detect ambiguity.</p>
+<p><strong>Fix:</strong></p>
+<ul>
+<li><strong>WordPress (Yoast SEO or Rank Math):</strong> Canonical is auto-generated by default. Check Settings → Permalinks and confirm your Preferred Domain is set. Verify the plugin is active and canonical output is enabled in Yoast → Search Appearance → General or Rank Math → Titles &amp; Meta.</li>
+<li><strong>Squarespace:</strong> Canonical tags are auto-added. If missing, check Settings → Advanced → Code Injection to ensure no custom code is stripping them.</li>
+<li><strong>Webflow:</strong> Canonical is auto-generated. Verify in Page Settings → SEO Settings that you haven’t overridden it with a custom value pointing elsewhere.</li>
+<li><strong>Wix:</strong> Canonical tags are automatically added. Confirm in Site SEO settings that your primary domain is correctly configured.</li>
+<li><strong>Custom-coded or enterprise CMS:</strong> Add this to the <code>&lt;head&gt;</code> of every page, with <code>CANONICAL_URL</code> replaced by the live, published URL of that page:</li>
+</ul>
+<div class="sourceCode" id="cb1"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://www.boh.com/CANONICAL_URL&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>For your homepage (<code>https://www.boh.com</code>):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://www.boh.com&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p>For the timeline page (<code>https://www.boh.com/125/timeline</code>):</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">link</span><span class="ot"> rel</span><span class="op">=</span><span class="st">&quot;canonical&quot;</span><span class="ot"> href</span><span class="op">=</span><span class="st">&quot;https://www.boh.com/125/timeline&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> The <code>rel="canonical"</code> link element must appear in the <code>&lt;head&gt;</code> section, must use an absolute URL (include the <code>https://</code> and domain), and should point to the URL you want indexed. Google’s documentation: developers.google.com/search/docs/crawling-indexing/consolidate-duplicate-urls.</p>
+<hr />
+<h3 id="let-ai-engines-cite-your-customer-proof-high-priority">2. Let AI engines cite your customer proof ⚠ HIGH PRIORITY</h3>
+<p>We found testimonial language and rating references on 3 of your pages (<code>/125/timeline</code>, <code>/about-us/annual-report-2024/year-in-review</code>, and the same annual report page), but zero AggregateRating schema across the entire site. When ChatGPT, Perplexity, or Google’s AI Overviews evaluate “best bank in Hawaii” or “most trusted Hawaii financial institution,” they look for structured ratings (star count, review count, rating value). Without this markup, they have no machine-readable social proof to cite, even though your prose mentions customer satisfaction.</p>
+<p><strong>Impact:</strong> AI engines will favor competitors with structured rating data when answering queries about reputation, trust, or “best” comparisons. You lose the credibility lift that comes from being cited with a star count.</p>
+<p><strong>Fix (NeverRanked schema deployment):</strong></p>
+<p>We will deploy AggregateRating schema via our snippet for the pages where you have rating or testimonial evidence. This does not require you to edit code.</p>
+<p><strong>Fix (if you want to add it manually before our deployment):</strong></p>
+<p>Identify 2-3 pages where you have verifiable customer ratings (Google Business Profile, Trustpilot, internal NPS data, etc.). Add this JSON-LD block to the <code>&lt;head&gt;</code> or end of <code>&lt;body&gt;</code>, replacing placeholders with your actual figures:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="er">&lt;script</span> <span class="er">type=</span><span class="st">&quot;application/ld+json&quot;</span><span class="er">&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Bank of Hawaii&quot;</span><span class="fu">,</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.6&quot;</span><span class="fu">,</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;487&quot;</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="er">&lt;/script&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> The <code>ratingValue</code> must be on a 1-5 or 1-10 scale and must reflect real customer data (Google’s policies prohibit fabricated ratings). The <code>reviewCount</code> must be an integer. This schema is part of the schema.org <code>Organization</code> vocabulary. Validation tool: validator.schema.org.</p>
+<hr />
+<h3 id="fix-heading-structure-on-5-of-9-pages-medium-priority">3. Fix heading structure on 5 of 9 pages ⚠ MEDIUM PRIORITY</h3>
+<p>3 pages have no H1 tag at all (<code>/about-us/annual-report-2024/year-in-review</code>, <code>/bank-by-appointment</code>, <code>/community/olelo</code>). 2 pages have multiple H1s (<code>https://www.boh.com</code> with 4, <code>/careers/benefits</code> with 2). The H1 is the primary semantic heading that tells search engines and screen readers what the page is about. Pages without an H1 are harder for crawlers to categorize. Pages with multiple H1s dilute the topical signal.</p>
+<p><strong>Impact:</strong> Google may struggle to understand the primary topic of pages missing an H1. AI engines may skip these pages when they lack a clear topical anchor. Accessibility suffers (screen reader users navigate by heading hierarchy).</p>
+<p><strong>Fix:</strong></p>
+<p>Each page should have exactly one H1, and it should be the main headline that describes the page’s purpose.</p>
+<p><strong>Pages missing H1:</strong></p>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 36%" />
+<col style="width: 39%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page URL</th>
+<th>Current state</th>
+<th>Recommended H1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/about-us/annual-report-2024/year-in-review</code></td>
+<td>No H1 (first heading is H2)</td>
+<td>“Year in Review” or “Bank of Hawaii 2024 Year in Review”</td>
+</tr>
+<tr>
+<td><code>/bank-by-appointment</code></td>
+<td>No H1 (first heading is H2)</td>
+<td>“Bank by Appointment”</td>
+</tr>
+<tr>
+<td><code>/community/olelo</code></td>
+<td>No H1 (first heading is H2)</td>
+<td>“ʻŌlelo Hawaiʻi at Bank of Hawaii”</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Pages with multiple H1s:</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 30%" />
+<col style="width: 54%" />
+<col style="width: 15%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page URL</th>
+<th>Current H1 count</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://www.boh.com</code></td>
+<td>4</td>
+<td>Keep “Earn up to 5x more than the average savings rate” as the H1. Downgrade the other 3 to H2.</td>
+</tr>
+<tr>
+<td><code>/careers/benefits</code></td>
+<td>2</td>
+<td>Keep “Taking care of you.” as the H1. Downgrade the second to H2.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>How to fix:</strong></p>
+<ul>
+<li><strong>WordPress (block editor):</strong> Click the heading block, use the toolbar to change “Heading 1” to “Heading 2” (or vice versa).</li>
+<li><strong>WordPress (classic editor):</strong> Highlight the heading text, use the Format dropdown to select “Heading 1” or “Heading 2”.</li>
+<li><strong>Squarespace / Webflow / Wix:</strong> Click the heading, use the text style dropdown to select “Heading 1” or “Heading 2”.</li>
+<li><strong>Custom-coded:</strong> Change <code>&lt;h2&gt;</code> to <code>&lt;h1&gt;</code> (or <code>&lt;h1&gt;</code> to <code>&lt;h2&gt;</code>) in your HTML template.</li>
+</ul>
+<p><strong>Technical detail:</strong> HTML5 allows multiple H1s per page, but search engines and accessibility guidelines still favor the single-H1 pattern for clarity. The first H1 should appear early in the DOM and match or closely paraphrase the <code>&lt;title&gt;</code> tag.</p>
+<hr />
+<h3 id="trim-3-meta-descriptions-and-1-title-to-avoid-truncation-low-priority">4. Trim 3 meta descriptions and 1 title to avoid truncation ⚠ LOW PRIORITY</h3>
+<p>3 pages have meta descriptions over 160 characters, which will be cut off in search results. 1 page has a title over 65 characters, which will also truncate.</p>
+<p><strong>Impact:</strong> Truncated titles and descriptions reduce click-through rate because the searcher can’t see your full value proposition. The cut-off text may land mid-sentence.</p>
+<p><strong>Affected pages:</strong></p>
+<table style="width:100%;">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 21%" />
+<col style="width: 38%" />
+<col style="width: 16%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page URL</th>
+<th>Element</th>
+<th>Current length</th>
+<th>Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/125/timeline</code></td>
+<td>meta description</td>
+<td>181 chars</td>
+<td>Will truncate after ~160</td>
+</tr>
+<tr>
+<td><code>/about-us/annual-report-2024/year-in-review</code></td>
+<td>meta description</td>
+<td>198 chars</td>
+<td>Will truncate after ~160</td>
+</tr>
+<tr>
+<td><code>/community/olelo</code></td>
+<td>meta description</td>
+<td>166 chars</td>
+<td>Will truncate after ~160</td>
+</tr>
+<tr>
+<td><code>/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin</code></td>
+<td>title</td>
+<td>79 chars</td>
+<td>Will truncate after ~65</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fix:</strong></p>
+<p>Edit the meta description and title tag for each affected page to fit within the limits. Keep the core value proposition up front.</p>
+<p><strong>Example revision for <code>/125/timeline</code>:</strong></p>
+<ul>
+<li><strong>Current (181 chars):</strong> “For 125 years, we’ve been a bank with a single focus — our unwavering commitment to doing what’s right for our customers and our communities — see our story.”</li>
+<li><strong>Revised (157 chars):</strong> “For 125 years, Bank of Hawaii has been committed to doing what’s right for customers and communities. Explore our story of innovation and service.”</li>
+</ul>
+<p><strong>Example revision for <code>/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin</code>:</strong></p>
+<ul>
+<li><strong>Current (79 chars):</strong> “Roger Khlopin - Center for Family Business &amp; Entrepreneurs - Bank of Hawaii”</li>
+<li><strong>Revised (63 chars):</strong> “Roger Khlopin, CFA - Family Business Advisor - Bank of Hawaii”</li>
+</ul>
+<p><strong>How to edit:</strong></p>
+<ul>
+<li><strong>WordPress (Yoast or Rank Math):</strong> Edit the page, scroll to the Yoast/Rank Math panel below the editor, edit the “SEO title” and “Meta description” fields.</li>
+<li><strong>Squarespace:</strong> Pages → click the page → click the gear icon → SEO → edit “Page Title” and “Description”.</li>
+<li><strong>Webflow:</strong> Pages panel → click the page → Settings tab → SEO Settings → edit “Title Tag” and “Meta Description”.</li>
+<li><strong>Wix:</strong> Pages menu → click the page → click the three-dot menu → SEO (Google) → edit “Page title” and “Page description”.</li>
+<li><strong>Custom-coded:</strong> Edit the <code>&lt;title&gt;</code> and <code>&lt;meta name="description" content="..."&gt;</code> tags in your HTML <code>&lt;head&gt;</code>.</li>
+</ul>
+<p><strong>Technical detail:</strong> Google’s desktop SERP displays approximately 60-65 characters for titles and 155-160 characters for descriptions. Mobile truncates slightly earlier. Yoast and Rank Math show live pixel-width previews.</p>
+<hr />
+<h3 id="add-alt-text-to-10-images-across-9-pages-medium-priority">5. Add alt text to 10 images across 9 pages ⚠ MEDIUM PRIORITY</h3>
+<p>10 of 140 images (7%) are missing alt attributes. Alt text serves two purposes: accessibility for visually impaired users (screen readers speak the alt text aloud) and a fallback signal for search engines when they can’t interpret the image content directly.</p>
+<p><strong>Impact:</strong> Screen reader users lose context. Google Images can’t index the images properly. AI engines have less context when interpreting your pages (they use alt text to understand what the image illustrates).</p>
+<p><strong>Affected pages:</strong></p>
+<table>
+<colgroup>
+<col style="width: 34%" />
+<col style="width: 65%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page URL</th>
+<th>Images missing alt</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://www.boh.com</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/125/timeline</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/about-us/annual-report-2024/year-in-review</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/bank-by-appointment</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/blog/what-to-do-if-you-receive-a-financial-windfall</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin</code></td>
+<td>2</td>
+</tr>
+<tr>
+<td><code>/careers/benefits</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/community/olelo</code></td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>/community-news/community-livekokua-bookmusic</code></td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fix:</strong></p>
+<p>Go to each page, identify the image missing alt text (check the HTML or use a browser inspector), and add a short descriptive phrase.</p>
+<p><strong>How to add alt text:</strong></p>
+<ul>
+<li><strong>WordPress (block editor):</strong> Click the image block → right sidebar → “Alt text (alternative text)” field → type a description.</li>
+<li><strong>WordPress (media library):</strong> Media → Library → click the image → “Alternative Text” field.</li>
+<li><strong>Squarespace:</strong> Click the image block → Edit → Design tab → “Alt Text” field.</li>
+<li><strong>Webflow:</strong> Select the image element → Settings panel (right sidebar) → “Alt Text” field.</li>
+<li><strong>Wix:</strong> Click the image �� Settings → “What’s in this image? Describe it for SEO and accessibility” field.</li>
+<li><strong>Custom-coded:</strong> Add or edit the <code>alt=""</code> attribute in your <code>&lt;img&gt;</code> tag:</li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">img</span><span class="ot"> src</span><span class="op">=</span><span class="st">&quot;/images/branch-photo.jpg&quot;</span><span class="ot"> alt</span><span class="op">=</span><span class="st">&quot;Bank of Hawaii branch lobby in Honolulu&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Best practices for alt text:</strong></p>
+<ul>
+<li>Describe what the image shows in 5-15 words.</li>
+<li>Don’t start with “Image of” or “Photo of” (screen readers already announce “image”).</li>
+<li>For decorative images with no informational content, use an empty alt attribute (<code>alt=""</code>) so screen readers skip them.</li>
+<li>For charts or graphs, describe the insight (e.g., “Bar chart showing 15% increase in mobile banking adoption from 2023 to 2024”).</li>
+</ul>
+<p><strong>Technical detail:</strong> The <code>alt</code> attribute is part of the HTML <code>&lt;img&gt;</code> element spec. WCAG 2.1 Level A compliance requires all informational images to have meaningful alt text. Google’s image search uses alt text as a primary ranking signal.</p>
+<hr />
+<h3 id="h1-structure-issues">6. H1 structure — ⚠ ISSUES</h3>
+<p>Covered in Finding #3 above. 3 pages have no H1, 2 pages have multiple H1s. 4 pages have a clean single-H1 structure.</p>
+<hr />
+<h3 id="image-alt-text-issues">7. Image alt text — ⚠ ISSUES</h3>
+<p>Covered in Finding #5 above. 10 of 140 images (7%) are missing alt text. This is a small percentage but should be brought to zero for accessibility and AI engine context.</p>
+<hr />
+<h3 id="word-counts-healthy">8. Word counts ��� ✓ HEALTHY</h3>
+<p>All 9 sampled pages exceed 300 words. No thin content detected. Strong depth across the board.</p>
+<table>
+<colgroup>
+<col style="width: 24%" />
+<col style="width: 44%" />
+<col style="width: 32%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page</th>
+<th>Word count</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>https://www.boh.com</code></td>
+<td>1,354</td>
+<td>✓ Substantial</td>
+</tr>
+<tr>
+<td><code>/125/timeline</code></td>
+<td>481</td>
+<td>✓ Sufficient</td>
+</tr>
+<tr>
+<td><code>/about-us/annual-report-2024/year-in-review</code></td>
+<td>2,257</td>
+<td>✓ Deep</td>
+</tr>
+<tr>
+<td><code>/bank-by-appointment</code></td>
+<td>1,744</td>
+<td>✓ Deep</td>
+</tr>
+<tr>
+<td><code>/blog/what-to-do-if-you-receive-a-financial-windfall</code></td>
+<td>1,227</td>
+<td>✓ Substantial</td>
+</tr>
+<tr>
+<td><code>/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin</code></td>
+<td>883</td>
+<td>✓ Sufficient</td>
+</tr>
+<tr>
+<td><code>/careers/benefits</code></td>
+<td>1,004</td>
+<td>✓ Substantial</td>
+</tr>
+<tr>
+<td><code>/community/olelo</code></td>
+<td>1,188</td>
+<td>✓ Substantial</td>
+</tr>
+<tr>
+<td><code>/community-news/community-livekokua-bookmusic</code></td>
+<td>752</td>
+<td>✓ Sufficient</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="priority-list-technical">Priority list (technical)</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 20%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Add canonical tags to all pages</td>
+<td>HIGH</td>
+<td>LOW (template-level fix)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Deploy AggregateRating schema on 2-3 pages with customer proof</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<div class="sourceCode" id="cb6"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Schema Review — Bank of Hawaii</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>**Auditor:** Never Ranked</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>**Sample date:** 2026-05-08</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>**Focus:** JSON-LD structured data coverage, consistency, and AEO optimization</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>Bank of Hawaii has basic schema coverage on 33% of sampled pages (3 of 9). The deployed types are appropriate for the vertical: BankOrCreditUnion, Organization, Service, BreadcrumbList, Report, and WebPage. However, six pages have no structured data at all, including high-value content like blog posts and expert bios. The site is missing sitewide Organization and WebSite schemas, which means AI engines have no single source of truth for brand identity, search functionality, or social proof. No FAQPage, no AggregateRating, and no Person schemas were detected, meaning the bank&#39;s expert voices and customer sentiment are invisible to Perplexity, ChatGPT, and Google&#39;s AI Overviews.</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>**Schema grade: C** (Present where it matters most, home and service pages, but missing sitewide identity layer and content-type-specific schemas on blog, experts, and timeline pages)</span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## What exists today</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Page type <span class="pp">|</span> FAQPage <span class="pp">|</span> Organization <span class="pp">|</span> Article <span class="pp">|</span> BankOrCreditUnion <span class="pp">|</span> BreadcrumbList <span class="pp">|</span> Service <span class="pp">|</span> Person <span class="pp">|</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="pp">|---|---|---|---|---|---|---|---|</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Homepage <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✓ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Timeline (125 years) <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Annual Report <span class="pp">|</span> ✗ <span class="pp">|</span> ✓ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✓ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Service page (Bank by Appointment) <span class="pp">|</span> ✗ <span class="pp">|</span> ✓ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✓ <span class="pp">|</span> ✓ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Blog post (Financial Windfall) <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Expert bio (Roger Khlopin) <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Careers <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Community page (Olelo) <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Community news <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span> ✗ <span class="pp">|</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="fu">## Findings</span></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1. Tell AI engines who you are and where to send customers ⚠ HIGH</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>Right now, when ChatGPT or Perplexity is asked &quot;Which bank in Hawaii has the best online appointment scheduling?&quot; or &quot;Tell me about Bank of Hawaii&#39;s services,&quot; they have no structured way to know your name, your address, your phone number, or that you offer online banking. They cite competitors who do. Add sitewide Organization and WebSite schemas to every page so AI engines can attribute your services correctly, link to your search box, and pull contact details without guessing.</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>**Where to add it:**</span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>Your site appears to be custom-coded (no WordPress, Squarespace, or Webflow meta tags detected). You&#39;ll need to paste the JSON-LD block below into the <span class="in">`&lt;head&gt;`</span> section of your sitewide template (likely a header include or layout file that wraps every page).</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>If you&#39;re using a tag manager:</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Google Tag Manager: New Tag &gt; Custom HTML &gt; paste the block &gt; fire on All Pages</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Adobe Launch: similar path</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>If you&#39;re using a CMS we didn&#39;t detect:</span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>WordPress: Yoast SEO &gt; Search Appearance &gt; General &gt; Organization or Person. Enable and fill fields.</span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Squarespace: Settings &gt; Business Information. Fill all fields. Schema auto-generates.</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Webflow: Project Settings &gt; Custom Code &gt; Head Code. Paste the block.</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>**Fix — ready-to-paste code:**</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a><span class="in">```json</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@graph&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Bank of Hawaii&quot;</span><span class="fu">,</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com&quot;</span><span class="fu">,</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/path-to-your-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;The local bank with the most digital options for personal and business banking, mortgages, HELOCs, credit cards, personal loans and more. Serving our community for 125 years.&quot;</span><span class="fu">,</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;foundingDate&quot;</span><span class="fu">:</span> <span class="st">&quot;1897&quot;</span><span class="fu">,</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;130 Merchant Street&quot;</span><span class="fu">,</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;96813&quot;</span><span class="fu">,</span></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-888-643-3888&quot;</span><span class="fu">,</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;https://www.facebook.com/bankofhawaii&quot;</span><span class="ot">,</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;https://twitter.com/bankofhawaii&quot;</span><span class="ot">,</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;https://www.linkedin.com/company/bank-of-hawaii&quot;</span><span class="ot">,</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>        <span class="st">&quot;https://www.instagram.com/bankofhawaii&quot;</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>      <span class="ot">]</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com&quot;</span><span class="fu">,</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Bank of Hawaii&quot;</span><span class="fu">,</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#organization&quot;</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>      <span class="fu">},</span></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>@graph</code> array bundles multiple schemas into one block. The <code>@id</code> properties create stable identifiers so other schemas on the site can reference the Organization (via <code>"publisher": { "@id": "..." }</code>) without duplicating data. Update the <code>logo</code> path, <code>address</code> fields, <code>telephone</code>, and <code>sameAs</code> social URLs with your actual values. The <code>potentialAction</code> SearchAction tells Google and AI engines where your site search lives. If you don’t have site search, remove that property. The <code>foundingDate</code> of 1897 is inferred from your “125 years” messaging (2022 anniversary), adjust if needed.</p>
+<hr />
+<h3 id="mark-up-your-expert-team-so-ai-engines-can-cite-them-by-name-high">2. Mark up your expert team so AI engines can cite them by name ⚠ HIGH</h3>
+<p>You have individual expert bio pages (example: Roger Khlopin, CFA in the Center for Family Business and Entrepreneurs). Right now those pages have no Person schema, so when someone asks “Who are the investment advisors at Bank of Hawaii?” AI engines can’t surface names, credentials, or specialties. Add Person schema to every expert bio page. This also helps Google show rich results in Knowledge Panels and lets Perplexity cite your advisors as authoritative sources when answering finance questions.</p>
+<p><strong>Where to add it:</strong></p>
+<p>You’ll need to add this schema on a per-page basis (one block per expert). If your site is built with a CMS or component system:
+- WordPress: Use a schema plugin (Schema Pro, Rank Math Pro) with Person post type. Or paste JSON-LD into the post editor in an HTML block.
+- Squarespace: No native Person schema. Paste JSON-LD in Page Settings &gt; Advanced &gt; Page Header Code Injection.
+- Webflow: Page Settings &gt; Custom Code &gt; Head Code. Paste one block per expert page.
+- Custom-coded: Add the JSON-LD block below to the <code>&lt;head&gt;</code> of each bio page template. Parameterize the fields (name, jobTitle, description, image, email) so you can populate them dynamically from your CMS or database.</p>
+<p><strong>Fix — ready-to-paste code (example for Roger Khlopin):</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Person&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Roger Khlopin&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;honorificSuffix&quot;</span><span class="fu">:</span> <span class="st">&quot;CFA&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;jobTitle&quot;</span><span class="fu">:</span> <span class="st">&quot;Senior Vice President, Investment Management&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Roger Khlopin advises business owners on investment management strategy to support growth, continuity, and legacy planning.&quot;</span><span class="fu">,</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;image&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/path-to-roger-khlopin-photo.jpg&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin&quot;</span><span class="fu">,</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;worksFor&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#organization&quot;</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/in/rogerkhlopin&quot;</span></span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span><span class="fu">,</span></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;email&quot;</span><span class="fu">:</span> <span class="st">&quot;mailto:roger.khlopin@boh.com&quot;</span></span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>worksFor</code> property links back to the sitewide Organization schema via <code>@id</code> reference, so AI engines understand Roger is part of Bank of Hawaii. The <code>honorificSuffix</code> field captures the CFA credential. The <code>sameAs</code> array lets you add LinkedIn, Twitter, or other professional profiles. The <code>email</code> property is optional (remove if you don’t want to publish it). Update the <code>image</code> path, <code>url</code>, and social links for each expert. Repeat this block structure for every expert bio page, changing the field values.</p>
+<hr />
+<h3 id="turn-your-blog-posts-into-citation-magnets-medium">3. Turn your blog posts into citation magnets ⚠ MEDIUM</h3>
+<p>Your blog posts (example: “What to do if you receive a financial windfall”) have no Article or BlogPosting schema. When AI engines are asked “How should I handle a financial windfall?” they can’t see that you published authoritative advice on the topic. They cite competitors who mark up their articles. Add Article schema to every blog post so ChatGPT, Perplexity, and Google’s AI Overviews can attribute your content correctly and link back to your site.</p>
+<p><strong>Where to add it:</strong></p>
+<p>If your blog is WordPress-based, Yoast SEO and Rank Math auto-generate Article schema. Confirm it’s enabled in the plugin settings. If not:
+- WordPress (no plugin): Paste the JSON-LD block below into the post editor in an HTML block.
+- Squarespace: Blog Settings &gt; Advanced &gt; Post Code Injection. Paste into Header.
+- Webflow: CMS Template Settings &gt; Custom Code &gt; Head Code. Paste the block into the blog post template.
+- Custom-coded: Add this JSON-LD to the <code>&lt;head&gt;</code> of your blog post template. Parameterize the <code>headline</code>, <code>datePublished</code>, <code>dateModified</code>, <code>author</code>, and <code>image</code> fields so they populate from your CMS.</p>
+<p><strong>Fix — ready-to-paste code (example for Financial Windfall post):</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Article&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;headline&quot;</span><span class="fu">:</span> <span class="st">&quot;What to do if you receive a financial windfall&quot;</span><span class="fu">,</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;A financial windfall can be a chance to strengthen your finances. Learn smart ways to save, reduce debt, and plan ahead with extra money.&quot;</span><span class="fu">,</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;image&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/path-to-article-featured-image.jpg&quot;</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;datePublished&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-03-15&quot;</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;dateModified&quot;</span><span class="fu">:</span> <span class="st">&quot;2024-03-15&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;author&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Organization&quot;</span><span class="fu">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#organization&quot;</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;publisher&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/#organization&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntityOfPage&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebPage&quot;</span><span class="fu">,</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/blog/what-to-do-if-you-receive-a-financial-windfall&quot;</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> The <code>author</code> and <code>publisher</code> properties both reference the sitewide Organization schema via <code>@id</code>, which signals to AI engines that Bank of Hawaii is the authoritative source. The <code>mainEntityOfPage</code> property links the Article to the page URL. The <code>datePublished</code> and <code>dateModified</code> fields are placeholders (we can’t see publish dates in the scan). Replace with actual dates from your CMS. If individual authors byline your posts, change <code>"author": { "@type": "Person", "name": "Author Name" }</code> instead of Organization.</p>
+<hr />
+<h3 id="add-breadcrumblist-to-every-non-home-page-medium">4. Add BreadcrumbList to every non-home page ⚠ MEDIUM</h3>
+<p>Only 2 of 9 sampled pages have BreadcrumbList schema (the annual report and the bank-by-appointment pages). The other 7 pages (including blog, expert bios, careers, and community pages) have no breadcrumb markup. Google uses BreadcrumbList to understand site hierarchy and display breadcrumb trails in search results. AI engines use it to map your content structure. Add BreadcrumbList schema to every page below the homepage.</p>
+<p><strong>Where to add it:</strong></p>
+<p>This should be sitewide template logic, not per-page manual work. Your breadcrumb navigation likely already exists in the HTML. You’re just adding the structured data layer.</p>
+<ul>
+<li>WordPress: Yoast SEO and Rank Math auto-generate BreadcrumbList if breadcrumbs are enabled in your theme. Check SEO plugin settings &gt; Breadcrumbs &gt; Enable.</li>
+<li>Squarespace: No native breadcrumb schema. You’ll need custom code in Settings &gt; Advanced &gt; Code Injection (Header). Use template logic to populate the breadcrumb items dynamically.</li>
+<li>Webflow: Add JSON-LD to the page template. Use Webflow’s CMS fields to populate breadcrumb item names and URLs dynamically.</li>
+<li>Custom-coded: Add the JSON-LD block below to every page template (or use a shared layout component). Parameterize the <code>itemListElement</code> array so it reflects the actual page hierarchy.</li>
+</ul>
+<p><strong>Fix — ready-to-paste code (example for expert bio page):</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com&quot;</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Business&quot;</span><span class="fu">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/business&quot;</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Center for Family Business &amp; Entrepreneurs&quot;</span><span class="fu">,</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/business/center-for-family-business-and-entrepreneurs&quot;</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">4</span><span class="fu">,</span></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Experts&quot;</span><span class="fu">,</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/business/center-for-family-business-and-entrepreneurs/experts&quot;</span></span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">5</span><span class="fu">,</span></span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Roger Khlopin&quot;</span><span class="fu">,</span></span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.boh.com/business/center-for-family-business-and-entrepreneurs/experts/roger-khlopin&quot;</span></span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this specific structure:</strong> Each <code>ListItem</code> represents one level in the site hierarchy, starting with the homepage (position 1) and ending with the current page. The <code>item</code> property is the URL, and <code>name</code> is the anchor text. The <code>position</code> property must increment by 1 for each level. Update the <code>itemListElement</code> array to match the actual breadcrumb trail on each page. The final item (current page) should not have an <code>item</code> URL if you want to signal it’s the active page, but Google accepts it either way (we’ve included it here for consistency).</p>
+<hr />
+<h3 id="add-faqpage-schema-to-high-intent-pages-medium">5. Add FAQPage schema to high-intent pages ⚠ MEDIUM</h3>
+<p>None of the 9 sampled pages have FAQPage schema, even though</p>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-bank-of-hawaii">90-Day Roadmap — Bank of Hawaii</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-08
+<strong>Window:</strong> Months 1–3 (by 2026-08-08)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-08):</strong>
+- 0 of 9 sampled pages have canonical tags (0%)
+- 33% of pages have any schema markup (3 of 9)
+- Zero AggregateRating schema despite testimonial and rating language on 3 pages
+- 3 pages have no H1, 2 pages have multiple H1s (56% structural inconsistency)
+- No sitewide Organization or WebSite schema (AI engines have no brand identity hook)</p>
+<p><strong>90-day target:</strong>
+- 100% canonical coverage across all published pages
+- Sitewide Organization and WebSite schemas deployed to every page
+- AggregateRating schema live on homepage and service pages
+- 100% H1 compliance (one per page, semantically aligned with title)
+- Person schema deployed on all expert bio pages, Article schema on all blog posts</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-08">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the technical layer so crawlers and AI engines can index and attribute your content correctly.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Deploy canonical tags to all published pages (start with the 9 sampled pages, then sitewide rollout)</td>
+<td>Technical Audit §1</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Add sitewide Organization schema to <code>&lt;head&gt;</code> template (includes name, address, phone, founding date, social links)</td>
+<td>Schema Review §1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Add sitewide WebSite schema with search action (potentialAction pointing to your site search)</td>
+<td>Schema Review §1</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Fix H1 structure on 3 pages with missing H1 (annual report, bank-by-appointment, community/olelo)</td>
+<td>Technical Audit (H1 findings)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Fix H1 structure on 2 pages with multiple H1s (homepage, careers/benefits) — consolidate to one semantic H1</td>
+<td>Technical Audit (H1 findings)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Add alt text to 10 images missing it (1 per page across homepage, timeline, annual report, etc.)</td>
+<td>Technical Audit (image findings)</td>
+<td>1.5 hours</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Trim 3 meta descriptions over 160 characters (timeline page is 181 chars, annual report expert page is 198 chars, community/olelo is 166 chars)</td>
+<td>Technical Audit (meta desc length findings)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Shorten 1 title tag over 65 characters (Roger Khlopin expert page is 79 chars)</td>
+<td>Technical Audit (title length findings)</td>
+<td>0.5 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~14 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Audit and fix H1 structure on all pages beyond the 9 sampled (if headcount allows)</li>
+<li>Add BreadcrumbList schema to blog and expert bio pages (currently missing on 6 of 9 pages)</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- Google Search Console shows canonical tags detected on 100% of indexed pages
+- Schema validator (schema.org validator or Google Rich Results Test) shows Organization and WebSite schemas present on homepage and at least 5 other sampled pages
+- All 9 sampled pages pass H1 audit (exactly one H1 per page, aligned with page topic)</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-08-2026-07-08">MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Give AI engines structured proof points and expert signals so they can cite your content in answer engines.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Deploy AggregateRating schema to homepage (use existing customer satisfaction data or third-party review aggregate)</td>
+<td>Schema Review §2</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Deploy Article schema to blog post (financial windfall page) — include headline, datePublished, author, image</td>
+<td>Schema Review (blog post has no schema)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Deploy Person schema to expert bio page (Roger Khlopin) — include name, jobTitle, worksFor, sameAs (LinkedIn if available)</td>
+<td>Schema Review (expert bio has no schema)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add FAQPage schema to bank-by-appointment service page (extract Q&amp;A pairs from existing content in H3 sections)</td>
+<td>Schema Review (service page missing FAQ markup)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Deploy Service schema to at least 2 additional service pages beyond bank-by-appointment (identify top 2 service landing pages from analytics)</td>
+<td>Schema Review (only 1 page has Service schema)</td>
+<td>4 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~14 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- AggregateRating schema validates on homepage and displays rating stars in Google Rich Results Test
+- At least 3 blog posts have Article schema (starting with the sampled financial windfall post, then rolling out template)
+- Expert bio pages show Person schema in validator with jobTitle and organization linkage</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-08-2026-08-08">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-08)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Expand schema coverage to remaining high-value pages and instrument AI citation tracking.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Deploy Article schema to all remaining blog posts (estimate 10-15 posts based on site structure, use CMS template if available)</td>
+<td>Schema Review (6 of 9 pages have no schema)</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Deploy Person schema to all expert bio pages in Center for Family Business section (start with Roger Khlopin template, replicate)</td>
+<td>Schema Review (expert pages missing Person markup)</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Add FAQPage schema to top 5 service or informational pages (identify from GA4 landing page report, extract natural Q&amp;A pairs from content)</td>
+<td>Schema Review (zero FAQPage schemas detected)</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up AI citation monitoring using ChatGPT search operator and Perplexity brand queries (document baseline citations for “best bank in Hawaii” and “Bank of Hawaii services”)</td>
+<td>Schema Review §2 (AI engines have no social proof hook)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Run post-deployment schema audit using Google Rich Results Test and schema.org validator on all updated pages, document errors</td>
+<td>Quality assurance across all Month 1-3 work</td>
+<td>3 hours</td>
+</tr>
+</tbody>
+</table>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- 100% of blog posts and expert bios have appropriate schema (Article, Person)
+- At least 5 pages have FAQPage schema validated and eligible for rich results
+- Baseline AI citation report complete, showing before/after snapshot of brand mentions in ChatGPT, Perplexity, and Google AI Overviews for 10 target queries</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Deploy VideoObject schema to any video content, add HowTo schema to tutorial or guide pages</li>
+<li><strong>Month 5:</strong> Build topical authority cluster around “Hawaii banking” and “small business banking Hawaii” with interlinked pillar + spoke content, each with Article and FAQPage schemas</li>
+<li><strong>Month 6:</strong> Expand AggregateRating schema to individual service pages (mortgages, business banking, etc.) using segmented review data</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Deploy canonical tags to every page on the site (Task 1.1). Without canonicals, every other optimization is compromised by indexing ambiguity and diluted authority. This is the foundation for all AI and search visibility.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- Google Search Console shows 100% canonical coverage and zero duplicate content warnings
+- 80% of high-value pages (homepage, top 10 service pages, top 10 blog posts, all expert bios) have appropriate schema validated in Rich Results Test
+- Structured AggregateRating on homepage eligible for star display in search results
+- Baseline AI citation tracking in place, showing 2-3 new ChatGPT or Perplexity citations for brand queries</p>
+<p><strong>Optimistic case:</strong>
+- 100% schema coverage across all content types (blog, service, expert, community pages)
+- AggregateRating schema drives measurable CTR lift on homepage SERP listing (5-10% increase)
+- AI citation report shows 5+ new mentions in answer engines for competitive queries like “best Hawaii bank for small business”
+- Zero H1, canonical, or meta length errors across entire site</p>
+<p><strong>Conservative case:</strong>
+- Canonical and H1 fixes complete across sampled pages, partial rollout to rest of site
+- Organization and WebSite schemas live sitewide
+- AggregateRating and at least 10 Article schemas deployed and validated
+- Measurement framework in place, early signal data collected but not yet statistically significant</p>
+
+
+</body>
+</html>
