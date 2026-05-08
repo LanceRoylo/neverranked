@@ -41,6 +41,7 @@ DIRS=(
   profile
   schemas
   security
+  standards
   terms
   thanks
 )

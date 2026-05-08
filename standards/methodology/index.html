@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>AEO Score Methodology — NeverRanked Standards</title>
+<meta name="description" content="How NeverRanked computes a 0-100 AEO score, what each component measures, and why every score is independently reproducible.">
+<link rel="canonical" href="https://neverranked.com/standards/methodology/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="AEO Score Methodology">
+<meta property="og:description" content="How NeverRanked computes a 0-100 AEO score, what each component measures, and why every score is independently reproducible.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/standards/methodology/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 24px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:22pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+h3{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:var(--gold);margin:32px 0 12px;font-weight:600}
+h4{font-family:var(--body);font-weight:600;font-size:15px;margin:20px 0 8px;color:var(--text)}
+p{margin:0 0 16px;color:var(--text-mute)}
+strong{color:var(--text);font-weight:600}
+ul,ol{margin:0 0 24px 24px;padding:0}
+li{margin-bottom:8px;color:var(--text-mute)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:10px 14px;text-align:left}
+th{background:var(--card);font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--gold)}
+td{color:var(--text-mute)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:20px 0}
+code{font-family:var(--mono);font-size:13.5px;color:var(--gold-bright);background:var(--card);padding:2px 6px;border-radius:3px}
+pre code{background:transparent;padding:0;color:var(--text)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+blockquote{border-left:3px solid var(--gold);padding:0 0 0 20px;margin:24px 0;color:var(--text-mute);font-style:italic}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.standards-card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;transition:border-color .15s}
+.standards-card:hover{border-color:var(--gold)}
+.standards-card-title{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.standards-card-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/standards/" style="color:var(--text-faint)">Standards</a></p>
+  <h1 id="neverranked-aeo-score-methodology">NeverRanked AEO Score Methodology</h1>
+<p>The AEO Score is a 0-100 rating of how citable a website is to
+the six AI engines that now answer most informational queries:
+ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, and
+Google AI Overviews.</p>
+<p>The score is computed from publicly observable signals on the
+homepage and the most-linked interior pages. No private data,
+no scraping behind paywalls, no proprietary feeds.</p>
+<h2 id="what-gets-scored">What gets scored</h2>
+<p>The score is the weighted combination of five components.</p>
+<h3 id="schema-coverage-40-points">1. Schema coverage (40 points)</h3>
+<p>Presence and correctness of structured-data types AI engines read
+when they pick sources to cite.</p>
+<ul>
+<li>Organization or LocalBusiness — entity disambiguation (8 points)</li>
+<li>WebSite with SearchAction — sitelinks search box (4 points)</li>
+<li>BreadcrumbList — navigation context (4 points)</li>
+<li>FAQPage — direct citation feed for question-style queries (8 points)</li>
+<li>A category-appropriate primary type — FinancialService,
+RealEstateAgent, MedicalOrganization, etc. (8 points)</li>
+<li>AggregateRating or Review — social proof signal (4 points)</li>
+<li>Article, BlogPosting, or HowTo on content pages (4 points)</li>
+</ul>
+<p>A type counts as “present” only if the JSON-LD parses, validates
+against schema.org, and contains required properties. Stub schema
+with missing required fields scores zero.</p>
+<h3 id="social-preview-readiness-15-points">2. Social preview readiness (15 points)</h3>
+<p>og:image, og:title, og:description on every public-facing page.
+Missing on any sampled page is a partial deduction. Sites without
+any og:image site-wide score zero on this component, regardless
+of other signals.</p>
+<h3 id="heading-and-canonical-hygiene-15-points">3. Heading and canonical hygiene (15 points)</h3>
+<ul>
+<li>Single H1 per page (5 points)</li>
+<li>Canonical tag present and self-referential where appropriate
+(5 points)</li>
+<li>Descriptive title and meta description (5 points)</li>
+</ul>
+<h3 id="citation-observation-20-points">4. Citation observation (20 points)</h3>
+<p>The site is queried against a category-specific prompt set on
+all six engines. Each cited mention counts toward the score.
+Sites with zero observed citations across the prompt set score
+zero on this component, regardless of how strong their schema is.</p>
+<h3 id="content-depth-signal-10-points">5. Content depth signal (10 points)</h3>
+<p>Word count and topical depth of homepage and primary service
+pages. Sites with under 300 words on the homepage score zero on
+this component. Sites with 1500+ words and clear topical
+organization score full marks.</p>
+<h2 id="how-sampling-works">How sampling works</h2>
+<p>We sample 10 pages per site by default: the homepage, the most
+internally linked navigation pages, and the most-linked interior
+pages discovered by crawl. Sites with fewer than 10 unique pages
+are scored on what exists.</p>
+<h2 id="how-often-scores-update">How often scores update</h2>
+<p>Weekly. Every Sunday at 02:00 UTC the prompt set runs and the
+schema scan re-runs. Scores published Monday morning Hawaii time.</p>
+<h2 id="what-changes-a-score">What changes a score</h2>
+<ul>
+<li>Deploying new schema types correctly: typically 4-8 point lift
+per type, observed within one weekly update.</li>
+<li>Removing a schema type that was scoring zero (because of stub
+fields): zero impact on score, but improves citation share
+because partial schema actively penalizes citation eligibility
+per the 730-citation Search Engine Land study.</li>
+<li>A competitor outranks you on a contested query: their citation
+observation score goes up, yours stays the same. Citation share
+is a relative measure even though the AEO score is absolute.</li>
+</ul>
+<h2 id="what-does-not-change-the-score">What does NOT change the score</h2>
+<ul>
+<li>Domain Authority, Page Rank, or any backlink metric. AI engines
+weight schema and content over link graph for citation choice.</li>
+<li>Site speed beyond a basic-loadability threshold. Slow sites
+are still cited if their schema is right.</li>
+<li>Mobile rendering (assumed; sites that fail mobile load entirely
+are excluded from the leaderboard).</li>
+</ul>
+<h2 id="independence">Independence</h2>
+<p>NeverRanked computes these scores using the same engine that runs
+at check.neverranked.com. Anyone can independently verify a score
+by running their domain through the public scan tool.</p>
+<h2 id="errata-and-disputes">Errata and disputes</h2>
+<p>If a site disputes its score, we re-scan within 24 hours and
+publish the second scan publicly alongside the first. Scores
+that move more than 5 points between scans get manual review
+and either a corrected number or a temporary “review pending”
+flag.</p>
+<h2 id="what-the-score-does-not-claim">What the score does NOT claim</h2>
+<p>The AEO Score does not predict revenue, conversion, brand value,
+customer satisfaction, or financial fitness. It is a measurement
+of one specific thing: whether AI engines have the structured
+signals they need to cite the site. Sites with low scores often
+have excellent businesses underneath. The score measures the
+machine-readable layer, not the business.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This document is a public standard. Disputes or corrections: <a href="mailto:standards@neverranked.com">standards@neverranked.com</a>. Want the practical implementation? See the <a href="/schemas/">Schema Marketplace</a>.</p>
+  </div>
+</div>
+</body>
+</html>

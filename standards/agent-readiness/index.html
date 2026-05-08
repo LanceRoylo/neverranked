@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>AI Agent Readiness — NeverRanked Standards</title>
+<meta name="description" content="The four agent task surfaces that matter, what good agent-ready schema looks like, and what should never be exposed as an agent action.">
+<link rel="canonical" href="https://neverranked.com/standards/agent-readiness/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="AI Agent Readiness">
+<meta property="og:description" content="The four agent task surfaces that matter, what good agent-ready schema looks like, and what should never be exposed as an agent action.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/standards/agent-readiness/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 24px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:22pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+h3{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:var(--gold);margin:32px 0 12px;font-weight:600}
+h4{font-family:var(--body);font-weight:600;font-size:15px;margin:20px 0 8px;color:var(--text)}
+p{margin:0 0 16px;color:var(--text-mute)}
+strong{color:var(--text);font-weight:600}
+ul,ol{margin:0 0 24px 24px;padding:0}
+li{margin-bottom:8px;color:var(--text-mute)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:10px 14px;text-align:left}
+th{background:var(--card);font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--gold)}
+td{color:var(--text-mute)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:20px 0}
+code{font-family:var(--mono);font-size:13.5px;color:var(--gold-bright);background:var(--card);padding:2px 6px;border-radius:3px}
+pre code{background:transparent;padding:0;color:var(--text)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+blockquote{border-left:3px solid var(--gold);padding:0 0 0 20px;margin:24px 0;color:var(--text-mute);font-style:italic}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.standards-card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;transition:border-color .15s}
+.standards-card:hover{border-color:var(--gold)}
+.standards-card-title{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.standards-card-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/standards/" style="color:var(--text-faint)">Standards</a></p>
+  <h1 id="neverranked-position-on-ai-agent-readiness">NeverRanked Position on AI Agent Readiness</h1>
+<p>Through 2026, the dominant AI use case has been <em>answering questions</em> —
+ChatGPT tells you the best Hawaii bank, Perplexity summarizes a category,
+Claude gives you advice on a topic. Citation Optimization (the AEO moves
+NeverRanked has been shipping all year) is built around this paradigm.</p>
+<p>The next paradigm — already in motion — is <em>agents performing tasks on
+behalf of users</em>. ChatGPT books your dinner reservation. Claude opens
+your bank account. Perplexity runs a quote across three insurance
+carriers. The agent is no longer reading your site for context. It is
+trying to <em>use</em> your site to do something.</p>
+<p>Sites optimized for citation are not necessarily optimized for agent
+use. The signals are different. The window for differentiation is open.
+This document is NeverRanked’s framework for closing it.</p>
+<h2 id="the-four-agent-task-surfaces-that-matter">The four agent task surfaces that matter</h2>
+<p>Agents need machine-readable instructions for the actions a site
+supports. Schema.org has had <code>Action</code> types for years; almost no
+business uses them. The four most leveraged surfaces:</p>
+<h3 id="reserveaction-booking-surfaces">1. ReserveAction — booking surfaces</h3>
+<p>Restaurants, hotels, airlines, healthcare appointments, tours, classes,
+table service, professional consultations. If a user can book time on
+your calendar via your site, an agent can do it for them — but only if
+the site exposes a structured <code>ReserveAction</code> block.</p>
+<h3 id="buyaction-orderaction-commerce-surfaces">2. BuyAction / OrderAction — commerce surfaces</h3>
+<p>E-commerce, gift cards, subscription signups, ticket sales, donations.
+The product schema you already have (Product, Offer) is the foundation;
+agent readiness adds the action-shape that says “an agent can complete
+the purchase from this URL with these parameters.”</p>
+<h3 id="applyaction-application-surfaces">3. ApplyAction — application surfaces</h3>
+<p>Loan applications, account openings, job applications, scholarship
+applications, college admissions, government forms. The single biggest
+agent-acceleration opportunity in financial services and education.</p>
+<h3 id="contactaction-askaction-communication-surfaces">4. ContactAction / AskAction — communication surfaces</h3>
+<p>Email an advisor, request a quote, schedule a demo, open a support
+ticket. Agents that need information will favor sites that expose
+structured contact actions over those that bury contact behind
+unstructured webforms.</p>
+<h2 id="what-good-looks-like">What good looks like</h2>
+<p>A well-structured <code>Action</code> block answers four questions for the agent:</p>
+<ol type="1">
+<li><strong>What action?</strong> (<code>@type</code>)</li>
+<li><strong>Who is the target?</strong> (<code>target.url</code> — the actual endpoint, not a
+landing page)</li>
+<li><strong>What does the agent need to provide?</strong> (<code>object</code>, <code>query-input</code>,
+<code>actionStatus</code> if applicable)</li>
+<li><strong>What does success look like?</strong> (<code>result</code> — the schema type the
+action produces, e.g. a <code>Reservation</code>, <code>Order</code>, or <code>LoanOrCredit</code>)</li>
+</ol>
+<p>The fifth, optional, but increasingly important question:</p>
+<ol start="5" type="1">
+<li><strong>Are there agents we trust?</strong> (<code>agent</code> constraints — some sites
+may want to whitelist specific agent providers as authentication
+matures)</li>
+</ol>
+<h2 id="why-most-businesses-are-not-ready">Why most businesses are not ready</h2>
+<p>Three reasons:</p>
+<ol type="1">
+<li><p><strong>The schema is not the bottleneck.</strong> Most sites have not yet
+exposed the underlying actions as machine-callable endpoints.
+Booking happens through a third-party widget (OpenTable, Resy,
+Calendly, etc.) that the site does not control. The Action schema
+has nowhere to point.</p></li>
+<li><p><strong>The actions are gated behind authentication.</strong> Most consequential
+agent actions (banking, healthcare) require proof of identity. The
+identity layer for agents is still maturing. Sites that figure out
+delegated authentication first will be the ones agents can actually
+transact with.</p></li>
+<li><p><strong>The category leaders have not made it a priority.</strong> Schema.org’s
+Action vocabulary is not new. The reason it has not been adopted is
+not technical — it is that no one was crawling for it. That changed
+in 2026.</p></li>
+</ol>
+<h2 id="neverrankeds-deployment-path">NeverRanked’s deployment path</h2>
+<p>For each customer:</p>
+<ol type="1">
+<li>Audit current Action coverage (typically zero)</li>
+<li>Identify the 2-4 most consequential actions the customer’s site
+supports — booking, ordering, applying, contacting</li>
+<li>Generate paste-ready Action templates with proper target URLs and
+query-input fields</li>
+<li>Deploy via the same snippet that handles citation schema</li>
+<li>Track agent traffic (bot user-agents that identify as agents) in
+the same dashboard that tracks citation traffic</li>
+<li>Update quarterly as agent capabilities expand</li>
+</ol>
+<h2 id="what-neverranked-refuses-to-ship">What NeverRanked refuses to ship</h2>
+<ul>
+<li><strong>Action schema pointing at JavaScript-only endpoints.</strong> Agents in
+2026 cannot execute arbitrary JavaScript reliably. The endpoint must
+be a real HTTP URL that responds to GET or POST.</li>
+<li><strong>Reservation actions for businesses without a real-time inventory
+feed.</strong> Pointing an agent at a “we will call you back” form is worse
+than not having the schema — the agent will report failure.</li>
+<li><strong>Action schema that wraps a third-party widget the customer does
+not control.</strong> OpenTable’s structured booking is OpenTable’s surface,
+not the customer’s. We will not pretend otherwise.</li>
+<li><strong>Agentic claims on sites that do not actually support the action.</strong>
+If the action does not work for a human, exposing it for agents is
+fraud.</li>
+</ul>
+<h2 id="how-agent-readiness-scoring-works">How agent-readiness scoring works</h2>
+<p>NeverRanked’s audit pipeline now includes an Agent Readiness component
+on the AEO score. Each customer gets a per-action assessment:</p>
+<ul>
+<li>Is the action exposed at all? (binary)</li>
+<li>Is the schema correct? (validation)</li>
+<li>Does the target URL respond? (live check)</li>
+<li>Are the required parameters discoverable? (heuristic)</li>
+</ul>
+<p>The component contributes up to 10 points to the overall AEO score,
+graduating up over time as the agent ecosystem matures. This means
+sites that invest now get an early lift in their public score and
+remain ahead as the weighting increases.</p>
+<h2 id="where-we-expect-this-to-land-by-q2-2027">Where we expect this to land by Q2 2027</h2>
+<ul>
+<li>ChatGPT and Claude both ship general-purpose agents that can
+transact through trusted commerce providers</li>
+<li>A small number of category leaders (probably hospitality and
+consumer banking) ship the first agent-native interfaces — agents
+can complete reservations and account openings end-to-end without
+human intervention</li>
+<li>Schema.org publishes a refreshed Action vocabulary specifically for
+agent use, replacing or augmenting the 2014-era PotentialAction
+patterns most documentation still references</li>
+<li>Major search and AI surfaces begin distinguishing “agent-ready” from
+“human-only” sites in their indexes; agent-ready sites win the
+agentic transaction volume</li>
+</ul>
+<p>NeverRanked’s bet: customers who deploy agent-readiness in 2026 lock in
+position before this transition becomes obvious. Customers who wait
+until 2027 catch up to a category that has already moved.</p>
+<h2 id="public-commitment">Public commitment</h2>
+<p>NeverRanked publishes its own agent-readiness audit at
+<a href="https://neverranked.com/standards/agent-readiness">neverranked.com/standards/agent-readiness</a>
+when shipped. The reference implementation is our own site’s
+“contact” and “scan” surfaces, exposed as <code>ContactAction</code> and an
+agent-callable <code>AskAction</code> pointing at the public scan API.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This document is a public standard. Disputes or corrections: <a href="mailto:standards@neverranked.com">standards@neverranked.com</a>. Want the practical implementation? See the <a href="/schemas/">Schema Marketplace</a>.</p>
+  </div>
+</div>
+</body>
+</html>
