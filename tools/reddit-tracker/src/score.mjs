@@ -101,22 +101,59 @@ export function anchorTokens(category) {
  * Word-boundary matching prevents "real" from matching "really" or
  * "realm" -- a major source of false positives in v1.
  */
+/**
+ * Stem-aware word-boundary matcher. Matches the token, the token
+ * with common suffixes ("hosting" matches "host"), and short common
+ * inflections (-s, -ed, -er). Avoids the trap where "host" misses
+ * "hosting" due to strict word-boundary matching.
+ */
+function stemMatcher(tok) {
+  const escaped = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Allow the base form, plus suffixes commonly attached in headlines.
+  // The (?:...)? group keeps the regex anchored at the token start.
+  return new RegExp(`\\b${escaped}(?:s|ed|er|ers|ing|ings)?\\b`, "i");
+}
+
+/**
+ * Anchor satisfaction rule: with one anchor, require it in the
+ * title. With two or more, require at least 2 (or all if only 2)
+ * to appear in the title. This kills the multi-anchor leak where
+ * a thread with one of two specific anchors slipped through (e.g.
+ * Spotify-podcast threads passing the "podcast hosting" gate
+ * because they had "podcast" but not "hosting").
+ */
+function anchorTitleHits(anchors, title) {
+  let hits = 0;
+  for (const a of anchors) {
+    if (stemMatcher(a).test(title)) hits++;
+  }
+  return hits;
+}
+
+function requiredAnchorHits(anchorCount) {
+  if (anchorCount <= 1) return 1;
+  return 2;
+}
+
 export function topicRelevance(thread, category) {
   const tokens = categoryTokens(category);
   if (tokens.length === 0) return 1;
   const anchors = anchorTokens(category);
   const title = (thread.title || "").toLowerCase();
   const body = (thread.op_body || "").toLowerCase();
-  const wb = (tok) => new RegExp(`\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
-  // Hard gate: at least one ANCHOR token must appear in the title.
-  // Anchors are the category-naming nouns (e.g. "crm", "running"),
-  // not generic qualifiers ("real", "best"). This kills viral
-  // threads that incidentally contain category qualifier words.
-  const anchorInTitle = anchors.some((a) => wb(a).test(title));
-  if (!anchorInTitle) return 0;
-  // Soft scoring: blend title and body coverage of all tokens.
-  const titleHits = tokens.filter((t) => wb(t).test(title)).length;
-  const bodyHits = tokens.filter((t) => wb(t).test(body)).length;
+  // Hard gate: enough anchor tokens must appear in the title (with
+  // stem matching, so "host" matches "hosting"). Anchors are the
+  // category-naming nouns (e.g. "crm", "podcast", "hosting"), not
+  // generic qualifiers ("real", "best"). The N-of-M requirement
+  // (>= 2 anchors when 2+ exist) prevents tangential threads that
+  // mention only one of the category's defining nouns from passing.
+  const titleAnchors = anchorTitleHits(anchors, title);
+  if (titleAnchors < requiredAnchorHits(anchors.length)) return 0;
+  // Soft scoring: blend title and body token coverage. Token-level
+  // hits use the same stem-aware matcher as the gate.
+  const matchOne = (tok, hay) => stemMatcher(tok).test(hay);
+  const titleHits = tokens.filter((t) => matchOne(t, title)).length;
+  const bodyHits = tokens.filter((t) => matchOne(t, body)).length;
   const titleFrac = titleHits / tokens.length;
   const bodyFrac = bodyHits / tokens.length;
   return Math.min(1, (2 * titleFrac + bodyFrac) / 3);

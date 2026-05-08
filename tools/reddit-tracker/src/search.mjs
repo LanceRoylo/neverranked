@@ -13,33 +13,94 @@ import { searchThreads } from "./reddit-api.mjs";
 import { scoreThread } from "./score.mjs";
 
 /**
+ * Detect the surface shape of the query so the variant builder
+ * generates appropriately-shaped sub-queries. Three patterns we
+ * distinguish:
+ *   - "best" pattern: "best X for Y" / "best X" / "top X"
+ *   - "question" pattern: "what X should I", "which X is", etc.
+ *   - "noun" pattern: bare category like "podcast hosting"
+ */
+function classifyQueryShape(category) {
+  const c = category.trim().toLowerCase();
+  if (/^(best|top|favorite)\b/.test(c)) return "best";
+  if (/^(what|which|how|where|why|anyone|has\s+anyone)\b/.test(c)) return "question";
+  return "noun";
+}
+
+/**
+ * Strip leading shape words ("best", "what", "anyone tried", etc.)
+ * to extract the bare category nouns. Used to build noun-only
+ * variants that catch threads phrased differently than the input.
+ */
+function bareCategory(category) {
+  return category
+    .trim()
+    .replace(/^(best|top|favorite)\s+/i, "")
+    .replace(/^(what|which|how)\s+(is|are|should\s+i|do\s+you)?\s*/i, "")
+    .replace(/^(anyone|has\s+anyone)\s+(tried|used|recommend|use[ds]?)\s+/i, "")
+    .replace(/\s+should\s+i\s+(take|use|try|get|buy|pick|choose)\s*\??$/i, "")
+    .replace(/\s+(is\s+best|are\s+best|do\s+you\s+(use|recommend))\s*\??$/i, "")
+    .replace(/[?.!]+$/, "")
+    .trim();
+}
+
+/**
  * Build the variant queries we'll fire for a given category. AI engines
  * surface threads with varied surface forms; we cast a wider net than
  * the raw user query to catch them all.
  *
- * Example: category "best CRM for real estate" expands to:
- *   - best CRM for real estate
- *   - CRM real estate recommendations
- *   - CRM for realtors
- *   - real estate CRM vs
+ * Variant patterns generated depend on the query shape:
+ *
+ * "best X for Y" / "best X":
+ *   - the raw query
+ *   - bare nouns (drops "best")
+ *   - bare nouns + "recommendations"
+ *   - bare nouns + "vs"
+ *
+ * "what X should I take" / "which X is best":
+ *   - the raw query
+ *   - bare nouns
+ *   - bare nouns + "recommendations"
+ *   - "anyone tried" + bare nouns
+ *
+ * Bare noun phrases like "podcast hosting":
+ *   - the raw query
+ *   - "best" + nouns
+ *   - nouns + "recommendations"
+ *   - nouns + "vs"
  */
 export function buildQueryVariants(category, region = null) {
-  const c = category.trim();
-  const variants = new Set([c]);
+  const raw = category.trim();
+  const shape = classifyQueryShape(raw);
+  const bare = bareCategory(raw);
+  const variants = new Set([raw]);
 
-  // Drop leading "best" qualifier for broader recall
-  variants.add(c.replace(/^best\s+/i, "").trim());
+  // The bare-nouns form is useful for every shape -- it strips
+  // shape words ("best", "what", "anyone tried") and surfaces
+  // threads that title themselves with the nouns directly.
+  if (bare && bare.toLowerCase() !== raw.toLowerCase()) variants.add(bare);
 
-  // Add "recommend" / "recommendations" variant
-  variants.add(`${c} recommendations`);
+  // Universal: nouns + "recommendations" (a common reddit framing)
+  if (bare) variants.add(`${bare} recommendations`);
 
-  // Add "vs" framing for comparison threads
-  variants.add(`${c} vs`);
+  if (shape === "best") {
+    if (bare) variants.add(`${bare} vs`);
+  } else if (shape === "question") {
+    if (bare) {
+      variants.add(`anyone tried ${bare}`);
+      variants.add(`best ${bare}`);
+    }
+  } else {
+    // bare-noun shape -> add "best" framing and comparison framing
+    variants.add(`best ${bare || raw}`);
+    variants.add(`${bare || raw} vs`);
+  }
 
-  // Region-scoped variants
+  // Region-scoped variants. Same shape rules but scoped to the region.
   if (region) {
-    variants.add(`${c} ${region}`);
-    variants.add(`${region} ${c.replace(/^best\s+/i, "")}`);
+    const r = region.trim();
+    variants.add(`${bare || raw} ${r}`);
+    variants.add(`${r} ${bare || raw}`);
   }
 
   return Array.from(variants).filter(Boolean);
