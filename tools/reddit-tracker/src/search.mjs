@@ -75,7 +75,7 @@ export async function discoverThreads({
   for (const q of variants) {
     onProgress(`  → query: ${q}`);
     try {
-      const results = await searchThreads({ query: q, limit: 50, sort: "top", t: "year" });
+      const results = await searchThreads({ query: q, limit: 50, sort: "relevance", t: "year" });
       for (const t of results) {
         if (!t.url || t.over_18) continue;
         if (!seen.has(t.url)) seen.set(t.url, t);
@@ -87,14 +87,20 @@ export async function discoverThreads({
 
   onProgress(`Collected ${seen.size} unique threads. Scoring...`);
 
-  // Score everything, then sort by composite descending.
+  // Score everything, then drop relevance-floor zeros and sort by
+  // composite descending. Passing `category` into scoreThread enables
+  // the topic-relevance gate -- threads whose title+body don't match
+  // the category get composite = 0 and never surface.
   const scored = [];
   const nowSec = Math.floor(Date.now() / 1000);
   for (const t of seen.values()) {
-    const scores = scoreThread(t, { subredditPrior, nowSec });
+    const scores = scoreThread(t, { subredditPrior, nowSec, category });
+    if (scores.composite_score === 0) continue;
     scored.push({ ...t, ...scores });
   }
   scored.sort((a, b) => b.composite_score - a.composite_score);
+
+  onProgress(`Kept ${scored.length} on-topic threads after relevance gate`);
 
   return scored.slice(0, limit);
 }

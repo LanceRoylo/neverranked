@@ -37,11 +37,15 @@ async function jsonFetch(url) {
  *
  * Reddit's search supports `sort=relevance|hot|top|new|comments` and
  * `t=hour|day|week|month|year|all`. For citation discovery, we want
- * threads with structural permanence -- so we default to `sort=top`
- * and `t=year` to bias toward enduring discussions, then apply our
- * own scoring on top.
+ * threads with structural permanence -- so we default to
+ * `sort=relevance` (reddit's own match-quality filter) and `t=year`
+ * to bias toward enduring on-topic discussions, then apply our own
+ * scoring on top. `sort=top` was the original default but on
+ * generic-keyword categories ("best CRM for real estate") it
+ * returned viral drama threads that happened to contain the search
+ * terms; relevance sort suppresses that class of false positive.
  */
-export async function searchThreads({ query, limit = 50, sort = "top", t = "year", subreddit = null }) {
+export async function searchThreads({ query, limit = 50, sort = "relevance", t = "year", subreddit = null }) {
   const base = subreddit
     ? `https://www.reddit.com/r/${encodeURIComponent(subreddit)}/search.json`
     : "https://www.reddit.com/search.json";

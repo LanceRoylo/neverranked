@@ -20,6 +20,90 @@
 const SWEET_SPOT_MIN_DAYS = 180;
 const SWEET_SPOT_MAX_DAYS = 1095;
 
+// Stopwords stripped before computing category tokens. These are
+// query-shape words ("best", "for") that match almost any thread on
+// reddit and create false positives if used as relevance signals.
+const QUERY_STOPWORDS = new Set([
+  "a", "an", "and", "any", "anyone", "are", "as", "at", "be", "best",
+  "between", "by", "can", "compare", "comparison", "do", "does", "for",
+  "from", "good", "great", "has", "have", "in", "is", "it", "of", "on",
+  "or", "recommend", "recommendations", "similar", "the", "to", "top",
+  "tried", "use", "used", "using", "vs", "versus", "what", "which",
+  "with", "your"
+]);
+
+/**
+ * Extract topical tokens from a category query. Drops stopwords and
+ * short noise words. "best CRM for real estate" -> ["crm","real","estate"].
+ */
+export function categoryTokens(category) {
+  return (category || "")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((w) => w.length >= 3 && !QUERY_STOPWORDS.has(w));
+}
+
+/**
+ * Anchor tokens are the most-distinctive nouns in the category --
+ * the words that name the THING the thread must be about, not
+ * generic qualifiers. Heuristic:
+ *   1. Acronyms (2-5 uppercase letters in the ORIGINAL casing) win.
+ *      "CRM", "API", "ERP" -- these are highly specific to a domain.
+ *   2. Otherwise, tokens >= 5 chars (the longer category nouns).
+ *   3. Otherwise, all tokens (single-word query).
+ *
+ * The relevance gate requires at least one anchor token in the
+ * thread title -- which forces topical centrality. A title with
+ * "real estate" but no "CRM" doesn't pass for a "best CRM for real
+ * estate" query, because the thread isn't about CRMs.
+ */
+export function anchorTokens(category) {
+  if (!category) return [];
+  const acronyms = (category.match(/\b[A-Z]{2,5}\b/g) || []).map((s) => s.toLowerCase());
+  if (acronyms.length) return acronyms;
+  const toks = categoryTokens(category);
+  const long = toks.filter((t) => t.length >= 5);
+  return long.length > 0 ? long : toks;
+}
+
+/**
+ * Topic relevance: blends title-token coverage (weighted 2x) and
+ * op_body-token coverage. Returns 0..1.
+ *
+ * Hard rule: at least one category token must appear in the THREAD
+ * TITLE (with word-boundary matching, not substring). A category
+ * token buried in op_body of an off-topic thread does not make it
+ * on-topic -- titles encode what the thread is ABOUT.
+ *
+ * Word-boundary matching prevents "real" from matching "really" or
+ * "realm" -- a major source of false positives in v1.
+ */
+export function topicRelevance(thread, category) {
+  const tokens = categoryTokens(category);
+  if (tokens.length === 0) return 1;
+  const anchors = anchorTokens(category);
+  const title = (thread.title || "").toLowerCase();
+  const body = (thread.op_body || "").toLowerCase();
+  const wb = (tok) => new RegExp(`\\b${tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+  // Hard gate: at least one ANCHOR token must appear in the title.
+  // Anchors are the category-naming nouns (e.g. "crm", "running"),
+  // not generic qualifiers ("real", "best"). This kills viral
+  // threads that incidentally contain category qualifier words.
+  const anchorInTitle = anchors.some((a) => wb(a).test(title));
+  if (!anchorInTitle) return 0;
+  // Soft scoring: blend title and body coverage of all tokens.
+  const titleHits = tokens.filter((t) => wb(t).test(title)).length;
+  const bodyHits = tokens.filter((t) => wb(t).test(body)).length;
+  const titleFrac = titleHits / tokens.length;
+  const bodyFrac = bodyHits / tokens.length;
+  return Math.min(1, (2 * titleFrac + bodyFrac) / 3);
+}
+
+// Threads scoring below this are off-topic false positives. Hard zero.
+// 0.20 because the title-must-have-a-token rule is the primary gate;
+// this floor catches edge cases where the title has 1 token of 5+.
+const RELEVANCE_FLOOR = 0.20;
+
 /**
  * Recency score. Peaks inside the sweet-spot age band, falls off
  * outside. Returns 0..1.
@@ -90,15 +174,32 @@ export function citationLikelihood(thread, { subredditPrior = {} } = {}) {
 /**
  * Compute the full composite score and return all components for
  * transparency in CLI output and DB storage.
+ *
+ * Two changes from the v0 formula:
+ *   1. Topic relevance is now a hard gate. Threads with relevance
+ *      below RELEVANCE_FLOOR get composite = 0 so off-topic viral
+ *      threads can't win on raw upvotes.
+ *   2. Topic relevance also enters the composite as a multiplier on
+ *      citation_likelihood (which previously ignored topical fit).
+ *
+ * Composite weights unchanged: 0.25*recency + 0.35*upvote + 0.40*likelihood
  */
 export function scoreThread(thread, opts = {}) {
   const recency = recencyScore(thread, opts.nowSec);
   const upvote = upvoteScore(thread);
-  const likelihood = citationLikelihood(thread, opts);
-  const composite = 0.25 * recency + 0.35 * upvote + 0.40 * likelihood;
+  const relevance = opts.category ? topicRelevance(thread, opts.category) : 1;
+  const likelihoodRaw = citationLikelihood(thread, opts);
+  // Likelihood is dampened by relevance: a perfectly-shaped title
+  // ("Best X vs Y") on an off-topic thread gets the title-shape
+  // bonus reduced to nothing.
+  const likelihood = likelihoodRaw * (0.4 + 0.6 * relevance);
+  const composite = relevance < RELEVANCE_FLOOR
+    ? 0
+    : (0.25 * recency + 0.35 * upvote + 0.40 * likelihood);
   return {
     recency_score: round(recency),
     upvote_score: round(upvote),
+    topic_relevance: round(relevance),
     citation_likelihood: round(likelihood),
     composite_score: round(composite),
   };

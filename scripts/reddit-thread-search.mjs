@@ -94,20 +94,21 @@ function truncate(s, n) {
 }
 
 function renderTable(rows) {
-  if (rows.length === 0) return "(no threads found)";
+  if (rows.length === 0) return "(no on-topic threads found — try widening the category or relaxing the relevance floor)";
   const lines = [];
-  lines.push("Rank  Score  Recency  Upvote  Likely  Sub                  Age   Title");
-  lines.push("----  -----  -------  ------  ------  -------------------  ----  ----------------------------------------");
+  lines.push("Rank  Score  Relev  Recency  Upvote  Likely  Sub                  Age   Title");
+  lines.push("----  -----  -----  -------  ------  ------  -------------------  ----  ----------------------------------------");
   rows.forEach((r, i) => {
     const rank = String(i + 1).padStart(2, " ");
     const score = r.composite_score.toFixed(3);
+    const rel = (r.topic_relevance ?? 0).toFixed(2);
     const rec = r.recency_score.toFixed(2);
     const up = r.upvote_score.toFixed(2);
     const lk = r.citation_likelihood.toFixed(2);
     const sub = truncate("r/" + r.subreddit, 19).padEnd(19, " ");
     const age = fmtAge(r.posted_at).padStart(4, " ");
     const title = truncate(r.title, 60);
-    lines.push(`  ${rank}  ${score}    ${rec}    ${up}    ${lk}  ${sub}  ${age}  ${title}`);
+    lines.push(`  ${rank}  ${score}   ${rel}    ${rec}    ${up}    ${lk}  ${sub}  ${age}  ${title}`);
   });
   lines.push("");
   rows.forEach((r, i) => {
