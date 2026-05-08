@@ -24,6 +24,12 @@ Never deploys.
 - **Effort:** 1 day. Light migration, light wiring.
 - **Why gated:** The data lives in KV with 90d TTL today, which is fine for current volume. Moving it to D1 only matters when we have enough scans for cross-customer benchmarks to be statistically meaningful.
 
+### Hawaii community banking leaderboard — publish publicly
+- **Trigger:** ASB meeting concludes + 14-day pre-publication notice window expires (regardless of whether ASB signs)
+- **What to build:** Publish `content/leaderboards/hawaii-community-banking-2026-05.md` and `methodology.md` as `neverranked.com/leaderboards/hawaii-community-banking` and `neverranked.com/leaderboards/methodology`. Add to sitemap. Add a small "Updated weekly" badge linking to the methodology. Wire weekly auto-update from the cron that already runs.
+- **Effort:** 4 hours (markdown → marketing site routes, sitemap, weekly cron tie-in)
+- **Why gated:** Cannot ambush the category lead by publishing without notice. The 14-day window is the structural alignment that turns the leaderboard from awkward to inevitable.
+
 ### Vertical exclusivity activation
 - **Trigger:** MVNP signs the wholesale pilot.
 - **What to build:** Add a `vertical_lockouts` table tracking which categories are reserved for which agency partner. Update the prospect intake flow to check lockouts before sending outreach. Update the sales pitch to mention the lockouts as a feature, not a limitation.

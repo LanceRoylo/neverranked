@@ -262,6 +262,44 @@ That is what makes it worth offering specifically to a founding
 partner. After 12 months we revisit, and if the partnership is
 producing, we extend or expand.
 
+### "We built a public leaderboard for Hawaii community banking. You're #1 on it."
+
+When and how to introduce: late in the meeting, after the
+methodology and the audit have been discussed. Not the opener.
+Frame it as a moat-deepening artifact we're shipping in the next
+30 days, not as pressure.
+
+The numbers (live scan May 7, 2026):
+- ASB: 55 (D) — leader
+- BOH: 50 (D)
+- FHB: 45 (D)
+- CPB: 25 (F)
+
+Phrasing:
+
+> "One thing we're shipping in the next 30 days is a public
+> leaderboard for Hawaii community banking, weekly updated. You're
+> on it — currently #1 by 5 points. We wanted you to see your
+> position privately before it goes live. The lead is real but
+> thin. Whoever ships the Phase 1 schema work first this quarter
+> takes the category lead by an unrecoverable margin. That's
+> either you or one of the three banks behind you."
+
+What this does:
+- Tells Mark his bank is winning, which is the right place for him
+  to start the negotiation from
+- Surfaces the urgency (the lead is thin, competitors can take it)
+- Frames the leaderboard as inevitable, not a threat
+- Implies first-mover advantage without saying "you should worry"
+
+Be ready for: "Don't publish that without my approval." Honest
+answer: "We're giving the category lead 14 days of pre-publication
+notice. After that we publish whether you sign or not. The
+methodology is reproducible — anyone can run check.neverranked.com
+on these four domains and verify the numbers themselves. We're
+not asking permission to score the category, we're asking whether
+you want to extend your lead before everyone can see the gap."
+
 ### "Why offer that exclusivity? What's in it for you?"
 
 Honest answer: Three things.
