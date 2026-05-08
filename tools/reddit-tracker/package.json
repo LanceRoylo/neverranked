@@ -14,6 +14,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "search": "node ../../scripts/reddit-thread-search.mjs"
+    "search": "node ../../scripts/reddit-thread-search.mjs",
+    "test": "node --test test/*.test.mjs"
   }
 }

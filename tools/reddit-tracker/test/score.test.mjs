@@ -1,0 +1,276 @@
+/**
+ * Tests for tools/reddit-tracker/src/score.mjs
+ *
+ * Coverage:
+ *   - categoryTokens: unicode folding, Latin diacritic + Scandinavian
+ *     handling, ASCII baseline, edge cases, documented limitations
+ *   - anchorTokens: acronym rules (>=3 char, mixed-case requirement),
+ *     generic-noun filter, all-caps query fix
+ *   - topicRelevance: anchor gate (single + multi), stem matching,
+ *     soft scoring blend
+ *   - recencyScore / upvoteScore / citationLikelihood: shape checks
+ *   - scoreThread: integration of components, relevance floor
+ */
+
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  categoryTokens,
+  anchorTokens,
+  topicRelevance,
+  recencyScore,
+  upvoteScore,
+  citationLikelihood,
+  scoreThread,
+} from "../src/score.mjs";
+
+// ---------------------------------------------------------------------
+// categoryTokens -- tokenization with unicode folding
+// ---------------------------------------------------------------------
+
+test("categoryTokens returns empty for null / empty / whitespace", () => {
+  assert.deepEqual(categoryTokens(null), []);
+  assert.deepEqual(categoryTokens(""), []);
+  assert.deepEqual(categoryTokens("   "), []);
+});
+
+test("categoryTokens drops stopwords and short noise", () => {
+  // "best", "for" are stopwords; "to" is too short anyway
+  assert.deepEqual(categoryTokens("best CRM for real estate"), ["crm", "real", "estate"]);
+});
+
+test("categoryTokens folds Latin diacritics via NFKD", () => {
+  assert.deepEqual(categoryTokens("best café for éspresso"), ["cafe", "espresso"]);
+  assert.deepEqual(categoryTokens("naïve approach to seo"), ["naive", "approach", "seo"]);
+  assert.deepEqual(categoryTokens("Raúl property management"), ["raul", "property", "management"]);
+  // Note: "tool" is a generic type-noun but only anchorTokens filters
+  // those; categoryTokens keeps everything that survives the stopword
+  // + length filter.
+  assert.deepEqual(categoryTokens("Acción Marketing tool"), ["accion", "marketing", "tool"]);
+});
+
+test("categoryTokens maps non-decomposing Latin letters", () => {
+  // ø, æ, ß, ð, þ, œ, ı, ł aren't decomposed by NFKD; the explicit
+  // map handles them.
+  assert.deepEqual(categoryTokens("best brewery in Helsingør"), ["brewery", "helsingor"]);
+  assert.deepEqual(categoryTokens("Bjørn Æsir Erlendsson naïveté"), ["bjorn", "aesir", "erlendsson", "naivete"]);
+  assert.deepEqual(categoryTokens("beste Straße Schloß"), ["beste", "strasse", "schloss"]);
+});
+
+test("categoryTokens drops non-Latin scripts (documented limitation)", () => {
+  // CJK / Cyrillic / Arabic don't survive NFKD + Latin map.
+  assert.deepEqual(categoryTokens("東京 best app"), ["app"]);
+});
+
+test("categoryTokens drops single tokens with embedded special chars (documented H3 limitation)", () => {
+  // Audit H3: not yet fixed. Lock in current behavior so a future
+  // tech-term-aware fix is detected as a behavior change.
+  assert.deepEqual(categoryTokens("best C++ framework"), ["framework"]);
+  assert.deepEqual(categoryTokens("best node.js library"), ["node", "library"]);
+});
+
+// ---------------------------------------------------------------------
+// anchorTokens -- acronyms, generics, all-caps fix
+// ---------------------------------------------------------------------
+
+test("anchorTokens prefers acronyms when context is mixed-case", () => {
+  assert.deepEqual(anchorTokens("best CRM for real estate"), ["crm"]);
+  assert.deepEqual(anchorTokens("best CRM software"), ["crm"]);
+  assert.deepEqual(anchorTokens("best local SEO software"), ["seo"]);
+});
+
+test("anchorTokens requires acronyms >= 3 chars (drops AI / OS / VR)", () => {
+  // 2-letter acronyms are too common to anchor reliably.
+  assert.deepEqual(anchorTokens("best AI listing tools for realtors"), ["listing", "realtors"]);
+});
+
+test("anchorTokens does NOT treat all-caps queries as acronym sets", () => {
+  // The fix for audit H1: "BEST CRM TOOL" used to return all words;
+  // now falls through to the lowercase pipeline where stopwords
+  // and generic type-nouns get filtered.
+  assert.deepEqual(anchorTokens("BEST CRM TOOL"), ["crm"]);
+  assert.deepEqual(anchorTokens("best CRM tool"), ["crm"]);
+});
+
+test("anchorTokens filters generic type-nouns from candidates", () => {
+  // "platform" / "tool" / "software" etc. are kind-of-thing words,
+  // not category-defining nouns.
+  assert.deepEqual(anchorTokens("best podcast hosting platform"), ["podcast", "hosting"]);
+  assert.deepEqual(anchorTokens("best podcast hosting tool"), ["podcast", "hosting"]);
+});
+
+test("anchorTokens falls through to short tokens when no long ones", () => {
+  // Single-word category, no acronym, length < 5: return the token.
+  assert.deepEqual(anchorTokens("CRM"), ["crm"]);
+});
+
+test("anchorTokens returns [] for null / empty", () => {
+  assert.deepEqual(anchorTokens(null), []);
+  assert.deepEqual(anchorTokens(""), []);
+});
+
+// ---------------------------------------------------------------------
+// topicRelevance -- anchor gate + soft scoring
+// ---------------------------------------------------------------------
+
+const mkThread = (overrides = {}) => ({
+  title: "",
+  op_body: "",
+  op_score: 100,
+  comment_count: 50,
+  posted_at: Math.floor(Date.now() / 1000) - 86400 * 365,
+  is_self: true,
+  subreddit: "test",
+  ...overrides,
+});
+
+test("topicRelevance hard-zeros when no anchor in title", () => {
+  // For "best CRM for real estate", anchor is "crm". A title with
+  // "real estate" but no "crm" is off-topic.
+  const t = mkThread({ title: "Best real estate tips for new agents" });
+  assert.equal(topicRelevance(t, "best CRM for real estate"), 0);
+});
+
+test("topicRelevance passes when single anchor present in title", () => {
+  const t = mkThread({ title: "What CRM are you using these days" });
+  const r = topicRelevance(t, "best CRM for real estate");
+  assert.ok(r > 0, `relevance should be > 0, got ${r}`);
+});
+
+test("topicRelevance applies multi-anchor rule (>= 2 in title)", () => {
+  // For "best podcast hosting platform", anchors are ["podcast", "hosting"].
+  // A title with only "podcast" should fail (1 of 2 needed = 2).
+  const single = mkThread({ title: "Spotify pulls white nationalist podcast" });
+  assert.equal(topicRelevance(single, "best podcast hosting platform"), 0);
+
+  // Title with both passes.
+  const both = mkThread({ title: "Best podcast hosting platform for new shows" });
+  assert.ok(topicRelevance(both, "best podcast hosting platform") > 0);
+});
+
+test("topicRelevance stem-matches anchors via suffix variants (hosting -> hostings, podcast -> podcasters)", () => {
+  // Stem matcher adds suffixes to the anchor: "podcast" matches
+  // "podcasters" in title. Direction is anchor + (s|ed|er|ers|ing|ings),
+  // not anchor truncation. So "hosting" anchor matches "hostings" but
+  // not "host". Lock in this behavior; the tighter direction (anchor
+  // truncation) is a documented Phase 2 stem improvement.
+  const stems = mkThread({ title: "Best podcast hosting recommendations" });
+  assert.ok(topicRelevance(stems, "best podcast hosting platform") > 0);
+
+  // Anchor stems match suffix variants in the title (selfhosting works
+  // because "hosting" is the literal substring after the dash).
+  const selfHosting = mkThread({ title: "Why are so few podcasters self-hosting" });
+  assert.ok(topicRelevance(selfHosting, "best podcast hosting platform") > 0);
+
+  // Documented limitation: title with bare "host" (truncated form)
+  // does NOT match anchor "hosting". Lock in.
+  const truncated = mkThread({ title: "Best podcast host for indie shows" });
+  assert.equal(topicRelevance(truncated, "best podcast hosting platform"), 0);
+});
+
+test("topicRelevance returns 1 when category has no usable tokens", () => {
+  const t = mkThread({ title: "anything" });
+  assert.equal(topicRelevance(t, ""), 1);
+  assert.equal(topicRelevance(t, "   "), 1);
+});
+
+// ---------------------------------------------------------------------
+// recencyScore -- sweet-spot age band
+// ---------------------------------------------------------------------
+
+test("recencyScore peaks in 6mo-3yr window", () => {
+  const now = Math.floor(Date.now() / 1000);
+  // 1 year old
+  const t = { posted_at: now - 86400 * 365 };
+  assert.equal(recencyScore(t, now), 1);
+});
+
+test("recencyScore is low for very fresh threads (< 30 days)", () => {
+  const now = Math.floor(Date.now() / 1000);
+  const t = { posted_at: now - 86400 * 10 };
+  assert.equal(recencyScore(t, now), 0.2);
+});
+
+test("recencyScore decays for very old threads (> 3 years)", () => {
+  const now = Math.floor(Date.now() / 1000);
+  // 5 years old
+  const t = { posted_at: now - 86400 * 365 * 5 };
+  const r = recencyScore(t, now);
+  assert.ok(r < 1 && r >= 0.3, `expected decay, got ${r}`);
+});
+
+// ---------------------------------------------------------------------
+// upvoteScore -- log-scaled
+// ---------------------------------------------------------------------
+
+test("upvoteScore is 0 for zero or negative upvotes", () => {
+  assert.equal(upvoteScore({ op_score: 0 }), 0);
+  assert.equal(upvoteScore({ op_score: -5 }), 0);
+  assert.equal(upvoteScore({}), 0);
+});
+
+test("upvoteScore saturates near 1 for very high upvotes", () => {
+  assert.ok(upvoteScore({ op_score: 50000 }) >= 1);
+  assert.ok(upvoteScore({ op_score: 5000 }) > 0.9);
+});
+
+test("upvoteScore is log-scaled (10x upvotes ≠ 10x score)", () => {
+  const a = upvoteScore({ op_score: 100 });
+  const b = upvoteScore({ op_score: 1000 });
+  // 1000 should be higher than 100 but not 10x
+  assert.ok(b > a);
+  assert.ok(b < a * 5);
+});
+
+// ---------------------------------------------------------------------
+// citationLikelihood -- title shape blend
+// ---------------------------------------------------------------------
+
+test("citationLikelihood rewards 'best' / 'vs' title shapes", () => {
+  const plain = citationLikelihood({ title: "my dog is cute", op_score: 100 });
+  const best = citationLikelihood({ title: "best CRM for real estate", op_score: 100 });
+  assert.ok(best > plain);
+});
+
+test("citationLikelihood uses subredditPrior when provided", () => {
+  const noPrior = citationLikelihood({ title: "test", subreddit: "unknown_sub", op_score: 100 });
+  const withPrior = citationLikelihood({ title: "test", subreddit: "known_sub", op_score: 100 }, {
+    subredditPrior: { known_sub: 1.0 },
+  });
+  assert.ok(withPrior > noPrior);
+});
+
+// ---------------------------------------------------------------------
+// scoreThread -- integration
+// ---------------------------------------------------------------------
+
+test("scoreThread returns all components", () => {
+  const t = mkThread({ title: "Best CRM for real estate? Anyone tried Follow Up Boss" });
+  const s = scoreThread(t, { category: "best CRM for real estate" });
+  assert.ok("recency_score" in s);
+  assert.ok("upvote_score" in s);
+  assert.ok("topic_relevance" in s);
+  assert.ok("citation_likelihood" in s);
+  assert.ok("composite_score" in s);
+});
+
+test("scoreThread zeros composite when off-topic", () => {
+  const t = mkThread({ title: "AITA for selling my real estate" });
+  const s = scoreThread(t, { category: "best CRM for real estate" });
+  assert.equal(s.composite_score, 0);
+  assert.equal(s.topic_relevance, 0);
+});
+
+test("scoreThread produces positive composite for on-topic high-quality thread", () => {
+  const t = mkThread({
+    title: "Best CRM for real estate? Anyone tried Follow Up Boss vs LionDesk",
+    op_body: "a".repeat(500),
+    op_score: 850,
+    comment_count: 320,
+  });
+  const s = scoreThread(t, { category: "best CRM for real estate" });
+  assert.ok(s.composite_score > 0.5, `expected high composite, got ${s.composite_score}`);
+  // topic_relevance = (2 * titleFrac + bodyFrac) / 3. With all 3
+  // tokens in title and 0 in body: (2*1 + 0)/3 = 0.667. Lock in.
+  assert.ok(s.topic_relevance >= 0.6, `expected high relevance, got ${s.topic_relevance}`);
+});
