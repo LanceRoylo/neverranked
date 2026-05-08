@@ -7,7 +7,7 @@
 import type { Env } from "./types";
 import { getUser } from "./auth";
 import { scanDomain as scanDomainImported } from "./scanner";
-import { redirect, html, layout } from "./render";
+import { redirect, html, layout, esc as escHtml } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
@@ -1062,6 +1062,41 @@ export default {
     }
     if (path === "/admin/scans" && method === "GET" && user.role === "admin") {
       return handleScanHealth(user, env);
+    }
+
+    // Admin: recent request errors. Surfaces any 500 captured by the
+    // global error handler. Filter by ?id=<request_id> to look up a
+    // specific error a customer reported.
+    if (path === "/admin/recent-errors" && method === "GET" && user.role === "admin") {
+      const reqIdFilter = url.searchParams.get("id");
+      const rows = reqIdFilter
+        ? (await env.DB.prepare(
+            "SELECT * FROM request_errors WHERE request_id = ? ORDER BY created_at DESC LIMIT 50"
+          ).bind(reqIdFilter).all()).results
+        : (await env.DB.prepare(
+            "SELECT * FROM request_errors ORDER BY created_at DESC LIMIT 100"
+          ).all()).results;
+      const items = (rows as Array<Record<string, unknown>>).map(r => `
+        <div style="padding:14px 18px;border:1px solid var(--line);border-radius:4px;margin-bottom:12px;font-family:var(--mono);font-size:12px;line-height:1.6">
+          <div style="display:flex;justify-content:space-between;color:var(--text-mute)">
+            <span style="color:var(--gold)">${escHtml(String(r.request_id))}</span>
+            <span>${new Date((r.created_at as number) * 1000).toLocaleString()}</span>
+          </div>
+          <div style="color:var(--text);margin-top:6px"><strong>${escHtml(String(r.method))}</strong> ${escHtml(String(r.path))}${r.user_id ? ` · user ${r.user_id}` : ''}</div>
+          <div style="color:var(--err);margin-top:8px;white-space:pre-wrap;word-break:break-all">${escHtml(String(r.message))}</div>
+          ${r.stack ? `<details style="margin-top:8px"><summary style="cursor:pointer;color:var(--text-faint)">stack</summary><pre style="white-space:pre-wrap;font-size:11px;color:var(--text-faint);margin:8px 0 0">${escHtml(String(r.stack))}</pre></details>` : ''}
+          ${r.user_agent ? `<div style="color:var(--text-faint);margin-top:6px;font-size:11px">UA: ${escHtml(String(r.user_agent))}</div>` : ''}
+        </div>
+      `).join("");
+      const body = `
+        <div style="margin-bottom:32px">
+          <div class="label" style="margin-bottom:8px"><a href="/admin" style="color:var(--text-mute)">Admin</a></div>
+          <h1><em>Recent errors</em></h1>
+          <p style="color:var(--text-faint);font-size:13px;margin-top:8px">Most recent ${reqIdFilter ? `request id "${escHtml(reqIdFilter)}"` : '100 captured 500s'}. <a href="/admin/recent-errors" style="color:var(--gold)">show all</a></p>
+        </div>
+        ${rows.length === 0 ? '<div class="empty"><h3>No errors captured</h3><p style="color:var(--text-faint)">The error capture is still alive though — anything that 500s from now on lands here.</p></div>' : items}
+      `;
+      return html(layout("Recent errors", body, user));
     }
     // Admin: issue a fresh magic link for a given email and return the
     // direct URL. Bypasses email entirely -- useful for verifying
@@ -2540,23 +2575,35 @@ export default {
     `, user), 404);
     })();
     } catch (err) {
-      // Uncaught error inside any route handler. Log it server-side
-      // with the request id so Lance can grep, and render a branded
-      // error page for the user that surfaces the request id so they
-      // can quote it when reporting.
-      console.error("[request-error]", reqLog.id, err);
+      // Uncaught error inside any route handler. Persist it to a
+      // dedicated table (no silent catches — if we lose the log we lose
+      // our ability to debug) and render a branded error page that
+      // surfaces the request id for the customer.
+      const errMessage = err instanceof Error ? err.message : String(err);
+      const errStack = err instanceof Error && err.stack ? err.stack : null;
+      console.error("[request-error]", reqLog.id, errMessage, errStack);
       try {
-        await logEvent(env, {
-          type: "request_error",
-          detail: {
-            request_id: reqLog.id,
-            path: new URL(request.url).pathname,
-            method: request.method,
-            message: err instanceof Error ? err.message : String(err),
-          },
-          userId: _user_id_for_log,
-        });
-      } catch {}
+        const ip = request.headers.get("CF-Connecting-IP") || "";
+        const ipPrefix = ip.split(".").slice(0, 2).join(".") || ip.split(":").slice(0, 2).join(":");
+        await env.DB.prepare(
+          `INSERT INTO request_errors
+             (request_id, path, method, user_id, message, stack, user_agent, ip_prefix, created_at)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+        ).bind(
+          reqLog.id,
+          new URL(request.url).pathname,
+          request.method,
+          _user_id_for_log ?? null,
+          errMessage.slice(0, 2000),
+          errStack ? errStack.slice(0, 4000) : null,
+          (request.headers.get("User-Agent") || "").slice(0, 500),
+          ipPrefix,
+          Math.floor(Date.now() / 1000),
+        ).run();
+      } catch (logErr) {
+        // Last-resort: at least surface to console if D1 itself failed.
+        console.error("[request-error-LOG-FAILED]", reqLog.id, String(logErr));
+      }
       response = new Response(`<!doctype html>
 <html><head><meta charset="utf-8"><title>Something went wrong</title>
 <style>body{font-family:Inter,system-ui,sans-serif;background:#0e0d0a;color:#fbf8ef;margin:0;padding:80px 24px;text-align:center}main{max-width:480px;margin:0 auto}h1{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c9a84c;font-weight:400;font-size:32pt;margin:0 0 16px}p{color:#b0b0a8;line-height:1.6;margin:0 0 16px;font-size:14px}code{font-family:'DM Mono',monospace;background:#1a1815;padding:4px 10px;border-radius:3px;color:#e8c767;font-size:12px;display:inline-block;margin:8px 0}.btn{display:inline-block;margin-top:24px;padding:10px 24px;background:#c9a84c;color:#080808;text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.06em;border-radius:2px}a{color:#c9a84c}</style>
