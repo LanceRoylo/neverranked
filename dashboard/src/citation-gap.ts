@@ -164,8 +164,12 @@ export function renderCitationGapPanel(report: GapReport | null, opts: { briefLi
         <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${summary.unique_sources} sources &middot; ${summary.sources_with_meaningful_gap} with action</div>
       </div>
 
+      <div style="font-size:12px;color:var(--text-mute);line-height:1.7;max-width:780px;margin-bottom:14px;padding:10px 14px;background:var(--bg);border-left:2px solid var(--gold-dim);border-radius:0 2px 2px 0">
+        <strong style="color:var(--text);font-weight:500">How to read this.</strong> The competitor matrix above shows who AI engines NAME in their answers. This panel shows the SOURCES (Wikipedia, TripAdvisor, news sites, Google Business Profile) AI engines cite as their references for your category. <strong style="color:var(--text);font-weight:500">Gap score</strong> is 0.0 to 1.0: red (>= 0.6) means the source cites your category but not you, gold (0.3 to 0.6) means partial coverage. Each gap has a source-appropriate action below.
+      </div>
+
       <div style="font-size:12.5px;color:var(--text-soft);line-height:1.7;max-width:780px;margin-bottom:18px">
-        Across the last 90 days, AI engines cited ${summary.unique_sources} source domain${summary.unique_sources === 1 ? '' : 's'} for your tracked queries. You appear in ${summary.total_runs_naming_client} of ${summary.total_runs} runs (${Math.round(summary.runs_naming_client_ratio * 100)}%). The sources below cite your category but not you, or cite you only weakly. Each has a source-appropriate action.
+        Across the last 90 days, AI engines cited ${summary.unique_sources} source domain${summary.unique_sources === 1 ? '' : 's'} for your tracked queries. You appear in ${summary.total_runs_naming_client} of ${summary.total_runs} runs (${Math.round(summary.runs_naming_client_ratio * 100)}%). The sources below cite your category but not you, or cite you only weakly.
       </div>
 
       <div style="margin-bottom:16px">${briefBlocks}</div>
