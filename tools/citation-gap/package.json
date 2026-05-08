@@ -1,0 +1,16 @@
+{
+  "name": "@nr/citation-gap",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Citation-gap analysis: which sources AI engines cite for a client's tracked keywords, where the client is mentioned vs absent, and source-appropriate action briefs to close the gap.",
+  "type": "module",
+  "main": "src/analyze.mjs",
+  "exports": {
+    ".": "./src/analyze.mjs",
+    "./source-types": "./src/source-types.mjs",
+    "./brief": "./src/brief.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
