@@ -245,6 +245,46 @@ roughly $16-32k/mo, on top of any existing retainer. Margin
 splits and exclusivity terms are negotiable for the first
 agency partner.
 
+### "What does my team get specifically?" (James)
+
+This question is likely from James as the digital strategy
+director thinking about his team's growth. Mark may also ask
+on James's behalf since talent investment is a leadership
+concern.
+
+Answer: NeverRanked Certified Practitioner program, founding
+cohort, complimentary for MVNP. Eight seats. Curriculum at
+`content/certification/program-overview.md`. MVNP-specific
+terms at `content/certification/mvnp-founding-cohort.md`.
+
+What it concretely gives the team:
+- 26 hours of asynchronous training across 8 modules covering
+  schema deployment, compliance-aware patterns, citation
+  tracking, the Clarity Principle voice, llms.txt, agent
+  readiness, customer engagement
+- Office hours with Lance during each module
+- Co-branded certification on practitioner LinkedIn profiles
+  ("Certified by NeverRanked in partnership with MVNP")
+- Hawaii financial services compliance track customized for
+  the partnership
+- If ASB consents, the capstone uses real ASB pilot data —
+  meaning the certification work IS production work
+- Public roster placement (referral pipeline from NeverRanked
+  customers we route to MVNP)
+- No cost (vs $1,500/practitioner standard rate — $12,000 of
+  program value complimentary as founding partner term)
+
+Why this matters: the Hawaii agency that has the first
+credentialed AEO team is the Hawaii agency that wins the
+next 12 months of AEO RFPs. James knows this. Pitching the
+cert as "talent investment your competitors are not making
+yet" is the right framing.
+
+Bring the MVNP-founding-cohort doc as a leave-behind. It is
+the kind of artifact a digital director shows their HR/talent
+peer to justify the partnership beyond the immediate revenue
+math.
+
 ### "What is the founding partner clause?"
 
 Answer: If MVNP signs the 90-day pilot, we lock Hawaii financial
