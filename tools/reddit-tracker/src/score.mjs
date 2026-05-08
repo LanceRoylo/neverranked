@@ -43,14 +43,32 @@ export function categoryTokens(category) {
     .filter((w) => w.length >= 3 && !QUERY_STOPWORDS.has(w));
 }
 
+// Generic type-nouns ("platform", "tools", "software") are the
+// kind-of-thing word in a category, not the category-defining word.
+// In "best podcast hosting platform" the category is podcast +
+// hosting, not platform. Filtering these from anchor candidates
+// prevents off-topic threads that mention "platform" / "tools" /
+// "software" from passing the relevance gate.
+const GENERIC_TYPE_NOUNS = new Set([
+  "app", "apps", "platform", "platforms", "software", "tool", "tools",
+  "service", "services", "system", "systems", "product", "products",
+  "solution", "solutions", "option", "options", "thing", "things",
+  "stuff", "kind", "type", "company", "companies", "brand", "brands"
+]);
+
 /**
  * Anchor tokens are the most-distinctive nouns in the category --
  * the words that name the THING the thread must be about, not
  * generic qualifiers. Heuristic:
- *   1. Acronyms (2-5 uppercase letters in the ORIGINAL casing) win.
- *      "CRM", "API", "ERP" -- these are highly specific to a domain.
- *   2. Otherwise, tokens >= 5 chars (the longer category nouns).
- *   3. Otherwise, all tokens (single-word query).
+ *   1. Acronyms (3-5 uppercase letters in the ORIGINAL casing) win.
+ *      "CRM", "API", "ERP" -- highly specific to a domain. We
+ *      require >= 3 chars because 2-letter acronyms ("AI", "OS",
+ *      "VR") are too common to anchor reliably and leak off-topic
+ *      viral threads.
+ *   2. Otherwise, tokens >= 5 chars (the longer category nouns),
+ *      with generic type-nouns ("platform", "tools") filtered out.
+ *   3. Otherwise, all non-generic tokens.
+ *   4. Last resort: all tokens.
  *
  * The relevance gate requires at least one anchor token in the
  * thread title -- which forces topical centrality. A title with
@@ -59,11 +77,16 @@ export function categoryTokens(category) {
  */
 export function anchorTokens(category) {
   if (!category) return [];
-  const acronyms = (category.match(/\b[A-Z]{2,5}\b/g) || []).map((s) => s.toLowerCase());
+  const acronyms = (category.match(/\b[A-Z]{2,5}\b/g) || [])
+    .filter((s) => s.length >= 3)
+    .map((s) => s.toLowerCase());
   if (acronyms.length) return acronyms;
   const toks = categoryTokens(category);
-  const long = toks.filter((t) => t.length >= 5);
-  return long.length > 0 ? long : toks;
+  const specific = toks.filter((t) => !GENERIC_TYPE_NOUNS.has(t));
+  const long = specific.filter((t) => t.length >= 5);
+  if (long.length > 0) return long;
+  if (specific.length > 0) return specific;
+  return toks;
 }
 
 /**
