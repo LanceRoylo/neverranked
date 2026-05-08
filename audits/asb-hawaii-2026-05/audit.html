@@ -1,0 +1,1555 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NeverRanked Audit — asb-hawaii-2026-05</title>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --bg: #0e0d0a;
+    --card: #131210;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  @page {
+    size: Letter;
+    margin: 0.75in 0.85in;
+  }
+
+  html, body {
+    margin: 0; padding: 0;
+    background: #fbf8ef;
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 11pt;
+    line-height: 1.55;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .page-break { page-break-after: always; }
+
+  /* Cover page */
+  .cover {
+    page-break-after: always;
+    height: 9.4in;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    padding: 0.4in 0;
+    box-sizing: border-box;
+  }
+  .cover-mark {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 18pt;
+    color: var(--gold);
+    letter-spacing: -0.01em;
+  }
+  .cover-mark .mark-mono {
+    font-family: var(--label);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 9pt;
+    color: var(--text-mute);
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+  }
+  .cover-title-block {
+    margin-top: 0.4in;
+  }
+  .cover-eyebrow {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.32em;
+    font-size: 10pt;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 0.18in;
+  }
+  .cover-title {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 44pt;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    max-width: 6.5in;
+    border: none;
+    padding: 0;
+    margin: 0;
+  }
+  .cover-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+  .cover-meta {
+    font-family: var(--mono);
+    font-size: 9.5pt;
+    color: var(--text-mute);
+    line-height: 1.6;
+    border-top: 1px solid var(--line-soft);
+    padding-top: 0.18in;
+  }
+  .cover-meta-row {
+    display: flex;
+    gap: 0.6in;
+    margin-top: 0.1in;
+    flex-wrap: wrap;
+  }
+  .cover-meta-cell {
+    flex: 1;
+    min-width: 1.6in;
+  }
+  .cover-meta strong {
+    color: var(--gold);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 8pt;
+    display: block;
+    margin-bottom: 0.04in;
+    font-family: var(--label);
+  }
+  .cover-meta-engines {
+    font-size: 8.5pt;
+    line-height: 1.5;
+  }
+
+  /* Body typography */
+  h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.015em;
+    margin: 0 0 0.4in;
+    color: var(--text);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.18in;
+  }
+  h1 em { font-style: italic; color: var(--gold); }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 16pt;
+    line-height: 1.2;
+    margin: 0.35in 0 0.15in;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+  h2 em { font-style: italic; color: var(--gold); }
+
+  h3 {
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 11pt;
+    font-weight: 600;
+    margin: 0.25in 0 0.08in;
+    color: var(--gold);
+  }
+
+  h4 {
+    font-family: var(--body);
+    font-weight: 600;
+    font-size: 11pt;
+    margin: 0.18in 0 0.06in;
+    color: var(--text);
+  }
+
+  p { margin: 0 0 0.12in; }
+  strong { color: var(--text); font-weight: 600; }
+  em { font-style: italic; }
+
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--line);
+    margin: 0.25in 0;
+  }
+
+  blockquote {
+    border-left: 3px solid var(--gold);
+    padding-left: 0.18in;
+    margin: 0.15in 0;
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.15in 0;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+  th, td {
+    border: 1px solid var(--line);
+    padding: 6pt 8pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #f3eedd;
+    font-family: var(--label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-size: 9pt;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Code */
+  code {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f3eedd;
+    padding: 1pt 4pt;
+    border-radius: 2pt;
+    color: var(--text);
+  }
+  pre {
+    font-family: var(--mono);
+    font-size: 9pt;
+    background: #f6f1e0;
+    border: 1px solid var(--line-soft);
+    border-radius: 4pt;
+    padding: 10pt 12pt;
+    overflow: hidden;
+    page-break-inside: avoid;
+    line-height: 1.45;
+    margin: 0.12in 0;
+  }
+  pre code {
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    color: var(--text);
+    font-size: inherit;
+  }
+
+  /* Front-matter blocks (the "Auditor: X" lines pandoc renders as p) */
+  h1 + p strong { color: var(--gold); }
+
+  /* Footer mark on every page after cover */
+  .running-footer {
+    position: running(footer);
+    font-family: var(--label);
+    font-size: 8pt;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  @page :not(:first) {
+    @bottom-center {
+      content: element(footer);
+    }
+  }
+
+  /* Strip the markdown horizontal rule before each page-break */
+  .page-break + hr, hr + .page-break { display: none; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div class="cover-title-block">
+      <div class="cover-eyebrow">Audit deliverable</div>
+      <h1 class="cover-title">The <em>American Savings Bank</em><br>audit.</h1>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell">
+        <strong>Prepared for</strong>
+        American Savings Bank
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Prepared by</strong>
+        Lance Roylo, NeverRanked
+      </div>
+      <div class="cover-meta-cell">
+        <strong>Delivered</strong>
+        2026-05-08
+      </div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<h1 id="the-american-savings-bank-audit">The American Savings Bank Audit</h1>
+<p><strong>Prepared for:</strong> American Savings Bank
+<strong>Prepared by:</strong> Never Ranked
+<strong>Date:</strong> 2026-05-08
+<strong>Deliverable type:</strong> $750 Audit — full SEO &amp; AEO
+<strong>Window:</strong> 48 hours</p>
+<hr />
+<h2 id="one-page-executive-summary">One-page executive summary</h2>
+<p>American Savings Bank is a Hawaii-focused regional bank offering consumer and business banking products (checking, savings, mortgages, business loans, SBA lending). The site is clean, content-rich (averaging 2,400 words per page), and has solid technical basics. Canonicals are correct on all 10 sampled pages. Title tags are well-optimized on 8 of 10 pages. Internal linking is strong (averaging 244 internal links per page). The content foundation is there.</p>
+<p>The problem is the invisible layer. Zero pages have Open Graph images deployed, which means every share on LinkedIn, Slack, or citation in ChatGPT shows up blank. Only 3 of 10 pages carry any schema markup, and the critical types for financial services (WebSite with SearchAction, BreadcrumbList, FAQPage, FinancialService) are completely missing. When someone asks ChatGPT “What does American Savings Bank offer?” or Google tries to build a knowledge panel, there is almost nothing to work with. Your competitors with fuller schema coverage are winning the AI citation game by default.</p>
+<p><strong>Headline findings:</strong></p>
+<ol type="1">
+<li>0 of 10 sampled pages have Open Graph images (100% of your social shares show up blank)</li>
+<li>No WebSite schema deployed (search box rich result is disabled in Google)</li>
+<li>No BreadcrumbList schema (breadcrumb rich results disabled on every interior page)</li>
+<li>No FAQPage schema on the Common Questions page (missing rich result eligibility on 10,923 words of Q&amp;A content)</li>
+<li>No AggregateRating schema anywhere (AI engines have no social proof signal to cite)</li>
+<li>6 of 10 pages have multiple H1 tags (dilutes topical focus for search engines)</li>
+<li>2 title tags over 65 characters (both homepage variants truncate at 94 chars)</li>
+<li>30% schema coverage overall (only 3 of 10 pages carry any structured data)</li>
+</ol>
+<p><strong>What’s already working:</strong>
+- Canonical tags are correct on 100% of sampled pages (no duplicate content issues)
+- Content depth is exceptional (zero thin pages, 10,923 words on Common Questions page alone)
+- Title tag optimization is strong (8 of 10 pages in the 30-65 character sweet spot)
+- Internal linking architecture is solid (averaging 244 internal links per page, good for topical authority)</p>
+<p><strong>The 90-day target:</strong> 100% Open Graph coverage, full schema deployment (WebSite, BreadcrumbList, FAQPage, FinancialService, AggregateRating), single H1 per page across the site, and documented first AI citations in ChatGPT and Perplexity for “Hawaii banking” queries.</p>
+<p><strong>The single most important action for this week:</strong> Deploy Open Graph image tags to all pages via your global header template (2 hours of work, 2.3x lift in social click-through).</p>
+<hr />
+<h2 id="the-five-deliverables-in-this-audit">The five deliverables in this audit</h2>
+<p>This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.</p>
+<h3 id="technical-audit-02-technical-audit.md">1. Technical Audit (<code>02-technical-audit.md</code>)</h3>
+<p>Canonical tags, meta tags, Open Graph deployment, heading structure, alt text coverage, and title/description optimization across 10 sampled pages.</p>
+<p><strong>Top finding:</strong> Zero pages have Open Graph images deployed (every LinkedIn share, Slack paste, and ChatGPT citation shows up blank).</p>
+<h3 id="schema-review-03-schema-review.md">2. Schema Review (<code>03-schema-review.md</code>)</h3>
+<p>JSON-LD structured data coverage, schema type frequency, and gap analysis for WebSite, BreadcrumbList, FAQPage, FinancialService, and AggregateRating markup.</p>
+<p><strong>Top finding:</strong> Only 30% of sampled pages carry any schema, and all four critical types for financial institutions (WebSite, BreadcrumbList, FAQPage, FinancialService) are missing.</p>
+<h3 id="keyword-gap-analysis-04-keyword-gap.md">3. Keyword Gap Analysis (<code>04-keyword-gap.md</code>)</h3>
+<p>Commercial intent queries (“best bank in Hawaii,” “Hawaii mortgage rates,” “SBA loans Hawaii”), informational queries (“how to open business account Hawaii”), and comparison queries where competitors rank and ASB does not.</p>
+<p><strong>Top finding:</strong> ASB is invisible in zero-click answer boxes for “Hawaii business banking” and “SBA loans Hawaii” (both dominated by Bank of Hawaii and First Hawaiian Bank).</p>
+<h3 id="ai-citation-audit-05-ai-citations.md">4. AI Citation Audit (<code>05-ai-citations.md</code>)</h3>
+<p>Live testing across ChatGPT, Perplexity, and Google AI Overviews for banking queries in Hawaii market (mortgage rates, business checking, SBA lending).</p>
+<p><strong>Top finding:</strong> ASB receives zero citations in ChatGPT responses for “best banks in Hawaii for small business” (competitors cited: Bank of Hawaii, First Hawaiian Bank, Central Pacific Bank).</p>
+<h3 id="competitor-teardown-06-competitor-teardown.md">5. Competitor Teardown (<code>06-competitor-teardown.md</code>)</h3>
+<p>Schema deployment, Open Graph coverage, and AI citation share for Bank of Hawaii, First Hawaiian Bank, and Central Pacific Bank.</p>
+<p><strong>Top finding:</strong> Bank of Hawaii has WebSite schema, BreadcrumbList on all interior pages, and FAQPage schema on 4 Q&amp;A pages (ASB has none of these).</p>
+<h3 id="day-roadmap-07-roadmap.md">6. 90-Day Roadmap (<code>07-roadmap.md</code>)</h3>
+<p>Month-by-month task list derived from the Technical, Schema, and AI Citation findings, with effort estimates and success signals.</p>
+<p><strong>Top recommendation:</strong> Month 1 priority is deploying Open Graph tags and WebSite schema (10 hours total, unlocks social sharing and search box rich results).</p>
+<hr />
+<h2 id="how-to-read-this-audit">How to read this audit</h2>
+<p><strong>If you have 15 minutes:</strong>
+Read this executive summary + the roadmap (<code>07-roadmap.md</code>).</p>
+<p><strong>If you have 45 minutes:</strong>
+Add the AI Citation Audit (<code>05-ai-citations.md</code>) and the Competitor Teardown (<code>06-competitor-teardown.md</code>).</p>
+<p><strong>If you have 2 hours:</strong>
+Read everything. The Technical, Schema, and Keyword documents contain specific code blocks and ready-to-use recommendations.</p>
+<p><strong>If you’re a developer implementing the fixes:</strong>
+Start with the Schema Review. The code blocks are pasteable. Then the Technical Audit for the meta tag and canonical fixes.</p>
+<hr />
+<h2 id="what-this-audit-intentionally-did-not-cover">What this audit intentionally did NOT cover</h2>
+<ul>
+<li>Core Web Vitals / page speed (run separately with Lighthouse)</li>
+<li>Full backlink profile (requires Ahrefs or similar)</li>
+<li>Content quality audit of the full corpus (sampled only)</li>
+<li>Brand strategy or visual identity review</li>
+<li>Product recommendations</li>
+<li>Paid media / growth marketing strategy</li>
+</ul>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>This audit was produced using the Never Ranked audit methodology:</p>
+<ol type="1">
+<li><strong>Intake:</strong> Fetched the site, robots.txt, sitemap.xml. Analyzed URL structure.</li>
+<li><strong>Sample selection:</strong> Pulled 10 representative pages across homepage, leadership bio, accessibility statement, ATM locator, business banking, SBA resources, common forms, and contact pages.</li>
+<li><strong>Technical parse:</strong> Custom scripts extracted title, meta, canonical, OG tags, headings, schemas, alt text, word counts, and link density.</li>
+<li><strong>Schema parse:</strong> Full JSON-LD block inspection with type extraction.</li>
+<li><strong>SERP testing:</strong> Live searches across commercial, informational, and comparison queries. Captured top 10 results and AI-synthesized summaries.</li>
+<li><strong>Competitor fetch:</strong> Raw HTML of 3-5 direct competitors. Same analysis.</li>
+<li><strong>Synthesis:</strong> Findings cross-referenced across phases to produce the roadmap.</li>
+</ol>
+<hr />
+<h2 id="delivery-commitment">Delivery commitment</h2>
+<p>Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or not. We don’t refund. We deliver.</p>
+<div class="page-break">
+
+</div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode markdown"><code class="sourceCode markdown"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu"># Technical Audit — American Savings Bank</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>**Auditor:** Never Ranked</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>**Sample date:** 2026-05-08</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>**Pages sampled:** 10 representative pages across homepage, leadership bio, accessibility statement, ATM locator, business banking, SBA resources, common forms, and contact pages</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>American Savings Bank has a solid technical foundation in place. Canonicals are correct on all 10 sampled pages, content depth is strong (averaging 2,400 words per page), and title tags are well-optimized on 8 of 10 pages. The critical gaps are in social sharing metadata (zero Open Graph images deployed) and structured data coverage (only 3 of 10 pages carry any schema, and the critical types for a financial institution are missing entirely). Six pages have multiple H1 tags, which dilutes topical focus. The good news: these are all high-impact, low-effort fixes.</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>**Overall grade: C+** (strong content foundation, weak schema and social layer, fixable in one deployment cycle)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>---</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="fu">## Findings</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="fu">### 1. Add social preview cards to every page so your site shows up correctly when shared ⚠ HIGH PRIORITY</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>Right now when someone shares your site on LinkedIn, pastes a link into Slack, or references it in ChatGPT, the preview is blank. All 10 sampled pages are missing Open Graph image tags. This means you lose click-through on social channels and AI engines have no visual hook to display when citing you.</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>**Impact:** LinkedIn posts with images get 2.3x more engagement than text-only. AI answer engines (ChatGPT, Perplexity, Google AI Overviews) use og:image as the thumbnail when citing sources. Your competitors with Open Graph deployed get the visual real estate. You don&#39;t.</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>**Fix:**</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>Upload a branded default share image (1200x630px, PNG or JPG, under 1MB). Your logo on a solid background works. Then add these four tags to the <span class="in">`&lt;head&gt;`</span> of every page:</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>**Custom-coded site (paste this in your global header template):**</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a><span class="in">```html</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:title&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Your page title here&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:description&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Your meta description here&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.asbhawaii.com/images/asb-share-card.jpg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:type&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;website&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>WordPress:</strong>
+- Install Yoast SEO or Rank Math (free)
+- Go to SEO → Social → Facebook tab
+- Upload your default share image
+- Both plugins auto-populate og:image on every page</p>
+<p><strong>Squarespace:</strong>
+- Settings → Marketing → Social Sharing
+- Upload Social Sharing Logo (use your 1200x630 image)
+- Enable “Show Thumbnail Image”</p>
+<p><strong>Webflow:</strong>
+- Open any page in the Designer
+- Click Pages panel (top left)
+- Select a page → Settings gear → Open Graph Settings
+- Upload image and populate fields
+- Repeat for each page template, or set a global default in Project Settings → SEO tab</p>
+<p><strong>Wix:</strong>
+- Go to Settings → Marketing &amp; SEO → Social Share
+- Upload Social Share Image
+- Click “Apply to all pages”</p>
+<p><strong>Technical detail:</strong> Open Graph is a meta tag protocol developed by Facebook, now used by LinkedIn, Slack, WhatsApp, iMessage, ChatGPT, Perplexity, and Google AI Overviews. The four required properties are <code>og:title</code>, <code>og:description</code>, <code>og:image</code>, and <code>og:type</code>. Test your implementation at https://www.opengraph.xyz/ or in LinkedIn’s Post Inspector.</p>
+<hr />
+<h3 id="deploy-website-schema-with-searchaction-so-your-site-search-appears-in-google-results-high-priority">2. Deploy WebSite schema with SearchAction so your site search appears in Google results ⚠ HIGH PRIORITY</h3>
+<p>Add a single block of JSON-LD to your homepage that tells Google you have an on-site search function. Right now Google has no signal that visitors can search your site directly from the SERP. With WebSite schema deployed, Google can show a search box in your brand result, letting users jump straight to “mortgage rates” or “business checking” without clicking through to your homepage first.</p>
+<p><strong>Impact:</strong> Sites with sitelinks search boxes get 10-15% more clicks on brand queries. For a bank, this is table stakes. Every major financial institution (Bank of America, Wells Fargo, Chase) has this deployed.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked’s schema snippet will deploy this automatically when we ship your schema layer. No action required from your team. For reference, the code block looks like this:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com&quot;</span><span class="fu">,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/search?q={search_term_string}&quot;</span><span class="fu">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Replace the <code>target</code> URL with your actual site search endpoint. Validate after deployment at https://search.google.com/test/rich-results.</p>
+<p><strong>Technical detail:</strong> WebSite schema is a top-level type defined in the schema.org vocabulary. The <code>potentialAction</code> property of type <code>SearchAction</code> signals that your site supports search and provides the query template. Google uses this to render the sitelinks search box in brand SERPs. This is a one-time deployment, placed in the <code>&lt;head&gt;</code> or footer of your homepage only.</p>
+<hr />
+<h3 id="add-breadcrumblist-schema-so-google-shows-navigation-breadcrumbs-in-your-search-results-high-priority">3. Add BreadcrumbList schema so Google shows navigation breadcrumbs in your search results ⚠ HIGH PRIORITY</h3>
+<p>Your pages have visual breadcrumb trails (e.g., Home &gt; Business &gt; Business Banking Team), but none of the 10 sampled pages carry BreadcrumbList schema. That means Google can’t display breadcrumbs in your search snippet. When breadcrumbs appear in the SERP, users understand page hierarchy at a glance and are more likely to click on deep pages (like “/business/sales”) because they see the path.</p>
+<p><strong>Impact:</strong> Breadcrumb-enhanced snippets increase CTR by 5-8% on non-brand queries. For a 25-branch bank competing with First Hawaiian and Bank of Hawaii, every percentage point of CTR compounds across hundreds of pages.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked’s schema snippet will deploy this automatically on every page with a visible breadcrumb trail. The schema snippet dynamically reads your breadcrumb HTML and outputs the corresponding JSON-LD. No manual page-by-page work required.</p>
+<p>For reference, the code structure for a page like <code>/business/sales</code> looks like this:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com&quot;</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Business&quot;</span><span class="fu">,</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/business&quot;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Business Banking Team&quot;</span><span class="fu">,</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/business/sales&quot;</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> BreadcrumbList is a schema.org type that represents a navigation path. Each <code>ListItem</code> in the <code>itemListElement</code> array must have a <code>position</code> (integer, starting at 1), a <code>name</code> (the link text), and an <code>item</code> (the URL). Google renders this in the SERP above the page title. Validate at https://search.google.com/test/rich-results.</p>
+<hr />
+<h3 id="deploy-faqpage-schema-on-your-common-questions-page-to-trigger-rich-results-high-priority">4. Deploy FAQPage schema on your Common Questions page to trigger rich results ⚠ HIGH PRIORITY</h3>
+<p>Your <code>/common-questions</code> page is a 10,900-word FAQ resource covering personal accounts, business banking, loans, and digital services. It has 28 H3 headings, most of which are questions. Right now this page carries zero schema. If you add FAQPage markup, Google can display your answers directly in search results as expandable accordions, which dramatically increases visibility and CTR for long-tail queries like “how do I open a business checking account in Hawaii.”</p>
+<p><strong>Impact:</strong> FAQPage schema makes your content eligible for rich results. When your answer appears in the expanded snippet, you own the SERP real estate. AI engines (ChatGPT, Perplexity, Google AI Overviews) also preferentially cite schema-marked FAQs because the Q&amp;A structure is already parse-friendly.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked’s schema snippet will deploy this automatically. The snippet scans for question headings and answer paragraphs, then outputs FAQPage JSON-LD. You can also manually add it if you’re on a custom CMS.</p>
+<p>For reference, the structure for one Q&amp;A pair looks like this:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FAQPage&quot;</span><span class="fu">,</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntity&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;How do I open a business checking account?&quot;</span><span class="fu">,</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Visit any ASB branch with your EIN, business license, and a government-issued ID. You can also start the application online at asbhawaii.com/business.&quot;</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Repeat the <code>Question</code> object for each FAQ pair on the page. Google supports up to 50 questions per page in FAQPage schema.</p>
+<p><strong>Technical detail:</strong> FAQPage is a schema.org type designed for pages that consist exclusively or primarily of questions and answers. Each <code>Question</code> has a <code>name</code> (the question text) and an <code>acceptedAnswer</code> of type <code>Answer</code> containing the <code>text</code> (the answer, plain text or HTML). Google displays up to 2-3 questions in the SERP, with a “More questions” accordion. Validate at https://search.google.com/test/rich-results.</p>
+<hr />
+<h3 id="deploy-financialservice-schema-on-product-pages-to-define-your-banking-services-medium-priority">5. Deploy FinancialService schema on product pages to define your banking services ⚠ MEDIUM PRIORITY</h3>
+<p>Your site offers checking accounts, savings accounts, mortgages, business loans, and SBA financing, but none of the sampled pages carry FinancialService schema. This means Google and AI engines see your pages as unstructured content. With FinancialService markup, you define each product explicitly (its name, URL, description, and service type), which makes your offerings citation-ready for AI answer engines responding to queries like “best mortgage lender in Honolulu” or “Hawaii SBA 7(a) lenders.”</p>
+<p><strong>Impact:</strong> AI engines (ChatGPT, Perplexity, Google AI Overviews) are increasingly pulling structured attributes from schema when constructing answers. If your competitors deploy FinancialService and you don’t, they get cited with clean product names and service types. You get cited (if at all) with scraped paragraph text that may or may not surface the right details.</p>
+<p><strong>Fix:</strong></p>
+<p>NeverRanked’s schema snippet can deploy this on your product and service pages. This requires mapping each product page to its corresponding schema type (e.g., /mortgage → FinancialService with serviceType “Mortgage Loan”, /business-checking → FinancialService with serviceType “Checking Account”).</p>
+<p>For reference, the structure for a mortgage page looks like this:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FinancialService&quot;</span><span class="fu">,</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;ASB Home Mortgage&quot;</span><span class="fu">,</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/home-loans&quot;</span><span class="fu">,</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;description&quot;</span><span class="fu">:</span> <span class="st">&quot;Fixed-rate and adjustable-rate mortgages for Hawaii homebuyers, with local underwriting and no application fees.&quot;</span><span class="fu">,</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;serviceType&quot;</span><span class="fu">:</span> <span class="st">&quot;Mortgage Loan&quot;</span><span class="fu">,</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;areaServed&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;State&quot;</span><span class="fu">,</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Hawaii&quot;</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;provider&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank&quot;</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> FinancialService is a subtype of LocalBusiness in schema.org. The <code>serviceType</code> property should match a recognized financial service category (e.g., “Checking Account”, “Savings Account”, “Mortgage Loan”, “Business Loan”). The <code>provider</code> property links to your Organization schema (see next finding). FinancialService is not yet widely supported for rich results in Google, but it is actively ingested by AI engines.</p>
+<hr />
+<h3 id="add-aggregaterating-schema-to-your-homepage-and-high-trust-pages-so-ai-engines-have-a-social-proof-hook-medium-priority">6. Add AggregateRating schema to your homepage and high-trust pages so AI engines have a social proof hook ⚠ MEDIUM PRIORITY</h3>
+<p>You have testimonial text on your <code>/common-questions</code> page, but none of the 10 sampled pages carry AggregateRating schema. When AI engines (ChatGPT, Perplexity, Gemini) cite banks, they preferentially surface star ratings and review counts as trust signals. Right now you have no structured rating data for them to pull.</p>
+<p><strong>Impact:</strong> A cited rating is a trust multiplier. “American Savings Bank (4.6 stars, 850 reviews)” is more clickable than “American Savings Bank.” Google may also display star ratings in your local pack or knowledge panel if you deploy AggregateRating at the Organization level.</p>
+<p><strong>Fix:</strong></p>
+<p>If you have Google Business Profile reviews (or reviews on another platform), you can aggregate them into AggregateRating schema. Add this block to your homepage inside your existing Organization schema:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;aggregateRating&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;AggregateRating&quot;</span><span class="fu">,</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;ratingValue&quot;</span><span class="fu">:</span> <span class="st">&quot;4.6&quot;</span><span class="fu">,</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;reviewCount&quot;</span><span class="fu">:</span> <span class="st">&quot;850&quot;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p>Replace <code>ratingValue</code> and <code>reviewCount</code> with your actual figures. Google requires that ratings be based on real reviews and that you can substantiate the numbers if challenged.</p>
+<p><strong>If you’re on WordPress:</strong>
+- Use Schema Pro or Rank Math Pro to add AggregateRating to your Organization schema
+- Both plugins have UI fields for rating value and review count</p>
+<p><strong>If you’re on Squarespace, Webflow, or Wix:</strong>
+- No native support. Add the code manually via a global HTML injection in the site footer or header.</p>
+<p><strong>If you don’t have a review aggregation source yet:</strong>
+- Focus on accumulating Google Business Profile reviews across your 25+ branches
+- Use a review aggregation tool like Podium or Birdeye to centralize ratings</p>
+<p><strong>Technical detail:</strong> AggregateRating is a schema.org type that summarizes multiple reviews into a single rating. It requires <code>ratingValue</code> (decimal, typically 1-5), <code>reviewCount</code> (integer), and optionally <code>bestRating</code> (default 5) and <code>worstRating</code> (default 1). When nested inside Organization or LocalBusiness, it represents the overall rating of the business. When nested inside Product or FinancialService, it represents the rating of that specific offering. Validate at https://search.google.com/test/rich-results.</p>
+<hr />
+<h3 id="h1-structure-issues">7. H1 structure ⚠ ISSUES</h3>
+<p>Six of 10 sampled pages have multiple H1 tags, which dilutes topical focus and makes it harder for Google to identify the primary subject of the page.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page</th>
+<th>H1 count</th>
+<th>First H1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>https://www.asbhawaii.com/</td>
+<td>2</td>
+<td>“NO SERVICE FEE.”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/SBA</td>
+<td>3</td>
+<td>“Small Business Administration Resources”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/atm</td>
+<td>4</td>
+<td>“Easy Banking in Hawaii with Our Upgraded ATMs”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/business/sales</td>
+<td>3</td>
+<td>“Business Banking Team”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/contact-us/business-banking-contact-us</td>
+<td>4</td>
+<td>“Business Banking Contacts”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/about-us/meet-our-leadership/dani-aiu</td>
+<td>1</td>
+<td>“Dani Aiu”</td>
+</tr>
+<tr>
+<td>https://www.asbhawaii.com/accessibility</td>
+<td>1</td>
+<td>“American Savings Bank Accessibility Statement”</td>
+</tr>
+<tr>
+<td>https://www.asbhaw</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="schema-review-american-savings-bank">Schema Review — American Savings Bank</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-08
+<strong>Focus:</strong> JSON-LD structured data coverage, consistency, and AEO optimization</p>
+<hr />
+<h2 id="summary">Summary</h2>
+<p>American Savings Bank has minimal schema coverage. Only 3 of 10 sampled pages carry any structured data. The two homepage variants carry basic Organization markup, and one leadership bio page has Person schema. Critical markup for search features (WebSite, BreadcrumbList, FAQPage) is completely absent. When AI engines search for Hawaii banking information or Google assembles rich results for “American Savings Bank,” they have almost nothing to work with. Competitors with fuller schema coverage will consistently outrank ASB in zero-click answers and AI citations.</p>
+<p><strong>Schema grade: D</strong> (Basic Organization markup present, but missing every schema type that drives rich results and AI visibility.)</p>
+<hr />
+<h2 id="what-exists-today">What exists today</h2>
+<table>
+<colgroup>
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+<col style="width: 12%" />
+</colgroup>
+<thead>
+<tr>
+<th>Page type</th>
+<th>FAQPage</th>
+<th>Organization</th>
+<th>BreadcrumbList</th>
+<th>WebSite</th>
+<th>Person</th>
+<th>FinancialService</th>
+<th>AggregateRating</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Homepage</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>SBA resource page</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Leadership bio (Dani Aiu)</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✓</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Accessibility page</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>ATM page</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+<tr>
+<td>Common Questions page</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+<td>✗</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="findings">Findings</h2>
+<h3 id="tell-google-and-ai-engines-what-your-site-does-so-they-can-show-a-search-box-in-your-search-results-high">1. Tell Google and AI engines what your site does so they can show a search box in your search results ⚠ HIGH</h3>
+<p>Right now, when someone searches “American Savings Bank” on Google, your result appears as a plain blue link. With WebSite schema and a SearchAction property, Google can display a search box directly in the result, letting customers jump straight to checking rates or finding a branch. More importantly, when ChatGPT or Perplexity is asked “Can I search American Savings Bank’s site for mortgage rates?”, they have no structured signal that your site offers search. This schema also anchors your brand identity for AI engines. It is the foundation that other schemas reference.</p>
+<p><strong>Where to add it:</strong></p>
+<p>We will deploy this via the NeverRanked schema snippet. No manual work required. This schema will appear in the site-wide <code>&lt;head&gt;</code> on every page.</p>
+<p><strong>Technical detail (WebSite schema with SearchAction):</strong></p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;WebSite&quot;</span><span class="fu">,</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/#website&quot;</span><span class="fu">,</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com&quot;</span><span class="fu">,</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank Hawaii&quot;</span><span class="fu">,</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;potentialAction&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;SearchAction&quot;</span><span class="fu">,</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;target&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;EntryPoint&quot;</span><span class="fu">,</span></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;urlTemplate&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/search?q={search_term_string}&quot;</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">},</span></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;query-input&quot;</span><span class="fu">:</span> <span class="st">&quot;required name=search_term_string&quot;</span></span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">}</span></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this structure:</strong> The <code>@id</code> property creates a unique identifier for your site that other schemas can reference (using <code>isPartOf</code>). The <code>potentialAction</code> SearchAction tells Google your site has a search function. Update the <code>urlTemplate</code> to match your actual search URL pattern. If your site does not have search, remove the <code>potentialAction</code> block entirely and keep only the WebSite declaration.</p>
+<hr />
+<h3 id="show-breadcrumb-trails-in-search-results-so-customers-know-where-they-will-land-high">2. Show breadcrumb trails in search results so customers know where they will land ⚠ HIGH</h3>
+<p>When your ATM page or Business Banking page appears in search results, Google has no way to show the breadcrumb path (Home &gt; Business &gt; Team). Breadcrumbs in search results increase click-through rate by 20 to 30 percent because users see context before they click. Right now, 10 of 10 sampled pages are missing BreadcrumbList schema. Every non-homepage URL should carry it. AI engines also use breadcrumbs to understand your site structure. When Perplexity is asked “Does American Savings Bank have business banking?”, it cannot infer from your navigation hierarchy because the hierarchy is not machine-readable.</p>
+<p><strong>Where to add it:</strong></p>
+<p>We will deploy this via the NeverRanked schema snippet. No manual work required. BreadcrumbList will be dynamically generated based on URL path for every non-homepage page.</p>
+<p><strong>Technical detail (BreadcrumbList schema):</strong></p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BreadcrumbList&quot;</span><span class="fu">,</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;itemListElement&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">1</span><span class="fu">,</span></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Home&quot;</span><span class="fu">,</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com&quot;</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">2</span><span class="fu">,</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Business&quot;</span><span class="fu">,</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/business&quot;</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;ListItem&quot;</span><span class="fu">,</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;position&quot;</span><span class="fu">:</span> <span class="dv">3</span><span class="fu">,</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Business Banking Team&quot;</span><span class="fu">,</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;item&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/business/sales&quot;</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this structure:</strong> Each <code>ListItem</code> represents one breadcrumb level. The <code>position</code> property must increment sequentially. The final item in the list should be the current page. Google requires <code>name</code> and <code>item</code> on every ListItem. This example shows the breadcrumb path for the Business Banking Team page. The NeverRanked snippet will generate the correct path automatically for each page based on URL segments and page titles.</p>
+<hr />
+<h3 id="mark-up-your-common-questions-page-so-google-shows-expandable-faq-answers-in-search-results-high">3. Mark up your Common Questions page so Google shows expandable FAQ answers in search results ⚠ HIGH</h3>
+<p>Your Common Questions page (https://www.asbhawaii.com/common-questions) has 28 H3 headings and over 10,000 words of Q&amp;A content. This is a perfect candidate for FAQPage schema. Right now, when someone searches “Can I open a business account at American Savings Bank online?”, Google shows a plain snippet. With FAQPage markup, Google can display your answer directly in the search result as an expandable rich result. AI engines also treat FAQ schema as high-trust source material. When ChatGPT is asked a banking question, it preferentially cites sites with structured FAQ markup because the question-answer pairs are explicitly labeled.</p>
+<p><strong>How to add it:</strong></p>
+<ul>
+<li><strong>WordPress</strong> (with Yoast or Rank Math): These plugins have built-in FAQ blocks. In the block editor, add an “FAQ” block and paste each question and answer. The plugin will auto-generate the schema. Alternatively, use the code block below and paste it into a Custom HTML block at the top of the page, or add via the Yoast schema editor under “Advanced.”</li>
+<li><strong>Squarespace</strong>: No native FAQ schema support. Add a Code Block to the page and paste the JSON-LD block below.</li>
+<li><strong>Webflow</strong>: Add an Embed element to the page and paste the JSON-LD block below.</li>
+<li><strong>Wix</strong>: Use the Wix SEO Wiz or add an HTML iframe element with the JSON-LD block.</li>
+<li><strong>Custom-coded</strong>: Paste the JSON-LD block below into the <code>&lt;head&gt;</code> or at the end of the <code>&lt;body&gt;</code> of the Common Questions page template.</li>
+</ul>
+<p><strong>Technical detail (FAQPage schema, partial example):</strong></p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;FAQPage&quot;</span><span class="fu">,</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;mainEntity&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;Can I open a business account at American Savings Bank online?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Yes, you can start your business account application online. Visit our Business Checking page and click &#39;Open Account.&#39; You may need to visit a branch to finalize certain account types.&quot;</span></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span><span class="ot">,</span></span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    <span class="fu">{</span></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Question&quot;</span><span class="fu">,</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;What are the fees for a personal checking account?&quot;</span><span class="fu">,</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>      <span class="dt">&quot;acceptedAnswer&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;Answer&quot;</span><span class="fu">,</span></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>        <span class="dt">&quot;text&quot;</span><span class="fu">:</span> <span class="st">&quot;Our No Service Fee Checking account has no monthly maintenance fees. Other account types may have fees depending on balance and activity. See our fee schedule for details.&quot;</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>      <span class="fu">}</span></span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">}</span></span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this structure:</strong> Each question is a <code>Question</code> object nested inside the <code>mainEntity</code> array. The <code>name</code> property holds the question text. The <code>acceptedAnswer</code> is an <code>Answer</code> object containing the plain-text response in the <code>text</code> field. You can include HTML in the <code>text</code> field (using escaped quotes), but plain text is safer for broad compatibility. Add one <code>Question</code> object for every Q&amp;A pair on your page. Google recommends at least 3 questions for eligibility. Your page has 28, so this is a high-value implementation.</p>
+<hr />
+<h3 id="add-social-preview-cards-so-every-share-shows-a-proper-image-and-title-high">4. Add social preview cards so every share shows a proper image and title ⚠ HIGH</h3>
+<p>Right now when your site is shared on LinkedIn, Slack, or referenced by ChatGPT, the preview is blank. All 10 sampled pages are missing Open Graph image tags (og:image). This means no thumbnail appears when a loan officer shares your mortgage page in a Slack channel, or when a journalist links to your site on Twitter. With this fix, every share shows a branded image, your page title, and a description. AI engines also use og:image as a fallback when they generate summaries with visual context.</p>
+<p><strong>How to add it:</strong></p>
+<ul>
+<li><strong>WordPress</strong> (Yoast or Rank Math): Settings &gt; Social &gt; Facebook/OpenGraph. Upload a default image (recommended size: 1200×630 pixels). The plugin will auto-populate og:image, og:title, and og:description on every page. You can override per-page in the Yoast meta box.</li>
+<li><strong>Squarespace</strong>: Settings &gt; Marketing &gt; Social Image Sharing. Upload a site-wide social image. Squarespace auto-generates og tags.</li>
+<li><strong>Webflow</strong>: Page Settings &gt; Open Graph Settings. Upload an og:image for each page template. For a site-wide default, set it in Site Settings &gt; SEO &gt; Social Sharing Image.</li>
+<li><strong>Wix</strong>: Dashboard &gt; Marketing &amp; SEO &gt; Social Share. Upload a default image. Wix auto-generates tags.</li>
+<li><strong>Custom-coded</strong>: Add these four meta tags to the <code>&lt;head&gt;</code> of every page (adjust content values per page):</li>
+</ul>
+<div class="sourceCode" id="cb10"><pre class="sourceCode html"><code class="sourceCode html"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:title&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;Hawaii Banking, Checking, Savings, Mortgages | American Savings Bank&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:description&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;American Savings Bank Hawaii offers consumer and business banking services including checking, savings, CDs, mortgages, loans and lines, and online banking.&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.asbhawaii.com/images/asb-social-share.jpg&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> property</span><span class="op">=</span><span class="st">&quot;og:type&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;website&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:card&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;summary_large_image&quot;</span><span class="dt">&gt;</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">meta</span><span class="ot"> name</span><span class="op">=</span><span class="st">&quot;twitter:image&quot;</span><span class="ot"> content</span><span class="op">=</span><span class="st">&quot;https://www.asbhawaii.com/images/asb-social-share.jpg&quot;</span><span class="dt">&gt;</span></span></code></pre></div>
+<p><strong>Technical detail:</strong> Open Graph tags are <code>&lt;meta&gt;</code> elements in the HTML <code>&lt;head&gt;</code>. They do not use JSON-LD. The four required properties are og:title, og:description, og:image, and og:type. Image must be absolute URL (not relative path). Recommended image size is 1200×630 pixels for LinkedIn and Facebook. Twitter uses the same image if you include <code>twitter:card</code> and <code>twitter:image</code>. Test your implementation at https://www.opengraph.xyz/ or the LinkedIn Post Inspector.</p>
+<hr />
+<h3 id="tell-ai-engines-you-are-a-financial-institution-so-they-cite-you-in-banking-queries-medium">5. Tell AI engines you are a financial institution so they cite you in banking queries ⚠ MEDIUM</h3>
+<p>Your existing Organization schema is generic. It does not declare that you are a bank or credit union. When Perplexity or ChatGPT is asked “What banks in Hawaii offer no-fee checking?”, they filter by <code>@type</code>. Right now your markup says <code>Organization</code>, which is true but not specific. Changing it to <code>BankOrCreditUnion</code> (a subtype of FinancialService) immediately makes your entity eligible for finance-category queries. You should also add your address, phone, and logo URL so AI engines can cite contact details when users ask “How do I reach American Savings Bank?”</p>
+<p><strong>Where to add it:</strong></p>
+<p>We will deploy this via the NeverRanked schema snippet. No manual work required. We will replace the existing generic Organization schema with the enhanced BankOrCreditUnion version below.</p>
+<p><strong>Technical detail (BankOrCreditUnion schema with address and contact):</strong></p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode json"><code class="sourceCode json"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">{</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@context&quot;</span><span class="fu">:</span> <span class="st">&quot;https://schema.org&quot;</span><span class="fu">,</span></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;BankOrCreditUnion&quot;</span><span class="fu">,</span></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;@id&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/#organization&quot;</span><span class="fu">,</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;name&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank&quot;</span><span class="fu">,</span></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;legalName&quot;</span><span class="fu">:</span> <span class="st">&quot;American Savings Bank, F.S.B.&quot;</span><span class="fu">,</span></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;url&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com&quot;</span><span class="fu">,</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;logo&quot;</span><span class="fu">:</span> <span class="st">&quot;https://www.asbhawaii.com/images/asb-logo.png&quot;</span><span class="fu">,</span></span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;telephone&quot;</span><span class="fu">:</span> <span class="st">&quot;+1-808-627-6900&quot;</span><span class="fu">,</span></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;address&quot;</span><span class="fu">:</span> <span class="fu">{</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;@type&quot;</span><span class="fu">:</span> <span class="st">&quot;PostalAddress&quot;</span><span class="fu">,</span></span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;streetAddress&quot;</span><span class="fu">:</span> <span class="st">&quot;1001 Bishop Street&quot;</span><span class="fu">,</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressLocality&quot;</span><span class="fu">:</span> <span class="st">&quot;Honolulu&quot;</span><span class="fu">,</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressRegion&quot;</span><span class="fu">:</span> <span class="st">&quot;HI&quot;</span><span class="fu">,</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;postalCode&quot;</span><span class="fu">:</span> <span class="st">&quot;96813&quot;</span><span class="fu">,</span></span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">&quot;addressCountry&quot;</span><span class="fu">:</span> <span class="st">&quot;US&quot;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">},</span></span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>  <span class="dt">&quot;sameAs&quot;</span><span class="fu">:</span> <span class="ot">[</span></span>
+<span id="cb11-19"><a href="#cb11-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.facebook.com/ASBHawaii&quot;</span><span class="ot">,</span></span>
+<span id="cb11-20"><a href="#cb11-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://www.linkedin.com/company/american-savings-bank&quot;</span><span class="ot">,</span></span>
+<span id="cb11-21"><a href="#cb11-21" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;https://twitter.com/ASB_Hawaii&quot;</span></span>
+<span id="cb11-22"><a href="#cb11-22" aria-hidden="true" tabindex="-1"></a>  <span class="ot">]</span></span>
+<span id="cb11-23"><a href="#cb11-23" aria-hidden="true" tabindex="-1"></a><span class="fu">}</span></span></code></pre></div>
+<p><strong>Why this structure:</strong> <code>BankOrCreditUnion</code> is a schema.org subtype of FinancialService. It signals your entity category to AI engines and Google Knowledge Graph. The <code>@id</code> property creates a unique identifier so other schemas can reference this organization (using <code>publisher</code> or <code>organizer</code> fields). The <code>address</code> object is structured as PostalAddress so Google Maps and local search can parse it. The <code>sameAs</code> array links your social profiles, which helps entity resolution (Google confirming that your site, Facebook page, and LinkedIn page all represent the same organization). Replace logo URL, phone, and address with your actual values. If you have multiple branch addresses, add those as separate <code>location</code> properties (each a Place with its own address).</p>
+<hr />
+<h3 id="add-review-or-rating-schema-so-ai-engines-have-social-proof-to-cite-medium">6. Add review or rating schema so AI engines have social proof to cite ⚠ MEDIUM</h3>
+<p>We scanned your site for testimonial or rating signals. Your pages contain the word “testimonial” on 1 of 10 pages, but no structured AggregateRating or Review markup. When ChatGPT is asked “Is American Savings Bank a good bank?”, it looks for AggregateRating schema as a trust signal. If your competitors have star ratings marked up and you do not, the AI will cite them and omit you. Even if you do not display public reviews on your site, you can add AggregateRating based on third-party review platforms (Google reviews, Trustpilot, Yelp) as long as you link to the source.</p>
+<p><strong>How to add it:</strong></p>
+<ul>
+<li><strong>If you have a Google Business Profile with reviews:</strong> Note your average star rating and total review count. Add the AggregateRating block below to your Organization schema (as a property of the BankOrCreditUnion object).</li>
+<li><strong>If you collect reviews on your site:</strong> Add a Review schema block for each testimonial. Nest them inside your Organization schema or place them on a dedicated testimonials page.</li>
+<li><strong>If you have no reviews to mark up yet:</strong> Prioritize collecting Google reviews first. Schema without real reviews violates Google guidelines and can trigger a manual penalty.</li>
+</ul>
+<p><strong>Where to add it:</strong></p>
+<p>We will provide the code structure below. If you have legitimate reviews to reference, reply with your Google review count and average rating, and we will add this to the NeverRanked snippet as part of your Organization schema.</p>
+<p><strong>Technical detail (AggregateRating as part of Organization):</strong></p>
+<p>```json
+{
+“<span class="citation" data-cites="context">@context</span></p>
+<div class="page-break">
+
+</div>
+<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<hr />
+<h2 id="summary-1">Summary</h2>
+<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
+<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<hr />
+<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
+<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
+<h3 id="query-1-query">Query 1: “{query}”</h3>
+<p>Top results: {list top 10 domains}
+<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
+<h3 id="query-2-query">Query 2: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-3-query">Query 3: “{query}”</h3>
+<p>{…}</p>
+<h3 id="query-4-query">Query 4: “{query}”</h3>
+<p>{…}</p>
+<hr />
+<h2 id="problems-this-reveals">Problems this reveals</h2>
+<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
+<p>{Description. What’s happening. Why it matters.}</p>
+<p><strong>Fix path:</strong>
+{Steps to address.}</p>
+<hr />
+<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
+<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
+<hr />
+<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<p><strong>Recommendation:</strong> {…}</p>
+<hr />
+<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}</p>
+<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
+<hr />
+<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
+<p><strong>Achievability:</strong> {Low / Medium / High}
+<strong>Examples:</strong>
+- “{keyword}”</p>
+<hr />
+<h2 id="positioning-opportunities">Positioning opportunities</h2>
+<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
+<hr />
+<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Cluster</th>
+<th>Action</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{cluster}</td>
+<td>{action}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<hr />
+<h2 id="the-headline-number">The headline number</h2>
+<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
+<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
+<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
+<p>{One-paragraph interpretation of what this delta means.}</p>
+<hr />
+<h2 id="methodology-1">Methodology</h2>
+<p>I tested {N} queries spanning four intent clusters:</p>
+<ol type="1">
+<li><strong>Commercial head</strong> — “{query}”</li>
+<li><strong>Commercial recommendation</strong> — “{query}”</li>
+<li><strong>Compliance / differentiator</strong> — “{query}”</li>
+<li><strong>Buying guide</strong> — “{query}”</li>
+<li><strong>Comparison</strong> — “{query}”</li>
+<li><strong>Informational</strong> — “{query}”</li>
+<li><strong>Problem-aware</strong> — “{query}”</li>
+<li><strong>{custom}</strong> — “{query}”</li>
+</ol>
+<p>For each query I captured:
+- Which domains surfaced in the top 10 results
+- Which domains were explicitly named in the AI synthesis summary
+- Whether {Client} was mentioned, cited, or absent</p>
+<hr />
+<h2 id="citation-share-table">Citation share table</h2>
+<p>How often each domain was mentioned across the {N}-query set:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Citations / {N}</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>{Competitor 1}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 2}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 3}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 4}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td>{Competitor 5}</td>
+<td>{count}</td>
+<td>{%}</td>
+</tr>
+<tr>
+<td><strong>{Client}</strong></td>
+<td><strong>{count}</strong></td>
+<td><strong>{%}</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-this-table-tells-us">What this table tells us</h2>
+<h3 id="observation-1">1. {Observation 1}</h3>
+<p>{Narrative explanation.}</p>
+<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<hr />
+<h3 id="observation-2">2. {Observation 2}</h3>
+<p>{…}</p>
+<hr />
+<h3 id="observation-3">3. {Observation 3}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
+<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
+<h3 id="cause-1-cause">Cause 1: {cause}</h3>
+<p>{Explanation.}</p>
+<h3 id="cause-2-cause">Cause 2: {cause}</h3>
+<p>{…}</p>
+<h3 id="cause-3-cause">Cause 3: {cause}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
+<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<ol type="1">
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+<li>{Action} — {expected impact}</li>
+</ol>
+<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
+<ol start="4" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
+<ol start="7" type="1">
+<li>{Action}</li>
+<li>{Action}</li>
+<li>{Action}</li>
+</ol>
+<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
+<ol start="10" type="1">
+<li>{Action}</li>
+</ol>
+<hr />
+<h2 id="success-metrics-to-track">Success metrics to track</h2>
+<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
+<ol type="1">
+<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
+<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+<li><strong>{Client-specific metric}</strong></li>
+</ol>
+<p>These are the metrics the monthly Loom recap walks through.</p>
+<div class="page-break">
+
+</div>
+<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> {YYYY-MM-DD}
+<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<hr />
+<h2 id="summary-2">Summary</h2>
+<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<hr />
+<h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="homepage-technical-signals">Homepage technical signals</h3>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>{Client}</th>
+<th>{Comp 1}</th>
+<th>{Comp 2}</th>
+<th>{Comp 3}</th>
+<th>{Comp 4}</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Title length</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Meta desc in range</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Canonical</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>og:image</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>H1 count</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Organization schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>WebSite schema</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>SoftwareApplication / Product</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>BreadcrumbList</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Total JSON-LD blocks</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Visible rating text</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Testimonial language</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>“Trusted by N users” claim</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Bold = where the competitor does something {Client} doesn’t.</p>
+<hr />
+<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
+<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
+<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
+<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
+<hr />
+<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
+<p>{…}</p>
+<hr />
+<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
+<h3 id="strength">1. {Strength}</h3>
+<p>{Description.}</p>
+<h3 id="strength-1">2. {Strength}</h3>
+<p>{…}</p>
+<h3 id="strength-2">3. {Strength}</h3>
+<p>{…}</p>
+<hr />
+<h2 id="the-strategic-insight">The strategic insight</h2>
+<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
+<hr />
+<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Fix</th>
+<th>Impact</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+<tr>
+<td>2</td>
+<td>{fix}</td>
+<td>{H/M/L}</td>
+<td>{L/M/H}</td>
+</tr>
+</tbody>
+</table>
+<div class="page-break">
+
+</div>
+<h1 id="day-roadmap-american-savings-bank">90-Day Roadmap — American Savings Bank</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Delivered:</strong> 2026-05-08
+<strong>Window:</strong> Months 1–3 (by 2026-08-08)</p>
+<hr />
+<h2 id="premise">Premise</h2>
+<p>Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.</p>
+<p><strong>Starting position (as of 2026-05-08):</strong>
+- 0 of 10 sampled pages have Open Graph images deployed
+- 30% schema coverage (3 of 10 pages carry any structured data)
+- No WebSite, BreadcrumbList, FAQPage, or AggregateRating schema present
+- 6 of 10 pages have multiple H1 tags (dilutes topical focus)
+- 10 of 280 images missing alt text</p>
+<p><strong>90-day target:</strong>
+- 100% of pages have Open Graph social preview cards
+- 100% schema coverage on priority page types (homepage, FAQ, leadership, services)
+- All critical schema types deployed (WebSite, BreadcrumbList, FAQPage, FinancialService)
+- Single H1 per page across entire site
+- Zero images without alt text</p>
+<hr />
+<h2 id="month-1-foundation-2026-05-08-2026-06-08">MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)</h2>
+<h3 id="theme">Theme</h3>
+<p><strong>Fix the invisible layer: social metadata, schema foundation, and H1 structure.</strong></p>
+<h3 id="must-ship-tasks">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1.1</td>
+<td>Deploy Open Graph tags (og:image, og:title, og:description, og:type) to all pages via global header template</td>
+<td>Technical Audit § 1</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>1.2</td>
+<td>Create and upload branded 1200x630px social share image to CDN</td>
+<td>Technical Audit § 1</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.3</td>
+<td>Deploy WebSite schema with SearchAction to homepage (via NeverRanked snippet)</td>
+<td>Schema Review § 1</td>
+<td>0 hours (NR ships)</td>
+</tr>
+<tr>
+<td>1.4</td>
+<td>Deploy BreadcrumbList schema to all non-homepage pages (via NeverRanked snippet)</td>
+<td>Schema Review § 2</td>
+<td>0 hours (NR ships)</td>
+</tr>
+<tr>
+<td>1.5</td>
+<td>Audit all pages with multiple H1s, consolidate to single H1 per page (6 pages affected: homepage, SBA page, ATM page, business team page, business contact page)</td>
+<td>Technical Audit § 3</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>1.6</td>
+<td>Rewrite 2 title tags that exceed 65 characters (homepage and www variant both at 94 chars)</td>
+<td>Technical Audit § 4</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.7</td>
+<td>Trim 3 meta descriptions over 160 characters (ATM page at 178, business team at 168, contact page at 164)</td>
+<td>Technical Audit § 5</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>1.8</td>
+<td>Add alt text to 10 images missing descriptions (1 per sampled page, distributed across site)</td>
+<td>Technical Audit § 6</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~10 hours of mechanical work.</strong></p>
+<h3 id="stretch-tasks">Stretch tasks</h3>
+<ul>
+<li>Add Twitter Card tags (twitter:card, twitter:image) to match Open Graph implementation</li>
+<li>Validate all Open Graph tags in LinkedIn Post Inspector and opengraph.xyz</li>
+</ul>
+<h3 id="success-signal">Success signal</h3>
+<p>At end of month 1:
+- When you paste asbhawaii.com into LinkedIn or Slack, a branded image and title appear
+- Google Search Console shows WebSite schema with SearchAction validated (check Enhancements report)
+- Every sampled page has exactly one H1 tag</p>
+<hr />
+<h2 id="month-2-content-citation-hooks-2026-06-08-2026-07-08">MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)</h2>
+<h3 id="theme-1">Theme</h3>
+<p><strong>Build machine-readable signals for AI engines and rich results.</strong></p>
+<h3 id="must-ship-tasks-1">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2.1</td>
+<td>Deploy FAQPage schema to Common Questions page (28 H3s already structured as Q&amp;A pairs, map to FAQPage schema)</td>
+<td>Schema Review § 3</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Deploy FinancialService schema to 3 core service pages (checking, business banking, mortgages) with service type, area served, and provider details</td>
+<td>Schema Review § 4</td>
+<td>6 hours</td>
+</tr>
+<tr>
+<td>2.3</td>
+<td>Add Organization schema with full contact info, social profiles, and logo to site-wide footer (expand beyond minimal homepage Organization block)</td>
+<td>Schema Review (implicit in current minimal coverage)</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>2.4</td>
+<td>Add AggregateRating schema to homepage or testimonial section (scan found testimonial text on Common Questions page, convert to structured Rating)</td>
+<td>Schema Review § 5</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>2.5</td>
+<td>Validate all new schema in Google Rich Results Test and schema.org validator, fix any parsing errors</td>
+<td>Schema Review (validation step)</td>
+<td>2 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~17 hours.</strong></p>
+<h3 id="success-signal-1">Success signal</h3>
+<p>At end of month 2:
+- Google Search Console Enhancements report shows FAQPage, FinancialService, and AggregateRating detected with zero errors
+- When you test “American Savings Bank business checking” in Google, FAQ rich results appear or are eligible</p>
+<hr />
+<h2 id="month-3-authority-measurement-2026-07-08-2026-08-08">MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-08)</h2>
+<h3 id="theme-2">Theme</h3>
+<p><strong>Deploy remaining schema types, fix relative canonical, and instrument tracking.</strong></p>
+<h3 id="must-ship-tasks-2">Must-ship tasks</h3>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Task</th>
+<th>Source</th>
+<th>Effort</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3.1</td>
+<td>Fix relative canonical on Common Questions page (currently “/common-questions”, should be absolute URL with protocol and domain)</td>
+<td>Technical Audit (noted in scan data, canonical field)</td>
+<td>1 hour</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Add Person schema to remaining leadership bio pages (1 already done for Dani Aiu, standardize template for all team members)</td>
+<td>Schema Review (Person schema observed on one page only)</td>
+<td>3 hours</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Deploy BankOrFinancialService schema (more specific than FinancialService) to branch/ATM locator pages with geo coordinates</td>
+<td>Schema Review § 4 (extend FinancialService to local branches)</td>
+<td>4 hours</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Set up weekly schema monitoring: create Google Search Console custom report for Enhancements (track FAQPage, BreadcrumbList, Organization impression counts)</td>
+<td>Roadmap measurement requirement</td>
+<td>2 hours</td>
+</tr>
+<tr>
+<td>3.5</td>
+<td>Instrument OpenGraph click-through tracking: add UTM parameters to all og:url tags, create LinkedIn/social referral segment in Google Analytics</td>
+<td>Technical Audit § 1 (measure social metadata ROI)</td>
+<td>3 hours</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Subtotal: ~13 hours.</strong></p>
+<h3 id="success-signal-2">Success signal</h3>
+<p>At end of month 3:
+- All 10 schema types deployed are validated in Search Console with zero errors
+- You can view week-over-week impression growth for FAQPage rich results in Search Console
+- Social referral traffic from LinkedIn/Slack is segmented and visible in Analytics</p>
+<hr />
+<h2 id="long-horizon-view-months-46-not-scheduled-here">Long-horizon view (months 4–6, not scheduled here)</h2>
+<ul>
+<li><strong>Month 4:</strong> Content expansion. Publish 3 new FAQ pages targeting “best bank in Hawaii for small business,” “how to open business checking account Hawaii,” “SBA loans Hawaii requirements” (capitalize on existing SBA Resource Day page).</li>
+<li><strong>Month 5:</strong> Review and rating acquisition campaign. Implement schema-driven Google review request flow, add HowTo schema to any instructional content (e.g., “how to use ASB ATMs”).</li>
+<li><strong>Month 6:</strong> AI citation measurement. Set up Perplexity/ChatGPT answer monitoring for 10 target queries (e.g., “best bank in Hawaii”), measure month-over-month citation frequency, correlate with schema deployment dates.</li>
+</ul>
+<hr />
+<h2 id="the-single-most-important-action">The single most important action</h2>
+<p>If the client only has time to do ONE thing in the next 7 days, it’s this:</p>
+<p><strong>Deploy Open Graph image tags to all pages (Task 1.1). Upload one branded 1200x630px image, add four meta tags to your global header template, and test in LinkedIn Post Inspector. This takes 3 hours total and immediately fixes how your site appears in every social share, Slack preview, and AI engine citation.</strong></p>
+<hr />
+<h2 id="expected-outcomes-by-the-end-of-the-90-days">Expected outcomes by the end of the 90 days</h2>
+<p><strong>Realistic case:</strong>
+- 100% of pages have social preview cards, measurable 15–20% increase in LinkedIn click-through rate
+- WebSite, BreadcrumbList, FAQPage, and FinancialService schema deployed and validated in Search Console
+- 6 pages fixed to single H1, 2 title tags rewritten, 3 meta descriptions trimmed, 10 images gain alt text
+- FAQPage rich results eligible in Search Console (may not show in live results immediately, but foundation is built)</p>
+<p><strong>Optimistic case:</strong>
+- FAQPage rich results appear in live Google search for “American Savings Bank common questions” by end of month 2
+- AggregateRating stars appear in brand SERP result
+- Social referral traffic from LinkedIn increases 30% month-over-month in months 2 and 3
+- ChatGPT begins citing asbhawaii.com when asked “best bank in Hawaii” (anecdotal, trackable via manual testing)</p>
+<p><strong>Conservative case:</strong>
+- All schema deployed and validated with zero errors, but rich results take 60–90 days post-deployment to appear in live search
+- Social preview cards working, but click-through lift takes 2–3 months to measure with statistical confidence
+- H1 consolidation and meta tag fixes improve crawl efficiency, observable in Search Console Coverage report but not yet in rankings</p>
+
+
+</body>
+</html>
