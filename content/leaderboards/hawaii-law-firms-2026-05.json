@@ -1,0 +1,76 @@
+{
+  "vertical": "Hawaii law firms",
+  "category_archetype": "law firm",
+  "category_plural": "law firms",
+  "region_hint": "Hawaii",
+  "data_collected": "2026-05-08",
+  "median": 45,
+  "sample_size": 6,
+  "ranked": [
+    {
+      "name": "Cades Schutte",
+      "url": "https://www.cades.com",
+      "score": 90,
+      "grade": "A",
+      "schema_present": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "Goodsill Anderson Quinn & Stifel",
+      "url": "https://www.goodsill.com",
+      "score": 80,
+      "grade": "B",
+      "schema_present": [
+        "Organization",
+        "WebSite"
+      ]
+    },
+    {
+      "name": "Schlack Ito",
+      "url": "https://www.schlackito.com",
+      "score": 80,
+      "grade": "B",
+      "schema_present": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "Damon Key Leong Kupchak Hastert",
+      "url": "https://www.hawaiilawyer.com",
+      "score": 45,
+      "grade": "D",
+      "schema_present": []
+    },
+    {
+      "name": "Watanabe Ing",
+      "url": "https://www.wik.com",
+      "score": 30,
+      "grade": "F",
+      "schema_present": []
+    },
+    {
+      "name": "Carlsmith Ball",
+      "url": "https://www.carlsmith.com",
+      "score": 15,
+      "grade": "F",
+      "schema_present": []
+    }
+  ],
+  "failed": [
+    {
+      "name": "Ashford & Wriston",
+      "url": "https://www.awlaw.com",
+      "error": "HTTP 429"
+    },
+    {
+      "name": "Bays Lung Rose & Holma",
+      "url": "https://www.legalhawaii.com",
+      "error": "HTTP 422"
+    }
+  ]
+}

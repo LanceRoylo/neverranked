@@ -3,7 +3,7 @@ category: Hawaii law firms
 status: INTERNAL — not published
 data_collected: 2026-05-08
 methodology: /leaderboards/methodology
-sample_size: 7
+sample_size: 6
 next_update: weekly Mondays once published
 ---
 
@@ -27,8 +27,7 @@ Hawaii's legal services market is dominated by mid-sized full-service firms in H
 | 3 | Schlack Ito | 80 | B | Organization, WebSite, BreadcrumbList |
 | 4 | Damon Key Leong Kupchak Hastert | 45 | D | (none) |
 | 5 | Watanabe Ing | 30 | F | (none) |
-| 6 | Bays Lung Rose & Holma | 25 | F | (none) |
-| 7 | Carlsmith Ball | 15 | F | (none) |
+| 6 | Carlsmith Ball | 15 | F | (none) |
 
 
 ### Could not score
@@ -37,12 +36,13 @@ The following law firms returned no score on the day this
 leaderboard was generated. Most often this means a rate-limit cap or a
 site that returned a non-HTML response. They will be retried next cycle.
 
-- Ashford & Wriston (https://www.awlaw.com) — HTTP 422
+- Ashford & Wriston (https://www.awlaw.com) — HTTP 429
+- Bays Lung Rose & Holma (https://www.legalhawaii.com) — HTTP 422
 
 
 ## What the rankings mean
 
-The leader (Cades Schutte) sits at 90, the bottom of the ranked list (Carlsmith Ball) at 15. The category median is 45. 4 of 7 law firms have **zero structured data** deployed at all.
+The leader (Cades Schutte) sits at 90, the bottom of the ranked list (Carlsmith Ball) at 15. The category median is 45. 3 of 6 law firms have **zero structured data** deployed at all.
 
 A law firm that ships a single Phase 1 schema deployment
 (Organization, WebSite, BreadcrumbList, primary category type, FAQPage) typically
@@ -75,11 +75,6 @@ the lead by a margin the rest would need a full quarter to close.
 
 - Schema deployed: none detected
 - URL: https://www.wik.com
-
-### Bays Lung Rose & Holma — score 25, grade F
-
-- Schema deployed: none detected
-- URL: https://www.legalhawaii.com
 
 ### Carlsmith Ball — score 15, grade F
 

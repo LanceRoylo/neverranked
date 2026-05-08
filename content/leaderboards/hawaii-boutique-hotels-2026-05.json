@@ -1,0 +1,83 @@
+{
+  "vertical": "Hawaii boutique hotels",
+  "category_archetype": "hotel",
+  "category_plural": "hotels",
+  "region_hint": "Hawaii",
+  "data_collected": "2026-05-08",
+  "median": 70,
+  "sample_size": 7,
+  "ranked": [
+    {
+      "name": "The Surfjack Hotel & Swim Club",
+      "url": "https://www.surfjack.com",
+      "score": 90,
+      "grade": "A",
+      "schema_present": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "Hotel Wailea",
+      "url": "https://www.hotelwailea.com",
+      "score": 90,
+      "grade": "A",
+      "schema_present": [
+        "Organization",
+        "WebSite",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "The Laylow Autograph Collection",
+      "url": "https://www.laylowwaikiki.com",
+      "score": 80,
+      "grade": "B",
+      "schema_present": [
+        "Organization",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "Lotus Honolulu at Diamond Head",
+      "url": "https://www.lotushonolulu.com",
+      "score": 70,
+      "grade": "C",
+      "schema_present": [
+        "Organization"
+      ]
+    },
+    {
+      "name": "The Cliffs at Princeville",
+      "url": "https://www.cliffsatprinceville.com",
+      "score": 70,
+      "grade": "C",
+      "schema_present": [
+        "WebSite",
+        "BreadcrumbList"
+      ]
+    },
+    {
+      "name": "Halepuna Waikiki by Halekulani",
+      "url": "https://www.halepuna.com",
+      "score": 45,
+      "grade": "D",
+      "schema_present": []
+    },
+    {
+      "name": "Volcano Village Lodge",
+      "url": "https://www.volcanovillagelodge.com",
+      "score": 0,
+      "grade": "F",
+      "schema_present": []
+    }
+  ],
+  "failed": [
+    {
+      "name": "Travaasa Hana",
+      "url": "https://www.hotelhanamaui.com",
+      "error": "HTTP 429"
+    }
+  ]
+}

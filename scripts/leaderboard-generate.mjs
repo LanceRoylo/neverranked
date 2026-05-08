@@ -209,6 +209,20 @@ review per the policy in \`README.md\`.*
 mkdirSync(dirname(outputPath), { recursive: true });
 writeFileSync(outputPath, md);
 
+// JSON sidecar — same data structured for downstream consumers
+// (profile-generate.mjs builds per-business profile pages from this).
+const jsonPath = outputPath.replace(/\.md$/, '.json');
+writeFileSync(jsonPath, JSON.stringify({
+  vertical: config.vertical,
+  category_archetype: config.category_archetype,
+  category_plural: config.category_plural,
+  region_hint: config.region_hint,
+  data_collected: today,
+  median, sample_size: ranked.length,
+  ranked,
+  failed,
+}, null, 2));
+
 console.log(`[3/3] Done.`);
 console.log();
 console.log(`  ${outputPath}`);

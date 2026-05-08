@@ -3,7 +3,7 @@ category: Hawaii boutique hotels
 status: INTERNAL — not published
 data_collected: 2026-05-08
 methodology: /leaderboards/methodology
-sample_size: 8
+sample_size: 7
 next_update: weekly Mondays once published
 ---
 
@@ -24,17 +24,25 @@ Hawaii's boutique hotel category sits between major chains (Hyatt, Marriott, Hil
 |---|---|---|---|---|
 | 1 | The Surfjack Hotel & Swim Club | 90 | A | Organization, WebSite, BreadcrumbList |
 | 2 | Hotel Wailea | 90 | A | Organization, WebSite, BreadcrumbList |
-| 3 | Travaasa Hana | 85 | B | Organization, WebSite, BreadcrumbList |
-| 4 | The Laylow Autograph Collection | 80 | B | Organization, BreadcrumbList |
-| 5 | Lotus Honolulu at Diamond Head | 70 | C | Organization |
-| 6 | The Cliffs at Princeville | 70 | C | WebSite, BreadcrumbList |
-| 7 | Halepuna Waikiki by Halekulani | 45 | D | (none) |
-| 8 | Volcano Village Lodge | 0 | F | (none) |
+| 3 | The Laylow Autograph Collection | 80 | B | Organization, BreadcrumbList |
+| 4 | Lotus Honolulu at Diamond Head | 70 | C | Organization |
+| 5 | The Cliffs at Princeville | 70 | C | WebSite, BreadcrumbList |
+| 6 | Halepuna Waikiki by Halekulani | 45 | D | (none) |
+| 7 | Volcano Village Lodge | 0 | F | (none) |
+
+
+### Could not score
+
+The following hotels returned no score on the day this
+leaderboard was generated. Most often this means a rate-limit cap or a
+site that returned a non-HTML response. They will be retried next cycle.
+
+- Travaasa Hana (https://www.hotelhanamaui.com) — HTTP 429
 
 
 ## What the rankings mean
 
-The leader (The Surfjack Hotel & Swim Club) sits at 90, the bottom of the ranked list (Volcano Village Lodge) at 0. The category median is 70. 2 of 8 hotels have **zero structured data** deployed at all.
+The leader (The Surfjack Hotel & Swim Club) sits at 90, the bottom of the ranked list (Volcano Village Lodge) at 0. The category median is 70. 2 of 7 hotels have **zero structured data** deployed at all.
 
 A hotel that ships a single Phase 1 schema deployment
 (Organization, WebSite, BreadcrumbList, primary category type, FAQPage) typically
@@ -52,11 +60,6 @@ the lead by a margin the rest would need a full quarter to close.
 
 - Schema deployed: Organization, WebSite, BreadcrumbList
 - URL: https://www.hotelwailea.com
-
-### Travaasa Hana — score 85, grade B
-
-- Schema deployed: Organization, WebSite, BreadcrumbList
-- URL: https://www.hotelhanamaui.com
 
 ### The Laylow Autograph Collection — score 80, grade B
 

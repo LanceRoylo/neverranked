@@ -38,6 +38,7 @@ DIRS=(
   pitch
   principles
   privacy
+  profile
   security
   terms
   thanks

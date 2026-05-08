@@ -1,0 +1,16 @@
+{
+  "vertical": "Hawaii community banking",
+  "category_archetype": "bank",
+  "category_plural": "banks",
+  "region_hint": "Hawaii",
+  "data_collected": "2026-05-07",
+  "median": 50,
+  "sample_size": 4,
+  "ranked": [
+    { "name": "American Savings Bank", "url": "https://www.asbhawaii.com", "score": 55, "grade": "D", "schema_present": ["Organization"] },
+    { "name": "Bank of Hawaii", "url": "https://www.boh.com", "score": 50, "grade": "D", "schema_present": ["Organization"] },
+    { "name": "First Hawaiian Bank", "url": "https://www.fhb.com", "score": 45, "grade": "D", "schema_present": [] },
+    { "name": "Central Pacific Bank", "url": "https://www.cpb.bank", "score": 25, "grade": "F", "schema_present": [] }
+  ],
+  "failed": []
+}
