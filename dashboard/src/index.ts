@@ -824,8 +824,20 @@ export default {
       return redirect(user.role === "agency_admin" ? "/agency" : "/");
     }
 
-    // Auto-redirect non-onboarded clients to onboarding
-    if (user.role === "client" && !user.onboarded) {
+    // Auto-redirect non-onboarded clients to onboarding, but always
+    // let critical user-control paths through. Without this exception,
+    // a client who can't complete onboarding (no competitors known,
+    // billing question, needs to invite a teammate) is stuck — every
+    // menu click bounces back to /onboarding with no way to reach the
+    // settings, support, or billing surfaces that would unblock them.
+    const allowDuringOnboarding =
+      path === "/settings" ||
+      path.startsWith("/settings/") ||
+      path === "/support" ||
+      path.startsWith("/billing/") ||
+      path === "/agency/invites/teammate" ||
+      path === "/agency/invites/client";
+    if (user.role === "client" && !user.onboarded && !allowDuringOnboarding) {
       return redirect("/onboarding");
     }
 
