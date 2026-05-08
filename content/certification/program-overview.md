@@ -142,12 +142,38 @@ revocable for documented violations of the operating principles.
 
 ## Cost
 
+Pricing climbs as the credential gains market value. Today the
+program is new; the certification doesn't yet appear in agency RFPs
+or job listings. Pricing reflects that. Future cohorts will pay
+more as the public roster grows and certified practitioners produce
+case studies the next intake can see.
+
+### Cohort 1 — Founding (Q3 2026, capped at 30 seats)
+
 - **Wholesale partner cohort:** complimentary for agencies on an
-  active wholesale partnership. Up to 5 seats per agency in the
-  first 12 months.
+  active wholesale partnership. Up to 5 seats per agency.
+- **Founding-cohort independent practitioners:** $500 per
+  practitioner. Limited to the first 30 seats. Includes lifetime
+  alumni access to module updates.
+
+### Cohort 2-3 (Q4 2026 - Q1 2027)
+
+- **Wholesale partner cohort:** complimentary, ongoing
+- **Independent practitioners:** $1,000 per practitioner once the
+  founding cohort has produced their first deployments and the
+  credential is referenced in published case studies.
+
+### Cohort 4+ (Q2 2027 onwards)
+
+- **Wholesale partner cohort:** complimentary, ongoing
 - **In-house teams:** $1,500 per practitioner. Volume pricing on
   cohorts of 5+.
 - **Independent practitioners:** $1,500 per practitioner.
+
+This is the destination price, contingent on the credential
+appearing in agency RFPs and job postings — which is an artifact of
+the founding cohort's output, not a unilateral pricing decision by
+NeverRanked.
 
 The first cohort launches Q3 2026 and is capped at 30 practitioners
 to allow direct involvement from Lance during the capstone review
