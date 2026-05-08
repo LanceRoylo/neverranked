@@ -1,4 +1,4 @@
-# Reply to Ron McDaniel — dashboard menu fix
+# Reply to Ron McDaniel — dashboard menu fix + team invites
 
 **To:** ronmcdaniel@hawaiitheatre.com
 **Cc:** Greg
@@ -7,40 +7,37 @@
 Ron,
 
 Thanks for the detailed report and the screenshot — that bug was
-real, and you helped me find it in about ten minutes. I owe you a
-straight answer on two things.
+real, and you helped me find it in about ten minutes.
 
-**The menu loop is fixed.** Settings, Support, and Sign Out should
-all click through normally now. Try it whenever you're back at the
-dashboard. If anything still bounces, send me a screenshot and the
-time it happened so I can pull the request log.
+Two updates:
 
-**The thing you were actually trying to do — adding additional
-users — is something I have to do manually for you right now.**
-The teammate-invite UI is currently only available to agency-
-managed accounts, not direct retail accounts like Hawaii Theatre's.
-Building the equivalent for direct customers is on my list this
-week. In the meantime, send me the email addresses you want added
-and I'll send the invites today, within an hour of getting your
-note.
+**The menu loop is fixed.** Settings, Support, Sign Out — all
+clickable now. The bug was an over-aggressive onboarding gate
+that was redirecting every menu click back to the dashboard.
 
-I'm also going to be transparent: this bug existed because I never
-ran through the customer experience as a customer would see it
-before handing you the keys. That's a process gap on my end, and
-I've started fixing it. You should never have hit this.
+**Adding teammates is now a self-service flow.** I noticed the
+deeper issue while looking at the menu fix — the platform did
+not actually have a teammate-invite UI for direct customers like
+Hawaii Theatre. Only agency-managed accounts had it. I shipped
+the missing piece this evening.
 
-If it's helpful, I'd like to hop on a quick call this week — 15
-minutes, your time of choice — to walk through how you'd actually
-use the dashboard day-to-day, get those additional users set up,
-and finish the onboarding step that was creating the redirect in
-the first place. Just let me know what works.
+When you log back in, go to Settings and you'll see a new "Team
+members" card with a "Manage team →" button. From there you can
+invite teammates by email. They'll get a 7-day sign-in link, no
+password required, and they'll see the same scans, roadmap, and
+reports you do.
 
-Thanks again for flagging it cleanly. Real customer feedback at
-this stage is the most valuable thing the platform gets.
+I'm also going to be transparent about what happened: this bug
+shipped because I never ran through the customer flow as a
+customer would experience it before handing you the keys. That's
+a process gap on my end, not a Cloudflare bug. I've changed how
+launches work going forward.
+
+Still happy to hop on a 15-minute call this week if you want me
+to walk through the dashboard with you and your team. Just send
+me the time that works.
 
 Lance
 
-P.S. The platform has been deploying fixes via continuous
-integration since you wrote in — you'll see the menu work the
-next time you log in. The deploy went out as commit d2fddd6 if
-Greg or your dev team wants to verify.
+P.S. The fixes deployed via continuous integration as commits
+d2fddd6 and 0affe1e. Greg or your dev team can verify if useful.
