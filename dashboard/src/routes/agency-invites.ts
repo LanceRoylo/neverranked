@@ -436,16 +436,34 @@ export async function handleInviteAccept(request: Request, env: Env): Promise<Re
 
   if (user) {
     // Existing user: upgrade their binding. Don't downgrade if they're
-    // already an admin of something stronger.
+    // already an admin of something stronger, and don't strip an
+    // existing agency context when the invite is direct-client only.
     const updates: string[] = [];
     const values: (string | number | null)[] = [];
-    if (user.role !== "admin") {
-      updates.push("role = ?"); values.push(invite.role);
-    }
-    updates.push("agency_id = ?"); values.push(invite.agency_id);
-    if (invite.role === "client" && invite.client_slug) {
+
+    const isDirectClientInvite = !invite.agency_id && !!invite.client_slug;
+
+    if (isDirectClientInvite) {
+      // Direct-client invite (e.g. Ron at Hawaii Theatre invites a
+      // teammate). Bind the user to this client_slug but don't touch
+      // their role unless they're a no-role'd ghost, and never strip
+      // agency_id — that would orphan an agency_admin accepting a
+      // teammate invite to a direct retail account.
+      if (!user.role || user.role === "client") {
+        updates.push("role = ?"); values.push("client");
+      }
       updates.push("client_slug = ?"); values.push(invite.client_slug);
+    } else {
+      // Agency invite — original behavior.
+      if (user.role !== "admin") {
+        updates.push("role = ?"); values.push(invite.role);
+      }
+      updates.push("agency_id = ?"); values.push(invite.agency_id);
+      if (invite.role === "client" && invite.client_slug) {
+        updates.push("client_slug = ?"); values.push(invite.client_slug);
+      }
     }
+
     values.push(user.id);
     await env.DB.prepare(
       `UPDATE users SET ${updates.join(", ")} WHERE id = ?`
