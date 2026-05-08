@@ -1,4 +1,4 @@
-# Reddit thread discovery — methodology
+# Reddit thread discovery -- methodology
 
 Forward-looking discovery of reddit threads likely to be cited by AI
 engines for "best X for Y" queries. Companion document to the
@@ -35,12 +35,12 @@ point.
 
 For any category, fire these query shapes against reddit search:
 
-- `best <category>` — the canonical recommendation thread
-- `<category>` — broader recall (drops the "best" qualifier)
-- `<category> recommendations` — explicit ask threads
-- `<category> vs` — comparison threads
-- `<category> <region>` — local recommendation threads
-- `<region> <category>` — region-led variants
+- `best <category>` -- the canonical recommendation thread
+- `<category>` -- broader recall (drops the "best" qualifier)
+- `<category> recommendations` -- explicit ask threads
+- `<category> vs` -- comparison threads
+- `<category> <region>` -- local recommendation threads
+- `<region> <category>` -- region-led variants
 
 Bonus patterns worth firing manually for high-value categories:
 
@@ -48,7 +48,7 @@ Bonus patterns worth firing manually for high-value categories:
 - `honest opinions on <category>`
 - `what <category> do you actually use`
 
-The tool fires the first six automatically; the bonus patterns are
+The tool fires the first six automatically. The bonus patterns are
 for human-led deep dives.
 
 ## Scoring formula
@@ -81,7 +81,7 @@ upvote_score = min(1, log10(ups + 1) / 3.7)
 
 Log scaling matters because raw upvote distribution on reddit is
 extremely heavy-tailed. A 10k-upvote thread isn't 100x more citeable
-than a 100-upvote thread; it's maybe 2x. The log brings the curve
+than a 100-upvote thread. It's maybe 2x. The log brings the curve
 back toward something usable as a feature.
 
 ### Citation likelihood (weight 0.40)
@@ -147,3 +147,71 @@ This methodology owns the discovery side. The dashboard's existing
 `thread_url`: when a discovered thread shows up in `reddit_citations`,
 flip `reddit_threads.observed_in_citations = 1` and timestamp it.
 That's the closed loop.
+
+---
+
+## Updates since publication
+
+The original methodology above describes the v1 scoring approach.
+The shipped Phase 1 implementation extends it materially based on
+stress-testing and audit findings. Authoritative source-of-truth is
+the code (`tools/reddit-tracker/src/score.mjs`); the deltas worth
+calling out:
+
+**Anchor-based topic relevance gate.** v1 relied on token coverage
+across title and op_body, with a threshold floor. Real-world testing
+revealed two false-positive classes:
+
+1. Reddit `sort=top` returned viral drama threads that incidentally
+   contained query terms ("real estate" appearing in the body of an
+   r/AmItheAsshole thread).
+2. Generic qualifier words ("platform", "tools") leaked off-topic
+   threads through the gate.
+
+The shipped fix:
+- Identifies an *anchor token* per category -- the most-distinctive
+  noun (acronym >= 3 chars, otherwise tokens >= 5 chars after
+  filtering generic type-nouns).
+- Requires the anchor in the thread title (not just op_body).
+- For multi-anchor categories, requires at least 2 anchors in title.
+- Stem matching ("host" matches "hosting", "list" matches "listing").
+- Uses `sort=relevance` instead of `sort=top` so reddit's own match
+  filter runs first.
+
+**Acronym handling.** v1 treated any uppercase 2-5 letter run as an
+acronym. Shipped version:
+- Requires acronym length >= 3 (AI / OS / VR are too common).
+- Skips acronym detection entirely if the input is all-uppercase
+  (otherwise every word looks like an acronym).
+
+**Query-shape variants.** v1 only handled "best X for Y" patterns.
+The shipped variant builder classifies query shape (best /
+question / noun) and generates appropriate sub-queries per shape.
+"What NMLS course should I take" expands to "NMLS course",
+"NMLS course recommendations", "anyone tried NMLS course",
+"best NMLS course".
+
+**Unicode tokenization.** v1's split regex treated every non-ASCII
+letter as a token boundary, dropping diacritics and Scandinavian
+letters entirely ("café" -> "caf"). Shipped version normalizes via
+NFKD plus a hand-mapped table for non-decomposing Latin letters
+(ø/æ/ß/ð/þ/œ/ı/ł). Latin-script only. Non-Latin scripts are
+documented as not supported.
+
+**Brand voice sweep.** Brief generator output goes to customers and
+must satisfy the Hello Momentum brand voice rules: no em dashes, no
+semicolons in body copy, no banned words ("unlock", "leverage",
+"effortless", etc.). The brief-generation prose in
+`tools/reddit-tracker/src/brief.mjs` and
+`tools/citation-gap/src/brief.mjs` was swept and is enforced by
+audit.
+
+**Known limitations to revisit in Phase 2:**
+- Tech-term acronyms with embedded special chars ("C++", "node.js",
+  ".NET", "C#") are still split or stripped by the tokenizer. The
+  `\b` word-boundary stem matcher can't find them in titles even if
+  preserved. Real fix needs a tech-term-aware matching path.
+- Two-letter acronyms (AI, OS, VR, ML) are dropped entirely because
+  they leak too much. Co-occurrence rules could re-include them.
+- Question-pattern variants don't yet fully handle "anyone tried X"
+  shapes that the original methodology lists as bonus patterns.
