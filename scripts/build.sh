@@ -23,6 +23,7 @@ FILES=(
   favicon.png
   robots.txt
   sitemap.xml
+  llms.txt
   _headers
 )
 

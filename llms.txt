@@ -1,0 +1,34 @@
+# NeverRanked
+
+> NeverRanked is an Answer Engine Optimization (AEO) service. We make websites citable by AI engines — ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, and Google AI Overviews. We deploy the schema, track the citations, and ship the work.
+
+## About
+
+- [Homepage](https://neverranked.com): NeverRanked overview, the six-engine model, and how AEO replaces SEO for AI-driven discovery
+- [About](https://neverranked.com/about): Who we are, the Clarity Principle, and what makes our approach different from generic AEO tools
+- [Principles](https://neverranked.com/principles): The operating principles that govern how we ship customer work — clarity, accuracy, and outcome-led communication
+
+## Free Tools
+
+- [AEO Score (check.neverranked.com)](https://check.neverranked.com): Free six-engine AEO score for any site, scored against the published methodology in 30 seconds
+- [Methodology](https://neverranked.com/leaderboards/methodology): The full scoring rubric used at check.neverranked.com — independently reproducible
+
+## Pricing & Plans
+
+- [Pulse — $497/mo](https://neverranked.com/#pulse): Entry tier with monthly visibility reports, 10 tracked prompts, and 2 schemas auto-deployed monthly
+- [Signal — $2,000/mo](https://neverranked.com/#signal): Weekly six-engine citation tracking with statistical attribution, schema fixes auto-deployed via our snippet, authority audits, and a 90-day roadmap
+- [Amplify — $4,500/mo](https://neverranked.com/#amplify): Everything in Signal plus brand-voice fingerprint, citation-shaped content drafts, auto-publish to WordPress / Webflow / Shopify, and Reddit reply briefs
+
+## For Agencies
+
+- [Agency Partner Program](https://neverranked.com/for-agencies): Wholesale pricing for marketing agencies — $800/mo per Signal slot at 1-9 clients, $700 at 10-24, $600 at 25+
+- [Founding Partner Terms](https://neverranked.com/for-agencies#founding): Vertical and regional exclusivity for the first agencies in each category
+
+## Methodology & Standards
+
+- [llms.txt Standard](https://neverranked.com/standards/llms-txt): Our position on the llms.txt standard, what good looks like, and engine adoption status
+- [Clarity Principle](https://neverranked.com/principles): The three-layer pattern that governs every customer-facing artifact — outcome headline, platform-specific where-to-fix, collapsed technical detail
+
+## Contact
+
+- [Contact](https://neverranked.com/#contact): Founder direct — Lance Roylo, lance@neverranked.com

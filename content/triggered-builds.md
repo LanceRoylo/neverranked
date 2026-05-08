@@ -24,6 +24,30 @@ Never deploys.
 - **Effort:** 1 day. Light migration, light wiring.
 - **Why gated:** The data lives in KV with 90d TTL today, which is fine for current volume. Moving it to D1 only matters when we have enough scans for cross-customer benchmarks to be statistically meaningful.
 
+### llms.txt scoring integrated into schema-check
+- **Trigger:** llms.txt deployed to neverranked.com production AND CLI tool stable for 7 days (no error reports)
+- **What to build:** Port logic from `scripts/llms-txt-check.mjs` into `tools/schema-check/src/index.ts`. Add llms.txt section to the public scan UI alongside schema and OG checks. Surface as a new component in the AEO score (5-10 points). Store llms.txt observations in event KV for future benchmarking.
+- **Effort:** 1 day
+- **Why gated:** Want the CLI tool battle-tested before merging into the public scan flow. Also want our own llms.txt live first so the marketing claim is honest.
+
+### llms.txt standard page on neverranked.com
+- **Trigger:** Marketing site has a /standards/ route or the homepage is updated to link a standalone HTML page
+- **What to build:** Convert `content/llms-txt/standard.md` to a polished HTML page at `neverranked.com/standards/llms-txt`. Add to nav. Submit to sitemap. Becomes a high-authority page that ranks for "llms.txt" queries.
+- **Effort:** 4 hours
+- **Why gated:** Marketing site routing pattern needs to be decided first (currently flat directory of HTML files; /standards/ would be a new pattern)
+
+### State of AEO 2026 — Hawaii edition
+- **Trigger:** 6+ Hawaii audits in `audits/` AND 4+ Hawaii leaderboards published (community banking already shipped)
+- **What to build:** Full PDF report aggregating all Hawaii vertical scan data. Distribution percentiles per vertical. Schema coverage trend lines. Engine-by-engine citation share averages. Becomes the canonical reference. Submitted to PRWeb + sent to local press.
+- **Effort:** 2 weeks
+- **Why gated:** Need a credible sample size of audits across 4+ verticals before the report has substance.
+
+### Per-vertical leaderboard pipeline
+- **Trigger:** First publication of Hawaii community banking leaderboard succeeds AND 3+ requests for similar leaderboards in other verticals
+- **What to build:** Generalize `content/leaderboards/hawaii-community-banking-2026-05.md` into a template + script pipeline. Auto-pull scores from check.neverranked.com for any list of domains. Auto-rank, auto-format, auto-publish. Reduces leaderboard production to 30 minutes per vertical.
+- **Effort:** 2 days
+- **Why gated:** First leaderboard needs to land publicly and prove the pattern before scaling.
+
 ### Reverse-engineer citations — Phase 2 worker
 - **Trigger:** First customer with weekly citation tracking running 4+ weeks AND citation_runs has 10+ "competitor cited, client not cited" rows on tracked-corpus prompts
 - **What to build:** Per `content/design/reverse-engineer-citations.md` — diff worker, customer-facing UI route, nightly cron, dashboard tab. Schema already shipped in migration 0067.

@@ -1,0 +1,39 @@
+# {{Development Name}}
+
+> {{Development Name}} is a {{master-planned community | mixed-use development | resort community}} in {{location}}, developed by {{developer}}. {{One-line description — e.g. "X acres in the heart of Honolulu featuring residential condominiums, retail, parks, and cultural amenities."}}
+
+## About
+
+- [About the Development]({{base_url}}/about): Master plan, vision, sustainability commitments, and development timeline
+- [The Developer]({{base_url}}/developer): About {{developer}}, track record, and other projects
+- [Master Plan]({{base_url}}/master-plan): Phased build-out timeline and current development status
+
+## Residences
+
+- [Available Buildings]({{base_url}}/residences): Current and pre-construction residential offerings with floor plans and pricing tiers
+- [Floor Plans]({{base_url}}/floor-plans): Searchable database of all available unit types
+- [Amenities]({{base_url}}/amenities): Building and community amenity overview
+
+## Buying
+
+- [Buyer Information]({{base_url}}/buyers): Process for first-time and out-of-state buyers, including legal and tax considerations specific to {{state}}
+- [Financing]({{base_url}}/financing): Preferred lender relationships and financing options
+- [HOA & Fees]({{base_url}}/hoa-fees): HOA fee structure and what they cover
+- [Property Tax]({{base_url}}/taxes): {{State}}-specific property tax explanations for residential condominiums
+
+## The Neighborhood
+
+- [Location & Walkability]({{base_url}}/location): Distance to airport, beaches, shopping, schools
+- [Retail & Dining]({{base_url}}/retail): Current and announced retail and restaurant tenants
+- [Schools]({{base_url}}/schools): Public and private school options nearby
+- [Community Programs]({{base_url}}/community): Cultural, educational, and community-building programs
+
+## Common Questions
+
+- [FAQ]({{base_url}}/faq): Comprehensive Q&A covering buyer process, ownership rules, HOA, rentals, property management
+
+## Optional
+
+- [News & Updates]({{base_url}}/news): Construction milestones, retail announcements, community events
+- [Press]({{base_url}}/press): Media coverage and press releases
+- [Sales Center]({{base_url}}/sales-center): Hours, location, contact for the on-site sales gallery

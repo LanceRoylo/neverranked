@@ -262,6 +262,48 @@ That is what makes it worth offering specifically to a founding
 partner. After 12 months we revisit, and if the partnership is
 producing, we extend or expand.
 
+### "Have you heard about llms.txt?"
+
+This is the meeting differentiator that nobody else in the room
+will know about. Use it strategically.
+
+What it is, in one sentence: llms.txt is a markdown file at the
+root of a website that gives AI engines a curated map of what to
+cite — proposed by Anthropic, adopted preferentially by Claude,
+and being followed by other engines through 2026.
+
+Why it matters: Sites with a curated llms.txt get cited by Claude
+preferentially over sites without one. ASB does not have an
+llms.txt. Neither do FHB, BOH, or CPB. None of the four Hawaii
+banks have deployed it.
+
+The window: When OpenAI and Perplexity follow Anthropic's lead
+(expected H2 2026), every site without an llms.txt loses two-to-
+three months of citation share to faster movers. Whoever ships
+first in Hawaii community banking wins that window.
+
+NeverRanked's position: We have a CLI tool that audits any site's
+llms.txt against our scoring rubric. We have vertical-specific
+templates including financial services. We deploy llms.txt
+through the same snippet that handles schema. ASB's would be
+the first community bank in Hawaii to have one.
+
+Phrasing for Mark and James:
+
+> "There's a second piece of the AEO surface most agencies haven't
+> caught up to yet. It's called llms.txt. It's a curated map of
+> your site that AI engines read first when deciding what to
+> cite. Anthropic's Claude already follows it preferentially.
+> OpenAI's stated they will. Right now zero Hawaii banks have it
+> deployed — yours included. We have templates ready and the
+> deployment infrastructure to ship it the same week we ship the
+> schema work. The bank that deploys first locks in the lead before
+> the rest of the engines catch up to the standard."
+
+If James asks for technical detail: methodology is at
+`/standards/llms-txt`. The CLI tool is `scripts/llms-txt-check.mjs`.
+Reference implementation is at neverranked.com/llms.txt.
+
 ### "We built a public leaderboard for Hawaii community banking. You're #1 on it."
 
 When and how to introduce: late in the meeting, after the

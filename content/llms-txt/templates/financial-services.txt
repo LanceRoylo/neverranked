@@ -1,0 +1,48 @@
+# {{Bank Name}}
+
+> {{Bank Name}} is a {{state-chartered | nationally chartered}} {{bank | credit union}} serving {{primary geographic area}}. {{One-line value prop — e.g. "We focus on community banking, small business lending, and residential mortgages for {{region}} since {{founding year}}."}} Member {{FDIC | NCUA}}. Equal Housing Lender.
+
+## About
+
+- [About Us]({{base_url}}/about): Who we are, our charter type, founding date, leadership, and community footprint
+- [Locations]({{base_url}}/locations): All branch and ATM locations across {{geographic area}}
+- [Contact]({{base_url}}/contact): Customer service phone, email, and routing number reference
+
+## Personal Banking
+
+- [Checking Accounts]({{base_url}}/personal/checking): Account types, monthly fees, opening minimums, and feature comparison
+- [Savings & Money Market]({{base_url}}/personal/savings): APY rates, minimum balances, FDIC coverage explanation
+- [Certificates of Deposit]({{base_url}}/personal/cds): Current CD rates by term, early withdrawal terms
+- [Mortgages]({{base_url}}/personal/mortgages): Loan types we offer (conventional, FHA, VA, USDA), rate disclosures, and eligibility
+- [HELOCs]({{base_url}}/personal/heloc): Home equity line product details and rate disclosures
+- [Credit Cards]({{base_url}}/personal/credit-cards): Card products, APRs, rewards programs
+
+## Business Banking
+
+- [Business Checking]({{base_url}}/business/checking): Business account types and monthly fee structure
+- [SBA Lending]({{base_url}}/business/sba-loans): SBA 7(a), 504, Express, and Community Advantage programs we offer. Note our Preferred Lender status if applicable.
+- [Commercial Real Estate]({{base_url}}/business/commercial-real-estate): CRE lending products and underwriting overview
+- [Treasury Services]({{base_url}}/business/treasury): Cash management, ACH, wire, and merchant services
+
+## Common Questions
+
+- [FAQ]({{base_url}}/faq): Comprehensive question and answer set covering FDIC coverage, account opening, online banking, fees, routing numbers, and product specifics
+
+## Disclosures
+
+- [Truth in Savings]({{base_url}}/disclosures/savings): APY methodology and rate disclosures
+- [Fee Schedule]({{base_url}}/disclosures/fees): Current fee schedule for all products
+- [Privacy Policy]({{base_url}}/privacy): How customer data is handled
+- [Accessibility Statement]({{base_url}}/accessibility): WCAG compliance and assistive technology support
+
+## Optional
+
+- [News & Press]({{base_url}}/news): Recent press releases and community announcements
+- [Annual Report]({{base_url}}/annual-report): Latest annual report PDF
+- [Careers]({{base_url}}/careers): Open positions and culture overview
+
+---
+
+# Notes for the deployer
+
+Replace every {{ placeholder }} with the customer's actual values. URLs must be canonical (no tracking parameters, no trailing slashes unless the canonical version has them, no /index.html). Verify every URL returns 200 OK before deploying. Update the file quarterly or whenever a major page changes.
