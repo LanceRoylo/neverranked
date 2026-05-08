@@ -1,5 +1,5 @@
 /**
- * Mention detection — given a discovered thread + a client identity,
+ * Mention detection -- given a discovered thread + a client identity,
  * find where the client is mentioned (or not) inside the thread, and
  * surface the competitive set being recommended instead.
  *

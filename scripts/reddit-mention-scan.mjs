@@ -69,7 +69,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`reddit-mention-scan — find where a client is mentioned in a reddit thread
+  console.log(`reddit-mention-scan -- find where a client is mentioned in a reddit thread
 
 Usage:
   node scripts/reddit-mention-scan.mjs --thread <url> --client-slug <slug> --client-names <csv> [options]

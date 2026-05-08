@@ -1,5 +1,5 @@
 /**
- * Reddit thread discovery — orchestrator.
+ * Reddit thread discovery -- orchestrator.
  *
  * Given a category query (and optional region), runs reddit search,
  * scores each result, dedupes, and returns the top N ranked threads

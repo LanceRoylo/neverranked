@@ -58,7 +58,7 @@ function parseArgs(argv) {
 }
 
 function printHelp() {
-  console.log(`reddit-thread-search — discover reddit threads likely to be cited by AI engines
+  console.log(`reddit-thread-search -- discover reddit threads likely to be cited by AI engines
 
 Usage:
   node scripts/reddit-thread-search.mjs --category <text> [options]
@@ -94,7 +94,7 @@ function truncate(s, n) {
 }
 
 function renderTable(rows) {
-  if (rows.length === 0) return "(no on-topic threads found — try widening the category or relaxing the relevance floor)";
+  if (rows.length === 0) return "(no on-topic threads found -- try widening the category or relaxing the relevance floor)";
   const lines = [];
   lines.push("Rank  Score  Relev  Recency  Upvote  Likely  Sub                  Age   Title");
   lines.push("----  -----  -----  -------  ------  ------  -------------------  ----  ----------------------------------------");
@@ -119,7 +119,7 @@ function renderTable(rows) {
 
 function renderMarkdown(rows, opts) {
   const lines = [];
-  lines.push(`# Reddit thread discovery — ${opts.category}${opts.region ? ` (${opts.region})` : ""}`);
+  lines.push(`# Reddit thread discovery -- ${opts.category}${opts.region ? ` (${opts.region})` : ""}`);
   lines.push("");
   lines.push(`Run at: ${new Date().toISOString()}  ·  ${rows.length} threads`);
   lines.push("");
