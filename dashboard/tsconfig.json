@@ -10,7 +10,12 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "allowJs": true
   },
-  "include": ["src/**/*.ts", "../packages/aeo-analyzer/src/**/*.ts"]
+  "include": [
+    "src/**/*.ts",
+    "../packages/aeo-analyzer/src/**/*.ts",
+    "../tools/citation-gap/src/**/*.mjs"
+  ]
 }

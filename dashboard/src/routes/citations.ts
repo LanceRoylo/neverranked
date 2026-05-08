@@ -15,6 +15,7 @@ import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
 import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
+import { buildCitationGapReport, renderCitationGapPanel } from "../citation-gap";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -608,8 +609,8 @@ export async function handleCitations(
   // Fetch AEO score data for cross-reference
   let aeoContext: AeoContext | null = null;
   const domain = await env.DB.prepare(
-    "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
-  ).bind(slug).first<{ id: number }>();
+    "SELECT id, domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(slug).first<{ id: number; domain: string }>();
   if (domain) {
     const scan = await env.DB.prepare(
       "SELECT aeo_score, grade, red_flags, schema_types FROM scan_results WHERE domain_id = ? AND error IS NULL ORDER BY scanned_at DESC LIMIT 1"
@@ -798,8 +799,11 @@ export async function handleCitations(
       topCompetitors, keywordBreakdown, enginesBreakdown, slug, aeoContext
     )}
 
-    <!-- Competitor citation comparison matrix -->
+    <!-- Competitor citation comparison matrix (entity-level) -->
     ${await buildCompetitorCitationMatrix(slug, keywordBreakdown, env)}
+
+    <!-- Source-level gaps (which sources AI engines pull from, where you're missing) -->
+    ${renderCitationGapPanel(await buildCitationGapReport(slug, domain?.domain ? [domain.domain] : [], env, 90))}
 
     <!-- Content recommendations from citation gaps -->
     ${await buildContentRecommendations(slug, keywordBreakdown, env)}
