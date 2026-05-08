@@ -54,15 +54,15 @@ export function generateSourceBrief(source, client) {
 
 function inferGap(source, client) {
   if (source.is_client_owned) {
-    return `Source is the client's own property. Not a gap; it's working as intended.`;
+    return `Source is the client's own property. Not a gap. It's working as intended.`;
   }
   if (source.client_named_ratio >= 0.8) {
-    return `${source.source_label} cites this client in ${Math.round(source.client_named_ratio * 100)}% of the ${source.total_runs} runs that mention this source. Strong signal; defend rather than invest.`;
+    return `${source.source_label} cites this client in ${Math.round(source.client_named_ratio * 100)}% of the ${source.total_runs} runs that mention this source. Strong signal. Defend rather than invest.`;
   }
   if (source.client_named_ratio >= 0.4) {
     return `${source.source_label} cites this client in ${Math.round(source.client_named_ratio * 100)}% of the ${source.total_runs} runs that mention this source. Partial coverage. Reinforce so AI engines stop treating the citation as occasional.`;
   }
-  return `${source.source_label} is cited in ${source.total_runs} run${source.total_runs === 1 ? "" : "s"} for this client's tracked queries (${source.engines.join(", ")}), but the client is named in only ${source.client_named_runs} of those runs. The source is a citation channel for this category; the client is missing from it.`;
+  return `${source.source_label} is cited in ${source.total_runs} run${source.total_runs === 1 ? "" : "s"} for this client's tracked queries (${source.engines.join(", ")}), but the client is named in only ${source.client_named_runs} of those runs. The source is a citation channel for this category. The client is missing from it.`;
 }
 
 // ---------------------------------------------------------------------
@@ -89,14 +89,14 @@ const SOURCE_BRIEF_LIBRARY = {
 
   tripadvisor: {
     action: (s, c) => `Increase review density and recency. Target 4+ new reviews/month from authentic visitors. Refresh business hours, photos, and Q&A.`,
-    angle: (s, c) => `TripAdvisor citation strength scales with review count and recency. AI engines pull recent reviews preferentially. The unlock is review velocity, not review score.`,
+    angle: (s, c) => `TripAdvisor citation strength scales with review count and recency. AI engines pull recent reviews preferentially. What moves the number is review velocity, not review score.`,
     tone_notes: [
       "Owner responses to reviews are read by AI engines. Make them substantive (specific to the review, not boilerplate).",
       "Photos uploaded by visitors > photos uploaded by owner. Encourage post-visit photo shares.",
       "Q&A answers should be short, specific, and address logistical questions (parking, accessibility, hours).",
     ],
     dont_do: [
-      "Do not use a service to generate fake reviews. TripAdvisor's detection is good; suspended listings stop being cited.",
+      "Do not use a service to generate fake reviews. TripAdvisor's detection is good. Suspended listings stop being cited.",
       "Do not use templated responses that read like 'Thank you for your review!'",
       "Do not delete legitimate negative reviews. Address them in-line.",
     ],
@@ -108,7 +108,7 @@ const SOURCE_BRIEF_LIBRARY = {
     tone_notes: [
       "Profile descriptions should match brand voice without being promotional.",
       "Add photos in categories Google uses: storefront / interior / staff / products / experiences.",
-      "Use Posts (events, offers, updates) — they're indexed and cite-eligible.",
+      "Use Posts (events, offers, updates). They're indexed and cite-eligible.",
       "Q&A: pin canonical answers to common questions before community answers them wrong.",
     ],
     dont_do: [
@@ -120,7 +120,7 @@ const SOURCE_BRIEF_LIBRARY = {
 
   reddit: {
     action: (s, c) => `Use the @nr/reddit-tracker discovery + brief pipeline. Surface the threads cited for this category and reply where the gap is real.`,
-    angle: (s, c) => `Reddit citation is hard to fake but high leverage. One quality reply on a cited thread compounds because the thread is in the AI engines' retrieval set.`,
+    angle: (s, c) => `Reddit citation is hard to fake but compounds. One quality reply on a cited thread keeps working because the thread is in the AI engines' retrieval set.`,
     tone_notes: [
       "Run scripts/reddit-thread-search.mjs to identify the specific threads.",
       "Run scripts/reddit-brief-generate.mjs for source-shaped reply briefs.",
@@ -128,12 +128,12 @@ const SOURCE_BRIEF_LIBRARY = {
     ],
     dont_do: [
       "Do not reply with a sales pitch. Mods remove and the comment count zeroes out.",
-      "Do not link to brand-owned properties. Disclose if relevant; otherwise don't.",
+      "Do not link to brand-owned properties. Disclose if relevant, otherwise don't.",
     ],
   },
 
   news: {
-    action: (s, c) => `Press release distribution + targeted pitch. ${s.domain.includes("globenewswire") || s.domain.includes("prnewswire") ? "Wire services AI engines crawl; cadence matters more than headline." : "Direct pitch -- earned, not paid."}`,
+    action: (s, c) => `Press release distribution + targeted pitch. ${s.domain.includes("globenewswire") || s.domain.includes("prnewswire") ? "Wire services AI engines crawl. Cadence matters more than headline." : "Direct pitch -- earned, not paid."}`,
     angle: (s, c) => `News citations decay fast. AI engines preference recency. The strategy is steady cadence (1-2 wire pieces / quarter) plus opportunistic earned press around real events.`,
     tone_notes: [
       "Wire services: write the lede so it stands alone; AI engines truncate.",
@@ -172,8 +172,8 @@ const SOURCE_BRIEF_LIBRARY = {
   },
 
   "review-aggregator": {
-    action: (s, c) => `Claim listing if not already; collect reviews from real customers; respond to all reviews.`,
-    angle: (s, c) => `Review aggregators are heavily weighted for software / SaaS / B2B citation. Empty listings get cited as "exists but unrated"; populated listings get cited with sentiment context.`,
+    action: (s, c) => `Claim listing if not already, collect reviews from real customers, respond to all reviews.`,
+    angle: (s, c) => `Review aggregators are heavily weighted for software / SaaS / B2B citation. Empty listings get cited as "exists but unrated". Populated listings get cited with sentiment context.`,
     tone_notes: [
       "Owner responses signal active brand presence to AI engines.",
       "Encourage reviewers to mention specific use cases, not just star ratings.",
@@ -198,8 +198,8 @@ const SOURCE_BRIEF_LIBRARY = {
 
   yelp: {
     action: (s, c) => `Claim the listing, populate hours / photos / categories, respond to reviews. For B2B less impactful than for consumer.`,
-    angle: (s, c) => `Yelp citation strength is local-consumer biased. High signal for restaurants / venues / services; weaker for B2B.`,
-    tone_notes: ["Same culture as TripAdvisor — review density and recency matter."],
+    angle: (s, c) => `Yelp citation strength is local-consumer biased. High signal for restaurants / venues / services, weaker for B2B.`,
+    tone_notes: ["Same culture as TripAdvisor. Review density and recency matter."],
     dont_do: ["Do not buy reviews. Yelp's filter is aggressive."],
   },
 
@@ -217,7 +217,7 @@ const SOURCE_BRIEF_LIBRARY = {
 
   other: {
     action: (s, c) => `Investigate. Source type unclassified -- needs a manual look to decide if it's high-value, low-value, or new-category-worthy.`,
-    angle: (s, c) => `Unrecognized source domain. Could be a high-leverage niche site we haven't classified yet, or noise. Open the example URLs and classify.`,
+    angle: (s, c) => `Unrecognized source domain. Could be a high-value niche site we haven't classified yet, or noise. Open the example URLs and classify.`,
     tone_notes: [
       "Add the domain to source-types.mjs once classified so future briefs benefit.",
     ],

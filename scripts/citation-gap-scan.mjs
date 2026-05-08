@@ -126,11 +126,20 @@ function runD1Query(db, sql, { remote = true, quiet = false } = {}) {
   return env.results || [];
 }
 
+// Defense-in-depth: even though the SQL builder escapes single quotes,
+// validate the slug shape before interpolation. Real client_slugs are
+// always [a-z0-9-] and capped at 64 chars in the dashboard.
+const SLUG_PATTERN = /^[a-z0-9-]{1,64}$/;
+
 async function main() {
   const args = parseArgs(process.argv);
   if (!args.clientSlug) {
     console.error("error: --client-slug is required\n");
     printHelp();
+    process.exit(2);
+  }
+  if (!SLUG_PATTERN.test(args.clientSlug)) {
+    console.error(`error: --client-slug must match ${SLUG_PATTERN} (got "${args.clientSlug}")`);
     process.exit(2);
   }
   if (!["markdown", "json", "summary"].includes(args.format)) {

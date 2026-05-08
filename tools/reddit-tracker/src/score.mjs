@@ -77,9 +77,17 @@ const GENERIC_TYPE_NOUNS = new Set([
  */
 export function anchorTokens(category) {
   if (!category) return [];
-  const acronyms = (category.match(/\b[A-Z]{2,5}\b/g) || [])
-    .filter((s) => s.length >= 3)
-    .map((s) => s.toLowerCase());
+  // Acronym detection only kicks in when the surrounding text is
+  // mixed-case. If the WHOLE category is uppercase ("BEST CRM TOOL")
+  // every word looks like an acronym and we'd anchor on stopwords
+  // and generic type-nouns. The lowercase check distinguishes a real
+  // acronym ("best CRM tool") from a shouted query.
+  const hasLowercaseWord = /[a-z]/.test(category);
+  const acronyms = hasLowercaseWord
+    ? (category.match(/\b[A-Z]{2,5}\b/g) || [])
+        .filter((s) => s.length >= 3)
+        .map((s) => s.toLowerCase())
+    : [];
   if (acronyms.length) return acronyms;
   const toks = categoryTokens(category);
   const specific = toks.filter((t) => !GENERIC_TYPE_NOUNS.has(t));

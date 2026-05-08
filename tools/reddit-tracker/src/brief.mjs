@@ -101,7 +101,7 @@ function inferGap(summary, clientMentions, competitorMentions, category) {
   if (summary.client_negative > summary.client_positive) {
     return `Client is mentioned ${summary.client_mention_count}x but sentiment skews negative (${summary.client_negative}- vs ${summary.client_positive}+). Gap: existing perception needs counter-evidence, not introduction.`;
   }
-  return `Client mentioned ${summary.client_mention_count}x with ${summary.client_positive}+ / ${summary.client_negative}- sentiment. No gap on visibility; consider whether reply adds new evidence or repeats existing positive signal.`;
+  return `Client mentioned ${summary.client_mention_count}x with ${summary.client_positive}+ / ${summary.client_negative}- sentiment. No gap on visibility. Consider whether reply adds new evidence or repeats existing positive signal.`;
 }
 
 function inferAngle(thread, summary, category) {
@@ -118,17 +118,17 @@ function inferAngle(thread, summary, category) {
   }
   // "Anyone tried" / experience-share thread: angle is honest experience
   if (/\b(anyone\s+(tried|used|use)|honest|experience)\b/.test(titleLower)) {
-    return `Experience-share thread. Angle: contribute one specific anecdote with a verifiable detail. Avoid summary-style replies; OP is asking for stories, not pitches.`;
+    return `Experience-share thread. Angle: contribute one specific anecdote with a verifiable detail. Avoid summary-style replies. OP is asking for stories, not pitches.`;
   }
   // Generic best-of: angle is to add a non-obvious option
   if (/\b(best|top|favorite)\b/.test(titleLower)) {
     if (competitors.length >= 3) {
-      return `Best-of list with ${competitors.length} competitors named. Angle: do not repeat the consensus; either add a specific use case where the consensus picks fail, or surface a non-obvious option with a real reason.`;
+      return `Best-of list with ${competitors.length} competitors named. Angle: do not repeat the consensus. Either add a specific use case where the consensus picks fail, or surface a non-obvious option with a real reason.`;
     }
     return `Best-of thread with thin competitive set. Angle: be the first authoritative voice -- establish the criteria the OP should care about, then name the option that matches.`;
   }
   // Fallback
-  return `Topical thread without strong shape signal. Angle: read the top 3 comments before drafting; match their register, then add one piece of evidence not yet present.`;
+  return `Topical thread without strong shape signal. Angle: read the top 3 comments before drafting. Match their register, then add one piece of evidence not yet present.`;
 }
 
 // Subreddit tone library. Keep small and curated; default applies to
@@ -141,7 +141,7 @@ const SUBREDDIT_TONE = {
     "Top comments are usually 1-3 sentences. Long comments without anecdotes get downvoted.",
   ],
   realestate: [
-    "r/realestate is consumer-side; agents posting need to disclose.",
+    "r/realestate is consumer-side. Agents posting need to disclose.",
     "Personal experience > general advice. Always.",
     "Comments without numbers or specifics get ignored.",
   ],
@@ -162,7 +162,7 @@ const SUBREDDIT_TONE = {
     "Self-promotion rules are enforced -- read the sidebar.",
   ],
   marketing: [
-    "r/marketing is contrarian by default. Take a clear position; don't hedge.",
+    "r/marketing is contrarian by default. Take a clear position. Don't hedge.",
   ],
   seo: [
     "r/SEO is allergic to consultant-speak. Concrete tactics, real screenshots, traffic numbers.",
