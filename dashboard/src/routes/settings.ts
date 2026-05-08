@@ -112,6 +112,18 @@ export async function handleSettings(user: User, env: Env, flashMessage?: string
     </div>
     ` : ""}
 
+    <!-- Team Members (direct retail clients only — agency-managed
+         teams handle invites at /agency/invites) -->
+    ${user.client_slug && !user.agency_id ? `
+    <div class="card" style="margin-bottom:24px">
+      <div class="label" style="margin-bottom:16px">Team members</div>
+      <p style="font-size:13px;color:var(--text-faint);margin:0 0 16px;line-height:1.6">
+        Add teammates so they can see scans, the roadmap, and reports without sharing your login.
+      </p>
+      <a href="/team" class="btn">Manage team &rarr;</a>
+    </div>
+    ` : ""}
+
     <!-- Competitors -->
     ${user.client_slug ? `
     <div class="card" style="margin-bottom:24px">

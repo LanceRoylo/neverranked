@@ -100,7 +100,9 @@ export default {
     // Wrap routing in an IIFE so every existing `return X` becomes
     // "return X from the IIFE", which we then log + decorate before
     // returning to Cloudflare. No invasive change to the routing body.
-    const response = await (async (): Promise<Response> => {
+    let response: Response;
+    try {
+    response = await (async (): Promise<Response> => {
     const url = new URL(request.url);
     const path = url.pathname;
     const method = request.method;
@@ -817,24 +819,48 @@ export default {
       const referer = request.headers.get("Referer");
       return redirect(referer && referer.startsWith(new URL(request.url).origin) ? referer : "/");
     }
-    if (path === "/onboarding/checklist/reset" && method === "POST") {
+    if (path === "/onboarding/checklist/reset" && (method === "GET" || method === "POST")) {
       await env.DB.prepare(
         "UPDATE users SET checklist_dismissed_at = NULL WHERE id = ?",
       ).bind(user.id).run();
       return redirect(user.role === "agency_admin" ? "/agency" : "/");
     }
 
-    // Auto-redirect non-onboarded clients to onboarding, but always
-    // let critical user-control paths through. Without this exception,
-    // a client who can't complete onboarding (no competitors known,
-    // billing question, needs to invite a teammate) is stuck — every
-    // menu click bounces back to /onboarding with no way to reach the
-    // settings, support, or billing surfaces that would unblock them.
+    // Auto-mark active clients as onboarded. If a client user has a
+    // monitored domain with at least one scan, they have already passed
+    // the productive bootstrap — the onboarded flag is just a stale
+    // bookkeeping bit. Flip it forward instead of trapping them in the
+    // onboarding flow. (Reported by Hawaii Theatre on 2026-05-07: the
+    // unset flag was redirecting every menu click to /onboarding.)
+    if (user.role === "client" && !user.onboarded && user.client_slug) {
+      const hasActive = await env.DB.prepare(
+        `SELECT 1 FROM domains d
+            JOIN scan_results sr ON sr.domain_id = d.id
+            WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1
+            LIMIT 1`
+      ).bind(user.client_slug).first<{ 1: number }>();
+      if (hasActive) {
+        await env.DB.prepare(
+          "UPDATE users SET onboarded = 1 WHERE id = ? AND onboarded = 0"
+        ).bind(user.id).run().catch(() => {});
+        user.onboarded = 1;
+      }
+    }
+
+    // Auto-redirect non-onboarded clients to /onboarding, but never
+    // block the user-control surfaces (settings, support, billing,
+    // team management, logout). A client who can't complete onboarding
+    // for any reason should still be able to reach the screens that
+    // unblock them.
     const allowDuringOnboarding =
       path === "/settings" ||
       path.startsWith("/settings/") ||
       path === "/support" ||
       path.startsWith("/billing/") ||
+      path === "/team" ||
+      path.startsWith("/team/") ||
+      path === "/learn" ||
+      path.startsWith("/learn/") ||
       path === "/agency/invites/teammate" ||
       path === "/agency/invites/client";
     if (user.role === "client" && !user.onboarded && !allowDuringOnboarding) {
@@ -2395,6 +2421,26 @@ export default {
       return handleUpdateEmailPrefs(request, user, env);
     }
 
+    // Team management for direct retail clients (non-agency).
+    if (path === "/team" && method === "GET") {
+      const { handleTeamGet } = await import("./routes/client-team");
+      return handleTeamGet(user, env, url);
+    }
+    if (path === "/team/invite" && method === "POST") {
+      const { handleTeamInvite } = await import("./routes/client-team");
+      return handleTeamInvite(request, user, env);
+    }
+    const teamResendMatch = path.match(/^\/team\/invite\/(\d+)\/resend$/);
+    if (teamResendMatch && method === "POST") {
+      const { handleTeamInviteResend } = await import("./routes/client-team");
+      return handleTeamInviteResend(Number(teamResendMatch[1]), user, env);
+    }
+    const teamRevokeMatch = path.match(/^\/team\/invite\/(\d+)\/revoke$/);
+    if (teamRevokeMatch && method === "POST") {
+      const { handleTeamInviteRevoke } = await import("./routes/client-team");
+      return handleTeamInviteRevoke(Number(teamRevokeMatch[1]), user, env);
+    }
+
     // Support
     if (path === "/support" && method === "GET") {
       return handleSupport(user, env, url);
@@ -2493,6 +2539,38 @@ export default {
       </div>
     `, user), 404);
     })();
+    } catch (err) {
+      // Uncaught error inside any route handler. Log it server-side
+      // with the request id so Lance can grep, and render a branded
+      // error page for the user that surfaces the request id so they
+      // can quote it when reporting.
+      console.error("[request-error]", reqLog.id, err);
+      try {
+        await logEvent(env, {
+          type: "request_error",
+          detail: {
+            request_id: reqLog.id,
+            path: new URL(request.url).pathname,
+            method: request.method,
+            message: err instanceof Error ? err.message : String(err),
+          },
+          userId: _user_id_for_log,
+        });
+      } catch {}
+      response = new Response(`<!doctype html>
+<html><head><meta charset="utf-8"><title>Something went wrong</title>
+<style>body{font-family:Inter,system-ui,sans-serif;background:#0e0d0a;color:#fbf8ef;margin:0;padding:80px 24px;text-align:center}main{max-width:480px;margin:0 auto}h1{font-family:'Playfair Display',Georgia,serif;font-style:italic;color:#c9a84c;font-weight:400;font-size:32pt;margin:0 0 16px}p{color:#b0b0a8;line-height:1.6;margin:0 0 16px;font-size:14px}code{font-family:'DM Mono',monospace;background:#1a1815;padding:4px 10px;border-radius:3px;color:#e8c767;font-size:12px;display:inline-block;margin:8px 0}.btn{display:inline-block;margin-top:24px;padding:10px 24px;background:#c9a84c;color:#080808;text-decoration:none;font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.06em;border-radius:2px}a{color:#c9a84c}</style>
+</head><body><main>
+<h1>Something went wrong</h1>
+<p>An unexpected error occurred while loading this page. The team has been notified automatically.</p>
+<p>If this keeps happening, email <a href="mailto:lance@neverranked.com">lance@neverranked.com</a> and quote this request ID:</p>
+<code>${reqLog.id}</code>
+<p style="margin-top:32px"><a class="btn" href="/">Back to dashboard</a></p>
+</main></body></html>`, {
+        status: 500,
+        headers: { "Content-Type": "text/html; charset=utf-8" },
+      });
+    }
 
     // Log + decorate the response.
     reqLog.finish(response, { user_id: _user_id_for_log });
