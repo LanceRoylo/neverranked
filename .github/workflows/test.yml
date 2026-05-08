@@ -1,0 +1,61 @@
+name: Tests
+
+# Runs the unit-test suite on push to main and on every pull request.
+# Catches regressions in the analyzer / brief / scoring / source-type
+# logic before they ship. No deploy step here -- deploy-dashboard.yml
+# handles production push and is gated only on its own dry-run check;
+# this workflow exists so a failing test on PR shows up in review.
+#
+# No secrets required. Pure node:test runners against pure-JS
+# (and TypeScript via tsx) modules. Network calls (reddit fetch,
+# wrangler d1 execute) are NOT exercised here -- those would need
+# integration tests with mocks.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  reddit-tracker:
+    name: '@nr/reddit-tracker tests'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/reddit-tracker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm test
+
+  citation-gap:
+    name: '@nr/citation-gap tests'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/citation-gap
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm test
+
+  dashboard:
+    name: 'dashboard tests'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+      - run: npm ci
+      - run: npm test
