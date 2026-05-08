@@ -42,11 +42,10 @@ Never deploys.
 - **Effort:** 1 day for distribution work; sample-size expansion is ongoing audit work
 - **Why gated:** Current sample (n=7) is too small for credible percentile distributions. Want at least 12 across 4 verticals (banking, real estate, hospitality, professional services) before going to press. Also: ASB should see the report before it goes public if they're on it.
 
-### Per-vertical leaderboard pipeline
-- **Trigger:** First publication of Hawaii community banking leaderboard succeeds AND 3+ requests for similar leaderboards in other verticals
-- **What to build:** Generalize `content/leaderboards/hawaii-community-banking-2026-05.md` into a template + script pipeline. Auto-pull scores from check.neverranked.com for any list of domains. Auto-rank, auto-format, auto-publish. Reduces leaderboard production to 30 minutes per vertical.
-- **Effort:** 2 days
-- **Why gated:** First leaderboard needs to land publicly and prove the pattern before scaling.
+### Per-vertical leaderboard pipeline — SHIPPED 2026-05-08
+- Pipeline at `scripts/leaderboard-generate.mjs`. Configs at `content/leaderboards/configs/<slug>.json`. Each leaderboard takes ~90 seconds end-to-end including 10s-per-scan rate-limit pacing.
+- Three leaderboards built: hawaii-community-banking, hawaii-law-firms, hawaii-boutique-hotels. All INTERNAL until category leader gets 14-day pre-publication preview per `content/leaderboards/README.md`.
+- Adding a new vertical: drop a JSON config, run the script, review output, ship.
 
 ### Reverse-engineer citations — Phase 2 worker
 - **Trigger:** First customer with weekly citation tracking running 4+ weeks AND citation_runs has 10+ "competitor cited, client not cited" rows on tracked-corpus prompts

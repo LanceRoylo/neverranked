@@ -1,0 +1,17 @@
+{
+  "vertical": "Hawaii law firms",
+  "category_archetype": "law firm",
+  "category_plural": "law firms",
+  "region_hint": "Hawaii",
+  "competitive_summary": "Hawaii's legal services market is dominated by mid-sized full-service firms in Honolulu, with a long tail of boutiques specializing in real estate, native Hawaiian rights, immigration, and litigation. The category has high citation pressure on AI engines because legal queries (\"best Hawaii estate planning attorney,\" \"Honolulu probate lawyer\") are exactly the kind of buyer-stage research now happening primarily through ChatGPT and Perplexity.",
+  "entrants": [
+    { "name": "Goodsill Anderson Quinn & Stifel", "url": "https://www.goodsill.com" },
+    { "name": "Cades Schutte", "url": "https://www.cades.com" },
+    { "name": "Carlsmith Ball", "url": "https://www.carlsmith.com" },
+    { "name": "Watanabe Ing", "url": "https://www.wik.com" },
+    { "name": "Damon Key Leong Kupchak Hastert", "url": "https://www.hawaiilawyer.com" },
+    { "name": "Ashford & Wriston", "url": "https://www.awlaw.com" },
+    { "name": "Bays Lung Rose & Holma", "url": "https://www.legalhawaii.com" },
+    { "name": "Schlack Ito", "url": "https://www.schlackito.com" }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "vertical": "Hawaii boutique hotels",
+  "category_archetype": "hotel",
+  "category_plural": "hotels",
+  "region_hint": "Hawaii",
+  "competitive_summary": "Hawaii's boutique hotel category sits between major chains (Hyatt, Marriott, Hilton) and short-term rentals. Independent properties compete heavily on AI search because their best buyers research via ChatGPT and Perplexity for queries like \"best boutique hotel Waikiki,\" \"Maui beachfront boutique resort,\" or \"adults only Big Island stay.\" Smaller operations with sharper schema deployment can outrank larger national chains for these high-intent queries.",
+  "entrants": [
+    { "name": "Halepuna Waikiki by Halekulani", "url": "https://www.halepuna.com" },
+    { "name": "The Surfjack Hotel & Swim Club", "url": "https://www.surfjack.com" },
+    { "name": "The Laylow Autograph Collection", "url": "https://www.laylowwaikiki.com" },
+    { "name": "Lotus Honolulu at Diamond Head", "url": "https://www.lotushonolulu.com" },
+    { "name": "Hotel Wailea", "url": "https://www.hotelwailea.com" },
+    { "name": "Travaasa Hana", "url": "https://www.hotelhanamaui.com" },
+    { "name": "The Cliffs at Princeville", "url": "https://www.cliffsatprinceville.com" },
+    { "name": "Volcano Village Lodge", "url": "https://www.volcanovillagelodge.com" }
+  ]
+}
