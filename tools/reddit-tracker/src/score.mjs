@@ -35,9 +35,52 @@ const QUERY_STOPWORDS = new Set([
 /**
  * Extract topical tokens from a category query. Drops stopwords and
  * short noise words. "best CRM for real estate" -> ["crm","real","estate"].
+ *
+ * Diacritics are folded so users can write categories with native
+ * characters and still match titles that use stripped-down spellings:
+ *   "café"   -> "cafe"
+ *   "Acción" -> "accion"
+ *   "naïve"  -> "naive"
+ *
+ * This implementation is Latin-script only. Non-Latin scripts
+ * (Japanese, Korean, Chinese, Russian, Arabic) are not supported --
+ * the resulting tokens would be empty. If a customer ever needs
+ * non-Latin matching, that's a separate code path.
+ *
+ * Known limitation: tokens with embedded technical characters --
+ * "C++", "node.js", ".NET", "C#" -- are split or stripped here, and
+ * the downstream stem matcher uses \b word-boundaries which can't
+ * find them in titles anyway. Phase 2 will need a tech-term-aware
+ * matching path. See score.mjs::stemMatcher.
  */
+// Scandinavian / Germanic / Icelandic letters that are base codepoints
+// (NOT precomposed letter+diacritic) and so don't decompose under
+// NFKD. Hand-mapped to their conventional Latin transliterations so
+// "Helsingør" -> "helsingor", "Bjørn" -> "bjorn", etc.
+const NON_DECOMPOSING_LATIN = {
+  "ø": "o", "Ø": "O",
+  "æ": "ae", "Æ": "AE",
+  "œ": "oe", "Œ": "OE",
+  "ß": "ss",
+  "ð": "d", "Ð": "D",
+  "þ": "th", "Þ": "TH",
+  "ı": "i", "İ": "I",
+  "ł": "l", "Ł": "L",
+};
+const NON_DECOMPOSING_RE = new RegExp("[" + Object.keys(NON_DECOMPOSING_LATIN).join("") + "]", "g");
+
 export function categoryTokens(category) {
-  return (category || "")
+  if (!category) return [];
+  // Two-stage fold:
+  //   1. Replace non-decomposing Latin letters (ø, æ, ß, ...) with
+  //      their conventional ASCII transliterations.
+  //   2. NFKD splits precomposed letter+diacritic ("é" -> "e" + U+0301)
+  //      and we strip the combining marks (U+0300..U+036F).
+  // Together these cover the Latin diacritic / Germanic / Icelandic
+  // surface forms a real customer name might contain.
+  const transliterated = category.replace(NON_DECOMPOSING_RE, (ch) => NON_DECOMPOSING_LATIN[ch]);
+  const folded = transliterated.normalize("NFKD").replace(/[̀-ͯ]/g, "");
+  return folded
     .toLowerCase()
     .split(/[^a-z0-9]+/)
     .filter((w) => w.length >= 3 && !QUERY_STOPWORDS.has(w));
