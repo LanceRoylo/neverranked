@@ -62,11 +62,61 @@ test("categoryTokens drops non-Latin scripts (documented limitation)", () => {
   assert.deepEqual(categoryTokens("東京 best app"), ["app"]);
 });
 
-test("categoryTokens drops single tokens with embedded special chars (documented H3 limitation)", () => {
-  // Audit H3: not yet fixed. Lock in current behavior so a future
-  // tech-term-aware fix is detected as a behavior change.
-  assert.deepEqual(categoryTokens("best C++ framework"), ["framework"]);
-  assert.deepEqual(categoryTokens("best node.js library"), ["node", "library"]);
+test("categoryTokens preserves tech terms with embedded special chars (audit H3 fix)", () => {
+  // Tech terms (containing `+`, `.`, `#`) are preserved in tokens
+  // and anchor regardless of length. The tokenizer trims leading
+  // non-`.` and trailing non-`+#` chars so end-of-sentence periods
+  // don't pollute the token.
+  assert.deepEqual(categoryTokens("best C++ framework"), ["c++", "framework"]);
+  assert.deepEqual(categoryTokens("best node.js library"), ["node.js", "library"]);
+  assert.deepEqual(categoryTokens("C# vs Java performance"), ["c#", "java", "performance"]);
+  assert.deepEqual(categoryTokens(".NET migration tips"), [".net", "migration", "tips"]);
+  assert.deepEqual(categoryTokens("Use C++. End of sentence."), ["c++", "end", "sentence"]);
+});
+
+test("categoryTokens drops degenerate punctuation-only tokens", () => {
+  // "+++" or "..." with no letters should not survive.
+  assert.deepEqual(categoryTokens("+++ best ..."), []);
+});
+
+test("anchorTokens picks tech terms as primary anchors", () => {
+  assert.deepEqual(anchorTokens("best C++ framework"), ["c++"]);
+  assert.deepEqual(anchorTokens("learn node.js for free"), ["node.js"]);
+  assert.deepEqual(anchorTokens(".NET migration tips"), [".net"]);
+  assert.deepEqual(anchorTokens("C# tutorials"), ["c#"]);
+});
+
+test("anchorTokens dedupes tech terms vs their bare-acronym form", () => {
+  // \b[A-Z]{2,5}\b matches "NET" inside ".NET". Without dedup, the
+  // anchor list would contain both "net" and ".net". Lock in dedup.
+  assert.deepEqual(anchorTokens(".NET migration tips"), [".net"]);
+});
+
+test("anchorTokens combines tech-term + acronym when both distinct", () => {
+  // CRM anchor and node.js anchor are independent; both should appear.
+  const a = anchorTokens("best CRM and node.js for startups");
+  assert.ok(a.includes("crm"));
+  assert.ok(a.includes("node.js"));
+});
+
+test("topicRelevance with tech-term anchors uses non-word boundaries", () => {
+  // "C++" in title with surrounding non-word chars matches.
+  const t1 = mkThread({ title: "Best C++ framework for embedded systems" });
+  assert.ok(topicRelevance(t1, "best C++ framework") > 0);
+
+  // "C++Builder" is a different identifier; trailing alphanumeric
+  // means anchor "c++" should NOT match.
+  const t2 = mkThread({ title: "C++Builder is great for legacy code" });
+  assert.equal(topicRelevance(t2, "best C++ framework"), 0);
+
+  // node.js anchor matches "Node.js" in title (case insensitive).
+  const t3 = mkThread({ title: "Best Node.js library for SSR" });
+  assert.ok(topicRelevance(t3, "best node.js library") > 0);
+
+  // Strict matching: "asp.net" does NOT match anchor ".net" because
+  // "p" precedes the dot. Documented strictness, not a bug.
+  const t4 = mkThread({ title: "asp.net core tutorial" });
+  assert.equal(topicRelevance(t4, "best .NET framework"), 0);
 });
 
 // ---------------------------------------------------------------------

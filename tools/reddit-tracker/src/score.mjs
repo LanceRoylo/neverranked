@@ -71,19 +71,34 @@ const NON_DECOMPOSING_RE = new RegExp("[" + Object.keys(NON_DECOMPOSING_LATIN).j
 
 export function categoryTokens(category) {
   if (!category) return [];
-  // Two-stage fold:
+  // Three-stage normalize:
   //   1. Replace non-decomposing Latin letters (ø, æ, ß, ...) with
   //      their conventional ASCII transliterations.
   //   2. NFKD splits precomposed letter+diacritic ("é" -> "e" + U+0301)
   //      and we strip the combining marks (U+0300..U+036F).
-  // Together these cover the Latin diacritic / Germanic / Icelandic
-  // surface forms a real customer name might contain.
+  //   3. Tokenize on a separator class that preserves `+`, `.`, `#`
+  //      inside tokens so tech terms ("c++", "node.js", ".net", "c#")
+  //      survive. Post-process trims leading non-alphanumeric except
+  //      `.` (preserves ".net") and trailing except `+#` (preserves
+  //      "c++", "c#"). Tech-term tokens with at least one letter pass
+  //      the filter regardless of length; regular tokens still need
+  //      length >= 3.
   const transliterated = category.replace(NON_DECOMPOSING_RE, (ch) => NON_DECOMPOSING_LATIN[ch]);
   const folded = transliterated.normalize("NFKD").replace(/[̀-ͯ]/g, "");
   return folded
     .toLowerCase()
-    .split(/[^a-z0-9]+/)
-    .filter((w) => w.length >= 3 && !QUERY_STOPWORDS.has(w));
+    .split(/[^a-z0-9.+#]+/)
+    .map((w) => w.replace(/^[^a-z0-9.]+/, "").replace(/[^a-z0-9+#]+$/, ""))
+    .filter((w) => {
+      if (!w) return false;
+      if (QUERY_STOPWORDS.has(w)) return false;
+      // Tech term: contains a non-alphanumeric char. Anchor regardless
+      // of length but require at least one letter (otherwise "+++" or
+      // "..." would survive).
+      if (/[.+#]/.test(w)) return /[a-z]/.test(w);
+      // Regular token: at least 3 alphanumeric chars.
+      return w.length >= 3;
+    });
 }
 
 // Generic type-nouns ("platform", "tools", "software") are the
@@ -131,8 +146,19 @@ export function anchorTokens(category) {
         .filter((s) => s.length >= 3)
         .map((s) => s.toLowerCase())
     : [];
-  if (acronyms.length) return acronyms;
   const toks = categoryTokens(category);
+  // Tech terms (tokens containing `+`, `.`, or `#`) are inherently
+  // distinctive and anchor regardless of length. "c++" / "node.js" /
+  // ".net" / "c#" don't pass the >= 5 char floor below, but they're
+  // exactly the words that name the category.
+  const techTerms = toks.filter((t) => /[.+#]/.test(t));
+  // The \b[A-Z]{2,5}\b regex picks up the alphanumeric core of a tech
+  // term (e.g. "NET" inside ".NET") and would duplicate the anchor.
+  // Drop any bare acronym that's already covered by a tech term.
+  const techBases = new Set(techTerms.map((t) => t.replace(/[.+#]+/g, "").toLowerCase()));
+  const acronymsDeduped = acronyms.filter((a) => !techBases.has(a));
+  const primary = [...new Set([...acronymsDeduped, ...techTerms])];
+  if (primary.length) return primary;
   const specific = toks.filter((t) => !GENERIC_TYPE_NOUNS.has(t));
   const long = specific.filter((t) => t.length >= 5);
   if (long.length > 0) return long;
@@ -160,8 +186,15 @@ export function anchorTokens(category) {
  */
 function stemMatcher(tok) {
   const escaped = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Allow the base form, plus suffixes commonly attached in headlines.
-  // The (?:...)? group keeps the regex anchored at the token start.
+  // For tech terms (containing `.`, `+`, `#`), \b word-boundary fails
+  // because both sides of "++" or "#" are non-word chars. Use explicit
+  // non-alphanumeric boundaries instead, and skip suffix variants
+  // (no "c++s" / "node.jses").
+  const isTechTerm = /[.+#]/.test(tok);
+  if (isTechTerm) {
+    return new RegExp(`(?:^|[^a-z0-9])${escaped}(?=[^a-z0-9]|$)`, "i");
+  }
+  // Regular token: \b word-boundary plus optional headline suffixes.
   return new RegExp(`\\b${escaped}(?:s|ed|er|ers|ing|ings)?\\b`, "i");
 }
 
