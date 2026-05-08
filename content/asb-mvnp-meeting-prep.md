@@ -441,17 +441,88 @@ without me being the bottleneck on each one.
 
 Behind it: founder-risk on a long-term commitment.
 
-Answer: Honest. Three answers stacked. (1) The schema we
-deploy via snippet is JSON-LD that can be exported and
-self-hosted by your team if NR ever shut down. We can provide
-the export at any time. You don't lose the work. (2) The
-methodology and tooling are not magic. The patterns we use
-(schema.org standard, the six engines we track, the
-citation-counting math) are all standard practice your own
-team or any other vendor could replicate. (3) Founder risk
-is real. We can address it with a longer warranty or by
-holding the snippet code in escrow with your IT team. Not
-typical for SaaS but I'd offer it for ASB.
+Answer: We have a written Founder Continuity Plan at
+`content/sla/founder-continuity.md`. Four key points:
+
+1. **The schema we deploy is yours forever.** It lives in your
+   HTML. Removing our snippet doesn't remove the schema. You
+   never lose the work.
+2. **All your data is exportable on demand.** The dashboard
+   has a Continuity Export button that produces a single ZIP
+   with every audit, every citation observation, the prompt
+   corpus, and the brand voice fingerprint. Available
+   regardless of subscription status, no support ticket
+   required.
+3. **For $10K+ ACV contracts, three options are pre-built:**
+   source escrow with Iron Mountain, multi-cloud failover
+   under your own Cloudflare, or on-site weekly export to your
+   data warehouse. Standard contract addenda — no price
+   increase.
+4. **A successor plan exists in writing with legal counsel.**
+   Cloudflare, GitHub, and Stripe transfer to a designated
+   successor. Customers can terminate without penalty within
+   30 days of any transition.
+
+Hand them the founder-continuity doc as a leave-behind. Most
+early-stage AEO vendors have nothing like this. Asking the
+question usually kills the deal because the answer is "we
+haven't thought about it." Our answer is "we have, and here
+it is in writing."
+
+### "What guarantees do you offer that this works?"
+
+Likely from Mark when the conversation shifts to risk. James
+might also ask in the practitioner phrasing.
+
+Answer: The **Citation Floor Guarantee** at
+`content/sla/citation-floor-guarantee.md`. Plain English: if
+your AEO score drops more than 10 points below baseline AND
+we don't catch it within 7 days, we credit the month against
+your next invoice. It's contractual, listed in Section 4.3 of
+the standard subscription agreement.
+
+The guarantee is *detection*, not absolute score performance.
+Engines retrain, competitors deploy, content gets stale. We
+don't promise your score never moves. We promise that if it
+moves, we catch it before you do — and if we miss, we eat the
+month.
+
+What this signals to ASB: we have to be excellent at detection
+or we lose money. The promise is enforceable, not marketing
+copy. Most AEO vendors can't honor a guarantee like this
+because their tracking isn't deep enough to actually catch
+drops. Ours is. We're locking in the differentiator before
+funded competitors realize it's possible.
+
+### "Have you thought about the agent transition?"
+
+Maybe from James — he reads enough to know the next AI shift
+is from "answering questions" to "performing tasks."
+
+Answer: Yes, and we have shipped for it. The
+`content/agent-readiness/` framework is published with
+templates for financial services, hospitality, and
+professional services. For ASB specifically, the four
+agent-readiness opportunities are:
+
+1. **ApplyAction on account-opening pages.** When a ChatGPT
+   agent helps a user open a checking account, sites with
+   ApplyAction schema get the application traffic. Sites
+   without get skipped.
+2. **ApplyAction on mortgage prequalification.** Same pattern,
+   bigger ticket size.
+3. **ContactAction on the wealth-advisor scheduling page.**
+4. **ReserveAction for branch appointments.**
+
+The headline finding from our scan: ASB scores 0/F on
+agent-readiness. So does every other Hawaii bank. So does
+every Hawaii hotel we scanned, including the ones at 90/A on
+citation. The agent-readiness moat is wide open.
+
+Not blocking the citation work — these are stacked layers,
+not alternatives. We deploy citation schema first (Phase 1),
+agent-readiness schema second (Phase 2, ~30 days later). Both
+ride the same snippet.
 
 ---
 
