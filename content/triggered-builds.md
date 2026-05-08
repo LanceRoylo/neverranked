@@ -36,11 +36,11 @@ Never deploys.
 - **Effort:** 4 hours
 - **Why gated:** Marketing site routing pattern needs to be decided first (currently flat directory of HTML files; /standards/ would be a new pattern)
 
-### State of AEO 2026 — Hawaii edition
-- **Trigger:** 6+ Hawaii audits in `audits/` AND 4+ Hawaii leaderboards published (community banking already shipped)
-- **What to build:** Full PDF report aggregating all Hawaii vertical scan data. Distribution percentiles per vertical. Schema coverage trend lines. Engine-by-engine citation share averages. Becomes the canonical reference. Submitted to PRWeb + sent to local press.
-- **Effort:** 2 weeks
-- **Why gated:** Need a credible sample size of audits across 4+ verticals before the report has substance.
+### State of AEO 2026 — Hawaii edition: PUBLICATION
+- **Trigger:** ASB meeting concludes + sample size grows to 12+ Hawaii sites across 4+ verticals
+- **What to build:** Promote the existing draft at `reports/state-of-aeo-hawaii-2026/` from "working draft" to "v1 published". Submit to PRWeb. Send to Star-Advertiser, Pacific Business News, Honolulu Civil Beat, Hawaii Business Magazine. Add a public landing page at neverranked.com/reports/state-of-aeo-hawaii-2026 with download link.
+- **Effort:** 1 day for distribution work; sample-size expansion is ongoing audit work
+- **Why gated:** Current sample (n=7) is too small for credible percentile distributions. Want at least 12 across 4 verticals (banking, real estate, hospitality, professional services) before going to press. Also: ASB should see the report before it goes public if they're on it.
 
 ### Per-vertical leaderboard pipeline
 - **Trigger:** First publication of Hawaii community banking leaderboard succeeds AND 3+ requests for similar leaderboards in other verticals

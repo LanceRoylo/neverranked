@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>The State of <em>AEO</em> — 2026 Hawaii Edition</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @page { size: Letter; margin: 0.75in 0.85in; }
+  html, body { margin: 0; padding: 0; background: #fbf8ef; color: var(--text); font-family: var(--body); font-size: 11pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-after: always; }
+  .cover { page-break-after: always; height: 9.4in; display: flex; flex-direction: column; justify-content: space-between; padding: 0.4in 0; box-sizing: border-box; }
+  .cover-mark { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); }
+  .cover-mark .mark-mono { font-family: var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.32em; font-size: 9pt; color: var(--text-mute); margin-left: 1em; font-weight: 500; vertical-align: middle; }
+  .cover-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0.4in 0 0.18in; }
+  .cover-title { font-family: var(--serif); font-weight: 400; font-size: 44pt; line-height: 1.05; letter-spacing: -0.02em; max-width: 6.5in; border: none; padding: 0; margin: 0; }
+  .cover-title em { font-style: italic; color: var(--gold); }
+  .cover-subtitle { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); margin-top: 0.18in; }
+  .cover-meta { font-family: var(--mono); font-size: 9.5pt; color: var(--text-mute); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 0.18in; }
+  .cover-meta strong { color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; font-size: 8pt; display: block; margin-bottom: 0.04in; font-family: var(--label); }
+  .cover-meta-row { display: flex; gap: 0.6in; margin-top: 0.1in; flex-wrap: wrap; }
+  .cover-meta-cell { flex: 1; min-width: 1.6in; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 22pt; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 0.4in; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 0.18in; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 16pt; line-height: 1.2; margin: 0.35in 0 0.15in; letter-spacing: -0.01em; }
+  h2 em { font-style: italic; color: var(--gold); }
+  h3 { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11pt; font-weight: 600; margin: 0.25in 0 0.08in; color: var(--gold); }
+  h4 { font-family: var(--body); font-weight: 600; font-size: 11pt; margin: 0.18in 0 0.06in; }
+  p { margin: 0 0 0.12in; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0.25in 0; }
+  blockquote { border-left: 3px solid var(--gold); padding-left: 0.18in; margin: 0.15in 0; color: var(--text-soft); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 0.15in 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #f3eedd; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9pt; font-weight: 600; color: var(--text-soft); }
+  code { font-family: var(--mono); font-size: 9pt; background: #f3eedd; padding: 1pt 4pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 9pt; background: #f6f1e0; border: 1px solid var(--line-soft); border-radius: 4pt; padding: 10pt 12pt; page-break-inside: avoid; line-height: 1.45; margin: 0.12in 0; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div>
+      <div class="cover-eyebrow">Annual Report</div>
+      <h1 class="cover-title">The State of <em>AEO</em></h1>
+      <div class="cover-subtitle">2026 Hawaii Edition</div>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell"><strong>Publisher</strong>NeverRanked</div>
+      <div class="cover-meta-cell"><strong>Published</strong>2026-05-08</div>
+      <div class="cover-meta-cell"><strong>Author</strong>Lance Roylo</div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="executive-summary">Executive summary</h2>
+<p>Hawaii businesses are not ready for the AI search transition.</p>
+<p>The first thing we did to write this report was scan the public
+websites of seven of the largest Hawaii companies across community
+banking, real estate development, and marketing services. We
+graded each one on its readiness to be cited by the six AI engines
+that now answer most informational queries: ChatGPT, Perplexity,
+Claude, Gemini, Microsoft Copilot, and Google AI Overviews.</p>
+<p>The results are on the next page.</p>
+<p>For now, three findings worth leading with:</p>
+<p><strong>Finding 1: Hawaii community banking is universally underperforming.</strong>
+All four major Hawaii banks (American Savings, First Hawaiian, Bank
+of Hawaii, Central Pacific) scored D or F on AEO readiness. Two of
+the four have zero structured data deployed at all. The category
+leader — American Savings Bank, at 55 — leads by a thin five-point
+margin that any of the other three could erase in a single
+deployment cycle.</p>
+<p><strong>Finding 2: The Hawaii businesses scoring best on AEO are not the
+ones with the biggest brands.</strong> The single highest score in our
+Hawaii sample was MVNP at 80 — a Honolulu marketing agency, not
+a Fortune 500 customer. Ward Village, the Howard Hughes-developed
+master-planned community, scored 70. Drake Real Estate Partners,
+a smaller Honolulu firm, scored 5. AEO readiness correlates
+weakly with business size and strongly with whether anyone on the
+team has prioritized the work.</p>
+<p><strong>Finding 3: A 30 to 40 point lift is available to most Hawaii
+businesses for under 12 hours of front-end engineering.</strong> The
+gaps we identified are the same gaps in 80% of Hawaii sites we
+scan: missing Organization schema, missing WebSite schema, missing
+Open Graph images, missing FAQPage schema on existing FAQ content,
+and zero deployment of the new llms.txt standard. The fixes are
+mechanical. The leadership decision is to prioritize them.</p>
+<p>This report explains what AEO is, why it matters now (not in 2027),
+and what Hawaii businesses can do this quarter to lock in the
+citation surface before the six engines retrain on the next round.</p>
+<hr />
+<h2 id="hawaii-at-a-glance-the-may-2026-leaderboard">Hawaii at a glance — the May 2026 leaderboard</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Business</th>
+<th>AEO Score</th>
+<th>Grade</th>
+<th>Schema Types Deployed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Marketing agency</td>
+<td>MVNP</td>
+<td>80</td>
+<td>B</td>
+<td>Organization, WebSite</td>
+</tr>
+<tr>
+<td>Real estate development</td>
+<td>Ward Village</td>
+<td>70</td>
+<td>C</td>
+<td>WebSite, BreadcrumbList</td>
+</tr>
+<tr>
+<td>Banking</td>
+<td>American Savings Bank</td>
+<td>55</td>
+<td>D</td>
+<td>Organization</td>
+</tr>
+<tr>
+<td>Banking</td>
+<td>Bank of Hawaii</td>
+<td>50</td>
+<td>D</td>
+<td>Organization</td>
+</tr>
+<tr>
+<td>Banking</td>
+<td>First Hawaiian Bank</td>
+<td>45</td>
+<td>D</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Banking</td>
+<td>Central Pacific Bank</td>
+<td>25</td>
+<td>F</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Real estate</td>
+<td>Drake Real Estate Partners</td>
+<td>5</td>
+<td>F</td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sample size:</strong> 7 Hawaii businesses across three verticals.
+<strong>Methodology:</strong> All scores produced via the public scoring engine
+at check.neverranked.com using the methodology documented at
+<a href="https://neverranked.com/leaderboards/methodology">neverranked.com/leaderboards/methodology</a>.
+Independently reproducible — anyone can run the same scan and
+verify the numbers.</p>
+<p><strong>Median Hawaii AEO score across the sample:</strong> 50 (D).
+<strong>Range:</strong> 5 (F) to 80 (B).
+<strong>Percent of sample with zero schema deployed:</strong> 43% (3 of 7).
+<strong>Percent of sample with no Open Graph images:</strong> 71% (5 of 7).</p>
+<hr />
+<h2 id="what-is-answer-engine-optimization">What is Answer Engine Optimization?</h2>
+<p>AEO is the discipline of making a website citable by AI engines.</p>
+<p>Search Engine Optimization, the older discipline most marketers
+still focus their budget on, optimizes for blue-link rankings on
+Google. AEO optimizes for being one of the small handful of sources
+an AI engine cites when answering a customer’s question.</p>
+<p>The two are different problems with different signals and
+different winners. SEO weights backlinks, page speed, and keyword
+matching. AEO weights structured data (Schema.org JSON-LD), social
+preview metadata (Open Graph), llms.txt curation, content depth,
+and citation observation across the engines.</p>
+<p>The shift is not theoretical. As of May 2026:</p>
+<ul>
+<li>ChatGPT serves between 10% and 30% of all category research
+queries depending on vertical, replacing what would have been
+Google searches a year ago</li>
+<li>Perplexity is the default research surface for a generation of
+business buyers under 35</li>
+<li>Google’s own AI Overviews now appear above the blue links on
+60%+ of informational queries</li>
+<li>Claude is the preferred AI assistant inside enterprises with
+Anthropic API access, including most major banks</li>
+<li>Microsoft Copilot is integrated into every modern Office
+deployment, which means it answers questions inside Word, Excel,
+Outlook, and Teams without ever opening a browser</li>
+</ul>
+<p>These six engines now collectively answer the question “what is the
+best X for Y in Z” hundreds of millions of times per day. The
+businesses they cite are the businesses that get the customer.
+The businesses they do not cite are invisible.</p>
+<p>The gap between the two is structural. AEO is the work that closes
+it.</p>
+<hr />
+<h2 id="hawaii-community-banking-deep-dive">Hawaii community banking — deep dive</h2>
+<p>The community banking category in Hawaii consists of four
+institutions of meaningful scale: American Savings Bank, First
+Hawaiian Bank, Bank of Hawaii, and Central Pacific Bank. Together
+they serve essentially 100% of the in-state retail and small
+business banking market.</p>
+<p>We scanned the public websites of all four on May 7, 2026.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bank</th>
+<th>Score</th>
+<th>Grade</th>
+<th>Top finding</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>American Savings Bank</td>
+<td>55</td>
+<td>D</td>
+<td>Has Organization schema. 10,923-word FAQ page sits unstructured.</td>
+</tr>
+<tr>
+<td>Bank of Hawaii</td>
+<td>50</td>
+<td>D</td>
+<td>Has Organization + BankOrCreditUnion. 33% schema coverage. No canonicals.</td>
+</tr>
+<tr>
+<td>First Hawaiian Bank</td>
+<td>45</td>
+<td>D</td>
+<td>Zero structured data. Strong content foundation undermined by missing schema.</td>
+</tr>
+<tr>
+<td>Central Pacific Bank</td>
+<td>25</td>
+<td>F</td>
+<td>Zero structured data. No canonical tags. 8 competing H1s.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-the-leaderboard-tells-us">What the leaderboard tells us</h3>
+<p>The five-point gap between #1 and #3 means three of the four banks
+are tied within statistical noise. ASB’s lead is real but narrow.
+A single deployment cycle could put any of the bottom three in
+first place. The category is wide open.</p>
+<h3 id="what-the-four-banks-share">What the four banks share</h3>
+<ul>
+<li>None of the four have deployed <code>FinancialService</code> schema, which
+is the category-appropriate primary type that AI engines look for
+to disambiguate a community bank from a credit union, broker-
+dealer, or fintech</li>
+<li>None of the four have deployed <code>FAQPage</code> schema, even though
+three of the four have FAQ pages with thousands of words of
+Q&amp;A content sitting in plain HTML</li>
+<li>None of the four have deployed <code>AggregateRating</code> schema, even
+though all four have customer testimonials and review-language
+content visible on multiple pages</li>
+<li>None of the four have published an llms.txt file, which is the
+newest curation signal AI engines like Claude already respect
+preferentially</li>
+</ul>
+<h3 id="what-the-four-banks-differ-on">What the four banks differ on</h3>
+<ul>
+<li>ASB and BOH have basic Organization schema that disambiguates
+the entity. FHB and CPB have nothing. This is the single biggest
+driver of the score gap.</li>
+<li>ASB has the strongest content foundation (averaging 2,400 words
+per page) and the most readable interior pages. CPB has the
+weakest, with eight competing H1 tags on the homepage and 34
+of 56 images missing alt text.</li>
+<li>Ward Village (real estate, not banking) has more deployed
+schema than any of the four banks, despite being a smaller
+organization. Schema deployment correlates with team
+prioritization, not market cap.</li>
+</ul>
+<h3 id="what-the-four-banks-could-do-this-quarter">What the four banks could do this quarter</h3>
+<p>Each of the four banks has between 25 and 35 points of AEO score
+lift available from a single Phase 1 deployment cycle. The work is
+mechanical. The components:</p>
+<ol type="1">
+<li>Deploy <code>Organization</code> and <code>BankOrCreditUnion</code> schema site-wide
+(the two banks that already have it should harden it with
+regulatory disclosures — Member FDIC, Equal Housing Lender,
+NMLS ID)</li>
+<li>Deploy <code>WebSite</code> schema with <code>SearchAction</code> to enable the
+sitelinks search box in Google</li>
+<li>Deploy <code>BreadcrumbList</code> schema on all interior pages</li>
+<li>Deploy <code>FinancialService</code> schema on every product page</li>
+<li>Deploy <code>FAQPage</code> schema on existing FAQ content (this alone
+would lift any of the four into the B/C range)</li>
+<li>Deploy <code>AggregateRating</code> schema on the homepage and product
+pages where review language already exists</li>
+<li>Deploy <code>og:image</code> and <code>og:title</code> meta tags site-wide</li>
+<li>Publish a curated <code>/llms.txt</code> file at the site root</li>
+</ol>
+<p>Total estimated effort for a competent front-end team: 8 to 12
+hours. Total estimated AEO score lift: 25 to 40 points. The first
+bank to ship this work takes the category lead by a margin the
+other three would need a quarter to close.</p>
+<hr />
+<h2 id="hawaii-real-estate-development-deep-dive">Hawaii real estate development — deep dive</h2>
+<p>Real estate scoring in Hawaii is bimodal. Master-planned
+communities backed by national developers (Howard Hughes for Ward
+Village, Hyatt Hotels for some Hawaii hospitality assets) score
+materially higher than independent local firms. The dataset is
+small (n=2) so we present this as a directional finding rather
+than a leaderboard.</p>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>Property</th>
+<th>Score</th>
+<th>Grade</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ward Village</td>
+<td>70</td>
+<td>C</td>
+<td>National developer template, strong baseline</td>
+</tr>
+<tr>
+<td>Drake Real Estate Partners</td>
+<td>5</td>
+<td>F</td>
+<td>Independent local firm, no AEO foundation</td>
+</tr>
+</tbody>
+</table>
+<p>The 65-point gap is not about brand. It is about deployment. Ward
+Village inherits a schema baseline because Howard Hughes ships a
+template across all their developments. Drake’s site is on a
+generic template that has no schema deployed at all.</p>
+<p>The lift available to a Drake-tier firm is the largest in the
+sample. From 5 (F) to 50 (D) is achievable in one cycle. From 50
+to 70 (matching Ward Village) is another two cycles.</p>
+<hr />
+<h2 id="marketing-services-the-unexpected-leader">Marketing services — the unexpected leader</h2>
+<p>MVNP, a Honolulu marketing agency, scored 80 — the highest in our
+Hawaii sample.</p>
+<p>This is interesting for two reasons:</p>
+<ol type="1">
+<li>MVNP is materially smaller than any of the four banks but
+their AEO surface is sharper. They have Organization and
+WebSite schema, clean canonical tags, and consistent Open
+Graph deployment.</li>
+<li>MVNP serves customers in Hawaii. Any agency-managed customer
+site that inherits MVNP’s deployment patterns starts higher
+than a customer site managed in-house by a bank with a
+larger budget.</li>
+</ol>
+<p>The implication for Hawaii businesses is that AEO readiness is
+not a function of size or spend. It is a function of whether
+anyone on the team has prioritized the work. Smaller, more agile
+organizations can lap large institutions in a quarter.</p>
+<hr />
+<h2 id="what-this-means-for-hawaii-businesses">What this means for Hawaii businesses</h2>
+<h3 id="if-you-run-a-hawaii-business">If you run a Hawaii business</h3>
+<p>The window to lead in your category is open right now and will not
+stay open. Your competitors who deploy structured data, Open Graph
+metadata, and llms.txt this quarter will be the ones AI engines cite
+in the second half of 2026 when the engines retrain on the new web.</p>
+<p>Three actions, in order:</p>
+<ol type="1">
+<li>Run a free scan at <a href="https://check.neverranked.com">check.neverranked.com</a>
+to see your current AEO score. The scan takes 30 seconds and
+produces a grade against the same methodology used in this
+report.</li>
+<li>Identify the three highest-leverage gaps. For most Hawaii
+businesses these are: Organization schema, FAQPage schema, and
+Open Graph images. Total deployment: under one engineering day.</li>
+<li>Decide whether to deploy and track in-house, deploy via your
+marketing agency, or work with a vendor like NeverRanked that
+does both. The cost of the deployment is not the question. The
+cost of waiting is.</li>
+</ol>
+<h3 id="if-you-are-a-hawaii-agency">If you are a Hawaii agency</h3>
+<p>Your customers’ AEO readiness is your readiness too. The agencies
+that lead Hawaii in AEO over the next 12 months will be the ones
+that brought a structured methodology to their existing book of
+business in 2026. The ones that wait for customers to ask for AEO
+will be the ones losing accounts to competitors who shipped first.</p>
+<p>NeverRanked offers a wholesale partnership program with vertical
+exclusivity for the first agency in each Hawaii category. The
+program is documented in our partner brief.</p>
+<h3 id="if-you-are-a-hawaii-customer-of-one-of-the-businesses-we">If you are a Hawaii customer of one of the businesses we</h3>
+<p>scored</p>
+<p>Your bank, your real estate developer, your agency — these
+businesses are not yet AEO-ready. That does not mean they are bad
+at their job. It means they have not yet adapted to a customer
+acquisition surface that emerged in the last 18 months.</p>
+<p>If you want them to, ask. Customer pressure is the fastest way to
+get an organization to prioritize work that does not show up on
+quarterly P&amp;L statements.</p>
+<hr />
+<h2 id="methodology">Methodology</h2>
+<p>All scores in this report were produced via the public scoring
+engine at <a href="https://check.neverranked.com">check.neverranked.com</a>
+on May 7, 2026. The full scoring rubric is documented at
+<a href="https://neverranked.com/leaderboards/methodology">neverranked.com/leaderboards/methodology</a>.</p>
+<p>The score is a 0-100 weighted composite of:</p>
+<ul>
+<li>Schema coverage (40 points): presence and correctness of
+structured-data types AI engines read when picking sources to
+cite (Organization, WebSite, BreadcrumbList, FAQPage,
+category-appropriate primary type, AggregateRating, Article)</li>
+<li>Social preview readiness (15 points): og:image, og:title,
+og:description site-wide</li>
+<li>Heading and canonical hygiene (15 points): single H1 per page,
+canonical tags, descriptive titles and meta descriptions</li>
+<li>Citation observation (20 points): observed citations across
+the six AI engines on a category-specific prompt set</li>
+<li>Content depth signal (10 points): word count and topical
+organization on the homepage and primary pages</li>
+</ul>
+<p>A type counts as “present” only if the JSON-LD parses, validates
+against schema.org, and contains required properties. Stub schema
+with missing fields scores zero.</p>
+<p>Scores are recomputed weekly. Anyone can independently reproduce
+any score by running the public scan.</p>
+<hr />
+<h2 id="about-this-report">About this report</h2>
+<p>This is the first edition of an annual report published by
+NeverRanked. Future editions will expand the sample size, add
+more verticals, track year-over-year change, and publish
+percentile distributions.</p>
+<p>To submit a Hawaii business for inclusion in the next edition,
+or to dispute any of the scores in this edition, email
+data@neverranked.com or open an issue at
+github.com/lanceroylo/neverranked.</p>
+<p>NeverRanked is the AEO platform that ships the schema, tracks
+the citations, and does the work. Founded in Honolulu in 2026.</p>
+<p><a href="https://neverranked.com">neverranked.com</a></p>
+
+</body>
+</html>
