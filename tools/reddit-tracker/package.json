@@ -1,0 +1,19 @@
+{
+  "name": "@nr/reddit-tracker",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Forward-looking discovery of reddit threads likely to be cited by AI engines for 'best X for Y' queries.",
+  "type": "module",
+  "main": "src/search.mjs",
+  "exports": {
+    ".": "./src/search.mjs",
+    "./score": "./src/score.mjs",
+    "./reddit-api": "./src/reddit-api.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "search": "node ../../scripts/reddit-thread-search.mjs"
+  }
+}
