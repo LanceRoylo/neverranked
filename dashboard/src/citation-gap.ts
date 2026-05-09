@@ -229,3 +229,146 @@ function formatInline(s: string): string {
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
     .replace(/`([^`]+)`/g, '<code style="background:var(--bg-edge);padding:1px 4px;border-radius:2px;font-family:var(--mono);font-size:11px">$1</code>');
 }
+
+// ---------------------------------------------------------------------
+// Auto-roadmap from citation gaps
+//
+// Bridges the citation-gap analyzer to the roadmap_items table: each
+// meaningful gap becomes a roadmap action item with the source brief
+// embedded in the description. Subsequent runs dedupe (no duplicates
+// for an open item) and auto-complete (when the gap closes, mark the
+// item done with completed_by='citation_gap').
+// ---------------------------------------------------------------------
+
+/** Per-source-type title + category mapping. Title is intentionally
+ *  stable so dedup-by-title works across runs. */
+const SOURCE_ROADMAP_TEMPLATES: Record<string, { title: string; category: string }> = {
+  wikipedia:              { title: "Update Wikipedia entity entry",                category: "authority" },
+  tripadvisor:            { title: "Increase TripAdvisor review density",          category: "authority" },
+  "google-maps":          { title: "Complete Google Business Profile",             category: "authority" },
+  yelp:                   { title: "Claim and enrich Yelp listing",                category: "authority" },
+  reddit:                 { title: "Seed reddit recommendation thread",            category: "content" },
+  youtube:                { title: "Build YouTube category presence",              category: "content" },
+  news:                   { title: "Distribute press release",                     category: "authority" },
+  directory:              { title: "Claim directory listing with consistent NAP",  category: "authority" },
+  social:                 { title: "Publish canonical bio on social",              category: "authority" },
+  "review-aggregator":    { title: "Claim review-aggregator listing",              category: "authority" },
+  "industry-publication": { title: "Pitch industry publication coverage",          category: "content" },
+  other:                  { title: "Investigate unclassified citation source",     category: "custom" },
+};
+
+const ROADMAP_REFRESH_SOURCE = "citation_gap";
+
+/** Encode the source domain in the description so we can recover it
+ *  later for auto-completion lookup. The convention is a single line
+ *  prefixed with "[gap-source: <domain>]" at the bottom of the
+ *  description. Stable to parse, ignored visually by the dashboard. */
+function encodeSourceTag(domain: string): string {
+  return `\n\n[gap-source: ${domain}]`;
+}
+
+function extractSourceTag(description: string | null | undefined): string | null {
+  if (!description) return null;
+  const m = description.match(/\[gap-source:\s*([a-z0-9.\-]+)\s*\]/i);
+  return m ? m[1].toLowerCase() : null;
+}
+
+interface GapRoadmapDraft {
+  client_slug: string;
+  title: string;
+  description: string;
+  category: string;
+  refresh_source: string;
+  source_domain: string; // not persisted directly; encoded in description
+}
+
+/** Convert a single gap source into a roadmap item draft. Pure
+ *  function -- no I/O. */
+export function gapToRoadmapItem(slug: string, source: SourceRow): GapRoadmapDraft {
+  const tpl = SOURCE_ROADMAP_TEMPLATES[source.source_type] || SOURCE_ROADMAP_TEMPLATES.other;
+  const evidenceLine = `Cited ${source.total_runs}x across ${source.engines.join(", ")}, named in ${source.client_named_runs} (${Math.round(source.client_named_ratio * 100)}%). Gap score: ${source.gap_score.toFixed(2)}.`;
+  const description = `${evidenceLine}\n\n**Action:** ${source.action}\n\n**Source:** ${source.source_label} (${source.domain})${encodeSourceTag(source.domain)}`;
+  return {
+    client_slug: slug,
+    title: tpl.title,
+    description,
+    category: tpl.category,
+    refresh_source: ROADMAP_REFRESH_SOURCE,
+    source_domain: source.domain,
+  };
+}
+
+/** Sync a client's citation-gap-sourced roadmap items against the
+ *  current gap report:
+ *
+ *    - For each gap source not already represented by an open roadmap
+ *      item, INSERT a new item (refresh_source = 'citation_gap').
+ *    - For each existing citation-gap-sourced open item whose source
+ *      domain is no longer in the current gap set, mark it done with
+ *      completed_by = 'citation_gap'.
+ *
+ *  Returns counts for logging. Idempotent: running twice in quick
+ *  succession produces zero churn.
+ */
+export async function syncRoadmapItemsFromGaps(
+  slug: string,
+  clientDomains: string[],
+  env: Env,
+): Promise<{ inserted: number; resolved: number }> {
+  const report = await buildCitationGapReport(slug, clientDomains, env, 90);
+  if (!report) return { inserted: 0, resolved: 0 };
+
+  // Current open roadmap items sourced from citation-gap.
+  const openItems = (await env.DB.prepare(
+    `SELECT id, title, description FROM roadmap_items
+     WHERE client_slug = ? AND status != 'done' AND refresh_source = ?`
+  ).bind(slug, ROADMAP_REFRESH_SOURCE).all<{ id: number; title: string; description: string }>()).results;
+
+  // Map open items by their encoded source domain for fast lookup.
+  const openByDomain = new Map<string, { id: number; title: string }>();
+  for (const it of openItems) {
+    const dom = extractSourceTag(it.description);
+    if (dom) openByDomain.set(dom, { id: it.id, title: it.title });
+  }
+
+  // Domains present in the current gap report.
+  const gapDomains = new Set(report.sources_with_gap.map((s) => s.domain));
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // INSERT new items for any gap source not already represented.
+  const drafts = report.sources_with_gap
+    .filter((s) => !openByDomain.has(s.domain))
+    .map((s) => gapToRoadmapItem(slug, s));
+
+  if (drafts.length > 0) {
+    const insertStmts = drafts.map((d) =>
+      env.DB.prepare(
+        `INSERT INTO roadmap_items
+         (client_slug, title, description, category, status, sort_order, created_at, updated_at, refresh_source)
+         VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, ?)`
+      ).bind(d.client_slug, d.title, d.description, d.category, now, now, d.refresh_source)
+    );
+    await env.DB.batch(insertStmts);
+  }
+
+  // RESOLVE: any open citation-gap item whose source is no longer in
+  // the current gap set means the underlying gap closed. Mark done.
+  const toResolve: { id: number; title: string }[] = [];
+  for (const [domain, info] of openByDomain.entries()) {
+    if (!gapDomains.has(domain)) toResolve.push(info);
+  }
+
+  if (toResolve.length > 0) {
+    const updateStmts = toResolve.map((t) =>
+      env.DB.prepare(
+        `UPDATE roadmap_items SET status = 'done', completed_at = ?, updated_at = ?,
+         completed_by = ? WHERE id = ?`
+      ).bind(now, now, ROADMAP_REFRESH_SOURCE, t.id)
+    );
+    await env.DB.batch(updateStmts);
+  }
+
+  return { inserted: drafts.length, resolved: toResolve.length };
+}
+

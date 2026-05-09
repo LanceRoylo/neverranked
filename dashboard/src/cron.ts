@@ -476,6 +476,19 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // sweep self-throttles (only runs the expensive drift detection
   // on clients past the 90-day threshold).
   await runQuarterlyRoadmapRefreshSweep(env);
+  // Citation-gap roadmap sync: auto-create roadmap items from sources
+  // AI engines cite for the client's category but don't name the
+  // client in. Closes those items when the gap closes (client appears
+  // in subsequent citation_runs). Fires daily because it's idempotent
+  // and picks up gap-closures faster than weekly. Cheap query --
+  // only fires the analyzer when citation_runs has fresh data.
+  try {
+    const { runCitationGapRoadmapSync } = await import("./cron-citation-gap");
+    const r = await runCitationGapRoadmapSync(env);
+    console.log(`[cron] citation-gap roadmap sync: ${r.inserted} new items, ${r.resolved} resolved across ${r.clients} clients`);
+  } catch (e) {
+    console.log(`[cron] citation-gap roadmap sync failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
   // Phase 6A: Recompute industry benchmark percentiles from latest
   // scan + citation_snapshot per tagged client. Industries with n<5
   // are skipped (their stale rows are deleted to avoid the dashboard

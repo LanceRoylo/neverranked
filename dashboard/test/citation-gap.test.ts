@@ -13,7 +13,7 @@
 
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { mdLiteToHtml, renderCitationGapPanel } from "../src/citation-gap.ts";
+import { mdLiteToHtml, renderCitationGapPanel, gapToRoadmapItem } from "../src/citation-gap.ts";
 
 // ---------------------------------------------------------------------
 // mdLiteToHtml
@@ -243,8 +243,88 @@ test("renderCitationGapPanel respects briefLimit option", () => {
   }));
   const r = mkReport({ sources_with_gap: fiveGaps });
   const limited = renderCitationGapPanel(r, { briefLimit: 2 });
-  // briefLimit caps the number of <details> brief blocks; the full
+  // briefLimit caps the number of <details> brief blocks. The full
   // table still includes everything.
   const briefMatches = limited.match(/cited \d+x/g) || [];
   assert.equal(briefMatches.length, 2);
+});
+
+// ---------------------------------------------------------------------
+// gapToRoadmapItem -- pure mapping from gap source to roadmap draft
+// ---------------------------------------------------------------------
+
+const mkSource = (overrides: any = {}) => ({
+  domain: "en.wikipedia.org",
+  source_type: "wikipedia",
+  source_label: "Wikipedia",
+  action: "Audit and update Wikipedia entry",
+  total_runs: 5,
+  unique_urls: 5,
+  engines: ["openai", "perplexity"],
+  keywords: ["best widget"],
+  client_named_runs: 0,
+  client_named_ratio: 0,
+  is_client_owned: false,
+  gap_score: 0.9,
+  example_urls: ["https://en.wikipedia.org/wiki/X"],
+  ...overrides,
+});
+
+test("gapToRoadmapItem maps each canonical source type to a stable title", () => {
+  const expectedTitles: Record<string, string> = {
+    wikipedia: "Update Wikipedia entity entry",
+    tripadvisor: "Increase TripAdvisor review density",
+    "google-maps": "Complete Google Business Profile",
+    yelp: "Claim and enrich Yelp listing",
+    reddit: "Seed reddit recommendation thread",
+    youtube: "Build YouTube category presence",
+    news: "Distribute press release",
+    directory: "Claim directory listing with consistent NAP",
+    social: "Publish canonical bio on social",
+    "review-aggregator": "Claim review-aggregator listing",
+    "industry-publication": "Pitch industry publication coverage",
+  };
+  for (const [type, expected] of Object.entries(expectedTitles)) {
+    const draft = gapToRoadmapItem("test-client", mkSource({ source_type: type }));
+    assert.equal(draft.title, expected, `wrong title for ${type}`);
+  }
+});
+
+test("gapToRoadmapItem assigns a category per source type", () => {
+  const wiki = gapToRoadmapItem("c", mkSource({ source_type: "wikipedia" }));
+  assert.equal(wiki.category, "authority");
+  const reddit = gapToRoadmapItem("c", mkSource({ source_type: "reddit" }));
+  assert.equal(reddit.category, "content");
+  const unknown = gapToRoadmapItem("c", mkSource({ source_type: "unknown-type" }));
+  assert.equal(unknown.category, "custom");
+});
+
+test("gapToRoadmapItem encodes the source domain in the description for round-trip", () => {
+  const draft = gapToRoadmapItem("test-client", mkSource({ domain: "en.wikipedia.org" }));
+  assert.match(draft.description, /\[gap-source: en\.wikipedia\.org\]/);
+});
+
+test("gapToRoadmapItem includes evidence in the description (engines, runs, gap score)", () => {
+  const draft = gapToRoadmapItem("test-client", mkSource({
+    total_runs: 12,
+    engines: ["openai", "perplexity", "gemini"],
+    client_named_runs: 0,
+    client_named_ratio: 0,
+    gap_score: 0.9,
+  }));
+  assert.match(draft.description, /Cited 12x/);
+  assert.match(draft.description, /openai, perplexity, gemini/);
+  assert.match(draft.description, /named in 0/);
+  assert.match(draft.description, /Gap score: 0\.90/);
+});
+
+test("gapToRoadmapItem stamps refresh_source = 'citation_gap'", () => {
+  const draft = gapToRoadmapItem("test-client", mkSource());
+  assert.equal(draft.refresh_source, "citation_gap");
+});
+
+test("gapToRoadmapItem falls through to 'other' template for unrecognized source types", () => {
+  const draft = gapToRoadmapItem("test-client", mkSource({ source_type: "definitely-not-real" }));
+  assert.equal(draft.title, "Investigate unclassified citation source");
+  assert.equal(draft.category, "custom");
 });
