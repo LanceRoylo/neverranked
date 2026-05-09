@@ -259,18 +259,14 @@ const SOURCE_ROADMAP_TEMPLATES: Record<string, { title: string; category: string
 
 const ROADMAP_REFRESH_SOURCE = "citation_gap";
 
-/** Encode the source domain in the description so we can recover it
- *  later for auto-completion lookup. The convention is a single line
- *  prefixed with "[gap-source: <domain>]" at the bottom of the
- *  description. Stable to parse, ignored visually by the dashboard. */
+/** Encode the source domain in the description as a human-visible
+ *  audit-trail line. The dedup + auto-resolve lookup uses the
+ *  dedicated source_domain column on roadmap_items (migration 0071),
+ *  not this tag. Tag is kept in description so practitioners reading
+ *  the roadmap can see at a glance which citation gap drove the item.
+ */
 function encodeSourceTag(domain: string): string {
   return `\n\n[gap-source: ${domain}]`;
-}
-
-function extractSourceTag(description: string | null | undefined): string | null {
-  if (!description) return null;
-  const m = description.match(/\[gap-source:\s*([a-z0-9.\-]+)\s*\]/i);
-  return m ? m[1].toLowerCase() : null;
 }
 
 interface GapRoadmapDraft {
@@ -318,17 +314,19 @@ export async function syncRoadmapItemsFromGaps(
   const report = await buildCitationGapReport(slug, clientDomains, env, 90);
   if (!report) return { inserted: 0, resolved: 0 };
 
-  // Current open roadmap items sourced from citation-gap.
+  // Current open roadmap items sourced from citation-gap. Uses the
+  // dedicated source_domain column (migration 0071) so the dedup +
+  // auto-resolve lookup is robust against any user edit to the
+  // description field.
   const openItems = (await env.DB.prepare(
-    `SELECT id, title, description FROM roadmap_items
-     WHERE client_slug = ? AND status != 'done' AND refresh_source = ?`
-  ).bind(slug, ROADMAP_REFRESH_SOURCE).all<{ id: number; title: string; description: string }>()).results;
+    `SELECT id, title, source_domain FROM roadmap_items
+     WHERE client_slug = ? AND status != 'done' AND refresh_source = ? AND source_domain IS NOT NULL`
+  ).bind(slug, ROADMAP_REFRESH_SOURCE).all<{ id: number; title: string; source_domain: string }>()).results;
 
-  // Map open items by their encoded source domain for fast lookup.
+  // Map open items by source_domain for fast lookup.
   const openByDomain = new Map<string, { id: number; title: string }>();
   for (const it of openItems) {
-    const dom = extractSourceTag(it.description);
-    if (dom) openByDomain.set(dom, { id: it.id, title: it.title });
+    if (it.source_domain) openByDomain.set(it.source_domain, { id: it.id, title: it.title });
   }
 
   // Domains present in the current gap report.
@@ -345,9 +343,9 @@ export async function syncRoadmapItemsFromGaps(
     const insertStmts = drafts.map((d) =>
       env.DB.prepare(
         `INSERT INTO roadmap_items
-         (client_slug, title, description, category, status, sort_order, created_at, updated_at, refresh_source)
-         VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, ?)`
-      ).bind(d.client_slug, d.title, d.description, d.category, now, now, d.refresh_source)
+         (client_slug, title, description, category, status, sort_order, created_at, updated_at, refresh_source, source_domain)
+         VALUES (?, ?, ?, ?, 'pending', 0, ?, ?, ?, ?)`
+      ).bind(d.client_slug, d.title, d.description, d.category, now, now, d.refresh_source, d.source_domain)
     );
     await env.DB.batch(insertStmts);
   }
