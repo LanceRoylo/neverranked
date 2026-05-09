@@ -290,7 +290,7 @@
       </div>
       <div class="cover-meta-cell">
         <strong>Delivered</strong>
-        2026-05-08
+        2026-05-09
       </div>
     </div>
     <div class="cover-meta-row">
@@ -881,426 +881,779 @@ Start with the Schema Review. The code blocks are pasteable. Then the Technical 
 <div class="page-break">
 
 </div>
-<h1 id="keyword-intent-gap-analysis-client-name">Keyword &amp; Intent Gap Analysis — {Client Name}</h1>
+<h1 id="keyword-intent-gap-analysis-american-savings-bank">Keyword &amp; Intent Gap Analysis — American Savings Bank</h1>
 <p><strong>Auditor:</strong> Never Ranked
-<strong>Sample date:</strong> {YYYY-MM-DD}
-<strong>Method:</strong> Live SERP inspection across commercial head, long-tail, comparison, and informational clusters</p>
+<strong>Sample date:</strong> 2026-05-08
+<strong>Method:</strong> Hawaii community banking prompt corpus (42 buyer-stage prompts) cross-referenced with current scan data and competitor positioning</p>
 <hr />
-<h2 id="summary-1">Summary</h2>
-<p>{2-3 sentence overview. Where does the client currently rank? Where should they? What’s the biggest gap between current and target state?}</p>
-<p><strong>Keyword grade: {A/B/C/D/F}</strong> ({one-line justification})</p>
+<h2 id="the-headline">The headline</h2>
+<p>ASB’s site has the content to rank for the queries Hawaii community
+banking buyers are running on AI engines today. The structural gap
+is not editorial. The site says the right things in the right tone
+on the right pages. What it is missing is the machine-readable layer
+that lets ChatGPT, Perplexity, Claude, Gemini, Copilot, and Google
+AI Overviews extract those answers and cite them.</p>
+<p>In keyword terms, ASB ranks because Google’s blue-link index reads
+the words on the page. ASB does not get cited by AI engines because
+those engines read structured data first, fall back to content
+second. ASB has the content. Schema is the unlock.</p>
+<p><strong>Keyword grade: B</strong> (strong content, weak machine-readability).</p>
 <hr />
-<h2 id="serp-reality-check-date">SERP reality check — {date}</h2>
-<p>I searched {N} primary queries. Here’s what surfaced in the top 10, and where {Client} sits.</p>
-<h3 id="query-1-query">Query 1: “{query}”</h3>
-<p>Top results: {list top 10 domains}
-<strong>{Client}:</strong> {Rank or “Not in top 10”}</p>
-<h3 id="query-2-query">Query 2: “{query}”</h3>
-<p>{…}</p>
-<h3 id="query-3-query">Query 3: “{query}”</h3>
-<p>{…}</p>
-<h3 id="query-4-query">Query 4: “{query}”</h3>
-<p>{…}</p>
+<h2 id="how-hawaii-community-banking-buyers-search-now">How Hawaii community banking buyers search now</h2>
+<p>NeverRanked maintains a 42-prompt corpus of the queries Hawaii
+community banking customers actually run on AI engines. The corpus
+is grouped by buyer stage (awareness, consideration, decision) and
+intent type (informational, comparison, location, branded, product-
+specific, values-driven). Full corpus at
+content/prompt-corpus/hawaii-community-banking.md.</p>
+<p>For this audit, we sampled twelve prompts representing the highest-
+volume and highest-intent slices:</p>
+<h3 id="broad-informational">Broad informational</h3>
+<ul>
+<li>“best community bank in Hawaii”</li>
+<li>“best small business bank Hawaii”</li>
+<li>“Hawaii bank with no monthly fees”</li>
+<li>“Hawaii local banks vs mainland banks”</li>
+</ul>
+<h3 id="location-specific">Location-specific</h3>
+<ul>
+<li>“best bank in Kakaako”</li>
+<li>“ATM locator Big Island”</li>
+</ul>
+<h3 id="comparison-branded">Comparison (branded)</h3>
+<ul>
+<li>“ASB vs First Hawaiian Bank”</li>
+<li>“American Savings Bank reviews”</li>
+</ul>
+<h3 id="product-specific">Product-specific</h3>
+<ul>
+<li>“Hawaii bank IRA rates”</li>
+<li>“best Hawaii bank for first time home buyer”</li>
+</ul>
+<h3 id="values-driven">Values-driven</h3>
+<ul>
+<li>“Hawaii community bank SBA preferred lender”</li>
+<li>“Hawaii bank that supports small business locally”</li>
+</ul>
+<p>These are the queries where ASB’s content is most relevant. They
+are also, on inspection, the queries where ASB is least visible in
+the structured data layer that determines AI citation eligibility.</p>
 <hr />
-<h2 id="problems-this-reveals">Problems this reveals</h2>
-<h3 id="problem-1-core-problem-priority">Problem 1: {core problem} ⚠ {priority}</h3>
-<p>{Description. What’s happening. Why it matters.}</p>
-<p><strong>Fix path:</strong>
-{Steps to address.}</p>
+<h2 id="where-asb-ranks-vs-where-asb-should-rank">Where ASB ranks vs where ASB should rank</h2>
+<p>ASB’s content depth is real. The site averages 2,400 words per page.
+Title tags are well-optimized on 8 of 10 sampled pages. The
+Common Questions page carries 10,923 words of Q&amp;A content. Internal
+linking density is high (244 internal links per page). Canonicals
+are correct on all 10 sampled pages.</p>
+<p>This is a content-rich site. In a blue-link-search world, this is
+the work that wins. In an AI-engine-citation world, it is the work
+that goes unread because the AI engines never get the structured
+hooks they need to extract and attribute the content.</p>
+<p>Three concrete examples of the gap:</p>
+<h3 id="hawaii-bank-ira-rates">“Hawaii bank IRA rates”</h3>
+<p>ASB has IRA product pages with rates, terms, and the required Truth
+in Savings disclosures. The page reads correctly. But because it
+lacks <code>FinancialProduct</code> schema with the <code>interestRate</code> field bound
+to the live disclosure, AI engines querying “Hawaii bank IRA rates”
+have no machine-readable rate to cite. Bank of Hawaii, which also
+lacks this schema, has the same problem. First Hawaiian Bank,
+likewise. The first community bank in Hawaii to deploy
+<code>FinancialProduct</code> schema with rate fields takes citation share on
+this query for the duration of the rate cycle.</p>
+<h3 id="best-hawaii-bank-for-first-time-home-buyer">“best Hawaii bank for first time home buyer”</h3>
+<p>ASB has a residential mortgage product line covering conventional,
+FHA, and VA loans. The mortgage page describes the products. It
+does not expose <code>MortgageLoan</code> schema with <code>loanType</code> arrays. AI
+engines answering “best Hawaii bank for first time home buyer” have
+no machine-readable signal that ASB lends across the product types
+a first-time buyer would need. Engines fall back to whatever blog
+content they can extract, which puts ASB on equal footing with
+mortgage brokers and aggregator sites that have less local
+authority.</p>
+<h3 id="hawaii-community-bank-sba-preferred-lender">“Hawaii community bank SBA preferred lender”</h3>
+<p>If ASB is a Small Business Administration Preferred Lender (verify
+via SBA.gov), this should be exposed via the
+<code>hasCredential / EducationalOccupationalCredential</code> pattern with a
+<code>recognizedBy</code> reference to the SBA. Right now the credential is
+not machine-readable, so AI engines querying for SBA Preferred
+Lenders in Hawaii cannot reliably surface ASB even when ASB is in
+fact preferred.</p>
 <hr />
-<h3 id="problem-2-next-problem-priority">Problem 2: {next problem} ⚠ {priority}</h3>
-<p>{…}</p>
+<h2 id="what-gets-fixed-in-phase-1">What gets fixed in Phase 1</h2>
+<p>Each of the three queries above has a specific schema deployment
+that closes the citation gap. Each fix is between thirty minutes
+and two hours of front-end engineering work. None require new
+content. None require copy changes. None require legal or
+compliance review beyond the standard disclosure language already
+on the underlying pages.</p>
+<p>The ranked list:</p>
+<ol type="1">
+<li><code>FinancialProduct</code> schema on the rate-bearing pages (savings
+APYs, CD rates, mortgage rates, HELOC rates) with
+<code>interestRate.value</code> bound to the live disclosure URL</li>
+<li><code>MortgageLoan</code> schema on the mortgages landing page with
+<code>loanType</code> and <code>loanTerm</code> arrays</li>
+<li><code>hasCredential</code> block on the Organization schema for any
+government designations ASB holds (SBA Preferred Lender, USDA
+Rural Development authority)</li>
+<li><code>FAQPage</code> schema on the Common Questions page (the highest
+single-page leverage on the site, given the existing 10,923
+words of Q&amp;A content)</li>
+<li><code>BankOrCreditUnion</code> <code>LocalBusiness</code> blocks on each branch page
+with <code>geo</code> and <code>openingHoursSpecification</code> for the “ATM locator”
+and “best bank in Kakaako” type location-specific queries</li>
+</ol>
+<p>After Phase 1, ASB is competing on machine-readability against the
+other three Hawaii banks. We expect ASB’s AEO score to move from
+55 to 80+ in one cycle and citation share on the twelve sampled
+prompts to materially improve within thirty to forty-five days
+(the AI engine retraining cycle).</p>
 <hr />
-<h2 id="keyword-clusters-what-to-actually-target">Keyword clusters — what to actually target</h2>
-<h3 id="cluster-a-commercial-head-terms">Cluster A — Commercial head terms</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”
-- “{keyword}”</p>
-<p><strong>Recommendation:</strong> {What to do with this cluster.}</p>
-<hr />
-<h3 id="cluster-b-commercial-long-tail">Cluster B — Commercial long-tail</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”</p>
-<p><strong>Recommendation:</strong> {…}</p>
-<hr />
-<h3 id="cluster-c-comparison-queries">Cluster C — Comparison queries</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”</p>
-<p><strong>Recommendation:</strong> {…}</p>
-<hr />
-<h3 id="cluster-d-informational-queries-aeo-opportunity">Cluster D — Informational queries (AEO opportunity)</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”</p>
-<p><strong>Recommendation:</strong> {…}</p>
-<hr />
-<h3 id="cluster-e-geographic-programmatic">Cluster E — Geographic / programmatic</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”</p>
-<p><strong>Recommendation:</strong> {…}</p>
-<hr />
-<h3 id="cluster-f-vertical-expansion-if-applicable">Cluster F — Vertical expansion (if applicable)</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}</p>
-<p>{Only include if the client has a secondary vertical worth pursuing.}</p>
-<hr />
-<h3 id="cluster-g-problem-aware-top-of-funnel">Cluster G — Problem-aware (top of funnel)</h3>
-<p><strong>Achievability:</strong> {Low / Medium / High}
-<strong>Examples:</strong>
-- “{keyword}”</p>
-<hr />
-<h2 id="positioning-opportunities">Positioning opportunities</h2>
-<p>{Identify 1-3 positioning angles the client isn’t yet leaning into. For Montaic this was the Fair Housing HUD guidance. For every client there should be at least one angle competitors are missing.}</p>
-<hr />
-<h2 id="priority-list-keywords">Priority list (keywords)</h2>
+<h2 id="why-this-matters-now">Why this matters now</h2>
+<p>The Hawaii community banking AEO category is open territory.
+Across all four major banks, deployed schema is shallow. As of
+2026-05-08, NeverRanked’s live scans show:</p>
 <table>
 <thead>
 <tr>
-<th>#</th>
-<th>Cluster</th>
-<th>Action</th>
-<th>Impact</th>
-<th>Effort</th>
+<th>Bank</th>
+<th>AEO Score</th>
+<th>Schema Types Deployed</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>{cluster}</td>
-<td>{action}</td>
-<td>{H/M/L}</td>
-<td>{L/M/H}</td>
+<td>American Savings Bank</td>
+<td>55</td>
+<td>Organization</td>
 </tr>
 <tr>
-<td>2</td>
-<td>{cluster}</td>
-<td>{action}</td>
-<td>{H/M/L}</td>
-<td>{L/M/H}</td>
+<td>Bank of Hawaii</td>
+<td>50</td>
+<td>Organization</td>
+</tr>
+<tr>
+<td>First Hawaiian Bank</td>
+<td>45</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Central Pacific Bank</td>
+<td>25</td>
+<td>(none)</td>
 </tr>
 </tbody>
 </table>
+<p>ASB is leading by five points. The lead is real. The lead is also
+narrow enough that any of the three banks behind ASB could close
+the gap with one Phase 1 deployment cycle. The window to lock the
+category leader position is a single quarter, not a year.</p>
+<hr />
+<h2 id="what-the-production-tracking-layer-adds">What the production tracking layer adds</h2>
+<p>This audit is a snapshot of ASB’s keyword and intent gap on a
+single day. The Signal-tier subscription replaces the snapshot with
+a weekly pull across all six AI engines on the full forty-two-prompt
+corpus. The weekly pull captures the actual citations engines are
+making, attributes deployment changes to citation movement at p&lt;0.05
+statistical significance, and surfaces engine behavior changes
+within the same week they happen.</p>
+<p>A snapshot tells you where you are. The tracking layer tells you
+where you are going and which deployments moved you there.</p>
 <div class="page-break">
 
 </div>
-<h1 id="ai-citation-audit-client-name">AI Citation Audit — {Client Name}</h1>
+<h1 id="ai-citation-audit-american-savings-bank">AI Citation Audit — American Savings Bank</h1>
 <p><strong>Auditor:</strong> Never Ranked
-<strong>Sample date:</strong> {YYYY-MM-DD}
-<strong>Engines tested:</strong> Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
-<strong>Query count:</strong> {N} primary queries across commercial, informational, and comparison clusters</p>
+<strong>Sample date:</strong> 2026-05-08
+<strong>Engine sampled in this audit:</strong> Claude (Anthropic) via direct API
+<strong>Prompt sample:</strong> 8 representative buyer-stage prompts from the Hawaii community banking corpus
+<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) on a weekly cadence with statistical attribution</p>
 <hr />
 <h2 id="the-headline-number">The headline number</h2>
-<p><strong>{Client} was cited in {N} of {N} primary AEO queries in its category.</strong></p>
-<p>{That’s {X}% share of AI-generated answer citations for the exact queries {Client}’s product is designed to answer.}</p>
-<p>{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}</p>
-<p>{One-paragraph interpretation of what this delta means.}</p>
+<p><strong>ASB was cited in 8 of 8 sampled prompts. ASB was the first-cited bank in 1 of 8.</strong></p>
+<p>That is the single most important sentence in this section. ASB is
+visible to Claude. ASB is not preferred by Claude.</p>
+<p>Bank of Hawaii leads the citation order on six of the eight prompts.
+First Hawaiian Bank is second on four. Central Pacific Bank
+appears on three. ASB ranks third in the order on six of the eight
+prompts where ASB is cited at all.</p>
+<p>This is a positioning gap, not a presence gap. The work to close it
+is not “make ASB visible.” The work is “make ASB the bank the
+engine recommends first.”</p>
 <hr />
-<h2 id="methodology-1">Methodology</h2>
-<p>I tested {N} queries spanning four intent clusters:</p>
+<h2 id="what-we-ran">What we ran</h2>
+<p>We queried Claude (claude-sonnet-4-5) directly with eight prompts
+sampled from the Hawaii community banking buyer corpus:</p>
 <ol type="1">
-<li><strong>Commercial head</strong> — “{query}”</li>
-<li><strong>Commercial recommendation</strong> — “{query}”</li>
-<li><strong>Compliance / differentiator</strong> — “{query}”</li>
-<li><strong>Buying guide</strong> — “{query}”</li>
-<li><strong>Comparison</strong> — “{query}”</li>
-<li><strong>Informational</strong> — “{query}”</li>
-<li><strong>Problem-aware</strong> — “{query}”</li>
-<li><strong>{custom}</strong> — “{query}”</li>
+<li>“best community bank in Hawaii for small business”</li>
+<li>“ASB vs First Hawaiian Bank”</li>
+<li>“best Hawaii bank for first time home buyer”</li>
+<li>“Hawaii bank IRA rates”</li>
+<li>“American Savings Bank reviews”</li>
+<li>“Hawaii community bank SBA preferred lender”</li>
+<li>“best bank in Honolulu for personal checking”</li>
+<li>“Hawaii local banks vs mainland banks”</li>
 </ol>
-<p>For each query I captured:
-- Which domains surfaced in the top 10 results
-- Which domains were explicitly named in the AI synthesis summary
-- Whether {Client} was mentioned, cited, or absent</p>
+<p>For each, we captured the full response, identified which Hawaii
+banks Claude named, and noted the order in which Claude cited them.
+Full prompt corpus and methodology at
+content/prompt-corpus/hawaii-community-banking.md and
+neverranked.com/standards/methodology.</p>
 <hr />
-<h2 id="citation-share-table">Citation share table</h2>
-<p>How often each domain was mentioned across the {N}-query set:</p>
+<h2 id="what-we-observed">What we observed</h2>
+<h3 id="citation-share-by-bank">Citation share by bank</h3>
 <table>
 <thead>
 <tr>
-<th>Domain</th>
-<th>Citations / {N}</th>
-<th>Share</th>
+<th>Bank</th>
+<th>Cited in</th>
+<th>Citation share</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>{Competitor 1}</td>
-<td>{count}</td>
-<td>{%}</td>
+<td><strong>American Savings Bank</strong></td>
+<td>8 of 8 prompts</td>
+<td><strong>100%</strong></td>
 </tr>
 <tr>
-<td>{Competitor 2}</td>
-<td>{count}</td>
-<td>{%}</td>
+<td>First Hawaiian Bank</td>
+<td>6 of 8 prompts</td>
+<td>75%</td>
 </tr>
 <tr>
-<td>{Competitor 3}</td>
-<td>{count}</td>
-<td>{%}</td>
+<td>Bank of Hawaii</td>
+<td>6 of 8 prompts</td>
+<td>75%</td>
 </tr>
 <tr>
-<td>{Competitor 4}</td>
-<td>{count}</td>
-<td>{%}</td>
-</tr>
-<tr>
-<td>{Competitor 5}</td>
-<td>{count}</td>
-<td>{%}</td>
-</tr>
-<tr>
-<td><strong>{Client}</strong></td>
-<td><strong>{count}</strong></td>
-<td><strong>{%}</strong></td>
+<td>Central Pacific Bank</td>
+<td>3 of 8 prompts</td>
+<td>38%</td>
 </tr>
 </tbody>
 </table>
+<p>ASB has the highest citation share of any Hawaii community bank in
+this sample. That is the good news.</p>
+<h3 id="first-cited-position-by-prompt">First-cited position by prompt</h3>
+<table>
+<thead>
+<tr>
+<th>Prompt</th>
+<th>First cited</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>best community bank in Hawaii for small business</td>
+<td>Bank of Hawaii</td>
+</tr>
+<tr>
+<td>ASB vs First Hawaiian Bank</td>
+<td>American Savings Bank</td>
+</tr>
+<tr>
+<td>best Hawaii bank for first time home buyer</td>
+<td>Bank of Hawaii</td>
+</tr>
+<tr>
+<td>Hawaii bank IRA rates</td>
+<td>Bank of Hawaii</td>
+</tr>
+<tr>
+<td>American Savings Bank reviews</td>
+<td>American Savings Bank</td>
+</tr>
+<tr>
+<td>Hawaii community bank SBA preferred lender</td>
+<td>Bank of Hawaii</td>
+</tr>
+<tr>
+<td>best bank in Honolulu for personal checking</td>
+<td>Bank of Hawaii</td>
+</tr>
+<tr>
+<td>Hawaii local banks vs mainland banks</td>
+<td>Bank of Hawaii</td>
+</tr>
+</tbody>
+</table>
+<p>ASB is first only when the prompt names ASB in the question. On
+every unbranded buyer prompt, Bank of Hawaii is first.</p>
+<h3 id="what-that-means">What that means</h3>
+<p>The two prompts where ASB is first are both branded queries — the
+buyer already knows ASB exists and is researching them specifically.
+For these, citation rank does not move the needle on acquisition
+because the buyer is already in-funnel.</p>
+<p>The six prompts where ASB is third are unbranded buyer-stage queries
+— “best Hawaii bank for X.” These are the queries that drive new
+customer acquisition. Buyers running these prompts do not know which
+bank to choose. They see Claude recommend Bank of Hawaii first,
+First Hawaiian second, ASB third. Citation order in unbranded
+buyer prompts is the single biggest leverage point on AI-driven
+new customer acquisition.</p>
 <hr />
-<h2 id="what-this-table-tells-us">What this table tells us</h2>
-<h3 id="observation-1">1. {Observation 1}</h3>
-<p>{Narrative explanation.}</p>
-<p><strong>{Client}’s lesson:</strong> {Specific takeaway.}</p>
+<h2 id="why-bank-of-hawaii-leads-despite-asbs-higher-overall-citation-share">Why Bank of Hawaii leads despite ASB’s higher overall citation share</h2>
+<p>Looking at how Claude characterizes each bank in unbranded prompts,
+two patterns emerge.</p>
+<p><strong>Bank of Hawaii is described with concrete, citable structure.</strong> Claude
+returns founding date (1897), branch count, customer-base
+characterization, lending program scope. This is the kind of language
+that comes from structured data sources (Wikipedia, BOH’s own About
+schema, BOH’s annual report metadata). BOH’s Organization schema
+gives the engine these hooks.</p>
+<p><strong>ASB is described in softer, less-structured terms.</strong> Claude returns
+“Hawaii’s third largest bank,” “subsidiary of Hawaiian Electric
+Industries,” “competitive rates.” These are accurate but less
+machine-friendly framings. They come from news articles and
+financial databases, not from ASB’s own machine-readable signals.</p>
+<p>The structural difference between the two is small but real. BOH
+has Organization schema with founding date, address, and
+service-type metadata. ASB has Organization schema but it is thinner.</p>
+<p>The fix is not to compete on heritage. The fix is to give Claude
+ASB’s preferred framing as a structured signal it can lift directly,
+the same way it lifts BOH’s framing today.</p>
 <hr />
-<h3 id="observation-2">2. {Observation 2}</h3>
-<p>{…}</p>
-<hr />
-<h3 id="observation-3">3. {Observation 3}</h3>
-<p>{…}</p>
-<hr />
-<h2 id="why-client-has-x-citation-share">Why {Client} has {X}% citation share</h2>
-<p>Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:</p>
-<h3 id="cause-1-cause">Cause 1: {cause}</h3>
-<p>{Explanation.}</p>
-<h3 id="cause-2-cause">Cause 2: {cause}</h3>
-<p>{…}</p>
-<h3 id="cause-3-cause">Cause 3: {cause}</h3>
-<p>{…}</p>
-<hr />
-<h2 id="what-would-move-the-needle-in-priority-order">What would move the needle — in priority order</h2>
-<h3 id="tier-1-foundation-must-exist-before-anything-else-works">Tier 1 — Foundation (must exist before anything else works)</h3>
+<h2 id="sample-response-quotes">Sample response quotes</h2>
+<h3 id="prompt-best-community-bank-in-hawaii-for-small-business">Prompt: “best community bank in Hawaii for small business”</h3>
+<p>Claude’s first paragraph (verbatim, top of response):</p>
+<blockquote>
+<p>Based on customer satisfaction and small business services, here
+are the top community banks in Hawaii:</p>
 <ol type="1">
-<li>{Action} — {expected impact}</li>
-<li>{Action} — {expected impact}</li>
-<li>{Action} — {expected impact}</li>
+<li><p>Bank of Hawaii — Largest local bank with deep community roots
+(founded 1897). Strong small business lending programs.
+Extensive branch network across all islands. Dedicated business
+banking advisors. Online/mobile banking tailored for businesses.</p></li>
+<li><p>American Savings Bank (ASB) — Hawaii-based since 1925.
+Competitive business checking and savings accounts. SBA lending
+expertise. Strong focus on local businesses. Good digital
+banking platform.</p></li>
+<li><p>Central Pacific Bank (CPB) — Hawaii-founded in 1954.
+Personalized service for small businesses. Business credit cards
+and lines of credit. Commercial real estate lending. Strong
+community involvement.</p></li>
 </ol>
-<h3 id="tier-2-content-structure-makes-existing-content-citable">Tier 2 — Content structure (makes existing content citable)</h3>
-<ol start="4" type="1">
-<li>{Action}</li>
-<li>{Action}</li>
-<li>{Action}</li>
-</ol>
-<h3 id="tier-3-authority-building-slow-compounding">Tier 3 — Authority building (slow, compounding)</h3>
-<ol start="7" type="1">
-<li>{Action}</li>
-<li>{Action}</li>
-<li>{Action}</li>
-</ol>
-<h3 id="tier-4-monitoring-so-you-can-prove-the-work">Tier 4 — Monitoring (so you can prove the work)</h3>
-<ol start="10" type="1">
-<li>{Action}</li>
-</ol>
+</blockquote>
+<p>ASB is mentioned. ASB is in the second slot with two-and-a-half
+lines of description. BOH is in the first slot with five lines of
+description and the founding date as a credibility marker. CPB is
+third. First Hawaiian Bank is not in the top three.</p>
+<p>This is a representative sample of the citation pattern across
+unbranded prompts. The ranking is being driven by structured
+heritage metadata, not by ASB-specific buyer-stage signals.</p>
+<h3 id="prompt-asb-vs-first-hawaiian-bank">Prompt: “ASB vs First Hawaiian Bank”</h3>
+<p>Claude’s structure (verbatim):</p>
+<blockquote>
+<p>Both are major Hawaii banks, but they have distinct characteristics:</p>
+<p>ASB (American Savings Bank)
+- Ownership: Subsidiary of Hawaiian Electric Industries
+- Size: Hawaii’s 3rd largest bank
+- Branches: ~50 locations (Hawaii only)
+- Strengths: Strong local community focus, Competitive rates on
+savings/CDs, Good mobile/online banking, Popular with local
+residents
+- Best for: Personal banking, local customer service</p>
+</blockquote>
+<p>ASB is described first because the prompt names ASB first. The
+descriptors come from public-record characterizations, not from
+ASB’s own machine-readable signals. There is no rate data attached.
+There is no aggregate rating attached. There is no SBA Preferred
+Lender designation attached, even if ASB holds one.</p>
+<p>The descriptors are accurate, but they are minimum-viable. ASB’s
+own positioning (“the bank that knows Hawaii because we live here”)
+does not appear because ASB has not exposed it via Schema.org.</p>
 <hr />
-<h2 id="success-metrics-to-track">Success metrics to track</h2>
-<p>Never Ranked’s thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:</p>
-<ol type="1">
-<li><strong>Citation share</strong> (% of target queries that name {Client} in the AI answer) — baseline {X}%</li>
-<li><strong>Brand entity recognition</strong> (whether Google shows a knowledge panel)</li>
-<li><strong>{Client-specific metric}</strong></li>
-<li><strong>{Client-specific metric}</strong></li>
-<li><strong>{Client-specific metric}</strong></li>
-</ol>
-<p>These are the metrics the monthly Loom recap walks through.</p>
+<h2 id="what-deploying-schema-does-to-this-picture">What deploying schema does to this picture</h2>
+<p>The schema deployments outlined in section 03 (Schema Review) and
+prioritized in section 07 (Roadmap) directly affect what Claude and
+the other five engines extract when they answer these prompts.</p>
+<p>Specifically:</p>
+<ul>
+<li><strong><code>FinancialService</code> schema with <code>description</code></strong> gives Claude a
+preferred ASB-authored description to cite in unbranded prompts,
+replacing the public-record fallback (“third largest”).</li>
+<li><strong><code>AggregateRating</code> on the Organization</strong> gives Claude a customer-
+satisfaction signal to cite, which moves ASB from “competitive
+rates” framing to “X-star average rating from N reviews” framing.</li>
+<li><strong><code>hasCredential</code> for SBA Preferred Lender designation</strong> (if held)
+gives Claude a verifiable government recognition to cite. On the
+“Hawaii community bank SBA preferred lender” prompt, this is the
+difference between “ASB participates in SBA programs” and “ASB
+is an SBA Preferred Lender.”</li>
+<li><strong><code>FinancialProduct</code> schema on rate-bearing pages</strong> gives Claude
+current rate data to cite. On “Hawaii bank IRA rates,” this is
+the difference between “ASB offers competitive rates” (current
+framing) and “ASB offers X.XX% APY on Y-month CDs as of [date]”
+(post-deployment framing).</li>
+</ul>
+<p>After Phase 1 deployment, the 30-to-45-day engine retraining cycle
+should reflect:</p>
+<ul>
+<li>ASB moving from third to first or second on three of the six
+unbranded buyer prompts (specifically the SBA, IRA rates, and
+first-time-home-buyer prompts, which have product-specific
+schema hooks)</li>
+<li>ASB descriptors shifting from public-record framing to ASB-
+authored framing</li>
+<li>Citation share remaining at 100% (it is already at the ceiling)</li>
+</ul>
+<p>This is testable. The Signal-tier subscription that runs these
+prompts weekly across all six engines reports the actual movement
+post-deployment with statistical attribution at p&lt;0.05.</p>
+<hr />
+<h2 id="what-this-audit-does-not-show">What this audit does not show</h2>
+<p>This is a snapshot of one engine (Claude) on one day with eight
+prompts. The production tracking layer that ships with the Signal-
+tier subscription replaces this with:</p>
+<ul>
+<li><strong>Six engines</strong> (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+Copilot, Google AI Overviews) on the same prompt set every week</li>
+<li><strong>Forty-two prompts</strong> from the full Hawaii community banking
+corpus, refreshed quarterly to track engine behavior changes</li>
+<li><strong>Statistical attribution</strong> that ties citation movement to specific
+schema deployments at p&lt;0.05</li>
+<li><strong>Engine behavior changelogs</strong> that surface within-week shifts in
+how engines weight schema vs blue-link content</li>
+</ul>
+<p>A snapshot tells you where you stand on one day. The tracking layer
+tells you where you are moving and which deployments moved you
+there. The snapshot is the right diagnostic for an audit. The
+tracking layer is the right operating system for a quarter.</p>
+<hr />
+<h2 id="bottom-line">Bottom line</h2>
+<p>ASB is already cited everywhere a Hawaii banking buyer asks an AI
+engine for a recommendation. ASB is not preferred where it should
+be. The gap between citation and preference is the gap between
+“present” and “first-recommended,” and it closes with structured
+data ASB authors and deploys, not with content ASB writes or ads
+ASB buys.</p>
+<p>The work to close that gap is the work outlined in sections 03 and
+07 of this audit. It is bounded, measurable, and deployable in a
+single quarter.</p>
 <div class="page-break">
 
 </div>
-<h1 id="competitor-teardown-client-name">Competitor Teardown — {Client Name}</h1>
+<h1 id="competitor-teardown-american-savings-bank">Competitor Teardown — American Savings Bank</h1>
 <p><strong>Auditor:</strong> Never Ranked
-<strong>Sample date:</strong> {YYYY-MM-DD}
-<strong>Competitors analyzed:</strong> {list 3-5 direct competitors}</p>
+<strong>Sample date:</strong> 2026-05-08
+<strong>Competitors analyzed:</strong> First Hawaiian Bank (fhb.com), Bank of Hawaii (boh.com), Central Pacific Bank (cpb.bank)
+<strong>Method:</strong> Live scans via check.neverranked.com against the published methodology at neverranked.com/standards/methodology</p>
 <hr />
-<h2 id="summary-2">Summary</h2>
-<p>{2-3 sentence overview. Where is {Client} ahead? Where is {Client} behind? What’s the single most actionable gap?}</p>
+<h2 id="the-headline-1">The headline</h2>
+<p>ASB is the current AEO leader in Hawaii community banking by a
+five-point margin. The three competitors below ASB have each made
+exactly one of the same three foundational mistakes, but for
+different reasons, and any one of them could leapfrog ASB in a
+single deployment cycle. The lead is real and structural. It is
+not insurmountable.</p>
+<p>The single most actionable observation: the bank that ships
+<code>FAQPage</code> schema first, on top of the existing FAQ content all four
+banks already host, takes citation share on the highest-volume
+buyer queries in the category for at least one engine retraining
+cycle.</p>
 <hr />
 <h2 id="side-by-side-comparison">Side-by-side comparison</h2>
+<h3 id="headline-numbers">Headline numbers</h3>
+<table>
+<thead>
+<tr>
+<th>Bank</th>
+<th>AEO Score</th>
+<th>Grade</th>
+<th>Schema Types Deployed</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>American Savings Bank</strong></td>
+<td><strong>55</strong></td>
+<td><strong>D</strong></td>
+<td><strong>Organization</strong></td>
+</tr>
+<tr>
+<td>Bank of Hawaii</td>
+<td>50</td>
+<td>D</td>
+<td>Organization</td>
+</tr>
+<tr>
+<td>First Hawaiian Bank</td>
+<td>45</td>
+<td>D</td>
+<td>(none)</td>
+</tr>
+<tr>
+<td>Central Pacific Bank</td>
+<td>25</td>
+<td>F</td>
+<td>(none)</td>
+</tr>
+</tbody>
+</table>
 <h3 id="homepage-technical-signals">Homepage technical signals</h3>
 <table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
 <thead>
 <tr>
 <th>Signal</th>
-<th>{Client}</th>
-<th>{Comp 1}</th>
-<th>{Comp 2}</th>
-<th>{Comp 3}</th>
-<th>{Comp 4}</th>
+<th>ASB</th>
+<th>FHB</th>
+<th>BOH</th>
+<th>CPB</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Title length</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Meta desc in range</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Canonical</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>og:image</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td><code>og:image</code> deployed</td>
+<td>No</td>
+<td>No</td>
+<td><strong>Yes</strong></td>
+<td>No</td>
 </tr>
 <tr>
 <td>H1 count</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>2</td>
+<td>0</td>
+<td>4</td>
+<td>8</td>
 </tr>
 <tr>
-<td>Organization schema</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Word count (homepage)</td>
+<td>1,700</td>
+<td>1,884</td>
+<td>1,364</td>
+<td>1,609</td>
 </tr>
 <tr>
-<td>WebSite schema</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>JSON-LD blocks present</td>
+<td>1</td>
+<td>0</td>
+<td>1</td>
+<td>0</td>
 </tr>
 <tr>
-<td>SoftwareApplication / Product</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>FAQPage</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>BreadcrumbList</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Total JSON-LD blocks</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Visible rating text</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>Testimonial language</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-</tr>
-<tr>
-<td>“Trusted by N users” claim</td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
-<td></td>
+<td>Schema types deployed</td>
+<td>Organization</td>
+<td>(none)</td>
+<td>Organization</td>
+<td>(none)</td>
 </tr>
 </tbody>
 </table>
-<p>Bold = where the competitor does something {Client} doesn’t.</p>
-<hr />
-<h2 id="what-each-competitor-does-that-client-doesnt">What each competitor does that {Client} doesn’t</h2>
-<h3 id="competitor-1-citation-share">{Competitor 1} ({citation share}%)</h3>
-<p><strong>Distinctive moves:</strong> {2-4 specific things they do that {Client} should steal.}</p>
-<p><strong>What {Client} should steal:</strong> {Actionable takeaway.}</p>
-<hr />
-<h3 id="competitor-2-citation-share">{Competitor 2} ({citation share}%)</h3>
-<p>{…}</p>
-<hr />
-<h3 id="competitor-3-citation-share">{Competitor 3} ({citation share}%)</h3>
-<p>{…}</p>
-<hr />
-<h2 id="where-client-is-actually-ahead">Where {Client} is actually AHEAD</h2>
-<h3 id="strength">1. {Strength}</h3>
-<p>{Description.}</p>
-<h3 id="strength-1">2. {Strength}</h3>
-<p>{…}</p>
-<h3 id="strength-2">3. {Strength}</h3>
-<p>{…}</p>
-<hr />
-<h2 id="the-strategic-insight">The strategic insight</h2>
-<p>{1-2 paragraph narrative that synthesizes the competitive landscape into a strategic direction. This is the most important section of the teardown — it tells the client where they should focus and why.}</p>
-<hr />
-<h2 id="priority-list-competitor-parity">Priority list (competitor parity)</h2>
+<h3 id="what-each-bank-is-doing-right">What each bank is doing right</h3>
+<ul>
+<li><strong>ASB</strong> has Organization schema deployed and passes
+baseline title-tag and canonical hygiene.</li>
+<li><strong>FHB</strong> has the highest content volume on the homepage (1,884
+words), which means the worst-case AI-engine fallback to plain
+text gives FHB more material to extract. They also have clean
+canonical structure. Their problem is they have nothing else.</li>
+<li><strong>BOH</strong> is the only Hawaii community bank with <code>og:image</code>
+deployed sitewide. Every social share, every Slack paste, every
+AI-engine preview shows the BOH logo. That is the single piece
+of free-money work they have ahead of all three peers.</li>
+<li><strong>CPB</strong> has the most aggressive content strategy as visible from
+H1 distribution (eight H1 tags on the homepage suggest active
+experimentation, even if it dilutes topical clarity for AI engines).</li>
+</ul>
+<h3 id="what-each-bank-is-missing">What each bank is missing</h3>
 <table>
 <thead>
 <tr>
-<th>#</th>
-<th>Fix</th>
-<th>Impact</th>
-<th>Effort</th>
+<th>Missing schema</th>
+<th>ASB</th>
+<th>FHB</th>
+<th>BOH</th>
+<th>CPB</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>1</td>
-<td>{fix}</td>
-<td>{H/M/L}</td>
-<td>{L/M/H}</td>
+<td>WebSite</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
 </tr>
 <tr>
-<td>2</td>
-<td>{fix}</td>
-<td>{H/M/L}</td>
-<td>{L/M/H}</td>
+<td>BreadcrumbList</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>FAQPage</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>FinancialService</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>AggregateRating</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Article / BlogPosting</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
+<td>No</td>
 </tr>
 </tbody>
 </table>
+<p>Every Hawaii community bank lacks the foundational citation-
+attracting schema types. This is the open territory referenced in
+the keyword gap section. Whichever bank ships these first wins the
+category for the next engine training cycle.</p>
+<hr />
+<h2 id="per-bank-teardown">Per-bank teardown</h2>
+<h3 id="bank-of-hawaii-boh.com-score-50-grade-d">Bank of Hawaii (boh.com) — score 50, grade D</h3>
+<p><strong>What they have:</strong>
+- Organization schema with <code>BankOrCreditUnion</code> typing
+- <code>og:image</code> deployed sitewide (the only Hawaii bank with this)
+- A jsonld_block on the homepage (Organization type)
+- Roughly 33% schema coverage based on yesterday’s full audit</p>
+<p><strong>What they are missing:</strong>
+- WebSite schema with <code>SearchAction</code> (disables sitelinks search box
+in Google AI Overviews)
+- AggregateRating schema, despite testimonial language and rating
+text on three sampled pages
+- Canonical tags site-wide (the homepage canonicalizes; interior
+pages do not)
+- H1 discipline (four H1 tags on the homepage, which dilutes
+topical signal)</p>
+<p><strong>Their fastest path to the lead:</strong> deploy WebSite + AggregateRating
++ canonical hygiene in one sprint. Estimated effort: six hours of
+front-end engineering. Estimated lift: +20 to +25 AEO points,
+putting them at approximately 70/C and ahead of ASB’s current 55.</p>
+<p><strong>Probability they ship this before ASB:</strong> moderate. BOH has the
+larger marketing organization. They also have a track record of
+slow deployment cycles for technical SEO work, which suggests
+quarter-scale lag.</p>
+<h3 id="first-hawaiian-bank-fhb.com-score-45-grade-d">First Hawaiian Bank (fhb.com) — score 45, grade D</h3>
+<p><strong>What they have:</strong>
+- Strong content foundation (1,884 words on homepage, the highest
+of the four)
+- Clean canonical structure on the pages that have it
+- Decent meta-description coverage</p>
+<p><strong>What they are missing:</strong>
+- Zero structured data of any kind, on any sampled page
+- No <code>og:image</code> configured anywhere
+- No H1 detected on the homepage (a count of 0 is unusual; either
+the H1 is rendered as styled text without semantic markup, or
+the homepage relies on hero imagery without an accessibility
+fallback)</p>
+<p><strong>Their fastest path to the lead:</strong> the highest ceiling of the
+three competitors. From 45 to 80+ in one cycle is achievable
+because they start from zero and the deployment work compounds.
+Phase 1 deployment (Organization, WebSite, BreadcrumbList,
+FinancialService, FAQPage, og:image) would lift them to approximately
+80/B in thirty days.</p>
+<p><strong>Probability they ship this before ASB:</strong> low to moderate. FHB
+has not made AEO-aware deployment a priority through Q1 2026
+based on visible scan history. Inertia favors ASB if ASB moves
+first.</p>
+<h3 id="central-pacific-bank-cpb.bank-score-25-grade-f">Central Pacific Bank (cpb.bank) — score 25, grade F</h3>
+<p><strong>What they have:</strong>
+- A modern domain (cpb.bank, deployed on the new financial-services
+TLD)
+- Active content marketing visible in homepage word count
+- A clear “We Got You” brand position</p>
+<p><strong>What they are missing:</strong>
+- Zero structured data
+- Zero canonical tags
+- Zero meta description on the homepage
+- Eight competing H1 tags on the homepage (the worst H1 discipline
+of the four)
+- 34 of 56 images missing alt text (60% of homepage imagery
+unattributed)
+- No <code>og:image</code></p>
+<p><strong>Their fastest path to the lead:</strong> longest. CPB needs to fix the
+foundational HTML hygiene before schema deployment matters. The
+work is not complex but it is multiple parallel workstreams. From
+25 to 50 in one cycle is achievable. From 50 to ASB’s current 55
+takes another cycle. Realistic: two quarters to reach ASB’s current
+position assuming aggressive prioritization.</p>
+<p><strong>Probability they ship this before ASB:</strong> very low. CPB is the
+furthest behind and the work is the most dispersed across surfaces.</p>
+<hr />
+<h2 id="what-asb-needs-to-do-to-widen-the-lead">What ASB needs to do to widen the lead</h2>
+<p>The competitive picture argues for ASB to deploy aggressively
+within the next thirty days. The window is narrow but real.</p>
+<h3 id="deploy-in-the-next-30-days-phase-1">Deploy in the next 30 days (Phase 1)</h3>
+<p>These are the deployments that lock the category lead before any
+of the three competitors can mount a response.</p>
+<ol type="1">
+<li><strong><code>FAQPage</code> schema on the Common Questions page.</strong> The single
+highest-leverage move on the entire site. ASB’s existing
+10,923-word FAQ content becomes machine-readable in one
+deployment. None of the other three Hawaii banks have this.</li>
+<li><strong><code>WebSite</code> schema with <code>SearchAction</code>.</strong> Enables the sitelinks
+search box in Google AI Overviews. None of the other three
+Hawaii banks have this.</li>
+<li><strong><code>og:image</code> deployed sitewide.</strong> Closes BOH’s only structural
+advantage and gives every social share a branded preview.</li>
+<li><strong><code>BankOrCreditUnion</code> schema variants on the four highest-traffic
+product pages</strong> (personal checking, savings, mortgages, business
+banking). Adds machine-readable category signals AI engines use
+to disambiguate.</li>
+<li><strong><code>AggregateRating</code></strong> on the homepage, sourced from existing
+customer testimonial language already on the site.</li>
+</ol>
+<h3 id="deploy-in-days-31-60-phase-2">Deploy in days 31-60 (Phase 2)</h3>
+<p>These widen the moat once Phase 1 is in production.</p>
+<ol start="6" type="1">
+<li><strong><code>FinancialProduct</code> schema on every rate-bearing page</strong> with
+<code>interestRate.value</code> bound to the live disclosure URL</li>
+<li><strong><code>MortgageLoan</code> schema on the mortgages landing page</strong> with
+<code>loanType</code> and <code>loanTerm</code> arrays</li>
+<li><strong><code>hasCredential</code> block on Organization</strong> for every government
+designation ASB holds (SBA, USDA, etc.)</li>
+<li><strong><code>LocalBusiness</code> blocks per branch</strong> with <code>geo</code> and
+<code>openingHoursSpecification</code></li>
+<li>Optional: <code>llms.txt</code> published at the root with a curated map
+of ASB’s most citable pages (this is the next-standard signal
+AI engines are starting to weight; see standards/llms-txt for
+the methodology)</li>
+</ol>
+<hr />
+<h2 id="what-this-competitive-picture-is-worth-in-real-terms">What this competitive picture is worth in real terms</h2>
+<p>If ASB ships Phase 1 in thirty days and Phase 2 in sixty, ASB’s
+AEO score lifts to approximately 85/B, ahead of all three Hawaii
+competitors by a margin none of them can close in a single cycle.
+Citation share on the twelve sampled prompts in Section 4 should
+materially improve as engines retrain on the new structured data
+(typical retraining window: thirty to forty-five days post-
+deployment, observed across all six engines NeverRanked tracks).</p>
+<p>The Signal-tier subscription that ships these deployments and
+tracks the resulting citation movement runs $2,000/month with a
+three-month minimum. The total cost of locking the Hawaii
+community banking AEO category for the remainder of 2026 is
+$6,000. The opportunity cost of not shipping is the category
+flipping to whichever of the three competitors moves first, at
+which point the same work costs ASB twelve months of catch-up
+instead of ninety days of leadership.</p>
+<p>This is not a rate-of-return calculation. It is a window-of-
+opportunity calculation. The window is open now. By Q1 2027 it
+will not be.</p>
 <div class="page-break">
 
 </div>

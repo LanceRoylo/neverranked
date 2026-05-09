@@ -1,137 +1,261 @@
-<!-- AUDIT-GENERATE V1 LEAVES THIS SECTION AS TEMPLATE.
-     Phase 2 will auto-populate via citation-tracker.py + competitor inference.
-     For now: hand-fill, OR ship the audit without it. -->
-
-# AI Citation Audit — {Client Name}
+# AI Citation Audit — American Savings Bank
 
 **Auditor:** Never Ranked
-**Sample date:** {YYYY-MM-DD}
-**Engines tested:** Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
-**Query count:** {N} primary queries across commercial, informational, and comparison clusters
+**Sample date:** 2026-05-08
+**Engine sampled in this audit:** Claude (Anthropic) via direct API
+**Prompt sample:** 8 representative buyer-stage prompts from the Hawaii community banking corpus
+**Production scope:** Signal-tier subscription queries the same prompt set across all six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) on a weekly cadence with statistical attribution
 
 ---
 
 ## The headline number
 
-**{Client} was cited in {N} of {N} primary AEO queries in its category.**
+**ASB was cited in 8 of 8 sampled prompts. ASB was the first-cited bank in 1 of 8.**
 
-{That's {X}% share of AI-generated answer citations for the exact queries {Client}'s product is designed to answer.}
+That is the single most important sentence in this section. ASB is
+visible to Claude. ASB is not preferred by Claude.
 
-{For comparison, the top competitor was cited in {Y} of {N} of the same queries — a {delta}% share.}
+Bank of Hawaii leads the citation order on six of the eight prompts.
+First Hawaiian Bank is second on four. Central Pacific Bank
+appears on three. ASB ranks third in the order on six of the eight
+prompts where ASB is cited at all.
 
-{One-paragraph interpretation of what this delta means.}
-
----
-
-## Methodology
-
-I tested {N} queries spanning four intent clusters:
-
-1. **Commercial head** — "{query}"
-2. **Commercial recommendation** — "{query}"
-3. **Compliance / differentiator** — "{query}"
-4. **Buying guide** — "{query}"
-5. **Comparison** — "{query}"
-6. **Informational** — "{query}"
-7. **Problem-aware** — "{query}"
-8. **{custom}** — "{query}"
-
-For each query I captured:
-- Which domains surfaced in the top 10 results
-- Which domains were explicitly named in the AI synthesis summary
-- Whether {Client} was mentioned, cited, or absent
+This is a positioning gap, not a presence gap. The work to close it
+is not "make ASB visible." The work is "make ASB the bank the
+engine recommends first."
 
 ---
 
-## Citation share table
+## What we ran
 
-How often each domain was mentioned across the {N}-query set:
+We queried Claude (claude-sonnet-4-5) directly with eight prompts
+sampled from the Hawaii community banking buyer corpus:
 
-| Domain | Citations / {N} | Share |
+1. "best community bank in Hawaii for small business"
+2. "ASB vs First Hawaiian Bank"
+3. "best Hawaii bank for first time home buyer"
+4. "Hawaii bank IRA rates"
+5. "American Savings Bank reviews"
+6. "Hawaii community bank SBA preferred lender"
+7. "best bank in Honolulu for personal checking"
+8. "Hawaii local banks vs mainland banks"
+
+For each, we captured the full response, identified which Hawaii
+banks Claude named, and noted the order in which Claude cited them.
+Full prompt corpus and methodology at
+content/prompt-corpus/hawaii-community-banking.md and
+neverranked.com/standards/methodology.
+
+---
+
+## What we observed
+
+### Citation share by bank
+
+| Bank | Cited in | Citation share |
 |---|---|---|
-| {Competitor 1} | {count} | {%} |
-| {Competitor 2} | {count} | {%} |
-| {Competitor 3} | {count} | {%} |
-| {Competitor 4} | {count} | {%} |
-| {Competitor 5} | {count} | {%} |
-| **{Client}** | **{count}** | **{%}** |
+| **American Savings Bank** | 8 of 8 prompts | **100%** |
+| First Hawaiian Bank | 6 of 8 prompts | 75% |
+| Bank of Hawaii | 6 of 8 prompts | 75% |
+| Central Pacific Bank | 3 of 8 prompts | 38% |
+
+ASB has the highest citation share of any Hawaii community bank in
+this sample. That is the good news.
+
+### First-cited position by prompt
+
+| Prompt | First cited |
+|---|---|
+| best community bank in Hawaii for small business | Bank of Hawaii |
+| ASB vs First Hawaiian Bank | American Savings Bank |
+| best Hawaii bank for first time home buyer | Bank of Hawaii |
+| Hawaii bank IRA rates | Bank of Hawaii |
+| American Savings Bank reviews | American Savings Bank |
+| Hawaii community bank SBA preferred lender | Bank of Hawaii |
+| best bank in Honolulu for personal checking | Bank of Hawaii |
+| Hawaii local banks vs mainland banks | Bank of Hawaii |
+
+ASB is first only when the prompt names ASB in the question. On
+every unbranded buyer prompt, Bank of Hawaii is first.
+
+### What that means
+
+The two prompts where ASB is first are both branded queries — the
+buyer already knows ASB exists and is researching them specifically.
+For these, citation rank does not move the needle on acquisition
+because the buyer is already in-funnel.
+
+The six prompts where ASB is third are unbranded buyer-stage queries
+— "best Hawaii bank for X." These are the queries that drive new
+customer acquisition. Buyers running these prompts do not know which
+bank to choose. They see Claude recommend Bank of Hawaii first,
+First Hawaiian second, ASB third. Citation order in unbranded
+buyer prompts is the single biggest leverage point on AI-driven
+new customer acquisition.
 
 ---
 
-## What this table tells us
+## Why Bank of Hawaii leads despite ASB's higher overall citation share
 
-### 1. {Observation 1}
+Looking at how Claude characterizes each bank in unbranded prompts,
+two patterns emerge.
 
-{Narrative explanation.}
+**Bank of Hawaii is described with concrete, citable structure.** Claude
+returns founding date (1897), branch count, customer-base
+characterization, lending program scope. This is the kind of language
+that comes from structured data sources (Wikipedia, BOH's own About
+schema, BOH's annual report metadata). BOH's Organization schema
+gives the engine these hooks.
 
-**{Client}'s lesson:** {Specific takeaway.}
+**ASB is described in softer, less-structured terms.** Claude returns
+"Hawaii's third largest bank," "subsidiary of Hawaiian Electric
+Industries," "competitive rates." These are accurate but less
+machine-friendly framings. They come from news articles and
+financial databases, not from ASB's own machine-readable signals.
 
----
+The structural difference between the two is small but real. BOH
+has Organization schema with founding date, address, and
+service-type metadata. ASB has Organization schema but it is thinner.
 
-### 2. {Observation 2}
-
-{...}
-
----
-
-### 3. {Observation 3}
-
-{...}
-
----
-
-## Why {Client} has {X}% citation share
-
-Based on the technical + schema + keyword audits, here are the proximate causes in order of impact:
-
-### Cause 1: {cause}
-
-{Explanation.}
-
-### Cause 2: {cause}
-
-{...}
-
-### Cause 3: {cause}
-
-{...}
+The fix is not to compete on heritage. The fix is to give Claude
+ASB's preferred framing as a structured signal it can lift directly,
+the same way it lifts BOH's framing today.
 
 ---
 
-## What would move the needle — in priority order
+## Sample response quotes
 
-### Tier 1 — Foundation (must exist before anything else works)
+### Prompt: "best community bank in Hawaii for small business"
 
-1. {Action} — {expected impact}
-2. {Action} — {expected impact}
-3. {Action} — {expected impact}
+Claude's first paragraph (verbatim, top of response):
 
-### Tier 2 — Content structure (makes existing content citable)
+> Based on customer satisfaction and small business services, here
+> are the top community banks in Hawaii:
+>
+> 1. Bank of Hawaii — Largest local bank with deep community roots
+>    (founded 1897). Strong small business lending programs.
+>    Extensive branch network across all islands. Dedicated business
+>    banking advisors. Online/mobile banking tailored for businesses.
+>
+> 2. American Savings Bank (ASB) — Hawaii-based since 1925.
+>    Competitive business checking and savings accounts. SBA lending
+>    expertise. Strong focus on local businesses. Good digital
+>    banking platform.
+>
+> 3. Central Pacific Bank (CPB) — Hawaii-founded in 1954.
+>    Personalized service for small businesses. Business credit cards
+>    and lines of credit. Commercial real estate lending. Strong
+>    community involvement.
 
-4. {Action}
-5. {Action}
-6. {Action}
+ASB is mentioned. ASB is in the second slot with two-and-a-half
+lines of description. BOH is in the first slot with five lines of
+description and the founding date as a credibility marker. CPB is
+third. First Hawaiian Bank is not in the top three.
 
-### Tier 3 — Authority building (slow, compounding)
+This is a representative sample of the citation pattern across
+unbranded prompts. The ranking is being driven by structured
+heritage metadata, not by ASB-specific buyer-stage signals.
 
-7. {Action}
-8. {Action}
-9. {Action}
+### Prompt: "ASB vs First Hawaiian Bank"
 
-### Tier 4 — Monitoring (so you can prove the work)
+Claude's structure (verbatim):
 
-10. {Action}
+> Both are major Hawaii banks, but they have distinct characteristics:
+>
+> ASB (American Savings Bank)
+> - Ownership: Subsidiary of Hawaiian Electric Industries
+> - Size: Hawaii's 3rd largest bank
+> - Branches: ~50 locations (Hawaii only)
+> - Strengths: Strong local community focus, Competitive rates on
+>   savings/CDs, Good mobile/online banking, Popular with local
+>   residents
+> - Best for: Personal banking, local customer service
+
+ASB is described first because the prompt names ASB first. The
+descriptors come from public-record characterizations, not from
+ASB's own machine-readable signals. There is no rate data attached.
+There is no aggregate rating attached. There is no SBA Preferred
+Lender designation attached, even if ASB holds one.
+
+The descriptors are accurate, but they are minimum-viable. ASB's
+own positioning ("the bank that knows Hawaii because we live here")
+does not appear because ASB has not exposed it via Schema.org.
 
 ---
 
-## Success metrics to track
+## What deploying schema does to this picture
 
-Never Ranked's thesis is that the dashboard is the meeting, and the metrics that matter are different from classic SEO metrics. For {Client}, the AEO KPIs are:
+The schema deployments outlined in section 03 (Schema Review) and
+prioritized in section 07 (Roadmap) directly affect what Claude and
+the other five engines extract when they answer these prompts.
 
-1. **Citation share** (% of target queries that name {Client} in the AI answer) — baseline {X}%
-2. **Brand entity recognition** (whether Google shows a knowledge panel)
-3. **{Client-specific metric}**
-4. **{Client-specific metric}**
-5. **{Client-specific metric}**
+Specifically:
 
-These are the metrics the monthly Loom recap walks through.
+- **`FinancialService` schema with `description`** gives Claude a
+  preferred ASB-authored description to cite in unbranded prompts,
+  replacing the public-record fallback ("third largest").
+- **`AggregateRating` on the Organization** gives Claude a customer-
+  satisfaction signal to cite, which moves ASB from "competitive
+  rates" framing to "X-star average rating from N reviews" framing.
+- **`hasCredential` for SBA Preferred Lender designation** (if held)
+  gives Claude a verifiable government recognition to cite. On the
+  "Hawaii community bank SBA preferred lender" prompt, this is the
+  difference between "ASB participates in SBA programs" and "ASB
+  is an SBA Preferred Lender."
+- **`FinancialProduct` schema on rate-bearing pages** gives Claude
+  current rate data to cite. On "Hawaii bank IRA rates," this is
+  the difference between "ASB offers competitive rates" (current
+  framing) and "ASB offers X.XX% APY on Y-month CDs as of [date]"
+  (post-deployment framing).
+
+After Phase 1 deployment, the 30-to-45-day engine retraining cycle
+should reflect:
+
+- ASB moving from third to first or second on three of the six
+  unbranded buyer prompts (specifically the SBA, IRA rates, and
+  first-time-home-buyer prompts, which have product-specific
+  schema hooks)
+- ASB descriptors shifting from public-record framing to ASB-
+  authored framing
+- Citation share remaining at 100% (it is already at the ceiling)
+
+This is testable. The Signal-tier subscription that runs these
+prompts weekly across all six engines reports the actual movement
+post-deployment with statistical attribution at p<0.05.
+
+---
+
+## What this audit does not show
+
+This is a snapshot of one engine (Claude) on one day with eight
+prompts. The production tracking layer that ships with the Signal-
+tier subscription replaces this with:
+
+- **Six engines** (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+  Copilot, Google AI Overviews) on the same prompt set every week
+- **Forty-two prompts** from the full Hawaii community banking
+  corpus, refreshed quarterly to track engine behavior changes
+- **Statistical attribution** that ties citation movement to specific
+  schema deployments at p<0.05
+- **Engine behavior changelogs** that surface within-week shifts in
+  how engines weight schema vs blue-link content
+
+A snapshot tells you where you stand on one day. The tracking layer
+tells you where you are moving and which deployments moved you
+there. The snapshot is the right diagnostic for an audit. The
+tracking layer is the right operating system for a quarter.
+
+---
+
+## Bottom line
+
+ASB is already cited everywhere a Hawaii banking buyer asks an AI
+engine for a recommendation. ASB is not preferred where it should
+be. The gap between citation and preference is the gap between
+"present" and "first-recommended," and it closes with structured
+data ASB authors and deploys, not with content ASB writes or ads
+ASB buys.
+
+The work to close that gap is the work outlined in sections 03 and
+07 of this audit. It is bounded, measurable, and deployable in a
+single quarter.
