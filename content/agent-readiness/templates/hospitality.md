@@ -3,11 +3,11 @@
 The most consequential agent task surface for hotels, B&Bs, vacation
 rentals, restaurants, tours, and event venues is the *reservation*.
 Any property whose booking flow is exposed as a structured
-`ReserveAction` will capture agent-driven bookings; properties that
+`ReserveAction` will capture agent-driven bookings. Properties that
 ride entirely on third-party widgets (OpenTable, Resy, Booking.com)
 will see their bookings flow through the widget's brand instead.
 
-## ReserveAction — hotel room booking
+## ReserveAction: hotel room booking
 
 Goes on the property's dedicated booking page.
 
@@ -65,10 +65,9 @@ Goes on the property's dedicated booking page.
   hit directly.
 - `query-input` is the single most important field for agents.
   Without it the agent does not know what data to provide.
-- `valuePattern` for dates uses ISO 8601 — the standard agents
-  expect.
+- `valuePattern` for dates uses ISO 8601, the standard agents expect.
 
-## ReserveAction — restaurant table
+## ReserveAction: restaurant table
 
 Goes on the restaurant page or contact page.
 
@@ -115,7 +114,7 @@ Goes on the restaurant page or contact page.
 }
 ```
 
-## ReserveAction — tour or activity
+## ReserveAction: tour or activity
 
 For boat tours, helicopter rides, snorkeling, hiking, ATV rentals,
 spa appointments, surf lessons.

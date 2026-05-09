@@ -20,7 +20,7 @@ stalls in legal forever.
 
 ## Verticals covered
 
-- `financial-services.md` — banks, credit unions, wealth advisors,
+- `financial-services.md`: banks, credit unions, wealth advisors,
   SBA preferred lenders. FDIC / NCUA / FINRA aware.
 - *Coming when triggered:* healthcare (HIPAA-aware), legal
   (ABA / state bar marketing rules), insurance, and education.

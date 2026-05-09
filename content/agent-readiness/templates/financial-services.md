@@ -4,13 +4,13 @@ The most consequential agent task surface for banks, credit unions,
 and wealth advisors is the *application*. Account opening, loan
 application, credit card application, mortgage pre-qualification.
 Sites that expose these as structured `ApplyAction` blocks will
-capture the agent-driven application volume; sites that do not will
+capture the agent-driven application volume. Sites that do not will
 lose share to whoever did.
 
 This document is the canonical NeverRanked template set for agent-
 readiness on US financial sites.
 
-## ApplyAction — account opening
+## ApplyAction: account opening
 
 Goes on the dedicated account-opening page (e.g. `/personal/checking/open`).
 
@@ -73,7 +73,7 @@ Goes on the dedicated account-opening page (e.g. `/personal/checking/open`).
   act customer identification notice. Agent flows must surface these
   to the user before submission.
 
-## ApplyAction — loan / mortgage pre-qualification
+## ApplyAction: loan / mortgage pre-qualification
 
 Goes on the dedicated pre-qualification page.
 
@@ -112,7 +112,7 @@ Goes on the dedicated pre-qualification page.
 }
 ```
 
-## ContactAction — speak with an advisor
+## ContactAction: speak with an advisor
 
 Goes on the contact page or the wealth-advisory landing page.
 
@@ -138,7 +138,7 @@ Goes on the contact page or the wealth-advisory landing page.
 }
 ```
 
-## ReserveAction — branch visit appointment
+## ReserveAction: branch visit appointment
 
 For banks with appointment-required branch services (notary, safe
 deposit, complex transactions).
@@ -172,7 +172,7 @@ deposit, complex transactions).
 - **Wire transfers, ACH transfers, or any irrevocable money
   movement.** The fraud surface is too large. Banks should require
   a logged-in session with an authenticated user before any movement
-  of funds; an unauthenticated `Action` schema invites abuse.
+  of funds. An unauthenticated `Action` schema invites abuse.
 - **Investment trading actions.** Agents executing trades on behalf
   of users without explicit per-trade consent is regulated by SEC
   Rule 15c3-5 and is not safe to ship.

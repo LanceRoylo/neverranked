@@ -61,7 +61,7 @@ because:
 - All deployment is fully automated via GitHub Actions to Cloudflare
 - All scans, reports, and emails are scheduled via cron triggers
   that do not require human intervention
-- Stripe billing continues unattended; subscription renewals do not
+- Stripe billing continues unattended. Subscription renewals do not
   require manual approval
 - The Cloudflare account has a designated co-administrator with
   read-only access plus billing/account-recovery rights
@@ -140,7 +140,7 @@ question often kills the deal because the answer is "we have not
 thought about it."
 
 NeverRanked has thought about it. The structures above are not
-aspirational — the dashboard export already works, the deployment
+aspirational. The dashboard export already works, the deployment
 is already automated, the successor plan is already in writing.
 The provisions for $10K+ contracts are standard contract addenda
 ready to sign.

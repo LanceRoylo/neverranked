@@ -1,4 +1,4 @@
-# NeverRanked Certified Practitioner — MVNP Founding Cohort Offer
+# NeverRanked Certified Practitioner: MVNP Founding Cohort Offer
 
 **Audience:** James Malins and the MVNP digital strategy team
 **Status:** offered as part of the Hawaii financial services
@@ -15,7 +15,7 @@ Specifically:
 
 - Up to **8 practitioner seats** for the first cohort (vs the
   standard 5-seat agency allotment)
-- **Direct access to Lance** during all 8 modules — Q&A office hours
+- **Direct access to Lance** during all 8 modules. Q&A office hours
   at least once per module
 - **Co-branded certification badges** for the MVNP website and
   practitioner LinkedIn profiles ("Certified by NeverRanked, in
@@ -31,19 +31,19 @@ Specifically:
 
 Three concrete benefits:
 
-### 1. Talent retention and hiring leverage
+### 1. Talent retention and hiring advantage
 
 A certified practitioner is a credentialed AEO specialist. MVNP can
 post roles with the credential as a requirement, market the team's
 credential to new business prospects, and use the program as a
 retention tool ("we invest in your skills").
 
-### 2. Pricing leverage on AEO retainers
+### 2. Pricing power on AEO retainers
 
 A certified team supports higher hourly rates than an uncertified
 one. The market expectation in 2026-2027 will be that AEO work is
 done by trained specialists. MVNP becomes an early-credentialed shop
-in the Pacific region — alongside maybe one or two mainland firms —
+in the Pacific region (alongside maybe one or two mainland firms)
 and prices accordingly.
 
 ### 3. Referral pipeline
@@ -59,7 +59,7 @@ them to MVNP's certified practitioners.
 Two of the eight modules are tailored to the Hawaii financial
 services exclusivity:
 
-### Module 3 (Compliance-Aware Schema) — Hawaii Banking Track
+### Module 3 (Compliance-Aware Schema): Hawaii Banking Track
 
 Adds Hawaii state-specific banking regulation review:
 
@@ -71,7 +71,7 @@ Adds Hawaii state-specific banking regulation review:
   well, what each is missing, and the deployment path that works
   inside their respective compliance review windows
 
-### Module 7 (Customer Engagement) — Hawaii Banking Track
+### Module 7 (Customer Engagement): Hawaii Banking Track
 
 Adds the customer-engagement playbook specific to Hawaii regional
 banks:
@@ -82,7 +82,7 @@ banks:
 - The seasonal cycles in Hawaii banking marketing (tax-time CDs,
   spring home-buying, summer SBA pushes)
 
-## Capstone — fast-track using ASB pilot data
+## Capstone: fast-track using ASB pilot data
 
 If ASB consents, MVNP practitioners can use the ASB pilot
 deployment as their capstone subject. Two operational benefits:
@@ -130,11 +130,11 @@ In exchange for the founding-cohort terms:
    when each practitioner completes the program
 2. Co-marketing rights (a single case study after the first 90 days
    describing what MVNP shipped using the methodology)
-3. Reasonable cohort attendance — practitioners who enroll commit
+3. Reasonable cohort attendance. Practitioners who enroll commit
    to completing modules 1-7 inside the 10-week window
 
 That's it. The certification is a benefit to MVNP's team and an
-asset to the partnership; the agency is not paying for it with
+asset to the partnership. The agency is not paying for it with
 anything more than reasonable participation.
 
 ## Next step

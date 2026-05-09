@@ -1,6 +1,6 @@
 # {{Bank Name}}
 
-> {{Bank Name}} is a {{state-chartered | nationally chartered}} {{bank | credit union}} serving {{primary geographic area}}. {{One-line value prop — e.g. "We focus on community banking, small business lending, and residential mortgages for {{region}} since {{founding year}}."}} Member {{FDIC | NCUA}}. Equal Housing Lender.
+> {{Bank Name}} is a {{state-chartered | nationally chartered}} {{bank | credit union}} serving {{primary geographic area}}. {{One-line value prop, for example "We focus on community banking, small business lending, and residential mortgages for {{region}} since {{founding year}}."}} Member {{FDIC | NCUA}}. Equal Housing Lender.
 
 ## About
 

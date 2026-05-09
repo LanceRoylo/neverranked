@@ -9,7 +9,7 @@ audience: marketing agency operators, in-house SEO/AEO teams, freelance speciali
 
 A practical certification program for marketing operators who deploy
 and maintain Answer Engine Optimization for clients. Built on the
-methodology NeverRanked uses to ship customer work — codified so any
+methodology NeverRanked uses to ship customer work, codified so any
 trained practitioner can apply it consistently.
 
 ## Why this exists
@@ -44,15 +44,15 @@ five years.
 
 ## What it covers
 
-### Module 1 — Foundations of AEO (3 hours)
+### Module 1: Foundations of AEO (3 hours)
 
 - The six-engine citation surface and how each engine retrieves
-- Schema.org as the substrate; what AI actually reads
+- Schema.org as the substrate, and what AI actually reads
 - The 0-100 AEO score: methodology, components, weighting
 - Diagnostic vs deployment: why most "AEO tools" stop at the audit
 - Where AEO differs from SEO and where the disciplines compound
 
-### Module 2 — Schema Deployment (5 hours)
+### Module 2: Schema Deployment (5 hours)
 
 - Organization, WebSite, BreadcrumbList: the citation foundation
 - Vertical-specific primary types (FinancialService, LocalBusiness,
@@ -62,7 +62,7 @@ five years.
 - Validation, error handling, and the snippet-vs-static deployment
   decision
 
-### Module 3 — Compliance-Aware Schema (3 hours)
+### Module 3: Compliance-Aware Schema (3 hours)
 
 - Financial services: FDIC/NCUA, Truth in Savings, Equal Housing
   Lender, NMLS disclosures inside JSON-LD
@@ -71,7 +71,7 @@ five years.
 - The customer compliance review workflow and how to pass it on
   the first attempt
 
-### Module 4 — Citation Tracking and Attribution (4 hours)
+### Module 4: Citation Tracking and Attribution (4 hours)
 
 - Building a vertical prompt corpus that reflects real buyer queries
 - Web-grounded vs API-only engine querying
@@ -81,7 +81,7 @@ five years.
 - Recognizing engine behavior changes within the same week they
   happen
 
-### Module 5 — The Clarity Principle (2 hours)
+### Module 5: The Clarity Principle (2 hours)
 
 - The three-layer pattern: outcome headline, platform-specific
   where-to-fix, collapsed technical detail
@@ -90,7 +90,7 @@ five years.
   just X but Y", formulaic transitions)
 - Audit deliverables that pass executive review
 
-### Module 6 — llms.txt and Agent Readiness (3 hours)
+### Module 6: llms.txt and Agent Readiness (3 hours)
 
 - The llms.txt standard, scoring rubric, and engine adoption
 - Agent task surfaces: ReserveAction, ApplyAction, BuyAction,
@@ -99,7 +99,7 @@ five years.
   agent action
 - Where the agent ecosystem is heading through 2027
 
-### Module 7 — Customer Engagement (2 hours)
+### Module 7: Customer Engagement (2 hours)
 
 - The 90-day playbook: Phase 1 deployment, Phase 2 measurement,
   Phase 3 expansion
@@ -109,7 +109,7 @@ five years.
 - The wholesale-margin economics and how to price for the
   customer
 
-### Module 8 — Capstone Audit (4 hours)
+### Module 8: Capstone Audit (4 hours)
 
 The candidate runs a full NeverRanked audit on a designated test
 site (a real Hawaii business we own the schema for). Submission
@@ -137,18 +137,18 @@ own production audits.
 A passing score on the capstone (75 of 100 against the rubric) plus
 a verified deployment of all six learning-objective schema types on
 a live site of the candidate's choice. NeverRanked publishes a
-public-facing roster of certified practitioners; certification is
+public-facing roster of certified practitioners. Certification is
 revocable for documented violations of the operating principles.
 
 ## Cost
 
 Pricing climbs as the credential gains market value. Today the
-program is new; the certification doesn't yet appear in agency RFPs
+program is new. The certification doesn't yet appear in agency RFPs
 or job listings. Pricing reflects that. Future cohorts will pay
 more as the public roster grows and certified practitioners produce
 case studies the next intake can see.
 
-### Cohort 1 — Founding (Q3 2026, capped at 30 seats)
+### Cohort 1: Founding (Q3 2026, capped at 30 seats)
 
 - **Wholesale partner cohort:** complimentary for agencies on an
   active wholesale partnership. Up to 5 seats per agency.
@@ -171,7 +171,7 @@ case studies the next intake can see.
 - **Independent practitioners:** $1,500 per practitioner.
 
 This is the destination price, contingent on the credential
-appearing in agency RFPs and job postings — which is an artifact of
+appearing in agency RFPs and job postings, which is an artifact of
 the founding cohort's output, not a unilateral pricing decision by
 NeverRanked.
 
@@ -183,11 +183,11 @@ phase.
 
 Three reasons MVNP-tier agencies should care about this:
 
-1. **Hiring leverage.** A certified practitioner is referenceable
+1. **Hiring advantage.** A certified practitioner is referenceable
    training when posting AEO roles or pitching new business.
-2. **Pricing leverage.** Certified-team-deployed AEO work supports
+2. **Pricing power.** Certified-team-deployed AEO work supports
    higher hourly rates than "we figured it out from a blog post."
-3. **Pipeline leverage.** The public roster of certified
+3. **Pipeline advantage.** The public roster of certified
    practitioners is a de-facto referral network for businesses
    seeking AEO help in regions where NeverRanked does not have a
    direct customer.

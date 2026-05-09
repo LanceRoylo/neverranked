@@ -64,7 +64,7 @@ const CATEGORIES = [
   {
     slug: 'llms-txt',
     name: 'llms.txt Templates',
-    summary: 'Curated llms.txt files per vertical. The standard is curation, not auto-generation — these templates show the right structure and which links matter for AI engine citation.',
+    summary: 'Curated llms.txt files per vertical. The standard is curation, not auto-generation. These templates show the right structure and which links matter for AI engine citation.',
     templates: readTemplates('content/llms-txt/templates', 'llms-txt'),
   },
 ];
@@ -81,7 +81,7 @@ const PAGE_HEAD = (title, description, path) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>${title} — NeverRanked Schema Marketplace</title>
+<title>${title}: NeverRanked Schema Marketplace</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="https://neverranked.com${path}">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -164,7 +164,7 @@ function indexPage() {
   <hr>
   <div class="footer">
     <p>Templates are MIT-licensed unless otherwise noted on the individual page. Methodology is open and reproducible.</p>
-    <p>Need a vertical we have not built yet? <a href="mailto:lance@neverranked.com">Email Lance</a> — we prioritize templates by demand.</p>
+    <p>Need a vertical we have not built yet? <a href="mailto:lance@neverranked.com">Email Lance</a>. We prioritize templates by demand.</p>
   </div>
 </div>
 </body>
@@ -186,7 +186,7 @@ function categoryPage(category) {
   `).join('');
 
   return PAGE_HEAD(
-    `${category.name} — NeverRanked`,
+    `${category.name}: NeverRanked`,
     category.summary,
     `/schemas/${category.slug}/`
   ) + `
@@ -231,7 +231,7 @@ function templatePage(category, template) {
     .replace(/(<\/(h[1-3]|ul|ol|pre|li)>\s*)<\/p>/g, '$1');
 
   return PAGE_HEAD(
-    `${template.title} — ${category.name}`,
+    `${template.title}: ${category.name}`,
     `Production-ready ${category.name.toLowerCase()} template from NeverRanked. Pre-reviewed for vertical compliance.`,
     `/schemas/${category.slug}/${template.slug}/`
   ) + `

@@ -13,8 +13,8 @@ make a site reliably citable.
 
 A markdown file at `/llms.txt` (root). Begins with an H1 that
 names the site. Followed by a blockquote that summarizes what the
-site does in one or two sentences. Then optional H2 sections —
-typically `## Docs`, `## Examples`, `## API`, `## Optional` — each
+site does in one or two sentences. Then optional H2 sections
+(typically `## Docs`, `## Examples`, `## API`, `## Optional`), each
 listing curated links in the form `- [Title](url): one-line
 description`. A companion `/llms-full.txt` may concatenate the
 full content of all linked pages for direct AI ingestion.
@@ -34,7 +34,7 @@ A good llms.txt:
 - Every link points to a 200 OK URL
 - Every link's title and description match the linked page's
   actual title and content
-- Sections are organized by intent, not by site IA — group by
+- Sections are organized by intent, not by site IA. Group by
   what an AI is most likely to need
 
 A bad llms.txt:

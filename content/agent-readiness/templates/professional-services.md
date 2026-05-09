@@ -6,7 +6,7 @@ medical practices, and consultancies are *consultation booking* and
 quote, or initiate a client engagement will reward sites that expose
 these as structured actions.
 
-## ReserveAction — discovery call / consultation
+## ReserveAction: discovery call / consultation
 
 Goes on the engagement landing page or contact page.
 
@@ -52,7 +52,7 @@ Goes on the engagement landing page or contact page.
 }
 ```
 
-## ContactAction — request a quote
+## ContactAction: request a quote
 
 Goes on the relevant practice page.
 
@@ -87,7 +87,7 @@ Goes on the relevant practice page.
 
 - **Anything that could constitute legal advice through an automated
   channel.** ReserveAction for a consultation is fine. AskAction that
-  promises an answer to a legal question is not — the bar association
+  promises an answer to a legal question is not. The bar association
   rules in most states prohibit unauthorized practice of law via
   automated systems.
 - **Privileged-information collection.** The schema target URL must
@@ -111,7 +111,7 @@ and direct authentication.
 
 ContactAction for *engagement intake* is appropriate. Do NOT expose
 any action that involves tax filing on the user's behalf without an
-authenticated session and signed engagement letter — IRS Circular 230
+authenticated session and signed engagement letter. IRS Circular 230
 and state CPA rules govern this strictly.
 
 ### Management consulting
@@ -125,10 +125,10 @@ agent flows beyond standard consumer protection.
 Same as the financial services and hospitality templates. Three
 sign-offs:
 
-1. Engineering — target URLs work and accept the parameters
-2. Compliance — the action does not exceed what your professional
+1. Engineering: target URLs work and accept the parameters
+2. Compliance: the action does not exceed what your professional
    license permits
-3. Marketing — the action is consistent with how you want agents to
+3. Marketing: the action is consistent with how you want agents to
    represent your firm
 
 ## Why this is a moat
@@ -136,5 +136,5 @@ sign-offs:
 Professional services categories are slow to adopt new schema. Most
 firms are still on year-old templates that lack basic Organization
 schema, let alone Action surfaces. A firm that ships agent-readiness
-in 2026 is positioning before any of their direct competitors —
+in 2026 is positioning before any of their direct competitors,
 typically by 12+ months.

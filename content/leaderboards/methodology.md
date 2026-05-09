@@ -18,13 +18,13 @@ The score is the weighted combination of five components.
 Presence and correctness of structured-data types AI engines read
 when they pick sources to cite.
 
-- Organization or LocalBusiness — entity disambiguation (8 points)
-- WebSite with SearchAction — sitelinks search box (4 points)
-- BreadcrumbList — navigation context (4 points)
-- FAQPage — direct citation feed for question-style queries (8 points)
-- A category-appropriate primary type — FinancialService,
-  RealEstateAgent, MedicalOrganization, etc. (8 points)
-- AggregateRating or Review — social proof signal (4 points)
+- Organization or LocalBusiness: entity disambiguation (8 points)
+- WebSite with SearchAction: sitelinks search box (4 points)
+- BreadcrumbList: navigation context (4 points)
+- FAQPage: direct citation feed for question-style queries (8 points)
+- A category-appropriate primary type (FinancialService,
+  RealEstateAgent, MedicalOrganization, etc.) (8 points)
+- AggregateRating or Review: social proof signal (4 points)
 - Article, BlogPosting, or HowTo on content pages (4 points)
 
 A type counts as "present" only if the JSON-LD parses, validates

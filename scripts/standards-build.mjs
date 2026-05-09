@@ -53,7 +53,7 @@ const BRAND_HEAD = (title, description, path) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>${title} — NeverRanked Standards</title>
+<title>${title}: NeverRanked Standards</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="https://neverranked.com${path}">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -117,7 +117,7 @@ function indexPage() {
 <div class="wrap">
   <p class="eyebrow"><a href="/" style="color:var(--text-faint)">NeverRanked</a> · Standards</p>
   <h1><em>Standards</em></h1>
-  <p style="font-size:18px;color:var(--text-mute);margin:0 0 40px;line-height:1.6">The public methodology that governs how NeverRanked scores AEO, deploys schema, and treats emerging standards like llms.txt and agent-readiness. Reproducible — anyone can apply these documents to their own work.</p>
+  <p style="font-size:18px;color:var(--text-mute);margin:0 0 40px;line-height:1.6">The public methodology that governs how NeverRanked scores AEO, deploys schema, and treats emerging standards like llms.txt and agent-readiness. Reproducible. Anyone can apply these documents to their own work.</p>
 
   ${cards}
 

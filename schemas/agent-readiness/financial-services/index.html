@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>Agent-Ready Schema for US Financial Services — Agent-Ready Schema — NeverRanked Schema Marketplace</title>
+<title>Agent-Ready Schema for US Financial Services: Agent-Ready Schema: NeverRanked Schema Marketplace</title>
 <meta name="description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
 <link rel="canonical" href="https://neverranked.com/schemas/agent-readiness/financial-services/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:title" content="Agent-Ready Schema for US Financial Services — Agent-Ready Schema">
+<meta property="og:title" content="Agent-Ready Schema for US Financial Services: Agent-Ready Schema">
 <meta property="og:description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/schemas/agent-readiness/financial-services/">
@@ -57,13 +57,13 @@ hr{border:0;border-top:1px solid var(--line);margin:48px 0}
 <p>and wealth advisors is the *application*. Account opening, loan</p>
 <p>application, credit card application, mortgage pre-qualification.</p>
 <p>Sites that expose these as structured <code>ApplyAction</code> blocks will</p>
-<p>capture the agent-driven application volume; sites that do not will</p>
+<p>capture the agent-driven application volume. Sites that do not will</p>
 <p>lose share to whoever did.</p>
 
 <p>This document is the canonical NeverRanked template set for agent-</p>
 <p>readiness on US financial sites.</p>
 
-<h2>ApplyAction — account opening</h2>
+<h2>ApplyAction: account opening</h2>
 
 <p>Goes on the dedicated account-opening page (e.g. <code>/personal/checking/open</code>).</p>
 
@@ -124,7 +124,7 @@ hr{border:0;border-top:1px solid var(--line);margin:48px 0}
 <p>  act customer identification notice. Agent flows must surface these</p>
 <p>  to the user before submission.</p>
 
-<h2>ApplyAction — loan / mortgage pre-qualification</h2>
+<h2>ApplyAction: loan / mortgage pre-qualification</h2>
 
 <p>Goes on the dedicated pre-qualification page.</p>
 
@@ -161,7 +161,7 @@ hr{border:0;border-top:1px solid var(--line);margin:48px 0}
 <p>  }</p>
 <p>}</code></pre>
 
-<h2>ContactAction — speak with an advisor</h2>
+<h2>ContactAction: speak with an advisor</h2>
 
 <p>Goes on the contact page or the wealth-advisory landing page.</p>
 
@@ -185,7 +185,7 @@ hr{border:0;border-top:1px solid var(--line);margin:48px 0}
 <p>  }</p>
 <p>}</code></pre>
 
-<h2>ReserveAction — branch visit appointment</h2>
+<h2>ReserveAction: branch visit appointment</h2>
 
 <p>For banks with appointment-required branch services (notary, safe</p>
 <p>deposit, complex transactions).</p>
@@ -217,7 +217,7 @@ hr{border:0;border-top:1px solid var(--line);margin:48px 0}
 <ul><li>**Wire transfers, ACH transfers, or any irrevocable money</li>
 </ul>  movement.** The fraud surface is too large. Banks should require
 <p>  a logged-in session with an authenticated user before any movement</p>
-<p>  of funds; an unauthenticated <code>Action</code> schema invites abuse.</p>
+<p>  of funds. An unauthenticated <code>Action</code> schema invites abuse.</p>
 <ul><li>**Investment trading actions.** Agents executing trades on behalf</li>
 </ul>  of users without explicit per-trade consent is regulated by SEC
 <p>  Rule 15c3-5 and is not safe to ship.</p>

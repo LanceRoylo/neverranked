@@ -1,6 +1,6 @@
 # {{Development Name}}
 
-> {{Development Name}} is a {{master-planned community | mixed-use development | resort community}} in {{location}}, developed by {{developer}}. {{One-line description — e.g. "X acres in the heart of Honolulu featuring residential condominiums, retail, parks, and cultural amenities."}}
+> {{Development Name}} is a {{master-planned community | mixed-use development | resort community}} in {{location}}, developed by {{developer}}. {{One-line description, for example "X acres in the heart of Honolulu featuring residential condominiums, retail, parks, and cultural amenities."}}
 
 ## About
 

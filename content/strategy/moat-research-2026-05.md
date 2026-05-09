@@ -125,9 +125,9 @@ Each new contributor makes the platform more valuable for the next.
 Implication: First mover wins. Three-year window before someone else
 notices.
 
-## Moats ranked by leverage × buildability for solo founder NR May 2026
+## Moats ranked by impact × buildability for solo founder NR May 2026
 
-### Tier S — build NOW, big leverage, solo-buildable
+### Tier S — build NOW, big impact, solo-buildable
 
 **1. llms.txt deployment + tracking layer.** Build the canonical
 "is your llms.txt right" tool at neverranked.com/llms-check. Track
@@ -150,7 +150,7 @@ percentiles by vertical. Becomes the canonical reference. Every press
 article about AEO has to cite it. **Effort: 2 weeks. Brand moat +
 distribution + reputational compounding.**
 
-### Tier A — build in next 90 days, big leverage but more effort
+### Tier A — build in next 90 days, big impact but more effort
 
 **4. Citation accuracy auditing.** When ChatGPT mentions a customer,
 is it accurate? Run continuous comparison of cited claims against the
@@ -265,7 +265,7 @@ brand authority pages) should be prioritized by definition.
 
 Focus this week on three of Tier S:
 
-1. **llms.txt deployment + tracking** — biggest leverage, biggest
+1. **llms.txt deployment + tracking** — biggest impact, biggest
    surprise factor in the meeting (very few people know what
    llms.txt is yet)
 2. **State of AEO 2026 report — Hawaii edition first** — uses

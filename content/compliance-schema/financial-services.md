@@ -245,7 +245,7 @@ block per physical location. AI engines use these heavily for
   "@context": "https://schema.org",
   "@type": "BankOrCreditUnion",
   "@id": "https://www.example.com/branches/bishop-square#branch",
-  "name": "Example Community Bank — Bishop Square Branch",
+  "name": "Example Community Bank: Bishop Square Branch",
   "branchOf": {
     "@id": "https://www.example.com/#organization"
   },
@@ -287,10 +287,10 @@ block per physical location. AI engines use these heavily for
 ## What to NEVER put in financial schema
 
 - Specific marketing claims about rates being "the highest" or
-  "lowest" — superlative claims require substantiation under
+  "lowest" superlative claims require substantiation under
   the FTC Act and CFPB UDAAP rules
 - Customer testimonials with specific dollar outcomes ("saved
-  $5,000") — triggers endorsement disclosure requirements
+  $5,000") triggers endorsement disclosure requirements
 - Promotional offers with expiration dates, unless paired with
   a `validThrough` field that the CMS auto-updates
 - AggregateRating from third-party review platforms unless

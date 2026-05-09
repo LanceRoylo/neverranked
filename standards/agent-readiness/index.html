@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>AI Agent Readiness — NeverRanked Standards</title>
+<title>AI Agent Readiness: NeverRanked Standards</title>
 <meta name="description" content="The four agent task surfaces that matter, what good agent-ready schema looks like, and what should never be exposed as an agent action.">
 <link rel="canonical" href="https://neverranked.com/standards/agent-readiness/">
 <meta name="robots" content="index, follow, max-image-preview:large">
@@ -54,11 +54,11 @@ blockquote{border-left:3px solid var(--gold);padding:0 0 0 20px;margin:24px 0;co
 <div class="wrap">
   <p class="eyebrow"><a href="/standards/" style="color:var(--text-faint)">Standards</a></p>
   <h1 id="neverranked-position-on-ai-agent-readiness">NeverRanked Position on AI Agent Readiness</h1>
-<p>Through 2026, the dominant AI use case has been <em>answering questions</em> —
+<p>Through 2026, the dominant AI use case has been <em>answering questions</em>.
 ChatGPT tells you the best Hawaii bank, Perplexity summarizes a category,
 Claude gives you advice on a topic. Citation Optimization (the AEO moves
 NeverRanked has been shipping all year) is built around this paradigm.</p>
-<p>The next paradigm — already in motion — is <em>agents performing tasks on
+<p>The next paradigm, already in motion, is <em>agents performing tasks on
 behalf of users</em>. ChatGPT books your dinner reservation. Claude opens
 your bank account. Perplexity runs a quote across three insurance
 carriers. The agent is no longer reading your site for context. It is
@@ -68,23 +68,23 @@ use. The signals are different. The window for differentiation is open.
 This document is NeverRanked’s framework for closing it.</p>
 <h2 id="the-four-agent-task-surfaces-that-matter">The four agent task surfaces that matter</h2>
 <p>Agents need machine-readable instructions for the actions a site
-supports. Schema.org has had <code>Action</code> types for years; almost no
-business uses them. The four most leveraged surfaces:</p>
-<h3 id="reserveaction-booking-surfaces">1. ReserveAction — booking surfaces</h3>
+supports. Schema.org has had <code>Action</code> types for years. Almost no
+business uses them. The four most consequential surfaces:</p>
+<h3 id="reserveaction-booking-surfaces">1. ReserveAction: booking surfaces</h3>
 <p>Restaurants, hotels, airlines, healthcare appointments, tours, classes,
 table service, professional consultations. If a user can book time on
-your calendar via your site, an agent can do it for them — but only if
+your calendar via your site, an agent can do it for them, but only if
 the site exposes a structured <code>ReserveAction</code> block.</p>
-<h3 id="buyaction-orderaction-commerce-surfaces">2. BuyAction / OrderAction — commerce surfaces</h3>
+<h3 id="buyaction-orderaction-commerce-surfaces">2. BuyAction / OrderAction: commerce surfaces</h3>
 <p>E-commerce, gift cards, subscription signups, ticket sales, donations.
 The product schema you already have (Product, Offer) is the foundation;
 agent readiness adds the action-shape that says “an agent can complete
 the purchase from this URL with these parameters.”</p>
-<h3 id="applyaction-application-surfaces">3. ApplyAction — application surfaces</h3>
+<h3 id="applyaction-application-surfaces">3. ApplyAction: application surfaces</h3>
 <p>Loan applications, account openings, job applications, scholarship
 applications, college admissions, government forms. The single biggest
 agent-acceleration opportunity in financial services and education.</p>
-<h3 id="contactaction-askaction-communication-surfaces">4. ContactAction / AskAction — communication surfaces</h3>
+<h3 id="contactaction-askaction-communication-surfaces">4. ContactAction / AskAction: communication surfaces</h3>
 <p>Email an advisor, request a quote, schedule a demo, open a support
 ticket. Agents that need information will favor sites that expose
 structured contact actions over those that bury contact behind
@@ -93,16 +93,16 @@ unstructured webforms.</p>
 <p>A well-structured <code>Action</code> block answers four questions for the agent:</p>
 <ol type="1">
 <li><strong>What action?</strong> (<code>@type</code>)</li>
-<li><strong>Who is the target?</strong> (<code>target.url</code> — the actual endpoint, not a
+<li><strong>Who is the target?</strong> (<code>target.url</code>, the actual endpoint, not a
 landing page)</li>
 <li><strong>What does the agent need to provide?</strong> (<code>object</code>, <code>query-input</code>,
 <code>actionStatus</code> if applicable)</li>
-<li><strong>What does success look like?</strong> (<code>result</code> — the schema type the
+<li><strong>What does success look like?</strong> (<code>result</code>, the schema type the
 action produces, e.g. a <code>Reservation</code>, <code>Order</code>, or <code>LoanOrCredit</code>)</li>
 </ol>
 <p>The fifth, optional, but increasingly important question:</p>
 <ol start="5" type="1">
-<li><strong>Are there agents we trust?</strong> (<code>agent</code> constraints — some sites
+<li><strong>Are there agents we trust?</strong> (<code>agent</code> constraints. Some sites
 may want to whitelist specific agent providers as authentication
 matures)</li>
 </ol>
@@ -121,7 +121,7 @@ delegated authentication first will be the ones agents can actually
 transact with.</p></li>
 <li><p><strong>The category leaders have not made it a priority.</strong> Schema.org’s
 Action vocabulary is not new. The reason it has not been adopted is
-not technical — it is that no one was crawling for it. That changed
+not technical. It is that no one was crawling for it. That changed
 in 2026.</p></li>
 </ol>
 <h2 id="neverrankeds-deployment-path">NeverRanked’s deployment path</h2>
@@ -129,7 +129,7 @@ in 2026.</p></li>
 <ol type="1">
 <li>Audit current Action coverage (typically zero)</li>
 <li>Identify the 2-4 most consequential actions the customer’s site
-supports — booking, ordering, applying, contacting</li>
+supports: booking, ordering, applying, contacting</li>
 <li>Generate paste-ready Action templates with proper target URLs and
 query-input fields</li>
 <li>Deploy via the same snippet that handles citation schema</li>
@@ -144,7 +144,7 @@ the same dashboard that tracks citation traffic</li>
 be a real HTTP URL that responds to GET or POST.</li>
 <li><strong>Reservation actions for businesses without a real-time inventory
 feed.</strong> Pointing an agent at a “we will call you back” form is worse
-than not having the schema — the agent will report failure.</li>
+than not having the schema. The agent will report failure.</li>
 <li><strong>Action schema that wraps a third-party widget the customer does
 not control.</strong> OpenTable’s structured booking is OpenTable’s surface,
 not the customer’s. We will not pretend otherwise.</li>
@@ -170,14 +170,14 @@ remain ahead as the weighting increases.</p>
 <li>ChatGPT and Claude both ship general-purpose agents that can
 transact through trusted commerce providers</li>
 <li>A small number of category leaders (probably hospitality and
-consumer banking) ship the first agent-native interfaces — agents
-can complete reservations and account openings end-to-end without
-human intervention</li>
+consumer banking) ship the first agent-native interfaces, where
+agents can complete reservations and account openings end-to-end
+without human intervention</li>
 <li>Schema.org publishes a refreshed Action vocabulary specifically for
 agent use, replacing or augmenting the 2014-era PotentialAction
 patterns most documentation still references</li>
 <li>Major search and AI surfaces begin distinguishing “agent-ready” from
-“human-only” sites in their indexes; agent-ready sites win the
+“human-only” sites in their indexes. Agent-ready sites win the
 agentic transaction volume</li>
 </ul>
 <p>NeverRanked’s bet: customers who deploy agent-readiness in 2026 lock in

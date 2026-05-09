@@ -28,7 +28,7 @@ the drop occurring, you get a full credit for that month against the
 next month's invoice.
 
 The guarantee covers detection. We are not guaranteeing your score
-never drops — search engines retrain, competitors deploy schema,
+never drops. Search engines retrain, competitors deploy schema,
 content gets stale. We are guaranteeing that if a drop happens, *we
 will catch it before you do.* If we miss it, we eat the month.
 
@@ -84,7 +84,7 @@ Customers may take the credit as:
 2. Application of the credit balance toward an upgrade tier
 3. A refund issued to the original payment method on request
 
-Credits stack — if the guarantee triggers two months in a row,
+Credits stack. If the guarantee triggers two months in a row,
 both months are credited.
 
 ## Why we offer this
@@ -113,8 +113,8 @@ Three reasons:
 
 This document was published 2026-05-08. As of publication, the
 guarantee has been honored zero times because no qualifying drop has
-occurred among current customers. The first incident — when it
-happens — will be documented publicly in our changelog with a
+occurred among current customers. The first incident, when it
+happens, will be documented publicly in our changelog with a
 post-mortem of what we missed and the fix that shipped.
 
 ## Reading the actual contract language
