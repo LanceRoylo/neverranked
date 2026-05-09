@@ -1,4 +1,4 @@
-# Competitor Teardown — American Savings Bank
+# Competitor Teardown: American Savings Bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08
@@ -81,7 +81,7 @@ category for the next engine training cycle.
 
 ## Per-bank teardown
 
-### Bank of Hawaii (boh.com) — score 50, grade D
+### Bank of Hawaii (boh.com): score 50, grade D
 
 **What they have:**
 - Organization schema with `BankOrCreditUnion` typing
@@ -94,7 +94,7 @@ category for the next engine training cycle.
   in Google AI Overviews)
 - AggregateRating schema, despite testimonial language and rating
   text on three sampled pages
-- Canonical tags site-wide (the homepage canonicalizes; interior
+- Canonical tags site-wide (the homepage canonicalizes, interior
   pages do not)
 - H1 discipline (four H1 tags on the homepage, which dilutes
   topical signal)
@@ -109,7 +109,7 @@ larger marketing organization. They also have a track record of
 slow deployment cycles for technical SEO work, which suggests
 quarter-scale lag.
 
-### First Hawaiian Bank (fhb.com) — score 45, grade D
+### First Hawaiian Bank (fhb.com): score 45, grade D
 
 **What they have:**
 - Strong content foundation (1,884 words on homepage, the highest
@@ -120,7 +120,7 @@ quarter-scale lag.
 **What they are missing:**
 - Zero structured data of any kind, on any sampled page
 - No `og:image` configured anywhere
-- No H1 detected on the homepage (a count of 0 is unusual; either
+- No H1 detected on the homepage (a count of 0 is unusual. Either
   the H1 is rendered as styled text without semantic markup, or
   the homepage relies on hero imagery without an accessibility
   fallback)
@@ -137,7 +137,7 @@ has not made AEO-aware deployment a priority through Q1 2026
 based on visible scan history. Inertia favors ASB if ASB moves
 first.
 
-### Central Pacific Bank (cpb.bank) — score 25, grade F
+### Central Pacific Bank (cpb.bank): score 25, grade F
 
 **What they have:**
 - A modern domain (cpb.bank, deployed on the new financial-services
@@ -178,7 +178,7 @@ These are the deployments that lock the category lead before any
 of the three competitors can mount a response.
 
 1. **`FAQPage` schema on the Common Questions page.** The single
-   highest-leverage move on the entire site. ASB's existing
+   highest-impact move on the entire site. ASB's existing
    10,923-word FAQ content becomes machine-readable in one
    deployment. None of the other three Hawaii banks have this.
 2. **`WebSite` schema with `SearchAction`.** Enables the sitelinks
@@ -206,9 +206,9 @@ These widen the moat once Phase 1 is in production.
 9. **`LocalBusiness` blocks per branch** with `geo` and
    `openingHoursSpecification`
 10. Optional: `llms.txt` published at the root with a curated map
-    of ASB's most citable pages (this is the next-standard signal
-    AI engines are starting to weight; see standards/llms-txt for
-    the methodology)
+    of ASB's most citable pages. This is the next-standard signal
+    AI engines are starting to weight. See standards/llms-txt for
+    the methodology.
 
 ---
 

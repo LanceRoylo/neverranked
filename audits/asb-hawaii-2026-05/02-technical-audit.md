@@ -1,5 +1,5 @@
 ```markdown
-# Technical Audit — American Savings Bank
+# Technical Audit: American Savings Bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08

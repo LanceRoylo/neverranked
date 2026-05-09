@@ -1,4 +1,4 @@
-# AI Citation Audit — American Savings Bank
+# AI Citation Audit: American Savings Bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08
@@ -80,18 +80,18 @@ every unbranded buyer prompt, Bank of Hawaii is first.
 
 ### What that means
 
-The two prompts where ASB is first are both branded queries — the
+The two prompts where ASB is first are both branded queries. The
 buyer already knows ASB exists and is researching them specifically.
 For these, citation rank does not move the needle on acquisition
 because the buyer is already in-funnel.
 
 The six prompts where ASB is third are unbranded buyer-stage queries
-— "best Hawaii bank for X." These are the queries that drive new
-customer acquisition. Buyers running these prompts do not know which
-bank to choose. They see Claude recommend Bank of Hawaii first,
-First Hawaiian second, ASB third. Citation order in unbranded
-buyer prompts is the single biggest leverage point on AI-driven
-new customer acquisition.
+of the "best Hawaii bank for X" shape. These are the queries that
+drive new customer acquisition. Buyers running these prompts do not
+know which bank to choose. They see Claude recommend Bank of Hawaii
+first, First Hawaiian second, ASB third. Citation order in unbranded
+buyer prompts is the single biggest acquisition mover on AI-driven
+new customer growth.
 
 ---
 

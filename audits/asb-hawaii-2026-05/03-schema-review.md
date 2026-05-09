@@ -1,4 +1,4 @@
-# Schema Review — American Savings Bank
+# Schema Review: American Savings Bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08

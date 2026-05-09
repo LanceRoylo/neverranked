@@ -1,4 +1,4 @@
-# Keyword & Intent Gap Analysis — American Savings Bank
+# Keyword & Intent Gap Analysis: American Savings Bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08
@@ -18,7 +18,7 @@ AI Overviews extract those answers and cite them.
 In keyword terms, ASB ranks because Google's blue-link index reads
 the words on the page. ASB does not get cited by AI engines because
 those engines read structured data first, fall back to content
-second. ASB has the content. Schema is the unlock.
+second. ASB has the content. Schema is what closes the gap.
 
 **Keyword grade: B** (strong content, weak machine-readability).
 
@@ -140,7 +140,7 @@ The ranked list:
    government designations ASB holds (SBA Preferred Lender, USDA
    Rural Development authority)
 4. `FAQPage` schema on the Common Questions page (the highest
-   single-page leverage on the site, given the existing 10,923
+   single-page impact on the site, given the existing 10,923
    words of Q&A content)
 5. `BankOrCreditUnion` `LocalBusiness` blocks on each branch page
    with `geo` and `openingHoursSpecification` for the "ATM locator"

@@ -1,4 +1,4 @@
-# Delivery email — American Savings Bank
+# Delivery email: American Savings Bank
 
 **To:** TBD
 **Subject:** Your NeverRanked audit: American Savings Bank

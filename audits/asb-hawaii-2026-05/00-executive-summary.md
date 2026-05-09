@@ -3,7 +3,7 @@
 **Prepared for:** American Savings Bank
 **Prepared by:** Never Ranked
 **Date:** 2026-05-08
-**Deliverable type:** $750 Audit — full SEO & AEO
+**Deliverable type:** $750 Audit. Full SEO & AEO
 **Window:** 48 hours
 
 ---

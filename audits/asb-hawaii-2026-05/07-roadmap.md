@@ -1,4 +1,4 @@
-# 90-Day Roadmap — American Savings Bank
+# 90-Day Roadmap: American Savings Bank
 
 **Auditor:** Never Ranked
 **Delivered:** 2026-05-08
@@ -8,7 +8,7 @@
 
 ## Premise
 
-Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented — every action traces back to a specific gap documented in the earlier sections.
+Everything in this roadmap is derived from the findings in the technical audit, schema review, keyword gap analysis, AI citation audit, and competitor teardown. Nothing here is invented. Every action traces back to a specific gap documented in the earlier sections.
 
 **Starting position (as of 2026-05-08):**
 - 0 of 10 sampled pages have Open Graph images deployed
@@ -26,7 +26,7 @@ Everything in this roadmap is derived from the findings in the technical audit, 
 
 ---
 
-## MONTH 1 — FOUNDATION (2026-05-08 – 2026-06-08)
+## MONTH 1: FOUNDATION (2026-05-08 – 2026-06-08)
 
 ### Theme
 **Fix the invisible layer: social metadata, schema foundation, and H1 structure.**
@@ -58,7 +58,7 @@ At end of month 1:
 
 ---
 
-## MONTH 2 — CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)
+## MONTH 2: CONTENT CITATION HOOKS (2026-06-08 – 2026-07-08)
 
 ### Theme
 **Build machine-readable signals for AI engines and rich results.**
@@ -82,7 +82,7 @@ At end of month 2:
 
 ---
 
-## MONTH 3 — AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-08)
+## MONTH 3: AUTHORITY + MEASUREMENT (2026-07-08 – 2026-08-08)
 
 ### Theme
 **Deploy remaining schema types, fix relative canonical, and instrument tracking.**
