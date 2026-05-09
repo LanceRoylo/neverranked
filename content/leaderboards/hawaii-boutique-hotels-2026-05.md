@@ -1,19 +1,19 @@
 ---
 category: Hawaii boutique hotels
-status: INTERNAL — not published
+status: "INTERNAL: not published"
 data_collected: 2026-05-08
 methodology: /leaderboards/methodology
 sample_size: 7
 next_update: weekly Mondays once published
 ---
 
-# Hawaii boutique hotels — AEO Leaderboard
+# Hawaii boutique hotels AEO Leaderboard
 
 **As of 2026-05-08.** Live scores pulled from
 [check.neverranked.com](https://check.neverranked.com) using the
 methodology at
 [methodology.md](methodology.md). Scores are independently
-reproducible — anyone can run a domain through the public scan tool
+reproducible. anyone can run a domain through the public scan tool
 and verify.
 
 Hawaii's boutique hotel category sits between major chains (Hyatt, Marriott, Hilton) and short-term rentals. Independent properties compete heavily on AI search because their best buyers research via ChatGPT and Perplexity for queries like "best boutique hotel Waikiki," "Maui beachfront boutique resort," or "adults only Big Island stay." Smaller operations with sharper schema deployment can outrank larger national chains for these high-intent queries.
@@ -37,7 +37,7 @@ The following hotels returned no score on the day this
 leaderboard was generated. Most often this means a rate-limit cap or a
 site that returned a non-HTML response. They will be retried next cycle.
 
-- Travaasa Hana (https://www.hotelhanamaui.com) — HTTP 429
+- Travaasa Hana (https://www.hotelhanamaui.com): HTTP 429
 
 
 ## What the rankings mean
@@ -51,37 +51,37 @@ the lead by a margin the rest would need a full quarter to close.
 
 ## Per-hotel notes
 
-### The Surfjack Hotel & Swim Club — score 90, grade A
+### The Surfjack Hotel & Swim Club: score 90, grade A
 
 - Schema deployed: Organization, WebSite, BreadcrumbList
 - URL: https://www.surfjack.com
 
-### Hotel Wailea — score 90, grade A
+### Hotel Wailea: score 90, grade A
 
 - Schema deployed: Organization, WebSite, BreadcrumbList
 - URL: https://www.hotelwailea.com
 
-### The Laylow Autograph Collection — score 80, grade B
+### The Laylow Autograph Collection: score 80, grade B
 
 - Schema deployed: Organization, BreadcrumbList
 - URL: https://www.laylowwaikiki.com
 
-### Lotus Honolulu at Diamond Head — score 70, grade C
+### Lotus Honolulu at Diamond Head: score 70, grade C
 
 - Schema deployed: Organization
 - URL: https://www.lotushonolulu.com
 
-### The Cliffs at Princeville — score 70, grade C
+### The Cliffs at Princeville: score 70, grade C
 
 - Schema deployed: WebSite, BreadcrumbList
 - URL: https://www.cliffsatprinceville.com
 
-### Halepuna Waikiki by Halekulani — score 45, grade D
+### Halepuna Waikiki by Halekulani: score 45, grade D
 
 - Schema deployed: none detected
 - URL: https://www.halepuna.com
 
-### Volcano Village Lodge — score 0, grade F
+### Volcano Village Lodge: score 0, grade F
 
 - Schema deployed: none detected
 - URL: https://www.volcanovillagelodge.com
@@ -94,7 +94,7 @@ independently reproducible via [check.neverranked.com](https://check.neverranked
 
 ## Errata
 
-(none — first publication of this vertical)
+((none. First publication.))
 
 ---
 

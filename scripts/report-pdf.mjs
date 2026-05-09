@@ -67,7 +67,7 @@ const fullHtml = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>${title} — ${subtitle}</title>
+<title>${subtitle ? `${title}: ${subtitle}` : title}</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
 <style>
   :root {

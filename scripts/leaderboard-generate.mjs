@@ -139,7 +139,7 @@ The following ${config.category_plural} returned no score on the day this
 leaderboard was generated. Most often this means a rate-limit cap or a
 site that returned a non-HTML response. They will be retried next cycle.
 
-${failed.map(f => `- ${f.name} (${f.url}) — ${f.error}`).join('\n')}
+${failed.map(f => `- ${f.name} (${f.url}): ${f.error}`).join('\n')}
 `;
 
 const competitiveLine = config.competitive_summary
@@ -148,20 +148,20 @@ const competitiveLine = config.competitive_summary
 
 const md = `---
 category: ${config.vertical}
-status: INTERNAL — not published
+status: "INTERNAL: not published"
 data_collected: ${today}
 methodology: /leaderboards/methodology
 sample_size: ${ranked.length}
 next_update: weekly Mondays once published
 ---
 
-# ${config.vertical} — AEO Leaderboard
+# ${config.vertical} AEO Leaderboard
 
 **As of ${today}.** Live scores pulled from
 [check.neverranked.com](https://check.neverranked.com) using the
 methodology at
 [methodology.md](methodology.md). Scores are independently
-reproducible — anyone can run a domain through the public scan tool
+reproducible. Anyone can run a domain through the public scan tool
 and verify.
 ${competitiveLine}
 ## Current rankings
@@ -175,7 +175,7 @@ ${failedSection}
 
 ${highest && lowest ? `The leader (${highest.name}) sits at ${highest.score}, ` +
 `the bottom of the ranked list (${lowest.name}) at ${lowest.score}. ` : ''}\
-The category median is ${median ?? '—'}.\
+The category median is ${median ?? 'n/a'}.\
 ${noSchema > 0 ? ` ${noSchema} of ${results.length - failed.length} ${config.category_plural} have **zero structured data** deployed at all.` : ''}
 
 A ${config.category_archetype} that ships a single Phase 1 schema deployment
@@ -185,7 +185,7 @@ the lead by a margin the rest would need a full quarter to close.
 
 ## Per-${config.category_archetype} notes
 
-${ranked.map(r => `### ${r.name} — score ${r.score}, grade ${r.grade}
+${ranked.map(r => `### ${r.name}: score ${r.score}, grade ${r.grade}
 
 - Schema deployed: ${(r.schema_present || []).join(', ') || 'none detected'}
 - URL: ${r.url}
@@ -198,7 +198,7 @@ independently reproducible via [check.neverranked.com](https://check.neverranked
 
 ## Errata
 
-(none — first publication of this vertical)
+(none. First publication of this vertical.)
 
 ---
 

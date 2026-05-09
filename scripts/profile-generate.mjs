@@ -61,11 +61,11 @@ const PAGE_HEAD = (title, description, slug) => `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
-<title>${title} — NeverRanked AEO Profile</title>
+<title>${title}: NeverRanked AEO Profile</title>
 <meta name="description" content="${description}">
 <link rel="canonical" href="https://neverranked.com/profile/${slug}/">
 <meta name="robots" content="index, follow, max-image-preview:large">
-<meta property="og:title" content="${title} — AEO Profile">
+<meta property="og:title" content="${title}: AEO Profile">
 <meta property="og:description" content="${description}">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://neverranked.com/profile/${slug}/">
@@ -119,18 +119,18 @@ function profilePage(entry, leaderboard) {
       ? `${Math.abs(vsmedian)} points below the ${leaderboard.vertical} median`
       : `at the ${leaderboard.vertical} median`;
 
-  const description = `${entry.name} scored ${score} (${grade}) on the NeverRanked AEO methodology — ${vsLabel}. Schema deployed: ${schemaList.join(', ') || 'none detected'}.`;
+  const description = `${entry.name} scored ${score} (${grade}) on the NeverRanked AEO methodology, ${vsLabel}. Schema deployed: ${schemaList.join(', ') || 'none detected'}.`;
 
   const allSchemaTypes = ['Organization','WebSite','BreadcrumbList','FAQPage','AggregateRating'];
   const schemaItems = allSchemaTypes.map(t => {
     const has = schemaList.includes(t);
-    return `<li class="${has ? '' : 'missing'}">${has ? '✓ ' : '— '}${t}</li>`;
+    return `<li class="${has ? '' : 'missing'}">${has ? '✓ ' : '× '}${t}</li>`;
   }).join('');
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": `${entry.name} — AEO Profile`,
+    "headline": `${entry.name}: AEO Profile`,
     "description": description,
     "datePublished": leaderboard.data_collected,
     "author": { "@type": "Organization", "name": "NeverRanked", "url": "https://neverranked.com" },
@@ -171,7 +171,7 @@ function profilePage(entry, leaderboard) {
 
   <div class="section">
     <p class="section-label">What this means</p>
-    <p>${entry.name} is currently ${grade === 'A' || grade === 'B' ? 'one of the better-deployed' : grade === 'C' ? 'mid-pack on' : 'underperforming on'} AEO readiness within ${leaderboard.vertical}. ${score >= 70 ? 'AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) have most of the structured signals they need to cite this site when answering buyer queries in this category.' : score >= 40 ? 'AI engines have some of the signals but are missing key types that determine citation eligibility — competitors with sharper schema deployment are likely capturing citations this business should be earning.' : 'AI engines have very little structured data to work with. Deploying foundational schema (Organization, WebSite, FAQPage, category-appropriate type) would lift the score 25 to 40 points in one cycle.'}</p>
+    <p>${entry.name} is currently ${grade === 'A' || grade === 'B' ? 'one of the better-deployed' : grade === 'C' ? 'mid-pack on' : 'underperforming on'} AEO readiness within ${leaderboard.vertical}. ${score >= 70 ? 'AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) have most of the structured signals they need to cite this site when answering buyer queries in this category.' : score >= 40 ? 'AI engines have some of the signals but are missing key types that determine citation eligibility. Competitors with sharper schema deployment are likely capturing citations this business should be earning.' : 'AI engines have very little structured data to work with. Deploying foundational schema (Organization, WebSite, FAQPage, category-appropriate type) would lift the score 25 to 40 points in one cycle.'}</p>
   </div>
 
   <div class="section">
@@ -211,7 +211,7 @@ function indexPage(allEntries) {
           <div style="color:var(--text-faint);font-size:11px;font-family:var(--mono);margin-top:2px">${e.url.replace(/^https?:\/\//,'').replace(/\/$/,'')}</div>
         </div>
         <div style="text-align:right">
-          <div style="color:var(--gold);font-family:var(--serif);font-style:italic;font-size:24px">${e.score ?? '—'}</div>
+          <div style="color:var(--gold);font-family:var(--serif);font-style:italic;font-size:24px">${e.score ?? 'n/a'}</div>
           <div style="color:var(--text-faint);font-size:10px;font-family:var(--label);letter-spacing:.18em;text-transform:uppercase">${e.grade ?? ''}</div>
         </div>
       </a>`).join('');

@@ -1,5 +1,5 @@
 ---
-title: "The State of Answer Engine Optimization in Hawaii — 2026 Edition"
+title: "The State of Answer Engine Optimization in Hawaii: 2026 Edition"
 publisher: NeverRanked
 publication_date: 2026-05-07
 data_collected: 2026-05-07
@@ -33,13 +33,13 @@ For now, three findings worth leading with:
 All four major Hawaii banks (American Savings, First Hawaiian, Bank
 of Hawaii, Central Pacific) scored D or F on AEO readiness. Two of
 the four have zero structured data deployed at all. The category
-leader — American Savings Bank, at 55 — leads by a thin five-point
+leader, American Savings Bank at 55, leads by a thin five-point
 margin that any of the other three could erase in a single
 deployment cycle.
 
 **Finding 2: The Hawaii businesses scoring best on AEO are not the
 ones with the biggest brands.** The single highest score in our
-Hawaii sample was MVNP at 80 — a Honolulu marketing agency, not
+Hawaii sample was MVNP at 80, a Honolulu marketing agency, not
 a Fortune 500 customer. Ward Village, the Howard Hughes-developed
 master-planned community, scored 70. Drake Real Estate Partners,
 a smaller Honolulu firm, scored 5. AEO readiness correlates
@@ -60,7 +60,7 @@ citation surface before the six engines retrain on the next round.
 
 ---
 
-## Hawaii at a glance — the May 2026 leaderboard
+## Hawaii at a glance: the May 2026 leaderboard
 
 | Vertical | Business | AEO Score | Grade | Schema Types Deployed |
 |---|---|---|---|---|
@@ -76,7 +76,7 @@ citation surface before the six engines retrain on the next round.
 **Methodology:** All scores produced via the public scoring engine
 at check.neverranked.com using the methodology documented at
 [neverranked.com/leaderboards/methodology](https://neverranked.com/leaderboards/methodology).
-Independently reproducible — anyone can run the same scan and
+Independently reproducible. Anyone can run the same scan and
 verify the numbers.
 
 **Median Hawaii AEO score across the sample:** 50 (D).
@@ -126,7 +126,7 @@ it.
 
 ---
 
-## Hawaii community banking — deep dive
+## Hawaii community banking: deep dive
 
 The community banking category in Hawaii consists of four
 institutions of meaningful scale: American Savings Bank, First
@@ -188,7 +188,7 @@ mechanical. The components:
 
 1. Deploy `Organization` and `BankOrCreditUnion` schema site-wide
    (the two banks that already have it should harden it with
-   regulatory disclosures — Member FDIC, Equal Housing Lender,
+   regulatory disclosures (Member FDIC, Equal Housing Lender),
    NMLS ID)
 2. Deploy `WebSite` schema with `SearchAction` to enable the
    sitelinks search box in Google
@@ -208,7 +208,7 @@ other three would need a quarter to close.
 
 ---
 
-## Hawaii real estate development — deep dive
+## Hawaii real estate development: deep dive
 
 Real estate scoring in Hawaii is bimodal. Master-planned
 communities backed by national developers (Howard Hughes for Ward
@@ -233,9 +233,9 @@ to 70 (matching Ward Village) is another two cycles.
 
 ---
 
-## Marketing services — the unexpected leader
+## Marketing services: the unexpected leader
 
-MVNP, a Honolulu marketing agency, scored 80 — the highest in our
+MVNP, a Honolulu marketing agency, scored 80, the highest in our
 Hawaii sample.
 
 This is interesting for two reasons:
@@ -294,7 +294,7 @@ program is documented in our partner brief.
 ### If you are a Hawaii customer of one of the businesses we
 scored
 
-Your bank, your real estate developer, your agency — these
+Your bank, your real estate developer, your agency: these
 businesses are not yet AEO-ready. That does not mean they are bad
 at their job. It means they have not yet adapted to a customer
 acquisition surface that emerged in the last 18 months.

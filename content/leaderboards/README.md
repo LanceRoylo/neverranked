@@ -21,16 +21,16 @@ Leaderboards are not published until:
 
 ## Files
 
-- `methodology.md` — how the AEO score is computed and what each
+- `methodology.md`: how the AEO score is computed and what each
   component measures. Public when published.
-- `hawaii-community-banking-2026-05.md` — first leaderboard. Built
+- `hawaii-community-banking-2026-05.md`: first leaderboard. Built
   from live data on May 7, 2026. Status: internal, not published.
 
 ## After ASB meeting
 
 If ASB signs the Signal pilot, give them 14 days, then publish.
 If ASB declines, give them 14 days, publish anyway. The leaderboard
-is structural — it exists whether they sign or not.
+is structural. It exists whether they sign or not.
 
 If MVNP signs as agency partner, the leaderboard publication is
 their first co-marketing artifact.

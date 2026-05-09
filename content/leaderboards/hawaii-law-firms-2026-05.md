@@ -1,19 +1,19 @@
 ---
 category: Hawaii law firms
-status: INTERNAL — not published
+status: "INTERNAL: not published"
 data_collected: 2026-05-08
 methodology: /leaderboards/methodology
 sample_size: 6
 next_update: weekly Mondays once published
 ---
 
-# Hawaii law firms — AEO Leaderboard
+# Hawaii law firms AEO Leaderboard
 
 **As of 2026-05-08.** Live scores pulled from
 [check.neverranked.com](https://check.neverranked.com) using the
 methodology at
 [methodology.md](methodology.md). Scores are independently
-reproducible — anyone can run a domain through the public scan tool
+reproducible. anyone can run a domain through the public scan tool
 and verify.
 
 Hawaii's legal services market is dominated by mid-sized full-service firms in Honolulu, with a long tail of boutiques specializing in real estate, native Hawaiian rights, immigration, and litigation. The category has high citation pressure on AI engines because legal queries ("best Hawaii estate planning attorney," "Honolulu probate lawyer") are exactly the kind of buyer-stage research now happening primarily through ChatGPT and Perplexity.
@@ -36,8 +36,8 @@ The following law firms returned no score on the day this
 leaderboard was generated. Most often this means a rate-limit cap or a
 site that returned a non-HTML response. They will be retried next cycle.
 
-- Ashford & Wriston (https://www.awlaw.com) — HTTP 429
-- Bays Lung Rose & Holma (https://www.legalhawaii.com) — HTTP 422
+- Ashford & Wriston (https://www.awlaw.com): HTTP 429
+- Bays Lung Rose & Holma (https://www.legalhawaii.com): HTTP 422
 
 
 ## What the rankings mean
@@ -51,32 +51,32 @@ the lead by a margin the rest would need a full quarter to close.
 
 ## Per-law firm notes
 
-### Cades Schutte — score 90, grade A
+### Cades Schutte: score 90, grade A
 
 - Schema deployed: Organization, WebSite, BreadcrumbList
 - URL: https://www.cades.com
 
-### Goodsill Anderson Quinn & Stifel — score 80, grade B
+### Goodsill Anderson Quinn & Stifel: score 80, grade B
 
 - Schema deployed: Organization, WebSite
 - URL: https://www.goodsill.com
 
-### Schlack Ito — score 80, grade B
+### Schlack Ito: score 80, grade B
 
 - Schema deployed: Organization, WebSite, BreadcrumbList
 - URL: https://www.schlackito.com
 
-### Damon Key Leong Kupchak Hastert — score 45, grade D
+### Damon Key Leong Kupchak Hastert: score 45, grade D
 
 - Schema deployed: none detected
 - URL: https://www.hawaiilawyer.com
 
-### Watanabe Ing — score 30, grade F
+### Watanabe Ing: score 30, grade F
 
 - Schema deployed: none detected
 - URL: https://www.wik.com
 
-### Carlsmith Ball — score 15, grade F
+### Carlsmith Ball: score 15, grade F
 
 - Schema deployed: none detected
 - URL: https://www.carlsmith.com
@@ -89,7 +89,7 @@ independently reproducible via [check.neverranked.com](https://check.neverranked
 
 ## Errata
 
-(none — first publication of this vertical)
+((none. First publication.))
 
 ---
 
