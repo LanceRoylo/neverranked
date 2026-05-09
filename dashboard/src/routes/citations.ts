@@ -666,12 +666,12 @@ export async function handleCitations(
     }).join("");
 
     const verdict = sov.clientRank === null
-      ? `<strong style="color:var(--red)">You don't appear in any of the AI mentions for your tracked queries</strong> — competitors are claiming the entire conversation. The roadmap items below address this directly.`
+      ? `<strong style="color:var(--red)">You don't appear in any of the AI mentions for your tracked queries.</strong> Competitors are claiming the entire conversation. The roadmap items below address this directly.`
       : sov.clientRank === 1
-      ? `<strong style="color:var(--green)">You hold the most mentions in your category</strong> — ranked #1 across ${sov.totalMentions} business mentions in the last 90 days.`
+      ? `<strong style="color:var(--green)">You hold the most mentions in your category.</strong> Ranked #1 across ${sov.totalMentions} business mentions in the last 90 days.`
       : sov.clientRank <= 3
       ? `Ranked <strong style="color:var(--text)">#${sov.clientRank}</strong> across ${sov.totalMentions} business mentions in your category. Competitive with the leaders.`
-      : `Ranked <strong style="color:var(--text)">#${sov.clientRank}</strong> across ${sov.totalMentions} business mentions in your category. Top three are pulling away — see the per-keyword gaps below for where to focus.`;
+      : `Ranked <strong style="color:var(--text)">#${sov.clientRank}</strong> across ${sov.totalMentions} business mentions in your category. Top three are pulling away. See the per-keyword gaps below for where to focus.`;
 
     const trendChart = sovTrend.buckets.length > 0 ? renderSovTrend(sovTrend, slug, env) : "";
 
@@ -802,8 +802,16 @@ export async function handleCitations(
     <!-- Competitor citation comparison matrix (entity-level) -->
     ${await buildCompetitorCitationMatrix(slug, keywordBreakdown, env)}
 
-    <!-- Source-level gaps (which sources AI engines pull from, where you're missing) -->
-    ${renderCitationGapPanel(await buildCitationGapReport(slug, domain?.domain ? [domain.domain] : [], env, 90))}
+    <!-- Source-level gaps (which sources AI engines pull from, where you're missing).
+         Fetches ALL active domains for the client so multi-domain brands
+         (example.com + app.example.com + docs.example.com) get every
+         domain marked as client-owned. Single-domain clients are unaffected. -->
+    ${await (async () => {
+      const allDomains = (await env.DB.prepare(
+        "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1"
+      ).bind(slug).all<{ domain: string }>()).results.map(r => r.domain);
+      return renderCitationGapPanel(await buildCitationGapReport(slug, allDomains, env, 90));
+    })()}
 
     <!-- Content recommendations from citation gaps -->
     ${await buildContentRecommendations(slug, keywordBreakdown, env)}

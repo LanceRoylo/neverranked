@@ -37,7 +37,7 @@ venue-specific queries. AI engines pull from Wikipedia, TripAdvisor,
 brand sites, Maps, and press releases for those. Across 695 captured
 citation runs for current NeverRanked clients (mostly Hawaii local
 businesses) we saw zero reddit citations. The reddit tracker is
-forward-leverage for SaaS / national / product-comparison customers,
+strategic infrastructure for SaaS / national / product-comparison customers,
 not the current customer mix. Use the broader `@nr/citation-gap`
 package for source-agnostic gap analysis on local-business clients.
 

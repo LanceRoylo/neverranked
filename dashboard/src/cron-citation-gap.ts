@@ -26,26 +26,33 @@ export interface CitationGapSweepResult {
 }
 
 export async function runCitationGapRoadmapSync(env: Env): Promise<CitationGapSweepResult> {
-  // Pull active client + their canonical domain in one shot. The
-  // canonical domain feeds the analyzer's client-owned classifier so
-  // self-citing URLs don't get flagged as gaps.
+  // Pull active client + ALL their domains. Multi-domain clients
+  // (e.g. example.com + app.example.com + docs.example.com) need
+  // every domain in the array so the analyzer's client-owned
+  // classifier correctly identifies any of them as self-cited and
+  // doesn't flag those URLs as third-party gaps. GROUP_CONCAT is
+  // SQLite's standard array aggregation; we split on comma below.
   const rows = (
     await env.DB.prepare(
-      `SELECT client_slug, MIN(domain) AS domain
+      `SELECT client_slug, GROUP_CONCAT(domain) AS domains
        FROM domains
        WHERE active = 1 AND is_competitor = 0
        GROUP BY client_slug
        ORDER BY client_slug`
-    ).all<{ client_slug: string; domain: string }>()
+    ).all<{ client_slug: string; domains: string }>()
   ).results;
 
   const result: CitationGapSweepResult = { clients: 0, inserted: 0, resolved: 0, errors: 0 };
 
   for (const r of rows) {
     try {
+      const clientDomains = (r.domains || "")
+        .split(",")
+        .map((d) => d.trim())
+        .filter(Boolean);
       const out = await syncRoadmapItemsFromGaps(
         r.client_slug,
-        r.domain ? [r.domain] : [],
+        clientDomains,
         env,
       );
       result.clients += 1;

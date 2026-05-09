@@ -121,7 +121,7 @@ export async function sendMagicLinkEmail(
         from: `${brand.name} <login@neverranked.com>`,
         to: [email],
         subject: `Sign in to ${brand.name}`,
-        text: `Click to sign in:\n\n${loginUrl}\n\nThis link expires in 15 minutes.\n\n— ${brand.name}`,
+        text: `Click to sign in:\n\n${loginUrl}\n\nThis link expires in 15 minutes.\n\n${brand.name}`,
         html: `
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
             ${headerHtml}
