@@ -201,6 +201,16 @@ export async function sendWeeklyDigests(
       const recentDone = (await env.DB.prepare(
         "SELECT title FROM roadmap_items WHERE client_slug = ? AND status = 'done' AND completed_at > ? ORDER BY completed_at DESC LIMIT 3"
       ).bind(d.clientSlug, oneWeekAgo).all<{ title: string }>()).results;
+      // Citation-gap delta: items added or auto-resolved in the last
+      // week with refresh_source / completed_by = 'citation_gap'.
+      // Limit 3 each to match the recently-completed line cap and
+      // keep the email block scannable.
+      const newGapItems = (await env.DB.prepare(
+        "SELECT title FROM roadmap_items WHERE client_slug = ? AND refresh_source = 'citation_gap' AND created_at > ? AND status != 'done' ORDER BY created_at DESC LIMIT 3"
+      ).bind(d.clientSlug, oneWeekAgo).all<{ title: string }>()).results;
+      const gapResolved = (await env.DB.prepare(
+        "SELECT title FROM roadmap_items WHERE client_slug = ? AND completed_by = 'citation_gap' AND completed_at > ? ORDER BY completed_at DESC LIMIT 3"
+      ).bind(d.clientSlug, oneWeekAgo).all<{ title: string }>()).results;
 
       if (total && total.cnt > 0) {
         roadmapDataMap.set(d.clientSlug, {
@@ -209,6 +219,8 @@ export async function sendWeeklyDigests(
           done: done?.cnt || 0,
           inProgress: inProg?.cnt || 0,
           recentlyCompleted: recentDone.map(r => r.title),
+          newGapItems: newGapItems.length > 0 ? newGapItems.map(r => r.title) : undefined,
+          gapResolved: gapResolved.length > 0 ? gapResolved.map(r => r.title) : undefined,
         });
       }
     }

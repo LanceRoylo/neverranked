@@ -239,6 +239,12 @@ export interface RoadmapDigestData {
   done: number;
   inProgress: number;
   recentlyCompleted: string[];  // titles of items completed this week
+  // Citation-gap delta surfaces the auto-roadmap activity: new items
+  // generated from gap detection in the last 7 days, and gap-driven
+  // items auto-resolved (closed because the underlying gap closed
+  // in citation_runs). Both are subsets of the larger totals above.
+  newGapItems?: string[];       // titles added in last 7 days where refresh_source='citation_gap'
+  gapResolved?: string[];       // titles closed in last 7 days where completed_by='citation_gap'
 }
 
 /** Send a digest email to one recipient */
@@ -1775,6 +1781,15 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
           ${rd.recentlyCompleted.length > 0 ? `
           <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">Completed this week</div>
           ${recentList}
+          ` : ""}
+          ${rd.gapResolved && rd.gapResolved.length > 0 ? `
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#27ae60;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">Citation gap closed this week</div>
+          ${rd.gapResolved.slice(0, 3).map(t => `<div style="padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;color:#b0b0a8">${escEmail(t)}</div>`).join("")}
+          ` : ""}
+          ${rd.newGapItems && rd.newGapItems.length > 0 ? `
+          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">New gap-driven items this week</div>
+          ${rd.newGapItems.slice(0, 3).map(t => `<div style="padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;color:#b0b0a8">${escEmail(t)}</div>`).join("")}
+          <div style="font-size:11px;color:#888888;margin-top:8px;line-height:1.6">Each item is backed by AI engine citation evidence for your tracked queries. Open your roadmap for the full action briefs.</div>
           ` : ""}
         </td>
       </tr>
