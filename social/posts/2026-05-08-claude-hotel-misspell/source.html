@@ -22,85 +22,59 @@
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{
   width:1080px;height:1080px;overflow:hidden;
-  background:var(--bg);color:var(--text);
-  font-family:var(--mono);
+  background:var(--bg);color:var(--text);font-family:var(--mono);
   -webkit-print-color-adjust:exact;print-color-adjust:exact;
 }
 .card{
   width:100%;height:100%;
-  display:flex;flex-direction:column;
+  display:flex;flex-direction:column;justify-content:space-between;
   padding:64px 72px;
   position:relative;
-  background:radial-gradient(ellipse at 30% 0%, #1f1812 0%, #0a0908 75%);
+  background:radial-gradient(ellipse at 30% 0%, #1c1812 0%, #0a0908 70%);
 }
-
-/* Tiny brand row at top */
 .brand-row{
   display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:24px;
 }
 .brand-mark{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--gold)}
 .brand-tag{font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;font-size:11px;color:var(--text-faint);font-weight:500}
 
-/* Eyebrow */
+.center{
+  display:flex;flex-direction:column;justify-content:center;flex:1;
+  margin:24px 0;
+}
 .eyebrow{
   font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;
   font-size:14px;color:var(--red);font-weight:700;
-  margin-bottom:18px;
+  margin-bottom:32px;
 }
-
-/* The hero — the misspelled word, huge */
-.hero{
-  flex:1;
-  display:flex;flex-direction:column;justify-content:center;
-  margin:8px 0;
+.headline{
+  font-family:var(--serif);font-weight:400;
+  font-size:104px;line-height:1.02;letter-spacing:-0.03em;
+  color:var(--text);
+  max-width:980px;
 }
-.misspell{
-  font-family:var(--serif);font-style:italic;font-weight:700;
-  font-size:158px;line-height:0.95;letter-spacing:-0.04em;
-  color:var(--red);
-  position:relative;display:inline-block;
+.headline em{font-style:italic;color:var(--gold-bright)}
+.headline .strike{
   text-decoration:line-through;
-  text-decoration-thickness:7px;
+  text-decoration-thickness:6px;
   text-decoration-color:var(--red);
+  color:var(--red);
+  font-style:italic;
 }
-.arrow-row{
-  display:flex;align-items:center;gap:24px;
-  margin-top:20px;margin-bottom:32px;
+.sub{
+  margin-top:36px;
+  font-family:var(--mono);font-size:24px;line-height:1.45;
+  color:var(--text-mute);max-width:840px;letter-spacing:0;
 }
-.arrow{
-  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
-  font-size:18px;color:var(--text-faint);font-weight:600;
-}
-.arrow span{color:var(--red);margin-right:8px;font-size:24px;letter-spacing:0}
-.real-name{
-  font-family:var(--serif);font-style:italic;font-weight:600;
-  font-size:72px;line-height:0.95;letter-spacing:-0.025em;
-  color:var(--gold-bright);
-}
+.sub strong{color:var(--gold);font-weight:500}
 
-/* The punchline */
-.punchline{
-  font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.18;
-  letter-spacing:-0.015em;color:var(--text);
-  max-width:920px;
-  margin-top:12px;
-}
-.punchline em{font-style:italic;color:var(--gold-bright)}
-
-/* Footer attribution */
 .footer{
+  border-top:1px solid var(--line);padding-top:20px;
   display:flex;align-items:flex-end;justify-content:space-between;
-  border-top:1px solid var(--line);padding-top:18px;margin-top:auto;
 }
-.footer-meta{
-  font-family:var(--mono);font-size:13px;color:var(--text-faint);line-height:1.5;
-}
+.footer-meta{font-family:var(--mono);font-size:13px;color:var(--text-faint);line-height:1.5}
 .footer-meta strong{color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;font-weight:600;font-size:11px;display:block;margin-bottom:3px}
-.footer-cta{
-  text-align:right;
-  font-family:var(--mono);font-size:14px;color:var(--gold-bright);
-}
+.footer-cta{text-align:right;font-family:var(--mono);font-size:14px;color:var(--gold-bright)}
 .footer-cta .url{display:block;font-size:16px;color:var(--gold);margin-top:4px;font-weight:500}
 </style>
 </head>
@@ -112,24 +86,25 @@ html,body{
     <div class="brand-tag">Answer Engine Optimization</div>
   </div>
 
-  <div class="eyebrow">AI just misspelled Hawaii's most famous hotel</div>
+  <div class="center">
+    <div class="eyebrow">When AI is your storefront</div>
 
-  <div class="hero">
-    <div class="misspell">Haalekulani</div>
-    <div class="arrow-row">
-      <span class="arrow"><span>→</span>actually spelled</span>
-      <span class="real-name">Halekulani.</span>
-    </div>
-    <div class="punchline">Claude just recommended this hotel by name.<br>It just couldn't <em>spell</em> the name.</div>
+    <h1 class="headline">
+      AI is writing your business description <em>right now.</em>
+    </h1>
+
+    <p class="sub">
+      Using words you <strong>never wrote.</strong> From sources you <strong>don't control.</strong>
+    </p>
   </div>
 
   <div class="footer">
     <div class="footer-meta">
-      <strong>Real prompt · May 8, 2026</strong>
-      Claude (claude-sonnet-4-5), asked: "best boutique hotel in Honolulu"
+      <strong>Test it yourself</strong>
+      Open ChatGPT or Claude. Ask: "best [your category] in [your city]."
     </div>
     <div class="footer-cta">
-      Your storefront in AI →
+      Your AI score →
       <span class="url">check.neverranked.com</span>
     </div>
   </div>
