@@ -10,77 +10,98 @@
   --gold:#c9a84c;
   --gold-bright:#e8c767;
   --bg:#0a0908;
-  --card:#13110e;
   --text:#fbf8ef;
   --text-mute:#a8a298;
   --text-faint:#6b665a;
   --line:#2a2620;
+  --red:#ff7a5c;
   --serif:"Playfair Display",Georgia,serif;
   --mono:"DM Mono","Menlo",monospace;
   --label:"Barlow Condensed","Helvetica Neue",sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html,body{width:1080px;height:1080px;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--mono);font-size:15px;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{
+  width:1080px;height:1080px;overflow:hidden;
+  background:var(--bg);color:var(--text);
+  font-family:var(--mono);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
 .card{
   width:100%;height:100%;
   display:flex;flex-direction:column;
-  padding:60px 64px 56px;
-  background:radial-gradient(ellipse at 50% 0%, #1a1612 0%, #0a0908 70%);
+  padding:64px 72px;
   position:relative;
+  background:radial-gradient(ellipse at 30% 0%, #1f1812 0%, #0a0908 75%);
 }
+
+/* Tiny brand row at top */
 .brand-row{
-  display:flex;align-items:baseline;justify-content:space-between;
-  margin-bottom:38px;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
 }
-.brand-mark{
-  font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold);letter-spacing:-0.01em;
-}
-.brand-tag{
-  font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;font-size:12px;color:var(--text-faint);font-weight:500;
-}
+.brand-mark{font-family:var(--serif);font-style:italic;font-size:24px;color:var(--gold)}
+.brand-tag{font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;font-size:11px;color:var(--text-faint);font-weight:500}
+
+/* Eyebrow */
 .eyebrow{
-  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;font-size:13px;color:var(--gold);margin-bottom:16px;font-weight:600;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;
+  font-size:14px;color:var(--red);font-weight:700;
+  margin-bottom:18px;
 }
-.headline{
-  font-family:var(--serif);font-weight:400;font-size:46px;line-height:1.05;letter-spacing:-0.025em;color:var(--text);margin-bottom:8px;
+
+/* The hero — the misspelled word, huge */
+.hero{
+  flex:1;
+  display:flex;flex-direction:column;justify-content:center;
+  margin:8px 0;
 }
-.headline em{font-style:italic;color:var(--gold-bright)}
-.subhead{font-family:var(--mono);font-size:14px;color:var(--text-mute);margin-bottom:28px;line-height:1.5}
-.prompt-box{
-  background:#0e0d0a;border:1px solid var(--line);border-left:3px solid var(--gold);
-  padding:14px 18px;margin-bottom:24px;
-  font-family:var(--mono);font-size:14px;color:var(--text);
+.misspell{
+  font-family:var(--serif);font-style:italic;font-weight:700;
+  font-size:158px;line-height:0.95;letter-spacing:-0.04em;
+  color:var(--red);
+  position:relative;display:inline-block;
+  text-decoration:line-through;
+  text-decoration-thickness:7px;
+  text-decoration-color:var(--red);
 }
-.prompt-box .lab{font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;color:var(--gold);font-size:11px;font-weight:600;display:block;margin-bottom:6px}
-.answer-box{
-  background:var(--card);border:1px solid var(--line);
-  padding:20px 22px 22px;flex:1;
-  font-family:var(--mono);font-size:13px;line-height:1.55;color:var(--text-mute);
-  position:relative;overflow:hidden;
+.arrow-row{
+  display:flex;align-items:center;gap:24px;
+  margin-top:20px;margin-bottom:32px;
 }
-.answer-box .lab{font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;color:var(--gold);font-size:11px;font-weight:600;display:block;margin-bottom:14px}
-.hotel{margin-bottom:18px;position:relative}
-.hotel-name{color:var(--text);font-weight:500;font-size:15px;letter-spacing:0.01em}
-.misspelled-row{display:flex;align-items:center;gap:18px;background:rgba(255,139,107,.08);border:1.5px solid #ff8b6b;border-radius:6px;padding:10px 14px;margin:6px -8px}
-.misspelled-word{font-family:var(--mono);color:#ff8b6b;font-weight:700;font-size:18px;letter-spacing:0.02em;text-decoration:line-through;text-decoration-thickness:2px}
-.actual-word{font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;color:var(--text);font-size:12px;font-weight:600}
-.actual-word .arrow{color:#ff8b6b;font-weight:700;margin-right:8px}
-.actual-word .real{color:var(--gold-bright);font-family:var(--mono);text-transform:none;letter-spacing:0;font-size:15px;font-weight:600;margin-left:10px}
-.misspelled-tag{margin-left:auto;background:#ff8b6b;color:#0a0908;font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;font-weight:700;font-size:10px;padding:4px 10px;border-radius:3px}
-.hotel-vibe{color:var(--text-faint);font-size:12px;margin-top:4px;font-style:italic}
+.arrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:18px;color:var(--text-faint);font-weight:600;
+}
+.arrow span{color:var(--red);margin-right:8px;font-size:24px;letter-spacing:0}
+.real-name{
+  font-family:var(--serif);font-style:italic;font-weight:600;
+  font-size:72px;line-height:0.95;letter-spacing:-0.025em;
+  color:var(--gold-bright);
+}
+
+/* The punchline */
+.punchline{
+  font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.18;
+  letter-spacing:-0.015em;color:var(--text);
+  max-width:920px;
+  margin-top:12px;
+}
+.punchline em{font-style:italic;color:var(--gold-bright)}
+
+/* Footer attribution */
 .footer{
-  margin-top:24px;
   display:flex;align-items:flex-end;justify-content:space-between;
-  border-top:1px solid var(--line);padding-top:20px;
+  border-top:1px solid var(--line);padding-top:18px;margin-top:auto;
 }
-.footer-text{
-  font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6;max-width:60%;
+.footer-meta{
+  font-family:var(--mono);font-size:13px;color:var(--text-faint);line-height:1.5;
 }
-.footer-text strong{color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:0.16em;font-size:10px;font-weight:600;display:block;margin-bottom:3px}
+.footer-meta strong{color:var(--gold);font-family:var(--label);text-transform:uppercase;letter-spacing:0.18em;font-weight:600;font-size:11px;display:block;margin-bottom:3px}
 .footer-cta{
-  font-family:var(--mono);font-size:13px;color:var(--gold-bright);text-align:right;
+  text-align:right;
+  font-family:var(--mono);font-size:14px;color:var(--gold-bright);
 }
-.footer-cta .url{display:block;font-size:14px;color:var(--gold);margin-top:4px}
+.footer-cta .url{display:block;font-size:16px;color:var(--gold);margin-top:4px;font-weight:500}
 </style>
 </head>
 <body>
@@ -91,49 +112,24 @@ html,body{width:1080px;height:1080px;overflow:hidden;background:var(--bg);color:
     <div class="brand-tag">Answer Engine Optimization</div>
   </div>
 
-  <div class="eyebrow">When AI is your storefront</div>
-  <h1 class="headline">Claude can't <em>spell</em> Hawaii's most famous hotel.</h1>
-  <p class="subhead">Real prompt. Real answer. May 8, 2026.</p>
+  <div class="eyebrow">AI just misspelled Hawaii's most famous hotel</div>
 
-  <div class="prompt-box">
-    <span class="lab">Prompt sent to Claude</span>
-    best boutique hotel in Honolulu
-  </div>
-
-  <div class="answer-box">
-    <span class="lab">Claude's recommendation, verbatim</span>
-
-    <div class="hotel">
-      <div class="hotel-name">1. The Laylow, Autograph Collection</div>
-      <div class="hotel-vibe">Mid-century modern with a retro-cool aesthetic</div>
+  <div class="hero">
+    <div class="misspell">Haalekulani</div>
+    <div class="arrow-row">
+      <span class="arrow"><span>→</span>actually spelled</span>
+      <span class="real-name">Halekulani.</span>
     </div>
-
-    <div class="hotel">
-      <div class="misspelled-row">
-        <span class="misspelled-word">2. Haalekulani</span>
-        <span class="actual-word"><span class="arrow">→</span>actually <span class="real">Halekulani</span></span>
-        <span class="misspelled-tag">AI Misspelled</span>
-      </div>
-      <div class="hotel-vibe" style="margin-top:8px">Elegant, tranquil luxury · "Iconic orchid pool"</div>
-    </div>
-
-    <div class="hotel">
-      <div class="hotel-name">3. The Surfjack Hotel & Swim Club</div>
-      <div class="hotel-vibe">Vintage Hawaii meets contemporary cool</div>
-    </div>
-    <div class="hotel">
-      <div class="hotel-name">4. Shoreline Hotel Waikiki</div>
-      <div class="hotel-vibe">Modern minimalist, adults-only</div>
-    </div>
+    <div class="punchline">Claude just recommended this hotel by name.<br>It just couldn't <em>spell</em> the name.</div>
   </div>
 
   <div class="footer">
-    <div class="footer-text">
-      <strong>The gap</strong>
-      None of these descriptions came from the hotels' own websites. The AI engine pulled them from travel blogs, OTAs, and review aggregators. The hotels aren't writing their own answers.
+    <div class="footer-meta">
+      <strong>Real prompt · May 8, 2026</strong>
+      Claude (claude-sonnet-4-5), asked: "best boutique hotel in Honolulu"
     </div>
     <div class="footer-cta">
-      Run yours →<br>
+      Your storefront in AI →
       <span class="url">check.neverranked.com</span>
     </div>
   </div>
