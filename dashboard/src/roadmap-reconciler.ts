@@ -205,10 +205,12 @@ export async function reconcileRoadmapForClient(
     } catch { /* skip malformed json_ld */ }
   }
 
-  if (approvedTypes.size === 0 && pendingTypes.size === 0) {
-    return { markedDone: 0, markedInProgress: 0 };
-  }
-
+  // Pre-2026-05-10 we early-returned here when the client had no
+  // schema_injections, but that meant SaaS clients (which often have
+  // zero injections on their own marketing site) never reached the
+  // authority + content reconciliation logic added below. Now we
+  // continue regardless -- the schema-category branch will harmlessly
+  // no-op when both sets are empty.
   const now = Math.floor(Date.now() / 1000);
   let markedDone = 0;
   let markedInProgress = 0;

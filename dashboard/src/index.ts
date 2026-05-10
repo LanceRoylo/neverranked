@@ -2417,17 +2417,19 @@ export default {
 
     // Manual reconciler trigger -- runs the enhanced roadmap
     // reconciler against one client (or all if no slug given) and
-    // returns the result counts. Used to test the reconciler without
-    // waiting for the daily 06:00 UTC cron.
+    // returns the result counts. Accepts GET for quick browser-bar
+    // testing (the action is server-side state mutation but it's
+    // idempotent and admin-gated, so the GET-side-effect concern is
+    // minimal here). POST also accepted for scripted callers.
     const reconcilerMatch = path.match(/^\/admin\/reconciler\/([^/]+)?\/?run$/);
-    if (path === "/admin/reconciler/run" && method === "POST" && user.role === "admin") {
+    if (path === "/admin/reconciler/run" && (method === "POST" || method === "GET") && user.role === "admin") {
       const { reconcileAllRoadmaps } = await import("./roadmap-reconciler");
       const result = await reconcileAllRoadmaps(env);
       return new Response(JSON.stringify(result, null, 2), {
         headers: { "Content-Type": "application/json" },
       });
     }
-    if (reconcilerMatch && reconcilerMatch[1] && method === "POST" && user.role === "admin") {
+    if (reconcilerMatch && reconcilerMatch[1] && (method === "POST" || method === "GET") && user.role === "admin") {
       const { reconcileRoadmapForClient } = await import("./roadmap-reconciler");
       const r = await reconcileRoadmapForClient(decodeURIComponent(reconcilerMatch[1]), env);
       return new Response(JSON.stringify(r, null, 2), {
