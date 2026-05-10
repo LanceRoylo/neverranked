@@ -14,7 +14,7 @@
  * Honest about sample size. Sections that need n >= 3 clients in a
  * vertical are skipped when n is below threshold. The report is
  * generatable from day 1 of citation_runs accumulation; sections
- * unlock as data thickens.
+ * activate as data thickens.
  *
  * Usage:
  *   node scripts/state-of-aeo-generate.mjs

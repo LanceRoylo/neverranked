@@ -11,7 +11,7 @@ The priority score blends discovery score (recency, upvotes,
 citation likelihood) with the mention gap (client invisible vs
 already cited; competitors named vs absent). The top of the list is
 where AI engines are most likely to be pulling answers from for
-NeverRanked-relevant queries today, with the highest leverage to
+NeverRanked-relevant queries today, with the highest impact to
 shift the recommendation shape.
 
 ## Top 15 ranked

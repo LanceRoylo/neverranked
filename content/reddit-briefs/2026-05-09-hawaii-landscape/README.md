@@ -21,7 +21,7 @@ Hawaii verticals, the citation infrastructure that determines AI
 answers ranges from saturated (hotels, where you compete for
 share-of-voice) to thin (law firms, where you can author the answer
 shape). Banking sits in the middle, which is exactly the slot
-where targeted Reddit reply ops have the most leverage per hour
+where targeted Reddit reply ops have the most impact per hour
 spent.
 
 ## Top 5 threads across all three verticals
