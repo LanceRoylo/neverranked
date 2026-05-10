@@ -11,6 +11,8 @@ sample_keywords: 15
 
 # State of AEO: NeverRanked tracked-universe report
 
+*From The Citation Tape, NeverRanked's standing AI-citation measurement system.*
+
 *Generated 2026-05-10. Window: 2026-04-14 to 2026-05-04.*
 
 ## What this report is

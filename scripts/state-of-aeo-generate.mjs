@@ -297,6 +297,8 @@ md.push(`---`);
 md.push(``);
 md.push(`# State of AEO: NeverRanked tracked-universe report`);
 md.push(``);
+md.push(`*From The Citation Tape, NeverRanked's standing AI-citation measurement system.*`);
+md.push(``);
 md.push(`*Generated ${today}. Window: ${earliestDate} to ${latestDate}.*`);
 md.push(``);
 md.push(`## What this report is`);

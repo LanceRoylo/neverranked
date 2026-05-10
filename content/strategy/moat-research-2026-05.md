@@ -144,11 +144,19 @@ mainland boutique hotels. Each leaderboard is half a day of audit
 work + half a day of publishing. **Effort: 1 day per leaderboard,
 unlimited supply. Distribution + vertical depth + structural lockup.**
 
-**3. State of AEO 2026 — annual report.** One major data publication
+**3. State of AEO 2026, annual report.** One major data publication
 per year. Aggregates NR scan data + industry research + benchmark
 percentiles by vertical. Becomes the canonical reference. Every press
 article about AEO has to cite it. **Effort: 2 weeks. Brand moat +
 distribution + reputational compounding.**
+
+**3b. The Citation Tape, the standing measurement system that
+generates the annual report and the weekly digest input.** Live
+as of 2026-05-09. Reproducible weekly cron, public source-type
+taxonomy, 15-category classifier, per-source brief library,
+public hub at neverranked.com/state-of-aeo. The Tape is the
+apparatus; the State of AEO reports are its artifacts. Naming
+decision documented in `content/strategy/aeo-framework-naming.md`.
 
 ### Tier A — build in next 90 days, big impact but more effort
 

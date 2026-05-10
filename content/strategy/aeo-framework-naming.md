@@ -2,8 +2,15 @@
 title: "Naming the AEO measurement framework"
 author: Lance + Claude
 date: 2026-05-09
-status: working draft, decision pending
+status: DECIDED -- The Citation Tape (2026-05-09 evening HST)
 ---
+
+> **Decision: The Citation Tape.** Lance picked 2026-05-09 evening HST.
+> Rename pass shipped across hub, generator, digest email, latest
+> report masthead, and moat-research doc in commit immediately
+> following this update. This document remains as the historical
+> record of the four candidates considered and why The Citation
+> Tape won.
 
 # Naming the framework
 

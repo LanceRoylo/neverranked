@@ -293,6 +293,7 @@ ${r.pdfPath ? `        <a href="/state-of-aeo/${r.slug}.pdf">Download PDF</a>` :
 
   const body = `  <p class="eyebrow"><a href="/" style="color:var(--text-faint)">NeverRanked</a> &middot; The State of AEO</p>
   <h1>The State of <em>AEO</em></h1>
+  <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500">Powered by The Citation Tape</p>
   <p style="font-size:18px;color:var(--text-mute);margin:0 0 32px;line-height:1.6">What AI engines actually cite when answering questions about the brands NeverRanked tracks. Pulled live from production citation runs across ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, and Google AI Overviews. Same script, same data sources, no manual curation. Anyone running the same query against the same database gets the same numbers.</p>
 
   ${latest ? `<div class="summary-stats">
@@ -305,9 +306,10 @@ ${r.pdfPath ? `        <a href="/state-of-aeo/${r.slug}.pdf">Download PDF</a>` :
 ${cards}
 
   <hr>
-  <h2>Methodology</h2>
-  <p>Every number comes from the <code>citation_runs</code> table in NeverRanked's production database. Each run is one query against one AI engine for one tracked keyword, with the engine's response text and cited URLs captured as raw evidence.</p>
-  <p>Generation script: <code>scripts/state-of-aeo-generate.mjs</code>. Source-type taxonomy: <code>tools/citation-gap/src/source-types.mjs</code>. Both files live in the public repo. Reports regenerate weekly on a Cloudflare cron.</p>
+  <h2>The Citation <em>Tape</em></h2>
+  <p>The Citation Tape is the standing measurement system that produces these reports. Like a ticker tape, it runs continuously: every weekly cron pulls fresh <code>citation_runs</code> from production D1, runs the source-type taxonomy across every cited URL, and emits an updated snapshot. The State of AEO report is the artifact. The Citation Tape is the apparatus.</p>
+  <p>Every number on this page comes from the <code>citation_runs</code> table in NeverRanked's production database. Each run is one query against one AI engine for one tracked keyword, with the engine's response text and cited URLs captured as raw evidence.</p>
+  <p>Generation script: <code>scripts/state-of-aeo-generate.mjs</code>. Source-type taxonomy: <code>tools/citation-gap/src/source-types.mjs</code>. Both files live in the public repo. The Tape regenerates weekly on a Cloudflare cron.</p>
   <p>Honest limit: this is NeverRanked's tracked subset, not a random sample of the AI search universe. Findings are descriptive of what AI engines say in our clients' categories. Generalizing beyond those categories requires more data, and as more clients onboard the tracked universe expands.</p>
 
   <hr>
