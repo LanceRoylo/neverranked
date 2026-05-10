@@ -107,6 +107,43 @@ const runs = runD1(`
 
 log(`     pulled ${runs.length} citation runs across ${new Set(runs.map(r => r.client_slug)).size} clients`);
 
+// ---------------------------------------------------------------------
+// Completion-rate disclosure: per-client, what fraction of active
+// tracked keywords have at least one citation_run in the window?
+//
+// Why we compute this: a known issue (filed at
+// content/handoff-questions/citation-cron-not-firing.md) means the
+// runWeeklyCitations function intermittently completes only a subset
+// of a client's keywords per invocation due to subrequest budget
+// exhaustion. The State of AEO report should be transparent about
+// this rather than silently underrepresenting clients with many
+// keywords. When the fix lands, completion rates climb to 100% on
+// their own, no code change required here.
+// ---------------------------------------------------------------------
+
+const activeKeywordsPerClient = runD1(`
+  SELECT client_slug, COUNT(*) as active_kw
+  FROM citation_keywords
+  WHERE active = 1
+  GROUP BY client_slug
+`);
+const keywordsWithRunsPerClient = runD1(`
+  SELECT ck.client_slug, COUNT(DISTINCT ck.id) as kw_with_runs
+  FROM citation_keywords ck
+  JOIN citation_runs cr ON cr.keyword_id = ck.id
+  WHERE ck.active = 1 AND ${cutoffClause}
+  GROUP BY ck.client_slug
+`);
+const completionByClient = new Map();
+for (const r of activeKeywordsPerClient) {
+  completionByClient.set(r.client_slug, { active: r.active_kw, ran: 0 });
+}
+for (const r of keywordsWithRunsPerClient) {
+  const entry = completionByClient.get(r.client_slug) || { active: 0, ran: 0 };
+  entry.ran = r.kw_with_runs;
+  completionByClient.set(r.client_slug, entry);
+}
+
 if (runs.length === 0) {
   log("No data. Cannot generate report.");
   process.exit(1);
@@ -467,6 +504,23 @@ md.push(`- ${runs.length} citation runs`);
 md.push(`- ${totalClients} tracked clients across ${byVertical.size} verticals`);
 md.push(`- ${totalKeywords} tracked keywords`);
 md.push(`- Window: ${earliestDate} to ${latestDate}`);
+md.push(``);
+
+// Per-client keyword-completion rates. Surfaces the subrequest-budget
+// issue documented in content/handoff-questions/. When the per-keyword
+// workflow fix lands, completion rates rise to 100% on their own.
+md.push(`### Keyword completion this window`);
+md.push(``);
+md.push(`Per-client share of active tracked keywords with at least one citation run in the window. Below 100% means the producer did not complete the full keyword set. A known infrastructure issue causes partial completions on multi-keyword clients (filed in \`content/handoff-questions/\`); numbers will rise as the fix lands.`);
+md.push(``);
+md.push(`| Client | Active keywords | Keywords with runs | Completion |`);
+md.push(`|---|---|---|---|`);
+const completionRows = [...completionByClient.entries()]
+  .sort(([a], [b]) => a.localeCompare(b));
+for (const [slug, c] of completionRows) {
+  const pct = c.active > 0 ? Math.round((c.ran / c.active) * 100) : 0;
+  md.push(`| ${slug} | ${c.active} | ${c.ran} | ${pct}% |`);
+}
 md.push(``);
 md.push(`Honest limits: this is NeverRanked's tracked subset, not a random`);
 md.push(`sample of the AI search universe. Findings are descriptive of what`);
