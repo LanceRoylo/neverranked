@@ -226,7 +226,7 @@ p a:hover,ul a:hover{opacity:.8}
   <a href="/blog/">Insights</a>
   <a href="/#services">Services</a>
   <a href="/#pricing">Pricing</a>
-  <a href="https://check.neverranked.com">Free Tool</a>
+  <a href="https://check.neverranked.com?utm_source=kit&utm_medium=organic">Free Tool</a>
   <a href="https://app.neverranked.com">Client Login</a>
   <a href="/#audit" class="mob-cta">$750 Audit</a>
   <span class="mob-status">Taking clients Q2</span>
@@ -237,7 +237,7 @@ p a:hover,ul a:hover{opacity:.8}
   <div class="right">
     <a href="/about/">About</a>
     <a href="/blog/">Insights</a>
-    <a href="https://check.neverranked.com">Free Tool</a>
+    <a href="https://check.neverranked.com?utm_source=kit&utm_medium=organic">Free Tool</a>
     <a href="/#audit">The Audit</a>
   </div>
 </nav>
@@ -320,8 +320,23 @@ p a:hover,ul a:hover{opacity:.8}
       <span class="rule"></span>
     </div>
     <ul>
-      <li><a href="https://check.neverranked.com"><b>check.neverranked.com</b></a> &mdash; public AEO health check. Lead capture flow built in.</li>
-      <li><a href="https://check.neverranked.com/api/schema-score"><b>check.neverranked.com/api/schema-score</b></a> &mdash; the public schema scorer API endpoint. POST a URL, get a graded report.</li>
+      <li><a href="https://check.neverranked.com?utm_source=kit&utm_medium=organic"><b>https://check.neverranked.com?utm_source=kit&utm_medium=organic</b></a> &mdash; public AEO health check. Lead capture flow built in.</li>
+      <li><a href="https://check.neverranked.com/api/schema-score?utm_source=kit&utm_medium=organic"><b>https://check.neverranked.com/api/schema-score?utm_source=kit&utm_medium=organic</b></a> &mdash; the public schema scorer API endpoint. POST a URL, get a graded report.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04b</span>
+      <span>Public methodology + standing reports</span>
+      <span class="rule"></span>
+    </div>
+    <ul>
+      <li><a href="/state-of-aeo/"><b>/state-of-aeo/</b></a> &mdash; The Citation Tape. NeverRanked's standing AI-citation measurement system. Weekly reports, public methodology, source code on GitHub, RSS feed at /state-of-aeo/feed.xml.</li>
+      <li><a href="/standards/"><b>/standards/</b></a> &mdash; Public methodology index. AEO scoring rubric, llms.txt rubric, AI agent readiness, and The Citation Tape, each independently reproducible.</li>
+      <li><a href="/standards/methodology/"><b>/standards/methodology/</b></a> &mdash; the 0-100 AEO score rubric used at check.neverranked.com.</li>
     </ul>
   </div>
 </section>
@@ -412,7 +427,7 @@ p a:hover,ul a:hover{opacity:.8}
   echo -n "neverranked.com$u "
   curl -sL -o /dev/null -w "%{http_code}\n" "https://www.neverranked.com$u"
 done
-curl -sL -o /dev/null -w "check.neverranked.com %{http_code}\n" "https://check.neverranked.com/"
+curl -sL -o /dev/null -w "https://check.neverranked.com?utm_source=kit&utm_medium=organic %{http_code}\n" "https://check.neverranked.com/?utm_source=kit&utm_medium=organic"
 curl -sL -o /dev/null -w "app.neverranked.com %{http_code}\n" "https://app.neverranked.com/"</pre>
     <p style="font-size:13px;color:var(--text-faint);margin-top:12px">
       Expect all 200s on marketing surfaces. Checkout endpoints will 302 (redirect to Stripe) which is correct.
