@@ -42,6 +42,7 @@ DIRS=(
   schemas
   security
   standards
+  state-of-aeo
   terms
   thanks
 )

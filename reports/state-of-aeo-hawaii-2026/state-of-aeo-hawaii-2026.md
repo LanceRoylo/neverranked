@@ -271,7 +271,7 @@ Three actions, in order:
    to see your current AEO score. The scan takes 30 seconds and
    produces a grade against the same methodology used in this
    report.
-2. Identify the three highest-leverage gaps. For most Hawaii
+2. Identify the three highest-impact gaps. For most Hawaii
    businesses these are: Organization schema, FAQPage schema, and
    Open Graph images. Total deployment: under one engineering day.
 3. Decide whether to deploy and track in-house, deploy via your
