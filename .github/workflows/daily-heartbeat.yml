@@ -18,7 +18,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 jobs:
@@ -41,7 +41,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
           set +e
-          node scripts/heartbeat.mjs > /tmp/heartbeat.txt 2>&1
+          node scripts/heartbeat.mjs --log-to-file > /tmp/heartbeat.txt 2>&1
           HEARTBEAT_EXIT=$?
           echo "exit_code=$HEARTBEAT_EXIT" >> $GITHUB_OUTPUT
           cat /tmp/heartbeat.txt
@@ -51,6 +51,19 @@ jobs:
             echo "EOF"
           } >> $GITHUB_OUTPUT
           exit 0  # never fail the workflow itself; we use exit_code below
+
+      - name: Commit autonomy log
+        run: |
+          git config user.name 'neverranked-bot'
+          git config user.email 'bot@neverranked.com'
+          git add content/autonomy-log/
+          if git diff --cached --quiet; then
+            echo "No log changes to commit."
+          else
+            DATE=$(date -u +%Y-%m-%d)
+            git commit -m "Autonomy log: $DATE"
+            git push
+          fi
 
       - name: Open issue if stale automations detected
         if: steps.heartbeat.outputs.exit_code != '0'
