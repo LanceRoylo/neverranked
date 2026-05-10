@@ -119,12 +119,14 @@ plus 3-8 hours of billable implementation per slot.
 Three new pieces of platform we shipped between May 6 and May 10
 that are directly relevant to where Muck Rack stops:
 
-1. **NeverRanked Beacon** — the citation-tracking layer named as a
-   standalone product. Six engines. Weekly cadence. Attribution.
-   Vertical-specific prompt corpora for community banking, real
-   estate, professional services, hospitality, and more. Beacon is
-   the answer to Generative Pulse if a client wants the tracking
-   without the rest of the Muck Rack platform.
+1. **Citation tracking as a standalone product line.** Six engines.
+   Weekly cadence. Statistical attribution at p<0.05. Vertical-
+   specific prompt corpora for community banking, real estate,
+   professional services, hospitality, and more. The product name
+   ships with the May 22 release; until then it is bundled into
+   Signal. The capability is the answer to Generative Pulse for
+   clients who want the tracking layer without the rest of the
+   Muck Rack platform.
 
 2. **@neverranked/mcp** — the first AEO toolchain in the official
    MCP registry. Any AI agent built on Claude Code or Claude Desktop
