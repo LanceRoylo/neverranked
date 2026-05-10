@@ -121,6 +121,7 @@ export async function discoverThreads({
   region = null,
   limit = 20,
   subredditPrior = {},
+  requiredTokens = [],
   onProgress = () => {},
 }) {
   if (!category || typeof category !== "string") {
@@ -155,7 +156,7 @@ export async function discoverThreads({
   const scored = [];
   const nowSec = Math.floor(Date.now() / 1000);
   for (const t of seen.values()) {
-    const scores = scoreThread(t, { subredditPrior, nowSec, category });
+    const scores = scoreThread(t, { subredditPrior, nowSec, category, requiredTokens });
     if (scores.composite_score === 0) continue;
     scored.push({ ...t, ...scores });
   }

@@ -36,6 +36,7 @@ function parseArgs(argv) {
     clientDomains: [],
     clientAliases: [],
     competitors: [],
+    requiredTokens: [],
     discoverLimit: 12,
     topBriefs: 5,
     topComments: 12,
@@ -63,6 +64,13 @@ function parseArgs(argv) {
       case "--competitors":
         out.competitors = (next || "").split(",").map((s) => s.trim()).filter(Boolean)
           .map((name) => ({ name, surfaceForms: [name] })); i++; break;
+      case "--required":
+        // Tokens that MUST appear in the thread title for the
+        // relevance gate to pass. Use for niche categories where
+        // anchor extraction lets in noise (e.g. "improv based
+        // corporate training" leaks into generic corporate-training
+        // threads without --required improv).
+        out.requiredTokens = (next || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean); i++; break;
       case "--discover-limit":
         out.discoverLimit = Math.max(1, Math.min(50, parseInt(next, 10) || 12)); i++; break;
       case "--top":
@@ -164,6 +172,7 @@ async function main() {
     category: args.category,
     region: args.region,
     limit: args.discoverLimit,
+    requiredTokens: args.requiredTokens,
     onProgress: log,
   });
   log(`     ${candidates.length} candidate threads after relevance gate`);
