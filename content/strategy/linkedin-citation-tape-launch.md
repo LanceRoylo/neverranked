@@ -16,7 +16,7 @@ LinkedIn rules of thumb being applied here:
 - First two lines have to earn the click on "see more"
 - No emojis (per global brand voice rule)
 - No em dashes (same)
-- No banned words (unlock, leverage, effortless, seamless)
+- No banned words per the global brand voice rule
 - 1300 char limit on post body (LinkedIn truncates harder past that)
 - Personal account beats company account on engagement
 - "Follow up question in the comments" outperforms link-in-post
