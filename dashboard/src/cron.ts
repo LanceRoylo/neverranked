@@ -48,15 +48,13 @@ export async function runWeeklyScans(env: Env): Promise<void> {
 
   console.log(`Weekly scan dispatched: ${dispatched} workflow instances queued, ${dispatchErrors} dispatch failures, ${domains.length} total`);
 
-  // --- Phase 2: Dispatch the weekly-extras workflow ---
-  // Citations + GSC + backup each get their own retryable step inside
-  // one workflow invocation, isolated from the per-domain scans.
-  try {
-    await env.WEEKLY_EXTRAS_WORKFLOW.create({ params: {} });
-    console.log(`[cron] dispatched weekly-extras workflow`);
-  } catch (e) {
-    console.log(`[cron] failed to dispatch weekly-extras workflow: ${e}`);
-  }
+  // --- Phase 2: WeeklyExtras dispatch ---
+  // 2026-05-10: removed from this Monday-only path. WeeklyExtras now
+  // dispatches daily from runDailyTasks() with runSnapshot=runGscAndBackup
+  // controlled by day-of-week. This avoids double-dispatching on
+  // Mondays (the cron handler runs both runDailyTasks AND runWeeklyScans
+  // when it's a Monday). All citations/snapshot/GSC/backup work happens
+  // through the daily path now.
 
   // --- Phase 3: Fan out one SendDigestWorkflow per opted-in user ---
   // Done here in the cron handler (not from inside WeeklyExtras)
@@ -263,6 +261,62 @@ export async function sendWeeklyDigests(
 
 /** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep + auto-provision missing roadmaps + automation digest */
 export async function runDailyTasks(env: Env): Promise<void> {
+  // --- Citations daily dispatch ---
+  // One CitationKeywordWorkflow per (client, keyword). Each instance
+  // gets its own 1000-subrequest budget, which is the only path that
+  // reliably completes the full roster (verified empirically:
+  // multi-step approaches inside one workflow exhausted the shared
+  // budget after ~2 keywords). Then WeeklyExtrasWorkflow runs the
+  // snapshot rollup + Monday-only GSC/backup on top.
+  try {
+    const { planCitationRun } = await import("./citations");
+    const plan = await planCitationRun(env);
+    let dispatched = 0;
+    let dispatchErrors = 0;
+    for (const item of plan.items) {
+      try {
+        await env.CITATION_KEYWORD_WORKFLOW.create({
+          params: {
+            clientSlug: item.clientSlug,
+            keywordId: item.keywordId,
+          },
+        });
+        dispatched++;
+      } catch (e) {
+        dispatchErrors++;
+        console.log(`[cron daily] failed to dispatch citation-keyword workflow for ${item.clientSlug}/${item.keywordId}: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+    console.log(`[cron daily] dispatched ${dispatched}/${plan.items.length} citation-keyword workflows (${dispatchErrors} errors) across ${plan.clientSlugs.length} clients`);
+
+    // Snapshot rollup -- Mondays only (7-day lookback over the prior
+    // week of daily samples). Plus GSC pull and backup. The snapshot
+    // workflow runs after the per-keyword dispatches so the rows are
+    // already landing as it queues; in practice the dispatch loop
+    // above takes seconds and the per-keyword instances each run
+    // 10-30s, so the snapshot workflow may need to wait for them.
+    // That's fine -- snapshot reads from D1 with a time window, so
+    // late-arriving rows are picked up if/when this workflow re-runs
+    // on the next Monday or via the manual button.
+    const isMonday = new Date().getUTCDay() === 1;
+    if (isMonday) {
+      try {
+        await env.WEEKLY_EXTRAS_WORKFLOW.create({
+          params: {
+            runSnapshot: true,
+            snapshotLookbackDays: 7,
+            runGscAndBackup: true,
+          },
+        });
+        console.log(`[cron daily] dispatched weekly-extras workflow (snapshot+gsc+backup, Monday)`);
+      } catch (e) {
+        console.log(`[cron daily] failed to dispatch weekly-extras workflow: ${e instanceof Error ? e.message : String(e)}`);
+      }
+    }
+  } catch (e) {
+    console.log(`[cron daily] citations dispatch failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   await sendOnboardingDripEmails(env);
   await sendNurtureDripEmails(env);
   await checkStaleRoadmapItems(env);

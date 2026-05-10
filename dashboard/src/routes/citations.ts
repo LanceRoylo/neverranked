@@ -864,6 +864,7 @@ export async function handleAdminCitations(
   url?: URL
 ): Promise<Response> {
   const isRunning = url?.searchParams.get("running") === "1";
+  const kwRunningId = url?.searchParams.get("kw_running");
   const keywords = (
     await env.DB.prepare(
       "SELECT * FROM citation_keywords WHERE client_slug = ? ORDER BY active DESC, category, keyword"
@@ -886,7 +887,7 @@ export async function handleAdminCitations(
         <div id="scan-dot" style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
         <div>
           <div id="scan-title" style="color:var(--text);font-size:14px">Citation scan running in the background</div>
-          <div id="scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">This takes 3-5 minutes. This page will update automatically when the scan finishes.</div>
+          <div id="scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">All 6 engines, all keywords, parallel workflows. Takes 2-4 minutes. This page will update automatically when the scan finishes.</div>
         </div>
       </div>
     </div>
@@ -968,10 +969,19 @@ export async function handleAdminCitations(
 
     <!-- Manual scan trigger -->
     <div class="card">
-      <form method="POST" action="/admin/citations/${esc(slug)}/run">
-        <button type="submit" class="btn" style="background:var(--gold);color:var(--bg)">Run citation scan now</button>
-        <span style="font-size:12px;color:var(--text-faint);margin-left:8px">Runs all keywords against Perplexity, ChatGPT, Gemini, and Claude</span>
-      </form>
+      ${isRunning ? `
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
+          <button type="button" disabled class="btn" style="background:var(--line);color:var(--text-faint);cursor:not-allowed;border-color:var(--line)">Scan running...</button>
+          <span style="font-size:12px;color:var(--text-faint)">All 6 engines, one workflow per keyword. Takes 2-4 min. Banner at top will update.</span>
+        </div>
+        <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+      ` : `
+        <form method="POST" action="/admin/citations/${esc(slug)}/run" id="full-scan-form">
+          <button type="submit" class="btn" id="full-scan-btn" style="background:var(--gold);color:var(--bg)" onclick="this.disabled=true;this.textContent='Starting scan...';this.style.background='var(--line)';this.style.color='var(--text-faint)';this.form.submit();">Run citation scan now</button>
+          <span style="font-size:12px;color:var(--text-faint);margin-left:8px">All keywords across all 6 engines (Perplexity, ChatGPT, Gemini, Claude, Bing/Copilot, Google AIO)</span>
+        </form>
+      `}
     </div>
 
     <!-- Current keywords -->
@@ -990,9 +1000,18 @@ export async function handleAdminCitations(
               <td>${k.active ? '<span style="color:#27ae60">Active</span>' : '<span style="color:#888">Inactive</span>'}</td>
               <td>
                 ${k.active ? `
-                  <form method="POST" action="/admin/citations/${esc(slug)}/delete/${k.id}" style="display:inline">
-                    <button type="submit" class="btn-sm" style="color:#c0392b;border-color:#c0392b">Remove</button>
-                  </form>
+                  <div style="display:flex;gap:6px;align-items:center">
+                    ${kwRunningId === String(k.id) ? `
+                      <button type="button" disabled class="btn-sm" style="background:var(--line);color:var(--text-faint);border:1px solid var(--line);min-width:64px;cursor:not-allowed">Running...</button>
+                    ` : `
+                      <form method="POST" action="/admin/citations/${esc(slug)}/keyword/${k.id}/run" style="margin:0">
+                        <button type="submit" class="btn-sm" style="background:var(--gold);color:var(--bg);border:1px solid var(--gold);min-width:64px" onclick="this.disabled=true;this.textContent='Starting...';this.style.background='var(--line)';this.style.color='var(--text-faint)';this.form.submit();">Run</button>
+                      </form>
+                    `}
+                    <form method="POST" action="/admin/citations/${esc(slug)}/delete/${k.id}" style="margin:0">
+                      <button type="submit" class="btn-sm" style="background:transparent;color:var(--text-faint);border:1px solid var(--line);min-width:64px">Remove</button>
+                    </form>
+                  </div>
                 ` : ""}
               </td>
             </tr>
@@ -1117,11 +1136,58 @@ export async function handleManualCitationRun(
   env: Env,
   ctx: ExecutionContext
 ): Promise<Response> {
-  // Per-client run only -- previously this called runWeeklyCitations(env)
-  // with no filter, which fired every client's keywords through the AI
-  // engines on every "Run now" click. Burned API budget unnecessarily
-  // and could rate-limit other clients' Monday cron data. Slug-filtered
-  // now so the button does what its location implies.
-  ctx.waitUntil(runWeeklyCitations(env, slug));
+  // Dispatch one CitationKeywordWorkflow per active keyword for this
+  // client, then dispatch WeeklyExtrasWorkflow with slugFilter for
+  // the same-day snapshot. This matches the daily cron path so we're
+  // exercising the same architecture in production.
+  //
+  // Each per-keyword workflow gets its own 1000-subrequest budget,
+  // which avoids the shared-budget exhaustion that killed earlier
+  // multi-step approaches at ~2 keywords.
+  const { planCitationRun } = await import("../citations");
+  const plan = await planCitationRun(env, slug);
+  let dispatched = 0;
+  for (const item of plan.items) {
+    try {
+      await env.CITATION_KEYWORD_WORKFLOW.create({
+        params: { clientSlug: item.clientSlug, keywordId: item.keywordId },
+      });
+      dispatched++;
+    } catch (e) {
+      console.log(`[manual citations] dispatch failed for ${item.clientSlug}/${item.keywordId}: ${e}`);
+    }
+  }
+  // Snapshot follows. lookback=1 so the snapshot reflects only today's
+  // run (the one we just kicked off + any earlier same-day rows),
+  // giving the user fresh dashboard feedback without waiting until
+  // Monday's weekly rollup.
+  try {
+    await env.WEEKLY_EXTRAS_WORKFLOW.create({
+      params: {
+        slugFilter: slug,
+        runSnapshot: true,
+        snapshotLookbackDays: 1,
+        runGscAndBackup: false,
+      },
+    });
+  } catch (e) {
+    console.log(`[manual citations] snapshot dispatch failed for ${slug}: ${e}`);
+  }
+  console.log(`[manual citations] ${slug}: ${dispatched}/${plan.items.length} keyword workflows dispatched`);
   return redirect(`/admin/citations/${slug}?running=1`);
+}
+
+// Per-keyword "Run" button. Fires all 6 engines × RUNS_PER_KEYWORD on
+// one keyword only -- a single-keyword run fits inside Workers'
+// waitUntil budget where the 15-keyword roster does not. Used for
+// demos, triage, and any "did this engine actually fire?" verification.
+export async function handleManualKeywordRun(
+  slug: string,
+  keywordId: number,
+  env: Env,
+  ctx: ExecutionContext
+): Promise<Response> {
+  const { runOneKeywordCitations } = await import("../citations");
+  ctx.waitUntil(runOneKeywordCitations(env, slug, keywordId));
+  return redirect(`/admin/citations/${slug}?kw_running=${keywordId}`);
 }

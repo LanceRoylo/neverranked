@@ -49,6 +49,13 @@ export interface Env {
   // One digest email per user, each in its own invocation so multi-
   // domain gather queries don't blow the per-Worker subrequest cap.
   SEND_DIGEST_WORKFLOW: Workflow;
+  // One citation run per (client, keyword), each in its own invocation
+  // so each gets its own fresh 1000-subrequest budget. Cloudflare
+  // Workflows share the budget across ALL steps in a single instance,
+  // so a multi-step approach silently exhausts the budget after ~2
+  // keywords (verified empirically: instance 3bf7120b 2026-05-10).
+  // Per-instance dispatch trades dispatcher overhead for isolation.
+  CITATION_KEYWORD_WORKFLOW: Workflow;
 }
 
 export interface ScheduledDraft {

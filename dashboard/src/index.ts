@@ -56,7 +56,7 @@ import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript, handleInjectJson } from "./routes/inject";
 import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInjectApprove, handleInjectPause, handleInjectEdit, handleInjectDelete, handleInjectPublish } from "./routes/inject-admin";
-import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun } from "./routes/citations";
+import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun, handleManualKeywordRun } from "./routes/citations";
 import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
 import { handleSummary } from "./routes/summary";
 import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead, handleAlertClickThrough } from "./routes/alerts";
@@ -87,6 +87,7 @@ import { getBrandingContext, getAgency } from "./agency";
 export { ScanDomainWorkflow } from "./workflows/scan-domain";
 export { WeeklyExtrasWorkflow } from "./workflows/weekly-extras";
 export { SendDigestWorkflow } from "./workflows/send-digest";
+export { CitationKeywordWorkflow } from "./workflows/citation-keyword";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -2403,6 +2404,15 @@ export default {
     const citationsRunMatch = path.match(/^\/admin\/citations\/([^/]+)\/run$/);
     if (citationsRunMatch && method === "POST" && user.role === "admin") {
       return handleManualCitationRun(decodeURIComponent(citationsRunMatch[1]), env, ctx);
+    }
+    const citationsKwRunMatch = path.match(/^\/admin\/citations\/([^/]+)\/keyword\/(\d+)\/run$/);
+    if (citationsKwRunMatch && method === "POST" && user.role === "admin") {
+      return handleManualKeywordRun(
+        decodeURIComponent(citationsKwRunMatch[1]),
+        parseInt(citationsKwRunMatch[2], 10),
+        env,
+        ctx
+      );
     }
 
     // Citation scan status API (polling endpoint for admin)

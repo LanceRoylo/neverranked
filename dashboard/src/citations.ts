@@ -38,7 +38,16 @@ async function maybeAlert(
 // Constants
 // ---------------------------------------------------------------------------
 
-const RUNS_PER_KEYWORD = 3; // Multiple runs for stability
+// 2026-05-10: dropped from 3 to 1. Pre-refactor we ran weekly with 3
+// samples/keyword for stability (3 samples × 6 engines = 18 calls per
+// keyword per week). New architecture runs DAILY with 1 sample/keyword
+// per day, which gives 7 samples/week per (keyword, engine) -- far more
+// stable than 3 weekly. Smaller per-step CPU footprint also avoids the
+// Cloudflare Workflows internal-error threshold we hit at 18 calls per
+// step (verified empirically: 39s step duration triggered
+// WorkflowInternalError + auto-retry that wrote duplicate rows on
+// instance de51674d-9ee4 on 2026-05-09).
+const RUNS_PER_KEYWORD = 1;
 const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions";
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions";
 // gemini-2.5-flash works on billing-enabled projects; gemini-2.0-flash
@@ -483,333 +492,194 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       let kwCited = false;
       const kwEngines: string[] = [];
 
+      // Engine handlers, parallelized per keyword. Pre-2026-05-09 these
+      // ran sequentially (perplexity -> openai -> gemini -> anthropic ->
+      // aio -> bing) which summed to 30-60s of wall-time per keyword and
+      // hit the Workers wall-time ceiling on the 5th and 6th engine. The
+      // bing + google_ai_overview rows literally never landed from the
+      // weekly cron path -- verified empirically (only 2 rows each in 14
+      // days, both from the manual per-keyword button). Promise.allSettled
+      // drops wall-time per keyword to max(slowest single engine), so all
+      // 6 land. Map mutations are safe under JS single-threaded execution
+      // -- continuations between awaits run serially.
+      const runPerplexity = async () => {
+        if (!env.PERPLEXITY_API_KEY) return;
+        const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("perplexity")) kwEngines.push("perplexity");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase()) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const runOpenAI = async () => {
+        if (!env.OPENAI_API_KEY) return;
+        const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("openai")) kwEngines.push("openai");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const runGemini = async () => {
+        if (!env.GEMINI_API_KEY) return;
+        const r = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
+        // Skip persistence when the API returned nothing -- usually a 429
+        // quota error or transient 5xx. Empty rows would poison the
+        // citation rate denominator with non-runs.
+        if (r.text.length === 0 && r.urls.length === 0) return;
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("gemini")) kwEngines.push("gemini");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const runAnthropic = async () => {
+        if (!env.ANTHROPIC_API_KEY) return;
+        const r = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
+        const prom = computeProminence(r.entities, [], clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("anthropic")) kwEngines.push("anthropic");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        // Anthropic still LLM-only (web search tool integration is a Phase 3
+        // upgrade). grounding_mode='training' so analytics distinguish.
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const runGoogleAIO = async () => {
+        if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
+        const { queryGoogleAIO } = await import("./citations-google-aio");
+        const r = await queryGoogleAIO(kw.keyword, env);
+        // AIO doesn't render for many queries -- skip the INSERT so we
+        // don't poison the citation rate denominator with non-runs.
+        if (r.text.length === 0 && r.urls.length === 0) return;
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("google_ai_overview")) kwEngines.push("google_ai_overview");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const runBing = async () => {
+        if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
+        const { queryBing } = await import("./citations-bing");
+        const r = await queryBing(kw.keyword, env);
+        if (r.text.length === 0 && r.urls.length === 0) return;
+        const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("bing")) kwEngines.push("bing");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing"];
+
       // Run multiple times per engine for stability
       for (let run = 0; run < RUNS_PER_KEYWORD; run++) {
-        // --- Perplexity ---
-        if (env.PERPLEXITY_API_KEY) {
-          try {
-            const pResult = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
-            const prom = computeProminence(pResult.entities, pResult.urls, clientDomain, businessName);
-            const cited = prom !== null;
-
-            if (cited) {
-              kwCited = true;
-              if (!kwEngines.includes("perplexity")) kwEngines.push("perplexity");
-            }
-
-            // Track competitors
-            for (const entity of pResult.entities) {
-              const eName = entity.name.toLowerCase();
-              if (eName !== clientDomain.replace(/^www\./, "").toLowerCase()) {
-                competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-              }
-            }
-
-            // Store run. Perplexity sonar has always been web-grounded.
-            const insertRes = await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-               VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
-            )
-              .bind(
-                kw.id,
-                pResult.text.slice(0, 4000),
-                JSON.stringify(pResult.entities),
-                JSON.stringify(pResult.urls),
-                cited ? 1 : 0,
-                prom,
-                now
-              )
-              .run();
-
-            // Real-time alert detection (Signal+ only -- internally gated)
-            await maybeAlert(env, clientSlug, kw.id, "perplexity", insertRes, cited, prom);
-
-            totalQueries++;
-            if (cited) clientCitations++;
-          } catch (err) {
-            console.log(`Perplexity query failed for "${kw.keyword}": ${err}`);
+        const results = await Promise.allSettled([
+          runPerplexity(),
+          runOpenAI(),
+          runGemini(),
+          runAnthropic(),
+          runGoogleAIO(),
+          runBing(),
+        ]);
+        results.forEach((res, i) => {
+          if (res.status === "rejected") {
+            console.log(`Engine ${engineLabels[i]} failed for "${kw.keyword}": ${res.reason}`);
           }
-
-          // Rate limit: small delay between queries
-          await new Promise((r) => setTimeout(r, 300));
-        }
-
-        // --- OpenAI ---
-        if (env.OPENAI_API_KEY) {
-          try {
-            const oResult = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
-            // Now web-grounded: pass URLs to computeProminence so a
-            // citation counts when the live ChatGPT response cites the
-            // client's domain in its url_citation annotations.
-            const prom = computeProminence(oResult.entities, oResult.urls, clientDomain, businessName);
-            const cited = prom !== null;
-
-            if (cited) {
-              kwCited = true;
-              if (!kwEngines.includes("openai")) kwEngines.push("openai");
-            }
-
-            // Track competitors from OpenAI
-            for (const entity of oResult.entities) {
-              const eName = entity.name.toLowerCase();
-              if (
-                eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
-                (!businessName || eName !== businessName.toLowerCase())
-              ) {
-                competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-              }
-            }
-
-            const insertRes = await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-               VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
-            )
-              .bind(
-                kw.id,
-                oResult.text.slice(0, 4000),
-                JSON.stringify(oResult.entities),
-                JSON.stringify(oResult.urls),
-                cited ? 1 : 0,
-                prom,
-                now
-              )
-              .run();
-
-            await maybeAlert(env, clientSlug, kw.id, "openai", insertRes, cited, prom);
-
-            totalQueries++;
-            if (cited) clientCitations++;
-          } catch (err) {
-            console.log(`OpenAI query failed for "${kw.keyword}": ${err}`);
-          }
-
-          await new Promise((r) => setTimeout(r, 200));
-        }
-
-        // --- Gemini ---
-        if (env.GEMINI_API_KEY) {
-          try {
-            const gResult = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
-            // Skip persistence when the API returned nothing -- usually
-            // means a 429 quota error (project on free tier without
-            // billing, gemini-2.0-flash limit=0) or a transient 5xx.
-            // Writing empty rows would poison the citation rate
-            // calculation by inflating the denominator with non-runs.
-            if (gResult.text.length === 0 && gResult.urls.length === 0) {
-              // Fall through to the rate-limit sleep at the end of
-              // the Gemini block so we still pace the Anthropic call.
-            } else {
-            // Web-grounded: pass URLs from googleSearch groundingChunks
-            const prom = computeProminence(gResult.entities, gResult.urls, clientDomain, businessName);
-            const cited = prom !== null;
-
-            if (cited) {
-              kwCited = true;
-              if (!kwEngines.includes("gemini")) kwEngines.push("gemini");
-            }
-
-            for (const entity of gResult.entities) {
-              const eName = entity.name.toLowerCase();
-              if (
-                eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
-                (!businessName || eName !== businessName.toLowerCase())
-              ) {
-                competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-              }
-            }
-
-            const insertRes = await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-               VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
-            )
-              .bind(
-                kw.id,
-                gResult.text.slice(0, 4000),
-                JSON.stringify(gResult.entities),
-                JSON.stringify(gResult.urls),
-                cited ? 1 : 0,
-                prom,
-                now
-              )
-              .run();
-
-            await maybeAlert(env, clientSlug, kw.id, "gemini", insertRes, cited, prom);
-
-            totalQueries++;
-            if (cited) clientCitations++;
-            }  // end: gResult had data
-          } catch (err) {
-            console.log(`Gemini query failed for "${kw.keyword}": ${err}`);
-          }
-
-          await new Promise((r) => setTimeout(r, 200));
-        }
-
-        // --- Claude (Anthropic) ---
-        if (env.ANTHROPIC_API_KEY) {
-          try {
-            const cResult = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
-            const prom = computeProminence(cResult.entities, [], clientDomain, businessName);
-            const cited = prom !== null;
-
-            if (cited) {
-              kwCited = true;
-              if (!kwEngines.includes("anthropic")) kwEngines.push("anthropic");
-            }
-
-            for (const entity of cResult.entities) {
-              const eName = entity.name.toLowerCase();
-              if (
-                eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
-                (!businessName || eName !== businessName.toLowerCase())
-              ) {
-                competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-              }
-            }
-
-            // Anthropic still LLM-only (web search tool integration is
-            // a Phase 3 upgrade). Marked grounding_mode='training' so
-            // analytics can distinguish from grounded engines.
-            const insertRes = await env.DB.prepare(
-              `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-               VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
-            )
-              .bind(
-                kw.id,
-                cResult.text.slice(0, 4000),
-                JSON.stringify(cResult.entities),
-                cited ? 1 : 0,
-                prom,
-                now
-              )
-              .run();
-
-            await maybeAlert(env, clientSlug, kw.id, "anthropic", insertRes, cited, prom);
-
-            totalQueries++;
-            if (cited) clientCitations++;
-          } catch (err) {
-            console.log(`Claude query failed for "${kw.keyword}": ${err}`);
-          }
-
-          await new Promise((r) => setTimeout(r, 200));
-        }
-
-        // --- Google AI Overviews (via DataForSEO) ---
-        // Skipped silently when DATAFORSEO_LOGIN/PASSWORD aren't set,
-        // matching how the other engines no-op without their keys.
-        // When AIO doesn't render for a query (very common), we get
-        // an empty result back -- skip the INSERT so we don't poison
-        // the citation rate denominator with non-runs.
-        if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
-          try {
-            const { queryGoogleAIO } = await import("./citations-google-aio");
-            const aioResult = await queryGoogleAIO(kw.keyword, env);
-            if (aioResult.text.length > 0 || aioResult.urls.length > 0) {
-              const prom = computeProminence(aioResult.entities, aioResult.urls, clientDomain, businessName);
-              const cited = prom !== null;
-
-              if (cited) {
-                kwCited = true;
-                if (!kwEngines.includes("google_ai_overview")) kwEngines.push("google_ai_overview");
-              }
-
-              for (const entity of aioResult.entities) {
-                const eName = entity.name.toLowerCase();
-                if (
-                  eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
-                  (!businessName || eName !== businessName.toLowerCase())
-                ) {
-                  competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-                }
-              }
-
-              const insertRes = await env.DB.prepare(
-                `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-                 VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
-              )
-                .bind(
-                  kw.id,
-                  aioResult.text.slice(0, 4000),
-                  JSON.stringify(aioResult.entities),
-                  JSON.stringify(aioResult.urls),
-                  cited ? 1 : 0,
-                  prom,
-                  now
-                )
-                .run();
-
-              await maybeAlert(env, clientSlug, kw.id, "google_ai_overview", insertRes, cited, prom);
-
-              totalQueries++;
-              if (cited) clientCitations++;
-            }
-            // else: no AIO rendered for this query, no row written
-          } catch (err) {
-            console.log(`Google AIO query failed for "${kw.keyword}": ${err}`);
-          }
-
-          // DataForSEO Live Advanced is 2-5s per call. Pace lightly to
-          // be polite to their API and avoid burst rate limits.
-          await new Promise((r) => setTimeout(r, 300));
-        }
-
-        // --- Bing / Microsoft Copilot (via DataForSEO) ---
-        // Bing's organic SERP is what Copilot draws from for web
-        // answers, plus its own answer_box / featured_snippet surfaces
-        // act as AI-overview equivalents. Same DataForSEO auth as
-        // Google AIO. Cheapest endpoint in the catalog (no AIO
-        // multiplier). Skipped silently when DATAFORSEO creds aren't
-        // set, matching the other engines.
-        if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
-          try {
-            const { queryBing } = await import("./citations-bing");
-            const bingResult = await queryBing(kw.keyword, env);
-            if (bingResult.text.length > 0 || bingResult.urls.length > 0) {
-              const prom = computeProminence(bingResult.entities, bingResult.urls, clientDomain, businessName);
-              const cited = prom !== null;
-
-              if (cited) {
-                kwCited = true;
-                if (!kwEngines.includes("bing")) kwEngines.push("bing");
-              }
-
-              for (const entity of bingResult.entities) {
-                const eName = entity.name.toLowerCase();
-                if (
-                  eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
-                  (!businessName || eName !== businessName.toLowerCase())
-                ) {
-                  competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
-                }
-              }
-
-              const insertRes = await env.DB.prepare(
-                `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
-                 VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
-              )
-                .bind(
-                  kw.id,
-                  bingResult.text.slice(0, 4000),
-                  JSON.stringify(bingResult.entities),
-                  JSON.stringify(bingResult.urls),
-                  cited ? 1 : 0,
-                  prom,
-                  now
-                )
-                .run();
-
-              await maybeAlert(env, clientSlug, kw.id, "bing", insertRes, cited, prom);
-
-              totalQueries++;
-              if (cited) clientCitations++;
-            }
-          } catch (err) {
-            console.log(`Bing query failed for "${kw.keyword}": ${err}`);
-          }
-
-          await new Promise((r) => setTimeout(r, 300));
-        }
+        });
       }
 
       keywordResults.push({
@@ -905,6 +775,35 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       enginesBreakdown.anthropic = {
         queries: cRuns?.total || 0,
         citations: cRuns?.cited || 0,
+      };
+    }
+    // Google AI Overviews + Bing both come from DataForSEO. Same gate.
+    // Pre-2026-05-09 these were missing from engines_breakdown entirely
+    // because the aggregator only knew about the 4 LLM engines, so even
+    // when bing/aio rows landed they were invisible in dashboards and
+    // digest emails. Snapshot now reflects the full 6-engine reality.
+    if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
+      const aioRuns = await env.DB.prepare(
+        `SELECT COUNT(*) as total, SUM(client_cited) as cited FROM citation_runs
+         WHERE keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)
+         AND engine = 'google_ai_overview' AND run_at = ?`
+      )
+        .bind(clientSlug, now)
+        .first<{ total: number; cited: number }>();
+      enginesBreakdown.google_ai_overview = {
+        queries: aioRuns?.total || 0,
+        citations: aioRuns?.cited || 0,
+      };
+      const bingRuns = await env.DB.prepare(
+        `SELECT COUNT(*) as total, SUM(client_cited) as cited FROM citation_runs
+         WHERE keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)
+         AND engine = 'bing' AND run_at = ?`
+      )
+        .bind(clientSlug, now)
+        .first<{ total: number; cited: number }>();
+      enginesBreakdown.bing = {
+        queries: bingRuns?.total || 0,
+        citations: bingRuns?.cited || 0,
       };
     }
 
@@ -1077,6 +976,462 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
 
     // Delay between clients
     await new Promise((r) => setTimeout(r, 500));
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Per-keyword run -- single keyword, all 6 engines, RUNS_PER_KEYWORD repeats.
+// Built for the admin "Run" button on individual keywords so a demo or
+// triage run fits well inside Workers' waitUntil budget. The full-roster
+// runWeeklyCitations() iterates 15+ keywords and fan-outs to ~270 API
+// calls which has been hitting the wall-time ceiling and dying mid-run
+// (see citations debug 2026-05-09). This function does ~18 calls max,
+// which fits comfortably. Skips snapshot/alert side-effects on purpose --
+// those are per-client aggregates owned by the weekly cron path.
+// ---------------------------------------------------------------------------
+
+export async function runOneKeywordCitations(
+  env: Env,
+  clientSlug: string,
+  keywordId: number
+): Promise<{ ok: boolean; rowsInserted: number; engines: Record<string, number>; error?: string }> {
+  const kw = await env.DB.prepare(
+    "SELECT * FROM citation_keywords WHERE id = ? AND client_slug = ? AND active = 1"
+  ).bind(keywordId, clientSlug).first<CitationKeyword>();
+
+  if (!kw) {
+    return { ok: false, rowsInserted: 0, engines: {}, error: "keyword not found or inactive" };
+  }
+
+  const domain = await env.DB.prepare(
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<Domain>();
+
+  const config = await env.DB.prepare(
+    "SELECT * FROM injection_configs WHERE client_slug = ?"
+  ).bind(clientSlug).first<InjectionConfig>();
+
+  const clientDomain = domain?.domain || "";
+  const businessName = config?.business_name || null;
+
+  const engines: Record<string, number> = {};
+  let rowsInserted = 0;
+
+  // Per-engine handlers. Each is an async closure that does the API
+  // call + INSERT and reports its row count. They run in parallel via
+  // Promise.allSettled below so wall-time per outer iteration is the
+  // SLOWEST single engine (~10-15s) rather than the SUM (~30-60s).
+  // That's what makes 6 engines × 3 iterations fit inside Workers'
+  // waitUntil budget. A failed engine doesn't take the others down --
+  // its row simply doesn't write.
+  const tick = () => Math.floor(Date.now() / 1000);
+
+  const runPerplexity = async () => {
+    if (!env.PERPLEXITY_API_KEY) return;
+    const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'perplexity', ?, ?, ?, ?, ?, ?, 'web')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    engines.perplexity = (engines.perplexity || 0) + 1;
+    rowsInserted++;
+  };
+
+  const runOpenAI = async () => {
+    if (!env.OPENAI_API_KEY) return;
+    const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'openai', ?, ?, ?, ?, ?, ?, 'web')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    engines.openai = (engines.openai || 0) + 1;
+    rowsInserted++;
+  };
+
+  const runGemini = async () => {
+    if (!env.GEMINI_API_KEY) return;
+    const r = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
+    if (r.text.length === 0 && r.urls.length === 0) return; // 429/empty
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'gemini', ?, ?, ?, ?, ?, ?, 'web')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    engines.gemini = (engines.gemini || 0) + 1;
+    rowsInserted++;
+  };
+
+  const runAnthropic = async () => {
+    if (!env.ANTHROPIC_API_KEY) return;
+    const r = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
+    const prom = computeProminence(r.entities, [], clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'anthropic', ?, ?, '[]', ?, ?, ?, 'training')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, tick()).run();
+    engines.anthropic = (engines.anthropic || 0) + 1;
+    rowsInserted++;
+  };
+
+  const runGoogleAIO = async () => {
+    if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
+    const { queryGoogleAIO } = await import("./citations-google-aio");
+    const r = await queryGoogleAIO(kw.keyword, env);
+    if (r.text.length === 0 && r.urls.length === 0) return; // AIO didn't render
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'google_ai_overview', ?, ?, ?, ?, ?, ?, 'web')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    engines.google_ai_overview = (engines.google_ai_overview || 0) + 1;
+    rowsInserted++;
+  };
+
+  const runBing = async () => {
+    if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
+    const { queryBing } = await import("./citations-bing");
+    const r = await queryBing(kw.keyword, env);
+    if (r.text.length === 0 && r.urls.length === 0) return;
+    const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'bing', ?, ?, ?, ?, ?, ?, 'web')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), JSON.stringify(r.urls), cited ? 1 : 0, prom, tick()).run();
+    engines.bing = (engines.bing || 0) + 1;
+    rowsInserted++;
+  };
+
+  const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing"];
+
+  for (let run = 0; run < RUNS_PER_KEYWORD; run++) {
+    const results = await Promise.allSettled([
+      runPerplexity(),
+      runOpenAI(),
+      runGemini(),
+      runAnthropic(),
+      runGoogleAIO(),
+      runBing(),
+    ]);
+    results.forEach((res, i) => {
+      if (res.status === "rejected") {
+        console.log(`[per-keyword] ${engineLabels[i]} failed (${kw.keyword}): ${res.reason}`);
+      }
+    });
+  }
+
+  console.log(`[per-keyword] ${clientSlug}/"${kw.keyword}": ${rowsInserted} rows across ${Object.keys(engines).length} engines`);
+  return { ok: true, rowsInserted, engines };
+}
+
+// ---------------------------------------------------------------------------
+// Workflow fan-out helpers. The pre-2026-05-09 path called
+// runWeeklyCitations() inside a single step.do(), which silently hit
+// the per-step 30s CPU ceiling after ~1.5 keywords and exited
+// "successfully" with most data missing (verified: 31s step, only ~27
+// rows per workflow instance for a 15-keyword roster). The new path
+// fans out one step.do() per (client, keyword), each with its own
+// fresh CPU budget, then aggregates per-client snapshots in a
+// follow-up step. Same total work, no piling.
+// ---------------------------------------------------------------------------
+
+export interface CitationRunPlan {
+  runStartTs: number;
+  items: Array<{ clientSlug: string; keywordId: number; keyword: string }>;
+  clientSlugs: string[];
+}
+
+export async function planCitationRun(
+  env: Env,
+  slugFilter?: string
+): Promise<CitationRunPlan> {
+  const runStartTs = Math.floor(Date.now() / 1000);
+  const keywords = slugFilter
+    ? (await env.DB.prepare(
+        "SELECT id, client_slug, keyword FROM citation_keywords WHERE active = 1 AND client_slug = ? ORDER BY id"
+      ).bind(slugFilter).all<{ id: number; client_slug: string; keyword: string }>()).results
+    : (await env.DB.prepare(
+        "SELECT id, client_slug, keyword FROM citation_keywords WHERE active = 1 ORDER BY client_slug, id"
+      ).all<{ id: number; client_slug: string; keyword: string }>()).results;
+
+  const items = keywords.map((k) => ({
+    clientSlug: k.client_slug,
+    keywordId: k.id,
+    keyword: k.keyword,
+  }));
+  const clientSlugs = Array.from(new Set(items.map((i) => i.clientSlug)));
+
+  return { runStartTs, items, clientSlugs };
+}
+
+// Build the per-client snapshot row + run citation-lost / first-citation
+// alerts. Reads citation_runs rows from the last `lookbackDays` days.
+// Default 7 -- the Monday weekly snapshot rolls up the prior week of
+// daily samples. Manual button passes 1 -- snapshot reflects only
+// today's run, fresh feedback for the user. Alert side-effects are
+// guarded by admin_alerts cooldowns, so re-running won't double-fire.
+export async function buildClientSnapshot(
+  env: Env,
+  clientSlug: string,
+  lookbackDays: number = 7
+): Promise<void> {
+  const now = Math.floor(Date.now() / 1000);
+  const runStartTs = now - Math.floor(lookbackDays * 86400);
+
+  const domain = await env.DB.prepare(
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<Domain>();
+
+  const config = await env.DB.prepare(
+    "SELECT * FROM injection_configs WHERE client_slug = ?"
+  ).bind(clientSlug).first<InjectionConfig>();
+
+  const clientDomain = domain?.domain || "";
+  const businessName = config?.business_name || null;
+
+  // Pull all rows written for this client during this run window.
+  const rows = (await env.DB.prepare(
+    `SELECT cr.id, cr.keyword_id, cr.engine, cr.cited_entities, cr.client_cited,
+            ck.keyword
+     FROM citation_runs cr
+     JOIN citation_keywords ck ON ck.id = cr.keyword_id
+     WHERE ck.client_slug = ? AND cr.run_at >= ?
+     ORDER BY cr.id`
+  ).bind(clientSlug, runStartTs).all<{
+    id: number;
+    keyword_id: number;
+    engine: string;
+    cited_entities: string;
+    client_cited: number;
+    keyword: string;
+  }>()).results;
+
+  if (rows.length === 0) {
+    console.log(`[snapshot] ${clientSlug}: no rows since ${runStartTs}, skipping snapshot`);
+    return;
+  }
+
+  // Aggregate.
+  let totalQueries = 0;
+  let clientCitations = 0;
+  const competitorCounts = new Map<string, number>();
+  const enginesBreakdown: Record<string, { queries: number; citations: number }> = {};
+  const perKeyword = new Map<number, { keyword: string; cited: boolean; engines: Set<string> }>();
+
+  const clientLc = clientDomain.replace(/^www\./, "").toLowerCase();
+  const businessLc = businessName ? businessName.toLowerCase() : null;
+
+  for (const row of rows) {
+    totalQueries++;
+    const cited = row.client_cited === 1;
+    if (cited) clientCitations++;
+
+    const eb = enginesBreakdown[row.engine] || { queries: 0, citations: 0 };
+    eb.queries++;
+    if (cited) eb.citations++;
+    enginesBreakdown[row.engine] = eb;
+
+    const kw = perKeyword.get(row.keyword_id) || { keyword: row.keyword, cited: false, engines: new Set<string>() };
+    if (cited) {
+      kw.cited = true;
+      kw.engines.add(row.engine);
+    }
+    perKeyword.set(row.keyword_id, kw);
+
+    // Decode entities for competitor counts.
+    try {
+      const entities = JSON.parse(row.cited_entities || "[]") as Array<{ name: string }>;
+      for (const e of entities) {
+        const eName = (e.name || "").toLowerCase();
+        if (!eName) continue;
+        if (eName === clientLc) continue;
+        if (businessLc && eName === businessLc) continue;
+        competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+      }
+    } catch { /* malformed JSON -- skip */ }
+  }
+
+  const citationShare = totalQueries > 0 ? clientCitations / totalQueries : 0;
+  const topCompetitors = [...competitorCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, count]) => ({ name, count }));
+  const keywordBreakdown = Array.from(perKeyword.entries()).map(([keyword_id, v]) => ({
+    keyword: v.keyword,
+    keyword_id,
+    cited: v.cited,
+    engines: Array.from(v.engines),
+  }));
+
+  // Monday of this week (UTC) for week_start.
+  const mondayDate = new Date();
+  mondayDate.setUTCHours(0, 0, 0, 0);
+  const dayOfWeek = mondayDate.getUTCDay();
+  const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  mondayDate.setUTCDate(mondayDate.getUTCDate() - diff);
+  const weekStart = Math.floor(mondayDate.getTime() / 1000);
+
+  await env.DB.prepare(
+    `INSERT INTO citation_snapshots
+     (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  ).bind(
+    clientSlug,
+    weekStart,
+    totalQueries,
+    clientCitations,
+    citationShare,
+    JSON.stringify(topCompetitors),
+    JSON.stringify(keywordBreakdown),
+    JSON.stringify(enginesBreakdown),
+    now
+  ).run();
+
+  console.log(
+    `[snapshot] ${clientSlug}: ${clientCitations}/${totalQueries} cited (${(citationShare * 100).toFixed(1)}%), ${topCompetitors.length} competitors, engines=${Object.keys(enginesBreakdown).join(",")}`
+  );
+
+  // Citation-lost alert -- mirror of first-citation. Same guards as the
+  // legacy path: previous snapshot had citations, this one has zero,
+  // 30-day cooldown via admin_alerts.
+  try {
+    if (clientCitations === 0 && domain) {
+      const previousSnapshot = await env.DB.prepare(
+        `SELECT client_citations, total_queries, created_at FROM citation_snapshots
+          WHERE client_slug = ? AND created_at < ?
+          ORDER BY created_at DESC LIMIT 1`
+      ).bind(clientSlug, now - 60).first<{ client_citations: number; total_queries: number; created_at: number }>();
+
+      if (previousSnapshot && previousSnapshot.client_citations > 0) {
+        const recentAlert = await env.DB.prepare(
+          "SELECT id FROM admin_alerts WHERE client_slug = ? AND type = 'citation_lost' AND created_at > ? LIMIT 1"
+        ).bind(clientSlug, now - 30 * 86400).first<{ id: number }>();
+
+        if (!recentAlert) {
+          const { resolveAgencyForEmail } = await import("./agency");
+          const { sendCitationLostEmail } = await import("./email");
+          const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
+          const recipients = (await env.DB.prepare(
+            `SELECT email, name FROM users
+              WHERE (email_regression = 1 OR email_regression IS NULL)
+                AND ((role = 'client' AND client_slug = ?) OR role = 'admin')`
+          ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
+          if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+            recipients.push({ email: agency.contact_email, name: null });
+          }
+
+          const daysBetween = Math.max(1, Math.floor((now - previousSnapshot.created_at) / 86400));
+          let sent = 0;
+          for (const r of recipients) {
+            const ok = await sendCitationLostEmail(r.email, r.name, {
+              domain: domain.domain,
+              clientSlug,
+              previousCitations: previousSnapshot.client_citations,
+              previousQueries: previousSnapshot.total_queries,
+              daysBetween,
+            }, env, agency);
+            if (ok) sent++;
+            await new Promise((res) => setTimeout(res, 200));
+          }
+
+          await env.DB.prepare(
+            `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+               VALUES (?, 'citation_lost', ?, ?, ?)`
+          ).bind(
+            clientSlug,
+            `Citations dropped to zero on ${domain.domain}`,
+            `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. ${sent}/${recipients.length} alert emails sent.`,
+            now,
+          ).run();
+          console.log(`[citation-lost] alerted ${clientSlug} -- ${sent}/${recipients.length} emails`);
+        }
+      }
+    }
+  } catch (e) {
+    console.log(`[citation-lost] check failed for ${clientSlug}: ${e}`);
+  }
+
+  // First-citation celebration. Persistent guard via admin_alerts so
+  // we never re-fire even after months of subsequent citations.
+  try {
+    if (clientCitations > 0 && domain) {
+      const alreadyCelebrated = await env.DB.prepare(
+        "SELECT id FROM admin_alerts WHERE client_slug = ? AND type = 'first_citation' LIMIT 1"
+      ).bind(clientSlug).first<{ id: number }>();
+
+      if (!alreadyCelebrated) {
+        const firstCited = keywordBreakdown.find((r) => r.cited);
+        const engineKey = firstCited?.engines[0] || "";
+        const engineName =
+          engineKey === "openai" ? "ChatGPT"
+          : engineKey === "perplexity" ? "Perplexity"
+          : engineKey === "google_ai_overview" ? "Google AI Overviews"
+          : engineKey === "gemini" ? "Gemini"
+          : engineKey === "bing" ? "Microsoft Copilot"
+          : engineKey === "anthropic" ? "Claude"
+          : engineKey || "an AI engine";
+        const keyword = firstCited?.keyword || "your tracked keywords";
+
+        const { resolveAgencyForEmail } = await import("./agency");
+        const { sendFirstCitationEmail } = await import("./email");
+        const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
+
+        const recipients = (await env.DB.prepare(
+          `SELECT email, name FROM users
+            WHERE (role = 'client' AND client_slug = ?)
+               OR role = 'admin'`
+        ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
+        if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
+          recipients.push({ email: agency.contact_email, name: null });
+        }
+
+        let sent = 0;
+        for (const r of recipients) {
+          const ok = await sendFirstCitationEmail(r.email, r.name, {
+            domain: domain.domain,
+            clientSlug,
+            engineName,
+            keyword,
+            citationsThisRun: clientCitations,
+            totalQueries,
+          }, env, agency);
+          if (ok) sent++;
+          await new Promise((res) => setTimeout(res, 200));
+        }
+
+        await env.DB.prepare(
+          `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
+           VALUES (?, 'first_citation', ?, ?, ?)`
+        ).bind(
+          clientSlug,
+          `First AI citation: ${domain.domain} cited by ${engineName}`,
+          `${clientCitations} of ${totalQueries} tracked queries cited this week. ${sent} of ${recipients.length} celebration emails sent.`,
+          now,
+        ).run();
+
+        console.log(`[first-citation] celebrated ${clientSlug} -- ${sent}/${recipients.length} emails sent`);
+      }
+    }
+  } catch (e) {
+    console.log(`[first-citation] check failed for ${clientSlug}: ${e}`);
+  }
+
+  // Reddit citation extraction. Same call the legacy path makes, kept
+  // here so the snapshot step covers all post-run aggregation work.
+  try {
+    const { backfillRedditCitations, maybeAddRedditRoadmapItems } = await import("./reddit-citations");
+    await backfillRedditCitations(clientSlug, 1, env);
+    await maybeAddRedditRoadmapItems(clientSlug, env);
+  } catch (e) {
+    console.log(`[reddit] backfill failed for ${clientSlug}: ${e}`);
   }
 }
 

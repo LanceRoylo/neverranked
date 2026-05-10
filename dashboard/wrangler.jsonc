@@ -59,6 +59,11 @@
       "name": "send-digest-workflow",
       "binding": "SEND_DIGEST_WORKFLOW",
       "class_name": "SendDigestWorkflow"
+    },
+    {
+      "name": "citation-keyword-workflow",
+      "binding": "CITATION_KEYWORD_WORKFLOW",
+      "class_name": "CitationKeywordWorkflow"
     }
   ]
 }
