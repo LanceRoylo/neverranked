@@ -28,9 +28,9 @@ anyone with the same query against the same database.
 ## Headline
 
 Across 376 captured AI engine responses, the single most-cited
-third-party source is **google.com** (Google Maps / Business Profile),
-appearing in 106 citation runs across
-1 engine and 3 tracked keywords.
+third-party source is **vertexaisearch.cloud.google.com** (Google AI infrastructure (Gemini grounding)),
+appearing in 117 citation runs across
+1 engine and 5 tracked keywords.
 
 Implication: any tracked client whose category overlaps with this
 source's coverage area (and whose own brand is not yet present on
@@ -45,13 +45,17 @@ question of "where else are they pulling from"):
 
 | Source type | Runs | Share |
 |---|---|---|
-| google-maps | 106 | 29.3% |
-| news | 100 | 27.6% |
-| youtube | 84 | 23.2% |
-| wikipedia | 41 | 11.3% |
-| directory | 17 | 4.7% |
-| tripadvisor | 11 | 3.0% |
-| review-aggregator | 3 | 0.8% |
+| aeo-services-agency | 343 | 28.1% |
+| aeo-platform | 200 | 16.4% |
+| seo-publication | 198 | 16.2% |
+| google-ai-infra | 117 | 9.6% |
+| google-maps | 106 | 8.7% |
+| news | 100 | 8.2% |
+| youtube | 84 | 6.9% |
+| wikipedia | 41 | 3.4% |
+| directory | 17 | 1.4% |
+| tripadvisor | 11 | 0.9% |
+| review-aggregator | 3 | 0.2% |
 
 ## Top 15 third-party sources
 
@@ -60,20 +64,20 @@ the dataset. Excludes client-owned domains.
 
 | Domain | Source type | Runs | Engines | Keywords | Clients |
 |---|---|---|---|---|---|
-| vertexaisearch.cloud.google.com | other | 117 | 1 | 5 | 2 |
+| vertexaisearch.cloud.google.com | google-ai-infra | 117 | 1 | 5 | 2 |
 | google.com | google-maps | 106 | 1 | 3 | 2 |
 | hawaiitheatre.com | other | 101 | 3 | 2 | 1 |
 | prnewswire.com | news | 94 | 2 | 1 | 1 |
 | youtube.com | youtube | 84 | 2 | 9 | 1 |
-| geekpoweredstudios.com | other | 59 | 3 | 1 | 1 |
-| orbitmedia.com | other | 55 | 1 | 2 | 1 |
-| evertune.ai | other | 54 | 2 | 2 | 1 |
-| greenbananaseo.com | other | 51 | 2 | 5 | 1 |
-| animalz.co | other | 48 | 1 | 2 | 1 |
-| arcintermedia.com | other | 46 | 1 | 2 | 1 |
-| sparktoro.com | other | 43 | 1 | 1 | 1 |
-| eseospace.com | other | 43 | 2 | 1 | 1 |
-| generatemore.ai | other | 42 | 1 | 1 | 1 |
+| geekpoweredstudios.com | aeo-services-agency | 59 | 3 | 1 | 1 |
+| orbitmedia.com | seo-publication | 55 | 1 | 2 | 1 |
+| evertune.ai | aeo-platform | 54 | 2 | 2 | 1 |
+| greenbananaseo.com | aeo-services-agency | 51 | 2 | 5 | 1 |
+| animalz.co | seo-publication | 48 | 1 | 2 | 1 |
+| arcintermedia.com | aeo-services-agency | 46 | 1 | 2 | 1 |
+| sparktoro.com | seo-publication | 43 | 1 | 1 | 1 |
+| eseospace.com | aeo-services-agency | 43 | 2 | 1 | 1 |
+| generatemore.ai | aeo-platform | 42 | 1 | 1 | 1 |
 | en.wikipedia.org | wikipedia | 41 | 3 | 3 | 2 |
 
 ## What each engine cites differently

@@ -105,6 +105,75 @@ export const SOURCE_TYPES = [
     action: "contribute-or-pitch-coverage",
     citeable: true,
   },
+  {
+    // SEO / content-marketing publications. These are the named
+    // editorial voices in the SEO+AEO space. AI engines cite them
+    // as authority for "how does AEO work" / "SEO best practice"
+    // type queries.
+    type: "seo-publication",
+    label: "SEO / marketing publication",
+    domains: [
+      "sparktoro.com", "animalz.co", "orbitmedia.com",
+      "searchengineland.com", "searchenginejournal.com",
+      "moz.com", "ahrefs.com/blog", "semrush.com/blog",
+      "backlinko.com", "neilpatel.com",
+      "minuttia.com", "onely.com",
+    ],
+    action: "pitch-contributed-content",
+    citeable: true,
+  },
+  {
+    // Direct AEO/AI-search platform competitors. These are the
+    // companies selling AEO software, dashboards, or visibility
+    // platforms. When AI engines answer "how do I get cited in
+    // ChatGPT" they often surface these. Surfacing them as a
+    // distinct type makes competitive-intelligence analysis
+    // possible directly from the report.
+    type: "aeo-platform",
+    label: "AEO platform competitor",
+    domains: [
+      "evertune.ai", "searchatlas.com", "searchseal.com",
+      "generatemore.ai", "promptalpha.ai", "lureon.ai",
+      "senso.ai", "birdeye.com", "cited.so",
+      "onmarketing.ai", "fozzels.com",
+    ],
+    action: "competitive-positioning-content",
+    citeable: true,
+  },
+  {
+    // AEO / AI-search / SEO service agencies that compete with NR
+    // for "best AI visibility agency" type queries. Different from
+    // aeo-platform: these sell services not software.
+    type: "aeo-services-agency",
+    label: "AEO services agency competitor",
+    domains: [
+      "geekpoweredstudios.com", "greenbananaseo.com",
+      "eseospace.com", "penguinpeak.com", "seotuners.com",
+      "1digitalagency.com", "seoworks.co.uk", "riweb.uk",
+      "roiamplified.com", "clickslice.co.uk", "jasonjkhoo.com",
+      "sealglobalholdings.com", "smamarketing.net",
+      "embarque.io", "cairrot.com", "marceldigital.com",
+      "firstpagesage.com", "arcintermedia.com",
+      "quoleady.com", "ommax.com", "leadgeneratorx.com",
+    ],
+    action: "differentiated-positioning-content",
+    citeable: true,
+  },
+  {
+    // Google's internal AI infrastructure (Gemini's grounding
+    // service URLs). Not a publishable surface; appears in citation
+    // logs because Gemini self-cites its own retrieval layer.
+    // Tagging it lets the report exclude or call it out separately
+    // rather than confusing it with third-party citation share.
+    type: "google-ai-infra",
+    label: "Google AI infrastructure (Gemini grounding)",
+    domains: [
+      "vertexaisearch.cloud.google.com",
+      "vertexaisearch.googleapis.com",
+    ],
+    action: "monitor-only",
+    citeable: false,
+  },
 ];
 
 const CATCHALL_TYPE = {

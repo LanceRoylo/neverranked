@@ -215,6 +215,58 @@ const SOURCE_BRIEF_LIBRARY = {
     ],
   },
 
+  "seo-publication": {
+    action: (s, c) => `Pitch a contributed piece (byline, guest post, or expert quote) to ${s.source_label || s.domain}. These are the canonical SEO/AEO publications AI engines cite when answering category questions.`,
+    angle: (s, c) => `One feature in a recognized SEO/AEO publication compounds for 12+ months because AI engines weight editorial brand authority. Contributed-content slot is usually easier than feature coverage and produces the same citation signal.`,
+    tone_notes: [
+      "Pitch a specific editor with a specific angle. Cold blasts get ignored.",
+      "Contributed content needs a real point of view backed by data, not a feature pitch for the brand.",
+      "Disclose any commercial relationship in the byline.",
+    ],
+    dont_do: [
+      "Do not pitch product news as a feature story. Wrong desk.",
+      "Do not use AI-generated drafts. Editors recognize them and the relationship goes cold fast.",
+    ],
+  },
+
+  "aeo-platform": {
+    action: (s, c) => `Direct competitor on the AEO platform/tools side. Build differentiated positioning content addressing what ${s.source_label || s.domain} does NOT offer (workflow + customer education + audit-as-content).`,
+    angle: (s, c) => `Platform competitors win citation share via tool keywords ("best AEO platform"). NeverRanked's edge is service + methodology + Hawaii-vertical depth. Lean into category-defining content the platform players cannot publish credibly.`,
+    tone_notes: [
+      "Name them directly when comparing -- AI engines learn the comparison shape.",
+      "Lead with category education, not product features.",
+      "Ship public methodology + audit deliverables they cannot match without a service team.",
+    ],
+    dont_do: [
+      "Do not attack their tooling on Twitter or LinkedIn -- backfires.",
+      "Do not copy their pricing page structure -- positioning collapses to feature-grid comparison.",
+    ],
+  },
+
+  "aeo-services-agency": {
+    action: (s, c) => `Direct services competitor. Build comparative content that names ${s.source_label || s.domain} explicitly when relevant, and ship case-study proof at higher quality than they publish.`,
+    angle: (s, c) => `Services agencies win citation share through volume of how-to content + "best AEO agency" listicles. NeverRanked's edge is Hawaii regional depth + technical infrastructure (snippet, schema, monitoring) most agencies do not offer. Differentiation lives in proof, not claims.`,
+    tone_notes: [
+      "Comparative content should be honest about where competitors do well, not just where they do not.",
+      "AI engines reward fair comparisons over biased ones (sentiment scoring penalizes hyperbole).",
+    ],
+    dont_do: [
+      "Do not write 'why we are the best' content. Performs worse than 'here is the trade-off.'",
+      "Do not buy listicle placements. AI engines downweight pay-to-play patterns.",
+    ],
+  },
+
+  "google-ai-infra": {
+    action: (s, c) => `No action. This is Gemini's internal grounding service self-citing. Filter out of competitive analysis.`,
+    angle: (s, c) => `Not a publishable surface. Appears in citation_runs because Gemini cites its own retrieval layer URLs. Excluded from third-party citation share calculations.`,
+    tone_notes: [
+      "Treat as observational signal that Gemini is the engine doing the citing, not as a competitive source.",
+    ],
+    dont_do: [
+      "Do not include this in customer-facing reports as a 'gap.' It is an artifact of Gemini's architecture.",
+    ],
+  },
+
   other: {
     action: (s, c) => `Investigate. Source type unclassified -- needs a manual look to decide if it's high-value, low-value, or new-category-worthy.`,
     angle: (s, c) => `Unrecognized source domain. Could be a high-value niche site we haven't classified yet, or noise. Open the example URLs and classify.`,

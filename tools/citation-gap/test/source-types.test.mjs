@@ -56,11 +56,19 @@ test("classifyUrl recognizes the eleven canonical source types", () => {
 });
 
 test("classifyUrl uses domain-suffix matching, not substring", () => {
-  // Audit fix: "ommax.com" used to match "x.com" via substring;
-  // proper domain-suffix logic excludes it.
-  assert.equal(classifyUrl("https://ommax.com/about").type, "other");
-  assert.equal(classifyUrl("https://leadgeneratorx.com/x").type, "other");
-  // But x.com itself and *.x.com still match social.
+  // Audit fix: "ommax.com" used to match "x.com" via substring,
+  // and "leadgeneratorx.com" matched too. Proper domain-suffix
+  // logic excludes both from the social class. They are now
+  // explicitly classified as aeo-services-agency (intentional --
+  // they are SEO/marketing service providers in the cited
+  // dataset), but the key invariant from the audit is that
+  // they never match social via substring leak.
+  assert.notEqual(classifyUrl("https://ommax.com/about").type, "social");
+  assert.notEqual(classifyUrl("https://leadgeneratorx.com/x").type, "social");
+  // Synthetic substring case that should remain "other" since no
+  // explicit type matches: "fakex.com" must not leak into social.
+  assert.equal(classifyUrl("https://fakex.com/about").type, "other");
+  // And x.com itself and *.x.com still match social.
   assert.equal(classifyUrl("https://x.com/post").type, "social");
 });
 
