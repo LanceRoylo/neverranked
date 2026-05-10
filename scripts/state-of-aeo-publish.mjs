@@ -59,6 +59,7 @@ function discoverReports() {
         windowStart: fm.window_start,
         windowEnd: fm.window_end,
         sampleRuns: fm.sample_runs,
+        isDraft: /draft/i.test(fm.status || ''),
       });
     }
   }
@@ -85,6 +86,7 @@ function discoverReports() {
         windowStart: fm.window_start,
         windowEnd: fm.window_end,
         sampleRuns: fm.sample_runs,
+        isDraft: /draft/i.test(fm.status || ''),
       });
     }
   }
@@ -237,15 +239,20 @@ function buildHub(reports) {
   const latest = reports[0];
   const cards = reports.map((r) => {
     const meta = [
-      r.kind === 'edition' ? 'Annual edition' : 'Weekly report',
+      r.isDraft ? 'Working draft' : (r.kind === 'edition' ? 'Annual edition' : 'Weekly report'),
       r.date,
       r.sampleRuns ? `${r.sampleRuns} runs` : null,
     ].filter(Boolean).join(' · ');
-    const summary = r.kind === 'edition'
-      ? 'Themed deep-dive on a tracked vertical or region. Captured from the same citation infrastructure as the weekly report.'
-      : `Standing snapshot of what AI engines cited across NeverRanked's tracked client universe between ${r.windowStart || '?'} and ${r.windowEnd || '?'}.`;
-    return `    <article class="report-card">
-      <p class="report-card-meta">${meta}</p>
+    const summary = r.isDraft
+      ? 'Working draft. Sample size below the publication threshold (12+ tracked sites in the vertical). Numbers and conclusions are subject to change as more clients onboard.'
+      : (r.kind === 'edition'
+        ? 'Themed deep-dive on a tracked vertical or region. Captured from the same citation infrastructure as the weekly report.'
+        : `Standing snapshot of what AI engines cited across NeverRanked's tracked client universe between ${r.windowStart || '?'} and ${r.windowEnd || '?'}.`);
+    const draftBadge = r.isDraft
+      ? '<span style="display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:#080808;background:#e8c767;padding:3px 8px;border-radius:2px;margin-left:8px;vertical-align:middle;font-weight:600">Draft</span>'
+      : '';
+    return `    <article class="report-card${r.isDraft ? ' is-draft' : ''}">
+      <p class="report-card-meta">${meta}${draftBadge}</p>
       <a href="/state-of-aeo/${r.slug}/" class="report-card-title">${r.title}</a>
       <p class="report-card-summary">${summary}</p>
       <div class="report-card-actions">
@@ -326,8 +333,16 @@ ${JSON.stringify(ld, null, 2)}
 
 function buildReportPage(report) {
   const body = renderBody(report.mdPath);
+  const draftBanner = report.isDraft ? `
+  <div style="background:#1c1815;border:1px solid #c9a84c;border-radius:6px;padding:18px 22px;margin:0 0 32px">
+    <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:#e8c767;margin:0 0 6px;font-weight:600">Working draft</p>
+    <p style="font-family:var(--body);font-size:14px;line-height:1.6;color:var(--text-mute);margin:0">This edition is published in working-draft form. Sample size is below the publication threshold of 12+ tracked sites in the vertical. Numbers and conclusions will be updated as more clients onboard.</p>
+  </div>` : '';
+
   const inner = `  <p class="eyebrow"><a href="/" style="color:var(--text-faint)">NeverRanked</a> &middot; <a href="/state-of-aeo/" style="color:var(--text-faint)">The State of AEO</a> &middot; ${report.date}</p>
   <h1>${report.title.replace(/^State of AEO:?\s*/i, '<em>State of AEO</em>: ').replace(/<em>State of AEO<\/em>:\s*$/, '<em>State of AEO</em>')}</h1>
+
+  ${draftBanner}
 
   <div class="action-row">
 ${report.pdfPath ? `    <a href="/state-of-aeo/${report.slug}.pdf">Download PDF</a>` : ''}
@@ -379,8 +394,9 @@ writeFileSync(resolve(OUT_DIR, 'index.html'), buildHub(reports), 'utf8');
 
 // latest.json -- consumed by the dashboard digest email so the
 // industry headline appears in the Monday weekly send. Tiny payload,
-// public, cache-friendly.
-const latest = reports[0];
+// public, cache-friendly. Drafts are excluded so the digest never
+// headlines a working-draft edition.
+const latest = reports.find((r) => !r.isDraft) || reports[0];
 const latestJson = {
   slug: latest.slug,
   title: latest.title,
