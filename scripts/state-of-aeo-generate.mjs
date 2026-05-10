@@ -338,6 +338,29 @@ md.push(`*From The Citation Tape, NeverRanked's standing AI-citation measurement
 md.push(``);
 md.push(`*Generated ${today}. Window: ${earliestDate} to ${latestDate}.*`);
 md.push(``);
+
+// Top-of-document data-integrity banner. Computes per-client
+// keyword-completion now, so the warning sits above the headline
+// when numbers are unreliable. Self-removing once completion
+// crosses the threshold for every client.
+{
+  const undercomplete = [...completionByClient.entries()]
+    .filter(([, c]) => c.active > 0 && c.ran / c.active < 0.8);
+  if (undercomplete.length > 0) {
+    md.push(`> ## Data integrity notice`);
+    md.push(`>`);
+    md.push(`> This week's data is partial. ${undercomplete.length} of ${completionByClient.size} tracked clients fell below 80% keyword completion due to a known infrastructure issue (filed at \`content/handoff-questions/citation-cron-not-firing.md\`). Numbers below should be read as a lower bound on what AI engines actually retrieve until the fix lands.`);
+    md.push(`>`);
+    md.push(`> Affected this week:`);
+    for (const [slug, c] of undercomplete) {
+      const pct = Math.round((c.ran / c.active) * 100);
+      md.push(`> - **${slug}**: ${c.ran} of ${c.active} keywords queried (${pct}%)`);
+    }
+    md.push(`>`);
+    md.push(`> The full per-client completion table appears in the methodology section at the end of this report.`);
+    md.push(``);
+  }
+}
 md.push(`## What this report is`);
 md.push(``);
 md.push(`A standing snapshot of what AI engines actually cite when answering`);

@@ -79,19 +79,28 @@
 <h1 id="state-of-aeo-neverranked-tracked-universe-report">State of AEO: NeverRanked tracked-universe report</h1>
 <p><em>From The Citation Tape, NeverRanked’s standing AI-citation measurement system.</em></p>
 <p><em>Generated 2026-05-10. Window: 2026-04-14 to 2026-05-10.</em></p>
+<blockquote>
+<h2 id="data-integrity-notice">Data integrity notice</h2>
+<p>This week’s data is partial. 3 of 3 tracked clients fell below 80% keyword completion due to a known infrastructure issue (filed at <code>content/handoff-questions/citation-cron-not-firing.md</code>). Numbers below should be read as a lower bound on what AI engines actually retrieve until the fix lands.</p>
+<p>Affected this week:
+- <strong>and-scene</strong>: 1 of 5 keywords queried (20%)
+- <strong>hawaii-theatre</strong>: 2 of 14 keywords queried (14%)
+- <strong>neverranked</strong>: 6 of 15 keywords queried (40%)</p>
+<p>The full per-client completion table appears in the methodology section at the end of this report.</p>
+</blockquote>
 <h2 id="what-this-report-is">What this report is</h2>
 <p>A standing snapshot of what AI engines actually cite when answering
 questions about NeverRanked’s tracked client universe. Pulled from
-live 394 citation runs across 5 engines (bing, gemini, google_ai_overview, openai, perplexity),
+live 437 citation runs across 5 engines (bing, gemini, google_ai_overview, openai, perplexity),
 17 tracked keywords, and 3 clients spanning 3 verticals.</p>
 <p>Generated weekly. Same script, same data sources, no manual curation.
 The methodology is the script (<code>scripts/state-of-aeo-generate.mjs</code>) plus
 the public scoring engine at check.neverranked.com. Reproducible by
 anyone with the same query against the same database.</p>
 <h2 id="headline">Headline</h2>
-<p>Across 394 captured AI engine responses, the single most-cited
+<p>Across 437 captured AI engine responses, the single most-cited
 third-party source is <strong>vertexaisearch.cloud.google.com</strong> (Google AI infrastructure (Gemini grounding)),
-appearing in 117 citation runs across
+appearing in 132 citation runs across
 1 engine and 5 tracked keywords.</p>
 <p>Implication: any tracked client whose category overlaps with this
 source’s coverage area (and whose own brand is not yet present on
@@ -112,63 +121,63 @@ question of “where else are they pulling from”):</p>
 <tbody>
 <tr>
 <td>aeo-services-agency</td>
-<td>361</td>
-<td>28.7%</td>
+<td>417</td>
+<td>29.6%</td>
 </tr>
 <tr>
 <td>seo-publication</td>
-<td>203</td>
+<td>227</td>
 <td>16.1%</td>
 </tr>
 <tr>
 <td>aeo-platform</td>
-<td>202</td>
-<td>16.0%</td>
+<td>203</td>
+<td>14.4%</td>
 </tr>
 <tr>
 <td>google-ai-infra</td>
-<td>117</td>
-<td>9.3%</td>
+<td>132</td>
+<td>9.4%</td>
 </tr>
 <tr>
 <td>google-maps</td>
 <td>112</td>
-<td>8.9%</td>
-</tr>
-<tr>
-<td>news</td>
-<td>100</td>
-<td>7.9%</td>
+<td>8.0%</td>
 </tr>
 <tr>
 <td>youtube</td>
-<td>89</td>
-<td>7.1%</td>
+<td>108</td>
+<td>7.7%</td>
+</tr>
+<tr>
+<td>news</td>
+<td>108</td>
+<td>7.7%</td>
 </tr>
 <tr>
 <td>wikipedia</td>
 <td>41</td>
-<td>3.3%</td>
+<td>2.9%</td>
+</tr>
+<tr>
+<td>reddit</td>
+<td>18</td>
+<td>1.3%</td>
 </tr>
 <tr>
 <td>directory</td>
 <td>17</td>
-<td>1.4%</td>
+<td>1.2%</td>
 </tr>
 <tr>
 <td>tripadvisor</td>
 <td>11</td>
-<td>0.9%</td>
+<td>0.8%</td>
 </tr>
 <tr>
-<td>review-aggregator</td>
-<td>3</td>
-<td>0.2%</td>
-</tr>
-<tr>
-<td>reddit</td>
-<td>2</td>
-<td>0.2%</td>
+<td>social</td>
+<td>11</td>
+<td>0.8%</td>
 </tr>
 </tbody>
 </table>
@@ -190,7 +199,7 @@ the dataset. Excludes client-owned domains.</p>
 <tr>
 <td>vertexaisearch.cloud.google.com</td>
 <td>google-ai-infra</td>
-<td>117</td>
+<td>132</td>
 <td>1</td>
 <td>5</td>
 <td>2</td>
@@ -204,6 +213,22 @@ the dataset. Excludes client-owned domains.</p>
 <td>3</td>
 </tr>
 <tr>
+<td>youtube.com</td>
+<td>youtube</td>
+<td>108</td>
+<td>3</td>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>prnewswire.com</td>
+<td>news</td>
+<td>102</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
 <td>hawaiitheatre.com</td>
 <td>other</td>
 <td>101</td>
@@ -212,25 +237,17 @@ the dataset. Excludes client-owned domains.</p>
 <td>1</td>
 </tr>
 <tr>
-<td>prnewswire.com</td>
-<td>news</td>
-<td>94</td>
-<td>2</td>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>youtube.com</td>
-<td>youtube</td>
-<td>89</td>
-<td>2</td>
-<td>10</td>
-<td>1</td>
-</tr>
-<tr>
 <td>geekpoweredstudios.com</td>
 <td>aeo-services-agency</td>
-<td>61</td>
+<td>74</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>eseospace.com</td>
+<td>aeo-services-agency</td>
+<td>58</td>
 <td>3</td>
 <td>1</td>
 <td>1</td>
@@ -244,6 +261,14 @@ the dataset. Excludes client-owned domains.</p>
 <td>1</td>
 </tr>
 <tr>
+<td>sparktoro.com</td>
+<td>seo-publication</td>
+<td>54</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
 <td>evertune.ai</td>
 <td>aeo-platform</td>
 <td>54</td>
@@ -254,7 +279,7 @@ the dataset. Excludes client-owned domains.</p>
 <tr>
 <td>greenbananaseo.com</td>
 <td>aeo-services-agency</td>
-<td>51</td>
+<td>52</td>
 <td>2</td>
 <td>5</td>
 <td>1</td>
@@ -273,22 +298,6 @@ the dataset. Excludes client-owned domains.</p>
 <td>48</td>
 <td>1</td>
 <td>2</td>
-<td>1</td>
-</tr>
-<tr>
-<td>sparktoro.com</td>
-<td>seo-publication</td>
-<td>45</td>
-<td>1</td>
-<td>1</td>
-<td>1</td>
-</tr>
-<tr>
-<td>eseospace.com</td>
-<td>aeo-services-agency</td>
-<td>45</td>
-<td>2</td>
-<td>1</td>
 <td>1</td>
 </tr>
 <tr>
@@ -312,45 +321,45 @@ the dataset. Excludes client-owned domains.</p>
 <h2 id="what-each-engine-cites-differently">What each engine cites differently</h2>
 <p>Top 5 sources per engine. When two engines have very different top
 lists, that’s a signal about how each one’s retrieval differs.</p>
-<h3 id="perplexity-227-runs">perplexity (227 runs)</h3>
+<h3 id="perplexity-236-runs">perplexity (236 runs)</h3>
 <ul>
-<li><strong>youtube.com</strong> – 75 runs</li>
+<li><strong>youtube.com</strong> – 83 runs</li>
 <li><strong>orbitmedia.com</strong> – 55 runs</li>
-<li><strong>greenbananaseo.com</strong> – 49 runs</li>
-<li><strong>animalz.co</strong> – 48 runs</li>
-<li><strong>arcintermedia.com</strong> – 46 runs</li>
+<li><strong>geekpoweredstudios.com</strong> – 54 runs</li>
+<li><strong>sparktoro.com</strong> – 54 runs</li>
+<li><strong>eseospace.com</strong> – 52 runs</li>
 </ul>
-<h3 id="openai-137-runs">openai (137 runs)</h3>
+<h3 id="openai-146-runs">openai (146 runs)</h3>
 <ul>
 <li><strong>google.com</strong> – 112 runs</li>
-<li><strong>prnewswire.com</strong> – 56 runs</li>
+<li><strong>prnewswire.com</strong> – 59 runs</li>
 <li><strong>en.wikipedia.org</strong> – 33 runs</li>
 <li><strong>hawaiitheatre.com</strong> – 32 runs</li>
 <li><strong>cited.so</strong> – 25 runs</li>
 </ul>
-<h3 id="gemini-26-runs">gemini (26 runs)</h3>
+<h3 id="gemini-34-runs">gemini (34 runs)</h3>
 <ul>
-<li><strong>vertexaisearch.cloud.google.com</strong> – 117 runs</li>
+<li><strong>vertexaisearch.cloud.google.com</strong> – 132 runs</li>
 <li><strong>hawaiitheatre.com</strong> – 36 runs</li>
+<li><strong>builtin.com</strong> – 6 runs</li>
+<li><strong>20northmarketing.com</strong> – 6 runs</li>
 <li><strong>vividseats.com</strong> – 6 runs</li>
-<li><strong>penguinpeak.com</strong> – 3 runs</li>
-<li><strong>search.auw211.org</strong> – 3 runs</li>
 </ul>
-<h3 id="google_ai_overview-2-runs">google_ai_overview (2 runs)</h3>
+<h3 id="bing-11-runs">bing (11 runs)</h3>
 <ul>
-<li><strong>reddit.com</strong> – 2 runs</li>
-<li><strong>higoodie.com</strong> – 2 runs</li>
-<li><strong>seorankmedia.com</strong> – 2 runs</li>
-<li><strong>digitalstrategyforce.com</strong> – 2 runs</li>
-<li><strong>magier.com</strong> – 2 runs</li>
+<li><strong>myapplications.microsoft.com</strong> – 8 runs</li>
+<li><strong>mychart.org</strong> – 5 runs</li>
+<li><strong>mypay.dfas.mil</strong> – 5 runs</li>
+<li><strong>merriam-webster.com</strong> – 5 runs</li>
+<li><strong>mytax.hasil.gov.my</strong> – 4 runs</li>
 </ul>
-<h3 id="bing-2-runs">bing (2 runs)</h3>
+<h3 id="google_ai_overview-10-runs">google_ai_overview (10 runs)</h3>
 <ul>
-<li><strong>merriam-webster.com</strong> – 2 runs</li>
-<li><strong>oxfordlearnersdictionaries.com</strong> – 2 runs</li>
-<li><strong>eslteacher.org</strong> – 1 runs</li>
-<li><strong>dictionary.cambridge.org</strong> – 1 runs</li>
-<li><strong>proofed.com</strong> – 1 runs</li>
+<li><strong>reddit.com</strong> – 18 runs</li>
+<li><strong>linkedin.com</strong> – 8 runs</li>
+<li><strong>semrush.com</strong> – 5 runs</li>
+<li><strong>farandwide.io</strong> – 4 runs</li>
+<li><strong>runningfish.net</strong> – 3 runs</li>
 </ul>
 <h2 id="vertical-breakdown">Vertical breakdown</h2>
 <p><em>Verticals with at least 3 tracked clients enable category-level insights.</em></p>
@@ -367,7 +376,7 @@ lists, that’s a signal about how each one’s retrieval differs.</p>
 <tr>
 <td>AEO agency</td>
 <td>1</td>
-<td>360</td>
+<td>403</td>
 </tr>
 <tr>
 <td>corporate training</td>
@@ -390,15 +399,15 @@ measured. Citation rate climbing from one of these starting points
 to a higher one over a defined window is the case-study artifact.</p>
 <h3 id="neverranked-aeo-agency">neverranked – AEO agency</h3>
 <ul>
-<li><strong>360</strong> captured runs across <strong>14</strong> tracked keywords</li>
+<li><strong>403</strong> captured runs across <strong>14</strong> tracked keywords</li>
 <li>Named in <strong>0</strong> runs (<strong>0%</strong> citation rate)</li>
 <li>Top 5 sources cited alongside this client’s queries:
 <ul>
-<li>vertexaisearch.cloud.google.com (114 runs)</li>
+<li>vertexaisearch.cloud.google.com (129 runs)</li>
+<li>youtube.com (108 runs)</li>
+<li>prnewswire.com (102 runs)</li>
 <li>google.com (100 runs)</li>
-<li>prnewswire.com (94 runs)</li>
-<li>youtube.com (89 runs)</li>
-<li>geekpoweredstudios.com (61 runs)</li>
+<li>geekpoweredstudios.com (74 runs)</li>
 </ul></li>
 </ul>
 <h3 id="hawaii-theatre-performing-arts-venue">hawaii-theatre – performing arts venue</h3>
@@ -435,7 +444,7 @@ cited_urls captured as raw evidence.</p>
 <p>Engines covered: bing, gemini, google_ai_overview, openai, perplexity.</p>
 <p>Sample size at this snapshot:</p>
 <ul>
-<li>394 citation runs</li>
+<li>437 citation runs</li>
 <li>3 tracked clients across 3 verticals</li>
 <li>17 tracked keywords</li>
 <li>Window: 2026-04-14 to 2026-05-10</li>
