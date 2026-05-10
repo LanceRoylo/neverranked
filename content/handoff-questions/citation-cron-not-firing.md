@@ -105,23 +105,60 @@ design intent.
 
 Three related fixes turn this from manual to autonomous:
 
-### Fix 1: Per-client workflow for runWeeklyCitations
+### Fix 1: Per-keyword workflow for runWeeklyCitations
 
-Mirrors `SendDigestWorkflow`. Each client gets its own 1000-
-subrequest budget. Dispatched from `dashboard/src/cron.ts` in a
-per-client loop, the way digests are dispatched today.
+**Updated 2026-05-10 evening HST after empirical test.** Lance
+manually triggered "Run now" tonight for both `and-scene`
+(5 keywords) and `neverranked` (15 keywords). Both scans
+returned successfully to the UI but landed only:
+
+- and-scene: 1 of 5 keywords completed (4 runs total)
+- neverranked: ~2 of 15 keywords completed (17 runs total)
+
+This proves the bug is broader than the cron. **The
+`runWeeklyCitations` function itself blows through the 1000-
+subrequest budget partway through the keyword loop and silently
+returns** -- the manual "Run now" button hits the same broken
+path. Hawaii Theatre's 2026-05-04 batch of 42 runs across 14
+keywords (3 runs per keyword instead of the expected 6+) is the
+same shape: partial completion.
+
+The fix has to be finer-grained than per-client. Each scan unit
+needs its own 1000-subrequest budget. Two viable shapes:
+
+**Option A: Per-keyword workflow.** Each `(client, keyword)`
+pair becomes one workflow instance. Highest fan-out, simplest
+mental model, easiest to retry one failed keyword. Concern: with
+6 engines + multiple stability runs + competitor analysis +
+sentiment scoring + alerting, even one keyword may approach the
+budget. Likely fine but worth measuring.
+
+**Option B: Per-batch-of-N workflow.** Group keywords into
+batches of 2-3, dispatch one workflow per batch. Lower fan-out,
+fewer workflow create() calls, but the batch size is a
+hand-tuned constant that may need adjusting as engines change.
+
+Recommendation: Option A. Per-keyword dispatch is the cleanest
+isolation, matches the SendDigestWorkflow pattern (one user
+per workflow), and makes failure surface attribution trivial.
 
 Steps:
 
-1. Create `dashboard/src/workflows/run-citations-for-client.ts`
+1. Create `dashboard/src/workflows/run-citation-for-keyword.ts`
 2. Register the workflow in `dashboard/wrangler.jsonc`
-3. In `dashboard/src/cron.ts`, dispatch the workflow per-client
-   inside the existing Monday gate, the way digests are
-   dispatched
-4. Deploy and verify next Monday at 06:00 UTC + 5 minutes that
-   citation_runs rows exist for all active clients
+3. Refactor `runWeeklyCitations` so it dispatches one workflow
+   instance per keyword instead of looping inline. The
+   per-keyword logic moves into the workflow.
+4. Cron handler dispatches `runWeeklyCitations(env)` as before,
+   which now fans out to N workflow instances instead of doing
+   the work inline.
+5. The admin "Run now" button (which calls
+   `runWeeklyCitations(env, slug)`) automatically benefits
+   since it goes through the same dispatch.
+6. Deploy and verify by triggering "Run now" for `neverranked`
+   and confirming all 15 keywords get rows.
 
-Estimated effort: 30-45 minutes of code.
+Estimated effort: 1-2 hours of code plus a verification cycle.
 
 ### Fix 2: Auto-fire initial scan on client onboarding
 
