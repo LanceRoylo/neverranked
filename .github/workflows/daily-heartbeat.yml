@@ -1,0 +1,108 @@
+name: Daily autonomy heartbeat
+
+# Runs the autonomy heartbeat from GitHub Actions infrastructure --
+# independent of the dashboard's Cloudflare cron, which we know is
+# unreliable per the 2026-05-09 autonomy audit. If a critical
+# automation goes silent, this catches it within 24 hours and opens
+# a GitHub Issue.
+#
+# Manual run: Actions tab -> Daily autonomy heartbeat -> Run workflow.
+
+on:
+  schedule:
+    # 12:00 UTC daily = 2am HST. Lands six hours after the dashboard's
+    # 06:00 UTC daily cron has had time to fire and 12 hours after
+    # the Monday weekly extras. Late enough to detect today's
+    # failure, early enough to leave a workday window for a fix.
+    - cron: '0 12 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  heartbeat:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install wrangler
+        run: npm install --global wrangler@4
+
+      - name: Run heartbeat
+        id: heartbeat
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set +e
+          node scripts/heartbeat.mjs > /tmp/heartbeat.txt 2>&1
+          HEARTBEAT_EXIT=$?
+          echo "exit_code=$HEARTBEAT_EXIT" >> $GITHUB_OUTPUT
+          cat /tmp/heartbeat.txt
+          {
+            echo "report<<EOF"
+            cat /tmp/heartbeat.txt
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          exit 0  # never fail the workflow itself; we use exit_code below
+
+      - name: Open issue if stale automations detected
+        if: steps.heartbeat.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        env:
+          REPORT: ${{ steps.heartbeat.outputs.report }}
+        with:
+          script: |
+            const report = process.env.REPORT || '(no report captured)';
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Heartbeat: stale automations detected ${today}`;
+
+            // Look for an open heartbeat issue from today already to
+            // avoid spamming on multiple manual runs.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'autonomy-heartbeat',
+              per_page: 50,
+            });
+            const todayIssue = existing.data.find(i => i.title === title);
+
+            const body = [
+              "The daily autonomy heartbeat detected one or more stale automations.",
+              "",
+              "```",
+              report,
+              "```",
+              "",
+              "See `content/handoff-questions/autonomy-audit-2026-05-09.md` for the",
+              "broader autonomy audit and recommended fixes.",
+              "",
+              "Re-run the heartbeat manually to verify after a fix lands:",
+              "Actions -> Daily autonomy heartbeat -> Run workflow.",
+            ].join("\n");
+
+            if (todayIssue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: todayIssue.number,
+                body: `Re-checked at ${new Date().toISOString()}:\n\n\`\`\`\n${report}\n\`\`\``,
+              });
+              console.log(`Updated existing issue #${todayIssue.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['autonomy-heartbeat'],
+              });
+              console.log(`Opened issue #${created.data.number}`);
+            }

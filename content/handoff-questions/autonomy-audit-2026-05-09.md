@@ -177,3 +177,79 @@ Total effort: ~2-3 hours of dashboard/src/ work.
 
 All in the other window's actively-patched zone. This window will
 not touch any of them without explicit handoff.
+
+## Redundancy patterns: how to keep this from happening again
+
+Lance asked: "Are there ways to have a secondary backup if
+something fails or something that can keep checks on things to
+make sure they don't fail and act as a backup?"
+
+Yes. Five layered patterns, each independent, easiest first:
+
+### 1. Heartbeat from independent infrastructure (shipped tonight)
+
+`scripts/heartbeat.mjs` queries D1 for the latest activity in
+each critical automation table and exits non-zero if anything is
+stale. Wired to a daily GitHub Actions cron at
+`.github/workflows/daily-heartbeat.yml`. On stale findings, opens
+a GitHub Issue automatically. Re-runs the next day either close
+the issue (no comment) or append a fresh report.
+
+Critical property: runs from GitHub Actions infrastructure, not
+the dashboard cron. The thing being monitored cannot suppress
+its own monitoring.
+
+### 2. Redundant cron paths
+
+Same job runs on two independent schedulers. Already used for
+the State of AEO weekly regen (the GitHub Actions
+`weekly-state-of-aeo.yml` workflow does the work, the dashboard
+cron does NOT). If the GH Actions infra goes down, we know within
+24 hours via the heartbeat. If the dashboard cron goes down,
+nothing breaks.
+
+Recommended next: move the digest fanout to GitHub Actions or
+add a fallback path. The dashboard cron currently owns it
+exclusively, which is the bug shape we just discovered.
+
+### 3. Auto-retry on staleness detection
+
+Future evolution of the heartbeat: when a stale automation is
+detected, the heartbeat itself triggers a retry by hitting the
+admin endpoint (`POST /admin/citations/<slug>/run`). Defense in
+depth: monitor + remediate + alert. Not built tonight because
+auto-retry against production endpoints needs explicit Lance
+sign-off and a rate limit.
+
+### 4. Idempotent producers + retry queues
+
+Each automation should be safe to re-fire multiple times. Today
+most of NR's crons are idempotent at the row level (UNIQUE
+constraints on `(client_slug, run_at)` etc), so a heartbeat-
+triggered retry is safe. Where they aren't, dead-letter queues
+catch failed work for later retry. Cloudflare Queues exists in
+the platform but isn't used yet.
+
+### 5. External uptime monitoring
+
+UptimeRobot, Pingdom, or a dedicated Cloudflare Worker that pings
+critical endpoints every N minutes and alerts on failure. Cheap
+defense in depth for "is the worker even running?" failures.
+Lower priority than the heartbeat because we already get that
+signal indirectly via the magic_link auth email pattern.
+
+## Recommended sequencing for redundancy buildout
+
+1. Daily heartbeat (shipped). Catches 80% of silent failures.
+2. Move the digest fanout to GitHub Actions OR add a redundant
+   fallback path that fires from the heartbeat when the
+   dashboard cron misses a Monday. ~1 hour.
+3. Auto-retry hooks in the heartbeat for the most expensive
+   silent failures (citations + GSC). ~30 min once Lance approves
+   admin-endpoint hits from CI.
+4. External uptime check on `app.neverranked.com/health`
+   (endpoint may need adding). ~30 min.
+
+Total: ~2 hours of work distributed over the next weeks. The
+heartbeat alone (shipped) is the highest-impact piece -- the
+others are belts on top of suspenders.
