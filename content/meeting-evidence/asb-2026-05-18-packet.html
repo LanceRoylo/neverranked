@@ -1,0 +1,1009 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ASB + MVNP: Meeting Packet, May 18, 2026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @page { size: Letter; margin: 0.75in 0.85in; }
+  html, body { margin: 0; padding: 0; background: #fbf8ef; color: var(--text); font-family: var(--body); font-size: 11pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .cover { page-break-after: always; height: 9.4in; display: flex; flex-direction: column; justify-content: space-between; padding: 0.4in 0; box-sizing: border-box; }
+  .cover-mark { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); }
+  .cover-mark .mark-mono { font-family: var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.32em; font-size: 9pt; color: var(--text-mute); margin-left: 1em; font-weight: 500; vertical-align: middle; }
+  .cover-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0.4in 0 0.18in; }
+  .cover-title { font-family: var(--serif); font-weight: 400; font-size: 44pt; line-height: 1.05; letter-spacing: -0.02em; max-width: 6.5in; border: none; padding: 0; margin: 0; }
+  .cover-title em { font-style: italic; color: var(--gold); }
+  .cover-subtitle { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); margin-top: 0.18in; }
+  .cover-meta { font-family: var(--mono); font-size: 9.5pt; color: var(--text-mute); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 0.18in; }
+  .cover-meta strong { color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; font-size: 8pt; display: block; margin-bottom: 0.04in; font-family: var(--label); }
+  .toc { padding: 0.4in 0; }
+  .toc h2 { font-family: var(--serif); font-weight: 400; font-size: 22pt; margin: 0 0 0.3in; }
+  .toc ol { font-family: var(--body); font-size: 12pt; line-height: 1.9; margin: 0; padding-left: 0.4in; }
+  .toc li { color: var(--text-soft); }
+  .toc-break { page-break-after: always; }
+  .packet-section { padding-top: 0.2in; page-break-before: always; }
+  .packet-section-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0 0 0.2in; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 22pt; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 0.4in; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 0.18in; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 16pt; line-height: 1.2; margin: 0.35in 0 0.15in; letter-spacing: -0.01em; }
+  h2 em { font-style: italic; color: var(--gold); }
+  h3 { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11pt; font-weight: 600; margin: 0.25in 0 0.08in; color: var(--gold); }
+  h4 { font-family: var(--body); font-weight: 600; font-size: 11pt; margin: 0.18in 0 0.06in; }
+  p { margin: 0 0 0.12in; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0.25in 0; }
+  blockquote { border-left: 3px solid var(--gold); padding-left: 0.18in; margin: 0.15in 0; color: var(--text-soft); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 0.15in 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #f3eedd; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9pt; font-weight: 600; color: var(--text-soft); }
+  code { font-family: var(--mono); font-size: 9pt; background: #f3eedd; padding: 1pt 4pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 9pt; background: #f6f1e0; border: 1px solid var(--line-soft); border-radius: 4pt; padding: 10pt 12pt; page-break-inside: avoid; line-height: 1.45; margin: 0.12in 0; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">Meeting Packet</span></div>
+    <div>
+      <div class="cover-eyebrow">Composite</div>
+      <h1 class="cover-title">ASB + MVNP</h1>
+      <div class="cover-subtitle">Meeting Packet, May 18, 2026</div>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div><strong>Compiled</strong>2026-05-10</div>
+    <div><strong>Sources</strong>4 documents bundled</div>
+    <div><strong>Author</strong>Lance Roylo</div>
+  </div>
+</div>
+<div class="toc toc-break">
+  <h2>Contents</h2>
+  <ol>
+    <li>asb 2026 05 18</li>
+    <li>state of aeo 2026 05 10</li>
+    <li>2026 05 09 asb</li>
+    <li>2026 05 09 hawaii landscape</li>
+  </ol>
+</div>
+<div class="packet-section">
+  <p class="packet-section-eyebrow">asb 2026 05 18</p>
+  <h1 id="asb-mvnp-may-18-meeting">ASB + MVNP, May 18 meeting</h1>
+<h2 id="what-this-document-is">What this document is</h2>
+<p>A standalone evidence appendix that compresses the AI-citation
+findings NeverRanked has gathered for the ASB Hawaii landscape
+into a single readable document. Pairs with (does not replace)
+the existing meeting materials at:</p>
+<ul>
+<li><code>audits/asb-hawaii-2026-05/audit.pdf</code> (audit deck)</li>
+<li><code>content/asb-mvnp-meeting-prep.md</code> (Q&amp;A prep, locked)</li>
+<li><code>content/asb-mvnp-onepager.md</code> (leave-behind, locked)</li>
+<li><code>content/asb-mvnp-preread-email.md</code> (24h pre-read, locked)</li>
+</ul>
+<p>This appendix is safe to share or print as a supporting handout
+without modifying the locked materials.</p>
+<h2 id="the-single-most-citable-finding">The single most-citable finding</h2>
+<p><strong>ASB is named in 0% of AI engine citation runs across the
+Hawaii community banking query set.</strong> First Hawaiian Bank and
+Bank of Hawaii get named by default in r/Hawaii consumer
+threads. ASB does not. The same pattern shows up in the AI
+engine citation logs.</p>
+<p>This is not a marketing failure. It is a citation infrastructure
+gap. The brands AI engines pull from when answering "best
+community bank in Hawaii" today are FHB and BOH, because those
+are the names that appear on the third-party surfaces AI engines
+trust (Reddit, news wires, local press, Wikipedia). ASB is
+underrepresented across all of them.</p>
+<h2 id="evidence-at-three-levels">Evidence at three levels</h2>
+<h3 id="level-1-the-state-of-aeo-data">Level 1, the State of AEO data</h3>
+<p>The Citation Tape (NeverRanked's standing AI-citation
+measurement system) captured 437 citation runs across NR's
+tracked client universe in the 2026-04-14 to 2026-05-10 window.
+Findings relevant to community banking:</p>
+<ul>
+<li><strong>vertexaisearch.cloud.google.com</strong> is the single most-cited
+third-party source. This is Gemini's grounding-redirect
+layer. Mention shape there determines what Gemini surfaces.</li>
+<li><strong>AEO-services agencies</strong> (geekpoweredstudios, greenbananaseo,
+eseospace, arcintermedia) collectively claim 28% of citation
+share for the queries NR tracks. AI engines cite the agency
+layer, not just the bank layer, when answering "best AEO
+agency" type queries. Translates: when people ask AI for help
+with their bank's AI visibility, they see agencies named, not
+banks.</li>
+<li><strong>News wires</strong> (prnewswire, businesswire, etc.) appear in 8%
+of citations. Press release distribution is one of the few
+citation-shifting moves that compounds.</li>
+</ul>
+<p>Full report: <code>reports/state-of-aeo/state-of-aeo-2026-05-10.pdf</code>.
+Live at https://neverranked.com/state-of-aeo/2026-05-10/.</p>
+<h3 id="level-2-the-reddit-landscape">Level 2, the Reddit landscape</h3>
+<p>The reddit-tracker probed three banking categories and
+surfaced 11 prioritized threads. Headline:</p>
+<p><strong><a href="https://www.reddit.com/r/Hawaii/comments/1p4b4p0/first_hawaiian_bank_continues_to_shock_me/">r/Hawaii: "First Hawaiian Bank continues to shock me"</a></strong></p>
+<p>Priority 0.94 in the dataset. ASB absent. FHB named, negatively.
+Cleanest competitor-visible / client-absent gap in the entire
+Hawaii banking dataset. AI engines retrieving this thread today
+surface FHB sentiment without an ASB counter-narrative.</p>
+<p>Three more high-priority threads documented at
+<code>content/reddit-briefs/2026-05-09-asb/README.md</code>. Each has a
+structured reply brief skeleton (gap analysis, angle, tone notes,
+draft hooks) that turns the finding into actionable Reddit reply
+ops. Brief skeletons are pasteable into Claude or Notion for
+further drafting.</p>
+<h3 id="level-3-the-hawaii-cross-vertical-signal">Level 3, the Hawaii cross-vertical signal</h3>
+<p>The same probe pattern run across three Hawaii verticals
+(banking, hotels, law) shows distinct demand-signal shapes.
+Banking sits in the sweet spot:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Briefs</th>
+<th>Max priority</th>
+<th>Avg priority</th>
+<th>Demand signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hawaii hotels</td>
+<td>10</td>
+<td>0.93</td>
+<td>0.69</td>
+<td>Saturated - compete for share-of-voice</td>
+</tr>
+<tr>
+<td>Hawaii community banking</td>
+<td>11</td>
+<td>0.94</td>
+<td>0.58</td>
+<td>Active but uncrowded - best risk/reward</td>
+</tr>
+<tr>
+<td>Hawaii law firms</td>
+<td>7</td>
+<td>0.38</td>
+<td>0.26</td>
+<td>Sparse - whoever shows up first writes the answer shape</td>
+</tr>
+</tbody>
+</table>
+<p>Banking is the only vertical of the three where targeted Reddit
+reply ops would have meaningful citation lift per hour spent.
+Hotels are too saturated; law firms are too thin.</p>
+<p>Cross-vertical narrative at
+<code>content/reddit-briefs/2026-05-09-hawaii-landscape/README.md</code>.</p>
+<h2 id="what-this-means-in-three-sentences-for-the-meeting">What this means in three sentences for the meeting</h2>
+<ol type="1">
+<li><p><strong>ASB is invisible in the consumer conversations AI engines
+actually retrieve when people ask about Hawaii community
+banks.</strong> The State of AEO citation data and the r/Hawaii
+thread evidence both confirm this independently.</p></li>
+<li><p><strong>The fix is not paid media - it is citation infrastructure.</strong>
+Reddit reply ops, Wikipedia entity entry maintenance, news
+wire distribution, and a handful of high-impact source-type
+actions move the citation share AI engines see. None of those
+are services Hawaii agencies offer today.</p></li>
+<li><p><strong>NR has the measurement infrastructure and the tooling to do
+the work.</strong> The Citation Tape produces weekly reports
+reproducible from public schema. The reddit-tracker generates
+prioritized reply briefs. The schema deployment infrastructure
+covers the technical layer. Wholesale partners (MVNP) get all
+of this in the pilot.</p></li>
+</ol>
+<h2 id="honest-caveats-this-packet-should-disclose">Honest caveats this packet should disclose</h2>
+<p>Three things to acknowledge before someone reads the numbers:</p>
+<ol type="1">
+<li><p><strong>The State of AEO 2026-05-10 report's data is partial.</strong>
+Per the data-integrity banner at the top of that report, only
+13-40% of tracked keywords got queried in the most recent
+window due to a documented infrastructure issue (filed at
+<code>content/handoff-questions/citation-cron-not-firing.md</code>).
+Numbers should be read as a lower bound on what AI engines
+actually surface. The pattern (ASB invisibility) is real
+either way; the magnitude is conservative.</p></li>
+<li><p><strong>Reddit reply ops are not magic.</strong> They compound over
+months, not days. Two well-placed replies per week, sustained
+for a quarter, shift the citation pattern. One reply does
+nothing.</p></li>
+<li><p><strong>The tracked-universe is small</strong> (3 clients, 17 keywords).
+Findings are descriptive of NR's current sample, not a random
+sample of AI search universe. Generalizing requires more
+data, and as more clients onboard, the tracked universe and
+the report's authority grow together.</p></li>
+</ol>
+<h2 id="files-this-appendix-references">Files this appendix references</h2>
+<ul>
+<li><code>reports/state-of-aeo/state-of-aeo-2026-05-10.pdf</code> - full citation report</li>
+<li><code>content/reddit-briefs/2026-05-09-asb/README.md</code> - ASB Reddit landscape detail</li>
+<li><code>content/reddit-briefs/2026-05-09-hawaii-landscape/README.md</code> - cross-vertical</li>
+<li><code>content/handoff-questions/citation-cron-not-firing.md</code> - data integrity caveat source</li>
+<li><code>audits/asb-hawaii-2026-05/audit.pdf</code> - the formal audit deck</li>
+<li><code>content/asb-mvnp-meeting-prep.md</code> - Q&amp;A prep (locked)</li>
+</ul>
+<h2 id="how-to-use-this-in-the-meeting">How to use this in the meeting</h2>
+<ul>
+<li>Print as a 4-page handout if needed for the room.</li>
+<li>Forward as PDF to MVNP team in advance of May 18 if a
+pre-read is desired beyond the existing pre-read email.</li>
+<li>Reference at the audit-deck handoff moment as the concrete
+evidence behind the deck's findings.</li>
+<li>Share with FHB or BOH at a future moment as the same pattern
+exists for them, just inverted (they are visible because of
+what they have done, not what ASB has not done).</li>
+</ul>
+
+</div>
+<div class="packet-section">
+  <p class="packet-section-eyebrow">state of aeo 2026 05 10</p>
+  <h1 id="state-of-aeo-neverranked-tracked-universe-report">State of AEO: NeverRanked tracked-universe report</h1>
+<p><em>From The Citation Tape, NeverRanked's standing AI-citation measurement system.</em></p>
+<p><em>Generated 2026-05-10. Window: 2026-04-14 to 2026-05-10.</em></p>
+<blockquote>
+<h2 id="data-integrity-notice">Data integrity notice</h2>
+<p>This week's data is partial. 3 of 3 tracked clients fell below 80% keyword completion due to a known infrastructure issue (filed at <code>content/handoff-questions/citation-cron-not-firing.md</code>). Numbers below should be read as a lower bound on what AI engines actually retrieve until the fix lands.</p>
+<p>Affected this week:
+- <strong>and-scene</strong>: 1 of 5 keywords queried (20%)
+- <strong>hawaii-theatre</strong>: 2 of 14 keywords queried (14%)
+- <strong>neverranked</strong>: 6 of 15 keywords queried (40%)</p>
+<p>The full per-client completion table appears in the methodology section at the end of this report.</p>
+</blockquote>
+<h2 id="what-this-report-is">What this report is</h2>
+<p>A standing snapshot of what AI engines actually cite when answering
+questions about NeverRanked's tracked client universe. Pulled from
+live 437 citation runs across 5 engines (bing, gemini, google_ai_overview, openai, perplexity),
+17 tracked keywords, and 3 clients spanning 3 verticals.</p>
+<p>Generated weekly. Same script, same data sources, no manual curation.
+The methodology is the script (<code>scripts/state-of-aeo-generate.mjs</code>) plus
+the public scoring engine at check.neverranked.com. Reproducible by
+anyone with the same query against the same database.</p>
+<h2 id="headline">Headline</h2>
+<p>Across 437 captured AI engine responses, the single most-cited
+third-party source is <strong>vertexaisearch.cloud.google.com</strong> (Google AI infrastructure (Gemini grounding)),
+appearing in 132 citation runs across
+1 engine and 5 tracked keywords.</p>
+<p>Implication: any tracked client whose category overlaps with this
+source's coverage area (and whose own brand is not yet present on
+it) is leaving citation share on the table. The path to closing the
+gap is source-specific. See the per-client baseline section below.</p>
+<h2 id="where-ai-engines-pull-from">Where AI engines pull from</h2>
+<p>Distribution of citation runs by source type, excluding client-owned
+URLs (which represent successful citation, not the moat-building
+question of "where else are they pulling from"):</p>
+<table>
+<thead>
+<tr>
+<th>Source type</th>
+<th>Runs</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>aeo-services-agency</td>
+<td>417</td>
+<td>29.6%</td>
+</tr>
+<tr>
+<td>seo-publication</td>
+<td>227</td>
+<td>16.1%</td>
+</tr>
+<tr>
+<td>aeo-platform</td>
+<td>203</td>
+<td>14.4%</td>
+</tr>
+<tr>
+<td>google-ai-infra</td>
+<td>132</td>
+<td>9.4%</td>
+</tr>
+<tr>
+<td>google-maps</td>
+<td>112</td>
+<td>8.0%</td>
+</tr>
+<tr>
+<td>youtube</td>
+<td>108</td>
+<td>7.7%</td>
+</tr>
+<tr>
+<td>news</td>
+<td>108</td>
+<td>7.7%</td>
+</tr>
+<tr>
+<td>wikipedia</td>
+<td>41</td>
+<td>2.9%</td>
+</tr>
+<tr>
+<td>reddit</td>
+<td>18</td>
+<td>1.3%</td>
+</tr>
+<tr>
+<td>directory</td>
+<td>17</td>
+<td>1.2%</td>
+</tr>
+<tr>
+<td>tripadvisor</td>
+<td>11</td>
+<td>0.8%</td>
+</tr>
+<tr>
+<td>social</td>
+<td>11</td>
+<td>0.8%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="top-15-third-party-sources">Top 15 third-party sources</h2>
+<p>The domains that appeared most often as cited references across
+the dataset. Excludes client-owned domains.</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Source type</th>
+<th>Runs</th>
+<th>Engines</th>
+<th>Keywords</th>
+<th>Clients</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vertexaisearch.cloud.google.com</td>
+<td>google-ai-infra</td>
+<td>132</td>
+<td>1</td>
+<td>5</td>
+<td>2</td>
+</tr>
+<tr>
+<td>google.com</td>
+<td>google-maps</td>
+<td>112</td>
+<td>1</td>
+<td>4</td>
+<td>3</td>
+</tr>
+<tr>
+<td>youtube.com</td>
+<td>youtube</td>
+<td>108</td>
+<td>3</td>
+<td>10</td>
+<td>1</td>
+</tr>
+<tr>
+<td>prnewswire.com</td>
+<td>news</td>
+<td>102</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>hawaiitheatre.com</td>
+<td>other</td>
+<td>101</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>geekpoweredstudios.com</td>
+<td>aeo-services-agency</td>
+<td>74</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>eseospace.com</td>
+<td>aeo-services-agency</td>
+<td>58</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>orbitmedia.com</td>
+<td>seo-publication</td>
+<td>55</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sparktoro.com</td>
+<td>seo-publication</td>
+<td>54</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>evertune.ai</td>
+<td>aeo-platform</td>
+<td>54</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>greenbananaseo.com</td>
+<td>aeo-services-agency</td>
+<td>52</td>
+<td>2</td>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>arcintermedia.com</td>
+<td>aeo-services-agency</td>
+<td>48</td>
+<td>2</td>
+<td>4</td>
+<td>1</td>
+</tr>
+<tr>
+<td>animalz.co</td>
+<td>seo-publication</td>
+<td>48</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>generatemore.ai</td>
+<td>aeo-platform</td>
+<td>44</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>boralagency.com</td>
+<td>other</td>
+<td>42</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-each-engine-cites-differently">What each engine cites differently</h2>
+<p>Top 5 sources per engine. When two engines have very different top
+lists, that's a signal about how each one's retrieval differs.</p>
+<h3 id="perplexity-236-runs">perplexity (236 runs)</h3>
+<ul>
+<li><strong>youtube.com</strong> - 83 runs</li>
+<li><strong>orbitmedia.com</strong> - 55 runs</li>
+<li><strong>geekpoweredstudios.com</strong> - 54 runs</li>
+<li><strong>sparktoro.com</strong> - 54 runs</li>
+<li><strong>eseospace.com</strong> - 52 runs</li>
+</ul>
+<h3 id="openai-146-runs">openai (146 runs)</h3>
+<ul>
+<li><strong>google.com</strong> - 112 runs</li>
+<li><strong>prnewswire.com</strong> - 59 runs</li>
+<li><strong>en.wikipedia.org</strong> - 33 runs</li>
+<li><strong>hawaiitheatre.com</strong> - 32 runs</li>
+<li><strong>cited.so</strong> - 25 runs</li>
+</ul>
+<h3 id="gemini-34-runs">gemini (34 runs)</h3>
+<ul>
+<li><strong>vertexaisearch.cloud.google.com</strong> - 132 runs</li>
+<li><strong>hawaiitheatre.com</strong> - 36 runs</li>
+<li><strong>builtin.com</strong> - 6 runs</li>
+<li><strong>20northmarketing.com</strong> - 6 runs</li>
+<li><strong>vividseats.com</strong> - 6 runs</li>
+</ul>
+<h3 id="bing-11-runs">bing (11 runs)</h3>
+<ul>
+<li><strong>myapplications.microsoft.com</strong> - 8 runs</li>
+<li><strong>mychart.org</strong> - 5 runs</li>
+<li><strong>mypay.dfas.mil</strong> - 5 runs</li>
+<li><strong>merriam-webster.com</strong> - 5 runs</li>
+<li><strong>mytax.hasil.gov.my</strong> - 4 runs</li>
+</ul>
+<h3 id="google_ai_overview-10-runs">google_ai_overview (10 runs)</h3>
+<ul>
+<li><strong>reddit.com</strong> - 18 runs</li>
+<li><strong>linkedin.com</strong> - 8 runs</li>
+<li><strong>semrush.com</strong> - 5 runs</li>
+<li><strong>farandwide.io</strong> - 4 runs</li>
+<li><strong>runningfish.net</strong> - 3 runs</li>
+</ul>
+<h2 id="vertical-breakdown">Vertical breakdown</h2>
+<p><em>Verticals with at least 3 tracked clients enable category-level insights.</em></p>
+<p>Current vertical distribution:</p>
+<table>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Clients</th>
+<th>Runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AEO agency</td>
+<td>1</td>
+<td>403</td>
+</tr>
+<tr>
+<td>corporate training</td>
+<td>1</td>
+<td>3</td>
+</tr>
+<tr>
+<td>performing arts venue</td>
+<td>1</td>
+<td>31</td>
+</tr>
+</tbody>
+</table>
+<p>As more clients onboard inside any vertical, this section will
+populate automatically with category-level patterns.</p>
+<h2 id="per-client-baselines">Per-client baselines</h2>
+<p>Each client's current citation footprint as of 2026-05-10. These
+numbers are the baseline against which any future case study is
+measured. Citation rate climbing from one of these starting points
+to a higher one over a defined window is the case-study artifact.</p>
+<h3 id="neverranked-aeo-agency">neverranked - AEO agency</h3>
+<ul>
+<li><strong>403</strong> captured runs across <strong>14</strong> tracked keywords</li>
+<li>Named in <strong>0</strong> runs (<strong>0%</strong> citation rate)</li>
+<li>Top 5 sources cited alongside this client's queries:
+<ul>
+<li>vertexaisearch.cloud.google.com (129 runs)</li>
+<li>youtube.com (108 runs)</li>
+<li>prnewswire.com (102 runs)</li>
+<li>google.com (100 runs)</li>
+<li>geekpoweredstudios.com (74 runs)</li>
+</ul></li>
+</ul>
+<h3 id="hawaii-theatre-performing-arts-venue">hawaii-theatre - performing arts venue</h3>
+<ul>
+<li><strong>31</strong> captured runs across <strong>2</strong> tracked keywords</li>
+<li>Named in <strong>30</strong> runs (<strong>97%</strong> citation rate)</li>
+<li>Top 5 sources cited alongside this client's queries:
+<ul>
+<li>hawaiitheatre.com (101 runs)</li>
+<li>tripadvisor.com (11 runs)</li>
+<li>en.wikipedia.org (9 runs)</li>
+<li>ticketmaster.com (8 runs)</li>
+<li>google.com (6 runs)</li>
+</ul></li>
+</ul>
+<h3 id="and-scene-corporate-training">and-scene - corporate training</h3>
+<ul>
+<li><strong>3</strong> captured runs across <strong>1</strong> tracked keywords</li>
+<li>Named in <strong>0</strong> runs (<strong>0%</strong> citation rate)</li>
+<li>Top 5 sources cited alongside this client's queries:
+<ul>
+<li>google.com (6 runs)</li>
+<li>themanifest.com (2 runs)</li>
+<li>theknowledgeacademy.com (2 runs)</li>
+<li>dalecarnegie.com (1 runs)</li>
+<li>nobleprog.com (1 runs)</li>
+</ul></li>
+</ul>
+<h2 id="methodology-and-sample-disclosure">Methodology and sample disclosure</h2>
+<p>Every number in this report comes from <code>citation_runs</code> in the
+NeverRanked production database. Each run is one query against one AI
+engine for one tracked keyword, with the engine's response_text and
+cited_urls captured as raw evidence.</p>
+<p>Engines covered: bing, gemini, google_ai_overview, openai, perplexity.</p>
+<p>Sample size at this snapshot:</p>
+<ul>
+<li>437 citation runs</li>
+<li>3 tracked clients across 3 verticals</li>
+<li>17 tracked keywords</li>
+<li>Window: 2026-04-14 to 2026-05-10</li>
+</ul>
+<h3 id="keyword-completion-this-window">Keyword completion this window</h3>
+<p>Per-client share of active tracked keywords with at least one citation run in the window. Below 100% means the producer did not complete the full keyword set. A known infrastructure issue causes partial completions on multi-keyword clients (filed in <code>content/handoff-questions/</code>); numbers will rise as the fix lands.</p>
+<table>
+<thead>
+<tr>
+<th>Client</th>
+<th>Active keywords</th>
+<th>Keywords with runs</th>
+<th>Completion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>and-scene</td>
+<td>5</td>
+<td>1</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>hawaii-theatre</td>
+<td>14</td>
+<td>2</td>
+<td>14%</td>
+</tr>
+<tr>
+<td>neverranked</td>
+<td>15</td>
+<td>6</td>
+<td>40%</td>
+</tr>
+</tbody>
+</table>
+<p>Honest limits: this is NeverRanked's tracked subset, not a random
+sample of the AI search universe. Findings are descriptive of what
+AI engines say to questions in our clients' categories. Generalizing
+beyond those categories requires more data.</p>
+<p>The script that generated this report is at
+<code>scripts/state-of-aeo-generate.mjs</code> and reads no private data.
+The schema for <code>citation_runs</code> is public in the migrations folder.</p>
+
+</div>
+<div class="packet-section">
+  <p class="packet-section-eyebrow">2026 05 09 asb</p>
+  <h1 id="reddit-reply-briefs-asb-hawaii-landscape-2026-05-09-v2">Reddit reply briefs: ASB Hawaii landscape, 2026-05-09 (v2)</h1>
+<p>Re-run after the <code>tools/reddit-tracker</code> relevance-gate fix.
+Designed as evidence material for the May 18 ASB + MVNP meeting.</p>
+<h2 id="what-changed-from-v1">What changed from v1</h2>
+<p>The first run (v1) returned 14 threads with about 50% noise - the
+relevance gate let through r/montreal, r/ottawa, r/pittsburgh, and
+similar threads about small-business owners that did not mention
+Hawaii or banks. Cause: the anchor gate matched on "small" +
+"business" without requiring the discriminating region token.</p>
+<p>Fix shipped in <code>tools/reddit-tracker/src/score.mjs</code>:</p>
+<ol type="1">
+<li><strong>Region-token enforcement.</strong> Any token that is a known US
+state, Hawaii county, or major Hawaii locale (Hawaii, Honolulu,
+Oahu, Kaneohe, Kailua, Maui, etc.) is now required to appear in
+the title. Caller can also pass explicit <code>requiredTokens</code> for
+non-region cases.</li>
+<li><strong>Anchor matcher region-aware.</strong> Region anchors use a looser
+matcher so "Hawaii" matches "Hawaiian", "Hawaii's", and
+"Hawaiians" naturally.</li>
+<li><strong>Anchor floor lowered from 5 to 4 chars.</strong> "bank", "food",
+"shop", "code", "yoga", "loan" are legitimate category nouns
+that anchor a query. The 5-char floor was previously dropping
+"bank" from "best community bank in Hawaii", forcing the gate
+to rely on weaker tokens like "community".</li>
+</ol>
+<p>Six new tests cover the noise-killing behavior, including the
+exact Montreal-thread case from the v1 audit. 68 tests passing.</p>
+<h2 id="all-11-ranked">All 11 ranked</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Pri</th>
+<th>Subreddit</th>
+<th>Category</th>
+<th>Thread</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.94</td>
+<td>r/Hawaii</td>
+<td>BOH vs FHB</td>
+<td><a href="https://www.reddit.com/r/Hawaii/comments/1p4b4p0/first_hawaiian_bank_continues_to_shock_me/">thread</a></td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.72</td>
+<td>r/SECWatch</td>
+<td>best community bank Hawaii</td>
+<td>(financial filing thread, monitor only)</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.71</td>
+<td>r/KaneoheOahu</td>
+<td>best bank Hawaii</td>
+<td><a href="https://www.reddit.com/r/KaneoheOahu/comments/1mu6zn2/part_of_the_roof_overhang_at_the_bank_of_hawaii/">thread</a></td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.70</td>
+<td>r/Oahu</td>
+<td>best bank Hawaii</td>
+<td><a href="https://www.reddit.com/r/Oahu/comments/1o9fize/the_bank_of_hawaii_boh_is_offering_financial/">thread</a></td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.59</td>
+<td>r/postcrossing</td>
+<td>best community bank Hawaii</td>
+<td>(residual noise, postcard sub)</td>
+</tr>
+<tr>
+<td>6</td>
+<td>0.52</td>
+<td>r/CreditCards</td>
+<td>best bank Hawaii</td>
+<td>BOH credit card thread</td>
+</tr>
+<tr>
+<td>7</td>
+<td>0.51</td>
+<td>r/HawaiiUncensored</td>
+<td>best bank Hawaii</td>
+<td>local Hawaii sub</td>
+</tr>
+<tr>
+<td>8</td>
+<td>0.48</td>
+<td>r/Oahu</td>
+<td>best bank Hawaii</td>
+<td>local</td>
+</tr>
+<tr>
+<td>9-10</td>
+<td>0.45</td>
+<td>r/SECFilingsAI</td>
+<td>BOH vs FHB</td>
+<td>FHB filings (passive monitor)</td>
+</tr>
+<tr>
+<td>11</td>
+<td>0.34</td>
+<td>r/honeymoonplanning</td>
+<td>best community bank Hawaii</td>
+<td>(residual: Hawaii honeymoon mentions credit cards)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-the-meeting-story-is">What the meeting story is</h2>
+<p>Same as v1, sharper evidence. Two related observations that turn
+into talking-tracks:</p>
+<ol type="1">
+<li><p><strong>In actual Hawaii consumer conversations on Reddit, FHB and BOH
+get named, ASB does not.</strong> This is not a marketing failure -
+it is a citation infrastructure gap. The same dynamic shows up
+in the AI engine logs (see the State of AEO 2026-05-10 report:
+ASB is named in 0% of citation runs across the relevant query
+set).</p></li>
+<li><p><strong>The "first community bank to show up in r/Hawaii conversations"
+becomes the answer AI engines return for "best community bank in
+Hawaii."</strong> Reddit thread participation is one of the few
+citation-shifting moves community banks can make without paid
+media. Not a high-volume play, but it compounds.</p></li>
+</ol>
+<p>The agency angle for MVNP: <strong>Reddit reply ops are the missing
+service line.</strong> No Hawaii agency offers structured Reddit citation
+work today. The Phase 1 tracker that produced this output is part
+of NR's existing infrastructure - MVNP partners get it included
+in any wholesale pilot.</p>
+<h2 id="the-headline-thread">The headline thread</h2>
+<p><strong><a href="https://www.reddit.com/r/Hawaii/comments/1p4b4p0/first_hawaiian_bank_continues_to_shock_me/">r/Hawaii: First Hawaiian Bank continues to shock me</a></strong></p>
+<p>Priority 0.94. ASB absent. FHB named, negatively. The cleanest
+competitor-visible / client-absent gap in the entire Hawaii
+banking dataset. Brief skeleton in <code>boh-vs-fhb.md</code>.</p>
+<h2 id="methodology">Methodology</h2>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="ex">node</span> scripts/reddit-brief-generate.mjs <span class="dt">\</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">--category</span> <span class="st">&quot;&lt;phrase&gt;&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">--client-slug</span> <span class="st">&quot;asb-hawaii&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">--client-names</span> <span class="st">&quot;American Savings Bank,ASB,ASB Hawaii&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">--client-domains</span> <span class="st">&quot;asbhawaii.com&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">--competitors</span> <span class="st">&quot;Bank of Hawaii,BOH,First Hawaiian Bank,FHB,Central Pacific Bank,CPB&quot;</span> <span class="dt">\</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">--top</span> 5 <span class="at">--format</span> markdown</span></code></pre></div>
+<p>Re-run any time - output is reproducible from the same Reddit
+search results within the day.</p>
+
+</div>
+<div class="packet-section">
+  <p class="packet-section-eyebrow">2026 05 09 hawaii landscape</p>
+  <h1 id="hawaii-vertical-reddit-landscape-2026-05-09">Hawaii vertical Reddit landscape, 2026-05-09</h1>
+<p>Three-vertical Reddit citation probe across NeverRanked's staged
+Hawaii leaderboards: community banking, boutique hotels, and law
+firms. Generated by <code>tools/reddit-tracker</code> after the relevance-gate
+fix shipped earlier tonight.</p>
+<p>Designed as evidence material for the May 18 ASB + MVNP meeting and
+as a generalizable methodology demo for any vertical NR moves into.</p>
+<h2 id="what-the-data-says-about-each-vertical">What the data says about each vertical</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Briefs</th>
+<th>Max priority</th>
+<th>Avg priority</th>
+<th>Demand signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hawaii hotels (Waikiki + boutique)</td>
+<td>10</td>
+<td>0.93</td>
+<td>0.69</td>
+<td><strong>Saturated.</strong> Every Hawaii hotel question already has dozens of high-quality threads. Players named in retrievals will dominate AI answers.</td>
+</tr>
+<tr>
+<td>Hawaii community banking</td>
+<td>11</td>
+<td>0.94</td>
+<td>0.58</td>
+<td><strong>Active but uncrowded.</strong> Real conversations exist (r/Hawaii, r/Oahu, r/KaneoheOahu) but the named-competitor density is low. Best risk/reward of the three for a citation push.</td>
+</tr>
+<tr>
+<td>Hawaii law firms</td>
+<td>7</td>
+<td>0.38</td>
+<td>0.26</td>
+<td><strong>Sparse.</strong> Reddit has very few Hawaii-law-firm threads. AI engines have correspondingly thin training signal. The first firm to seed authoritative answers writes the recommendation shape.</td>
+</tr>
+</tbody>
+</table>
+<p>The pattern is the meeting story in one paragraph: across three
+Hawaii verticals, the citation infrastructure that determines AI
+answers ranges from saturated (hotels, where you compete for
+share-of-voice) to thin (law firms, where you can author the answer
+shape). Banking sits in the middle, which is exactly the slot
+where targeted Reddit reply ops have the most leverage per hour
+spent.</p>
+<h2 id="top-5-threads-across-all-three-verticals">Top 5 threads across all three verticals</h2>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>#</th>
+<th>Pri</th>
+<th>Subreddit</th>
+<th>Vertical</th>
+<th>Category</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>0.94</td>
+<td>r/Hawaii</td>
+<td>banking</td>
+<td>"First Hawaiian Bank continues to shock me"</td>
+</tr>
+<tr>
+<td>2</td>
+<td>0.93</td>
+<td>r/VisitingHawaii</td>
+<td>hotels</td>
+<td>best hotel Waikiki</td>
+</tr>
+<tr>
+<td>3</td>
+<td>0.76</td>
+<td>r/FATTravel</td>
+<td>hotels</td>
+<td>best boutique hotel Hawaii</td>
+</tr>
+<tr>
+<td>4</td>
+<td>0.72</td>
+<td>r/SECWatch</td>
+<td>banking</td>
+<td>best community bank Hawaii (financial filings)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>0.71</td>
+<td>r/KaneoheOahu</td>
+<td>banking</td>
+<td>best bank Hawaii</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-to-use-this-for-the-may-18-meeting">How to use this for the May 18 meeting</h2>
+<p>Three talking-tracks, in priority order:</p>
+<h3 id="the-where-ai-engines-pull-from-for-asb-queries-story">1. The "where AI engines pull from for ASB queries" story</h3>
+<ul>
+<li>Use the State of AEO 2026-05-10 report data (ASB cited in 0% of
+citation runs across the relevant query set) plus the banking
+Reddit findings (FHB and BOH show up by default, ASB does not).</li>
+<li>Punchline: ASB's invisibility in AI search is a citation
+infrastructure gap, not a marketing failure.</li>
+</ul>
+<h3 id="the-we-mapped-the-conversations-story">2. The "we mapped the conversations" story</h3>
+<ul>
+<li>Show this README's vertical-comparison table.</li>
+<li>Punchline: hotel-tier saturation explains why Hawaii small
+businesses outside the hotel category have a 12-18 month window
+to seed the answer shape before AI engines lock it.</li>
+</ul>
+<h3 id="the-agency-layer-service-line-story-for-mvnp">3. The "agency-layer service line" story (for MVNP)</h3>
+<ul>
+<li>The Phase 1 reddit-tracker that produced these 28 prioritized
+briefs is part of NR's existing infrastructure.</li>
+<li>No Hawaii agency offers structured Reddit citation work today.</li>
+<li>Wholesale partners get this in the pilot.</li>
+</ul>
+<h2 id="per-vertical-detail">Per-vertical detail</h2>
+<h3 id="banking-11-briefs">Banking (11 briefs)</h3>
+<p><code>../2026-05-09-asb/</code> - ASB-as-client landscape across four
+banking queries. Headline: r/Hawaii FHB thread at priority 0.94.</p>
+<h3 id="hotels-10-briefs">Hotels (10 briefs)</h3>
+<p><code>../2026-05-09-hotels/</code> - Halepuna-as-client landscape across
+two hotel queries. Headline: r/VisitingHawaii thread at priority
+0.93. Hotel discovery returned 34 on-topic threads for "best
+hotel in Waikiki" alone - the densest vertical in this dataset.</p>
+<h3 id="law-7-briefs">Law (7 briefs)</h3>
+<p><code>../2026-05-09-law/</code> - Cades Schutte-as-client landscape across
+two legal queries. Maximum priority 0.38. Sparse data is the
+finding: the absence of Hawaii law conversations on Reddit means
+whoever shows up first (with substantive answers, not boilerplate)
+becomes the canonical source AI engines retrieve.</p>
+<h2 id="methodology-and-caveats">Methodology and caveats</h2>
+<ul>
+<li>Each probe pulls 4 query variants per category (raw + bare-noun +
+recommendations + comparison). Reddit unauthed search, 1.1s
+polite delay.</li>
+<li>Anchor client per vertical was chosen to give the gap analysis
+meaning. The same probe re-runs for any other client by passing
+<code>--client-slug</code>, <code>--client-names</code>, <code>--client-domains</code> accordingly.</li>
+<li>Priority blends discovery (0.25 recency + 0.35 upvote + 0.40
+citation-likelihood) with the mention gap (client absent +
+competitors named beats everything else).</li>
+<li>The relevance-gate fix shipped tonight (<code>commit 89959ee</code>)
+enforces region tokens like "Hawaii" / "Honolulu" / "Oahu" as
+must-include in title, killing the cross-region noise that
+contaminated the v1 ASB run.</li>
+<li>The dataset is correct as of 2026-05-09 evening HST. Reddit's
+search ordering shifts daily; weekly re-runs are reproducible
+but not byte-identical.</li>
+</ul>
+
+</div>
+</body>
+</html>

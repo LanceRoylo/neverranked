@@ -253,3 +253,61 @@ signal indirectly via the magic_link auth email pattern.
 Total: ~2 hours of work distributed over the next weeks. The
 heartbeat alone (shipped) is the highest-impact piece -- the
 others are belts on top of suspenders.
+
+## V2 audit, 2026-05-10 early HST
+
+Re-ran the broader empirical sweep across additional automation
+tables. Two more silent failures surfaced:
+
+### 4. Weekly brief generator (Thursday 17:00 UTC cron)
+
+**Symptom:** `weekly_briefs` table has zero rows ever. The
+scheduled handler in `dashboard/src/index.ts` line 2708 fires
+`generateWeeklyBrief` every Thursday at 17:00 UTC, with the
+result published via `/admin/weekly-brief/<id>` for Lance review
+and approval before going to `/weekly/<slug>`.
+
+The producer has never produced a brief. This is either a
+product decision (Lance hasn't enabled the surface yet) or a
+silent failure. Either way, the autonomy heartbeat should know.
+
+**Recommended action:** confirm with Lance whether weekly_briefs
+is intended to be active. If yes, debug the generator. If no,
+remove the Thursday cron path so the heartbeat doesn't flag
+something that shouldn't be running.
+
+### 5. Content pipeline drafts
+
+**Symptom:** `content_drafts` has 2 rows ever, last 2026-04-23
+(17 days ago). `runContentPipeline` is called from
+`runDailyTasks` daily.
+
+Could be intentional gating. Could be silent failure. Worth
+confirming before we add it to the heartbeat as a hard-fail
+check.
+
+**Recommended action:** read the gating logic in
+`dashboard/src/content-pipeline.ts` and either confirm "no
+eligible content to draft" is the correct read of the data, or
+flag this as the third silent producer.
+
+### Healthy automations confirmed in V2
+
+- `monitored_pages`: 144 rows, last 2026-05-04. Monday cron
+  populates this consistently.
+- `sentiment-scored`: 30 rows in last 7 days, 0 backlog of
+  unscored client_cited=1 rows. Sentiment scorer is healthy
+  (this was a false alarm from a misread of the V1 query).
+- `agency_slot_events`: 0 rows but expected (no agency
+  partners signed yet).
+- `audit_credit_applied`: 0 rows but expected (no users have
+  reached the 30-day audit window expiry yet that triggers
+  the sweep).
+
+### Updated total fix scope
+
+V1 surfaced 3 broken automations (citations, digest, GSC).
+V2 surfaces 2 more candidates (weekly_briefs, content_drafts)
+that need confirmation before they get fix priority. Heartbeat
+script updates would extend coverage to weekly_briefs once we
+confirm the intended behavior.

@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>llms.txt Standard: NeverRanked Standards</title>
+<meta name="description" content="NeverRanked's public position on the llms.txt standard, what good looks like, and current engine adoption.">
+<link rel="canonical" href="https://neverranked.com/standards/llms-txt/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="llms.txt Standard">
+<meta property="og:description" content="NeverRanked's public position on the llms.txt standard, what good looks like, and current engine adoption.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/standards/llms-txt/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 24px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:22pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+h3{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:var(--gold);margin:32px 0 12px;font-weight:600}
+h4{font-family:var(--body);font-weight:600;font-size:15px;margin:20px 0 8px;color:var(--text)}
+p{margin:0 0 16px;color:var(--text-mute)}
+strong{color:var(--text);font-weight:600}
+ul,ol{margin:0 0 24px 24px;padding:0}
+li{margin-bottom:8px;color:var(--text-mute)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:10px 14px;text-align:left}
+th{background:var(--card);font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--gold)}
+td{color:var(--text-mute)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:20px 0}
+code{font-family:var(--mono);font-size:13.5px;color:var(--gold-bright);background:var(--card);padding:2px 6px;border-radius:3px}
+pre code{background:transparent;padding:0;color:var(--text)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+blockquote{border-left:3px solid var(--gold);padding:0 0 0 20px;margin:24px 0;color:var(--text-mute);font-style:italic}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.standards-card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;transition:border-color .15s}
+.standards-card:hover{border-color:var(--gold)}
+.standards-card-title{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.standards-card-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/standards/" style="color:var(--text-faint)">Standards</a></p>
+  <h1 id="neverranked-position-on-llms.txt">NeverRanked Position on llms.txt</h1>
+<p>The llms.txt standard, proposed at <a href="https://llmstxt.org">llmstxt.org</a>
+by Jeremy Howard, is the cleanest answer to a real problem: AI
+engines need a curated, machine-readable map of a site’s most
+citable content, separate from what crawlers index for human users.</p>
+<p>NeverRanked treats llms.txt as a first-class deployment artifact
+alongside Schema.org JSON-LD. Both layers feed the same goal:
+make a site reliably citable.</p>
+<h2 id="the-standard-in-one-paragraph">The standard, in one paragraph</h2>
+<p>A markdown file at <code>/llms.txt</code> (root). Begins with an H1 that
+names the site. Followed by a blockquote that summarizes what the
+site does in one or two sentences. Then optional H2 sections
+(typically <code>## Docs</code>, <code>## Examples</code>, <code>## API</code>, <code>## Optional</code>), each
+listing curated links in the form <code>- [Title](url): one-line description</code>. A companion <code>/llms-full.txt</code> may concatenate the
+full content of all linked pages for direct AI ingestion.</p>
+<h2 id="what-good-looks-like">What good looks like</h2>
+<p>The minimum viable llms.txt is a half-dozen well-chosen links.
+The maximum is a curated information architecture.</p>
+<p>A good llms.txt:</p>
+<ul>
+<li>Has an H1 that uses the canonical brand name (matches your
+Organization schema)</li>
+<li>Has a one-paragraph description that mirrors your site’s
+meta description</li>
+<li>Lists 5-30 links in 2-5 sections</li>
+<li>Every link points to a 200 OK URL</li>
+<li>Every link’s title and description match the linked page’s
+actual title and content</li>
+<li>Sections are organized by intent, not by site IA. Group by
+what an AI is most likely to need</li>
+</ul>
+<p>A bad llms.txt:</p>
+<ul>
+<li>Auto-generated from sitemap (no curation)</li>
+<li>Includes broken or 301-redirected links</li>
+<li>Mismatches between titles in llms.txt and titles on the page</li>
+<li>Over-inclusive (lists every blog post)</li>
+<li>Missing the H1 or blockquote</li>
+<li>Stale (last-modified &gt; 90 days)</li>
+</ul>
+<h2 id="engine-adoption-status-may-2026">Engine adoption status, May 2026</h2>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Engine</th>
+<th>Respects llms.txt?</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Anthropic / Claude</td>
+<td>Yes</td>
+<td>Anthropic proposed the standard; Claude reads it preferentially</td>
+</tr>
+<tr>
+<td>OpenAI / ChatGPT</td>
+<td>Stated intent</td>
+<td>Public statements indicate respect; behavior inconsistent in scans</td>
+</tr>
+<tr>
+<td>Perplexity</td>
+<td>Inconsistent</td>
+<td>Sometimes follows the curated set, sometimes ignores</td>
+</tr>
+<tr>
+<td>Google AI Overviews</td>
+<td>No</td>
+<td>Currently uses standard search index</td>
+</tr>
+<tr>
+<td>Microsoft Copilot</td>
+<td>No</td>
+<td>Currently uses Bing index</td>
+</tr>
+<tr>
+<td>Gemini</td>
+<td>No</td>
+<td>Currently uses Google Search index</td>
+</tr>
+</tbody>
+</table>
+<p>This table changes month to month. NeverRanked’s engine changelog
+(<code>content/engine-changelog/</code>) tracks shifts as they happen.</p>
+<h2 id="why-this-matters-for-aeo-score">Why this matters for AEO score</h2>
+<p>Sites that publish a curated llms.txt give the engines that respect
+it a deterministic citation surface. Engines that respect llms.txt
+will weight content listed there above content discovered via crawl.
+Sites without llms.txt get crawled indiscriminately, with all the
+noise that implies.</p>
+<p>The compounding effect: once one major engine starts treating
+llms.txt as a strong signal, the others follow. We expect this to
+happen in the second half of 2026. Sites with llms.txt deployed by
+that point inherit the advantage. Sites without lose two-to-three
+months of citation share to faster movers.</p>
+<h2 id="neverrankeds-deployment-path">NeverRanked’s deployment path</h2>
+<p>For each customer:</p>
+<ol type="1">
+<li>Audit current llms.txt (present, absent, valid, stale)</li>
+<li>Generate vertical-aware template (banking, real estate, legal,
+healthcare, hospitality, education)</li>
+<li>Customize with the customer’s actual canonical pages</li>
+<li>Deploy via the same snippet that handles schema injection</li>
+<li>Track weekly: which engines respect it, what gets cited from it</li>
+<li>Update quarterly as the customer’s content evolves</li>
+</ol>
+<p>The NeverRanked snippet handles llms.txt the same way it handles
+JSON-LD: a curated, validated layer that updates as the site does.</p>
+<h2 id="anti-patterns-neverranked-refuses-to-ship">Anti-patterns NeverRanked refuses to ship</h2>
+<ul>
+<li><strong>Auto-generated llms.txt from sitemap.</strong> Curation is the point.
+An auto-gen file is worse than nothing because it dilutes the
+signal.</li>
+<li><strong>llms.txt that exposes paywalled or gated content links.</strong> The
+engines that respect llms.txt will follow links. Linking to
+paywalled content is functionally equivalent to making it
+public.</li>
+<li><strong>llms.txt that includes affiliate or tracking parameters.</strong>
+AI engines will cite the URL with the parameters intact. Ugly,
+noisy, sometimes leaks attribution data.</li>
+<li><strong>Different llms.txt per region or device.</strong> The standard is one
+canonical file at /llms.txt. Region targeting goes via hreflang
+or Schema.org <code>areaServed</code>, not by serving different llms.txt
+files.</li>
+</ul>
+<h2 id="public-commitment">Public commitment</h2>
+<p>NeverRanked publishes its own llms.txt at
+<a href="https://neverranked.com/llms.txt">neverranked.com/llms.txt</a> as
+the reference implementation. Anyone can verify our position is
+not aspirational by reading what we ship for ourselves.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This document is a public standard. Disputes or corrections: <a href="mailto:standards@neverranked.com">standards@neverranked.com</a>. Want the practical implementation? See the <a href="/schemas/">Schema Marketplace</a>.</p>
+  </div>
+</div>
+</body>
+</html>
