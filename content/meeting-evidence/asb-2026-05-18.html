@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ASB + MVNP Meeting Evidence: Citation infrastructure findings, May 18 2026</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @page { size: Letter; margin: 0.75in 0.85in; }
+  html, body { margin: 0; padding: 0; background: #fbf8ef; color: var(--text); font-family: var(--body); font-size: 11pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-after: always; }
+  .cover { page-break-after: always; height: 9.4in; display: flex; flex-direction: column; justify-content: space-between; padding: 0.4in 0; box-sizing: border-box; }
+  .cover-mark { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); }
+  .cover-mark .mark-mono { font-family: var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.32em; font-size: 9pt; color: var(--text-mute); margin-left: 1em; font-weight: 500; vertical-align: middle; }
+  .cover-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0.4in 0 0.18in; }
+  .cover-title { font-family: var(--serif); font-weight: 400; font-size: 44pt; line-height: 1.05; letter-spacing: -0.02em; max-width: 6.5in; border: none; padding: 0; margin: 0; }
+  .cover-title em { font-style: italic; color: var(--gold); }
+  .cover-subtitle { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); margin-top: 0.18in; }
+  .cover-meta { font-family: var(--mono); font-size: 9.5pt; color: var(--text-mute); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 0.18in; }
+  .cover-meta strong { color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; font-size: 8pt; display: block; margin-bottom: 0.04in; font-family: var(--label); }
+  .cover-meta-row { display: flex; gap: 0.6in; margin-top: 0.1in; flex-wrap: wrap; }
+  .cover-meta-cell { flex: 1; min-width: 1.6in; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 22pt; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 0.4in; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 0.18in; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 16pt; line-height: 1.2; margin: 0.35in 0 0.15in; letter-spacing: -0.01em; }
+  h2 em { font-style: italic; color: var(--gold); }
+  h3 { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11pt; font-weight: 600; margin: 0.25in 0 0.08in; color: var(--gold); }
+  h4 { font-family: var(--body); font-weight: 600; font-size: 11pt; margin: 0.18in 0 0.06in; }
+  p { margin: 0 0 0.12in; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0.25in 0; }
+  blockquote { border-left: 3px solid var(--gold); padding-left: 0.18in; margin: 0.15in 0; color: var(--text-soft); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 0.15in 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #f3eedd; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9pt; font-weight: 600; color: var(--text-soft); }
+  code { font-family: var(--mono); font-size: 9pt; background: #f3eedd; padding: 1pt 4pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 9pt; background: #f6f1e0; border: 1px solid var(--line-soft); border-radius: 4pt; padding: 10pt 12pt; page-break-inside: avoid; line-height: 1.45; margin: 0.12in 0; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div>
+      <div class="cover-eyebrow">Annual Report</div>
+      <h1 class="cover-title">ASB + MVNP Meeting Evidence</h1>
+      <div class="cover-subtitle">Citation infrastructure findings, May 18 2026</div>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell"><strong>Publisher</strong>NeverRanked</div>
+      <div class="cover-meta-cell"><strong>Published</strong>2026-05-10</div>
+      <div class="cover-meta-cell"><strong>Author</strong>Lance Roylo</div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="what-this-document-is">What this document is</h2>
+<p>A standalone evidence appendix that compresses the AI-citation
+findings NeverRanked has gathered for the ASB Hawaii landscape
+into a single readable document. Pairs with (does not replace)
+the existing meeting materials at:</p>
+<ul>
+<li><code>audits/asb-hawaii-2026-05/audit.pdf</code> (audit deck)</li>
+<li><code>content/asb-mvnp-meeting-prep.md</code> (Q&amp;A prep, locked)</li>
+<li><code>content/asb-mvnp-onepager.md</code> (leave-behind, locked)</li>
+<li><code>content/asb-mvnp-preread-email.md</code> (24h pre-read, locked)</li>
+</ul>
+<p>This appendix is safe to share or print as a supporting handout
+without modifying the locked materials.</p>
+<h2 id="the-single-most-citable-finding">The single most-citable finding</h2>
+<p><strong>ASB is named in 0% of AI engine citation runs across the
+Hawaii community banking query set.</strong> First Hawaiian Bank and
+Bank of Hawaii get named by default in r/Hawaii consumer
+threads. ASB does not. The same pattern shows up in the AI
+engine citation logs.</p>
+<p>This is not a marketing failure. It is a citation infrastructure
+gap. The brands AI engines pull from when answering “best
+community bank in Hawaii” today are FHB and BOH, because those
+are the names that appear on the third-party surfaces AI engines
+trust (Reddit, news wires, local press, Wikipedia). ASB is
+underrepresented across all of them.</p>
+<h2 id="evidence-at-three-levels">Evidence at three levels</h2>
+<h3 id="level-1-the-state-of-aeo-data">Level 1, the State of AEO data</h3>
+<p>The Citation Tape (NeverRanked’s standing AI-citation
+measurement system) captured 437 citation runs across NR’s
+tracked client universe in the 2026-04-14 to 2026-05-10 window.
+Findings relevant to community banking:</p>
+<ul>
+<li><strong>vertexaisearch.cloud.google.com</strong> is the single most-cited
+third-party source. This is Gemini’s grounding-redirect
+layer. Mention shape there determines what Gemini surfaces.</li>
+<li><strong>AEO-services agencies</strong> (geekpoweredstudios, greenbananaseo,
+eseospace, arcintermedia) collectively claim 28% of citation
+share for the queries NR tracks. AI engines cite the agency
+layer, not just the bank layer, when answering “best AEO
+agency” type queries. Translates: when people ask AI for help
+with their bank’s AI visibility, they see agencies named, not
+banks.</li>
+<li><strong>News wires</strong> (prnewswire, businesswire, etc.) appear in 8%
+of citations. Press release distribution is one of the few
+citation-shifting moves that compounds.</li>
+</ul>
+<p>Full report: <code>reports/state-of-aeo/state-of-aeo-2026-05-10.pdf</code>.
+Live at https://neverranked.com/state-of-aeo/2026-05-10/.</p>
+<h3 id="level-2-the-reddit-landscape">Level 2, the Reddit landscape</h3>
+<p>The reddit-tracker probed three banking categories and
+surfaced 11 prioritized threads. Headline:</p>
+<p><strong><a href="https://www.reddit.com/r/Hawaii/comments/1p4b4p0/first_hawaiian_bank_continues_to_shock_me/">r/Hawaii: “First Hawaiian Bank continues to shock me”</a></strong></p>
+<p>Priority 0.94 in the dataset. ASB absent. FHB named, negatively.
+Cleanest competitor-visible / client-absent gap in the entire
+Hawaii banking dataset. AI engines retrieving this thread today
+surface FHB sentiment without an ASB counter-narrative.</p>
+<p>Three more high-priority threads documented at
+<code>content/reddit-briefs/2026-05-09-asb/README.md</code>. Each has a
+structured reply brief skeleton (gap analysis, angle, tone notes,
+draft hooks) that turns the finding into actionable Reddit reply
+ops. Brief skeletons are pasteable into Claude or Notion for
+further drafting.</p>
+<h3 id="level-3-the-hawaii-cross-vertical-signal">Level 3, the Hawaii cross-vertical signal</h3>
+<p>The same probe pattern run across three Hawaii verticals
+(banking, hotels, law) shows distinct demand-signal shapes.
+Banking sits in the sweet spot:</p>
+<table>
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+<col style="width: 20%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Briefs</th>
+<th>Max priority</th>
+<th>Avg priority</th>
+<th>Demand signal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hawaii hotels</td>
+<td>10</td>
+<td>0.93</td>
+<td>0.69</td>
+<td>Saturated – compete for share-of-voice</td>
+</tr>
+<tr>
+<td>Hawaii community banking</td>
+<td>11</td>
+<td>0.94</td>
+<td>0.58</td>
+<td>Active but uncrowded – best risk/reward</td>
+</tr>
+<tr>
+<td>Hawaii law firms</td>
+<td>7</td>
+<td>0.38</td>
+<td>0.26</td>
+<td>Sparse – whoever shows up first writes the answer shape</td>
+</tr>
+</tbody>
+</table>
+<p>Banking is the only vertical of the three where targeted Reddit
+reply ops would have meaningful citation lift per hour spent.
+Hotels are too saturated; law firms are too thin.</p>
+<p>Cross-vertical narrative at
+<code>content/reddit-briefs/2026-05-09-hawaii-landscape/README.md</code>.</p>
+<h2 id="what-this-means-in-three-sentences-for-the-meeting">What this means in three sentences for the meeting</h2>
+<ol type="1">
+<li><p><strong>ASB is invisible in the consumer conversations AI engines
+actually retrieve when people ask about Hawaii community
+banks.</strong> The State of AEO citation data and the r/Hawaii
+thread evidence both confirm this independently.</p></li>
+<li><p><strong>The fix is not paid media – it is citation infrastructure.</strong>
+Reddit reply ops, Wikipedia entity entry maintenance, news
+wire distribution, and a handful of high-impact source-type
+actions move the citation share AI engines see. None of those
+are services Hawaii agencies offer today.</p></li>
+<li><p><strong>NR has the measurement infrastructure and the tooling to do
+the work.</strong> The Citation Tape produces weekly reports
+reproducible from public schema. The reddit-tracker generates
+prioritized reply briefs. The schema deployment infrastructure
+covers the technical layer. Wholesale partners (MVNP) get all
+of this in the pilot.</p></li>
+</ol>
+<h2 id="honest-caveats-this-packet-should-disclose">Honest caveats this packet should disclose</h2>
+<p>Three things to acknowledge before someone reads the numbers:</p>
+<ol type="1">
+<li><p><strong>The State of AEO 2026-05-10 report’s data is partial.</strong>
+Per the data-integrity banner at the top of that report, only
+13-40% of tracked keywords got queried in the most recent
+window due to a documented infrastructure issue (filed at
+<code>content/handoff-questions/citation-cron-not-firing.md</code>).
+Numbers should be read as a lower bound on what AI engines
+actually surface. The pattern (ASB invisibility) is real
+either way; the magnitude is conservative.</p></li>
+<li><p><strong>Reddit reply ops are not magic.</strong> They compound over
+months, not days. Two well-placed replies per week, sustained
+for a quarter, shift the citation pattern. One reply does
+nothing.</p></li>
+<li><p><strong>The tracked-universe is small</strong> (3 clients, 17 keywords).
+Findings are descriptive of NR’s current sample, not a random
+sample of AI search universe. Generalizing requires more
+data, and as more clients onboard, the tracked universe and
+the report’s authority grow together.</p></li>
+</ol>
+<h2 id="files-this-appendix-references">Files this appendix references</h2>
+<ul>
+<li><code>reports/state-of-aeo/state-of-aeo-2026-05-10.pdf</code> – full citation report</li>
+<li><code>content/reddit-briefs/2026-05-09-asb/README.md</code> – ASB Reddit landscape detail</li>
+<li><code>content/reddit-briefs/2026-05-09-hawaii-landscape/README.md</code> – cross-vertical</li>
+<li><code>content/handoff-questions/citation-cron-not-firing.md</code> – data integrity caveat source</li>
+<li><code>audits/asb-hawaii-2026-05/audit.pdf</code> – the formal audit deck</li>
+<li><code>content/asb-mvnp-meeting-prep.md</code> – Q&amp;A prep (locked)</li>
+</ul>
+<h2 id="how-to-use-this-in-the-meeting">How to use this in the meeting</h2>
+<ul>
+<li>Print as a 4-page handout if needed for the room.</li>
+<li>Forward as PDF to MVNP team in advance of May 18 if a
+pre-read is desired beyond the existing pre-read email.</li>
+<li>Reference at the audit-deck handoff moment as the concrete
+evidence behind the deck’s findings.</li>
+<li>Share with FHB or BOH at a future moment as the same pattern
+exists for them, just inverted (they are visible because of
+what they have done, not what ASB has not done).</li>
+</ul>
+
+</body>
+</html>
