@@ -1,4 +1,4 @@
-# Bug: Monday weekly citation cron has not fired in 30+ days
+# Citation tracking autonomy gap: cron not firing + two related fixes
 
 Discovered 2026-05-09 evening HST while investigating why the
 `and-scene` client has zero `citation_runs` despite being onboarded
@@ -82,11 +82,36 @@ from the admin UI to backfill the and-scene baseline. Then
 manually triggers `neverranked` and `hawaii-theatre` if their
 data is needed before the underlying fix lands.
 
-## Question for the other window
+## The broader pattern: citation tracking is too manual
 
-Would you (other Claude window) like to take this fix? It lives
-inside `dashboard/src/` which you have been actively patching.
-If yes, the steps are:
+The cron-not-firing bug is one symptom of a deeper design gap.
+Citation tracking is supposed to be the autonomous measurement
+backbone of NR. In practice today, every meaningful action
+requires a human clicking a button:
+
+- New client onboarded -> human clicks "Run now" or waits up to
+  7 days for the (broken) Monday cron
+- Existing client's data goes stale -> nothing alerts, nothing
+  retries
+- Keyword list changes -> waits for next Monday
+- Cron silently dies for 30 days -> only caught by Lance asking
+  "why is and-scene at zero?"
+
+The "Run now" button exists as an ops safety valve, not as a
+primary workflow. The fact that 100% of citation_runs in the
+last 30 days came from manual clicks means the safety valve is
+the only thing keeping the data alive. That is the bug, not the
+design intent.
+
+Three related fixes turn this from manual to autonomous:
+
+### Fix 1: Per-client workflow for runWeeklyCitations
+
+Mirrors `SendDigestWorkflow`. Each client gets its own 1000-
+subrequest budget. Dispatched from `dashboard/src/cron.ts` in a
+per-client loop, the way digests are dispatched today.
+
+Steps:
 
 1. Create `dashboard/src/workflows/run-citations-for-client.ts`
 2. Register the workflow in `dashboard/wrangler.jsonc`
@@ -94,8 +119,54 @@ If yes, the steps are:
    inside the existing Monday gate, the way digests are
    dispatched
 4. Deploy and verify next Monday at 06:00 UTC + 5 minutes that
-   `citation_runs` rows exist for all three clients
+   citation_runs rows exist for all active clients
 
-If you would prefer this stay queued for me, leave a note in this
-file. I will not touch `dashboard/src/cron.ts` or
-`dashboard/wrangler.jsonc` without explicit handoff.
+Estimated effort: 30-45 minutes of code.
+
+### Fix 2: Auto-fire initial scan on client onboarding
+
+When a new client is created with at least one active keyword,
+queue a one-shot citation scan immediately, the same way the
+admin "Run now" button does. Eliminates the up-to-7-day window
+where a newly onboarded client has no data.
+
+Hook point: wherever the client onboarding flow inserts into
+`citation_keywords` (likely `dashboard/src/routes/citations.ts`
+add-keyword endpoint or a higher-level onboarding handler). On
+the first active keyword for a slug with no prior runs, fire
+`SCAN_CITATIONS_WORKFLOW.create({ params: { slug } })`.
+
+Estimated effort: 30 minutes including testing.
+
+### Fix 3: Staleness alert when citation_runs is dry
+
+Daily admin sweep that checks: for each active client with at
+least one active keyword, if `MAX(run_at)` is older than 8 days,
+write an admin alert. Hook into the existing
+`createAlertIfFresh()` machinery in
+`dashboard/src/admin-alerts.ts`. Single SQL query per sweep,
+runs in the daily 06:00 UTC cron.
+
+Without this, the cron-firing bug went unnoticed for 30+ days.
+With this, any future regression surfaces within 24 hours via
+the admin inbox Lance already reads daily.
+
+Estimated effort: 20 minutes.
+
+## Question for the other window
+
+Would you (other Claude window) like to take any subset of
+these three fixes? They live inside `dashboard/src/` which you
+have been actively patching.
+
+Order of priority:
+1. The per-client workflow (Fix 1) -- highest impact, unblocks
+   the weekly cron entirely
+2. Staleness alert (Fix 3) -- shortest, prevents the next silent
+   failure
+3. Auto-fire on onboarding (Fix 2) -- closes the new-client gap
+
+If you would prefer these stay queued, leave a note in this
+file. I will not touch `dashboard/src/cron.ts`,
+`dashboard/wrangler.jsonc`, or `dashboard/src/admin-alerts.ts`
+without explicit handoff.
