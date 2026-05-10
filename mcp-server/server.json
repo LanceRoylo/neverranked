@@ -1,0 +1,23 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
+  "name": "io.github.LanceRoylo/mcp",
+  "description": "First AEO toolchain in the AI agent ecosystem. Three tools (aeo_scan, llms_txt_check, agent_readiness_check) callable from Claude Desktop, Claude Code, or any MCP client. Free, MIT-with-attribution.",
+  "repository": {
+    "url": "https://github.com/LanceRoylo/neverranked",
+    "source": "github",
+    "subfolder": "mcp-server"
+  },
+  "websiteUrl": "https://neverranked.com/blog/the-first-aeo-mcp-server/",
+  "version": "0.1.1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "registryBaseUrl": "https://registry.npmjs.org",
+      "identifier": "@neverranked/mcp",
+      "version": "0.1.1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}

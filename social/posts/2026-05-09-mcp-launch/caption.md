@@ -1,4 +1,42 @@
-# LinkedIn Company Page — MCP Launch
+# LinkedIn — MCP Launch (two posts: personal + company)
+
+Both posts use the same image (`card.png`). Different captions for
+different audiences: personal feed = founder voice; company page =
+institutional voice.
+
+---
+
+## Personal LinkedIn caption (paste verbatim)
+
+I just shipped @neverranked/mcp on npm. It is the first AEO toolchain in the AI agent ecosystem.
+
+Three tools live in any Claude Desktop or Claude Code session: AEO scoring, llms.txt audit, and agent-readiness checks. One install command. No NeverRanked account required.
+
+Why I shipped this:
+
+For months I have been arguing that businesses should expose machine-readable interfaces so AI agents can interact with them. Schema. Actions. llms.txt. The whole architecture of being citable by AI.
+
+I was not interested in shipping that argument while keeping our own tools behind a closed API. So we did not. The MCP wraps the same scanner that runs at check.neverranked.com. Same logic, same scoring, same methodology. Free.
+
+The agent ecosystem is forming right now. Today there is no canonical AEO toolchain in the public registry, no default Claude Desktop catalog entry, no developer workflow assembling around an AEO API. Whoever ships first takes the category position.
+
+We chose to be first.
+
+Install in Claude Code:
+claude mcp add neverranked -- npx -y @neverranked/mcp
+
+Or in Claude Desktop: add the npx command to your config. Full instructions in the launch post.
+
+If you build something interesting with it, send it. I want to see what gets built on top of this.
+
+Launch post: https://neverranked.com/blog/the-first-aeo-mcp-server/
+Package: https://www.npmjs.com/package/@neverranked/mcp
+
+#MCP #AEO #ClaudeCode #ModelContextProtocol #AISearch #BuildInPublic
+
+---
+
+## Company LinkedIn Page caption (paste verbatim)
 
 ## What this is
 
@@ -7,7 +45,7 @@ announcing `@neverranked/mcp` 0.1.0 on npm. Distinct from the
 "AI is writing your storefront" personal post — different audience
 (developers vs business owners), different reading pace.
 
-## Caption (paste verbatim on the company page)
+### Caption (paste verbatim on the company page)
 
 `@neverranked/mcp` is live on npm.
 
