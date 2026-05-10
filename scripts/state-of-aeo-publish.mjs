@@ -175,6 +175,7 @@ function pageChrome({ pageTitle, description, canonical, body, ogType = 'article
 <meta property="og:url" content="${canonical}">
 <meta property="og:site_name" content="NeverRanked">
 <meta property="og:image" content="https://neverranked.com/og.jpg">
+<link rel="alternate" type="application/rss+xml" title="The State of AEO" href="https://neverranked.com/state-of-aeo/feed.xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
@@ -413,6 +414,56 @@ const latestJson = {
   headline: extractHeadline(latest.mdPath),
 };
 writeFileSync(resolve(OUT_DIR, 'latest.json'), JSON.stringify(latestJson, null, 2) + '\n', 'utf8');
+
+// RSS feed for The Citation Tape. One <item> per report. Allows
+// anyone tracking AEO industry data to subscribe. Same shape as
+// blog/feed.xml -- keeps the tooling consistent.
+function rssDate(d) {
+  // Convert YYYY-MM-DD to RFC 822 (Mon, 10 May 2026 12:00:00 +0000)
+  if (!d) return new Date().toUTCString();
+  try { return new Date(`${d}T12:00:00Z`).toUTCString(); }
+  catch { return new Date().toUTCString(); }
+}
+function escXml(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+const items = reports.map((r) => `    <item>
+      <title>${escXml(r.title)}</title>
+      <link>https://neverranked.com/state-of-aeo/${r.slug}/</link>
+      <guid isPermaLink="true">https://neverranked.com/state-of-aeo/${r.slug}/</guid>
+      <pubDate>${rssDate(r.date)}</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>${escXml(r.kind === 'edition'
+        ? `Themed deep-dive on a tracked vertical. Captured by The Citation Tape, NeverRanked's standing AI-citation measurement system.`
+        : `Standing snapshot of what AI engines cited across NeverRanked's tracked client universe between ${r.windowStart || '?'} and ${r.windowEnd || '?'}. From The Citation Tape.`)}</description>
+      <category>AEO</category>
+      <category>${r.kind === 'edition' ? 'Annual edition' : 'Weekly report'}</category>
+    </item>`).join('\n');
+
+const feed = `<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>The State of AEO -- Never Ranked</title>
+    <link>https://neverranked.com/state-of-aeo/</link>
+    <description>What AI engines actually cite, generated weekly by The Citation Tape, NeverRanked's standing measurement system.</description>
+    <language>en-us</language>
+    <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
+    <atom:link href="https://neverranked.com/state-of-aeo/feed.xml" rel="self" type="application/rss+xml"/>
+    <managingEditor>lance@neverranked.com (Lance Roylo)</managingEditor>
+    <webMaster>lance@neverranked.com (Lance Roylo)</webMaster>
+    <copyright>Never Ranked ${new Date().getUTCFullYear()}</copyright>
+    <image>
+      <url>https://neverranked.com/og.jpg</url>
+      <title>The State of AEO</title>
+      <link>https://neverranked.com/state-of-aeo/</link>
+    </image>
+
+${items}
+  </channel>
+</rss>
+`;
+writeFileSync(resolve(OUT_DIR, 'feed.xml'), feed, 'utf8');
 
 console.log('[3/3] Done.');
 console.log();

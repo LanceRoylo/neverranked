@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <channel>
+    <title>The State of AEO -- Never Ranked</title>
+    <link>https://neverranked.com/state-of-aeo/</link>
+    <description>What AI engines actually cite, generated weekly by The Citation Tape, NeverRanked's standing measurement system.</description>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 10 May 2026 09:46:02 GMT</lastBuildDate>
+    <atom:link href="https://neverranked.com/state-of-aeo/feed.xml" rel="self" type="application/rss+xml"/>
+    <managingEditor>lance@neverranked.com (Lance Roylo)</managingEditor>
+    <webMaster>lance@neverranked.com (Lance Roylo)</webMaster>
+    <copyright>Never Ranked 2026</copyright>
+    <image>
+      <url>https://neverranked.com/og.jpg</url>
+      <title>The State of AEO</title>
+      <link>https://neverranked.com/state-of-aeo/</link>
+    </image>
+
+    <item>
+      <title>State of AEO: NeverRanked tracked-universe report</title>
+      <link>https://neverranked.com/state-of-aeo/2026-05-10/</link>
+      <guid isPermaLink="true">https://neverranked.com/state-of-aeo/2026-05-10/</guid>
+      <pubDate>Sun, 10 May 2026 12:00:00 GMT</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Standing snapshot of what AI engines cited across NeverRanked&apos;s tracked client universe between 2026-04-14 and 2026-05-10. From The Citation Tape.</description>
+      <category>AEO</category>
+      <category>Weekly report</category>
+    </item>
+    <item>
+      <title>The State of Answer Engine Optimization in Hawaii: 2026 Edition</title>
+      <link>https://neverranked.com/state-of-aeo/hawaii-2026/</link>
+      <guid isPermaLink="true">https://neverranked.com/state-of-aeo/hawaii-2026/</guid>
+      <pubDate>Thu, 07 May 2026 12:00:00 GMT</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Themed deep-dive on a tracked vertical. Captured by The Citation Tape, NeverRanked&apos;s standing AI-citation measurement system.</description>
+      <category>AEO</category>
+      <category>Annual edition</category>
+    </item>
+  </channel>
+</rss>
