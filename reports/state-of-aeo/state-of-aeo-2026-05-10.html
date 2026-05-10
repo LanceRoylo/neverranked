@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State of AEO: NeverRanked Tracked-Universe Report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @page { size: Letter; margin: 0.75in 0.85in; }
+  html, body { margin: 0; padding: 0; background: #fbf8ef; color: var(--text); font-family: var(--body); font-size: 11pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-after: always; }
+  .cover { page-break-after: always; height: 9.4in; display: flex; flex-direction: column; justify-content: space-between; padding: 0.4in 0; box-sizing: border-box; }
+  .cover-mark { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); }
+  .cover-mark .mark-mono { font-family: var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.32em; font-size: 9pt; color: var(--text-mute); margin-left: 1em; font-weight: 500; vertical-align: middle; }
+  .cover-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0.4in 0 0.18in; }
+  .cover-title { font-family: var(--serif); font-weight: 400; font-size: 44pt; line-height: 1.05; letter-spacing: -0.02em; max-width: 6.5in; border: none; padding: 0; margin: 0; }
+  .cover-title em { font-style: italic; color: var(--gold); }
+  .cover-subtitle { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); margin-top: 0.18in; }
+  .cover-meta { font-family: var(--mono); font-size: 9.5pt; color: var(--text-mute); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 0.18in; }
+  .cover-meta strong { color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; font-size: 8pt; display: block; margin-bottom: 0.04in; font-family: var(--label); }
+  .cover-meta-row { display: flex; gap: 0.6in; margin-top: 0.1in; flex-wrap: wrap; }
+  .cover-meta-cell { flex: 1; min-width: 1.6in; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 22pt; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 0.4in; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 0.18in; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 16pt; line-height: 1.2; margin: 0.35in 0 0.15in; letter-spacing: -0.01em; }
+  h2 em { font-style: italic; color: var(--gold); }
+  h3 { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11pt; font-weight: 600; margin: 0.25in 0 0.08in; color: var(--gold); }
+  h4 { font-family: var(--body); font-weight: 600; font-size: 11pt; margin: 0.18in 0 0.06in; }
+  p { margin: 0 0 0.12in; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0.25in 0; }
+  blockquote { border-left: 3px solid var(--gold); padding-left: 0.18in; margin: 0.15in 0; color: var(--text-soft); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 0.15in 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #f3eedd; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9pt; font-weight: 600; color: var(--text-soft); }
+  code { font-family: var(--mono); font-size: 9pt; background: #f3eedd; padding: 1pt 4pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 9pt; background: #f6f1e0; border: 1px solid var(--line-soft); border-radius: 4pt; padding: 10pt 12pt; page-break-inside: avoid; line-height: 1.45; margin: 0.12in 0; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div>
+      <div class="cover-eyebrow">Annual Report</div>
+      <h1 class="cover-title">State of AEO</h1>
+      <div class="cover-subtitle">NeverRanked Tracked-Universe Report</div>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell"><strong>Publisher</strong>NeverRanked</div>
+      <div class="cover-meta-cell"><strong>Published</strong>2026-05-10</div>
+      <div class="cover-meta-cell"><strong>Author</strong>Lance Roylo</div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Six engines tracked</strong>
+        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+      </div>
+    </div>
+  </div>
+</div>
+<h1 id="state-of-aeo-neverranked-tracked-universe-report">State of AEO: NeverRanked tracked-universe report</h1>
+<p><em>Generated 2026-05-10. Window: 2026-04-14 to 2026-05-04.</em></p>
+<h2 id="what-this-report-is">What this report is</h2>
+<p>A standing snapshot of what AI engines actually cite when answering
+questions about NeverRanked’s tracked client universe. Pulled from
+live 376 citation runs across 3 engines (gemini, openai, perplexity),
+15 tracked keywords, and 2 clients spanning 2 verticals.</p>
+<p>Generated weekly. Same script, same data sources, no manual curation.
+The methodology is the script (<code>scripts/state-of-aeo-generate.mjs</code>) plus
+the public scoring engine at check.neverranked.com. Reproducible by
+anyone with the same query against the same database.</p>
+<h2 id="headline">Headline</h2>
+<p>Across 376 captured AI engine responses, the single most-cited
+third-party source is <strong>google.com</strong> (Google Maps / Business Profile),
+appearing in 106 citation runs across
+1 engine and 3 tracked keywords.</p>
+<p>Implication: any tracked client whose category overlaps with this
+source’s coverage area (and whose own brand is not yet present on
+it) is leaving citation share on the table. The path to closing the
+gap is source-specific. See the per-client baseline section below.</p>
+<h2 id="where-ai-engines-pull-from">Where AI engines pull from</h2>
+<p>Distribution of citation runs by source type, excluding client-owned
+URLs (which represent successful citation, not the moat-building
+question of “where else are they pulling from”):</p>
+<table>
+<thead>
+<tr>
+<th>Source type</th>
+<th>Runs</th>
+<th>Share</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>google-maps</td>
+<td>106</td>
+<td>29.3%</td>
+</tr>
+<tr>
+<td>news</td>
+<td>100</td>
+<td>27.6%</td>
+</tr>
+<tr>
+<td>youtube</td>
+<td>84</td>
+<td>23.2%</td>
+</tr>
+<tr>
+<td>wikipedia</td>
+<td>41</td>
+<td>11.3%</td>
+</tr>
+<tr>
+<td>directory</td>
+<td>17</td>
+<td>4.7%</td>
+</tr>
+<tr>
+<td>tripadvisor</td>
+<td>11</td>
+<td>3.0%</td>
+</tr>
+<tr>
+<td>review-aggregator</td>
+<td>3</td>
+<td>0.8%</td>
+</tr>
+</tbody>
+</table>
+<h2 id="top-15-third-party-sources">Top 15 third-party sources</h2>
+<p>The domains that appeared most often as cited references across
+the dataset. Excludes client-owned domains.</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Source type</th>
+<th>Runs</th>
+<th>Engines</th>
+<th>Keywords</th>
+<th>Clients</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>vertexaisearch.cloud.google.com</td>
+<td>other</td>
+<td>117</td>
+<td>1</td>
+<td>5</td>
+<td>2</td>
+</tr>
+<tr>
+<td>google.com</td>
+<td>google-maps</td>
+<td>106</td>
+<td>1</td>
+<td>3</td>
+<td>2</td>
+</tr>
+<tr>
+<td>hawaiitheatre.com</td>
+<td>other</td>
+<td>101</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>prnewswire.com</td>
+<td>news</td>
+<td>94</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>youtube.com</td>
+<td>youtube</td>
+<td>84</td>
+<td>2</td>
+<td>9</td>
+<td>1</td>
+</tr>
+<tr>
+<td>geekpoweredstudios.com</td>
+<td>other</td>
+<td>59</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>orbitmedia.com</td>
+<td>other</td>
+<td>55</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>evertune.ai</td>
+<td>other</td>
+<td>54</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>greenbananaseo.com</td>
+<td>other</td>
+<td>51</td>
+<td>2</td>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr>
+<td>animalz.co</td>
+<td>other</td>
+<td>48</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>arcintermedia.com</td>
+<td>other</td>
+<td>46</td>
+<td>1</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr>
+<td>sparktoro.com</td>
+<td>other</td>
+<td>43</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>eseospace.com</td>
+<td>other</td>
+<td>43</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>generatemore.ai</td>
+<td>other</td>
+<td>42</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>en.wikipedia.org</td>
+<td>wikipedia</td>
+<td>41</td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<h2 id="what-each-engine-cites-differently">What each engine cites differently</h2>
+<p>Top 5 sources per engine. When two engines have very different top
+lists, that’s a signal about how each one’s retrieval differs.</p>
+<h3 id="perplexity-222-runs">perplexity (222 runs)</h3>
+<ul>
+<li><strong>youtube.com</strong> – 71 runs</li>
+<li><strong>orbitmedia.com</strong> – 55 runs</li>
+<li><strong>greenbananaseo.com</strong> – 49 runs</li>
+<li><strong>animalz.co</strong> – 48 runs</li>
+<li><strong>arcintermedia.com</strong> – 46 runs</li>
+</ul>
+<h3 id="openai-132-runs">openai (132 runs)</h3>
+<ul>
+<li><strong>google.com</strong> – 106 runs</li>
+<li><strong>prnewswire.com</strong> – 56 runs</li>
+<li><strong>en.wikipedia.org</strong> – 33 runs</li>
+<li><strong>hawaiitheatre.com</strong> – 32 runs</li>
+<li><strong>cited.so</strong> – 25 runs</li>
+</ul>
+<h3 id="gemini-22-runs">gemini (22 runs)</h3>
+<ul>
+<li><strong>vertexaisearch.cloud.google.com</strong> – 117 runs</li>
+<li><strong>hawaiitheatre.com</strong> – 36 runs</li>
+<li><strong>vividseats.com</strong> – 6 runs</li>
+<li><strong>search.auw211.org</strong> – 3 runs</li>
+<li><strong>ticketmaster.com</strong> – 3 runs</li>
+</ul>
+<h2 id="vertical-breakdown">Vertical breakdown</h2>
+<p><em>Verticals with at least 3 tracked clients enable category-level insights.</em></p>
+<p>Current vertical distribution:</p>
+<table>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Clients</th>
+<th>Runs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>performing arts venue</td>
+<td>1</td>
+<td>31</td>
+</tr>
+<tr>
+<td>AEO agency</td>
+<td>1</td>
+<td>345</td>
+</tr>
+</tbody>
+</table>
+<p>As more clients onboard inside any vertical, this section will
+populate automatically with category-level patterns.</p>
+<h2 id="per-client-baselines">Per-client baselines</h2>
+<p>Each client’s current citation footprint as of 2026-05-10. These
+numbers are the baseline against which any future case study is
+measured. Citation rate climbing from one of these starting points
+to a higher one over a defined window is the case-study artifact.</p>
+<h3 id="neverranked-aeo-agency">neverranked – AEO agency</h3>
+<ul>
+<li><strong>345</strong> captured runs across <strong>13</strong> tracked keywords</li>
+<li>Named in <strong>0</strong> runs (<strong>0%</strong> citation rate)</li>
+<li>Top 5 sources cited alongside this client’s queries:
+<ul>
+<li>vertexaisearch.cloud.google.com (114 runs)</li>
+<li>google.com (100 runs)</li>
+<li>prnewswire.com (94 runs)</li>
+<li>youtube.com (84 runs)</li>
+<li>geekpoweredstudios.com (59 runs)</li>
+</ul></li>
+</ul>
+<h3 id="hawaii-theatre-performing-arts-venue">hawaii-theatre – performing arts venue</h3>
+<ul>
+<li><strong>31</strong> captured runs across <strong>2</strong> tracked keywords</li>
+<li>Named in <strong>30</strong> runs (<strong>97%</strong> citation rate)</li>
+<li>Top 5 sources cited alongside this client’s queries:
+<ul>
+<li>hawaiitheatre.com (101 runs)</li>
+<li>tripadvisor.com (11 runs)</li>
+<li>en.wikipedia.org (9 runs)</li>
+<li>ticketmaster.com (8 runs)</li>
+<li>google.com (6 runs)</li>
+</ul></li>
+</ul>
+<h2 id="methodology-and-sample-disclosure">Methodology and sample disclosure</h2>
+<p>Every number in this report comes from <code>citation_runs</code> in the
+NeverRanked production database. Each run is one query against one AI
+engine for one tracked keyword, with the engine’s response_text and
+cited_urls captured as raw evidence.</p>
+<p>Engines covered: gemini, openai, perplexity.</p>
+<p>Sample size at this snapshot:</p>
+<ul>
+<li>376 citation runs</li>
+<li>2 tracked clients across 2 verticals</li>
+<li>15 tracked keywords</li>
+<li>Window: 2026-04-14 to 2026-05-04</li>
+</ul>
+<p>Honest limits: this is NeverRanked’s tracked subset, not a random
+sample of the AI search universe. Findings are descriptive of what
+AI engines say to questions in our clients’ categories. Generalizing
+beyond those categories requires more data.</p>
+<p>The script that generated this report is at
+<code>scripts/state-of-aeo-generate.mjs</code> and reads no private data.
+The schema for <code>citation_runs</code> is public in the migrations folder.</p>
+
+</body>
+</html>
