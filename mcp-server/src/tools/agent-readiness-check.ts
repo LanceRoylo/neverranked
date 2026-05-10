@@ -122,12 +122,37 @@ export async function agentReadinessCheck(args: { url: string; vertical?: string
   const baseUrl = String(args.url || "").trim().replace(/\/+$/, "");
   if (!baseUrl) throw new Error("url is required");
   if (!/^https?:\/\//.test(baseUrl)) {
-    throw new Error("url must include the protocol (https:// or http://)");
+    throw new Error(
+      `url must include the protocol. Got: "${baseUrl}". Try "https://${baseUrl.replace(/^[a-z]+:\/*/, "")}" instead.`,
+    );
   }
   const vertical = args.vertical || null;
   const expected = vertical ? VERTICAL_BASELINES[vertical] : null;
 
-  const html = await fetch(baseUrl).then((r) => r.text());
+  let html: string;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      const res = await fetch(baseUrl, { redirect: "follow", signal: controller.signal });
+      if (!res.ok) {
+        throw new Error(
+          `Could not fetch ${baseUrl} for agent-readiness scan: HTTP ${res.status} ${res.statusText}. The site may be down or blocking automated requests. Try a different URL.`,
+        );
+      }
+      html = await res.text();
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (err) {
+    if (err instanceof Error && err.message.startsWith("Could not fetch")) throw err;
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    const msg = isAbort
+      ? `Agent-readiness fetch timed out after 30s for ${baseUrl}. Site may be down. Retry, or try a different URL.`
+      : `Agent-readiness fetch failed for ${baseUrl}. Network error: ${err instanceof Error ? err.message : String(err)}.`;
+    console.error("[neverranked/mcp]", "agent_readiness_check", "network-error", baseUrl, err);
+    throw new Error(msg);
+  }
   const blocks = extractJsonLd(html);
   const actions = extractActions(blocks);
 

@@ -27,7 +27,9 @@ export async function llmsTxtCheck(args: { url: string }): Promise<LlmsTxtResult
   const baseUrl = String(args.url || "").trim().replace(/\/+$/, "");
   if (!baseUrl) throw new Error("url is required");
   if (!/^https?:\/\//.test(baseUrl)) {
-    throw new Error("url must include the protocol (https:// or http://)");
+    throw new Error(
+      `url must include the protocol. Got: "${baseUrl}". Try "https://${baseUrl.replace(/^[a-z]+:\/*/, "")}" instead.`,
+    );
   }
 
   const llmsUrl = `${baseUrl}/llms.txt`;
@@ -38,10 +40,29 @@ export async function llmsTxtCheck(args: { url: string }): Promise<LlmsTxtResult
   let score = 0;
   let body = "";
   let lastModified: string | null = null;
-
-  // 1. Presence (30 pts)
-  const main = await fetch(llmsUrl, { redirect: "follow" });
   let present = false;
+
+  // 1. Presence (30 pts) — 404 is a valid-and-expected output state
+  // (not an error), so we catch network errors but treat any HTTP
+  // response as data.
+  let main: Response;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30_000);
+    try {
+      main = await fetch(llmsUrl, { redirect: "follow", signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+  } catch (err) {
+    const isAbort = err instanceof Error && err.name === "AbortError";
+    const msg = isAbort
+      ? `llms.txt fetch timed out after 30s for ${llmsUrl}. Site may be down. Retry, or try a different URL.`
+      : `llms.txt fetch could not reach ${baseUrl}. Network error: ${err instanceof Error ? err.message : String(err)}. Confirm the URL is reachable.`;
+    console.error("[neverranked/mcp]", "llms_txt_check", "network-error", llmsUrl, err);
+    throw new Error(msg);
+  }
+
   if (main.ok) {
     body = await main.text();
     if (body.trim().length > 0) {
