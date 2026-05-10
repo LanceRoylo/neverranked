@@ -93,12 +93,89 @@ export interface ReconcileResult {
   byClient: Record<string, { done: number; in_progress: number }>;
 }
 
+/** Authority-category items that don't apply to SaaS / no-physical-
+ *  location clients. The auto-generator drops these in for every
+ *  client because it doesn't yet branch on business type, and they
+ *  stall forever for SaaS clients (no Google Business Profile, no
+ *  NAP across local directories). Flagged here so the enhanced
+ *  reconciler can auto-defer them with a "not-applicable" completion
+ *  marker for SaaS-detected clients. */
+const AUTHORITY_NOT_APPLICABLE_TO_SAAS: RegExp[] = [
+  /google\s+business\s+profile/i,
+  /nap\s+across\s+(all\s+)?directories/i,
+  /citations\s+on\s+(industry-specific\s+)?directories/i,
+  /local\s+business\s+citation/i,
+];
+
+/** Content-category items that the reconciler can resolve by HTTP-probing
+ *  the live domain for the corresponding artifact. Each entry maps a
+ *  title regex to the path patterns we'll probe. If any path returns
+ *  200, the item is marked done. */
+const CONTENT_TITLE_TO_PATHS: Array<{ titleIncludes: RegExp; paths: string[] }> = [
+  { titleIncludes: /authoritative\s+faq\s+page|faq\s+page\s+answering/i,
+    paths: ["/faq", "/faqs", "/frequently-asked-questions", "/help/faq", "/support/faq"] },
+  { titleIncludes: /definitive\s+guide|comprehensive\s+guide/i,
+    paths: ["/guide", "/guides", "/resources", "/docs", "/learn", "/tutorial", "/tutorials"] },
+  { titleIncludes: /case\s+stud(y|ies)/i,
+    paths: ["/case-studies", "/customers", "/case-study"] },
+  { titleIncludes: /pillar\s+page|cornerstone\s+content/i,
+    paths: ["/", "/blog", "/resources"] },
+];
+
+/** Detect whether a client is SaaS / no-physical-location. We use
+ *  business_address as the proxy: any meaningful address means local
+ *  business; null/empty means SaaS. Conservative -- if the field
+ *  isn't filled in at all, we assume SaaS (better to defer authority
+ *  items than nag forever). */
+async function detectIsSaaS(env: Env, clientSlug: string): Promise<boolean> {
+  const config = await env.DB.prepare(
+    "SELECT business_address FROM injection_configs WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ business_address: string | null }>();
+  const addr = (config?.business_address || "").trim();
+  return addr.length === 0;
+}
+
+/** HTTP-probe each candidate path on the client's primary domain.
+ *  Returns the set of paths that returned a 200. We use HEAD with a
+ *  3s timeout per probe. Failures (404, timeout, DNS) just don't add
+ *  the path to the set -- we don't throw. The caller decides what
+ *  to do with the result. */
+async function detectContentArtifacts(
+  env: Env,
+  clientSlug: string,
+  paths: string[],
+): Promise<Set<string>> {
+  const domain = await env.DB.prepare(
+    "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<{ domain: string }>();
+  if (!domain?.domain) return new Set();
+
+  const found = new Set<string>();
+  // Sequential probes (parallelizing 5+ HEAD requests is fine but
+  // adds complexity; sequential keeps the per-step subrequest count
+  // small and predictable).
+  for (const path of paths) {
+    try {
+      const url = `https://${domain.domain}${path}`;
+      const res = await fetch(url, {
+        method: "HEAD",
+        redirect: "follow",
+        signal: AbortSignal.timeout(3000),
+      });
+      if (res.ok) found.add(path);
+    } catch { /* probe failure -- skip */ }
+  }
+  return found;
+}
+
 /** Reconcile roadmap_items against schema_injections for one client.
- *  Two passes:
- *    - approved schemas mark matching items as 'done'
- *    - pending schemas mark matching items as 'in_progress' (so the
- *      customer dashboard's "actively in progress" metric reflects
- *      real work-in-flight, not zero)
+ *  Three passes:
+ *    - approved schemas mark matching schema items as 'done'
+ *    - pending schemas mark matching schema items as 'in_progress'
+ *    - authority items not applicable to SaaS clients → 'done' with
+ *      completed_by='reconciler-not-applicable'
+ *    - content items where the corresponding artifact path returns
+ *      200 on the client's domain → 'done'
  *  Returns counts of each transition. */
 export async function reconcileRoadmapForClient(
   clientSlug: string,
@@ -106,7 +183,7 @@ export async function reconcileRoadmapForClient(
 ): Promise<{ markedDone: number; markedInProgress: number }> {
   const items = (await env.DB.prepare(
     "SELECT id, client_slug, title, category, status FROM roadmap_items " +
-    "WHERE client_slug = ? AND status != 'done' AND category = 'schema'"
+    "WHERE client_slug = ? AND status != 'done' AND category IN ('schema','content','authority')"
   ).bind(clientSlug).all<ItemRow>()).results;
   if (items.length === 0) return { markedDone: 0, markedInProgress: 0 };
 
@@ -135,39 +212,88 @@ export async function reconcileRoadmapForClient(
   const now = Math.floor(Date.now() / 1000);
   let markedDone = 0;
   let markedInProgress = 0;
+
+  // Lazy-evaluate SaaS detection and content probes -- only run them
+  // if we actually have an item that needs them. Avoids unnecessary
+  // DB queries and outbound HTTP probes for clients whose stalls are
+  // all schema-category.
+  let isSaaS: boolean | null = null;
+  const probedPaths = new Map<string, Set<string>>(); // titleRegex.source -> found paths
+
   for (const item of items) {
-    const mapping = TITLE_TO_TYPES.find((m) => m.titleIncludes.test(item.title));
-    if (!mapping) continue;
-    const satisfiedByApproved = mapping.types.some((t) => approvedTypes.has(t));
-    if (satisfiedByApproved) {
-      await env.DB.prepare(
-        "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
-        "completed_by = 'reconciler', updated_at = ? WHERE id = ?"
-      ).bind(now, now, item.id).run();
-      markedDone++;
+    // --- Schema category: existing schema_injection matching ---
+    if (item.category === "schema") {
+      const mapping = TITLE_TO_TYPES.find((m) => m.titleIncludes.test(item.title));
+      if (!mapping) continue;
+      const satisfiedByApproved = mapping.types.some((t) => approvedTypes.has(t));
+      if (satisfiedByApproved) {
+        await env.DB.prepare(
+          "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
+          "completed_by = 'reconciler', updated_at = ? WHERE id = ?"
+        ).bind(now, now, item.id).run();
+        markedDone++;
+        continue;
+      }
+      const satisfiedByPending = mapping.types.some((t) => pendingTypes.has(t));
+      if (satisfiedByPending && item.status !== "in_progress") {
+        await env.DB.prepare(
+          "UPDATE roadmap_items SET status = 'in_progress', updated_at = ? WHERE id = ?"
+        ).bind(now, item.id).run();
+        markedInProgress++;
+      }
       continue;
     }
-    // No approved match. If there's a pending one, surface as
-    // in_progress so the customer's "actively in progress" tile
-    // reflects the draft-awaiting-review work. Only flip if the
-    // current status is not already in_progress (avoid churning
-    // updated_at for no reason).
-    const satisfiedByPending = mapping.types.some((t) => pendingTypes.has(t));
-    if (satisfiedByPending && item.status !== "in_progress") {
-      await env.DB.prepare(
-        "UPDATE roadmap_items SET status = 'in_progress', updated_at = ? WHERE id = ?"
-      ).bind(now, item.id).run();
-      markedInProgress++;
+
+    // --- Authority category: not-applicable for SaaS clients ---
+    if (item.category === "authority") {
+      const matchesNotApplicable = AUTHORITY_NOT_APPLICABLE_TO_SAAS.some(
+        (re) => re.test(item.title)
+      );
+      if (!matchesNotApplicable) continue;
+      if (isSaaS === null) isSaaS = await detectIsSaaS(env, clientSlug);
+      if (isSaaS) {
+        await env.DB.prepare(
+          "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
+          "completed_by = 'reconciler-not-applicable', updated_at = ? WHERE id = ?"
+        ).bind(now, now, item.id).run();
+        markedDone++;
+      }
+      continue;
+    }
+
+    // --- Content category: HTTP-probe the live domain ---
+    if (item.category === "content") {
+      const mapping = CONTENT_TITLE_TO_PATHS.find((m) => m.titleIncludes.test(item.title));
+      if (!mapping) continue;
+      const cacheKey = mapping.titleIncludes.source;
+      let found = probedPaths.get(cacheKey);
+      if (!found) {
+        found = await detectContentArtifacts(env, clientSlug, mapping.paths);
+        probedPaths.set(cacheKey, found);
+      }
+      if (found.size > 0) {
+        await env.DB.prepare(
+          "UPDATE roadmap_items SET status = 'done', completed_at = ?, " +
+          "completed_by = 'reconciler-content-detected', updated_at = ? WHERE id = ?"
+        ).bind(now, now, item.id).run();
+        markedDone++;
+      }
+      continue;
     }
   }
+
   return { markedDone, markedInProgress };
 }
 
-/** Run the reconciler against every client that has at least one
- *  approved schema_injection. Used from runDailyTasks. */
+/** Run the reconciler against every client that has any non-done
+ *  roadmap items. Used from runDailyTasks. Pre-2026-05-10 this only
+ *  selected clients with approved schema_injections, which missed
+ *  SaaS clients whose only stalls are authority/content category --
+ *  they'd never get the not-applicable / content-detected pass that
+ *  resolves their roadmap automatically. */
 export async function reconcileAllRoadmaps(env: Env): Promise<ReconcileResult> {
   const slugs = (await env.DB.prepare(
-    "SELECT DISTINCT client_slug FROM schema_injections WHERE status = 'approved'"
+    "SELECT DISTINCT client_slug FROM roadmap_items WHERE status != 'done'"
   ).all<{ client_slug: string }>()).results.map((r) => r.client_slug);
 
   const result: ReconcileResult = {
