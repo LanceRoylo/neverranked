@@ -8,11 +8,14 @@ name: Weekly State of AEO
 
 on:
   schedule:
-    # 17:00 UTC Mondays = 7am Pacific/Honolulu Mondays.
-    # Runs after the dashboard 06:00-UTC weekly Monday tasks have
-    # finished writing the prior week's citation_runs, so the report
-    # captures the freshest data without racing the producer.
-    - cron: '0 17 * * 1'
+    # 04:00 UTC Mondays = Sunday 6pm HST.
+    # Lands ~2 hours before the dashboard 06:00 UTC Monday cron that
+    # fans out the weekly customer digest, so the digest fetches
+    # state-of-aeo/latest.json with the freshest report. The deploy
+    # workflow auto-publishes the regenerated pages on push, which
+    # takes ~1 minute, leaving ~119 minutes of headroom before the
+    # digest reads it.
+    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 permissions:
