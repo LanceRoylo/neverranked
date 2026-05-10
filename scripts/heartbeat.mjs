@@ -135,6 +135,106 @@ const CHECKS = [
 ];
 
 // -----------------------------------------------------------------
+// Invariant checks: go beyond "did anything happen?" and verify
+// system-level promises are upheld. These are the checks that catch
+// the partial-completion bug (the cron fired, rows landed, but only
+// 14% of the active keyword set actually got queried).
+//
+// Each invariant returns { pass, detail }. pass=false flips the
+// overall heartbeat to non-zero exit just like a stale check.
+// -----------------------------------------------------------------
+
+const INVARIANTS = [
+  {
+    name: 'keyword-completion',
+    description: 'Every active keyword should have at least one citation_run in the last 8 days',
+    run: () => {
+      const rows = runD1(`
+        SELECT k.client_slug,
+               COUNT(DISTINCT k.id) as active_kw,
+               COUNT(DISTINCT CASE WHEN r.run_at > unixepoch() - 8*86400 THEN k.id END) as kw_with_runs
+        FROM citation_keywords k
+        LEFT JOIN citation_runs r ON r.keyword_id = k.id
+        WHERE k.active = 1
+        GROUP BY k.client_slug
+        HAVING active_kw > 0
+      `);
+      const failing = rows
+        .map(r => ({ ...r, pct: r.active_kw > 0 ? Math.round((r.kw_with_runs / r.active_kw) * 100) : 0 }))
+        .filter(r => r.pct < 80);
+      if (failing.length === 0) return { pass: true, detail: `${rows.length} clients all >= 80% complete` };
+      return {
+        pass: false,
+        detail: failing
+          .map(r => `${r.client_slug} ${r.kw_with_runs}/${r.active_kw} (${r.pct}%)`)
+          .join(', '),
+      };
+    },
+  },
+  {
+    name: 'engine-coverage',
+    description: 'Every active citation engine should have runs in the last 8 days',
+    run: () => {
+      const rows = runD1(`
+        SELECT engine, COUNT(*) as runs
+        FROM citation_runs
+        WHERE run_at > unixepoch() - 8*86400
+        GROUP BY engine
+      `);
+      const expected = ['perplexity', 'openai', 'gemini', 'anthropic'];
+      const seen = new Set(rows.map(r => r.engine));
+      const missing = expected.filter(e => !seen.has(e));
+      if (missing.length === 0) return { pass: true, detail: `${rows.length} engines active` };
+      return { pass: false, detail: `missing engines: ${missing.join(', ')}` };
+    },
+  },
+  {
+    name: 'digest-delivery-per-user',
+    description: 'Every email_digest=1 user should have received a digest in the last 8 days',
+    run: () => {
+      const opted = runD1(`SELECT COUNT(*) as n FROM users WHERE email_digest = 1`)[0]?.n || 0;
+      if (opted === 0) return { pass: true, detail: 'no opted-in users' };
+      const recent = runD1(`
+        SELECT COUNT(DISTINCT email) as n
+        FROM email_log
+        WHERE type = 'digest' AND created_at > unixepoch() - 8*86400
+      `)[0]?.n || 0;
+      const pct = Math.round((recent / opted) * 100);
+      if (pct >= 80) return { pass: true, detail: `${recent}/${opted} users (${pct}%) received` };
+      return { pass: false, detail: `${recent}/${opted} users (${pct}%) received in last 8 days` };
+    },
+  },
+  {
+    name: 'gsc-coverage-per-client',
+    description: 'Every active client with gsc_property should have a snapshot in the last 8 days',
+    run: () => {
+      const rows = runD1(`
+        SELECT g.client_slug,
+               MAX(g.date_end) as latest_snapshot
+        FROM gsc_snapshots g
+        GROUP BY g.client_slug
+      `);
+      // Note: not all clients have GSC connected; this check measures
+      // freshness across the slugs that have ever produced a snapshot.
+      // A separate check would need to read the GSC connection table
+      // to find clients that SHOULD have data but don't.
+      const cutoff = new Date(Date.now() - 8 * 86400 * 1000).toISOString().slice(0, 10);
+      const stale = rows.filter(r => r.latest_snapshot < cutoff);
+      if (stale.length === 0 && rows.length > 0) {
+        return { pass: true, detail: `${rows.length} clients all fresh` };
+      }
+      if (rows.length === 0) {
+        return { pass: false, detail: 'no GSC snapshots ever recorded for any client' };
+      }
+      return {
+        pass: false,
+        detail: stale.map(r => `${r.client_slug} last ${r.latest_snapshot}`).join(', '),
+      };
+    },
+  },
+];
+
+// -----------------------------------------------------------------
 // Run checks
 // -----------------------------------------------------------------
 
@@ -154,6 +254,7 @@ function fmtMaxAge(seconds) {
 const nowSec = Math.floor(Date.now() / 1000);
 const results = [];
 
+// Staleness checks
 for (const check of CHECKS) {
   let row, err;
   try {
@@ -172,6 +273,7 @@ for (const check of CHECKS) {
   else status = 'OK';
 
   results.push({
+    kind: 'staleness',
     name: check.name,
     description: check.description,
     cadence: check.cadence,
@@ -183,24 +285,51 @@ for (const check of CHECKS) {
   });
 }
 
+// Invariant checks
+const invariantResults = [];
+for (const inv of INVARIANTS) {
+  let res, err;
+  try {
+    res = inv.run();
+  } catch (e) {
+    err = e.message;
+  }
+  let status;
+  if (err) status = 'ERROR';
+  else if (res.pass) status = 'OK';
+  else status = 'FAIL';
+  invariantResults.push({
+    kind: 'invariant',
+    name: inv.name,
+    description: inv.description,
+    status,
+    detail: res?.detail || null,
+    error: err || null,
+  });
+}
+
 // -----------------------------------------------------------------
 // Output
 // -----------------------------------------------------------------
 
 const stale = results.filter((r) => r.status === 'STALE' || r.status === 'EMPTY' || r.status === 'ERROR');
-const allOk = stale.length === 0;
+const failedInvariants = invariantResults.filter((r) => r.status === 'FAIL' || r.status === 'ERROR');
+const allOk = stale.length === 0 && failedInvariants.length === 0;
 
 if (args.json) {
   process.stdout.write(JSON.stringify({
     timestamp: new Date().toISOString(),
     healthy: allOk,
     stale_count: stale.length,
-    checks: results,
+    failed_invariant_count: failedInvariants.length,
+    staleness_checks: results,
+    invariants: invariantResults,
   }, null, 2) + '\n');
 } else {
   const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
   if (!args.silentOnOk || !allOk) {
     process.stdout.write(`NeverRanked autonomy heartbeat\n${stamp} UTC\n\n`);
+    process.stdout.write(`Staleness checks:\n`);
   }
   for (const r of results) {
     if (args.silentOnOk && r.status === 'OK') continue;
@@ -214,11 +343,24 @@ if (args.json) {
     process.stdout.write(`${tag} ${r.name.padEnd(22)} last seen ${age.padEnd(10)} (${r.cadence}, max ${max})${flag}\n`);
     if (r.error) process.stdout.write(`         error: ${r.error}\n`);
   }
+  if (!args.silentOnOk || failedInvariants.length > 0) {
+    process.stdout.write(`\nInvariant checks:\n`);
+  }
+  for (const r of invariantResults) {
+    if (args.silentOnOk && r.status === 'OK') continue;
+    const tag = r.status === 'OK' ? '[OK]   '
+      : r.status === 'FAIL' ? '[FAIL] '
+      : '[ERR]  ';
+    const flag = r.status !== 'OK' ? ' <-- ALERT' : '';
+    process.stdout.write(`${tag} ${r.name.padEnd(28)} ${(r.detail || '').slice(0, 90)}${flag}\n`);
+    if (r.error) process.stdout.write(`         error: ${r.error}\n`);
+  }
   if (!allOk) {
-    process.stdout.write(`\n${stale.length} stale automation${stale.length === 1 ? '' : 's'}.\n`);
+    const issues = stale.length + failedInvariants.length;
+    process.stdout.write(`\n${issues} issue${issues === 1 ? '' : 's'} (${stale.length} stale, ${failedInvariants.length} invariant fail${failedInvariants.length === 1 ? '' : 's'}).\n`);
     process.stdout.write(`See content/handoff-questions/autonomy-audit-2026-05-09.md\n`);
   } else if (!args.silentOnOk) {
-    process.stdout.write(`\nAll ${results.length} automations healthy.\n`);
+    process.stdout.write(`\nAll ${results.length + invariantResults.length} checks healthy.\n`);
   }
 }
 
