@@ -22,6 +22,7 @@ import {
   upvoteScore,
   citationLikelihood,
   scoreThread,
+  autoRequiredTokens,
 } from "../src/score.mjs";
 
 // ---------------------------------------------------------------------
@@ -323,4 +324,70 @@ test("scoreThread produces positive composite for on-topic high-quality thread",
   // topic_relevance = (2 * titleFrac + bodyFrac) / 3. With all 3
   // tokens in title and 0 in body: (2*1 + 0)/3 = 0.667. Lock in.
   assert.ok(s.topic_relevance >= 0.6, `expected high relevance, got ${s.topic_relevance}`);
+});
+
+// ---------------------------------------------------------------------
+// autoRequiredTokens + region-token enforcement
+// ---------------------------------------------------------------------
+//
+// Real audit case: 2026-05-09 ASB Reddit probe. The query
+// "best small business bank Hawaii" let through r/montreal, r/ottawa,
+// and r/pittsburgh threads about small business owners that did not
+// mention Hawaii or banks. Cause: anchor gate matched on
+// "small" + "business" without requiring the discriminating region
+// token. Fix: any token that is a known region/locale must appear in
+// the title, in addition to whatever the anchor gate requires.
+
+test("autoRequiredTokens picks up Hawaii from the category", () => {
+  assert.deepEqual(autoRequiredTokens("best small business bank Hawaii"), ["hawaii"]);
+  assert.deepEqual(autoRequiredTokens("best bank in Honolulu"), ["honolulu"]);
+  assert.deepEqual(autoRequiredTokens("dentists in Kailua, Oahu"), ["kailua", "oahu"]);
+});
+
+test("autoRequiredTokens returns empty for non-regional categories", () => {
+  assert.deepEqual(autoRequiredTokens("best CRM for real estate"), []);
+  assert.deepEqual(autoRequiredTokens("how to get cited by ChatGPT"), []);
+});
+
+test("topicRelevance kills the Montreal-noise case from the ASB audit", () => {
+  // The actual title r/montreal returned for "best small business bank Hawaii"
+  const t = mkThread({
+    title: "I'm a small business owner in Montreal I'm scared",
+    op_body: "no Hawaii or banking content",
+  });
+  assert.equal(topicRelevance(t, "best small business bank Hawaii"), 0);
+  // Same enforcement via scoreThread integration:
+  assert.equal(scoreThread(t, { category: "best small business bank Hawaii" }).composite_score, 0);
+});
+
+test("topicRelevance still passes legitimate Hawaii-titled threads", () => {
+  // The actual high-priority finding from the ASB audit
+  const t = mkThread({
+    title: "First Hawaiian Bank continues to shock me",
+    op_body: "long body about banking experience",
+  });
+  // "First Hawaiian Bank" contains both "Hawaii" (via Hawaiian stem) and "Bank"
+  assert.ok(topicRelevance(t, "best community bank in Hawaii") > 0);
+});
+
+test("topicRelevance enforces caller-supplied requiredTokens", () => {
+  const t = mkThread({ title: "best CRM for small businesses" });
+  // No region in category, but caller demands a specific token
+  assert.equal(topicRelevance(t, "best CRM", { requiredTokens: ["enterprise"] }), 0);
+  assert.ok(topicRelevance(t, "best CRM", { requiredTokens: ["small"] }) > 0);
+});
+
+test("scoreThread threads requiredTokens through opts", () => {
+  const t = mkThread({
+    title: "Best CRM tools 2024",
+    op_body: "general SaaS recommendations",
+    op_score: 500,
+  });
+  // Without requiredTokens, this passes
+  assert.ok(scoreThread(t, { category: "best CRM" }).composite_score > 0);
+  // With requiredTokens demanding "real" (not in title), this fails
+  assert.equal(
+    scoreThread(t, { category: "best CRM", requiredTokens: ["real", "estate"] }).composite_score,
+    0
+  );
 });

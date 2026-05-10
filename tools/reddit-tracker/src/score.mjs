@@ -114,6 +114,62 @@ const GENERIC_TYPE_NOUNS = new Set([
   "stuff", "kind", "type", "company", "companies", "brand", "brands"
 ]);
 
+// Region tokens that must appear in the title when present in the
+// category. Without this enforcement, a query like "best small
+// business bank Hawaii" lets through threads whose titles match
+// "small business" without mentioning Hawaii (e.g. r/montreal,
+// r/ottawa). Region tokens are the most-discriminating word in a
+// regional query -- a bank thread without "Hawaii" in the title
+// is, by definition, not a Hawaii-bank thread.
+//
+// Coverage is intentionally narrow: US states + major Hawaii
+// counties / cities, since Hawaii is the immediate use case. Add
+// to this set as the tracker is used in new regional verticals.
+// "city, state" or non-US regions can be passed via the explicit
+// requiredTokens option on topicRelevance / scoreThread.
+const REGION_TOKENS = new Set([
+  // US states
+  "alabama", "alaska", "arizona", "arkansas", "california", "colorado",
+  "connecticut", "delaware", "florida", "georgia", "hawaii", "idaho",
+  "illinois", "indiana", "iowa", "kansas", "kentucky", "louisiana",
+  "maine", "maryland", "massachusetts", "michigan", "minnesota",
+  "mississippi", "missouri", "montana", "nebraska", "nevada",
+  "ohio", "oklahoma", "oregon", "pennsylvania", "tennessee", "texas",
+  "utah", "vermont", "virginia", "washington", "wisconsin", "wyoming",
+  // Hawaii counties and major locales (the immediate use case)
+  "honolulu", "oahu", "maui", "kauai", "molokai", "lanai",
+  "kailua", "kakaako", "kaneohe", "waikiki", "hilo", "kona",
+  "waipahu", "pearl", "manoa", "ewa",
+]);
+
+/**
+ * Return the subset of category tokens that are required to appear
+ * in the title for the relevance gate to pass. Currently: any token
+ * that is a known region/locale name. Extension point for callers
+ * that want to enforce additional requirements via the
+ * requiredTokens option on scoreThread.
+ */
+export function autoRequiredTokens(category) {
+  const toks = categoryTokens(category);
+  return toks.filter((t) => REGION_TOKENS.has(t));
+}
+
+/**
+ * Looser matcher for required tokens. Region/locale names need
+ * looser matching than the stem matcher's strict s/ed/er/ing
+ * suffixes -- "Hawaii" should match "Hawaiian", "Hawaii's",
+ * "Hawaiians", and constructions like "First Hawaiian Bank". Same
+ * for "Honolulu" matching "Honolulu's", etc.
+ *
+ * The strategy: word-boundary at the start, but allow any letters
+ * to follow before the next word boundary. Functionally a prefix
+ * match scoped to a single word.
+ */
+function requiredTokenMatcher(tok) {
+  const escaped = tok.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`\\b${escaped}[a-z']*\\b`, "i");
+}
+
 /**
  * Anchor tokens are the most-distinctive nouns in the category --
  * the words that name the THING the thread must be about, not
@@ -160,7 +216,14 @@ export function anchorTokens(category) {
   const primary = [...new Set([...acronymsDeduped, ...techTerms])];
   if (primary.length) return primary;
   const specific = toks.filter((t) => !GENERIC_TYPE_NOUNS.has(t));
-  const long = specific.filter((t) => t.length >= 5);
+  // Anchor floor of 4 chars catches the legitimate short category
+  // nouns ("bank", "food", "shop", "code", "yoga", "loan") that
+  // anchor a query without leaking back into stopwords (already
+  // filtered) or generic type-nouns (also already filtered).
+  // Originally 5 chars, which dropped "bank" from "best community
+  // bank in Hawaii" -- the discriminating noun. Lowered after the
+  // 2026-05-09 ASB Reddit probe surfaced the gap.
+  const long = specific.filter((t) => t.length >= 4);
   if (long.length > 0) return long;
   if (specific.length > 0) return specific;
   return toks;
@@ -206,7 +269,11 @@ function stemMatcher(tok) {
 function anchorTitleHits(anchors, title) {
   let hits = 0;
   for (const a of anchors) {
-    if (stemMatcher(a).test(title)) hits++;
+    // Region tokens use the looser matcher so "Hawaii" matches
+    // "Hawaiian" / "Hawaii's" naturally. Other tokens stick with
+    // the strict s/ed/er/ing stem matcher.
+    const matcher = REGION_TOKENS.has(a) ? requiredTokenMatcher(a) : stemMatcher(a);
+    if (matcher.test(title)) hits++;
   }
   return hits;
 }
@@ -238,12 +305,25 @@ function requiredAnchorHits(anchorCount) {
  * regardless of body content. Titles encode what the thread is
  * ABOUT; bodies often mention category words tangentially.
  */
-export function topicRelevance(thread, category) {
+export function topicRelevance(thread, category, opts = {}) {
   const tokens = categoryTokens(category);
   if (tokens.length === 0) return 1;
   const anchors = anchorTokens(category);
   const title = (thread.title || "").toLowerCase();
   const body = (thread.op_body || "").toLowerCase();
+  // Required tokens: caller-supplied OR auto-derived (region tokens
+  // like "Hawaii" / "Honolulu" / "Oahu" that name a place). Every
+  // required token MUST appear in the title for the gate to pass.
+  // This is the kill-switch for the multi-anchor leak where a thread
+  // about "small business owners in Montreal" matched a
+  // "best small business bank Hawaii" query because it had two of
+  // three anchor candidates without the discriminating region token.
+  const required = (opts.requiredTokens && opts.requiredTokens.length)
+    ? opts.requiredTokens
+    : autoRequiredTokens(category);
+  for (const r of required) {
+    if (!requiredTokenMatcher(r).test(title)) return 0;
+  }
   const titleAnchors = anchorTitleHits(anchors, title);
   if (titleAnchors < requiredAnchorHits(anchors.length)) return 0;
   // Soft scoring: blend title and body token coverage. Token-level
@@ -349,7 +429,9 @@ export function citationLikelihood(thread, { subredditPrior = {} } = {}) {
 export function scoreThread(thread, opts = {}) {
   const recency = recencyScore(thread, opts.nowSec);
   const upvote = upvoteScore(thread);
-  const relevance = opts.category ? topicRelevance(thread, opts.category) : 1;
+  const relevance = opts.category
+    ? topicRelevance(thread, opts.category, { requiredTokens: opts.requiredTokens })
+    : 1;
   const likelihoodRaw = citationLikelihood(thread, opts);
   // Likelihood is dampened by relevance: a perfectly-shaped title
   // ("Best X vs Y") on an off-topic thread gets the title-shape

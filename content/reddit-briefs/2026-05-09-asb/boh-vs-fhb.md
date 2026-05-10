@@ -54,11 +54,11 @@ Topical thread without strong shape signal. Angle: read the top 3 comments befor
 ## Evidence
 - Client mentioned: 0x (0+ / 0-)
 - Competitors named:
-  - FHB (8x)
+  - FHB (9x)
   - First Hawaiian Bank (3x)
   - BOH (1x)
 
-*Generated 2026-05-10T04:09:55.006Z*
+*Generated 2026-05-10T04:22:14.130Z*
 
 ---
 
@@ -97,7 +97,7 @@ Topical thread without strong shape signal. Angle: read the top 3 comments befor
 ## Evidence
 - Client mentioned: 0x (0+ / 0-)
 
-*Generated 2026-05-10T04:09:55.742Z*
+*Generated 2026-05-10T04:22:15.006Z*
 
 ---
 
@@ -136,7 +136,7 @@ Topical thread without strong shape signal. Angle: read the top 3 comments befor
 ## Evidence
 - Client mentioned: 0x (0+ / 0-)
 
-*Generated 2026-05-10T04:09:56.827Z*
+*Generated 2026-05-10T04:22:16.118Z*
 
 ---
 
