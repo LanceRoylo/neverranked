@@ -398,7 +398,10 @@ export async function handleInjectAdmin(
               })()}
               <details>
                 <summary style="cursor:pointer;font-size:11px;color:var(--text-faint);margin-bottom:8px">View JSON-LD</summary>
-                <pre style="background:var(--bg);padding:12px;border-radius:4px;font-size:11px;color:var(--text-faint);overflow-x:auto;white-space:pre-wrap;margin:0">${esc(JSON.stringify(JSON.parse(inj.json_ld), null, 2))}</pre>
+                <div style="position:relative">
+                  <button type="button" onclick="(async()=>{try{await navigator.clipboard.writeText(this.nextElementSibling.textContent);const o=this.textContent;this.textContent='Copied';setTimeout(()=>this.textContent=o,1200)}catch(e){this.textContent='Copy failed';setTimeout(()=>this.textContent='Copy',1500)}})()" style="position:absolute;top:6px;right:6px;background:var(--line);color:var(--text-faint);border:1px solid var(--line);border-radius:3px;padding:3px 8px;font-size:10px;font-family:var(--mono);cursor:pointer;z-index:1">Copy</button>
+                  <pre style="background:var(--bg);padding:12px;border-radius:4px;font-size:11px;color:var(--text-faint);overflow-x:auto;white-space:pre-wrap;margin:0">${esc(JSON.stringify(JSON.parse(inj.json_ld), null, 2))}</pre>
+                </div>
                 <form method="POST" action="/admin/inject/${esc(slug)}/edit/${inj.id}" style="margin-top:8px">
                   <textarea name="json_ld" style="width:100%;min-height:120px;background:var(--bg);border:1px solid var(--line);color:var(--text);font-family:var(--mono);font-size:11px;padding:8px;border-radius:4px;resize:vertical">${esc(inj.json_ld)}</textarea>
                   <div style="display:flex;gap:8px;margin-top:8px">
