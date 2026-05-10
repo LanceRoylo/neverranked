@@ -94,6 +94,26 @@ function discoverReports() {
   return out;
 }
 
+/**
+ * Pull the first paragraph of the "## Headline" section as the
+ * single-sentence industry summary that ships in the digest. Strips
+ * markdown emphasis and collapses whitespace. Falls back to a
+ * generic line if the section is missing.
+ */
+function extractHeadline(mdPath) {
+  const md = readFileSync(mdPath, 'utf8');
+  const m = md.match(/##\s+Headline\s*\n+([\s\S]*?)(?:\n##\s|$)/);
+  if (!m) return 'Standing snapshot of what AI engines cite across NeverRanked\'s tracked client universe.';
+  // First paragraph only.
+  const para = m[1].split(/\n\n/)[0] || m[1];
+  return para
+    .replace(/\*\*(.+?)\*\*/g, '$1')
+    .replace(/\*(.+?)\*/g, '$1')
+    .replace(/\s+/g, ' ')
+    .replace(/—/g, ', ')
+    .trim();
+}
+
 function parseFrontMatter(md) {
   const m = md.match(/^---\n([\s\S]*?)\n---/);
   if (!m) return {};
@@ -354,8 +374,27 @@ for (const r of reports) {
   console.log(`         ${r.slug}/  (${r.kind}, ${r.date})`);
 }
 
-console.log('[2/3] Writing hub page...');
+console.log('[2/3] Writing hub page + latest.json...');
 writeFileSync(resolve(OUT_DIR, 'index.html'), buildHub(reports), 'utf8');
+
+// latest.json -- consumed by the dashboard digest email so the
+// industry headline appears in the Monday weekly send. Tiny payload,
+// public, cache-friendly.
+const latest = reports[0];
+const latestJson = {
+  slug: latest.slug,
+  title: latest.title,
+  generated: latest.date,
+  windowStart: latest.windowStart || null,
+  windowEnd: latest.windowEnd || null,
+  sampleRuns: latest.sampleRuns || null,
+  url: `https://neverranked.com/state-of-aeo/${latest.slug}/`,
+  pdfUrl: latest.pdfPath ? `https://neverranked.com/state-of-aeo/${latest.slug}.pdf` : null,
+  // Single-sentence industry headline. Hand-derived from the markdown
+  // first to avoid LLM-flavored summaries; falls back to a generic line.
+  headline: extractHeadline(latest.mdPath),
+};
+writeFileSync(resolve(OUT_DIR, 'latest.json'), JSON.stringify(latestJson, null, 2) + '\n', 'utf8');
 
 console.log('[3/3] Done.');
 console.log();

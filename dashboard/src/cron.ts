@@ -14,6 +14,7 @@ import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type Digest
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { getCitationDigestData, type CitationDigestData } from "./citations";
+import { getLatestStateOfAeo, type StateOfAeoLatest } from "./state-of-aeo";
 import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, sendSnippetPauseCheckIn, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency, resolveAgencyForEmail } from "./agency";
@@ -114,6 +115,12 @@ export async function sendWeeklyDigests(
 
   let sent = 0;
   let failed = 0;
+
+  // Fetch the latest State of AEO summary once per fanout. Each user's
+  // digest reuses the same payload, and the Cache API in
+  // getLatestStateOfAeo guards against duplicate origin fetches when
+  // SendDigestWorkflow scopes the call to one user per invocation.
+  const stateOfAeo = await getLatestStateOfAeo();
 
   for (const user of users) {
     // Admin sees all domains, clients see their own
@@ -231,7 +238,7 @@ export async function sendWeeklyDigests(
     // White-label branding: agency for Mode-2 clients, null otherwise.
     const agency = await resolveAgencyForEmail(env, { email: user.email });
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency);
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo);
     if (ok) {
       sent++;
       // Log to email_log

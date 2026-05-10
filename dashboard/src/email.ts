@@ -7,6 +7,7 @@
 import type { Agency, Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
+import { buildStateOfAeoBlock, type StateOfAeoLatest } from "./state-of-aeo";
 
 // Default brand visuals used when no agency override is supplied.
 const NR_BRAND_NAME = "Never Ranked";
@@ -257,7 +258,8 @@ export async function sendDigestEmail(
   gscData?: Map<string, GscDigestData>,
   roadmapData?: Map<string, RoadmapDigestData>,
   unsubToken?: string,
-  agency?: Agency | null
+  agency?: Agency | null,
+  stateOfAeo?: StateOfAeoLatest | null,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -271,7 +273,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0])
     : `Weekly AEO Report -- ${digests.length} domains scanned`;
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -1797,7 +1799,7 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null): string {
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null): string {
   const brand = brandFor(agency);
   const headerCellHtml = brand.logo
     ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
@@ -1966,6 +1968,13 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             if (rd && rd.total > 0) blocks.push(buildRoadmapBlock(rd));
           }
           return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
+        })()}
+
+        <!-- State of AEO industry block (skipped on white-label sends) -->
+        ${(() => {
+          if (!stateOfAeo || agency) return "";
+          const block = buildStateOfAeoBlock(stateOfAeo);
+          return block ? `<tr><td>${block}</td></tr>` : "";
         })()}
 
         <!-- CTA -->
