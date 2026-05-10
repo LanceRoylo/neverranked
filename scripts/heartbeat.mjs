@@ -287,6 +287,53 @@ for (const check of CHECKS) {
   });
 }
 
+// HTTP checks: external surfaces NeverRanked promises to keep alive.
+// Independent of D1 (lower-blast-radius failures: marketing site
+// outage, npm registry outage, public latest.json out of date).
+const HTTP_CHECKS = [
+  {
+    name: 'marketing-site',
+    description: 'neverranked.com homepage returns 200',
+    url: 'https://neverranked.com/',
+    expectStatus: 200,
+  },
+  {
+    name: 'state-of-aeo-latest',
+    description: 'state-of-aeo/latest.json fresh and parseable',
+    url: 'https://neverranked.com/state-of-aeo/latest.json',
+    expectStatus: 200,
+    validate: async (res) => {
+      try {
+        const json = await res.json();
+        if (!json.url || !json.headline) return { ok: false, detail: 'malformed payload' };
+        // Accept up to 14 days old; weekly cadence + grace.
+        const generated = new Date(json.generated);
+        const ageDays = (Date.now() - generated.getTime()) / 86400000;
+        if (ageDays > 14) return { ok: false, detail: `${Math.round(ageDays)}d old (max 14d)` };
+        return { ok: true, detail: `${json.slug}, ${Math.round(ageDays)}d old` };
+      } catch (e) {
+        return { ok: false, detail: `parse failed: ${e.message}` };
+      }
+    },
+  },
+  {
+    name: 'mcp-npm-package',
+    description: '@neverranked/mcp present in npm registry',
+    url: 'https://registry.npmjs.org/@neverranked/mcp',
+    expectStatus: 200,
+    validate: async (res) => {
+      try {
+        const json = await res.json();
+        const latest = json['dist-tags']?.latest;
+        if (!latest) return { ok: false, detail: 'no dist-tags.latest in registry response' };
+        return { ok: true, detail: `latest version ${latest}` };
+      } catch (e) {
+        return { ok: false, detail: `parse failed: ${e.message}` };
+      }
+    },
+  },
+];
+
 // Invariant checks
 const invariantResults = [];
 for (const inv of INVARIANTS) {
@@ -314,9 +361,63 @@ for (const inv of INVARIANTS) {
 // Output
 // -----------------------------------------------------------------
 
+// HTTP checks run after D1-driven checks. Async fetch with a 10s
+// timeout each so a slow endpoint cannot stall the entire heartbeat.
+const httpResults = [];
+for (const check of HTTP_CHECKS) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10_000);
+  try {
+    const res = await fetch(check.url, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (res.status !== check.expectStatus) {
+      httpResults.push({
+        kind: 'http',
+        name: check.name,
+        description: check.description,
+        status: 'FAIL',
+        detail: `HTTP ${res.status} (expected ${check.expectStatus})`,
+        error: null,
+      });
+      continue;
+    }
+    if (check.validate) {
+      const v = await check.validate(res);
+      httpResults.push({
+        kind: 'http',
+        name: check.name,
+        description: check.description,
+        status: v.ok ? 'OK' : 'FAIL',
+        detail: v.detail,
+        error: null,
+      });
+    } else {
+      httpResults.push({
+        kind: 'http',
+        name: check.name,
+        description: check.description,
+        status: 'OK',
+        detail: `HTTP ${res.status}`,
+        error: null,
+      });
+    }
+  } catch (e) {
+    clearTimeout(timer);
+    httpResults.push({
+      kind: 'http',
+      name: check.name,
+      description: check.description,
+      status: 'ERROR',
+      detail: null,
+      error: e.message || String(e),
+    });
+  }
+}
+
 const stale = results.filter((r) => r.status === 'STALE' || r.status === 'EMPTY' || r.status === 'ERROR');
 const failedInvariants = invariantResults.filter((r) => r.status === 'FAIL' || r.status === 'ERROR');
-const allOk = stale.length === 0 && failedInvariants.length === 0;
+const failedHttp = httpResults.filter((r) => r.status === 'FAIL' || r.status === 'ERROR');
+const allOk = stale.length === 0 && failedInvariants.length === 0 && failedHttp.length === 0;
 
 if (args.json) {
   process.stdout.write(JSON.stringify({
@@ -324,8 +425,10 @@ if (args.json) {
     healthy: allOk,
     stale_count: stale.length,
     failed_invariant_count: failedInvariants.length,
+    failed_http_count: failedHttp.length,
     staleness_checks: results,
     invariants: invariantResults,
+    http_checks: httpResults,
   }, null, 2) + '\n');
 } else {
   const stamp = new Date().toISOString().replace('T', ' ').slice(0, 16);
@@ -357,12 +460,24 @@ if (args.json) {
     process.stdout.write(`${tag} ${r.name.padEnd(28)} ${(r.detail || '').slice(0, 90)}${flag}\n`);
     if (r.error) process.stdout.write(`         error: ${r.error}\n`);
   }
+  if (!args.silentOnOk || failedHttp.length > 0) {
+    process.stdout.write(`\nHTTP checks:\n`);
+  }
+  for (const r of httpResults) {
+    if (args.silentOnOk && r.status === 'OK') continue;
+    const tag = r.status === 'OK' ? '[OK]   '
+      : r.status === 'FAIL' ? '[FAIL] '
+      : '[ERR]  ';
+    const flag = r.status !== 'OK' ? ' <-- ALERT' : '';
+    process.stdout.write(`${tag} ${r.name.padEnd(28)} ${(r.detail || '').slice(0, 90)}${flag}\n`);
+    if (r.error) process.stdout.write(`         error: ${r.error}\n`);
+  }
   if (!allOk) {
-    const issues = stale.length + failedInvariants.length;
-    process.stdout.write(`\n${issues} issue${issues === 1 ? '' : 's'} (${stale.length} stale, ${failedInvariants.length} invariant fail${failedInvariants.length === 1 ? '' : 's'}).\n`);
+    const issues = stale.length + failedInvariants.length + failedHttp.length;
+    process.stdout.write(`\n${issues} issue${issues === 1 ? '' : 's'} (${stale.length} stale, ${failedInvariants.length} invariant fail${failedInvariants.length === 1 ? '' : 's'}, ${failedHttp.length} http fail${failedHttp.length === 1 ? '' : 's'}).\n`);
     process.stdout.write(`See content/handoff-questions/autonomy-audit-2026-05-09.md\n`);
   } else if (!args.silentOnOk) {
-    process.stdout.write(`\nAll ${results.length + invariantResults.length} checks healthy.\n`);
+    process.stdout.write(`\nAll ${results.length + invariantResults.length + httpResults.length} checks healthy.\n`);
   }
 }
 
@@ -401,6 +516,15 @@ if (args.logToFile) {
   lines.push(`| Check | Status | Detail |`);
   lines.push(`|---|---|---|`);
   for (const r of invariantResults) {
+    const detail = (r.detail || r.error || '').replace(/\|/g, '\\|').slice(0, 140);
+    lines.push(`| ${r.name} | ${r.status} | ${detail} |`);
+  }
+  lines.push(``);
+  lines.push(`### HTTP`);
+  lines.push(``);
+  lines.push(`| Check | Status | Detail |`);
+  lines.push(`|---|---|---|`);
+  for (const r of httpResults) {
     const detail = (r.detail || r.error || '').replace(/\|/g, '\\|').slice(0, 140);
     lines.push(`| ${r.name} | ${r.status} | ${detail} |`);
   }
