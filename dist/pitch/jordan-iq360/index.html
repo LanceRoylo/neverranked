@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>For Jordan / Muck Rack and AEO, the honest read</title>
+<meta name="description" content="A friend at IQ360 asked where Muck Rack stops and AEO starts. Both tools are real. They cover different halves of the same value chain. Here is the honest map.">
+<link rel="canonical" href="https://neverranked.com/pitch/jordan-iq360/">
+<meta name="robots" content="noindex, nofollow">
+<meta property="og:title" content="For Jordan / Muck Rack and AEO, the honest read">
+<meta property="og:description" content="Where Muck Rack covers the press half. Where Never Ranked covers the schema and citation half. Honest about both.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/pitch/jordan-iq360/">
+<meta property="og:site_name" content="Never Ranked">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap"></noscript>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://neverranked.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Pitch / Jordan / IQ360",
+      "item": "https://neverranked.com/pitch/jordan-iq360/"
+    }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#121212;
+  --bg-lift:#1c1c1c;
+  --bg-edge:#242424;
+  --gold:#e8c767;
+  --gold-dim:#bfa04d;
+  --gold-wash:rgba(232,199,103,.14);
+  --text:#fbf8ef;
+  --text-soft:rgba(251,248,239,.98);
+  --text-mute:rgba(251,248,239,.86);
+  --text-faint:rgba(251,248,239,.78);
+  --line:rgba(251,248,239,.28);
+  --line-strong:rgba(251,248,239,.44);
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  --gutter:clamp(20px,4vw,64px);
+  --max:1080px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--mono);
+  font-size:14px;
+  line-height:1.65;
+  font-weight:400;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--gold);color:var(--bg)}
+
+/* grain */
+.grain{
+  position:fixed;inset:-50%;width:200%;height:200%;
+  pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size:260px 260px;
+  animation:grain 1.2s steps(6) infinite;
+}
+@keyframes grain{
+  0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}
+  40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}
+  80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+  background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),
+  radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%);
+}
+
+/* layout */
+.wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative;}
+
+/* nav */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:80;
+  padding:22px var(--gutter);display:flex;align-items:center;justify-content:space-between;
+  mix-blend-mode:difference;color:#f0ece3;
+}
+.nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em;
+  display:inline-flex;
+  align-items:center;
+  min-height:44px;
+  min-width:44px;
+  justify-content:flex-start;
+}
+.nav .mark sup{font-family:var(--label);font-style:normal;font-size:11px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+.nav .right{display:flex;align-items:center;gap:28px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px}
+.nav .right a{transition:opacity .25s}
+.nav .right a:hover{opacity:.7}
+
+/* page header */
+.page-hero{
+  padding:180px 0 80px;
+  border-bottom:1px solid var(--line);
+}
+.page-hero h1{
+  font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);
+  line-height:1.1;letter-spacing:-.02em;margin:0 0 16px;
+}
+.page-hero .updated{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--text-faint);
+}
+
+/* legal sections */
+.legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+.section-label{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;
+  color:var(--text-mute);margin-bottom:32px;
+}
+.section-label .num{color:var(--gold);font-weight:500}
+.section-label .rule{flex:1;height:1px;background:var(--line)}
+
+p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+p a,ul a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+p a:hover,ul a:hover{opacity:.8}
+
+/* footer */
+.legal-footer{
+  border-top:1px solid var(--line);padding:40px 0;
+  display:flex;justify-content:space-between;align-items:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;
+  color:var(--text-faint);
+}
+.legal-footer a{transition:color .25s}
+.legal-footer a:hover{color:var(--gold)}
+
+/* print button (screen only) */
+.print-btn{
+  position:fixed;bottom:24px;right:24px;
+  background:var(--gold);color:var(--bg);
+  border:none;padding:12px 18px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  cursor:pointer;border-radius:2px;
+  box-shadow:0 6px 24px rgba(0,0,0,.4);
+  z-index:50;
+}
+.print-btn:hover{background:var(--gold-dim);color:var(--bg)}
+
+/* print stylesheet -- hand Flash a clean printable brief */
+@page{size:letter;margin:.5in}
+@media print{
+  html,body{background:white !important;color:#0a0a0a !important;font-size:10pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-family:"Playfair Display",Georgia,serif !important}
+  body::before,.grain,.no-print,.print-btn,.nav,.hamburger,.mobile-overlay{display:none !important}
+  .wrap{max-width:none !important;padding:0 !important;width:100% !important}
+  *{position:static !important;box-shadow:none !important}
+  .page-hero{padding:0 0 14pt !important;border-bottom:1px solid #999;margin-bottom:14pt}
+  .page-hero h1{font-size:20pt !important;line-height:1.15 !important;margin:0 0 8pt !important;color:#0a0a0a !important;font-family:"Playfair Display",Georgia,serif !important}
+  .page-hero h1 em{color:#9c7a1f !important;font-style:italic}
+  .page-hero .updated{color:#666 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.12em}
+  .legal-section{padding:12pt 0 !important;border-bottom:1px solid #ccc !important;break-inside:auto;page-break-inside:auto}
+  .legal-section:last-child{border-bottom:none !important}
+  .section-label{margin-bottom:8pt !important;color:#444 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.16em}
+  .section-label .num{color:#9c7a1f !important;font-weight:600}
+  .section-label .rule{background:#ccc !important}
+  h2{font-size:13pt !important;color:#0a0a0a !important;margin:0 0 6pt !important;font-family:"Playfair Display",Georgia,serif !important}
+  h3{font-size:11pt !important;color:#0a0a0a !important;margin:0 0 4pt !important;font-family:"Playfair Display",Georgia,serif !important;font-weight:500}
+  p,ul,ol{color:#1a1a1a !important;max-width:none !important;margin:0 0 6pt !important;orphans:3;widows:3;font-family:Georgia,"Times New Roman",serif !important}
+  ul,ol{padding-left:18pt !important}
+  li{margin-bottom:3pt !important;color:#1a1a1a !important}
+  b,strong{color:#0a0a0a !important;font-weight:600}
+  p a,ul a,li a,a{color:#9c7a1f !important;text-decoration:underline}
+  pre{background:#f4f1e6 !important;color:#1a1a1a !important;border:1px solid #d4cdb8 !important;font-size:7.5pt !important;line-height:1.45 !important;padding:8pt !important;margin:6pt 0 !important;white-space:pre-wrap !important;word-break:break-word !important;overflow:visible !important;page-break-inside:avoid;break-inside:avoid;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  code{background:#f4f1e6 !important;color:#1a1a1a !important;padding:0 3pt;border-radius:2px;font-size:8pt !important;font-family:"DM Mono",ui-monospace,Menlo,Consolas,monospace !important}
+  div[style*="border:1px solid"]{background:#fafaf5 !important;border-color:#ccc !important;border-radius:0 !important;padding:10pt !important;margin:6pt 0 !important;page-break-inside:avoid;break-inside:avoid}
+  div[style*="background:rgba"]{background:#fafaf5 !important}
+  .legal-footer{display:none !important}
+  a[href^="http"]:after{content:" (" attr(href) ")";font-size:7pt;color:#666;font-family:"DM Mono",monospace;word-break:break-all}
+  a[href^="mailto:"]:after,a[href^="/"]:after,a[href^="#"]:after{content:""}
+}
+
+.hamburger{
+  display:none;
+  position:fixed;
+  top:14px;left:calc(var(--gutter) - 8px);
+  z-index:200;
+  background:none;border:none;cursor:pointer;
+  width:44px;height:44px;
+  padding:0;
+  -webkit-tap-highlight-color:transparent;
+}
+.hamburger span,
+.hamburger span::before,
+.hamburger span::after{
+  display:block;position:absolute;left:0;right:0;height:2px;
+  background:#f0ece3;transition:transform .3s var(--ease),opacity .3s var(--ease);
+}
+.hamburger span{top:21px;left:8px;right:8px}
+.hamburger span::before{content:"";top:-7px}
+.hamburger span::after{content:"";top:7px}
+.hamburger.active span{background:transparent}
+.hamburger.active span::before{transform:translateY(7px) rotate(45deg)}
+.hamburger.active span::after{transform:translateY(-7px) rotate(-45deg)}
+.mobile-overlay{
+  display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:190;
+  background:#080808;padding:90px var(--gutter) 40px;
+  flex-direction:column;align-items:flex-start;gap:0;overflow-y:auto;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:#f0ece3;
+}
+.mobile-overlay.open{display:flex}
+.mobile-overlay a{
+  display:block;width:100%;padding:16px 0;letter-spacing:.22em;
+  border-bottom:1px solid rgba(240,236,227,.08);color:#f0ece3;text-decoration:none;transition:color .25s;
+}
+.mobile-overlay a:hover{color:var(--gold)}
+.mobile-overlay .mob-cta{
+  margin-top:28px;text-align:center;color:var(--gold);border:1px solid var(--gold);
+  padding:16px 24px;width:100%;box-sizing:border-box;font-weight:500;letter-spacing:.2em;
+  border-bottom:1px solid var(--gold);
+}
+.mobile-overlay .mob-status{
+  margin-top:20px;display:flex;align-items:center;gap:8px;
+  font-size:11px;opacity:.5;text-transform:uppercase;letter-spacing:.18em;
+}
+.mobile-overlay .mob-status::before{
+  content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);
+  box-shadow:0 0 0 3px rgba(201,168,76,.18);
+}
+@media(max-width:820px){
+  .hamburger{display:block}
+  .nav .mark{margin-left:44px}
+  .nav .right a{display:none}
+}
+</style>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
+</head>
+<body>
+<div class="grain"></div>
+
+<button class="hamburger" id="hamburger" aria-label="Menu"><span></span></button>
+<div class="mobile-overlay" id="mobileMenu">
+  <a href="/">Home</a>
+  <a href="/about/">About</a>
+  <a href="/blog/">Insights</a>
+  <a href="/#services">Services</a>
+  <a href="/#pricing">Pricing</a>
+  <a href="https://check.neverranked.com?utm_source=pitch&utm_medium=email&utm_campaign=jordan-iq360">Free Tool</a>
+  <a href="https://app.neverranked.com">Client Login</a>
+  <a href="/#audit" class="mob-cta">$750 Audit</a>
+  <span class="mob-status">Taking clients Q2</span>
+</div>
+
+<nav class="nav">
+  <a href="/" class="mark">N<sup>R</sup></a>
+  <div class="right">
+    <a href="/about/">About</a>
+    <a href="/blog/">Insights</a>
+    <a href="https://check.neverranked.com?utm_source=pitch&utm_medium=email&utm_campaign=jordan-iq360">Free Tool</a>
+    <a href="/#audit">The Audit</a>
+  </div>
+</nav>
+
+<section class="page-hero">
+  <div class="wrap">
+    <div class="updated" style="margin-bottom:18px">Private brief &middot; Prepared for Jordan at IQ360 &middot; May 2026</div>
+    <h1>Muck Rack handles the press half well. <em>AEO is a separate layer</em> most agencies have not picked up yet. Here is the honest read.</h1>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">00</span>
+      <span>Why this exists</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Jordan. Good talking today. You mentioned IQ360 runs on Muck Rack and that the team uses it for mention tracking and sentiment, but that you were not sure how much of the AEO layer it actually covers.
+    </p>
+    <p>
+      This is the answer. Both tools are real. They are not the same product. Muck Rack owns the half of the AEO problem that lives upstream of the website (press, journalists, earned coverage). Never Ranked owns the half that lives on the website itself (schema, citation tracking, agent-readiness deployment). Most agencies are paying for the upstream half and ignoring the downstream half. That is the gap this brief is about.
+    </p>
+    <p>
+      Below is the comparison I would want if our roles were reversed. Honest about what each platform owns, what each one misses, and where the two are actually complementary instead of competing.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">01</span>
+      <span>Both tools, in one paragraph each</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      <b>Muck Rack is best-in-class PR infrastructure.</b> Searchable journalist database with the actual people behind every byline. Pitch tooling with measurable open and reply rates. Earned-media monitoring across digital, broadcast, podcast, newsletter, and social. Generative Pulse, their newest product, monitors whether a brand shows up in ChatGPT, Claude, Gemini, and a few others. Curation Engine and reporting dashboards. Customer logos include Pfizer, Google, NBCUniversal. Their thesis: 84% of AI citations come from earned media. Get the press, the citations follow. Pricing is enterprise-only, contact-sales, north of $25K per seat per year in published reports.
+    </p>
+    <p>
+      <b>Never Ranked is a service with a tool wrapped around it.</b> We sit on the deployment side of AEO. Schema.org JSON-LD shipped to customer sites via a snippet (no engineering work on the client's end). Six-engine citation tracking with statistical attribution at p&lt;0.05. Agent-readiness deployment for ReserveAction, ApplyAction, BuyAction, ContactAction, the Schema.org templates AI agents read when they perform tasks for users. Public methodology at <a href="/state-of-aeo/">neverranked.com/state-of-aeo</a>, source code on GitHub, anyone can reproduce the work. Pricing: $497/mo Pulse, $2,000/mo Signal, $4,500/mo Amplify. Wholesale tier for agencies starts at $800/mo per Signal slot at 1-9 clients.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">02</span>
+      <span>Side by side</span>
+      <span class="rule"></span>
+    </div>
+    <p>Quick reference. The differences that matter most when an agency partner is choosing tools per client tier.</p>
+    <div style="overflow-x:auto;margin:16px 0">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:var(--text-soft)">
+        <thead>
+          <tr style="border-bottom:1px solid var(--line-strong);text-align:left">
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">Capability</th>
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">Muck Rack</th>
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--gold)">Never Ranked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Journalist database</td><td style="padding:10px 12px">Yes, deep and current</td><td style="padding:10px 12px">No, by design</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Pitch tooling and outreach</td><td style="padding:10px 12px">Yes, with open/reply analytics</td><td style="padding:10px 12px">No</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Earned-media monitoring</td><td style="padding:10px 12px">Yes, real-time across digital, broadcast, podcast, social</td><td style="padding:10px 12px">No, we measure citation share, they monitor coverage</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">AI engine visibility tracking</td><td style="padding:10px 12px">Yes via Generative Pulse</td><td style="padding:10px 12px">Yes via The Citation Tape, public at /state-of-aeo</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">AI engines tracked</td><td style="padding:10px 12px">ChatGPT, Claude, Gemini (3)</td><td style="padding:10px 12px">ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, Google AI Overviews (6)</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Citation tracking sample density</td><td style="padding:10px 12px">Not published</td><td style="padding:10px 12px">Daily cadence, 7 samples per (keyword, engine) per week, statistical attribution at p&lt;0.05</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Methodology public</td><td style="padding:10px 12px">No, closed dashboard</td><td style="padding:10px 12px">Yes, source code + source-type taxonomy + schema in public GitHub repo</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Schema.org deployment</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, via one-line snippet, no engineering on client's end</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">llms.txt support</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, audit + deployment guidance</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Agent-readiness (ReserveAction, ApplyAction, BuyAction, ContactAction)</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, deploys the templates AI agents read when they execute tasks for users</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">MCP (Model Context Protocol) toolchain</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, @neverranked/mcp v0.1.2 in the official MCP registry. Three tools (aeo_scan, llms_txt_check, agent_readiness_check) callable from Claude Desktop or any MCP client</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Daily refresh of dynamic schema (events, products)</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, snippet refreshes inventory automatically</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Compliance-aware schema templates (banks, healthcare)</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, passes legal review at banks and healthcare orgs day one</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Self-instrumented autonomy monitoring</td><td style="padding:10px 12px">Not published</td><td style="padding:10px 12px">Yes, daily heartbeat at <a href="/state-of-aeo/">/state-of-aeo</a> + permanent git-tracked autonomy log</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Reseller / wholesale program for agencies</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px">Yes, $800/mo per Signal slot at 1-9 clients, $1,200/mo retail margin per slot</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Free public scorer as lead magnet</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px"><a href="https://check.neverranked.com?utm_source=pitch&utm_medium=email&utm_campaign=jordan-iq360">check.neverranked.com</a></td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Codebase publicly inspectable</td><td style="padding:10px 12px">No</td><td style="padding:10px 12px"><a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a></td></tr>
+          <tr><td style="padding:10px 12px">Entry price</td><td style="padding:10px 12px">Enterprise-only, contact sales (north of $25K/yr per seat)</td><td style="padding:10px 12px">$497/mo Pulse, $2,000/mo Signal, agency wholesale at $800/mo</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">03</span>
+      <span>When Seerly is the right call</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Honestly. Use Muck Rack when:
+    </p>
+    <ul>
+      <li>The IQ360 client has a real press strategy and an in-house comms team that can pitch journalists.</li>
+      <li>Earned-media coverage is the primary growth lever (the brand is already established and citations follow press).</li>
+      <li>The client's budget supports enterprise PR tooling. Below roughly $25K per year, Muck Rack is not configured to serve.</li>
+      <li>Mention tracking, sentiment, and broadcast monitoring are first-class needs (not side metrics).</li>
+      <li>The agency is already paying for it because press is half the job.</li>
+    </ul>
+    <p>
+      Saying "Muck Rack fits this client" honestly is what makes the next section credible.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04</span>
+      <span>When Never Ranked is the right call</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Use Never Ranked when:
+    </p>
+    <ul>
+      <li>The IQ360 client has a website that AI engines should be citing but is not. The deployment work (schema, llms.txt, agent-readiness) is what changes citation share for those queries, and Muck Rack does not deploy.</li>
+      <li>The client's vertical is regional, mid-market, or long-tail (regional bank, boutique hotel, professional services firm, wealth advisor). For these clients, enterprise PR tooling is not the binding constraint. Schema is.</li>
+      <li>The client wants citations they can prove. Every Signal customer gets variant-impact attribution at p&lt;0.05, citation share measured 4 weeks before deploy vs 4 weeks after. The number is a real number, not a vibe.</li>
+      <li>IQ360 wants reseller economics. Wholesale starts at $800/mo per Signal slot at 1-9 clients, retail is $2,000/mo. $1,200/mo margin per client subscription, plus 3-8 hours of billable implementation per slot.</li>
+      <li>The work has to pass legal review at banks, healthcare, regulated verticals. Compliance-aware Schema.org templates ship clean from day one.</li>
+      <li>The agency wants public methodology to defend in front of clients. <a href="/state-of-aeo/">neverranked.com/state-of-aeo</a> is the live methodology, source code on GitHub, anyone can reproduce. No "trust the dashboard" gap.</li>
+    </ul>
+    <p>
+      The Hawaii Theatre case study below is what this looks like in practice. Real numbers from the last 24 hours of citation infrastructure.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">05</span>
+      <span>What this looks like in practice (Hawaii Theatre, live)</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Hawaii Theatre Center signed with us in late April. Their AEO Readiness Score on the homepage was 45 of 100, Grade D. They had no schema markup of any kind on a site that does 80,000 to 100,000 patron visits a year. Five red flags. Zero structured data.
+    </p>
+    <p>
+      In one work session we deployed 36 schemas:
+    </p>
+    <ul>
+      <li><b>Foundation.</b> PerformingArtsTheater, WebSite, AggregateRating wired to their actual 4.6 from 700 Google reviews.</li>
+      <li><b>Inventory.</b> 31 Event schemas, one per active show, scoped to /upcoming-events. Pulled from their public events page automatically.</li>
+      <li><b>Navigation.</b> 2 BreadcrumbList schemas, scoped per section.</li>
+      <li><b>Editorial.</b> 1 FAQPage schema generated from their actual homepage content. 8 questions, all factual, all approved by their team before going live.</li>
+    </ul>
+    <p>
+      Score moved from D 45 to A 95 in less than 24 hours. Six of twenty-six roadmap items checked off. Daily Event refresh now runs automatically every morning at 6am UTC. When a show sells out and drops off the page, its schema deactivates the next morning. Their team does nothing.
+    </p>
+    <p>
+      As of this week, Hawaii Theatre is named in 97% of the AI engine retrievals across their tracked keyword set. Before the schema layer existed, that number was zero. Public proof at <a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>. The actual Event schemas serving live at <a href="https://app.neverranked.com/inject/hawaii-theatre.json">app.neverranked.com/inject/hawaii-theatre.json</a>. The methodology behind the 97% number is at <a href="/state-of-aeo/">neverranked.com/state-of-aeo</a>, with weekly snapshots and a public RSS feed.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">06</span>
+      <span>Pricing, side by side</span>
+      <span class="rule"></span>
+    </div>
+    <div style="overflow-x:auto;margin:16px 0">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;color:var(--text-soft)">
+        <thead>
+          <tr style="border-bottom:1px solid var(--line-strong);text-align:left">
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">Tool</th>
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">Tier</th>
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">Price</th>
+            <th style="padding:10px 12px;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:10px;color:var(--text-mute)">What's included</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Muck Rack</td><td style="padding:10px 12px">Pro</td><td style="padding:10px 12px">Contact sales</td><td style="padding:10px 12px">Journalist database, pitch tooling, mention monitoring, sentiment, Generative Pulse. North of $25K/yr per seat in published reports</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px">Muck Rack</td><td style="padding:10px 12px">Enterprise</td><td style="padding:10px 12px">Contact sales</td><td style="padding:10px 12px">Custom seats, additional features, advanced analytics</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px"><b style="color:var(--gold)">Never Ranked</b></td><td style="padding:10px 12px">Audit</td><td style="padding:10px 12px">$750 one-time</td><td style="padding:10px 12px">Full scan, 90-day roadmap, competitor citation matrix, schema fix code. Credited toward first month of any tier within 30 days.</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px"><b style="color:var(--gold)">Never Ranked</b></td><td style="padding:10px 12px">Pulse</td><td style="padding:10px 12px">$497 / mo</td><td style="padding:10px 12px">Entry tier: monthly Visibility Index PDF, 10 tracked prompts, 2 schemas deployed monthly, 6-engine tracking, multi-pass validation</td></tr>
+          <tr style="border-bottom:1px solid var(--line)"><td style="padding:10px 12px"><b style="color:var(--gold)">Never Ranked</b></td><td style="padding:10px 12px">Signal</td><td style="padding:10px 12px">$2,000 / mo</td><td style="padding:10px 12px">Audit + ongoing schema deploy + 5-engine citation tracking + real-time alerts + Reddit + authority + drift detection + variant impact attribution</td></tr>
+          <tr><td style="padding:10px 12px"><b style="color:var(--gold)">Never Ranked</b></td><td style="padding:10px 12px">Amplify</td><td style="padding:10px 12px">$4,500 / mo</td><td style="padding:10px 12px">Signal + content writing + auto-publish + Reddit reply briefs + brand voice fingerprint</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>
+      Honest framing for IQ360's tier-by-tier client allocation. Muck Rack is the right line item for enterprise clients with real press strategy and an in-house comms team. Never Ranked Pulse at $497 per month is the right line item for the long-tail and mid-market clients where deployment work moves citation share and Muck Rack pricing makes it a non-starter anyway. Signal at $2,000 per month is the agency-resold tier where IQ360 keeps $1,200 per month in subscription margin per client, plus billable implementation hours. Different tools for different tiers. The agency operator's question is not "which one do I pick" but "which combination, by client tier?"
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">07</span>
+      <span>Why NeverRanked, honestly</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Honest framing for IQ360's tier-by-tier evaluation. As of May 2026, Never Ranked is the only AEO platform in market that ships <em>all</em> of the following together:
+    </p>
+    <ul style="font-family:var(--mono);font-size:14px;line-height:1.85;margin:0 0 22px;padding-left:24px;color:var(--text-soft)">
+      <li><b>Six-engine citation tracking.</b> ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot via Bing, and Google AI Overviews. No other AEO platform tracks all six. Muck Rack's Generative Pulse covers three. Profound and Athena cover three to four. We are the only ones at six.</li>
+      <li><b>Done-for-you schema deployment.</b> One-line snippet, no CMS access, no dev cycle. Muck Rack does not deploy at all. Most AEO competitors stop at "here is what to deploy." We deploy it.</li>
+      <li><b>Public methodology.</b> The Citation Tape is live at <a href="/state-of-aeo/">neverranked.com/state-of-aeo</a> with weekly reports, RSS feed, source code on GitHub, source-type taxonomy public, schema in the repo. Anyone can reproduce. Closed dashboards at our competitors require trust; we offer evidence.</li>
+      <li><b>Variant impact attribution.</b> Every schema we deploy is tracked as a variant. Citation rate measured 4 weeks before deploy vs 4 weeks after, two-proportion z-test, statistical confidence at p&lt;0.05. The monthly Visibility Index includes a "what we deployed and what it did" section.</li>
+      <li><b>MCP toolchain.</b> @neverranked/mcp v0.1.2 is in the official MCP registry. Three tools (aeo_scan, llms_txt_check, agent_readiness_check) callable from Claude Desktop or any MCP client. The open-ecosystem play Muck Rack does not have.</li>
+      <li><b>Self-instrumented autonomy.</b> Daily heartbeat runs from independent infrastructure (GitHub Actions, not the dashboard cron). Permanent git-tracked autonomy log. The thing being monitored cannot suppress its own monitoring. Public posture: <a href="https://github.com/LanceRoylo/neverranked/tree/main/content/autonomy-log">github.com/LanceRoylo/neverranked/content/autonomy-log</a>.</li>
+    </ul>
+    <p>
+      Fair framing: Never Ranked is bootstrapped, founder-led, and currently runs a small customer count. That is also the buying advantage at the Pulse tier ($497/month) and at the wholesale tier ($800/month per Signal slot). Direct founder access, ability to shape the roadmap, and exclusivity terms available for the first agency in each Hawaii vertical.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section" style="border-bottom:none">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">08</span>
+      <span>What to recommend, and how to test it</span>
+      <span class="rule"></span>
+    </div>
+    <p>The simplest tier-by-tier allocation for IQ360:</p>
+    <ul>
+      <li><b>Enterprise clients</b> ($10K+/mo retainer, real press strategy, in-house comms): keep them on Muck Rack for journalist outreach and earned-media monitoring. Add Never Ranked Signal at $2,000/mo for the deployment layer Muck Rack does not run. Muck Rack is the larger line item, Never Ranked is the plug-in.</li>
+      <li><b>Mid-market clients</b> ($3K-$10K/mo retainer, press strategy emerging, no in-house comms): Never Ranked Signal as the primary AEO platform. Selective Muck Rack use for one-off press pushes when there is a story. Never Ranked is the recurring spend, Muck Rack is the campaign tool.</li>
+      <li><b>Long-tail clients</b> ($1K-$3K/mo retainer, no press strategy, no in-house comms): Never Ranked Pulse at $497/mo or Signal at $2,000/mo. Muck Rack pricing alone makes it a non-starter at this tier. The deployment work is what moves citation share for these clients, and Never Ranked does the deployment.</li>
+    </ul>
+    <p style="margin-top:24px">
+      The simplest test before any of this matters: pick one IQ360 client. Any tier. Send me the URL. I will run a full audit on it, same methodology we just delivered to a Hawaii community bank, and send you the PDF within 72 hours. Eight to twelve pages, vertical-specific, with the deployment plan that closes the gap.
+    </p>
+    <p style="margin-top:24px">
+      No cost. No pitch on the call back. If the audit makes a case for Never Ranked as an IQ360 line item, you bring it up. If it does not, you keep the audit and I shake your hand.
+    </p>
+    <p style="margin-top:24px">
+      <a href="https://check.neverranked.com?utm_source=pitch&utm_medium=email&utm_campaign=jordan-iq360" style="color:var(--gold);font-weight:500"><b>Run a free scan &rarr;</b></a><br>
+      No signup. Paste any IQ360 client URL. See the schema score, the missing pieces, and the per-engine grade in 30 seconds.
+    </p>
+    <p style="margin-top:24px">
+      <a href="mailto:lance@neverranked.com?subject=Jordan%20%2F%20IQ360%20%2F%20Audit" style="color:var(--gold);font-weight:500"><b>Or reply to schedule the audit &rarr;</b></a><br>
+      Send me the URL. I will deliver the audit PDF within 72 hours.
+    </p>
+    <p style="color:var(--text-faint);font-size:13px;margin-top:32px;border-top:1px solid var(--line);padding-top:24px">
+      The agency partner program has wholesale terms locked at the $800/mo Signal floor, vertical exclusivity in Hawaii available to the first agency that signs, and I would rather it be a Honolulu agency I already trust than a mainland one I do not.<br><br>
+      <span style="font-family:var(--serif);font-style:italic">Lance Roylo</span> &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a> &middot; <a href="https://neverranked.com">neverranked.com</a>
+    </p>
+  </div>
+</section>
+
+<footer class="legal-footer">
+  <div class="wrap" style="display:flex;justify-content:space-between;align-items:center">
+    <a href="/">Never Ranked</a>
+    <a href="mailto:hello@neverranked.com">hello@neverranked.com</a>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var btn = document.getElementById('hamburger');
+  var menu = document.getElementById('mobileMenu');
+  if(!btn||!menu) return;
+  function open(){ btn.classList.add('active'); menu.classList.add('open'); document.body.style.overflow='hidden'; }
+  function close(){ btn.classList.remove('active'); menu.classList.remove('open'); document.body.style.overflow=''; }
+  btn.addEventListener('click',function(e){ e.stopPropagation(); menu.classList.contains('open') ? close() : open(); });
+  menu.addEventListener('click',function(e){ if(e.target.tagName==='A') close(); });
+})();
+</script>
+
+<button class="print-btn no-print" onclick="window.print()">Save as PDF &rarr;</button>
+
+<!-- pitch open tracker (pixel fires on every page load, logged to dashboard D1) -->
+<img src="https://app.neverranked.com/track/pitch/jordan-iq360" width="1" height="1" alt="" style="position:absolute;left:-9999px;top:-9999px" loading="eager" referrerpolicy="no-referrer">
+</body>
+</html>
