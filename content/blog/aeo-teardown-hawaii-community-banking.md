@@ -14,7 +14,7 @@ This is a real audit we ran in the last 30 days, anonymized.
 The customer is a Hawaii community bank. Names, URLs, addresses, and
 identifying details have been replaced. Every numeric finding
 (schema coverage percentages, page counts, word counts, citation
-observations) is unchanged — those are the structural patterns
+observations) is unchanged. Those are the structural patterns
 we want you to see.
 
 If you run a business in this category, the findings here are
@@ -145,7 +145,7 @@ Six deliverables. Forty-eight hours. Yours to keep whether you hire us after or 
 ## The schema layer in detail
 
 ```markdown
-# Schema Review — a Hawaii community bank
+# Schema Review: a Hawaii community bank
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-08
@@ -196,7 +196,7 @@ If you're using a CMS we didn't detect:
 - Squarespace: Settings > Business Information. Fill all fields. Schema auto-generates.
 - Webflow: Project Settings > Custom Code > Head Code. Paste the block.
 
-**Fix — ready-to-paste code:**
+**Fix. Ready-to-paste code:**
 
 ```json
 {
@@ -260,7 +260,7 @@ You'll need to add this schema on a per-page basis (one block per expert). If yo
 - Webflow: Page Settings > Custom Code > Head Code. Paste one block per expert page.
 - Custom-coded: Add the JSON-LD block below to the `<head>` of each bio page template. Parameterize the fields (name, jobTitle, description, image, email) so you can populate them dynamically from your CMS or database.
 
-**Fix — ready-to-paste code (example for Roger Khlopin):**
+**Fix. Ready-to-paste code (example for Roger Khlopin):**
 
 ```json
 {
@@ -299,7 +299,7 @@ If your blog is WordPress-based, Yoast SEO and Rank Math auto-generate Article s
 - Webflow: CMS Template Settings > Custom Code > Head Code. Paste the block into the blog post template.
 - Custom-coded: Add this JSON-LD to the `<head>` of your blog post template. Parameterize the `headline`, `datePublished`, `dateModified`, `author`, and `image` fields so they populate from your CMS.
 
-**Fix — ready-to-paste code (example for Financial Windfall post):**
+**Fix. Ready-to-paste code (example for Financial Windfall post):**
 
 ```json
 {
@@ -342,7 +342,7 @@ This should be sitewide template logic, not per-page manual work. Your breadcrum
 - Webflow: Add JSON-LD to the page template. Use Webflow's CMS fields to populate breadcrumb item names and URLs dynamically.
 - Custom-coded: Add the JSON-LD block below to every page template (or use a shared layout component). Parameterize the `itemListElement` array so it reflects the actual page hierarchy.
 
-**Fix — ready-to-paste code (example for expert bio page):**
+**Fix. Ready-to-paste code (example for expert bio page):**
 
 ```json
 {
@@ -399,7 +399,7 @@ certainly present on your site too. The pattern is consistent across
 the category.
 
 The fix is straightforward but specific. Generic schema deployment
-will not help — and in many cases will hurt, per the published
+will not help, and in many cases will hurt, per the published
 research showing partial schema coverage scoring lower in citation
 eligibility than no schema at all.
 
