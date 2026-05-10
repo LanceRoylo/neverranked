@@ -1,0 +1,77 @@
+name: Weekly State of AEO
+
+# Regenerates the State of AEO report every Monday and commits the
+# refreshed markdown + PDF + public web pages back to main, which then
+# triggers the homepage deploy workflow automatically.
+#
+# Manual run: Actions tab -> Weekly State of AEO -> Run workflow.
+
+on:
+  schedule:
+    # 17:00 UTC Mondays = 7am Pacific/Honolulu Mondays.
+    # Runs after the dashboard 06:00-UTC weekly Monday tasks have
+    # finished writing the prior week's citation_runs, so the report
+    # captures the freshest data without racing the producer.
+    - cron: '0 17 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Install pandoc and Playwright deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          npx --yes playwright@latest install --with-deps chromium
+
+      - name: Install wrangler
+        run: npm install --global wrangler@4
+
+      - name: Generate State of AEO markdown
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          DATE=$(date -u +%Y-%m-%d)
+          OUT="reports/state-of-aeo/state-of-aeo-${DATE}.md"
+          mkdir -p reports/state-of-aeo
+          node scripts/state-of-aeo-generate.mjs --output="$OUT"
+          echo "REPORT_DATE=$DATE" >> $GITHUB_ENV
+          echo "REPORT_MD=$OUT" >> $GITHUB_ENV
+
+      - name: Render PDF
+        run: |
+          npm install --no-save @playwright/test
+          node scripts/report-pdf.mjs "$REPORT_MD" \
+            --title="The State of AEO" \
+            --subtitle="NeverRanked tracked-universe report, week of $REPORT_DATE"
+
+      - name: Publish web hub
+        run: node scripts/state-of-aeo-publish.mjs
+
+      - name: Refresh dist/
+        run: bash scripts/build.sh
+
+      - name: Commit if changed
+        run: |
+          git config user.name 'neverranked-bot'
+          git config user.email 'bot@neverranked.com'
+          git add reports/state-of-aeo/ state-of-aeo/ dist/state-of-aeo/
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Weekly State of AEO: $REPORT_DATE"
+            git push
+          fi

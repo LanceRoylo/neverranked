@@ -22,6 +22,8 @@ on:
       - 'principles/**'
       - 'privacy/**'
       - 'security/**'
+      - 'standards/**'
+      - 'state-of-aeo/**'
       - 'terms/**'
       - 'thanks/**'
       - 'wrangler.jsonc'
