@@ -95,10 +95,12 @@ client's end. Our compliance-aware templates pass legal review at
 banks and healthcare orgs on day one.
 
 **Citation tracking with attribution.** Every Signal customer gets
-weekly six-engine pulls (ChatGPT, Perplexity, Claude, Gemini,
+daily six-engine pulls (ChatGPT, Perplexity, Claude, Gemini,
 Microsoft Copilot, Google AI Overviews) on a vertical-specific
-prompt corpus. We attribute citation movement to specific
-deployments at p<0.05 statistical confidence.
+prompt corpus, seven samples per (keyword, engine) per week. We
+attribute citation movement to specific deployments at p<0.05
+statistical confidence. The whole apparatus is the Citation Tape
+referenced above.
 
 **Agent-readiness deployment.** As of this month, we also ship the
 ReserveAction, ApplyAction, BuyAction, and ContactAction templates
@@ -119,14 +121,18 @@ plus 3-8 hours of billable implementation per slot.
 Three new pieces of platform we shipped between May 6 and May 10
 that are directly relevant to where Muck Rack stops:
 
-1. **Citation tracking as a standalone product line.** Six engines.
-   Weekly cadence. Statistical attribution at p<0.05. Vertical-
-   specific prompt corpora for community banking, real estate,
-   professional services, hospitality, and more. The product name
-   ships with the May 22 release; until then it is bundled into
-   Signal. The capability is the answer to Generative Pulse for
-   clients who want the tracking layer without the rest of the
-   Muck Rack platform.
+1. **The Citation Tape — the measurement framework, productized.**
+   Six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+   Copilot, Google AI Overviews). Daily cadence, seven samples per
+   keyword per engine per week, statistical attribution at p<0.05.
+   Vertical-specific prompt corpora for community banking, real
+   estate, professional services, hospitality, and more. Public
+   methodology and reproducible numbers at neverranked.com/state-of-aeo
+   so anyone can audit the data. This is the answer to Generative
+   Pulse for clients who want the tracking layer without the rest
+   of the Muck Rack platform — except where Muck Rack tells you
+   what is happening, the Citation Tape tells you what to do
+   about it via the deployment layer underneath.
 
 2. **@neverranked/mcp** — the first AEO toolchain in the official
    MCP registry. Any AI agent built on Claude Code or Claude Desktop
