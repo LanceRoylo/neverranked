@@ -141,13 +141,13 @@ that are directly relevant to where Muck Rack stops:
    required when output is shown to users. This is the open
    ecosystem play Muck Rack does not have.
 
-3. **Earned-media authority signal** — being added to the AEO score
-   as a fifth weighted component. We use Common Crawl and news APIs
-   to detect inbound third-party mentions of the customer's domain
-   and surface them as a sub-score. This means our methodology now
-   accounts for the same signal Muck Rack's "84% of citations are
-   earned media" thesis rests on, without replacing schema as the
-   downstream lever.
+3. **Earned-media authority signal** is on the roadmap as a fifth
+   weighted component of the AEO score, ETA Q3. We will use Common
+   Crawl and news APIs to detect inbound third-party mentions of
+   the customer's domain and surface them as a sub-score. This
+   will mean our methodology accounts for the same signal Muck
+   Rack's "84% of citations are earned media" thesis rests on,
+   without replacing schema as the downstream lever.
 
 ---
 
@@ -206,3 +206,106 @@ Lance
 
 lance@neverranked.com
 neverranked.com
+
+---
+
+## May 10 update: what shipped overnight
+
+Between the original draft of this document and the version you are
+reading, the platform shipped several pieces that turn previously
+aspirational claims into demonstrable working infrastructure. Worth
+noting before any conversation with your team because the
+positioning got measurably stronger in 24 hours.
+
+**The Citation Tape is now public.** Live at
+neverranked.com/state-of-aeo with a hub page, per-week reports,
+PDF downloads, and an RSS feed at /state-of-aeo/feed.xml for
+industry subscribers. The methodology is the script, the
+source-type taxonomy lives at
+tools/citation-gap/src/source-types.mjs in the public repo, and
+the data schema is in the migrations. Anyone running the same
+query against the same database gets the same numbers. Muck
+Rack's Generative Pulse is a paid dashboard feature with no
+public artifact anyone can audit. We just made the contrast
+concrete.
+
+**The cron actually fires now.** As of yesterday morning, the
+weekly citation tracking job was silently broken because of a
+Cloudflare Workflows subrequest-budget exhaustion bug. Per-client
+fan-out exhausted the 1000-subrequest budget after roughly two
+keywords, and the remaining keywords "succeeded" with zero rows.
+The fix shipped tonight: each (client, keyword) tuple runs in
+its own workflow instance with a fresh budget. Empirical proof
+in production minutes after deploy: NeverRanked completed 15 of
+15 keywords across all 6 engines, 208 citation_runs in the first
+four hours. The previously-aspirational claim of "daily
+six-engine pulls, seven samples per keyword per engine per week"
+is now backed by working infrastructure. Yesterday it was copy.
+
+**Honest disclosure is baked into the public report.** This week's
+State of AEO report carries a top-of-document data-integrity
+banner that names the partial-completion issue while the bug was
+unresolved. The banner clears on its own when completion crosses
+80% across all tracked clients (which started happening tonight
+and will be fully recovered by Monday). For agency partners,
+this is the rare case where transparency is also a brand asset.
+Muck Rack would never publish a "this week's data is partial"
+banner because their model is outcomes-and-billing, not
+measurement-as-product.
+
+**Autonomy monitoring runs from infrastructure independent of
+the thing being monitored.** A daily heartbeat at
+scripts/heartbeat.mjs + a GitHub Actions workflow at
+.github/workflows/daily-heartbeat.yml runs seven staleness
+checks, four invariant checks (per-client keyword completion,
+digest delivery per user, GSC coverage per client, engine
+coverage), and three external HTTP checks (marketing site,
+public latest.json, npm registry presence) every 24 hours. On
+failure the workflow opens a GitHub Issue automatically and
+appends a permanent log to content/autonomy-log/ committed back
+to main. The thing being monitored cannot suppress its own
+monitoring. No competitor at our price point ships this level
+of self-instrumentation.
+
+**@neverranked/mcp at v0.1.2 in the official MCP registry.**
+Three tools live: aeo_scan, llms_txt_check,
+agent_readiness_check. Callable from Claude Desktop, Claude
+Code, or any MCP client. Free for developer use, attribution
+required when output ships to users. The open-ecosystem play
+remains uniquely ours.
+
+**The Citation Tape is named, branded, and cross-linked.**
+neverranked.com/standards now lists The Citation Tape as a
+peer to the llms.txt and Agent Readiness standards.
+neverranked.com/about names it in the founder bio. The launch
+blog post is drafted at content/blog/citation-tape-launch.md
+for publication coordinated with the next weekly report.
+
+### Where the comparison shifts
+
+After tonight, three of the body claims in this document moved
+from forward-looking to retrospective:
+
+1. The Citation Tape is no longer "the measurement framework,
+   productized." It is the named, public, weekly-running
+   measurement system. Anyone reading this can click the link.
+2. The cron infrastructure behind the daily-six-engine claim is
+   no longer aspirational. It is firing per-keyword in production,
+   with per-instance subrequest budgets that hold under load.
+3. The autonomy posture (does NeverRanked actually do what its
+   marketing says it does?) is now answered by the public
+   heartbeat log, not by my word.
+
+Where Muck Rack still beats us is unchanged: journalist
+database, pitch tooling breadth, earned-media monitoring scope,
+enterprise customer logos. Where we beat them is now backed by
+working production telemetry that did not exist when the body
+of this document was written.
+
+The agency partner offer at the end of the original document
+stands without modification. Send me the URL of any IQ360 client
+in any tier and you have a vertical-specific audit on your desk
+within 72 hours.
+
+Lance, again
+2026-05-10
