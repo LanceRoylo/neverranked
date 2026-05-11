@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#080808">
 <title>The First AEO MCP Server in the Claude Ecosystem: Never Ranked</title>
-<meta name="description" content="@neverranked/mcp is live on npm. The first AEO toolchain in the agent ecosystem — AEO scoring, llms.txt audit, and agent-readiness checks, callable from Claude Desktop, Claude Code, or any MCP client.">
+<meta name="description" content="@neverranked/mcp is live on npm. The first AEO toolchain in the agent ecosystem. AEO scoring, llms.txt audit, and agent-readiness checks, callable from Claude Desktop, Claude Code, or any MCP client.">
 <link rel="canonical" href="https://neverranked.com/blog/the-first-aeo-mcp-server/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta property="og:title" content="The First AEO MCP Server in the Claude Ecosystem">
@@ -325,9 +325,9 @@ body::before{
     <div class="reveal">
       <p>Three tools, callable by any MCP client:</p>
       <ul>
-        <li><strong>aeo_scan(url)</strong> — full 0-100 AEO score, schema coverage, technical signals, red flags. The same scanner that runs at <a href="https://check.neverranked.com">check.neverranked.com</a>, agent-callable.</li>
-        <li><strong>llms_txt_check(url)</strong> — grades a site's <code>/llms.txt</code> against the published rubric. Presence, structure, link health, freshness.</li>
-        <li><strong>agent_readiness_check(url, vertical?)</strong> — looks for Schema.org Action types (ReserveAction, ApplyAction, BuyAction, ContactAction). Optional vertical baselines for hospitality, financial-services, professional-services, and commerce.</li>
+        <li><strong>aeo_scan(url).</strong> Full 0-100 AEO score, schema coverage, technical signals, red flags. The same scanner that runs at <a href="https://check.neverranked.com">check.neverranked.com</a>, agent-callable.</li>
+        <li><strong>llms_txt_check(url).</strong> Grades a site's <code>/llms.txt</code> against the published rubric. Presence, structure, link health, freshness.</li>
+        <li><strong>agent_readiness_check(url, vertical?).</strong> Looks for Schema.org Action types (ReserveAction, ApplyAction, BuyAction, ContactAction). Optional vertical baselines for hospitality, financial-services, professional-services, and commerce.</li>
       </ul>
       <p>Every response includes a <code>methodology_url</code> link to the public scoring rubric and an <code>attribution</code> field the agent surfaces to the user. Per the MIT-with-attribution license, that attribution stays visible when scan output reaches a human.</p>
     </div>
@@ -351,7 +351,7 @@ body::before{
     </div>
 
     <div class="reveal">
-      <p>Restart Claude Desktop. The three tools are available the next time you start a conversation. Try: <em>"Run an AEO scan on https://www.surfjack.com using the NeverRanked MCP and tell me the top three issues to fix."</em></p>
+      <p>Restart Claude Desktop. The three tools are available the next time you start a conversation. Try: <em>"Run an AEO scan on https://www.surfjack.com using the NeverRanked MCP and tell me the top three issues to fix."</em> The agent will surface the score, the issues, and the methodology link in the response.</p>
     </div>
 
     <h2 class="reveal">Install in <em>Claude Code</em></h2>
@@ -366,15 +366,16 @@ body::before{
     </div>
 
     <div class="reveal">
-      <p>The tools are now available in any Claude Code session. The same prompt patterns work — ask for an AEO scan, ask for an llms.txt audit, ask for agent-readiness against a vertical.</p>
+      <p>The tools are now available in any Claude Code session. The same prompt patterns work. Ask for an AEO scan, ask for an llms.txt audit, ask for agent-readiness against a vertical.</p>
     </div>
 
     <h2 class="reveal">Why we shipped this</h2>
 
     <div class="reveal">
-      <p>Two reasons. Strategic and structural.</p>
-      <p><strong>Strategic.</strong> NeverRanked has been arguing for months that businesses should expose machine-readable interfaces — Schema.org Actions, llms.txt, structured data — so AI agents can interact with them. We were not interested in shipping that argument while keeping our own tools behind a closed API. The MCP is us eating our own cooking publicly.</p>
+      <p>Three reasons. Strategic, structural, and the open-weight argument.</p>
+      <p><strong>Strategic.</strong> NeverRanked has been arguing for months that businesses should expose machine-readable interfaces (Schema.org Actions, llms.txt, structured data) so AI agents can interact with them. We were not interested in shipping that argument while keeping our own tools behind a closed API. The MCP is us eating our own cooking publicly.</p>
       <p><strong>Structural.</strong> The agent ecosystem is forming right now. Today there is no canonical AEO toolchain in the public MCP registry, in the Claude Desktop default catalog, or in the developer workflows that are starting to assemble. The first one to ship takes the category position. We chose to be first.</p>
+      <p><strong>The open-weight argument.</strong> The scoring engine inside <code>aeo_scan</code> is the same engine that drives our broader citation measurement, which now includes Gemma (Google's open-weight model) as the seventh engine. Six of the seven engines we track are commercial APIs that can change behind the scenes. Gemma's weights are public. Anyone with the same model can re-run our prompts and verify our citation numbers. That makes us the only AEO measurement system whose results are independently reproducible. Shipping the scanner as an MCP server is the natural next move: if the methodology is auditable, the toolchain should be inspectable, and agents should be able to call it without a paid relationship.</p>
     </div>
 
     <h2 class="reveal">What we will not do</h2>
@@ -394,7 +395,7 @@ body::before{
       <p>The 0.1.0 release is the foundation. The roadmap from here:</p>
       <ul>
         <li><strong>0.2.</strong> Polished error handling for URLs the scanner cannot process (currently surfaces raw HTTP errors).</li>
-        <li><strong>0.3.</strong> A fourth tool: <code>citation_diff(client_url, competitor_url)</code> — surfaces what schema a competitor has that the client does not, with paste-ready remediation.</li>
+        <li><strong>0.3.</strong> A fourth tool, <code>citation_diff(client_url, competitor_url)</code>, surfaces what schema a competitor has that the client does not, with paste-ready remediation.</li>
         <li><strong>0.4.</strong> Vertical templates exposed as MCP resources so agents can fetch the full JSON-LD blocks for compliance-aware deployment, not just the audit verdict.</li>
         <li><strong>1.0.</strong> Stable API contract. Backwards-compatible from this point forward.</li>
       </ul>
