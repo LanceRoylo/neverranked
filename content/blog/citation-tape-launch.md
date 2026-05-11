@@ -44,7 +44,7 @@ Generated weekly. Same script, same data sources, no manual curation. Anyone run
 
 ## The data-integrity notice (and the fix)
 
-The 2026-05-10 weekly report carries a banner at the top: this week's data is partial. Three of three tracked clients fell below 80% keyword completion due to a documented infrastructure issue. The earlier daily cron silently exhausted its subrequest budget after ~2 keywords per client. The numbers in that report should be read as a lower bound on what AI engines actually retrieve.
+The 2026-05-10 archived report carries a banner at the top: that week's data was partial. Three of three tracked clients fell below 80% keyword completion due to a documented infrastructure issue. The earlier daily cron silently exhausted its subrequest budget after ~2 keywords per client. The numbers in that report should be read as a lower bound on what AI engines actually retrieve.
 
 We diagnosed it 2026-05-10 and shipped the fix the same day: one workflow instance dispatched per keyword, each with its own subrequest budget. The first production run after the fix landed 89 of 90 expected rows. From 2026-05-11 forward, the daily cron produces 7 samples per (keyword, engine) per week across all 7 engines.
 
@@ -58,12 +58,12 @@ The banner disappears from future reports automatically as the post-fix data acc
 
 ## Reproducible by design
 
-Three properties make The Citation Tape different from every other "AI visibility" report we've seen:
+Four properties make The Citation Tape different from every other "AI visibility" report we've seen:
 
-1. **The methodology is the script.** `scripts/state-of-aeo-generate.mjs` reads `citation_runs` from production D1, applies the source-type classifier, and emits the report markdown. No hidden hand-curation. No "our analyst noticed."
-2. **The source-type taxonomy is public.** `tools/citation-gap/src/source-types.mjs` defines the 15 categories. Disagree with how we classified a domain? File a PR.
-3. **The schema is in the repo.** `citation_runs` migration is published. Build your own version of this report against your own data and compare.
-4. **One engine is literally reproducible.** Six of our seven engines are commercial APIs that can change behavior without notice. The seventh, Gemma, is a published open-weight model. Re-run our exact prompts against the same Gemma weights and you get the same outputs. For regulated industries that need to audit a measurement system, this is the difference between "trust us" and "verify it yourself."
+1. **One engine is literally reproducible.** Six of our seven engines are commercial APIs that can change behavior without notice. The seventh, Gemma, is a published open-weight model. Re-run our exact prompts against the same Gemma weights and you get the same outputs. For regulated industries that need to audit a measurement system, this is the difference between "trust us" and "verify it yourself." No other AEO platform tracks an open-weight engine.
+2. **The methodology is the script.** `scripts/state-of-aeo-generate.mjs` reads `citation_runs` from production D1, applies the source-type classifier, and emits the report markdown. No hidden hand-curation. No "our analyst noticed."
+3. **The source-type taxonomy is public.** `tools/citation-gap/src/source-types.mjs` defines the 15 categories. Disagree with how we classified a domain? File a PR.
+4. **The schema is in the repo.** `citation_runs` migration is published. Build your own version of this report against your own data and compare.
 
 You can't reverse-engineer Gartner's Magic Quadrant. You can re-run our weekly report, with our exact methodology, against your own clients and decide if the numbers feel right.
 

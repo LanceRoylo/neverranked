@@ -54,13 +54,15 @@ What's there:
 - What each AI engine cites differently
 - Per-client baselines (the numbers we measure today become the baseline against which any future case study is measured)
 
-Three things to know:
+Four things to know:
 
-1. The methodology is the script. The source-type taxonomy is public. The schema is in the repo. Anyone running the same query gets the same numbers.
+1. One of the seven engines we measure is literally reproducible. Gemma is Google's open-weight model. Six engines are commercial APIs you have to trust on faith; the seventh you can audit yourself. No other AEO measurement system offers this.
 
-2. This week's data is partial. We caught a bug in our infrastructure while building the tape. The report ships with a banner above the headline disclosing the issue. We'd rather publish honest than wait.
+2. The methodology is the script. The source-type taxonomy is public. The schema is in the repo. Anyone running the same query gets the same numbers.
 
-3. Your category may not yet be in the tracked universe. If you'd like it to be, hit reply.
+3. The 2026-05-10 archived report ships with a "partial data" banner above the headline. We caught a subrequest-budget bug in the daily cron and shipped the fix the same day. The May 10 report's banner is permanent (it documents what actually happened). From the next weekly report forward, the banner is gone.
+
+4. Your category may not yet be in the tracked universe. If you'd like it to be, hit reply.
 
 The launch post explains the full thinking:
 
