@@ -14,6 +14,7 @@ import { handleFreeAuth } from "./routes/free-auth";
 import { handleFreeUnsubscribe } from "./routes/free-unsubscribe";
 import { handleFreeDashboard, handleFreeScan, handleFreeSettings } from "./routes/free-dashboard";
 import { handleFreePublicScore } from "./routes/free-public-score";
+import { handleFreeUpgrade } from "./routes/free-upgrade";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
@@ -511,6 +512,9 @@ export default {
     }
     if (path.startsWith("/score/") && method === "GET") {
       return handleFreePublicScore(request, env);
+    }
+    if (path === "/free/upgrade" && method === "POST") {
+      return handleFreeUpgrade(request, env);
     }
 
     // 2FA routes (the gate above lets these through even when 2FA is required)

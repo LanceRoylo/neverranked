@@ -135,7 +135,14 @@ function dashboardPage(user: FreeUser, latest: ScanRow | null, history: ScanRow[
         <p style="font-size:13px;color:var(--text-soft);margin:0 0 16px">
           Free shows the score. Paid shows <em>what to fix and the citation tracking across all seven engines</em>. Pulse is $497/mo, Signal $2,000/mo. Audit credits toward the first month.
         </p>
-        <a href="https://neverranked.com/pricing" class="btn" style="font-size:13px">See paid tiers</a>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <form method="POST" action="/free/upgrade?plan=pulse" style="margin:0">
+            <button type="submit" class="btn" style="font-size:13px">Upgrade to Pulse &rarr;</button>
+          </form>
+          <form method="POST" action="/free/upgrade?plan=signal" style="margin:0">
+            <button type="submit" class="btn btn-ghost" style="font-size:13px">Upgrade to Signal &rarr;</button>
+          </form>
+        </div>
       </div>
 
       <div style="margin:32px 0">
@@ -169,6 +176,14 @@ function dashboardPage(user: FreeUser, latest: ScanRow | null, history: ScanRow[
 export async function handleFreeDashboard(request: Request, env: Env): Promise<Response> {
   const user = await getFreeUser(request, env);
   if (!user) return redirect("/free/signup");
+
+  // If this free user already upgraded to paid, send them to the
+  // paid dashboard. Their nr_free cookie is still valid, but the
+  // experience they want is the paid one. /login bounces them to
+  // a magic-link flow that lands on /.
+  if (user.upgraded_to_user_id) {
+    return redirect("/login");
+  }
 
   const latest = await env.DB.prepare(
     `SELECT sr.id, sr.aeo_score, sr.grade, sr.scanned_at

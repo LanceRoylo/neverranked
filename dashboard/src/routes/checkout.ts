@@ -420,8 +420,66 @@ export async function handleStripeWebhook(
       const plan = session.metadata?.plan;
       const customerId = session.customer;
       const subscriptionId = session.subscription;
+      const freeUserId = session.metadata?.free_user_id
+        ? Number(session.metadata.free_user_id)
+        : null;
 
       if (!email || !plan) break;
+
+      // Free-to-paid upgrade reconciliation. If the checkout
+      // session carries metadata.free_user_id, the user already
+      // has a free_users row + a synthetic 'free-N' domains row
+      // with up to 12 weeks of scan history attached. We move
+      // that domain into the paid client_slug instead of creating
+      // a fresh one, so scan history persists across the
+      // upgrade boundary.
+      //
+      // Done as a separate step BEFORE the rest of the
+      // create-or-update flow so the existing
+      // "SELECT id FROM domains WHERE domain = ? AND
+      // client_slug = ?" lookup further down finds the
+      // reconciled row and skips re-creation.
+      if (freeUserId) {
+        try {
+          const freeUser = await env.DB.prepare(
+            "SELECT id, domain, email FROM free_users WHERE id = ?"
+          ).bind(freeUserId).first<{ id: number; domain: string; email: string }>();
+
+          if (freeUser && freeUser.email === email) {
+            // Compute the same client_slug derivation the rest of
+            // the flow will use so the domains row arrives at the
+            // exact slug the new users row will receive.
+            const emailDomain = email.split("@")[1];
+            const GENERIC_EMAIL_DOMAINS = ["gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com", "icloud.com", "protonmail.com", "mail.com"];
+            let upgradeSlug: string;
+            if (GENERIC_EMAIL_DOMAINS.includes(emailDomain)) {
+              const emailLocal = email.split("@")[0].replace(/[^a-z0-9]/g, "-").slice(0, 40) || "user";
+              const hashBuf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(email));
+              const hashHex = Array.from(new Uint8Array(hashBuf)).slice(0, 4).map(b => b.toString(16).padStart(2, "0")).join("");
+              upgradeSlug = `${emailLocal}-${hashHex}`;
+            } else {
+              upgradeSlug = freeUser.domain.replace(/\.[^.]+$/, "").replace(/[^a-z0-9]/g, "-");
+            }
+
+            // Rename the existing 'free-N' domains row to the
+            // paid slug and clear free_user_id. Scan history
+            // (scan_results.domain_id) follows automatically.
+            await env.DB.prepare(
+              `UPDATE domains
+                 SET client_slug = ?, free_user_id = NULL, updated_at = ?
+                 WHERE free_user_id = ? AND client_slug = ?`
+            ).bind(upgradeSlug, now, freeUser.id, `free-${freeUser.id}`).run();
+
+            console.log(`[checkout] reconciled free_user ${freeUser.id} (${freeUser.domain}) into paid slug ${upgradeSlug}`);
+          }
+        } catch (e) {
+          // Reconciliation failure must not block the paid
+          // signup. Log and continue -- the user gets a fresh
+          // domains row from the regular path below, history is
+          // orphaned but recoverable manually.
+          console.log(`[checkout] free reconciliation failed for free_user_id ${freeUserId}: ${e}`);
+        }
+      }
 
       // Get domain from checkout custom field, fall back to email domain
       const customFields = session.custom_fields || [];
@@ -466,6 +524,20 @@ export async function handleStripeWebhook(
           "UPDATE users SET plan = ?, stripe_customer_id = ?, stripe_subscription_id = ?, client_slug = COALESCE(client_slug, ?) WHERE id = ?"
         ).bind(plan, customerId, subscriptionId, clientSlug, user.id).run();
         if (!user.client_slug) user.client_slug = clientSlug;
+      }
+
+      // Link the free_users row to the new paid user so the
+      // dashboard knows to redirect /free → /login. Best-effort
+      // and only when this checkout actually came from a free
+      // upgrade.
+      if (freeUserId && user?.id) {
+        try {
+          await env.DB.prepare(
+            "UPDATE free_users SET upgraded_to_user_id = ? WHERE id = ?"
+          ).bind(user.id, freeUserId).run();
+        } catch (e) {
+          console.log(`[checkout] failed to link free_user ${freeUserId} -> user ${user.id}: ${e}`);
+        }
       }
 
       // Auto-provision: add domain if it doesn't exist yet
