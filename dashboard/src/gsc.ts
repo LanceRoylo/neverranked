@@ -81,8 +81,38 @@ async function refreshAccessToken(
   return (await resp.json()) as { access_token: string; expires_in: number };
 }
 
-/** Get a valid access token, refreshing if needed */
+/** Get a valid access token, refreshing if needed.
+ *
+ *  2026-05-10: prefers the service-account path when configured. Falls
+ *  back to user-OAuth otherwise, preserving the original auth flow as
+ *  a safety net during migration. Long-term the OAuth path can be
+ *  removed entirely once all GSC properties have granted the service
+ *  account email read access.
+ *
+ *  Why service account: user OAuth in "Testing" mode (which we can't
+ *  exit without Google's $15k third-party verification) expires
+ *  refresh_tokens after 7 days, causing the GSC integration to silently
+ *  die every week. Service accounts don't have refresh_token expiry --
+ *  one-time setup, works indefinitely. */
 export async function getValidToken(env: Env): Promise<string | null> {
+  // Try service account first.
+  const { getServiceAccountToken, isServiceAccountConfigured } =
+    await import("./gsc-service-account");
+  if (isServiceAccountConfigured(env)) {
+    try {
+      const saToken = await getServiceAccountToken(env);
+      if (saToken) return saToken;
+    } catch (err) {
+      // Service account configured but failing. Log loudly, fall
+      // through to user-OAuth so we don't break the integration
+      // entirely on a transient JWT signing error or token-exchange
+      // failure. The admin /admin/gsc/service-account page surfaces
+      // these failures so operators can diagnose.
+      console.log("GSC service-account token failed, falling back to user OAuth: " + err);
+    }
+  }
+
+  // Legacy user-OAuth fallback.
   const token = await env.DB.prepare(
     "SELECT * FROM gsc_tokens ORDER BY updated_at DESC LIMIT 1"
   ).first<GscToken>();

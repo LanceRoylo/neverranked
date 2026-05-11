@@ -2437,6 +2437,105 @@ export default {
       });
     }
 
+    // GSC service-account setup status page. Shows whether the
+    // GSC_SERVICE_ACCOUNT_JSON secret is set, displays the service
+    // account email to grant in each GSC property, and a button to
+    // test the connection. Migration path from user-OAuth to
+    // service-account auth so we stop having GSC die every 7-14 days.
+    if (path === "/admin/gsc/service-account" && method === "GET" && user.role === "admin") {
+      const { isServiceAccountConfigured, getServiceAccountEmail, getServiceAccountToken } =
+        await import("./gsc-service-account");
+      const configured = isServiceAccountConfigured(env);
+      const email = getServiceAccountEmail(env);
+      let testResult: { ok: boolean; detail: string } | null = null;
+      if (url.searchParams.get("test") === "1" && configured) {
+        try {
+          const tok = await getServiceAccountToken(env);
+          testResult = tok
+            ? { ok: true, detail: `Got access token (length ${tok.length}). Service account is working.` }
+            : { ok: false, detail: "Token returned null without throwing -- check JSON shape." };
+        } catch (e) {
+          testResult = { ok: false, detail: String(e).slice(0, 400) };
+        }
+      }
+      const html = `<!doctype html>
+<html><head><meta charset="utf-8"><title>GSC service account</title>
+<style>
+  body { font-family: ui-monospace, monospace; background: #0e0e10; color: #d9d9d9; padding: 32px; max-width: 760px; margin: 0 auto; line-height: 1.5; }
+  h1 { color: #e8c767; margin: 0 0 8px; font-family: Georgia, serif; font-weight: 400; font-size: 28px; }
+  h2 { color: #e8c767; font-family: Georgia, serif; font-weight: 400; font-size: 18px; margin: 32px 0 12px; }
+  code { background: #1a1a1c; padding: 2px 6px; border-radius: 3px; color: #e8c767; font-size: 12px; }
+  pre { background: #1a1a1c; padding: 12px; border-radius: 4px; overflow-x: auto; font-size: 11px; }
+  .row { background: rgba(255,255,255,.03); padding: 16px; border-radius: 4px; margin: 12px 0; }
+  .ok { color: #5ec76a; }
+  .bad { color: #c0392b; }
+  .pending { color: #888; }
+  .btn { display: inline-block; background: #e8c767; color: #0e0e10; padding: 8px 16px; border-radius: 3px; text-decoration: none; font-size: 12px; margin-right: 8px; }
+  .btn-ghost { background: transparent; color: #888; border: 1px solid #2a2a2c; }
+  ol { padding-left: 24px; }
+  ol li { margin-bottom: 12px; }
+  .copy-row { display: flex; align-items: center; gap: 8px; }
+</style>
+</head><body>
+<h1>GSC service-account auth</h1>
+<p style="color:#888;font-size:13px">Replaces user-OAuth for Google Search Console. Once set up, GSC never needs re-auth again.</p>
+
+<h2>Status</h2>
+<div class="row">
+  ${configured
+    ? `<div class="ok">✓ GSC_SERVICE_ACCOUNT_JSON secret is set</div>
+       ${email ? `<div style="margin-top:8px">Service account email: <code>${email}</code>
+         <button onclick="navigator.clipboard.writeText('${email}').then(()=>{this.textContent='Copied';setTimeout(()=>this.textContent='Copy',1200)})" class="btn btn-ghost" style="margin-left:8px">Copy</button>
+       </div>` : `<div class="bad">Email could not be parsed from the JSON. Check the secret format.</div>`}
+       ${testResult ? `<div style="margin-top:16px;padding:12px;background:#0a0a0c;border-radius:3px" class="${testResult.ok ? "ok" : "bad"}">${testResult.ok ? "✓" : "✗"} ${testResult.detail}</div>` : ""}
+       <div style="margin-top:16px">
+         <a href="/admin/gsc/service-account?test=1" class="btn">Test connection</a>
+         <a href="/admin/gsc" class="btn btn-ghost">Back to GSC admin</a>
+       </div>`
+    : `<div class="pending">○ GSC_SERVICE_ACCOUNT_JSON secret is not set yet</div>
+       <div style="margin-top:8px;color:#888;font-size:13px">Follow the setup steps below to configure.</div>`
+  }
+</div>
+
+<h2>Setup (one-time)</h2>
+<ol>
+  <li><strong>Create a service account in GCP.</strong> Open <a href="https://console.cloud.google.com/iam-admin/serviceaccounts" target="_blank" style="color:#e8c767">IAM → Service Accounts</a> in the NeverRanked project. Click "+ Create Service Account". Name it something like <code>gsc-reader</code>. Grant role: leave empty (no project-level role needed; permission is granted per-GSC-property below). Click "Done".</li>
+  <li><strong>Create a JSON key.</strong> Click the service account you just made → "Keys" tab → "Add Key" → "Create new key" → "JSON" → "Create". A JSON file downloads to your machine.</li>
+  <li><strong>Store the key as a Worker secret.</strong> In Terminal, in the dashboard directory, run:<br>
+    <pre>cd /Users/lanceroylo/Desktop/neverranked/dashboard
+npx wrangler secret put GSC_SERVICE_ACCOUNT_JSON</pre>
+    When it prompts, paste the entire contents of the JSON file (open it in a text editor, Cmd+A, Cmd+C, paste into the prompt, hit Enter).</li>
+  <li><strong>Refresh this page.</strong> The status above should flip to "✓ secret is set" and show the service account email. Copy it.</li>
+  <li><strong>Grant the email access in each GSC property.</strong> For each domain you track:
+    <ul style="margin-top:6px">
+      <li>Open <a href="https://search.google.com/search-console" target="_blank" style="color:#e8c767">Google Search Console</a></li>
+      <li>Select the property (e.g. <code>sc-domain:neverranked.com</code>)</li>
+      <li>Click "Settings" (gear icon, left sidebar)</li>
+      <li>Click "Users and permissions"</li>
+      <li>Click "Add user"</li>
+      <li>Paste the service account email</li>
+      <li>Permission: select "Restricted" (read-only) or "Owner". Either works -- "Restricted" is the principle-of-least-privilege choice</li>
+      <li>Click "Add"</li>
+    </ul>
+  </li>
+  <li><strong>Test.</strong> Click "Test connection" above. You should see "✓ Got access token...". Then go to <code>/admin/gsc</code> and click "Pull latest data now" to verify end-to-end.</li>
+</ol>
+
+<h2>Why this matters</h2>
+<p style="color:#aaa;font-size:13px;line-height:1.6">
+The user-OAuth path requires periodic re-authentication. Google's OAuth consent screen has two modes -- "Testing" and "Production" -- and our app is in Testing because moving to Production requires Google's $15k third-party security verification (the <code>webmasters.readonly</code> scope is "restricted"). In Testing mode, refresh tokens expire after 7 days, so the integration silently dies every week.
+</p>
+<p style="color:#aaa;font-size:13px;line-height:1.6">
+Service accounts don't have this problem. They use a private key (the JSON file) signed server-side -- no user consent flow, no refresh tokens, no expiry. One-time setup, works indefinitely.
+</p>
+<p style="color:#aaa;font-size:13px;line-height:1.6">
+Once verified working, the user-OAuth path becomes vestigial. The legacy code stays in <code>dashboard/src/gsc.ts</code> as a fallback during migration but can be removed entirely once all customers have granted the service account email.
+</p>
+
+</body></html>`;
+      return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+    }
+
     // Citation scan status API (polling endpoint for admin)
     const citationStatusMatch = path.match(/^\/api\/citation-status\/([^/]+?)\/?$/);
     if (citationStatusMatch && method === "GET" && user.role === "admin") {

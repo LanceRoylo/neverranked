@@ -33,6 +33,18 @@ export interface Env {
   DATAFORSEO_PASSWORD?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
+  /** Service-account JSON for GSC API auth. When set, the GSC
+   *  integration prefers this path over user-OAuth. The credential
+   *  is the full JSON key file Google issues at IAM → Service
+   *  Accounts → Keys → Create. Set via:
+   *    wrangler secret put GSC_SERVICE_ACCOUNT_JSON
+   *  and paste the JSON contents. The service account email needs
+   *  to be granted "Restricted" or "Owner" access in each GSC
+   *  property the dashboard tracks.
+   *  Solves the testing-mode OAuth 7-day refresh_token expiry that
+   *  was killing the integration weekly (see GSC_TOKEN_DEAD alerts
+   *  pre-2026-05-10). */
+  GSC_SERVICE_ACCOUNT_JSON?: string;
   // Used to encrypt per-client secrets at rest in D1 (currently just
   // WordPress Application Passwords). Set via `wrangler secret put
   // WP_ENCRYPTION_KEY`. Must be a 32-byte hex string. Rotating this
