@@ -1058,6 +1058,10 @@ h1,h2,h3,h4{
   font-size:.7em;
   opacity:.6;
 }
+.marquee-track .marquee-gemma{
+  color:var(--gold);
+  font-style:italic;
+}
 @keyframes slide{
   from{transform:translateX(0)}
   to{transform:translateX(-50%)}
@@ -2421,8 +2425,10 @@ h1,h2,h3,h4{
 .tier-icon-signal .arc-1, .tier-icon-signal .endpoint-1{ animation-delay:0s; }
 .tier-icon-signal .arc-2, .tier-icon-signal .endpoint-2{ animation-delay:0.6s; }
 .tier-icon-signal .arc-3, .tier-icon-signal .endpoint-3{ animation-delay:1.2s; }
-/* Amplify: 5 arcs in pentagon (one per tracked AI engine), staggered
-   every 0.3s for a continuous broadcast wave. */
+/* Amplify: 7 arcs in heptagon (one per tracked AI engine), staggered
+   every ~0.21s for a continuous broadcast wave. Gemma is the open-
+   weight reproducibility anchor and gets the gold-accented endpoint
+   (parallels the main hero broadcast diagram). */
 .tier-icon-amplify .arc,
 .tier-icon-amplify .endpoint{
   animation-duration:1.5s;
@@ -2432,11 +2438,13 @@ h1,h2,h3,h4{
 .tier-icon-amplify .arc{ animation-name:arc-broadcast; }
 .tier-icon-amplify .endpoint{ animation-name:endpoint-burst; }
 .tier-icon-amplify .arc-1, .tier-icon-amplify .endpoint-1{ animation-delay:0s; }
-.tier-icon-amplify .arc-2, .tier-icon-amplify .endpoint-2{ animation-delay:0.25s; }
-.tier-icon-amplify .arc-3, .tier-icon-amplify .endpoint-3{ animation-delay:0.5s; }
-.tier-icon-amplify .arc-4, .tier-icon-amplify .endpoint-4{ animation-delay:0.75s; }
-.tier-icon-amplify .arc-5, .tier-icon-amplify .endpoint-5{ animation-delay:1s; }
-.tier-icon-amplify .arc-6, .tier-icon-amplify .endpoint-6{ animation-delay:1.25s; }
+.tier-icon-amplify .arc-2, .tier-icon-amplify .endpoint-2{ animation-delay:0.21s; }
+.tier-icon-amplify .arc-3, .tier-icon-amplify .endpoint-3{ animation-delay:0.42s; }
+.tier-icon-amplify .arc-gemma{ animation-name:arc-broadcast; animation-delay:0.63s; stroke:var(--gold); }
+.tier-icon-amplify .endpoint-gemma{ animation-name:endpoint-burst; animation-delay:0.63s; fill:var(--gold); }
+.tier-icon-amplify .arc-4, .tier-icon-amplify .endpoint-4{ animation-delay:0.84s; }
+.tier-icon-amplify .arc-5, .tier-icon-amplify .endpoint-5{ animation-delay:1.05s; }
+.tier-icon-amplify .arc-6, .tier-icon-amplify .endpoint-6{ animation-delay:1.26s; }
 /* Reduced motion: animations off, icon shows static state with all
    arcs visible at low opacity (still communicates the metaphor). */
 @media (prefers-reduced-motion: reduce){
@@ -4857,7 +4865,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="hero-grain" aria-hidden="true"></div>
     <div class="wrap">
       <div class="hero-eyebrow reveal">
-        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>CITED IN CHATGPT, CLAUDE, GEMINI, PERPLEXITY, GOOGLE AIO &amp; COPILOT</span>
+        <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>SEVEN ENGINES TRACKED &middot; INCLUDING GEMMA, THE ONLY OPEN-WEIGHT ONE</span>
         <span class="tag">BY APPOINTMENT</span>
       </div>
 
@@ -4873,7 +4881,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <p class="hero-sub" style="margin-bottom:36px">
             <b>When your customer asks an AI engine to find a business, it picks one or two.</b> We make sure yours is one of them.
             <br><br>
-            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations monitored across seven engines (including Gemma, the only open-weight one) daily.
+            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations measured daily across seven engines. <b style="color:var(--gold)">The seventh is the only AEO measurement engine you can audit yourself</b>: Gemma's weights are public, so your compliance team can re-run our prompts and verify our numbers. No other platform does this.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4996,16 +5004,22 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <span>Perplexity</span>
       <span>Gemini</span>
       <span>Claude</span>
+      <span>Microsoft Copilot</span>
+      <span class="marquee-gemma">Gemma (open-weight)</span>
       <span>AI Overviews</span>
       <span>ChatGPT Search</span>
       <span>Perplexity</span>
       <span>Gemini</span>
       <span>Claude</span>
+      <span>Microsoft Copilot</span>
+      <span class="marquee-gemma">Gemma (open-weight)</span>
       <span>AI Overviews</span>
       <span>ChatGPT Search</span>
       <span>Perplexity</span>
       <span>Gemini</span>
       <span>Claude</span>
+      <span>Microsoft Copilot</span>
+      <span class="marquee-gemma">Gemma (open-weight)</span>
     </div>
   </div>
 
@@ -5096,6 +5110,50 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     </div>
   </section>
 
+  <!-- ============ REPRODUCIBILITY MOAT ============ -->
+  <!-- The open-weight thesis surfaced as its own beat. Sits right
+       after the broadcast diagram (where the visitor just saw the
+       heptagon with Gemma highlighted in gold) and before the "Why
+       we cost more" comparison. Per HM Principle #3 (Impact Before
+       Format) and #7 (Philosophy That Constrains): the open-weight
+       reproducibility is the SHARP differentiator that should be
+       loud, not parenthetical. Mirrors the schema-callout pattern
+       (h2 + body + pullquote + 3 stats) for visual parallelism. -->
+  <section class="schema-callout reproducibility-moat">
+    <div class="wrap">
+      <div class="schema-callout-grid">
+        <div class="schema-callout-side">
+          <div class="section-label" style="margin-bottom:24px">
+            <span class="num">§</span>
+            <span>The differentiator</span>
+            <span class="rule"></span>
+            <span>open-weight reproducibility</span>
+          </div>
+          <h2>The seventh engine is <em>the moat.</em></h2>
+        </div>
+        <div class="schema-callout-body">
+          <p>Six of the seven engines we track are commercial APIs. ChatGPT. Perplexity. Claude. Gemini. Microsoft Copilot. Google AI Overviews. Black boxes. You send a query, you get an answer, you cannot see what's behind it. The vendor can change the model tomorrow and your historical numbers are no longer comparable to your new numbers.</p>
+          <p>The seventh engine is different. <strong>Gemma is Google's open-weight model. The math is published.</strong> Anyone with the same model weights, your compliance team, your auditor, a skeptical journalist, can re-run our prompts and verify our numbers. The measurement is independently reproducible. No other AEO platform offers this.</p>
+          <p class="schema-callout-pullquote"><em>"Other AEO platforms say trust us. Our seventh engine says verify it yourself."</em></p>
+          <div class="schema-callout-stats">
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num">1<span class="schema-callout-stat-unit">/7</span></div>
+              <div class="schema-callout-stat-label">Engines in our set with published, auditable model weights</div>
+            </div>
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num">0<span class="schema-callout-stat-unit"></span></div>
+              <div class="schema-callout-stat-label">Other AEO platforms tracking an open-weight engine</div>
+            </div>
+            <div class="schema-callout-stat">
+              <div class="schema-callout-stat-num"><a href="/state-of-aeo/" style="color:inherit;text-decoration:none;border-bottom:2px solid var(--gold-dim)">Public</a></div>
+              <div class="schema-callout-stat-label">Full methodology at neverranked.com/state-of-aeo</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ WHY WE COST MORE ============ -->
   <!-- Direct, named comparison block. Names competitors and prices
        explicitly so the prospect doesn't have to research; reframes
@@ -5166,7 +5224,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div class="audit-callout-text">
             <h3>Audit</h3>
             <p>
-              Before you commit to a monthly tier, see what's actually broken. A full citation, schema, and content audit across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Delivered as a 90-day roadmap within 48 hours. <strong>Fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within 30 days.</strong>
+              Before you commit to a monthly tier, see what's actually broken. A full citation, schema, and content audit across all seven engines we track: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma (Google's open-weight model, the only AEO measurement engine your compliance team can independently reproduce). Delivered as a 90-day roadmap within 48 hours. <strong>Fully credited toward your first month if you upgrade to Pulse, Signal, or Amplify within 30 days.</strong>
             </p>
           </div>
           <a href="https://app.neverranked.com/checkout/audit" class="audit-callout-cta">Book my audit &rarr;</a>
@@ -5247,8 +5305,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
             <li>
               <span class="del-num">01</span>
               <div>
-                <strong>Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot.</strong>
-                Four of the five are web-grounded so you see what AI is citing this week, not what it was trained on a year ago. Reddit threads break out separately because that's where AI pulls "best X for Y" answers from. A keyword-by-competitor matrix shows who gets cited for what. Green where you win. Red where you don't.
+                <strong>Daily citation probes across all seven engines: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma (open-weight).</strong>
+                Aggregated weekly for trend signal, so you see what AI is citing this week, not what it was trained on a year ago. Four engines are web-grounded for live SERP signals. The seventh, Gemma, is published openly so your compliance team can re-run our prompts and verify our numbers independently. Reddit threads break out separately because that's where AI pulls "best X for Y" answers from. A keyword-by-competitor matrix shows who gets cited for what. Green where you win. Red where you don't.
               </div>
             </li>
             <li>
@@ -5296,20 +5354,25 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <h3><svg class="tier-icon tier-icon-amplify" viewBox="0 0 38 38" aria-hidden="true">
             <circle class="core-glow" cx="19" cy="19" r="6"/>
             <circle class="core" cx="19" cy="19" r="2.5"/>
-            <!-- 6 arcs in hexagon (60 degrees apart): one per tracked engine.
-                 ChatGPT, Claude, Gemini, Google AIO, Microsoft Copilot, Perplexity. -->
+            <!-- 7 arcs in heptagon (51.43 degrees apart): one per tracked
+                 engine. ChatGPT (top), Claude, Gemini, Gemma, Google AIO,
+                 Microsoft Copilot, Perplexity. Gemma's endpoint gets the
+                 gold fill to mark it as the open-weight reproducibility
+                 anchor (parallels the main broadcast diagram). -->
             <line class="arc arc-1" x1="19" y1="19" x2="19" y2="5"/>
             <circle class="endpoint endpoint-1" cx="19" cy="5" r="2"/>
-            <line class="arc arc-2" x1="19" y1="19" x2="31.12" y2="12"/>
-            <circle class="endpoint endpoint-2" cx="31.12" cy="12" r="2"/>
-            <line class="arc arc-3" x1="19" y1="19" x2="31.12" y2="26"/>
-            <circle class="endpoint endpoint-3" cx="31.12" cy="26" r="2"/>
-            <line class="arc arc-4" x1="19" y1="19" x2="19" y2="33"/>
-            <circle class="endpoint endpoint-4" cx="19" cy="33" r="2"/>
-            <line class="arc arc-5" x1="19" y1="19" x2="6.88" y2="26"/>
-            <circle class="endpoint endpoint-5" cx="6.88" cy="26" r="2"/>
-            <line class="arc arc-6" x1="19" y1="19" x2="6.88" y2="12"/>
-            <circle class="endpoint endpoint-6" cx="6.88" cy="12" r="2"/>
+            <line class="arc arc-2" x1="19" y1="19" x2="29.95" y2="10.27"/>
+            <circle class="endpoint endpoint-2" cx="29.95" cy="10.27" r="2"/>
+            <line class="arc arc-3" x1="19" y1="19" x2="32.65" y2="22.11"/>
+            <circle class="endpoint endpoint-3" cx="32.65" cy="22.11" r="2"/>
+            <line class="arc arc-gemma" x1="19" y1="19" x2="25.07" y2="31.61"/>
+            <circle class="endpoint endpoint-gemma" cx="25.07" cy="31.61" r="2"/>
+            <line class="arc arc-4" x1="19" y1="19" x2="12.93" y2="31.61"/>
+            <circle class="endpoint endpoint-4" cx="12.93" cy="31.61" r="2"/>
+            <line class="arc arc-5" x1="19" y1="19" x2="5.35" y2="22.11"/>
+            <circle class="endpoint endpoint-5" cx="5.35" cy="22.11" r="2"/>
+            <line class="arc arc-6" x1="19" y1="19" x2="8.05" y2="10.27"/>
+            <circle class="endpoint endpoint-6" cx="8.05" cy="10.27" r="2"/>
           </svg>Amplify</h3>
           <p class="del-tier-tagline">For teams ready to ship the work, not just see what's needed.</p>
           <div class="del-tier-price"><span class="sym">$</span>4,500<span class="per">/mo · everything in Signal, plus:</span></div>
