@@ -31,8 +31,9 @@ weekly across NR's tracked client universe and produces:
 - Per-client baselines that double as case-study artifacts
 - Per-source action briefs (when the gap is Wikipedia, do this;
   when it is Reddit, do this; when it is news, do this)
-- A public hub at neverranked.com/state-of-aeo where the same
-  numbers anyone can reproduce from the public schema
+- A public hub at neverranked.com/state-of-aeo where the
+  methodology is open and anyone running the same query against
+  the same database gets the same numbers
 - A digest pipeline that puts the latest industry headline in
   every customer's weekly email
 
