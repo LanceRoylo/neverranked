@@ -5,7 +5,7 @@
     <link>https://neverranked.com/state-of-aeo/</link>
     <description>What AI engines actually cite, generated weekly by The Citation Tape, NeverRanked's standing measurement system.</description>
     <language>en-us</language>
-    <lastBuildDate>Sun, 10 May 2026 10:17:29 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 11 May 2026 07:50:45 GMT</lastBuildDate>
     <atom:link href="https://neverranked.com/state-of-aeo/feed.xml" rel="self" type="application/rss+xml"/>
     <managingEditor>lance@neverranked.com (Lance Roylo)</managingEditor>
     <webMaster>lance@neverranked.com (Lance Roylo)</webMaster>
@@ -16,6 +16,16 @@
       <link>https://neverranked.com/state-of-aeo/</link>
     </image>
 
+    <item>
+      <title>State of AEO: NeverRanked tracked-universe report</title>
+      <link>https://neverranked.com/state-of-aeo/2026-05-11/</link>
+      <guid isPermaLink="true">https://neverranked.com/state-of-aeo/2026-05-11/</guid>
+      <pubDate>Mon, 11 May 2026 12:00:00 GMT</pubDate>
+      <dc:creator>Lance Roylo</dc:creator>
+      <description>Standing snapshot of what AI engines cited across NeverRanked&apos;s tracked client universe between 2026-04-14 and 2026-05-11. From The Citation Tape.</description>
+      <category>AEO</category>
+      <category>Weekly report</category>
+    </item>
     <item>
       <title>State of AEO: NeverRanked tracked-universe report</title>
       <link>https://neverranked.com/state-of-aeo/2026-05-10/</link>

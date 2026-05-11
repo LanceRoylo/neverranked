@@ -1,11 +1,11 @@
 {
-  "slug": "2026-05-10",
+  "slug": "2026-05-11",
   "title": "State of AEO: NeverRanked tracked-universe report",
-  "generated": "2026-05-10",
+  "generated": "2026-05-11",
   "windowStart": "2026-04-14",
-  "windowEnd": "2026-05-10",
-  "sampleRuns": "437",
-  "url": "https://neverranked.com/state-of-aeo/2026-05-10/",
-  "pdfUrl": "https://neverranked.com/state-of-aeo/2026-05-10.pdf",
-  "headline": "Across 437 captured AI engine responses, the single most-cited third-party source is vertexaisearch.cloud.google.com (Google AI infrastructure (Gemini grounding)), appearing in 132 citation runs across 1 engine and 5 tracked keywords."
+  "windowEnd": "2026-05-11",
+  "sampleRuns": "754",
+  "url": "https://neverranked.com/state-of-aeo/2026-05-11/",
+  "pdfUrl": "https://neverranked.com/state-of-aeo/2026-05-11.pdf",
+  "headline": "Across 754 captured AI engine responses, the single most-cited third-party source is youtube.com (YouTube), appearing in 190 citation runs across 5 engines and 22 tracked keywords."
 }
