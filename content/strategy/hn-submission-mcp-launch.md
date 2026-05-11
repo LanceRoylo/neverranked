@@ -37,20 +37,26 @@ about it. Avoid marketing language.
   llms_txt_check: validates an llms.txt file against the spec
   agent_readiness_check: audits whether a site exposes structured data agents can use
 
-Why we built it: AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AIO, and Gemma) increasingly answer "best X for Y" queries directly, and what they cite is shaped by infrastructure most sites don't ship: schema.org, llms.txt, agent-readable structured data. The MCP server lets Claude Desktop, Claude Code, or any MCP client run those audits inline. (We added Gemma to the engine set specifically because it's the only open-weight model in the group, which means our citation measurements are reproducible against published weights, not just black-box API responses.)
+Why we built it: AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AIO, and Gemma) increasingly answer "best X for Y" queries directly, and what they cite is shaped by infrastructure most sites don't ship: schema.org, llms.txt, agent-readable structured data. The MCP server lets Claude Desktop, Claude Code, or any MCP client run those audits inline.
+
+One thing we did differently from the rest of the AEO space: we added Gemma (Google's open-weight model) to our engine set so the citation measurements behind aeo_scan are independently reproducible. Anyone with the same model weights can re-run our prompts and verify the numbers. Six of the seven engines we track are commercial APIs that can change behind the scenes; Gemma's weights are public. As far as we can tell, no other AEO platform includes an open-weight engine, which means every other measurement vendor is asking you to trust their API responses on faith.
 
 Some interesting parts:
 
-- The aeo_scan engine is the same one we run weekly across our tracked client universe. Output of those weekly runs is at https://neverranked.com/state-of-aeo/ if you want to see what AI engines actually cite. The May 10 archived report carries a banner about a partial run window caused by a subrequest-budget bug in the daily cron; we documented the diagnosis and fix at content/handoff-questions/citation-cron-fix-landed.md and current runs are clean.
-
 - llms_txt_check is grumpy about the spec on purpose. The standard is young, and we'd rather flag ambiguities than silently accept malformed feeds.
 
-- The package is published as @neverranked/mcp on npm and listed in the official MCP registry as io.github.LanceRoylo/mcp.
+- agent_readiness_check looks for the Schema.org Action types (ReserveAction, ApplyAction, BuyAction, ContactAction) that AI agents read when they execute tasks on behalf of users. Today most sites score zero. The next year is going to be interesting.
+
+- The aeo_scan engine is the same one we run daily across our tracked client universe. Public methodology and current weekly reports at https://neverranked.com/state-of-aeo. The May 10 archive carries a banner about a partial run window from a subrequest-budget bug in the daily cron; we caught and shipped the fix the same day and documented it openly. Current runs are clean.
+
+- If you want to run aeo_scan without installing the MCP server, the same engine is exposed at https://check.neverranked.com (no signup) or at app.neverranked.com/free/signup (free weekly score for one domain, no card).
+
+The package is on npm as @neverranked/mcp and in the official MCP registry as io.github.LanceRoylo/mcp.
 
 Source: https://github.com/LanceRoylo/neverranked/tree/main/mcp-server
 Blog post with more context: https://neverranked.com/blog/the-first-aeo-mcp-server/
 
-Happy to answer questions about MCP server design, the AEO scoring methodology, or what we've learned watching AI engines cite (or not cite) the brands we track.
+Happy to answer questions about MCP server design, the AEO scoring methodology, the open-weight reproducibility argument, or what we've learned watching AI engines cite (or not cite) the brands we track.
 ```
 
 Length check: ~290 words. HN comment slots tolerate 1500 words easily; this leaves room to expand if needed.

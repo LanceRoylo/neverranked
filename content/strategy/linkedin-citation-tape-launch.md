@@ -36,10 +36,10 @@ The first weekly report is live. So is the bug we caught and fixed while running
 
 Four properties that make The Citation Tape different from every other AEO measurement we've seen:
 
-1. The methodology is the script
-2. The source-type taxonomy is public
-3. The schema is in the repo
-4. One of the seven engines is literally reproducible (open weights)
+1. One of the seven engines is literally reproducible (open-weight Gemma)
+2. The methodology is the script
+3. The source-type taxonomy is public
+4. The schema is in the repo
 
 Most AEO measurement today is gated behind dashboards. Customers see their own number. Categorical patterns stay locked inside agency decks. There is no public methodology anyone can reference.
 
