@@ -295,8 +295,8 @@
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Six engines tracked</strong>
-        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+        <strong>Seven engines tracked</strong>
+        <div class="cover-meta-engines">Gemma (open-weight) &middot; ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
       </div>
     </div>
   </div>
@@ -1052,7 +1052,7 @@ category leader position is a single quarter, not a year.</p>
 <h2 id="what-the-production-tracking-layer-adds">What the production tracking layer adds</h2>
 <p>This audit is a snapshot of ASB’s keyword and intent gap on a
 single day. The Signal-tier subscription replaces the snapshot with
-a weekly pull across all six AI engines on the full forty-two-prompt
+a weekly pull across all seven AI engines on the full forty-two-prompt
 corpus. The weekly pull captures the actual citations engines are
 making, attributes deployment changes to citation movement at p&lt;0.05
 statistical significance, and surfaces engine behavior changes
@@ -1067,7 +1067,7 @@ where you are going and which deployments moved you there.</p>
 <strong>Sample date:</strong> 2026-05-08
 <strong>Engine sampled in this audit:</strong> Claude (Anthropic) via direct API
 <strong>Prompt sample:</strong> 8 representative buyer-stage prompts from the Hawaii community banking corpus
-<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) on a weekly cadence with statistical attribution</p>
+<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all seven engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma, Google's open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.</p>
 <hr />
 <h2 id="the-headline-number">The headline number</h2>
 <p><strong>ASB was cited in 8 of 8 sampled prompts. ASB was the first-cited bank in 1 of 8.</strong></p>
@@ -1299,7 +1299,7 @@ authored framing</li>
 <li>Citation share remaining at 100% (it is already at the ceiling)</li>
 </ul>
 <p>This is testable. The Signal-tier subscription that runs these
-prompts weekly across all six engines reports the actual movement
+prompts weekly across all seven engines reports the actual movement
 post-deployment with statistical attribution at p&lt;0.05.</p>
 <hr />
 <h2 id="what-this-audit-does-not-show">What this audit does not show</h2>
@@ -1307,8 +1307,11 @@ post-deployment with statistical attribution at p&lt;0.05.</p>
 prompts. The production tracking layer that ships with the Signal-
 tier subscription replaces this with:</p>
 <ul>
-<li><strong>Six engines</strong> (ChatGPT, Perplexity, Claude, Gemini, Microsoft
-Copilot, Google AI Overviews) on the same prompt set every week</li>
+<li><strong>Seven engines</strong> (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+Copilot, Google AI Overviews, and Gemma, Google's open-weight
+model) on the same prompt set every week. Gemma is the
+reproducibility anchor: its weights are public, so a compliance
+team can re-run the exact same queries and verify our numbers.</li>
 <li><strong>Forty-two prompts</strong> from the full Hawaii community banking
 corpus, refreshed quarterly to track engine behavior changes</li>
 <li><strong>Statistical attribution</strong> that ties citation movement to specific
@@ -1642,7 +1645,7 @@ competitors by a margin none of them can close in a single cycle.
 Citation share on the twelve sampled prompts in Section 4 should
 materially improve as engines retrain on the new structured data
 (typical retraining window: thirty to forty-five days post-
-deployment, observed across all six engines NeverRanked tracks).</p>
+deployment, observed across all seven engines NeverRanked tracks).</p>
 <p>The Signal-tier subscription that ships these deployments and
 tracks the resulting citation movement runs $2,000/month with a
 three-month minimum. The total cost of locking the Hawaii

@@ -109,7 +109,7 @@
           {
             "@type": "Offer",
             "name": "Pulse",
-            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
+            "description": "Entry-tier monthly retainer for teams who want to know where they stand in AI search. Monthly Visibility Index PDF report tracking citation share across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma (Google's open-weight model). Up to 10 tracked prompts, two auto-generated schemas per month (FAQ and Article) deployed to your live site after multi-pass quality validation, and a read-only summary dashboard. Self-serve checkout. Three-month minimum engagement.",
             "price": "497",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -129,7 +129,7 @@
           {
             "@type": "Offer",
             "name": "Signal",
-            "description": "Monthly retainer for teams ready to be cited. Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot with four engines web-grounded for live signals, plus Reddit thread citations broken out separately because that's where AI pulls 'best X for Y' answers from. Schema fixes auto-pushed to your live site, graded for completeness before deploy so you avoid the 18-point partial-schema citation penalty. Authority audits monitor trust-platform presence (G2, Trustpilot, Capterra, Google Business) and author-bio depth including Person schema completeness. Live dashboard with AEO score, citation share, industry-percentile ranking against peers, and GSC clicks, refreshed every Monday. 90-day roadmap that updates itself, with quarterly citation-drift detection surfacing new competitors and lost ground. Forward-ready Monday digest. Three-month minimum engagement.",
+            "description": "Monthly retainer for teams ready to be cited. Daily citation probes aggregated weekly across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma (Google's open-weight model whose published weights let your compliance team independently reproduce our numbers) with four engines web-grounded for live signals, plus Reddit thread citations broken out separately because that's where AI pulls 'best X for Y' answers from. Schema fixes auto-pushed to your live site, graded for completeness before deploy so you avoid the 18-point partial-schema citation penalty. Authority audits monitor trust-platform presence (G2, Trustpilot, Capterra, Google Business) and author-bio depth including Person schema completeness. Live dashboard with AEO score, citation share, industry-percentile ranking against peers, and GSC clicks, refreshed every Monday. 90-day roadmap that updates itself, with quarterly citation-drift detection surfacing new competitors and lost ground. Forward-ready Monday digest. Three-month minimum engagement.",
             "price": "2000",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -149,7 +149,7 @@
           {
             "@type": "Offer",
             "name": "Amplify",
-            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot, Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit reply briefs that tell your team what to write about and what angle only you can take so a human practitioner posts the actual reply. Three-month minimum engagement.",
+            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (citation tracking across all seven engines including Gemma, the open-weight reproducibility anchor, plus Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit reply briefs that tell your team what to write about and what angle only you can take so a human practitioner posts the actual reply. Three-month minimum engagement.",
             "price": "4500",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -2094,11 +2094,17 @@ h1,h2,h3,h4{
   100%     { opacity:0; transform:scale(0.5); }
 }
 .broadcast-svg .bd-arc-1, .broadcast-svg .bd-endpoint-1{ animation-delay:0s; }
-.broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2{ animation-delay:0.37s; }
-.broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3{ animation-delay:0.74s; }
-.broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:1.10s; }
-.broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.47s; }
-.broadcast-svg .bd-arc-6, .broadcast-svg .bd-endpoint-6{ animation-delay:1.84s; }
+.broadcast-svg .bd-arc-2, .broadcast-svg .bd-endpoint-2{ animation-delay:0.31s; }
+.broadcast-svg .bd-arc-3, .broadcast-svg .bd-endpoint-3{ animation-delay:0.62s; }
+.broadcast-svg .bd-arc-4, .broadcast-svg .bd-endpoint-4{ animation-delay:0.93s; }
+.broadcast-svg .bd-arc-5, .broadcast-svg .bd-endpoint-5{ animation-delay:1.24s; }
+.broadcast-svg .bd-arc-6, .broadcast-svg .bd-endpoint-6{ animation-delay:1.55s; }
+.broadcast-svg .bd-arc-7, .broadcast-svg .bd-endpoint-7{ animation-delay:1.86s; }
+/* The open-weight engine (Gemma) is visually distinct: a gold-tinted
+   endpoint to signal that it's the reproducibility anchor in the set. */
+.broadcast-svg .bd-endpoint-7{ fill:var(--gold); }
+.broadcast-svg .bd-arc-7{ stroke:var(--gold); }
+.broadcast-svg .engine-label[data-engine="gemma"]{ fill:var(--gold); }
 
 /* "The honest comparison" — why we cost more. Names competitors
    and prices in their own terms, then reframes NeverRanked's price
@@ -4867,7 +4873,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <p class="hero-sub" style="margin-bottom:36px">
             <b>When your customer asks an AI engine to find a business, it picks one or two.</b> We make sure yours is one of them.
             <br><br>
-            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations monitored across six engines weekly.
+            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations monitored across seven engines (including Gemma, the only open-weight one) daily.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4976,9 +4982,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   <!-- ============ MARQUEE ============ -->
   <!-- Only the platforms we actually track or measurably affect:
-       Six engines in the citation tracker (ChatGPT, Perplexity,
+       Seven engines in the citation tracker (ChatGPT, Perplexity,
        Gemini, Google AI Overviews via DataForSEO live SERP,
-       Microsoft Copilot via Bing live SERP, Claude).
+       Microsoft Copilot via Bing live SERP, Claude, and Gemma
+       via Together AI's hosted endpoint -- the open-weight engine
+       added 2026-05-10 as the reproducibility anchor).
        Brave / You.com were removed 2026-04-28 because we
        don't substantiate any work for them. -->
   <div class="marquee" aria-hidden="true">
@@ -5008,12 +5016,12 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span class="num">§</span>
         <span>How AEO works</span>
         <span class="rule"></span>
-        <span>six engines / one signal</span>
+        <span>seven engines / one signal</span>
       </div>
       <div class="broadcast-head">
         <h2 class="reveal">Your brand, broadcasting to <em>every engine your customers ask.</em></h2>
         <p class="reveal" style="transition-delay:.1s">
-          Structured data we deploy on your site is what AI engines read first. The tracker watches all six major engines weekly to confirm the work is showing up in answers. The diagram below is the platform in one image.
+          Structured data we deploy on your site is what AI engines read first. The tracker watches all seven engines daily (six commercial APIs plus Gemma, the open-weight model that lets anyone reproduce our numbers) to confirm the work is showing up in answers. The diagram below is the platform in one image.
         </p>
       </div>
       <div class="broadcast-canvas reveal" style="transition-delay:.2s">
@@ -5027,50 +5035,62 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <text class="brand-label" x="300" y="306" text-anchor="middle">YOUR BRAND</text>
           <text class="brand-sublabel" x="300" y="324" text-anchor="middle">SCHEMA + CITATIONS</text>
 
-          <!-- Six arcs broadcasting outward to engine nodes.
-               Hexagon angles (clockwise from top): 90, 30, 330, 270, 210, 150.
-               Center (300,270), perimeter radius 180.
-               cos/sin: 30deg = 0.866/0.5, 60deg = 0.5/0.866 -->
+          <!-- Seven arcs broadcasting outward to engine nodes.
+               Heptagon angles (360/7 = 51.43deg spacing, starting at
+               top and going clockwise). Center (300,270), perimeter
+               radius 180. Gemma is the 7th engine, slotted between
+               Gemini and Google AI Overviews to read as Google's
+               three-surface cluster (Gemini API + Gemma open-weight +
+               AIO SERP). Gold-tinted endpoint marks Gemma as the
+               open-weight reproducibility anchor -- a visual cue that
+               this engine is structurally different from the other
+               six (commercial APIs). -->
 
-          <!-- Top: ChatGPT (90 degrees) -->
+          <!-- Top (90deg): ChatGPT -->
           <line class="bd-arc bd-arc-1" data-engine="chatgpt" x1="300" y1="270" x2="300" y2="90"/>
           <circle class="bd-endpoint bd-endpoint-1" data-engine="chatgpt" cx="300" cy="90" r="6"/>
           <text class="engine-label" data-engine="chatgpt" x="300" y="74" text-anchor="middle">ChatGPT</text>
           <text class="engine-sublabel" data-engine="chatgpt" x="300" y="58" text-anchor="middle">OpenAI &middot; web-grounded</text>
 
-          <!-- Upper-right: Claude (30 degrees) -->
-          <line class="bd-arc bd-arc-2" data-engine="claude" x1="300" y1="270" x2="455.88" y2="180"/>
-          <circle class="bd-endpoint bd-endpoint-2" data-engine="claude" cx="455.88" cy="180" r="6"/>
-          <text class="engine-label" data-engine="claude" x="475" y="166" text-anchor="start">Claude</text>
-          <text class="engine-sublabel" data-engine="claude" x="475" y="182" text-anchor="start">Anthropic</text>
+          <!-- Upper-right (38.57deg): Claude -->
+          <line class="bd-arc bd-arc-2" data-engine="claude" x1="300" y1="270" x2="440.7" y2="157.8"/>
+          <circle class="bd-endpoint bd-endpoint-2" data-engine="claude" cx="440.7" cy="157.8" r="6"/>
+          <text class="engine-label" data-engine="claude" x="460" y="144" text-anchor="start">Claude</text>
+          <text class="engine-sublabel" data-engine="claude" x="460" y="160" text-anchor="start">Anthropic</text>
 
-          <!-- Lower-right: Gemini (330 degrees) -->
-          <line class="bd-arc bd-arc-3" data-engine="gemini" x1="300" y1="270" x2="455.88" y2="360"/>
-          <circle class="bd-endpoint bd-endpoint-3" data-engine="gemini" cx="455.88" cy="360" r="6"/>
-          <text class="engine-label" data-engine="gemini" x="475" y="364" text-anchor="start">Gemini</text>
-          <text class="engine-sublabel" data-engine="gemini" x="475" y="380" text-anchor="start">Google &middot; web-grounded</text>
+          <!-- Right (-12.86deg): Gemini -->
+          <line class="bd-arc bd-arc-3" data-engine="gemini" x1="300" y1="270" x2="475.5" y2="310.0"/>
+          <circle class="bd-endpoint bd-endpoint-3" data-engine="gemini" cx="475.5" cy="310.0" r="6"/>
+          <text class="engine-label" data-engine="gemini" x="495" y="306" text-anchor="start">Gemini</text>
+          <text class="engine-sublabel" data-engine="gemini" x="495" y="322" text-anchor="start">Google &middot; web-grounded</text>
 
-          <!-- Bottom: Google AI Overviews (270 degrees) -->
-          <line class="bd-arc bd-arc-4" data-engine="aio" x1="300" y1="270" x2="300" y2="450"/>
-          <circle class="bd-endpoint bd-endpoint-4" data-engine="aio" cx="300" cy="450" r="6"/>
-          <text class="engine-label" data-engine="aio" x="300" y="478" text-anchor="middle">Google AI Overviews</text>
-          <text class="engine-sublabel" data-engine="aio" x="300" y="494" text-anchor="middle">SERP &middot; live via DataForSEO</text>
+          <!-- Lower-right (-64.29deg): Gemma (open-weight, gold-tinted) -->
+          <line class="bd-arc bd-arc-7" data-engine="gemma" x1="300" y1="270" x2="378.1" y2="432.2"/>
+          <circle class="bd-endpoint bd-endpoint-7" data-engine="gemma" cx="378.1" cy="432.2" r="6"/>
+          <text class="engine-label" data-engine="gemma" x="395" y="445" text-anchor="start">Gemma</text>
+          <text class="engine-sublabel" data-engine="gemma" x="395" y="461" text-anchor="start">Google &middot; open-weight</text>
 
-          <!-- Lower-left: Microsoft Copilot (210 degrees) -->
-          <line class="bd-arc bd-arc-5" data-engine="copilot" x1="300" y1="270" x2="144.12" y2="360"/>
-          <circle class="bd-endpoint bd-endpoint-5" data-engine="copilot" cx="144.12" cy="360" r="6"/>
-          <text class="engine-label" data-engine="copilot" x="125" y="364" text-anchor="end">Microsoft Copilot</text>
-          <text class="engine-sublabel" data-engine="copilot" x="125" y="380" text-anchor="end">Bing &middot; web-grounded</text>
+          <!-- Lower-left (-115.71deg): Google AI Overviews -->
+          <line class="bd-arc bd-arc-4" data-engine="aio" x1="300" y1="270" x2="221.9" y2="432.2"/>
+          <circle class="bd-endpoint bd-endpoint-4" data-engine="aio" cx="221.9" cy="432.2" r="6"/>
+          <text class="engine-label" data-engine="aio" x="205" y="445" text-anchor="end">Google AI Overviews</text>
+          <text class="engine-sublabel" data-engine="aio" x="205" y="461" text-anchor="end">SERP &middot; live via DataForSEO</text>
 
-          <!-- Upper-left: Perplexity (150 degrees) -->
-          <line class="bd-arc bd-arc-6" data-engine="perplexity" x1="300" y1="270" x2="144.12" y2="180"/>
-          <circle class="bd-endpoint bd-endpoint-6" data-engine="perplexity" cx="144.12" cy="180" r="6"/>
-          <text class="engine-label" data-engine="perplexity" x="125" y="166" text-anchor="end">Perplexity</text>
-          <text class="engine-sublabel" data-engine="perplexity" x="125" y="182" text-anchor="end">web-grounded</text>
+          <!-- Left (-167.14deg): Microsoft Copilot -->
+          <line class="bd-arc bd-arc-5" data-engine="copilot" x1="300" y1="270" x2="124.5" y2="310.0"/>
+          <circle class="bd-endpoint bd-endpoint-5" data-engine="copilot" cx="124.5" cy="310.0" r="6"/>
+          <text class="engine-label" data-engine="copilot" x="105" y="306" text-anchor="end">Microsoft Copilot</text>
+          <text class="engine-sublabel" data-engine="copilot" x="105" y="322" text-anchor="end">Bing &middot; web-grounded</text>
+
+          <!-- Upper-left (141.43deg): Perplexity -->
+          <line class="bd-arc bd-arc-6" data-engine="perplexity" x1="300" y1="270" x2="159.3" y2="157.8"/>
+          <circle class="bd-endpoint bd-endpoint-6" data-engine="perplexity" cx="159.3" cy="157.8" r="6"/>
+          <text class="engine-label" data-engine="perplexity" x="140" y="144" text-anchor="end">Perplexity</text>
+          <text class="engine-sublabel" data-engine="perplexity" x="140" y="160" text-anchor="end">web-grounded</text>
         </svg>
 
         <div class="broadcast-caption">
-          <strong>Six engines tracked weekly.</strong> Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
+          <strong>Seven engines tracked, anchored by Gemma (open-weight).</strong> Six commercial APIs plus one open-weight engine whose published weights make our numbers independently reproducible. Schema deployments graded for completeness before they ship. Citation lift attributed per variant with statistical confidence at p &lt; 0.05. The platform is what no other AEO service ships together.
         </div>
       </div>
     </div>
@@ -5111,7 +5131,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="vs-takeaway reveal" style="transition-delay:.15s">
         <p>None of them deploy schemas to your live site.<br>None ship content drafts in your voice.<br>None publish for you.</p>
         <p><strong>They sell dashboards. We ship the work.</strong></p>
-        <p class="vs-final">NeverRanked Pulse starts at $497 a month. Same band as Peec Enterprise and Profound Lite. We track six engines and we deploy the schema. They track fewer and hand you a report.</p>
+        <p class="vs-final">NeverRanked Pulse starts at $497 a month. Same band as Peec Enterprise and Profound Lite. We track seven engines, including the only open-weight one, and we deploy the schema. They track fewer and hand you a report.</p>
       </div>
     </div>
   </section>
@@ -5172,13 +5192,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <span class="del-num">01</span>
               <div>
                 <strong>Monthly Visibility Index, delivered as a PDF.</strong>
-                Your citation share across all six engines: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Microsoft Copilot. Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
+                Your citation share across all seven engines: ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma (Google's open-weight model). Where you got cited, where you didn't, where you ranked within each citation, and what changed from last month. Forwardable to your team or your boss without explanation.
               </div>
             </li>
             <li>
               <span class="del-num">02</span>
               <div>
-                <strong>Up to 10 tracked prompts, all six engines.</strong>
+                <strong>Up to 10 tracked prompts, all seven engines.</strong>
                 The "best X for Y" queries your customers actually ask. Run monthly, scored, and tracked over time so you can see when something shifts.
               </div>
             </li>
@@ -5816,7 +5836,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </p>
       </div>
 
-      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 6 engines">
+      <div class="dash-mock reveal" role="img" aria-label="Example view of the Never Ranked dashboard showing an AEO score of 84, a share of answer of 8%, and a citation matrix across 7 engines including Gemma the open-weight reproducibility anchor">
         <div class="dash-mock-chrome">
           <div class="dash-mock-url">
             <b>app.neverranked.com</b><span class="slash">/</span>demo

@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>Agent-Ready Schema for Hospitality: Agent-Ready Schema: NeverRanked Schema Marketplace</title>
+<meta name="description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<link rel="canonical" href="https://neverranked.com/schemas/agent-readiness/hospitality/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="Agent-Ready Schema for Hospitality: Agent-Ready Schema">
+<meta property="og:description" content="Production-ready agent-ready schema template from NeverRanked. Pre-reviewed for vertical compliance.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://neverranked.com/schemas/agent-readiness/hospitality/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:15px;line-height:1.65}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:880px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 16px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:24pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+.lede{color:var(--text-mute);font-size:17px;margin:0 0 40px;line-height:1.6;max-width:640px}
+.cat-card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;display:block;transition:border-color .15s}
+.cat-card:hover{border-color:var(--gold)}
+.cat-name{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.cat-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 12px}
+.cat-meta{font-family:var(--mono);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em}
+.template-list{list-style:none;padding:0;margin:24px 0}
+.template-list li{padding:14px 0;border-bottom:1px solid var(--line)}
+.template-list a{display:flex;justify-content:space-between;align-items:center}
+.template-name{color:var(--text);font-size:15px}
+.template-arrow{color:var(--gold);font-family:var(--mono);font-size:13px}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:12px;line-height:1.55}
+code{font-family:var(--mono);font-size:13px;color:var(--gold-bright)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.btn{display:inline-block;padding:10px 22px;background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:13px;letter-spacing:.04em;text-decoration:none;border-radius:3px;margin-right:8px}
+.btn-secondary{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+.contribute-card{background:var(--gold-wash);border:1px solid var(--gold);border-radius:6px;padding:24px;margin:48px 0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/schemas/" style="color:var(--text-faint)">Schemas</a> · <a href="/schemas/agent-readiness/" style="color:var(--text-faint)">Agent-Ready Schema</a></p>
+  <h1>Agent-Ready Schema for Hospitality</h1>
+
+<p>The most consequential agent task surface for hotels, B&Bs, vacation</p>
+<p>rentals, restaurants, tours, and event venues is the *reservation*.</p>
+<p>Any property whose booking flow is exposed as a structured</p>
+<code>ReserveAction</code> will capture agent-driven bookings. Properties that
+<p>ride entirely on third-party widgets (OpenTable, Resy, Booking.com)</p>
+<p>will see their bookings flow through the widget's brand instead.</p>
+
+<h2>ReserveAction: hotel room booking</h2>
+
+<p>Goes on the property's dedicated booking page.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ReserveAction",</p>
+<p>  "name": "Book a Room",</p>
+<p>  "description": "Direct booking. No third-party fees. Best Rate Guarantee.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example-hotel.com/book?checkin={checkin}&amp;checkout={checkout}&amp;guests={guests}&amp;source=agent",</p>
+<p>    "actionPlatform": [</p>
+<p>      "https://schema.org/DesktopWebPlatform",</p>
+<p>      "https://schema.org/MobileWebPlatform"</p>
+<p>    ],</p>
+<p>    "httpMethod": "GET"</p>
+<p>  },</p>
+<p>  "query-input": [</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "checkin",</p>
+<p>      "valueRequired": true,</p>
+<p>      "valuePattern": "\\d{4}-\\d{2}-\\d{2}"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "checkout",</p>
+<p>      "valueRequired": true,</p>
+<p>      "valuePattern": "\\d{4}-\\d{2}-\\d{2}"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "guests",</p>
+<p>      "valueRequired": true,</p>
+<p>      "minValue": 1,</p>
+<p>      "maxValue": 8</p>
+<p>    }</p>
+<p>  ],</p>
+<p>  "object": {</p>
+<p>    "@type": "LodgingBusiness",</p>
+<p>    "@id": "https://www.example-hotel.com/#organization"</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "LodgingReservation",</p>
+<p>    "reservationStatus": "Pending"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h3>Implementation notes</h3>
+
+<ul><li>The <code>urlTemplate</code> must accept the agent-passed parameters and</li>
+</ul>  return a usable booking page (or a structured response) when
+<p>  hit directly.</p>
+<ul><li><code>query-input</code> is the single most important field for agents.</li>
+</ul>  Without it the agent does not know what data to provide.
+<ul><li><code>valuePattern</code> for dates uses ISO 8601, the standard agents expect.</li>
+</ul>
+<h2>ReserveAction: restaurant table</h2>
+
+<p>Goes on the restaurant page or contact page.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ReserveAction",</p>
+<p>  "name": "Reserve a Table",</p>
+<p>  "description": "Direct restaurant reservations. We hold tables 15 minutes past your booking time.",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example-restaurant.com/reserve?date={date}&amp;time={time}&amp;party={party}&amp;source=agent",</p>
+<p>    "httpMethod": "GET"</p>
+<p>  },</p>
+<p>  "query-input": [</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "date",</p>
+<p>      "valueRequired": true,</p>
+<p>      "valuePattern": "\\d{4}-\\d{2}-\\d{2}"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "time",</p>
+<p>      "valueRequired": true,</p>
+<p>      "valuePattern": "\\d{2}:\\d{2}"</p>
+<p>    },</p>
+<p>    {</p>
+<p>      "@type": "PropertyValueSpecification",</p>
+<p>      "valueName": "party",</p>
+<p>      "valueRequired": true,</p>
+<p>      "minValue": 1,</p>
+<p>      "maxValue": 12</p>
+<p>    }</p>
+<p>  ],</p>
+<p>  "object": {</p>
+<p>    "@type": "FoodEstablishment",</p>
+<p>    "@id": "https://www.example-restaurant.com/#organization"</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "FoodEstablishmentReservation",</p>
+<p>    "reservationStatus": "Pending"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h2>ReserveAction: tour or activity</h2>
+
+<p>For boat tours, helicopter rides, snorkeling, hiking, ATV rentals,</p>
+<p>spa appointments, surf lessons.</p>
+
+<pre><code>{
+<p>  "@context": "https://schema.org",</p>
+<p>  "@type": "ReserveAction",</p>
+<p>  "name": "Book a Tour",</p>
+<p>  "target": {</p>
+<p>    "@type": "EntryPoint",</p>
+<p>    "urlTemplate": "https://www.example-tour.com/book?date={date}&amp;participants={participants}&amp;tour={tourId}&amp;source=agent",</p>
+<p>    "httpMethod": "GET"</p>
+<p>  },</p>
+<p>  "query-input": [</p>
+<p>    { "@type": "PropertyValueSpecification", "valueName": "date", "valueRequired": true, "valuePattern": "\\d{4}-\\d{2}-\\d{2}" },</p>
+<p>    { "@type": "PropertyValueSpecification", "valueName": "participants", "valueRequired": true, "minValue": 1, "maxValue": 10 },</p>
+<p>    { "@type": "PropertyValueSpecification", "valueName": "tourId", "valueRequired": true }</p>
+<p>  ],</p>
+<p>  "object": {</p>
+<p>    "@type": "TouristAttraction",</p>
+<p>    "@id": "https://www.example-tour.com/#organization"</p>
+<p>  },</p>
+<p>  "result": {</p>
+<p>    "@type": "EventReservation",</p>
+<p>    "reservationStatus": "Pending"</p>
+<p>  }</p>
+<p>}</code></pre>
+
+<h2>What to NEVER expose</h2>
+
+<ul><li>**Reservation actions where bookings cannot actually be confirmed</li>
+</ul>  in real time.** If the booking flow is "we will call you within 24
+<p>  hours" do not expose ReserveAction. Agents will report failure to</p>
+<p>  the user and you lose the booking entirely.</p>
+<ul><li>**Cancellation policies that vary by booking source via the</li>
+</ul>  schema.** If agent-driven bookings have different cancellation
+<p>  rules than direct human bookings, surface that on the *result*</p>
+<p>  page, not the schema. Hidden policy variation is a fast path to</p>
+<p>  bad-faith dispute.</p>
+<ul><li>**Reservations for capacity you do not have.** A real-time</li>
+</ul>  inventory feed is the prerequisite. If the schema says "Book a
+<p>  Room" but the hotel is sold out, the agent's failure is your</p>
+<p>  reputation hit.</p>
+
+<h2>What to expose alongside</h2>
+
+<ul><li>**Cancellation window** as a <code>cancellationPolicy</code> on the</li>
+</ul>  <code>LodgingReservation</code> result type
+<ul><li>**Best Rate Guarantee** as a <code>priceMatchPolicy</code> on the</li>
+</ul>  Organization
+<ul><li>**Pet policy, age policy, smoking policy** as</li>
+</ul>  <code>LocationFeatureSpecification</code> on the LodgingBusiness
+
+<p>The agent ecosystem in 2026 is starting to filter on these fields.</p>
+<p>A pet-friendly traveler asking ChatGPT for "pet-friendly Honolulu</p>
+<p>hotels with same-day booking" will reach properties that surface</p>
+<p>the pet policy in structured form before properties whose policy is</p>
+<p>buried in unstructured text.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This template is MIT-licensed. Use it freely; attribution appreciated. Need help deploying it on your site? <a href="https://check.neverranked.com">Run a free scan</a> first to see what other gaps exist, or <a href="mailto:lance@neverranked.com">email Lance</a>.</p>
+  </div>
+</div>
+</body>
+</html>
