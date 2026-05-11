@@ -204,22 +204,30 @@ this -- agencies sign up clients under their own slug and get
 white-label dashboards. The free tier is for direct end-user
 acquisition only, not for resold use.
 
-## Open questions for Lance
+## Resolved decisions (2026-05-10)
 
-1. **Should the free tier be branded "Free" or under a softer
-   name** ("Pulse", "Watch", "Standing")? Matters for messaging.
-   My recommendation: just say "Free" and treat it as standing
-   product, not a tier.
-2. **One domain forever, or one domain per 90-day window so
-   users can switch?** My recommendation: one domain forever
-   (simpler), upgrade allows switching.
-3. **Email cadence: weekly digest only, or also one-off score-
-   change alerts?** My recommendation: weekly digest is the floor;
-   add a same-day alert when score drops by 10+ points.
-4. **Public score history page** (optional toggle, free users can
-   make their score history visible to anyone via a shareable
-   URL)? My recommendation: yes, opt-in. Creates organic SEO and
-   social proof when good scores share publicly.
+All four open questions answered. Locked.
+
+1. **Branding: "Free."** Plain word, treated as standing product
+   not a tier. No "Pulse Lite" / "Watch" / softer-name framing.
+2. **One domain forever.** Upgrade unlocks switching and multi-
+   domain. Domain corrections (typo on signup, rebrand) handled
+   as one-time manual support, not self-serve.
+3. **Weekly digest + score-drop alert.** Triggered email fires
+   when score drops 5+ points week-over-week OR crosses a band
+   boundary (green 80+ -> yellow 60-79, or yellow -> red).
+   Capped at one alert per week so volatile periods do not spam.
+   The alert is the conversion moment: ends with "Pulse
+   subscribers get the diagnosis, not just the alert."
+4. **Opt-in public score history page** at
+   `neverranked.com/score/<domain>`. Default off. One-click
+   revoke (page 404s within an hour). Score floor: scores below
+   40 render as "score hidden, currently rebuilding" even if the
+   user is opted in (protects the user from publishing a bad-
+   week snapshot). `noindex` until the domain has 4+ weeks of
+   history so week-one snapshots don't get crawled. The public
+   page shows score + sparkline + engines tested + last update
+   + State of AEO methodology link. Diagnosis stays paid.
 
 ## Decision points
 

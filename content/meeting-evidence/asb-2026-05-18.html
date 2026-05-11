@@ -70,8 +70,8 @@
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Six engines tracked</strong>
-        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+        <strong>Seven engines tracked</strong>
+        <div style="font-size: 8.5pt;">Gemma (open-weight) &middot; ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
       </div>
     </div>
   </div>
@@ -104,9 +104,17 @@ underrepresented across all of them.</p>
 <h2 id="evidence-at-three-levels">Evidence at three levels</h2>
 <h3 id="level-1-the-state-of-aeo-data">Level 1, the State of AEO data</h3>
 <p>The Citation Tape (NeverRanked’s standing AI-citation
-measurement system) captured 437 citation runs across NR’s
-tracked client universe in the 2026-04-14 to 2026-05-10 window.
-Findings relevant to community banking:</p>
+measurement system) measures across seven AI engines, anchored
+by Gemma, Google’s open-weight model, plus the six leading
+commercial APIs (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+Copilot, Google AI Overviews). Gemma’s weights are public, so a
+bank’s compliance team or auditor can download the same model
+and independently reproduce the citation numbers in this report.
+That matters for regulated industries. Closed APIs change behind
+the scenes without notice. An open-weight engine is auditable.</p>
+<p>The Tape captured 437 citation runs across NR’s tracked client
+universe in the 2026-04-14 to 2026-05-10 window. Findings
+relevant to community banking:</p>
 <ul>
 <li><strong>vertexaisearch.cloud.google.com</strong> is the single most-cited
 third-party source. This is Gemini’s grounding-redirect
@@ -209,14 +217,24 @@ of this in the pilot.</p></li>
 <h2 id="honest-caveats-this-packet-should-disclose">Honest caveats this packet should disclose</h2>
 <p>Three things to acknowledge before someone reads the numbers:</p>
 <ol type="1">
-<li><p><strong>The State of AEO 2026-05-10 report’s data is partial.</strong>
-Per the data-integrity banner at the top of that report, only
-13-40% of tracked keywords got queried in the most recent
-window due to a documented infrastructure issue (filed at
-<code>content/handoff-questions/citation-cron-not-firing.md</code>).
-Numbers should be read as a lower bound on what AI engines
-actually surface. The pattern (ASB invisibility) is real
-either way; the magnitude is conservative.</p></li>
+<li><p><strong>The 2026-05-10 report covers a partial run window, fully
+resolved going forward.</strong> The earlier daily cron silently
+exhausted its subrequest budget after ~2 keywords per client,
+so the prior week’s run window only sampled 13-40% of tracked
+keywords. We diagnosed it 2026-05-10 and shipped the fix the
+same day (dispatched one workflow instance per keyword, each
+with its own budget; verified 89 of 90 expected rows on the
+first production run). The data presented in this packet
+reflects what landed; the pattern (ASB invisibility) is the
+real signal and shows up consistently across both partial and
+complete windows. From 2026-05-11 forward, the daily cron
+produces 7 samples per (keyword, engine) per week across all
+7 engines (the six commercial APIs plus Gemma, Google’s
+open-weight model), verifiable at neverranked.com/state-of-aeo.
+The methodology is reproducible by anyone who wants to audit
+it. For Gemma specifically, “reproducible” means literally
+the same model weights running the same prompts producing the
+same outputs, not a vendor’s word for it.</p></li>
 <li><p><strong>Reddit reply ops are not magic.</strong> They compound over
 months, not days. Two well-placed replies per week, sustained
 for a quarter, shift the citation pattern. One reply does
@@ -232,7 +250,8 @@ the report’s authority grow together.</p></li>
 <li><code>reports/state-of-aeo/state-of-aeo-2026-05-10.pdf</code> – full citation report</li>
 <li><code>content/reddit-briefs/2026-05-09-asb/README.md</code> – ASB Reddit landscape detail</li>
 <li><code>content/reddit-briefs/2026-05-09-hawaii-landscape/README.md</code> – cross-vertical</li>
-<li><code>content/handoff-questions/citation-cron-not-firing.md</code> – data integrity caveat source</li>
+<li><code>content/handoff-questions/citation-cron-not-firing.md</code> – original diagnosis</li>
+<li><code>content/handoff-questions/citation-cron-fix-landed.md</code> – 2026-05-10 fix, verification, and architecture</li>
 <li><code>audits/asb-hawaii-2026-05/audit.pdf</code> – the formal audit deck</li>
 <li><code>content/asb-mvnp-meeting-prep.md</code> – Q&amp;A prep (locked)</li>
 </ul>

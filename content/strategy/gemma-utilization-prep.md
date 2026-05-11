@@ -113,8 +113,10 @@ LM Studio) gives instant feedback without burning API calls.
   "does Gemini AI Overview cite you."
 - **It does not give us access to Google's search infrastructure.** That
   remains gated by Gemini's API and AI Overviews via DataForSEO.
-- **It is not a substitute for any of the 6 engines we already track.**
-  It's an addition, not a replacement.
+- **It is not a substitute for any of the 6 commercial engines we
+  already track.** It's an addition, not a replacement. (Decision
+  locked 2026-05-10: Gemma shipped as the 7th engine on 2026-05-10
+  evening HST. This doc is the prep that led to that decision.)
 
 ## The strategic question to answer tomorrow
 

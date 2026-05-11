@@ -28,17 +28,18 @@ We've been quiet for six months because we wanted the methodology to work before
 
 It works now.
 
-The Citation Tape is NeverRanked's standing measurement system for AI search citations. Every Monday at 6am Pacific, it pulls citation data from production and emits a weekly report on what AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AI Overviews) actually cite when they answer questions about the brands we track.
+The Citation Tape is NeverRanked's standing measurement system for AI search citations. Every Monday at 6am Pacific, it pulls citation data from production and emits a weekly report on what seven AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AI Overviews, and Gemma, the open-weight model from Google) actually cite when they answer questions about the brands we track.
 
-Same script, same data sources, no manual curation. The methodology is the script. The source-type taxonomy is public. The schema is in the repo. Anyone running the same query against the same database gets the same numbers.
+Same script, same data sources, no manual curation. The methodology is the script. The source-type taxonomy is public. The schema is in the repo. Anyone running the same query against the same database gets the same numbers. And for Gemma specifically, "the same numbers" means re-running the same published model weights, not trusting an API.
 
-The first weekly report is live. So is the bug we caught running it: this week's data is partial because of an infrastructure issue we documented openly. We chose to publish anyway with a banner above the headline rather than pretend the system was healthy.
+The first weekly report is live. So is the bug we caught and fixed while running it: the May 10 archive shows a partial-data banner from a subrequest-budget issue, diagnosed and shipped the same day. We chose to publish with the banner above the headline rather than backfill quietly.
 
-Three properties that make The Citation Tape different from every other AEO measurement we've seen:
+Four properties that make The Citation Tape different from every other AEO measurement we've seen:
 
 1. The methodology is the script
 2. The source-type taxonomy is public
 3. The schema is in the repo
+4. One of the seven engines is literally reproducible (open weights)
 
 Most AEO measurement today is gated behind dashboards. Customers see their own number. Categorical patterns stay locked inside agency decks. There is no public methodology anyone can reference.
 
@@ -63,9 +64,9 @@ The Citation Tape runs every Monday at 6am Pacific. Each weekly report covers se
 
 What makes this different from existing AEO measurement:
 
-The methodology is the script. The source-type taxonomy is public on GitHub. The data schema is in the repo. Anyone can re-run our methodology against their own client base and compare.
+The methodology is the script. The source-type taxonomy is public on GitHub. The data schema is in the repo. One of the seven engines we measure, Gemma, is Google's open-weight model, so the citation numbers we publish are literally reproducible against the same model weights. Anyone can re-run our methodology against their own client base and compare.
 
-The first weekly report is live with a data-integrity banner above the headline disclosing a known infrastructure issue we caught while building. We chose transparency over polish.
+The first weekly report (May 10) carries a data-integrity banner above the headline disclosing a partial-data infrastructure issue we caught and fixed the same day. We chose transparency over polish.
 
 Read the launch post: neverranked.com/blog/the-citation-tape
 View this week's report: neverranked.com/state-of-aeo
@@ -83,9 +84,9 @@ NeverRanked has launched The Citation Tape, the first public, weekly, reproducib
 
 Most AEO measurement today is gated. Customers see their own dashboards. Categorical patterns stay locked inside agency operations decks. The Citation Tape changes the default by publishing the methodology, the source-type taxonomy, and the data schema openly.
 
-Every Monday at 6am Pacific, the system regenerates a weekly State of AEO report from production citation_runs data. The first report is live and carries a top-of-document data-integrity banner: this week's data is partial because of a documented infrastructure issue. NeverRanked chose to ship with the banner visible rather than wait for the bug fix.
+Every Monday at 6am Pacific, the system regenerates a weekly State of AEO report from production citation_runs data, covering seven AI engines including Gemma, the open-weight model from Google whose weights are public, so the measurement is independently reproducible. The first report (May 10) is live and carries a top-of-document data-integrity banner: that week's data is partial because of a subrequest-budget bug NeverRanked diagnosed and fixed the same day. NeverRanked chose to ship with the banner visible rather than backfill quietly.
 
-Founder Lance Roylo on the decision: "Hiding the banner until the bug is fixed would require lying about when our data is healthy. We'd rather publish honestly and show the bug fix landing in real time."
+Founder Lance Roylo on the decision: "Hiding the banner would require pretending the bug never happened. We'd rather show the bug, the diagnosis, and the fix landing in real time."
 
 The Citation Tape and its public hub are at neverranked.com/state-of-aeo. RSS feed for subscribers at neverranked.com/state-of-aeo/feed.xml.
 ```

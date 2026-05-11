@@ -4,7 +4,7 @@
 **Sample date:** 2026-05-08
 **Engine sampled in this audit:** Claude (Anthropic) via direct API
 **Prompt sample:** 8 representative buyer-stage prompts from the Hawaii community banking corpus
-**Production scope:** Signal-tier subscription queries the same prompt set across all six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) on a weekly cadence with statistical attribution
+**Production scope:** Signal-tier subscription queries the same prompt set across all seven engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma, Google's open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.
 
 ---
 
@@ -220,7 +220,7 @@ should reflect:
 - Citation share remaining at 100% (it is already at the ceiling)
 
 This is testable. The Signal-tier subscription that runs these
-prompts weekly across all six engines reports the actual movement
+prompts weekly across all seven engines reports the actual movement
 post-deployment with statistical attribution at p<0.05.
 
 ---
@@ -231,8 +231,11 @@ This is a snapshot of one engine (Claude) on one day with eight
 prompts. The production tracking layer that ships with the Signal-
 tier subscription replaces this with:
 
-- **Six engines** (ChatGPT, Perplexity, Claude, Gemini, Microsoft
-  Copilot, Google AI Overviews) on the same prompt set every week
+- **Seven engines** (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+  Copilot, Google AI Overviews, and Gemma, Google's open-weight
+  model) on the same prompt set every week. Gemma is the
+  reproducibility anchor: its weights are public, so a compliance
+  team can re-run the exact same queries and verify our numbers.
 - **Forty-two prompts** from the full Hawaii community banking
   corpus, refreshed quarterly to track engine behavior changes
 - **Statistical attribution** that ties citation movement to specific

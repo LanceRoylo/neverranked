@@ -37,11 +37,11 @@ about it. Avoid marketing language.
   llms_txt_check: validates an llms.txt file against the spec
   agent_readiness_check: audits whether a site exposes structured data agents can use
 
-Why we built it: AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AIO) increasingly answer "best X for Y" queries directly, and what they cite is shaped by infrastructure most sites don't ship: schema.org, llms.txt, agent-readable structured data. The MCP server lets Claude Desktop, Claude Code, or any MCP client run those audits inline.
+Why we built it: AI engines (ChatGPT, Perplexity, Gemini, Claude, Copilot, AIO, and Gemma) increasingly answer "best X for Y" queries directly, and what they cite is shaped by infrastructure most sites don't ship: schema.org, llms.txt, agent-readable structured data. The MCP server lets Claude Desktop, Claude Code, or any MCP client run those audits inline. (We added Gemma to the engine set specifically because it's the only open-weight model in the group, which means our citation measurements are reproducible against published weights, not just black-box API responses.)
 
 Some interesting parts:
 
-- The aeo_scan engine is the same one we run weekly across our tracked client universe. Output of those weekly runs is at https://neverranked.com/state-of-aeo/ if you want to see what AI engines actually cite (with a real data-integrity caveat -- production cron has bugs we documented at content/handoff-questions/).
+- The aeo_scan engine is the same one we run weekly across our tracked client universe. Output of those weekly runs is at https://neverranked.com/state-of-aeo/ if you want to see what AI engines actually cite. The May 10 archived report carries a banner about a partial run window caused by a subrequest-budget bug in the daily cron; we documented the diagnosis and fix at content/handoff-questions/citation-cron-fix-landed.md and current runs are clean.
 
 - llms_txt_check is grumpy about the spec on purpose. The standard is young, and we'd rather flag ambiguities than silently accept malformed feeds.
 

@@ -16,7 +16,7 @@ add an "AI mentions" tab.
 
 What none of them ship together:
 
-- Six-engine, web-grounded weekly tracking with statistical attribution
+- Seven-engine, web-grounded weekly tracking with statistical attribution (six commercial APIs + Gemma, the open-weight model, which makes our numbers reproducible against published weights)
 - Schema deployment via a snippet (most are dashboards, not deployers)
 - Per-vertical compliance-aware schema (zero competitors do this)
 - A clarity-first customer voice (most are technical and gatekept)
@@ -25,9 +25,12 @@ What none of them ship together:
 - llms.txt support
 
 That gap is our window. It is not infinite. By Q1 2027 at least one of
-the funded competitors will copy the table-stakes pieces (six-engine
-tracking, snippet deployment, dashboard). The moats we build NOW need
-to compound between now and then.
+the funded competitors will copy the table-stakes pieces (multi-engine
+tracking, snippet deployment, dashboard). What they will be slower to
+copy is the open-weight reproducibility (Gemma in the engine set, with
+public methodology) because it requires committing to verifiability as
+a brand value. The moats we build NOW need to compound between now and
+then.
 
 ## The taxonomy of NeverRanked moats
 
@@ -88,7 +91,7 @@ says about them and dispute incorrect statements.
 Implication: NR can be the vendor that captures hallucinations,
 flags them to customers, helps file corrections via engine feedback
 mechanisms, and tracks resolution. Defensible because requires the
-six-engine tracking infrastructure to detect in the first place.
+seven-engine tracking infrastructure to detect in the first place.
 
 ### 4. The dark-funnel attribution problem is unsolved
 

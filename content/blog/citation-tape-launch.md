@@ -14,7 +14,7 @@ description: "The Citation Tape is NeverRanked's standing measurement system for
 
 ---
 
-For the last six months, we've been building a thing that didn't have a name. A standing measurement system for AI search citations, running weekly across the brands NeverRanked tracks, surfacing what ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, and Google AI Overviews actually pull from when they answer questions about those brands.
+For the last six months, we've been building a thing that didn't have a name. A standing measurement system for AI search citations, running weekly across the brands NeverRanked tracks, surfacing what seven AI engines actually pull from when they answer questions about those brands. Six are commercial APIs: ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, and Google AI Overviews. The seventh is Gemma, Google's open-weight model. The first six are black boxes. Gemma is reproducible: anyone can download the same weights and re-run our queries. That distinction is the whole point of what comes next.
 
 The thing now has a name. We call it **The Citation Tape**.
 
@@ -42,17 +42,19 @@ Each weekly run produces seven sections:
 
 Generated weekly. Same script, same data sources, no manual curation. Anyone running the same query against the same database gets the same numbers.
 
-## The data-integrity notice
+## The data-integrity notice (and the fix)
 
-The 2026-05-10 weekly report carries a banner at the top: this week's data is partial. Three of three tracked clients fell below 80% keyword completion due to a known infrastructure issue. The numbers in the report should be read as a lower bound on what AI engines actually retrieve, not the final picture.
+The 2026-05-10 weekly report carries a banner at the top: this week's data is partial. Three of three tracked clients fell below 80% keyword completion due to a documented infrastructure issue. The earlier daily cron silently exhausted its subrequest budget after ~2 keywords per client. The numbers in that report should be read as a lower bound on what AI engines actually retrieve.
 
-We're publishing this anyway, with the banner visible above the headline, because:
+We diagnosed it 2026-05-10 and shipped the fix the same day: one workflow instance dispatched per keyword, each with its own subrequest budget. The first production run after the fix landed 89 of 90 expected rows. From 2026-05-11 forward, the daily cron produces 7 samples per (keyword, engine) per week across all 7 engines.
+
+We're leaving the May 10 banner up rather than backfilling, because:
 
 - The pattern shown (which source types AI engines cite, where the gaps are) is reliable even when the magnitude is conservative.
-- Hiding the banner until the bug is fixed would require lying about when our data is healthy. We'd rather publish honestly and show the bug fix landing in real time.
-- The fix shape is documented in the public repo at `content/handoff-questions/citation-cron-not-firing.md`. Anyone curious about the engineering reality behind the number can read it.
+- Hiding the banner would require pretending the bug never happened. We'd rather show the bug, the diagnosis, and the fix landing in real time.
+- The full diagnosis and fix architecture are documented in the public repo at `content/handoff-questions/citation-cron-fix-landed.md`. Anyone curious about the engineering reality behind the numbers can read it.
 
-When the underlying bug ships, the banner disappears on its own. The visual presence of the banner becomes a signal: the more weeks it persists, the more we owe the audience.
+The banner disappears from future reports automatically as the post-fix data accumulates. The May 10 archived report keeps its banner permanently as a historical record.
 
 ## Reproducible by design
 
@@ -61,6 +63,7 @@ Three properties make The Citation Tape different from every other "AI visibilit
 1. **The methodology is the script.** `scripts/state-of-aeo-generate.mjs` reads `citation_runs` from production D1, applies the source-type classifier, and emits the report markdown. No hidden hand-curation. No "our analyst noticed."
 2. **The source-type taxonomy is public.** `tools/citation-gap/src/source-types.mjs` defines the 15 categories. Disagree with how we classified a domain? File a PR.
 3. **The schema is in the repo.** `citation_runs` migration is published. Build your own version of this report against your own data and compare.
+4. **One engine is literally reproducible.** Six of our seven engines are commercial APIs that can change behavior without notice. The seventh, Gemma, is a published open-weight model. Re-run our exact prompts against the same Gemma weights and you get the same outputs. For regulated industries that need to audit a measurement system, this is the difference between "trust us" and "verify it yourself."
 
 You can't reverse-engineer Gartner's Magic Quadrant. You can re-run our weekly report, with our exact methodology, against your own clients and decide if the numbers feel right.
 

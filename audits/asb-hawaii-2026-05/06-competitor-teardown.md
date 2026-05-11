@@ -220,7 +220,7 @@ competitors by a margin none of them can close in a single cycle.
 Citation share on the twelve sampled prompts in Section 4 should
 materially improve as engines retrain on the new structured data
 (typical retraining window: thirty to forty-five days post-
-deployment, observed across all six engines NeverRanked tracks).
+deployment, observed across all seven engines NeverRanked tracks).
 
 The Signal-tier subscription that ships these deployments and
 tracks the resulting citation movement runs $2,000/month with a

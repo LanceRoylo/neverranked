@@ -98,12 +98,15 @@ concerns. Healthcare, legal, and insurance vertical templates on
 the roadmap.
 
 **Citation tracking with attribution.** Every Signal customer gets
-daily six-engine pulls (ChatGPT, Perplexity, Claude, Gemini,
-Microsoft Copilot, Google AI Overviews) on a vertical-specific
-prompt corpus, seven samples per (keyword, engine) per week. We
-attribute citation movement to specific deployments at p<0.05
-statistical confidence. The whole apparatus is the Citation Tape
-referenced above.
+daily seven-engine pulls (ChatGPT, Perplexity, Claude, Gemini,
+Microsoft Copilot, Google AI Overviews, and Gemma, Google's
+open-weight model) on a vertical-specific prompt corpus, seven
+samples per (keyword, engine) per week. We attribute citation
+movement to specific deployments at p<0.05 statistical confidence.
+Gemma is in the set specifically because its weights are public,
+which means a compliance team or third-party auditor can re-run
+our exact prompts and verify the citation numbers we report. The
+whole apparatus is the Citation Tape referenced above.
 
 **Agent-readiness audit.** We audit for the ReserveAction,
 ApplyAction, BuyAction, and ContactAction templates that AI
@@ -125,10 +128,11 @@ plus 3-8 hours of billable implementation per slot.
 Three new pieces of platform we shipped between May 6 and May 10
 that are directly relevant to where Muck Rack stops:
 
-1. **The Citation Tape — the measurement framework, productized.**
-   Six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft
-   Copilot, Google AI Overviews). Daily cadence, seven samples per
-   keyword per engine per week, statistical attribution at p<0.05.
+1. **The Citation Tape, the measurement framework, productized.**
+   Seven engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+   Copilot, Google AI Overviews, and Gemma, Google's open-weight
+   model). Daily cadence, seven samples per keyword per engine per
+   week, statistical attribution at p<0.05.
    Vertical-specific prompt corpora for Hawaii community banking
    and Hawaii real estate live in the public repo today, with
    professional services and hospitality on the roadmap as more
@@ -242,10 +246,13 @@ keywords, and the remaining keywords "succeeded" with zero rows.
 The fix shipped tonight: each (client, keyword) tuple runs in
 its own workflow instance with a fresh budget. Empirical proof
 in production minutes after deploy: NeverRanked completed 15 of
-15 keywords across all 6 engines, 208 citation_runs in the first
-four hours. The previously-aspirational claim of "daily
-six-engine pulls, seven samples per keyword per engine per week"
-is now backed by working infrastructure. Yesterday it was copy.
+15 keywords across all 6 commercial engines, 208 citation_runs in
+the first four hours. The previously-aspirational claim of "daily
+multi-engine pulls, seven samples per keyword per engine per week"
+is now backed by working infrastructure. (Gemma joined the engine
+set the same evening as the seventh, open-weight engine, so by
+2026-05-11 forward the daily run produces seven samples per
+(keyword, engine) per week across all seven.) Yesterday it was copy.
 
 **Honest disclosure is baked into the public report.** This week's
 State of AEO report carries a top-of-document data-integrity
@@ -294,9 +301,11 @@ from forward-looking to retrospective:
 1. The Citation Tape is no longer "the measurement framework,
    productized." It is the named, public, weekly-running
    measurement system. Anyone reading this can click the link.
-2. The cron infrastructure behind the daily-six-engine claim is
+2. The cron infrastructure behind the daily-multi-engine claim is
    no longer aspirational. It is firing per-keyword in production,
-   with per-instance subrequest budgets that hold under load.
+   with per-instance subrequest budgets that hold under load. And
+   the engine set is now seven, with Gemma added as the open-weight
+   reproducibility anchor.
 3. The autonomy posture (does NeverRanked actually do what its
    marketing says it does?) is now answered by the public
    heartbeat log, not by my word.

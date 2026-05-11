@@ -178,7 +178,7 @@ category leader position is a single quarter, not a year.
 
 This audit is a snapshot of ASB's keyword and intent gap on a
 single day. The Signal-tier subscription replaces the snapshot with
-a weekly pull across all six AI engines on the full forty-two-prompt
+a weekly pull across all seven AI engines on the full forty-two-prompt
 corpus. The weekly pull captures the actual citations engines are
 making, attributes deployment changes to citation movement at p<0.05
 statistical significance, and surfaces engine behavior changes
