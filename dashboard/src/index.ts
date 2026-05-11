@@ -12,6 +12,7 @@ import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./r
 import { handleFreeSignup, handleFreeSignupGet } from "./routes/free-signup";
 import { handleFreeAuth } from "./routes/free-auth";
 import { handleFreeUnsubscribe } from "./routes/free-unsubscribe";
+import { handleFreeDashboard, handleFreeScan, handleFreeSettings } from "./routes/free-dashboard";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
@@ -497,6 +498,15 @@ export default {
     }
     if (path === "/free/unsubscribe" && method === "GET") {
       return handleFreeUnsubscribe(request, env);
+    }
+    if (path === "/free" && method === "GET") {
+      return handleFreeDashboard(request, env);
+    }
+    if (path === "/free/scan" && method === "POST") {
+      return handleFreeScan(request, env);
+    }
+    if (path === "/free/settings" && method === "POST") {
+      return handleFreeSettings(request, env);
     }
 
     // 2FA routes (the gate above lets these through even when 2FA is required)

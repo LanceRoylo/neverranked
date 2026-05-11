@@ -80,10 +80,34 @@ export async function handleFreeSignup(request: Request, env: Env): Promise<Resp
       return html(checkEmailPage(domain));
     }
 
-    await env.DB.prepare(
+    const insertResult = await env.DB.prepare(
       `INSERT INTO free_users (email, domain, created_at, email_alerts, public_history, unsub_token)
        VALUES (?, ?, ?, 1, 0, ?)`
     ).bind(email, domain, now, generateUnsubToken()).run();
+
+    const freeUserId = Number(insertResult.meta?.last_row_id ?? 0);
+    if (freeUserId > 0) {
+      // Provision a domains row so the existing scan + cron paths
+      // work without modification. client_slug carries a synthetic
+      // 'free-<id>' marker so the upgrade flow can later locate
+      // and rebrand this row.
+      const domainInsert = await env.DB.prepare(
+        `INSERT INTO domains (client_slug, domain, active, free_user_id, created_at, updated_at)
+         VALUES (?, ?, 1, ?, ?, ?)`
+      ).bind(`free-${freeUserId}`, domain, freeUserId, now, now).run();
+
+      const domainId = Number(domainInsert.meta?.last_row_id ?? 0);
+      if (domainId > 0 && env.SCAN_DOMAIN_WORKFLOW) {
+        // Fire-and-forget initial scan so the dashboard renders
+        // a real score the first time the user lands on /free
+        // (or shortly after).
+        try {
+          await env.SCAN_DOMAIN_WORKFLOW.create({ params: { domainId } });
+        } catch (err) {
+          console.error(`[free-signup] initial scan dispatch failed for ${domain}:`, err);
+        }
+      }
+    }
   }
 
   const token = await createFreeMagicLink(email, env);
