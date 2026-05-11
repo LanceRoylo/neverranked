@@ -32,12 +32,19 @@ CREATE INDEX idx_free_users_unsub ON free_users(unsub_token);
 CREATE INDEX idx_free_users_public ON free_users(public_history)
   WHERE public_history = 1;
 
--- Scope scan_results back to a free_user when the row originated
--- from the free tier. Existing scan_results rows have free_user_id
--- NULL, which is correct: they belong to paying users via
--- client_slug.
-ALTER TABLE scan_results ADD COLUMN free_user_id INTEGER
+-- Treat each free user's domain as a lightweight client. Adding
+-- free_user_id to `domains` rather than to `scan_results` means
+-- scanDomain() and the existing weekly cron work unchanged --
+-- they iterate `domains`, and free-tier rows just have a non-NULL
+-- free_user_id and a synthetic client_slug of the form
+-- 'free-<free_user.id>'. Scan history queries for a free user
+-- become: SELECT * FROM scan_results JOIN domains
+-- ON scan_results.domain_id = domains.id
+-- WHERE domains.free_user_id = ?
+ALTER TABLE domains ADD COLUMN free_user_id INTEGER
   REFERENCES free_users(id);
+CREATE INDEX idx_domains_free_user ON domains(free_user_id)
+  WHERE free_user_id IS NOT NULL;
 
 -- Free-tier sessions. Separate from `sessions` because that table
 -- has an FK to users(id) and free users live in their own table.
