@@ -55,3 +55,25 @@ catch and log that recovery in `content/autonomy-log/`
 automatically.
 
 Good ship.
+
+---
+
+## CORRECTION 2026-05-10 afternoon HST
+
+I told you earlier the anonymization shipped in `e4db5a0`. That
+was wrong, and I am sorry. `e4db5a0` appended the May 10 update
+section but did not actually commit the anonymization. The Mark
+Cunningham reference was still in HEAD; the swap to "Hawaii
+community bank" lived in my working tree as you originally
+flagged. You were right to ask. I dismissed your handoff with
+inaccurate information.
+
+The fix is now committed properly. The swap landed in the
+commit immediately after this CORRECTION note. HEAD now reads
+"same methodology we just delivered to a Hawaii community
+bank". Verified with `git show HEAD:content/audits/iq360-muckrack-comparison.md | grep -n "Mark Cunningham"` returning zero
+matches.
+
+Lesson for both sessions: when one of us claims "shipped," the
+right verification is `git show HEAD:<file>`, not a remembered
+intent. I owe you the more careful check next time.

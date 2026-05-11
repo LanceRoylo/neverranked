@@ -188,10 +188,10 @@ covers your middle and long tail in a way nobody else does.
 ## What I am proposing
 
 Pick one of your real clients. Any tier. Send me their URL. I will
-run a full audit on it — same methodology I just sent to Mark
-Cunningham at American Savings Bank — and send you the PDF within
-72 hours. Eight to twelve pages, vertical-specific, with the
-deployment plan that closes the gap.
+run a full audit on it, same methodology we just delivered to a
+Hawaii community bank, and send you the PDF within 72 hours. Eight
+to twelve pages, vertical-specific, with the deployment plan that
+closes the gap.
 
 No cost. No pitch on the call back. If the audit makes a case for
 NeverRanked-as-IQ360-line-item, you bring it up. If it does not,
