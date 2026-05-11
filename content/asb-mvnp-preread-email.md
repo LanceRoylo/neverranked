@@ -17,10 +17,12 @@ A few things worth flagging before you read:
    there, the audit pays for itself.
 
 2. The recurring value we are pitching is the measurement layer
-   underneath — six-engine citation tracking, statistical
-   attribution per deployment, benchmark data against First
-   Hawaiian and Bank of Hawaii. That is what the monthly
-   subscription buys, not the deployment.
+   underneath. Seven-engine citation tracking (six commercial
+   APIs plus Gemma, the open-weight model your compliance team
+   can independently audit), statistical attribution per
+   deployment, and benchmark data against First Hawaiian and
+   Bank of Hawaii. That is what the monthly subscription buys,
+   not the deployment.
 
 3. The schema review section (page 11) is the part James will
    probably want to spend the most time on. It includes

@@ -142,12 +142,20 @@ intro credit applies to the first three months either way.
 Behind it: he runs paid for a living. He knows attribution is
 hard and most vendors handwave it.
 
-Answer: Six engines, weekly, not daily (signals are too noisy
-daily). Each tracked prompt runs against ChatGPT, Perplexity,
-Claude, Gemini, Microsoft Copilot, and Google AI Overviews.
-Web-grounded engines (Perplexity, Copilot, Gemini, AIO) we
-hit via API or scraper depending on access. ChatGPT Search +
-Claude we hit via their respective interfaces. We measure
+Answer: Seven engines. Each tracked prompt runs against
+ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google
+AI Overviews, and Gemma (Google's open-weight model). Cadence
+is daily probes aggregated weekly for trend signal, which
+filters out per-day noise while still catching engine behavior
+shifts within the same week they happen. The seven-engine
+choice is deliberate: six are commercial APIs that can change
+behind the scenes; Gemma's weights are public, so your
+compliance team can re-run the same prompts against the same
+model and verify our numbers independently. That matters for a
+regulated bank. Web-grounded engines (Perplexity, Copilot,
+Gemini, AIO) we hit via API or scraper depending on access.
+ChatGPT Search + Claude we hit via their respective interfaces.
+Gemma runs via Together AI's hosted endpoint. We measure
 citation share (you appear in N of 100 cited sources for a
 given prompt) and rank position (1st, 2nd, 3rd). Citation lift
 attributed per variant with statistical confidence at p < 0.05

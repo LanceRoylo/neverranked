@@ -11,13 +11,13 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 ### Direct: ASB as a customer
 
 **Pulse** (entry tier): $497/mo, 3-month minimum.
-- Monthly Visibility Index report across all six engines
+- Monthly Visibility Index report across all seven engines (six commercial APIs plus Gemma, the open-weight model your compliance team can independently audit)
 - 10 tracked prompts (e.g. "best Hawaii business bank", "small business loans Honolulu")
 - 2 schemas auto-deployed monthly
 - Read-only summary dashboard
 
 **Signal**: $2,000/mo retail, 3-month minimum.
-- Weekly citation tracking across all six engines, web-grounded
+- Weekly citation tracking across all seven engines, web-grounded (six commercial APIs plus Gemma, open-weight)
 - Reddit thread tracking (where AI pulls "best X for Y" answers)
 - Schema fixes auto-deployed via our snippet
 - Authority audits + 90-day roadmap that updates itself
