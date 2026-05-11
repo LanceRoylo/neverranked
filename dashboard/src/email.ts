@@ -153,6 +153,64 @@ export async function sendMagicLinkEmail(
 }
 
 // ---------------------------------------------------------------------------
+// Free-tier magic link
+// ---------------------------------------------------------------------------
+
+export async function sendFreeMagicLinkEmail(
+  email: string,
+  token: string,
+  domain: string,
+  env: Env
+): Promise<boolean> {
+  const verifyUrl = `https://app.neverranked.com/free/auth?token=${token}`;
+
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Free magic link for ${email} (${domain}): ${verifyUrl}`);
+    return true;
+  }
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "NeverRanked <scores@neverranked.com>",
+        to: [email],
+        subject: `Confirm your weekly AEO score for ${domain}`,
+        text: `Click to confirm and see your first score:\n\n${verifyUrl}\n\nThis link expires in 15 minutes. After confirming, you will get a fresh AEO score for ${domain} every Monday, plus an alert if the score drops materially during the week.\n\nNeverRanked`,
+        html: `
+          <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
+            <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
+            <p style="margin:0 0 16px">You are one click away from a weekly AEO score for <strong>${domain}</strong>.</p>
+            <p style="margin:0 0 24px;color:#555">Every Monday we measure how your domain shows up across the seven AI engines we track and email you the result. If the score drops materially during the week, you also get an alert.</p>
+            <a href="${verifyUrl}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">See my score</a>
+            <p style="margin:24px 0 0;font-size:12px;color:#888">This link expires in 15 minutes. If you did not request this, ignore this email.</p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`Free magic link to ${email} failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email, type: "magic_link", status: "failed", statusCode: resp.status, errorMessage: errBody });
+      return false;
+    }
+
+    console.log(`Free magic link sent to ${email}`);
+    await logEmailDelivery(env, { email, type: "magic_link", status: "queued", statusCode: resp.status });
+    return true;
+  } catch (err) {
+    console.error(`Free magic link to ${email} error:`, err);
+    await logEmailDelivery(env, { email, type: "magic_link", status: "failed", errorMessage: String(err) });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Agency invites (teammate or client)
 // ---------------------------------------------------------------------------
 

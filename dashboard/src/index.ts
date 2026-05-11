@@ -9,6 +9,9 @@ import { getUser } from "./auth";
 import { scanDomain as scanDomainImported } from "./scanner";
 import { redirect, html, layout, esc as escHtml } from "./render";
 import { handleGetLogin, handlePostLogin, handleVerify, handleLogout } from "./routes/login";
+import { handleFreeSignup, handleFreeSignupGet } from "./routes/free-signup";
+import { handleFreeAuth } from "./routes/free-auth";
+import { handleFreeUnsubscribe } from "./routes/free-unsubscribe";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
@@ -479,6 +482,21 @@ export default {
     }
     if (path === "/auth/invite" && method === "GET") {
       return handleInviteAccept(request, env);
+    }
+
+    // Free monitoring tier (Phase 2 of /free/* surface).
+    // Spec: content/strategy/free-monitoring-tier.md
+    if (path === "/free/signup" && method === "GET") {
+      return handleFreeSignupGet(request, env);
+    }
+    if (path === "/free/signup" && method === "POST") {
+      return handleFreeSignup(request, env);
+    }
+    if (path === "/free/auth" && method === "GET") {
+      return handleFreeAuth(request, env);
+    }
+    if (path === "/free/unsubscribe" && method === "GET") {
+      return handleFreeUnsubscribe(request, env);
     }
 
     // 2FA routes (the gate above lets these through even when 2FA is required)
