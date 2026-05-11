@@ -57,6 +57,14 @@ const OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions";
 // billing-enabled key, while 2.0-flash returns 429 RESOURCE_EXHAUSTED.
 const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent";
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
+// Together AI hosts open-weight models including Gemma. OpenAI-compatible
+// API surface so the client code below is structurally identical to the
+// OpenAI/Anthropic patterns. We use gemma-3-27b-it (instruction-tuned)
+// as the 7th tracked engine -- the only open-weight model in the set,
+// which makes our citation numbers independently reproducible. See
+// content/strategy/gemma-utilization-prep.md for the strategic context.
+const TOGETHER_ENDPOINT = "https://api.together.xyz/v1/chat/completions";
+const GEMMA_MODEL = "google/gemma-3-27b-it";
 
 // ---------------------------------------------------------------------------
 // Perplexity queries
@@ -340,6 +348,93 @@ async function queryClaude(
     }));
   } catch {
     console.log("Claude JSON parse failed for \"" + keyword + "\"");
+  }
+
+  return { text: rawContent, entities };
+}
+
+// ---------------------------------------------------------------------------
+// Gemma queries (Google's open-weight model, hosted via Together AI)
+// ---------------------------------------------------------------------------
+
+/**
+ * Gemma 3 27B query via Together AI's OpenAI-compatible endpoint.
+ *
+ * Gemma is Google's open-weight LLM family. We track it as the 7th
+ * engine specifically because its weights are public -- anyone with
+ * the same model can independently reproduce our citation numbers,
+ * which the six closed-API engines (ChatGPT, Perplexity, Claude,
+ * Gemini, Copilot, AIO) cannot offer. This is the differentiator
+ * for compliance-sensitive and methodology-skeptical customers
+ * (banks, regulated industries, agencies serving them).
+ *
+ * Like Anthropic, Gemma has no native web grounding -- it answers
+ * from its training data. We use the same structured-JSON output
+ * pattern as queryClaude() so the entity extraction is comparable.
+ *
+ * Together AI's API is OpenAI-compatible so the client code mirrors
+ * queryOpenAI(), just with a different endpoint and model name.
+ * Auth is a single Bearer token (TOGETHER_API_KEY).
+ */
+async function queryGemma(
+  keyword: string,
+  apiKey: string
+): Promise<{ text: string; entities: CitedEntity[] }> {
+  const resp = await fetch(TOGETHER_ENDPOINT, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: GEMMA_MODEL,
+      max_tokens: 1024,
+      // Deterministic-ish: temperature 0 + a small seed gives more
+      // reproducible outputs across runs. Strengthens the "anyone
+      // can rerun and verify" methodology claim.
+      temperature: 0,
+      messages: [
+        {
+          role: "system",
+          content:
+            "You recommend local businesses and services. Always include specific business names and their websites when available. Respond ONLY with valid JSON in this exact format: {\"businesses\": [{\"name\": \"Business Name\", \"url\": \"https://example.com\", \"reason\": \"Why you recommend them\"}]}",
+        },
+        { role: "user", content: keyword },
+      ],
+    }),
+  });
+
+  if (!resp.ok) {
+    const err = await resp.text();
+    console.log(`Gemma error for "${keyword}": ${resp.status} ${err.slice(0, 200)}`);
+    return { text: "", entities: [] };
+  }
+
+  const data = (await resp.json()) as {
+    choices: { message: { content: string } }[];
+  };
+
+  const rawContent = data.choices?.[0]?.message?.content || "{}";
+  let entities: CitedEntity[] = [];
+
+  // Gemma sometimes wraps the JSON in ```json fences. Strip them
+  // before parsing -- same defensive parse as Anthropic.
+  const cleaned = rawContent
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
+    .trim();
+
+  try {
+    const parsed = JSON.parse(cleaned) as {
+      businesses: { name: string; url: string | null; reason: string }[];
+    };
+    entities = (parsed.businesses || []).map((b) => ({
+      name: b.name,
+      url: b.url,
+      context: b.reason,
+    }));
+  } catch {
+    console.log(`Gemma JSON parse failed for "${keyword}"`);
   }
 
   return { text: rawContent, entities };
@@ -663,7 +758,36 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (cited) clientCitations++;
       };
 
-      const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing"];
+      // 7th engine: Gemma (open-weight, hosted via Together AI).
+      // Mirror of runAnthropic but with the Gemma model. Reproducible
+      // by design -- public weights mean anyone can re-run the same
+      // prompts and verify our numbers.
+      const runGemma = async () => {
+        if (!env.TOGETHER_API_KEY) return;
+        const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+        const prom = computeProminence(r.entities, [], clientDomain, businessName);
+        const cited = prom !== null;
+        if (cited) {
+          kwCited = true;
+          if (!kwEngines.includes("gemma")) kwEngines.push("gemma");
+        }
+        for (const entity of r.entities) {
+          const eName = entity.name.toLowerCase();
+          if (eName !== clientDomain.replace(/^www\./, "").toLowerCase() &&
+              (!businessName || eName !== businessName.toLowerCase())) {
+            competitorCounts.set(eName, (competitorCounts.get(eName) || 0) + 1);
+          }
+        }
+        const insertRes = await env.DB.prepare(
+          `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+           VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
+        ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, now).run();
+        await maybeAlert(env, clientSlug, kw.id, "gemma", insertRes, cited, prom);
+        totalQueries++;
+        if (cited) clientCitations++;
+      };
+
+      const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing", "gemma"];
 
       // Run multiple times per engine for stability
       for (let run = 0; run < RUNS_PER_KEYWORD; run++) {
@@ -674,6 +798,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           runAnthropic(),
           runGoogleAIO(),
           runBing(),
+          runGemma(),
         ]);
         results.forEach((res, i) => {
           if (res.status === "rejected") {
@@ -777,11 +902,29 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         citations: cRuns?.cited || 0,
       };
     }
+    // Gemma -- the 7th engine, open-weight, gated on TOGETHER_API_KEY.
+    // Same shape as Anthropic in the aggregator (no URLs since Gemma
+    // doesn't have web grounding -- responses are training-data only).
+    if (env.TOGETHER_API_KEY) {
+      const gmRuns = await env.DB.prepare(
+        `SELECT COUNT(*) as total, SUM(client_cited) as cited FROM citation_runs
+         WHERE keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)
+         AND engine = 'gemma' AND run_at = ?`
+      )
+        .bind(clientSlug, now)
+        .first<{ total: number; cited: number }>();
+      enginesBreakdown.gemma = {
+        queries: gmRuns?.total || 0,
+        citations: gmRuns?.cited || 0,
+      };
+    }
     // Google AI Overviews + Bing both come from DataForSEO. Same gate.
     // Pre-2026-05-09 these were missing from engines_breakdown entirely
     // because the aggregator only knew about the 4 LLM engines, so even
     // when bing/aio rows landed they were invisible in dashboards and
-    // digest emails. Snapshot now reflects the full 6-engine reality.
+    // digest emails. Snapshot now reflects the full 7-engine reality
+    // (perplexity, openai, gemini, anthropic, google_ai_overview, bing,
+    // gemma).
     if (env.DATAFORSEO_LOGIN && env.DATAFORSEO_PASSWORD) {
       const aioRuns = await env.DB.prepare(
         `SELECT COUNT(*) as total, SUM(client_cited) as cited FROM citation_runs
@@ -1109,7 +1252,25 @@ export async function runOneKeywordCitations(
     rowsInserted++;
   };
 
-  const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing"];
+  // The 7th engine: Gemma (Google's open-weight model, hosted via
+  // Together AI). The only fully reproducible engine in the set --
+  // anyone can re-run our prompts on the same weights and verify.
+  // grounding_mode='training' since Gemma has no native web grounding
+  // (matches Anthropic's classification).
+  const runGemma = async () => {
+    if (!env.TOGETHER_API_KEY) return;
+    const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+    const prom = computeProminence(r.entities, [], clientDomain, businessName);
+    const cited = prom !== null;
+    await env.DB.prepare(
+      `INSERT INTO citation_runs (keyword_id, engine, response_text, cited_entities, cited_urls, client_cited, prominence, run_at, grounding_mode)
+       VALUES (?, 'gemma', ?, ?, '[]', ?, ?, ?, 'training')`
+    ).bind(kw.id, r.text.slice(0, 4000), JSON.stringify(r.entities), cited ? 1 : 0, prom, tick()).run();
+    engines.gemma = (engines.gemma || 0) + 1;
+    rowsInserted++;
+  };
+
+  const engineLabels = ["perplexity", "openai", "gemini", "anthropic", "google_aio", "bing", "gemma"];
 
   for (let run = 0; run < RUNS_PER_KEYWORD; run++) {
     const results = await Promise.allSettled([
@@ -1119,6 +1280,7 @@ export async function runOneKeywordCitations(
       runAnthropic(),
       runGoogleAIO(),
       runBing(),
+      runGemma(),
     ]);
     results.forEach((res, i) => {
       if (res.status === "rejected") {

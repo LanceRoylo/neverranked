@@ -31,6 +31,15 @@ export interface Env {
    *  keys. Both must be set for the integration to activate. */
   DATAFORSEO_LOGIN?: string;
   DATAFORSEO_PASSWORD?: string;
+  /** Together AI API key for Gemma 3 27B queries -- the 7th tracked
+   *  engine on The Citation Tape. Gemma is the only open-weight model
+   *  in the set, which makes our citation numbers independently
+   *  reproducible (anyone with the same model weights can verify our
+   *  prompts produce the same answers). Get a key at
+   *  https://api.together.ai. Skip-silently when unset, same pattern
+   *  as the other engine keys. Cost is negligible (~$3-5/mo at 5
+   *  clients, ~$60-90/mo at 100 clients). */
+  TOGETHER_API_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   /** Service-account JSON for GSC API auth. When set, the GSC
