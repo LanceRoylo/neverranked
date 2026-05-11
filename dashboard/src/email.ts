@@ -211,6 +211,184 @@ export async function sendFreeMagicLinkEmail(
 }
 
 // ---------------------------------------------------------------------------
+// Free-tier weekly digest + score-drop alert
+// ---------------------------------------------------------------------------
+
+interface FreeDigestData {
+  email: string;
+  domain: string;
+  score: number;
+  grade: string;
+  prevScore: number | null;
+  unsubToken: string;
+}
+
+export async function sendFreeWeeklyDigestEmail(
+  d: FreeDigestData,
+  env: Env
+): Promise<boolean> {
+  const trendBlock = d.prevScore !== null
+    ? (d.score === d.prevScore
+        ? `Same as last week.`
+        : d.score > d.prevScore
+          ? `Up ${d.score - d.prevScore} from last week.`
+          : `Down ${d.prevScore - d.score} from last week.`)
+    : `First weekly score.`;
+
+  const dashboardUrl = "https://app.neverranked.com/free";
+  const stateOfAeoUrl = "https://neverranked.com/state-of-aeo/";
+  const unsubUrl = `https://app.neverranked.com/free/unsubscribe?token=${d.unsubToken}`;
+  const upgradeUrl = "https://neverranked.com/pricing";
+
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Free weekly digest for ${d.email} (${d.domain}): score=${d.score}, trend=${trendBlock}`);
+    return true;
+  }
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "NeverRanked <scores@neverranked.com>",
+        to: [d.email],
+        subject: `Your AEO score this week: ${d.score}/100`,
+        text: `${d.domain}\n\nAEO score: ${d.score}/100 (grade ${d.grade})\n${trendBlock}\n\nFull dashboard: ${dashboardUrl}\nThis week's Citation Tape: ${stateOfAeoUrl}\n\nFree shows the score. Paid shows what to fix and the citation tracking across all seven engines. See paid tiers: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`,
+        html: `
+          <div style="font-family:monospace;font-size:14px;color:#333;max-width:520px;margin:0 auto;padding:40px 20px">
+            <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
+            <p style="margin:0 0 8px;font-family:monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#888">Weekly AEO score</p>
+            <h1 style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:24px;font-weight:400">${d.domain}</h1>
+            <div style="text-align:center;margin:32px 0">
+              <div style="font-family:Georgia,serif;font-style:italic;font-size:72px;line-height:1;color:#1a1a1a">${d.score}</div>
+              <div style="margin-top:8px;font-family:monospace;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#888">Grade ${d.grade}</div>
+              <p style="margin:16px 0 0;font-size:13px;color:#555">${trendBlock}</p>
+            </div>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.05em">Open dashboard</a>
+            <div style="border-top:1px solid #e5e5e5;margin:32px 0;padding-top:24px">
+              <p style="margin:0 0 12px;font-family:monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#888">This week in The Citation Tape</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#555">NeverRanked's standing measurement of what AI engines cite when answering questions about brands we track.</p>
+              <a href="${stateOfAeoUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">Read this week's report &rarr;</a>
+            </div>
+            <div style="background:#fafafa;padding:24px;border-radius:6px;margin:24px 0">
+              <p style="margin:0 0 8px;font-family:Georgia,serif;font-style:italic;font-size:16px">Want to fix the score?</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#555">Free shows the score. Paid shows <em>what to fix</em> and the citation tracking across all seven engines.</p>
+              <a href="${upgradeUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">See paid tiers &rarr;</a>
+            </div>
+            <p style="margin:32px 0 0;font-size:11px;color:#888">
+              <a href="${unsubUrl}" style="color:#888">Unsubscribe</a>
+            </p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`Free digest to ${d.email} failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", statusCode: resp.status, errorMessage: errBody });
+      return false;
+    }
+
+    await logEmailDelivery(env, { email: d.email, type: "digest", status: "queued", statusCode: resp.status });
+    return true;
+  } catch (err) {
+    console.error(`Free digest to ${d.email} error:`, err);
+    await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", errorMessage: String(err) });
+    return false;
+  }
+}
+
+interface FreeAlertData {
+  email: string;
+  domain: string;
+  prevScore: number;
+  currScore: number;
+  bandCrossing: "green-to-yellow" | "yellow-to-red" | "green-to-red" | null;
+  unsubToken: string;
+}
+
+export async function sendFreeScoreDropAlertEmail(
+  d: FreeAlertData,
+  env: Env
+): Promise<boolean> {
+  const drop = d.prevScore - d.currScore;
+  const dashboardUrl = "https://app.neverranked.com/free";
+  const upgradeUrl = "https://neverranked.com/pricing";
+  const unsubUrl = `https://app.neverranked.com/free/unsubscribe?token=${d.unsubToken}`;
+
+  const bandLabel = d.bandCrossing
+    ? d.bandCrossing === "green-to-yellow"
+      ? "Crossed from green (80+) to yellow (60-79)."
+      : d.bandCrossing === "yellow-to-red"
+        ? "Crossed from yellow (60-79) to red (under 60)."
+        : "Crossed from green (80+) all the way through yellow into red."
+    : "";
+
+  if (!env.RESEND_API_KEY) {
+    console.log(`[DEV] Free score-drop alert for ${d.email} (${d.domain}): ${d.prevScore} -> ${d.currScore}. ${bandLabel}`);
+    return true;
+  }
+
+  try {
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: "NeverRanked <scores@neverranked.com>",
+        to: [d.email],
+        subject: `Score alert: ${d.prevScore} → ${d.currScore} for ${d.domain}`,
+        text: `Your AEO score for ${d.domain} dropped ${drop} points this week.\n\n${d.prevScore} → ${d.currScore}\n${bandLabel}\n\nFree shows the alert. Pulse subscribers get the diagnosis: which schema changed, which engine stopped citing, which competitor moved.\n\nDashboard: ${dashboardUrl}\nUpgrade to Pulse: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`,
+        html: `
+          <div style="font-family:monospace;font-size:14px;color:#333;max-width:520px;margin:0 auto;padding:40px 20px">
+            <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
+            <p style="margin:0 0 8px;font-family:monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#c93a3a">Score drop alert</p>
+            <h1 style="margin:0 0 8px;font-family:Georgia,serif;font-style:italic;font-size:24px;font-weight:400">${d.domain}</h1>
+            <div style="text-align:center;margin:32px 0">
+              <div style="display:inline-flex;align-items:baseline;gap:16px;font-family:Georgia,serif;font-style:italic">
+                <span style="font-size:48px;color:#888">${d.prevScore}</span>
+                <span style="font-size:20px;color:#888">→</span>
+                <span style="font-size:64px;color:#c93a3a">${d.currScore}</span>
+              </div>
+              <p style="margin:12px 0 0;font-size:13px;color:#555">${bandLabel || `Down ${drop} points.`}</p>
+            </div>
+            <div style="background:#fafafa;padding:24px;border-radius:6px;margin:24px 0">
+              <p style="margin:0 0 8px;font-family:Georgia,serif;font-style:italic;font-size:16px">Pulse subscribers get the diagnosis, not just the alert.</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#555">Which schema changed, which engine stopped citing, which competitor moved. Free shows the alert. Pulse shows the cause and the fix.</p>
+              <a href="${upgradeUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">See Pulse &rarr;</a>
+            </div>
+            <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.05em">Open dashboard</a>
+            <p style="margin:32px 0 0;font-size:11px;color:#888">
+              <a href="${unsubUrl}" style="color:#888">Unsubscribe</a>
+            </p>
+          </div>
+        `,
+      }),
+    });
+
+    if (!resp.ok) {
+      const errBody = await resp.text();
+      console.log(`Free alert to ${d.email} failed: ${resp.status} ${errBody}`);
+      await logEmailDelivery(env, { email: d.email, type: "score_drop_alert", status: "failed", statusCode: resp.status, errorMessage: errBody });
+      return false;
+    }
+
+    await logEmailDelivery(env, { email: d.email, type: "score_drop_alert", status: "queued", statusCode: resp.status });
+    return true;
+  } catch (err) {
+    console.error(`Free alert to ${d.email} error:`, err);
+    await logEmailDelivery(env, { email: d.email, type: "score_drop_alert", status: "failed", errorMessage: String(err) });
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Agency invites (teammate or client)
 // ---------------------------------------------------------------------------
 

@@ -81,6 +81,17 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] failed to enumerate digest users: ${e}`);
   }
+
+  // --- Phase 4: Free-tier weekly digest fan-out ---
+  // Inline (not workflow-dispatched) because per-user load is small:
+  // one scan_results query and one email per free user. Wrap in
+  // try/catch so a free-tier failure cannot affect paid digests.
+  try {
+    const { runFreeWeeklyDigests } = await import("./free-cron");
+    await runFreeWeeklyDigests(env);
+  } catch (e) {
+    console.log(`[cron] free weekly digest sweep failed: ${e}`);
+  }
 }
 
 /** Send digest emails. If `usersOverride` is supplied, only those users
@@ -662,6 +673,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // The digest function self-guards: opt-in flag, 18h dedupe, skip if
   // nothing to report.
   await maybeSendAutomationDigest(env);
+
+  // Free-tier score-drop alert check (Phase 4 of /free).
+  // Compares each free user's two most recent scans; fires an alert
+  // if score dropped 5+ pts or crossed a band boundary. One alert
+  // per week per free user via free_users.last_alert_at.
+  try {
+    const { runFreeScoreDropAlertsCheck } = await import("./free-cron");
+    await runFreeScoreDropAlertsCheck(env);
+  } catch (e) {
+    console.log(`[cron daily] free score-drop alert sweep failed: ${e}`);
+  }
 }
 
 // ---------------------------------------------------------------------------
