@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Never Ranked for Agencies — Sell AEO. Keep the relationship.</title>
+<title>Never Ranked for Agencies: Sell AEO. Keep the relationship.</title>
 <meta name="description" content="A reseller partnership for agencies who want to offer AEO without building the team. White-labeled dashboard, co-branded reports, retained client relationship. Wholesale pricing, 1-client minimum, retained client relationship.">
 <meta name="robots" content="index, follow">
 <meta name="keywords" content="white label AEO, AEO reseller, agency partnership, white label SEO agency, AI search reseller, answer engine optimization reseller">
@@ -618,6 +618,9 @@ select:focus-visible{
     <p class="pricing-fine">
       <strong>Audit ($500 retail, one-time):</strong> the 90-day roadmap that starts every engagement. <strong>$300 to the agency, $200 to NeverRanked</strong> (same 60/40 split as the retainers). Delivered in 48 hours. The audit belongs to the client.
     </p>
+    <p class="pricing-fine" style="margin-top:14px">
+      Scaling past 9 active clients? <a href="/agencies/partner-program/">Volume terms for partners at scale &rarr;</a>
+    </p>
   </section>
 
   <section>
@@ -711,7 +714,7 @@ select:focus-visible{
         if (email) params.set('ref_email', email);
         if (phone) params.set('ref_phone', phone);
 
-        var pitchUrl = 'https://check.neverranked.com/?' + params.toString();
+        var pitchUrl = 'https://check.neverranked.com/?&utm_source=for_agencies&utm_medium=organic' + params.toString();
         linkEl.textContent = pitchUrl;
         previewEl.href = pitchUrl;
         output.style.display = 'block';
@@ -737,7 +740,7 @@ select:focus-visible{
     <div class="cta-row">
       <a href="https://app.neverranked.com/agency/apply" class="cta-primary">Apply to partner &rarr;</a>
       <a href="mailto:lance@neverranked.com?subject=Reseller%20partnership%20%E2%80%94%20%5Byour%20agency%20name%5D" class="cta-secondary">Or book a 30-min call first</a>
-      <a href="https://check.neverranked.com/" class="cta-secondary" target="_blank" rel="noopener">Run a scan on a prospect</a>
+      <a href="https://check.neverranked.com/?utm_source=for_agencies&utm_medium=organic" class="cta-secondary" target="_blank" rel="noopener">Run a scan on a prospect</a>
       <a href="/agencies/" class="cta-secondary">Read the reseller brief</a>
     </div>
   </div>
