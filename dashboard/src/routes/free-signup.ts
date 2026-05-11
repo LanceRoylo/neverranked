@@ -120,8 +120,22 @@ export async function handleFreeSignup(request: Request, env: Env): Promise<Resp
   return html(checkEmailPage(domain));
 }
 
-/** GET /free/signup -- render the signup form. */
-export async function handleFreeSignupGet(_request: Request, _env: Env): Promise<Response> {
+/** GET /free/signup -- render the signup form.
+ *  Pre-fills the domain and email fields from query params when
+ *  provided (e.g. from the homepage one-shot scan CTA, which
+ *  passes ?domain=acme.com after a scan completes). */
+export async function handleFreeSignupGet(request: Request, _env: Env): Promise<Response> {
+  const url = new URL(request.url);
+  const rawDomain = (url.searchParams.get("domain") || "").trim().toLowerCase()
+    .replace(/^https?:\/\//, "").replace(/^www\./, "").split("/")[0];
+  const domainPrefill = /^[a-z0-9.-]+\.[a-z]{2,}$/.test(rawDomain) ? rawDomain : "";
+
+  const rawEmail = (url.searchParams.get("email") || "").trim().toLowerCase();
+  const emailPrefill = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(rawEmail) ? rawEmail : "";
+
+  const domainAutofocus = domainPrefill ? "" : "autofocus";
+  const emailAutofocus = domainPrefill && !emailPrefill ? "autofocus" : "";
+
   return html(layout("Free weekly AEO score", `
     <div style="max-width:440px;margin:80px auto;text-align:center">
       <h1 style="margin-bottom:12px"><em>Free weekly AEO score</em></h1>
@@ -131,11 +145,11 @@ export async function handleFreeSignupGet(_request: Request, _env: Env): Promise
       <form method="POST" action="/free/signup">
         <div class="form-group" style="text-align:left">
           <label for="domain">Your website</label>
-          <input type="text" id="domain" name="domain" required placeholder="yourcompany.com" autofocus>
+          <input type="text" id="domain" name="domain" required placeholder="yourcompany.com" value="${esc(domainPrefill)}" ${domainAutofocus}>
         </div>
         <div class="form-group" style="text-align:left">
           <label for="email">Email</label>
-          <input type="email" id="email" name="email" required placeholder="you@company.com">
+          <input type="email" id="email" name="email" required placeholder="you@company.com" value="${esc(emailPrefill)}" ${emailAutofocus}>
         </div>
         <button type="submit" class="btn" style="width:100%;justify-content:center">
           Start tracking

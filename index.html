@@ -4904,6 +4904,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
               <div class="result-signals" id="resultSignals"></div>
               <div class="result-ctas">
                 <a class="primary" id="resultCtaPulse" href="https://app.neverranked.com/checkout/pulse">Fix this for $497/mo with Pulse <span class="arrow"></span></a>
+                <a class="secondary" id="resultCtaFree" href="https://app.neverranked.com/free/signup">Get this weekly, free <span class="arrow"></span></a>
                 <a class="secondary" id="resultCtaPrimary" href="https://check.neverranked.com?utm_source=homepage&utm_medium=organic" target="_blank" rel="noopener">See full report</a>
                 <a class="secondary" id="resultCtaSecondary" href="#audit">or book the $750 audit</a>
                 <button type="button" class="reset" id="resultReset">Check another &rarr;</button>
@@ -6535,7 +6536,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
       <div class="footer">
         <div class="l">Never Ranked © 2026</div>
-        <div class="c"><a href="https://app.neverranked.com">Client login</a> · <a href="https://app.neverranked.com/demo">Live demo</a> · <a href="/security/">Security</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/for-agencies/">For agencies</a> · <a href="/agencies/">Reseller brief</a> · <a href="/principles/">Principles</a> · <a href="https://app.neverranked.com/changelog">Changelog</a></div>
+        <div class="c"><a href="https://app.neverranked.com">Client login</a> · <a href="https://app.neverranked.com/free/signup">Free weekly score</a> · <a href="https://app.neverranked.com/demo">Live demo</a> · <a href="/security/">Security</a> · <a href="/privacy/">Privacy</a> · <a href="/terms/">Terms</a> · <a href="/for-agencies/">For agencies</a> · <a href="/agencies/">Reseller brief</a> · <a href="/principles/">Principles</a> · <a href="https://app.neverranked.com/changelog">Changelog</a></div>
         <div class="r"><a href="mailto:hello@neverranked.com">hello@neverranked.com</a></div>
       </div>
     </div>
@@ -6982,6 +6983,8 @@ window.scrollTo(0,0);
     var domainEnc=encodeURIComponent(report.domain||'');
     ctaPrimary.href='https://check.neverranked.com/?url='+domainEnc+'&utm_source=homepage&utm_medium=organic';
     ctaSecondary.href='https://app.neverranked.com/checkout/audit?domain='+domainEnc;
+    var ctaFree=document.getElementById('resultCtaFree');
+    if(ctaFree) ctaFree.href='https://app.neverranked.com/free/signup?domain='+domainEnc+'&utm_source=homepage&utm_medium=organic';
     if(typeof window.__setCheckoutDomain==='function') window.__setCheckoutDomain(report.domain);
     urlCheck.setAttribute('data-state','result');
     captionHint.textContent='Scan complete';
