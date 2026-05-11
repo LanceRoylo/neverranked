@@ -47,6 +47,13 @@ Never deploys.
 - Three leaderboards built: hawaii-community-banking, hawaii-law-firms, hawaii-boutique-hotels. All INTERNAL until category leader gets 14-day pre-publication preview per `content/leaderboards/README.md`.
 - Adding a new vertical: drop a JSON config, run the script, review output, ship.
 
+### Customer-facing conversation feed (questions about your business across LLMs + Reddit)
+- **Trigger:** Tracked client universe has 10+ active clients AND each averages 50+ weekly citation_runs AND each averages 5+ Reddit thread mentions (the reddit-tracker Phase 2 writer is shipping rows to `reddit_thread_mentions`).
+- **What to build:** Customer-facing dashboard surface showing the conversation happening about their brand across all surfaces NR already tracks: AI engine prompts + response excerpts from `citation_runs`, Reddit threads + sentiment from `reddit_thread_mentions`, GSC top queries from `gsc_snapshots`. Curated, not a raw dump. Filterable by surface, vertical, sentiment, recency. The Muck Rack equivalent in the deployment-first frame.
+- **Effort:** 1-2 weeks. New dashboard route, query layer, UI design pass, autonomy heartbeat integration.
+- **Why gated:** Empty-state UX risk. Today's customers have 5-15 tracked keywords and (for most verticals) sparse Reddit data per the 2026-05-09 + 2026-05-10 vertical probes. A customer logging in to a mostly-empty feed churns. Wait for density before shipping the surface. Also: the feature pulls the brand toward "look at the data, act on it yourself," which is the Seerly/Muck Rack model NR explicitly positions against. The deployment-first identity has to be intact when this ships or it dilutes the brand.
+- **Cheap interim:** include a "questions being asked in your category right now" section in the audit deliverable. One-shot per audit, no live feature, no maintenance debt. See `content/strategy/audit-conversation-section.md` for the spec.
+
 ### Reverse-engineer citations — Phase 2 worker
 - **Trigger:** First customer with weekly citation tracking running 4+ weeks AND citation_runs has 10+ "competitor cited, client not cited" rows on tracked-corpus prompts
 - **What to build:** Per `content/design/reverse-engineer-citations.md` — diff worker, customer-facing UI route, nightly cron, dashboard tab. Schema already shipped in migration 0067.
