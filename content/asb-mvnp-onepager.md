@@ -17,7 +17,7 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 - Read-only summary dashboard
 
 **Signal**: $2,000/mo retail, 3-month minimum.
-- Weekly citation tracking across all seven engines, web-grounded (six commercial APIs plus Gemma, open-weight)
+- Daily citation probes across all seven engines, aggregated weekly for trend signal (six commercial APIs plus Gemma, open-weight)
 - Reddit thread tracking (where AI pulls "best X for Y" answers)
 - Schema fixes auto-deployed via our snippet
 - Authority audits + 90-day roadmap that updates itself
@@ -45,7 +45,7 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 
 **At a 10-client Signal book:** $16-32k/mo in new recurring revenue on top of existing retainers.
 
-**No contract. Cancel anytime. First 3 months include a 10% intro credit.**
+**No contract. Cancel anytime.** Full terms (volume tiers, grandfathering, exclusivity) published at neverranked.com/agencies/partner-program/.
 
 ---
 
@@ -81,17 +81,36 @@ Our 3-month minimum exists to protect customers from quitting before the work ha
 - MVNP would be the first.
 - Being first is the offer: first pick of vertical territory, direct founder access, shaping the program before it opens up. We're not pretending to be at scale we're not at.
 
-### Founding partner clause (offered to MVNP only)
+### Hawaii vertical exclusivity (founding partner terms)
 
-If MVNP signs a 90-day wholesale pilot, we lock the following for 12 months from the pilot start date:
+The first Hawaii agency to sign at three or more active Signal
+clients in a given vertical holds a 24-month lockout for that
+vertical, renewable. The lockout is per-vertical, so MVNP can
+hold one, two, or six verticals depending on which categories
+the agency develops first.
 
-- **Hawaii financial services category** (community banking, credit unions, wealth management) — no other agency on the island gets wholesale access in this vertical.
-- **Hawaii real estate development** (master-planned communities, mixed-use, resort) — same.
-- **Right of first refusal** on any new Hawaii vertical we open before offering it to other agencies.
+Verticals currently open for the lockout in Hawaii:
 
-This is structural, not a discount. It means when a competing agency tries to pitch NeverRanked into a Hawaii bank, we route it back through MVNP or decline the deal.
+- Community banking
+- Boutique hotels and hospitality
+- Law firms and professional services
+- Wealth advisors and financial services
+- Real estate and development
+- Healthcare (when the compliance template ships)
 
-Costs us nothing now. Costs us something later if the bet works — which is exactly what makes it worth offering to a founding partner.
+Hawaii Theatre is already onboarded in performing arts and
+entertainment venues, but the vertical is not yet locked.
+
+This is structural, not a discount. It means when a competing
+Hawaii agency tries to pitch NeverRanked into a client in a
+locked vertical, we route it back through the agency that holds
+the lockout or decline the deal. Costs us nothing now, costs us
+something later if the bet works, which is exactly what makes
+it worth offering specifically to a founding partner.
+
+Same terms apply to every Hawaii agency. Published publicly at
+neverranked.com/agencies/partner-program/ so no Hawaii agency
+sees a private floor that another cannot.
 
 ---
 

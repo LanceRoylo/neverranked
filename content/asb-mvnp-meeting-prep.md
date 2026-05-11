@@ -359,11 +359,36 @@ methodology and the audit have been discussed. Not the opener.
 Frame it as a moat-deepening artifact we're shipping in the next
 30 days, not as pressure.
 
-The numbers (live scan May 7, 2026):
+The numbers (live scan May 7, 2026, domain-level scoring of the
+homepage of each bank):
 - ASB: 55 (D) — leader
 - BOH: 50 (D)
 - FHB: 45 (D)
 - CPB: 25 (F)
+
+Note on two scoring scopes (have this clear before the room):
+
+- **Domain-level homepage score** = the leaderboard numbers above
+  (55/50/45/25). What's scored: the root URL only (asbhawaii.com,
+  boh.com, fhb.com, cpb.com). This is the public-facing
+  comparison shape MVNP would expect for a "who's ahead in
+  Hawaii community banking" framing.
+- **Per-page deep score** (verified live during 2026-05-10 audit
+  prep): ASB /personal/checking returns 96, BOH homepage
+  returns 95. This is the same scoring methodology applied to
+  specific deep pages. The /personal/checking score is high
+  because that page has strong schema; the homepage scores are
+  lower because the homepage carries less structured data
+  across the four banks.
+
+If Mark asks "what's our score" the honest answer is "depends
+on what's scored." Lead with the domain-level leaderboard
+number (55) because that's the publishable comparison. Use the
+per-page 96 as a follow-up: "On specific product pages like
+your checking landing, you're at 96. The variance shows the
+opportunity. The homepage is the hardest page to score because
+it has to cover everything; deeper product pages can carry
+focused schema."
 
 Phrasing:
 
