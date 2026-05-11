@@ -91,8 +91,11 @@ We sit on the deployment side of AEO. Three layers:
 sites. Organization, WebSite, FAQPage, FinancialService,
 LocalBusiness, AggregateRating — whatever the vertical and content
 support. Deploy via a snippet so no engineering work on the
-client's end. Our compliance-aware templates pass legal review at
-banks and healthcare orgs on day one.
+client's end. Our compliance-aware templates for financial
+services are pre-flighted against FDIC, NCUA, FINRA, Reg DD,
+Reg E, Truth in Savings, and Equal Housing Lender review
+concerns. Healthcare, legal, and insurance vertical templates on
+the roadmap.
 
 **Citation tracking with attribution.** Every Signal customer gets
 daily six-engine pulls (ChatGPT, Perplexity, Claude, Gemini,
@@ -102,11 +105,12 @@ attribute citation movement to specific deployments at p<0.05
 statistical confidence. The whole apparatus is the Citation Tape
 referenced above.
 
-**Agent-readiness deployment.** As of this month, we also ship the
-ReserveAction, ApplyAction, BuyAction, and ContactAction templates
-that AI agents (not just answer engines) read when they perform
-tasks for users. The agentic shift is the next paradigm and we
-are deploying for it now.
+**Agent-readiness audit.** We audit for the ReserveAction,
+ApplyAction, BuyAction, and ContactAction templates that AI
+agents (not just answer engines) read when they perform tasks
+for users. Templates are ready, deployment is available when a
+customer's surface needs the Action types. The agentic shift is
+the next paradigm and the infrastructure is in place for it.
 
 **Pricing is in agency range.** $497/mo Pulse, $2,000/mo Signal,
 $4,500/mo Amplify. Wholesale tier for agencies starts at $800/mo
@@ -125,10 +129,11 @@ that are directly relevant to where Muck Rack stops:
    Six engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft
    Copilot, Google AI Overviews). Daily cadence, seven samples per
    keyword per engine per week, statistical attribution at p<0.05.
-   Vertical-specific prompt corpora for community banking, real
-   estate, professional services, hospitality, and more. Public
-   methodology and reproducible numbers at neverranked.com/state-of-aeo
-   so anyone can audit the data. This is the answer to Generative
+   Vertical-specific prompt corpora for Hawaii community banking
+   and Hawaii real estate live in the public repo today, with
+   professional services and hospitality on the roadmap as more
+   clients onboard. Public methodology and reproducible numbers at
+   neverranked.com/state-of-aeo so anyone can audit the data. This is the answer to Generative
    Pulse for clients who want the tracking layer without the rest
    of the Muck Rack platform — except where Muck Rack tells you
    what is happening, the Citation Tape tells you what to do
