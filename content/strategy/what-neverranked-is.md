@@ -24,18 +24,24 @@ themselves into the company.
 NeverRanked is a service with a tool wrapped around it. We
 deploy structured data (Schema.org JSON-LD, llms.txt, agent-
 readable Action types) to customer sites via a one-line snippet
-that any CMS supports. We track citation share across six AI
-engines weekly with statistical attribution at p&lt;0.05 (the
+that any CMS supports. We track citation share across seven AI
+engines daily with statistical attribution at p&lt;0.05 (the
 apparatus is called The Citation Tape, public at
-neverranked.com/state-of-aeo). We refresh dynamic schemas
+neverranked.com/state-of-aeo). One of the seven is Gemma,
+Google's open-weight model, which means our citation numbers
+are independently reproducible against published weights, not
+just a vendor's word for it. We refresh dynamic schemas
 (events, products, listings) on a daily cron. The customer does
 not log in to act on a dashboard. We ship the work.
 
 ## The five things we ship that no other AEO platform ships together
 
-1. **Six-engine citation tracking with statistical attribution.**
-   ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, and
-   Google AI Overviews. No other AEO platform tracks all six.
+1. **Seven-engine citation tracking with statistical attribution.**
+   ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, Google
+   AI Overviews, and Gemma (Google's open-weight model). No other
+   AEO platform tracks all seven, and we're the only one that
+   includes an open-weight engine, which means our citation
+   numbers are reproducible against published model weights.
    Muck Rack's Generative Pulse covers three. Profound and
    Athena cover three to four. Ahrefs Brand Radar covers four.
    Our weekly Visibility Index includes a "what we deployed and
@@ -100,10 +106,10 @@ becoming a different company.
 Three published tiers, all month-to-month:
 
 - **Pulse, $497/mo.** Entry tier. Monthly Visibility Index PDF,
-  10 tracked prompts, 2 schemas deployed monthly, 6-engine
+  10 tracked prompts, 2 schemas deployed monthly, 7-engine
   tracking, multi-pass validation.
 - **Signal, $2,000/mo.** Audit + ongoing schema deployment +
-  full 6-engine citation tracking + real-time alerts + Reddit +
+  full 7-engine citation tracking + real-time alerts + Reddit +
   authority + drift detection + variant-impact attribution +
   90-day roadmap.
 - **Amplify, $4,500/mo.** Signal + content writing + auto-publish
@@ -160,8 +166,10 @@ Three convictions that shape the roadmap:
    side of that collapse when it happens.
 
 3. **Multi-engine tracking is table stakes, not a moat.** The
-   competitors will catch up to six engines within 12 months.
-   Our moat is what comes after: variant-impact attribution at
+   competitors will catch up to seven engines within 12 months,
+   though the open-weight angle (Gemma) is harder to copy because
+   it requires committing to reproducibility as a brand value.
+   Our deeper moat is what comes after: variant-impact attribution at
    statistical confidence, vertical-specific source-type
    taxonomies, public methodology buyers can defend in front
    of clients, agent-ready Action type deployment. The moat
