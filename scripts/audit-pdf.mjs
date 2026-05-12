@@ -58,6 +58,7 @@ const SECTIONS = [
   '00-executive-summary.md',
   '02-technical-audit.md',
   '03-schema-review.md',
+  '03b-agent-readiness.md',
   '04-keyword-gap.md',
   '05-ai-citations.md',
   '06-competitor-teardown.md',

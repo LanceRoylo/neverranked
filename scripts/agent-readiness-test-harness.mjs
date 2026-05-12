@@ -44,40 +44,128 @@ const VERTICAL_BASELINES = {
 };
 
 const TEST_PANEL = [
-  // Banking
+  // ---- Banking (financial-services) ----
   { url: 'https://www.asbhawaii.com',          vertical: 'financial-services', label: 'ASB (Hawaii)' },
   { url: 'https://www.fhb.com',                vertical: 'financial-services', label: 'First Hawaiian Bank' },
   { url: 'https://www.boh.com',                vertical: 'financial-services', label: 'Bank of Hawaii' },
   { url: 'https://www.centralpacificbank.com', vertical: 'financial-services', label: 'Central Pacific Bank' },
-  { url: 'https://www.chase.com',              vertical: 'financial-services', label: 'Chase (national)' },
-  { url: 'https://www.wellsfargo.com',         vertical: 'financial-services', label: 'Wells Fargo (national)' },
-  // Hospitality
+  { url: 'https://www.chase.com',              vertical: 'financial-services', label: 'Chase' },
+  { url: 'https://www.wellsfargo.com',         vertical: 'financial-services', label: 'Wells Fargo' },
+  { url: 'https://www.bankofamerica.com',      vertical: 'financial-services', label: 'Bank of America' },
+  { url: 'https://www.citi.com',               vertical: 'financial-services', label: 'Citi' },
+  { url: 'https://www.usbank.com',             vertical: 'financial-services', label: 'US Bank' },
+  { url: 'https://www.capitalone.com',         vertical: 'financial-services', label: 'Capital One' },
+  { url: 'https://www.ally.com',               vertical: 'financial-services', label: 'Ally Bank' },
+  { url: 'https://www.discover.com',           vertical: 'financial-services', label: 'Discover' },
+
+  // ---- Hospitality ----
   { url: 'https://www.marriott.com',           vertical: 'hospitality',        label: 'Marriott' },
   { url: 'https://www.hilton.com',             vertical: 'hospitality',        label: 'Hilton' },
-  { url: 'https://www.hawaiitheatre.com',      vertical: 'performing-arts',    label: 'Hawaii Theatre (case study)' },
-  // Restaurants / reservations
+  { url: 'https://www.hyatt.com',              vertical: 'hospitality',        label: 'Hyatt' },
+  { url: 'https://www.ihg.com',                vertical: 'hospitality',        label: 'IHG' },
+  { url: 'https://www.wyndhamhotels.com',      vertical: 'hospitality',        label: 'Wyndham' },
+  { url: 'https://www.fourseasons.com',        vertical: 'hospitality',        label: 'Four Seasons' },
+  { url: 'https://www.ritzcarlton.com',        vertical: 'hospitality',        label: 'Ritz-Carlton' },
+  { url: 'https://www.airbnb.com',             vertical: 'hospitality',        label: 'Airbnb' },
+
+  // ---- Restaurants / food ordering ----
   { url: 'https://www.opentable.com',          vertical: 'restaurants',        label: 'OpenTable' },
   { url: 'https://resy.com',                   vertical: 'restaurants',        label: 'Resy' },
-  // E-commerce
+  { url: 'https://www.yelp.com',               vertical: 'restaurants',        label: 'Yelp' },
+  { url: 'https://www.doordash.com',           vertical: 'restaurants',        label: 'DoorDash' },
+  { url: 'https://www.ubereats.com',           vertical: 'restaurants',        label: 'Uber Eats' },
+  { url: 'https://www.chipotle.com',           vertical: 'restaurants',        label: 'Chipotle' },
+  { url: 'https://www.starbucks.com',          vertical: 'restaurants',        label: 'Starbucks' },
+  { url: 'https://www.dominos.com',            vertical: 'restaurants',        label: 'Domino\'s' },
+
+  // ---- E-commerce ----
   { url: 'https://www.amazon.com',             vertical: 'commerce',           label: 'Amazon' },
   { url: 'https://www.bestbuy.com',            vertical: 'commerce',           label: 'Best Buy' },
-  { url: 'https://www.shopify.com',            vertical: 'saas',               label: 'Shopify (SaaS)' },
-  // Healthcare
-  { url: 'https://www.mayoclinic.org',         vertical: 'healthcare',         label: 'Mayo Clinic' },
-  { url: 'https://healthy.kaiserpermanente.org', vertical: 'healthcare',       label: 'Kaiser Permanente' },
-  // Education
-  { url: 'https://www.harvard.edu',            vertical: 'education',          label: 'Harvard' },
-  // SaaS
+  { url: 'https://www.target.com',             vertical: 'commerce',           label: 'Target' },
+  { url: 'https://www.walmart.com',            vertical: 'commerce',           label: 'Walmart' },
+  { url: 'https://www.ebay.com',               vertical: 'commerce',           label: 'eBay' },
+  { url: 'https://www.etsy.com',               vertical: 'commerce',           label: 'Etsy' },
+  { url: 'https://www.costco.com',             vertical: 'commerce',           label: 'Costco' },
+  { url: 'https://www.wayfair.com',            vertical: 'commerce',           label: 'Wayfair' },
+
+  // ---- SaaS ----
+  { url: 'https://www.shopify.com',            vertical: 'saas',               label: 'Shopify' },
   { url: 'https://stripe.com',                 vertical: 'saas',               label: 'Stripe' },
   { url: 'https://github.com',                 vertical: 'saas',               label: 'GitHub' },
-  // Government
+  { url: 'https://slack.com',                  vertical: 'saas',               label: 'Slack' },
+  { url: 'https://www.notion.so',              vertical: 'saas',               label: 'Notion' },
+  { url: 'https://asana.com',                  vertical: 'saas',               label: 'Asana' },
+  { url: 'https://linear.app',                 vertical: 'saas',               label: 'Linear' },
+  { url: 'https://www.figma.com',              vertical: 'saas',               label: 'Figma' },
+  { url: 'https://vercel.com',                 vertical: 'saas',               label: 'Vercel' },
+
+  // ---- Healthcare ----
+  { url: 'https://www.mayoclinic.org',         vertical: 'healthcare',         label: 'Mayo Clinic' },
+  { url: 'https://healthy.kaiserpermanente.org', vertical: 'healthcare',       label: 'Kaiser Permanente' },
+  { url: 'https://my.clevelandclinic.org',     vertical: 'healthcare',         label: 'Cleveland Clinic' },
+  { url: 'https://www.mountsinai.org',         vertical: 'healthcare',         label: 'Mount Sinai' },
+  { url: 'https://www.hopkinsmedicine.org',    vertical: 'healthcare',         label: 'Johns Hopkins Medicine' },
+  { url: 'https://www.onemedical.com',         vertical: 'healthcare',         label: 'One Medical' },
+
+  // ---- Education ----
+  { url: 'https://www.harvard.edu',            vertical: 'education',          label: 'Harvard' },
+  { url: 'https://www.mit.edu',                vertical: 'education',          label: 'MIT' },
+  { url: 'https://www.stanford.edu',           vertical: 'education',          label: 'Stanford' },
+  { url: 'https://www.berkeley.edu',           vertical: 'education',          label: 'UC Berkeley' },
+  { url: 'https://www.nyu.edu',                vertical: 'education',          label: 'NYU' },
+  { url: 'https://www.coursera.org',           vertical: 'education',          label: 'Coursera' },
+
+  // ---- Government ----
   { url: 'https://www.irs.gov',                vertical: 'government',         label: 'IRS' },
-  // Known-positive controls
-  { url: 'https://www.google.com',             vertical: null,                 label: 'Google (SearchAction control)' },
-  { url: 'https://www.yelp.com',               vertical: 'restaurants',        label: 'Yelp (control)' },
-  { url: 'https://www.airbnb.com',             vertical: 'hospitality',        label: 'Airbnb (control)' },
-  { url: 'https://www.expedia.com',            vertical: 'hospitality',        label: 'Expedia (control)' },
-  { url: 'https://www.etsy.com',               vertical: 'commerce',           label: 'Etsy (control)' },
+  { url: 'https://www.ssa.gov',                vertical: 'government',         label: 'Social Security Administration' },
+  { url: 'https://www.usajobs.gov',            vertical: 'government',         label: 'USAJobs' },
+  { url: 'https://www.healthcare.gov',         vertical: 'government',         label: 'Healthcare.gov' },
+
+  // ---- Performing arts ----
+  { url: 'https://www.hawaiitheatre.com',      vertical: 'performing-arts',    label: 'Hawaii Theatre (case study)' },
+  { url: 'https://www.lincolncenter.org',      vertical: 'performing-arts',    label: 'Lincoln Center' },
+  { url: 'https://www.carnegiehall.org',       vertical: 'performing-arts',    label: 'Carnegie Hall' },
+  { url: 'https://www.kennedy-center.org',     vertical: 'performing-arts',    label: 'Kennedy Center' },
+
+  // ---- Media ----
+  { url: 'https://www.nytimes.com',            vertical: 'media',              label: 'New York Times' },
+  { url: 'https://www.wsj.com',                vertical: 'media',              label: 'Wall Street Journal' },
+  { url: 'https://www.bloomberg.com',          vertical: 'media',              label: 'Bloomberg' },
+  { url: 'https://www.spotify.com',            vertical: 'media',              label: 'Spotify' },
+  { url: 'https://www.netflix.com',            vertical: 'media',              label: 'Netflix' },
+
+  // ---- Real estate ----
+  { url: 'https://www.zillow.com',             vertical: 'real-estate',        label: 'Zillow' },
+  { url: 'https://www.realtor.com',            vertical: 'real-estate',        label: 'Realtor.com' },
+  { url: 'https://www.redfin.com',             vertical: 'real-estate',        label: 'Redfin' },
+  { url: 'https://www.compass.com',            vertical: 'real-estate',        label: 'Compass' },
+  { url: 'https://www.trulia.com',             vertical: 'real-estate',        label: 'Trulia' },
+
+  // ---- Nonprofit ----
+  { url: 'https://www.redcross.org',           vertical: 'nonprofit',          label: 'American Red Cross' },
+  { url: 'https://www.habitat.org',            vertical: 'nonprofit',          label: 'Habitat for Humanity' },
+  { url: 'https://www.worldvision.org',        vertical: 'nonprofit',          label: 'World Vision' },
+  { url: 'https://www.aclu.org',               vertical: 'nonprofit',          label: 'ACLU' },
+  { url: 'https://www.charitynavigator.org',   vertical: 'nonprofit',          label: 'Charity Navigator' },
+
+  // ---- Travel (uses hospitality baseline) ----
+  { url: 'https://www.kayak.com',              vertical: 'hospitality',        label: 'Kayak' },
+  { url: 'https://www.booking.com',            vertical: 'hospitality',        label: 'Booking.com' },
+  { url: 'https://www.tripadvisor.com',        vertical: 'hospitality',        label: 'TripAdvisor' },
+  { url: 'https://www.priceline.com',          vertical: 'hospitality',        label: 'Priceline' },
+  { url: 'https://www.expedia.com',            vertical: 'hospitality',        label: 'Expedia' },
+
+  // ---- Professional services ----
+  { url: 'https://www.morganstanley.com',      vertical: 'professional-services', label: 'Morgan Stanley' },
+  { url: 'https://www.goldmansachs.com',       vertical: 'professional-services', label: 'Goldman Sachs' },
+  { url: 'https://www.deloitte.com',           vertical: 'professional-services', label: 'Deloitte' },
+  { url: 'https://www.mckinsey.com',           vertical: 'professional-services', label: 'McKinsey' },
+  { url: 'https://www.ey.com',                 vertical: 'professional-services', label: 'EY' },
+
+  // ---- Search (control) ----
+  { url: 'https://www.google.com',             vertical: null,                 label: 'Google (search homepage)' },
+  { url: 'https://www.bing.com',               vertical: null,                 label: 'Bing' },
+  { url: 'https://duckduckgo.com',             vertical: null,                 label: 'DuckDuckGo' },
 ];
 
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) NeverRanked-Bot/1.0 (+https://neverranked.com/bot)';

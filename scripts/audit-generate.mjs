@@ -300,6 +300,74 @@ Output the email body ONLY. No subject line, no preamble. Just the body Lance co
 }
 
 // ---------------------------------------------------------------------------
+// Agent readiness helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Substitutes agent_readiness_check v2 findings into the 03b template.
+ * Inputs:
+ *   - tpl: raw template string from audit-template/03b-agent-readiness.md
+ *   - client: { name, slug, url, vertical? }
+ *   - r: AgentReadinessResult from agentReadinessCheck()
+ * Output: populated markdown ready to write to the audit directory.
+ */
+function populateAgentReadinessTemplate(tpl, client, r) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // ActionTypes found summary
+  const actionTypes = [...new Set(r.actions.map((a) => a.type))];
+  const actionTypesFound = actionTypes.length === 0
+    ? 'NONE detected on the root URL.'
+    : actionTypes.join(', ');
+
+  // Details table or none paragraph
+  let actionDetails;
+  if (r.actions.length === 0) {
+    actionDetails = 'No Action schemas were found in the JSON-LD or Microdata of this URL. This puts you in the same bucket as roughly 95% of enterprise sites today. See "How you compare" below.';
+  } else {
+    actionDetails = '| ActionType | Format | Name | Target | Issues |\n|---|---|---|---|---|\n';
+    for (const a of r.actions) {
+      const targetCell = a.target ? `\`${a.target.slice(0, 60)}${a.target.length > 60 ? '...' : ''}\`` : '_(missing)_';
+      const issuesCell = a.issues.length === 0 ? 'none' : a.issues.join('; ');
+      actionDetails += `| ${a.type} | ${a.format} | ${a.name} | ${targetCell} | ${issuesCell} |\n`;
+    }
+  }
+
+  // Vertical or null note
+  const verticalLabel = client.vertical || r.vertical || null;
+  let missingSection;
+  if (!verticalLabel) {
+    missingSection = 'No vertical was specified for this audit, so we did not apply a vertical baseline. To get a vertical-specific gap analysis, re-run with `--vertical=<vertical>` (supported: hospitality, restaurants, financial-services, professional-services, healthcare, education, commerce, saas, media, real-estate, nonprofit, government, performing-arts).';
+  } else if (r.missing_for_vertical.length === 0) {
+    missingSection = `Full baseline coverage for the **${verticalLabel}** vertical. Every ActionType we would expect for a site in this category is present.`;
+  } else {
+    missingSection = `For the **${verticalLabel}** vertical, our baseline expects: ${(r.missing_for_vertical.length > 0 ? r.missing_for_vertical : []).concat(r.actions.map((a) => a.type)).filter((v, i, arr) => arr.indexOf(v) === i).join(', ')}.\n\nMissing on your site: **${r.missing_for_vertical.join(', ')}**.`;
+  }
+
+  // Why-missing-matters list
+  let whyMatters;
+  if (!r.why_missing_matters || Object.keys(r.why_missing_matters).length === 0) {
+    whyMatters = '_(No missing ActionTypes flagged for this vertical.)_';
+  } else {
+    whyMatters = '';
+    for (const [type, why] of Object.entries(r.why_missing_matters)) {
+      whyMatters += `- **${type}** — ${why}\n`;
+    }
+  }
+
+  return tpl
+    .replace(/\{Client Name\}/g, client.name || client.slug)
+    .replace(/\{YYYY-MM-DD\}/g, today)
+    .replace(/\{SCORE\}/g, String(r.score))
+    .replace(/\{GRADE\}/g, r.grade)
+    .replace(/\{ACTION_TYPES_FOUND_OR_NONE\}/g, actionTypesFound)
+    .replace(/\{ACTION_DETAILS_TABLE_OR_NONE_PARAGRAPH\}/g, actionDetails)
+    .replace(/\{VERTICAL_OR_NULL\}/g, verticalLabel || '_unspecified_')
+    .replace(/\{MISSING_BASELINE_SECTION_OR_NO_VERTICAL_NOTE\}/g, missingSection)
+    .replace(/\{WHY_MISSING_MATTERS_LIST\}/g, whyMatters);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -454,6 +522,32 @@ the OUTCOME, not the spec. Schema type goes in Layer 3.`,
     const dst = resolve(auditDir, '08-proof.md');
     const tpl = readFileSync(resolve(templateDir, '08-proof.md'), 'utf8');
     writeFileSync(dst, tpl, 'utf8');
+  }
+
+  // 5c. Agent readiness section. Runs the v2 agent_readiness_check
+  // (Schema.org ActionType detection across JSON-LD + Microdata) against
+  // the client URL, then substitutes findings into the 03b template.
+  // The section is forward-looking — it positions the client for the
+  // agent-commerce shift. Failing the scan should not block the audit,
+  // so wrap in try/catch.
+  try {
+    console.log('[5c] Running agent_readiness_check v2...');
+    const { agentReadinessCheck } = await import(
+      resolve(REPO_ROOT, 'mcp-server', 'dist', 'tools', 'agent-readiness-check.js')
+    );
+    const arResult = await agentReadinessCheck({
+      url: client.url,
+      vertical: client.vertical || undefined,
+    });
+    const tpl = readFileSync(resolve(templateDir, '03b-agent-readiness.md'), 'utf8');
+    const populated = populateAgentReadinessTemplate(tpl, client, arResult);
+    writeFileSync(resolve(auditDir, '03b-agent-readiness.md'), populated, 'utf8');
+    console.log(`         wrote 03b-agent-readiness.md (score ${arResult.score} / ${arResult.grade})`);
+  } catch (err) {
+    console.warn(`[5c] agent_readiness_check failed — leaving 03b as template: ${err.message || err}`);
+    // Fall back to copying the raw template so 03b exists in the audit folder
+    const tpl = readFileSync(resolve(templateDir, '03b-agent-readiness.md'), 'utf8');
+    writeFileSync(resolve(auditDir, '03b-agent-readiness.md'), tpl, 'utf8');
   }
 
   // 6. Delivery email draft — what Lance sends when delivering the audit

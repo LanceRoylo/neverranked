@@ -881,6 +881,43 @@ Start with the Schema Review. The code blocks are pasteable. Then the Technical 
 <div class="page-break">
 
 </div>
+<h1 id="agent-readiness-american-savings-bank">Agent Readiness — American Savings Bank</h1>
+<p><strong>Auditor:</strong> Never Ranked
+<strong>Sample date:</strong> 2026-05-12
+<strong>Scope:</strong> Schema.org ActionType deployment, root URL
+<strong>Tool:</strong> <code>agent_readiness_check</code> v2 (27 ActionTypes recognized, JSON-LD + Microdata, deep-nesting traversal up to depth 12)</p>
+<hr />
+<h2 id="what-this-section-measures">What this section measures</h2>
+<p>This section is forward-looking. It does not measure how AI engines cite you today. It measures whether your site is ready for the next generation of AI tooling — agents that act on a user’s behalf to book, apply, buy, and contact, rather than just answering questions.</p>
+<p>The mechanism: Schema.org defines a set of <code>Action</code> types (<code>ReserveAction</code>, <code>ApplyAction</code>, <code>BuyAction</code>, <code>ContactAction</code>, plus 23 others) that mark transactional surfaces on a site. When an AI agent (OpenAI Operator, Anthropic computer-use, Perplexity agent mode, ChatGPT agent surface) tries to complete a task on a user’s behalf, it looks for these markers to know which page does what, what fields exist, what the target URL is, and what the expected result is. Sites with Action schemas deployed are agent-completable. Sites without have to be interpreted from raw HTML, which fails reliably for most non-trivial tasks.</p>
+<h2 id="your-current-state">Your current state</h2>
+<p><strong>Agent-readiness score:</strong> 0 / 100 (F)</p>
+<p><strong>ActionTypes detected on root URL:</strong> NONE detected on the root URL.</p>
+<p>No Action schemas were found in the JSON-LD or Microdata of this URL. This puts you in the same bucket as roughly 95% of enterprise sites today.</p>
+<h2 id="how-you-compare">How you compare</h2>
+<p>Across a 25-site panel NeverRanked scanned on 2026-05-12 (banks, hospitality chains, e-commerce platforms, healthcare systems, education, SaaS, government), <strong>1 site of 19 successfully scanned had any Schema.org ActionType on its root URL.</strong> That’s 5.3%.</p>
+<p>Translation: nobody is shipping this yet. The category is wide open. The first deployer in your vertical owns the agent layer for the 12-to-18-month window before the field catches up.</p>
+<h2 id="whats-missing-for-your-vertical-financial-services">What’s missing for your vertical (financial-services)</h2>
+<p>Missing on your site: <strong>ApplyAction, ContactAction, ReserveAction</strong></p>
+<h2 id="what-deploying-action-schemas-does">What deploying Action schemas does</h2>
+<p>For each missing ActionType, the buyer outcome:</p>
+<ul>
+<li><strong>ApplyAction</strong> — Loan, insurance, school, and job applications all need ApplyAction. This is the difference between an agent completing the form versus surfacing it to the user and exiting.</li>
+<li><strong>ContactAction</strong> — The simplest agent task is “contact this business.” Without ContactAction the agent cannot reliably find the right path (email, phone, form) and often gives up or picks wrong.</li>
+<li><strong>ReserveAction</strong> — Without ReserveAction on appointment/booking pages, an agent trying to book on a user’s behalf has to interpret the booking form from raw HTML. Most attempts fail or require human handoff.</li>
+</ul>
+<h2 id="roadmap-implications">Roadmap implications</h2>
+<p>Section 07 (Roadmap) sequences the schema deployments your audit recommends. The Action-layer deployments belong in M2 or M3 (after the core entity schemas in M1 have been deployed and indexed), unless you have a specific competitive reason to lead with them. The technical lift per ActionType is roughly the same as a standard schema deployment — what’s new is the <code>target</code> / <code>EntryPoint</code> resolution and (for some types) the <code>query-input</code> syntax that lets an agent supply parameters.</p>
+<h2 id="reproducibility">Reproducibility</h2>
+<p>This scan is open source and reproducible. The detection logic is in <code>mcp-server/src/tools/agent-readiness-check.ts</code> in the NeverRanked GitHub repo. Anyone can re-run the same scan against the same URL and verify the numbers. If you (or your dev team) get a different result, file an issue and we’ll trace the disagreement.</p>
+<h2 id="what-this-section-is-not">What this section is not</h2>
+<p>This is a measurement of the future, not the present. AI engines today still primarily cite based on the core schema layer (<code>Organization</code>, <code>Service</code>, <code>FAQPage</code>, <code>AggregateRating</code>) that the rest of your audit covers. Deploying ActionTypes does not improve your current citation share — it positions you for the agent shift that is materializing now and will be mainstream within 18 months.</p>
+<p>Treat this section as a leading indicator. If the rest of your audit is fixed and your citation share is healthy, this is the next layer to deploy. If the rest of your audit shows core schema gaps, fix those first.</p>
+<hr />
+<!-- AUDIT-GENERATE: This section is auto-populated by scripts/audit-generate.mjs from a live scan of the client URL. If you see `{PLACEHOLDER}` text, the scan did not run or failed; re-run audit-generate or scan manually with `node scripts/agent-readiness-test-harness.mjs --site=<client-url> --vertical=<vertical>`. -->
+<div class="page-break">
+
+</div>
 <h1 id="keyword-intent-gap-analysis-american-savings-bank">Keyword &amp; Intent Gap Analysis: American Savings Bank</h1>
 <p><strong>Auditor:</strong> Never Ranked
 <strong>Sample date:</strong> 2026-05-08

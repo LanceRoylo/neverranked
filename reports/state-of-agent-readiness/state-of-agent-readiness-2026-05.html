@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>State of Agent Readiness: 2026-05 · Seed report</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Inter:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-bright: #e8c767;
+    --text: #1a1815;
+    --text-soft: #4a463e;
+    --text-mute: #6b665a;
+    --line: #d8d2c0;
+    --line-soft: #ede8d8;
+    --serif: "Playfair Display", Georgia, serif;
+    --mono: "DM Mono", "Menlo", monospace;
+    --label: "Barlow Condensed", "Helvetica Neue", sans-serif;
+    --body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+  @page { size: Letter; margin: 0.75in 0.85in; }
+  html, body { margin: 0; padding: 0; background: #fbf8ef; color: var(--text); font-family: var(--body); font-size: 11pt; line-height: 1.55; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .page-break { page-break-after: always; }
+  .cover { page-break-after: always; height: 9.4in; display: flex; flex-direction: column; justify-content: space-between; padding: 0.4in 0; box-sizing: border-box; }
+  .cover-mark { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); }
+  .cover-mark .mark-mono { font-family: var(--label); font-style: normal; text-transform: uppercase; letter-spacing: 0.32em; font-size: 9pt; color: var(--text-mute); margin-left: 1em; font-weight: 500; vertical-align: middle; }
+  .cover-eyebrow { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.32em; font-size: 10pt; color: var(--gold); font-weight: 500; margin: 0.4in 0 0.18in; }
+  .cover-title { font-family: var(--serif); font-weight: 400; font-size: 44pt; line-height: 1.05; letter-spacing: -0.02em; max-width: 6.5in; border: none; padding: 0; margin: 0; }
+  .cover-title em { font-style: italic; color: var(--gold); }
+  .cover-subtitle { font-family: var(--serif); font-style: italic; font-size: 18pt; color: var(--gold); margin-top: 0.18in; }
+  .cover-meta { font-family: var(--mono); font-size: 9.5pt; color: var(--text-mute); line-height: 1.6; border-top: 1px solid var(--line-soft); padding-top: 0.18in; }
+  .cover-meta strong { color: var(--gold); font-weight: 500; text-transform: uppercase; letter-spacing: 0.18em; font-size: 8pt; display: block; margin-bottom: 0.04in; font-family: var(--label); }
+  .cover-meta-row { display: flex; gap: 0.6in; margin-top: 0.1in; flex-wrap: wrap; }
+  .cover-meta-cell { flex: 1; min-width: 1.6in; }
+  h1 { font-family: var(--serif); font-weight: 400; font-size: 22pt; line-height: 1.1; letter-spacing: -0.015em; margin: 0 0 0.4in; color: var(--text); border-bottom: 1px solid var(--line); padding-bottom: 0.18in; }
+  h1 em { font-style: italic; color: var(--gold); }
+  h2 { font-family: var(--serif); font-weight: 400; font-size: 16pt; line-height: 1.2; margin: 0.35in 0 0.15in; letter-spacing: -0.01em; }
+  h2 em { font-style: italic; color: var(--gold); }
+  h3 { font-family: var(--label); text-transform: uppercase; letter-spacing: 0.16em; font-size: 11pt; font-weight: 600; margin: 0.25in 0 0.08in; color: var(--gold); }
+  h4 { font-family: var(--body); font-weight: 600; font-size: 11pt; margin: 0.18in 0 0.06in; }
+  p { margin: 0 0 0.12in; }
+  strong { font-weight: 600; }
+  em { font-style: italic; }
+  ul, ol { margin: 0 0 0.15in 0.25in; padding: 0; }
+  li { margin-bottom: 0.05in; }
+  hr { border: 0; border-top: 1px solid var(--line); margin: 0.25in 0; }
+  blockquote { border-left: 3px solid var(--gold); padding-left: 0.18in; margin: 0.15in 0; color: var(--text-soft); font-style: italic; }
+  table { border-collapse: collapse; width: 100%; margin: 0.15in 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 6pt 8pt; text-align: left; vertical-align: top; }
+  th { background: #f3eedd; font-family: var(--label); text-transform: uppercase; letter-spacing: 0.08em; font-size: 9pt; font-weight: 600; color: var(--text-soft); }
+  code { font-family: var(--mono); font-size: 9pt; background: #f3eedd; padding: 1pt 4pt; border-radius: 2pt; }
+  pre { font-family: var(--mono); font-size: 9pt; background: #f6f1e0; border: 1px solid var(--line-soft); border-radius: 4pt; padding: 10pt 12pt; page-break-inside: avoid; line-height: 1.45; margin: 0.12in 0; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div>
+    <div class="cover-mark">NeverRanked<span class="mark-mono">AEO + Schema deployment</span></div>
+    <div>
+      <div class="cover-eyebrow">Annual Report</div>
+      <h1 class="cover-title">State of Agent Readiness</h1>
+      <div class="cover-subtitle">2026-05 · Seed report</div>
+    </div>
+  </div>
+  <div class="cover-meta">
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell"><strong>Publisher</strong>NeverRanked</div>
+      <div class="cover-meta-cell"><strong>Published</strong>2026-05-12</div>
+      <div class="cover-meta-cell"><strong>Author</strong>Lance Roylo</div>
+    </div>
+    <div class="cover-meta-row">
+      <div class="cover-meta-cell" style="flex: 1 1 100%;">
+        <strong>Seven engines tracked</strong>
+        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Claude &middot; Gemini &middot; Microsoft Copilot &middot; Google AI Overviews &middot; Gemma</div>
+      </div>
+    </div>
+  </div>
+</div>
+<h2 id="whats-missing-on-the-websites-ai-agents-are-about-to-start-using">What’s missing on the websites AI agents are about to start using</h2>
+<p><strong>Sample date:</strong> 2026-05-12
+<strong>Panel size:</strong> 25 production sites across 10 verticals
+<strong>Successfully scanned:</strong> 19
+<strong>Methodology:</strong> Open source. Reproducible.</p>
+<hr />
+<h2 id="headline">Headline</h2>
+<p><strong>Of 19 production sites NeverRanked scanned across 10 verticals, 1 has any Schema.org ActionType on its root URL.</strong></p>
+<p>That’s 5.3%.</p>
+<p>The single site is Airbnb, with SearchAction via <code>potentialAction</code> on its WebSite schema. The 18 others — including six US banks, three major hospitality chains, three e-commerce platforms, healthcare systems, education, SaaS platforms, and the US government — are at zero. No ReserveAction. No ApplyAction. No BuyAction. No ContactAction. No SearchAction.</p>
+<p>This is not a detection failure. NeverRanked’s <code>agent_readiness_check</code> tool catches Schema.org ActionTypes across JSON-LD (with deep-nesting traversal up to depth 12) and Microdata. The detection works. The web is just not ready for agents yet.</p>
+<h2 id="what-this-means">What this means</h2>
+<p>Schema.org defines a set of Action types that mark transactional surfaces on a site. <code>ReserveAction</code> for booking. <code>ApplyAction</code> for applications. <code>BuyAction</code> for purchases. <code>ContactAction</code> for messages. <code>SearchAction</code> for internal search. Plus 22 others covering subscriptions, downloads, reviews, payments, check-ins, RSVPs, donations, and the rest.</p>
+<p>When an AI agent — OpenAI Operator, Anthropic computer-use, Perplexity agent mode, ChatGPT agent surface — tries to complete a task on a user’s behalf, it looks for these markers. Sites with Action schemas deployed are agent-completable. Sites without have to be interpreted from raw HTML, which fails reliably for most non-trivial tasks.</p>
+<p>Today, 95% of enterprise sites are at zero. The category is wide open. The first deployer in each vertical owns the agent layer for the 12-to-18-month window before the field catches up.</p>
+<h2 id="panel-composition">Panel composition</h2>
+<p><strong>Successfully scanned (19):</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Vertical</th>
+<th>Sites</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Banking</td>
+<td>ASB, First Hawaiian Bank, Bank of Hawaii, Central Pacific Bank, Chase, Wells Fargo</td>
+</tr>
+<tr>
+<td>Hospitality</td>
+<td>Marriott, Hawaii Theatre, Airbnb</td>
+</tr>
+<tr>
+<td>Restaurants / reservations</td>
+<td>Resy</td>
+</tr>
+<tr>
+<td>E-commerce</td>
+<td>Amazon, Best Buy</td>
+</tr>
+<tr>
+<td>SaaS</td>
+<td>Shopify, Stripe, GitHub</td>
+</tr>
+<tr>
+<td>Healthcare</td>
+<td>Mayo Clinic</td>
+</tr>
+<tr>
+<td>Education</td>
+<td>Harvard</td>
+</tr>
+<tr>
+<td>Government</td>
+<td>IRS</td>
+</tr>
+<tr>
+<td>Search</td>
+<td>Google</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Blocked by bot detection (6):</strong> Hilton (403), OpenTable (timeout), Kaiser Permanente (network failure), Yelp (403), Expedia (429), Etsy (403).</p>
+<p>The block rate is itself a finding. <strong>One in four major sites we tried to audit blocked an automated request from a clearly-identified bot.</strong> Agents trying to act on user behalf will hit the same wall. Sites that block agents do not get agent traffic.</p>
+<h2 id="findings-by-vertical">Findings by vertical</h2>
+<p><strong>Banking (six sites, zero ActionTypes).</strong> Not one US bank in the panel has <code>ApplyAction</code> on its loan, mortgage, or account-opening pages. The first US bank to deploy <code>ApplyAction</code> becomes the only bank an AI agent can complete a mortgage or loan application for on a user’s behalf. Estimated agent-volume implication if agent-commerce reaches 5% of digital banking traffic in 2027: meaningful. Today: nothing.</p>
+<p><strong>Hospitality (three sites, one ActionType).</strong> Airbnb has SearchAction. Marriott has nothing on root. Hawaii Theatre has nine JSON-LD blocks of high-quality entity schema (PerformingArtsTheater, AggregateRating, Event, FAQPage, BreadcrumbList — the deployment from the NeverRanked case study) but no Action schemas. Adding ReserveAction to the booking page would make Hawaii Theatre the only major Honolulu venue an agent can book on a user’s behalf.</p>
+<p><strong>E-commerce (two sites, zero ActionTypes on root).</strong> Amazon and Best Buy both have zero ActionTypes on root. Their action surfaces (BuyAction, OrderAction) likely live on product pages — untested in this scan. The first major e-commerce platform that ships consistent BuyAction across all product pages becomes the default agent-shopping destination for the period before the others catch up.</p>
+<p><strong>SaaS (three sites, zero ActionTypes).</strong> Shopify, Stripe, GitHub. The SaaS vertical needs SubscribeAction (trial sign-up), ChooseAction (plan picker), and ContactAction (support). All three sites have zero. This is the easiest vertical to deploy in (sign-up flows are well-understood) and the highest-value for agent-driven discovery (someone says “find me a payment processor that handles X” and the agent picks the one it can complete a signup for).</p>
+<p><strong>Healthcare, education, government (three sites, zero ActionTypes).</strong> Mayo Clinic, Harvard, IRS. Each has a clear agent use case (book an appointment, apply to a program, complete a tax form) and each is at zero. These verticals will be slower to deploy because of compliance overhead, but the strategic value of being first is higher because of the regulatory moat.</p>
+<h2 id="methodology">Methodology</h2>
+<p>The scan extracts Schema.org ActionTypes from a page using two surfaces:</p>
+<ol type="1">
+<li><strong>JSON-LD blocks</strong> (<code>&lt;script type="application/ld+json"&gt;</code>). The scan parses each block, expands <code>@graph</code> arrays, then walks every nested object up to depth 12 looking for <code>@type</code> values matching the recognized ActionType vocabulary. This catches actions nested inside <code>WebSite</code>, <code>Service</code>, <code>mainEntity</code>, <code>offers</code>, <code>hasOfferCatalog</code>, <code>isPartOf</code>, and other Schema.org composition properties, as well as those exposed via <code>potentialAction</code>.</li>
+<li><strong>Microdata</strong> (<code>itemscope itemtype="https://schema.org/{ActionType}"</code>). The scan uses pattern matching on the markup to catch sites still using HTML5 Microdata. Most modern sites use JSON-LD, but a meaningful tail of older sites still ship Microdata.</li>
+</ol>
+<p><strong>Scope:</strong> Root URL only. A site that deploys ActionTypes on subpages (<code>/reserve/</code>, <code>/contact/</code>, <code>/apply/</code>) will read as zero in this scan. A future v3 of the methodology will follow common transactional paths and aggregate findings across them. Until then, the root-URL number is conservative — actual deployment may be higher than this report shows.</p>
+<p><strong>Recognized ActionType vocabulary (27 types):</strong></p>
+<p>SearchAction, ReserveAction, CheckInAction, CheckOutAction, RsvpAction, ApplyAction, AuthorizeAction, BuyAction, OrderAction, PayAction, PreOrderAction, TipAction, RentAction, QuoteAction, DonateAction, ContactAction, AskAction, CommunicateAction, WatchAction, ListenAction, ReadAction, PlayAction, SubscribeAction, RegisterAction, JoinAction, ChooseAction, ReviewAction, TrackAction, DownloadAction.</p>
+<p><strong>Vertical baselines (13 verticals):</strong></p>
+<p>hospitality, restaurants, financial-services, professional-services, healthcare, education, commerce, saas, media, real-estate, nonprofit, government, performing-arts. Each vertical specifies which ActionTypes a competent agent would expect to find on a site in that category.</p>
+<h2 id="reproducibility">Reproducibility</h2>
+<p>The detection logic lives in <code>mcp-server/src/tools/agent-readiness-check.ts</code> in the public NeverRanked GitHub repo. The test harness is <code>scripts/agent-readiness-test-harness.mjs</code>. The full dataset for this report is at <code>data/agent-readiness-baseline-2026-05-12.json</code>. All three are open source.</p>
+<p>Anyone with Node 20+ can clone the repo and reproduce these numbers:</p>
+<pre><code>git clone https://github.com/LanceRoylo/neverranked
+cd neverranked/mcp-server &amp;&amp; npm install &amp;&amp; npm run build
+cd .. &amp;&amp; node scripts/agent-readiness-test-harness.mjs</code></pre>
+<p>If a third party gets meaningfully different numbers, file an issue. The methodology is intentionally simple so disagreement is traceable.</p>
+<h2 id="what-changes-if-you-ship-action-schemas-today">What changes if you ship Action schemas today</h2>
+<p>For any site in the panel:</p>
+<ul>
+<li><strong>Become the only agent-completable option in your vertical.</strong> First-mover capture window is roughly 18 months before the rest of the category catches up.</li>
+<li><strong>Convert agent traffic that would otherwise hand off to a human.</strong> Every ActionType-marked surface is a path an agent can actually complete instead of escalating.</li>
+<li><strong>Get cited differently by AI engines.</strong> Engines that surface “AI agents can complete X here” as a citation signal are still emerging, but several already weight agent-readiness in their answer-source selection.</li>
+<li><strong>Position for the agent-commerce shift.</strong> When agent-driven purchasing reaches scale (likely H2 2026 to H1 2027), the deployment work is done.</li>
+</ul>
+<h2 id="what-this-report-is-not">What this report is not</h2>
+<p>This is a measurement of the future, not the present. AI engines today still primarily cite based on the core schema layer (<code>Organization</code>, <code>Service</code>, <code>FAQPage</code>, <code>AggregateRating</code>) that the rest of NeverRanked’s audit covers. Deploying ActionTypes does not improve your current citation share — it positions you for the agent shift.</p>
+<p>Treat this report as a leading indicator. If your core schema layer is complete and your citation share is healthy, this is the next layer to deploy. If your core schema is incomplete, fix that first.</p>
+<h2 id="next-iterations-of-this-report">Next iterations of this report</h2>
+<p>This is a seed. The panel will grow to 100 sites by next month, then 250, then 500. Subpage crawling will reveal whether sites have ActionTypes deployed off-root. Monthly cadence will track the curve as the first deployers ship.</p>
+<p>If your site is in the panel and you want the per-site detail behind your number, reach out. The findings are private by default — we did not publish a per-site scorecard because the goal of this report is to signal the category, not to shame specific brands. If you want the data, we’ll send it.</p>
+<hr />
+<p><strong>Authored by:</strong> NeverRanked
+<strong>Contact:</strong> lance@neverranked.com
+<strong>Methodology + dataset:</strong> https://github.com/LanceRoylo/neverranked
+<strong>Tool:</strong> https://www.npmjs.com/package/<span class="citation" data-cites="neverranked/mcp">@neverranked/mcp</span> (run <code>agent_readiness_check</code> against any URL)</p>
+<p><strong>Citation:</strong> “State of Agent Readiness, 2026-05.” NeverRanked. https://neverranked.com/reports/state-of-agent-readiness/</p>
+
+</body>
+</html>
