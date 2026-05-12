@@ -445,6 +445,17 @@ the OUTCOME, not the spec. Schema type goes in Layer 3.`,
     }
   }
 
+  // 5b. Copy the static proof-point section into every audit. Hawaii
+  // Theatre case study, CEO-approved 2026-05-10 for marketing use.
+  // Static (not AI-generated) so every audit closes with the same
+  // verifiable proof point regardless of the prospect's vertical.
+  // Lives at audit-template/08-proof.md.
+  {
+    const dst = resolve(auditDir, '08-proof.md');
+    const tpl = readFileSync(resolve(templateDir, '08-proof.md'), 'utf8');
+    writeFileSync(dst, tpl, 'utf8');
+  }
+
   // 6. Delivery email draft — what Lance sends when delivering the audit
   console.log('[6/6] Drafting delivery email...');
   await writeDeliveryEmail(client, auditDir, execOut, roadmapOut, tech, schema);

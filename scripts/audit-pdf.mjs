@@ -62,6 +62,7 @@ const SECTIONS = [
   '05-ai-citations.md',
   '06-competitor-teardown.md',
   '07-roadmap.md',
+  '08-proof.md',
 ];
 
 // ---------------------------------------------------------------------------
