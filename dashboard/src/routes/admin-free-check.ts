@@ -52,19 +52,45 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, url
   const view: "most-scanned" | "most-recent" =
     url?.searchParams.get("view") === "most-recent" ? "most-recent" : "most-scanned";
 
-  // Load scans, captures, and leads in parallel.
-  const [scanList, captureList, leadList] = await Promise.all([
-    env.LEADS.list({ prefix: "event:scan:", limit: KV_LIST_LIMIT }),
-    env.LEADS.list({ prefix: "event:capture:", limit: KV_LIST_LIMIT }),
-    env.LEADS.list({ prefix: "lead:", limit: KV_LIST_LIMIT }),
+  // Paginated KV list. Each list() call returns up to 1000 keys plus a
+  // cursor for the next page. KV.list returns keys alphabetically, which
+  // means oldest-first since our keys are epoch-prefixed
+  // (event:scan:<ms-timestamp>:<random>). To get the NEWEST entries we
+  // must paginate through every page, otherwise a single call with
+  // limit=1000 returns the OLDEST 1000 keys and the actual newest events
+  // (those beyond the first 1000) are invisible. This was the bug that
+  // caused "Most recent scans" to show 3-day-old data while real-time
+  // traffic kept landing in KV.
+  //
+  // Cap total pages to 10 (10,000 keys = ~3 years of activity at current
+  // volume) so the page render never blows the worker subrequest budget.
+  async function listAllKeys(prefix: string, maxPages = 10): Promise<{ name: string }[]> {
+    const all: { name: string }[] = [];
+    let cursor: string | undefined = undefined;
+    for (let page = 0; page < maxPages; page++) {
+      const r: KVNamespaceListResult<unknown, string> = await env.LEADS.list({ prefix, limit: 1000, cursor });
+      all.push(...r.keys);
+      if (r.list_complete) break;
+      cursor = r.cursor;
+      if (!cursor) break;
+    }
+    return all;
+  }
+
+  const [scanAllKeys, captureAllKeys, leadAllKeys] = await Promise.all([
+    listAllKeys("event:scan:"),
+    listAllKeys("event:capture:"),
+    listAllKeys("lead:"),
   ]);
 
-  // KV list returns oldest-first (alphabetical on epoch-prefixed keys).
-  // We want the most recent activity to dominate the stats, so slice
-  // from the end. This caps the number of subrequests we issue.
-  const scanKeys = scanList.keys.slice(-MAX_SCAN_READS);
-  const captureKeys = captureList.keys.slice(-MAX_CAPTURE_READS);
-  const truncatedScans = Math.max(0, scanList.keys.length - scanKeys.length);
+  // Now we have ALL keys. slice(-N) correctly grabs the NEWEST N.
+  const scanKeys = scanAllKeys.slice(-MAX_SCAN_READS);
+  const captureKeys = captureAllKeys.slice(-MAX_CAPTURE_READS);
+  const truncatedScans = Math.max(0, scanAllKeys.length - scanKeys.length);
+
+  // Shim leadList shape so the rest of the function (which references
+  // leadList.keys.length) continues to work without further edits.
+  const leadList = { keys: leadAllKeys };
 
   const [scanRaws, captureRaws] = await Promise.all([
     Promise.all(scanKeys.map((k) => env.LEADS.get(k.name))),
