@@ -47,7 +47,7 @@ Some interesting parts:
 
 - agent_readiness_check looks for the Schema.org Action types (ReserveAction, ApplyAction, BuyAction, ContactAction) that AI agents read when they execute tasks on behalf of users. Today most sites score zero. The next year is going to be interesting.
 
-- The aeo_scan engine is the same one we run daily across our tracked client universe. Public methodology and current weekly reports at https://neverranked.com/state-of-aeo. The May 10 archive carries a banner about a partial run window from a subrequest-budget bug in the daily cron; we caught and shipped the fix the same day and documented it openly. Current runs are clean.
+- The aeo_scan engine is the same one we run daily across our tracked client universe. Public methodology and current weekly reports at https://neverranked.com/state-of-aeo. The May 10 archive carries a banner about a partial run window from a subrequest-budget bug in the daily cron. We caught and shipped the fix the same day and documented it openly. Current runs are clean.
 
 - If you want to run aeo_scan without installing the MCP server, the same engine is exposed at https://check.neverranked.com (no signup) or at app.neverranked.com/free/signup (free weekly score for one domain, no card).
 
@@ -80,20 +80,95 @@ Before pasting:
 - [ ] You are signed into HN with an account at least 30 days
       old (newer accounts get rate-limited and de-emphasized).
 
+## Specific submission timing (Tuesday May 12 2026)
+
+**Submit at 10:00 AM ET (07:00 AM HST).**
+
+Reasoning:
+- HN front-page algorithm weights submissions made between
+  8am-12pm ET (US East Coast workday start, US West Coast
+  morning ramp). Submissions before 8am or after 1pm get less
+  early-vote velocity.
+- 10am ET = 4pm UK = 11am ET morning peak. International
+  HN-reading dev/founder audience overlaps.
+- Submitting closer to noon means competing with the morning's
+  built-up momentum from other Show HN posts.
+- 07:00 AM HST means Lance is up + at the desk + present for
+  the first 90 minutes of comment activity. Critical for
+  engagement (see plan below).
+
+If 10am ET doesn't work, second-best: 9:30am ET. Third-best:
+8:30am ET. Avoid noon-onward.
+
+## First comment, ready-to-post
+
+Post this as the FIRST comment on your own submission within
+60 seconds of posting. Provides context HN readers want
+without cluttering the title/body:
+
+```
+Author here. Some context on why we built this:
+
+1. We run a daily 7-engine citation tracker (ChatGPT,
+   Perplexity, Claude, Gemini, Microsoft Copilot, Google AI
+   Overviews, and Gemma -- the open-weight engine we added
+   specifically so anyone can independently reproduce our
+   numbers). The MCP server exposes the same scan engine we
+   use internally.
+
+2. The most useful tool is probably aeo_scan: scan any URL,
+   get back schema completeness, citation-readiness score,
+   and a 90-day fix priority list. Works on dental practices,
+   B2B SaaS, performing arts venues, anything with a public
+   site.
+
+3. Real-world example: we ran the scan + deployment cycle on
+   Hawaii Theatre (Honolulu performing arts venue). They went
+   from a 45 AEO score to 95 in ten days. On the first weekly
+   citation log run after deployment, Perplexity named them
+   on 14 of 19 tracked queries. CEO approved the case study:
+   https://neverranked.com/case-studies/hawaii-theatre/
+
+4. Repo: https://github.com/LanceRoylo/neverranked
+   The State of AEO public hub:
+   https://neverranked.com/state-of-aeo/
+
+Happy to answer questions about MCP server design, AEO
+methodology, or how the citation tracker is built.
+```
+
+This works because:
+- Acknowledges you're the author up front (HN values
+  disclosure)
+- Three numbered context points = scannable
+- One concrete example with verifiable numbers (Hawaii
+  Theatre)
+- Public links so anyone can verify the claims
+- Ends with "happy to answer questions" not "buy our product"
+
 ## Engagement plan after submission
 
 HN traffic comes in the first 90 minutes. Be present and
 responsive:
 
-- Reply to the first comment within 15 minutes regardless of
-  what it says. Sets the tone.
+- **Post your first comment within 60 seconds** (template above).
+- Reply to the first OTHER commenter within 15 minutes regardless of
+  what they say. Sets the tone.
 - If asked "why MCP and not just a CLI?": "MCP is how agents
   consume tools. We started with a CLI in February; the agent
   pull made MCP the better surface. Both still exist."
+- If asked "do you have customers?" or "is this real?": Point
+  at the Hawaii Theatre case study. "We have one named client
+  who agreed to be public: Hawaii Theatre. 45 AEO score to 95
+  in ten days, 14 of 19 Perplexity citations the same week,
+  CEO-approved. Full case at
+  neverranked.com/case-studies/hawaii-theatre. Plus four other
+  clients under NDA."
 - If asked about the data-integrity banner on the State of AEO
-  report: "The cron has a known partial-completion bug filed
-  publicly in the repo. We disclose it on the report itself and
-  in the autonomy audit at content/handoff-questions/. The
+  report: "The cron has a known partial-completion bug we fixed
+  the same day we caught it. The diagnosis and fix architecture
+  are public in the repo at
+  content/handoff-questions/citation-cron-fix-landed.md. The
   pattern shown is reliable; the magnitude is conservative."
 - If a hostile comment attacks "AEO is just SEO renamed":
   "The mechanism is different (citation share in answer
@@ -101,6 +176,14 @@ responsive:
   types AI engines pull from is documented in our open-source
   classifier at tools/citation-gap/src/source-types.mjs. Agree
   or disagree, but the work is reproducible."
+- If asked "what about the broken/empty engines I see in the
+  May 10 report?": "Caught two engine integrity bugs in the
+  Monday May 11 cron diagnostic (Claude returning fenced JSON
+  the parser rejected; Gemma's Together AI integration
+  thinner than commercial engines). Both fixes shipped same
+  day; commits 62d3f98 and ca719b3 in the public repo. The
+  underlying methodology is reproducible regardless of any
+  one engine's transient state."
 
 ## What NOT to do
 
