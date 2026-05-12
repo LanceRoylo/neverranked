@@ -370,3 +370,173 @@ export async function syncRoadmapItemsFromGaps(
   return { inserted: drafts.length, resolved: toResolve.length };
 }
 
+
+// ===========================================================================
+// Source-type rollup — strategic view above the domain-level gap panel
+// ===========================================================================
+//
+// The existing GapReport.sources is per-domain (TripAdvisor, hawaiitheatre.com,
+// reddit.com/r/hawaii). The rollup below aggregates by source TYPE so the
+// buyer reads the strategic shape: "Reddit + Wikipedia + news are your three
+// biggest content categories to attack." Feeds the auto-generated content
+// roadmap and the per-client report's "what to ship next" line.
+//
+// Rolling up to source-type loses domain-level specificity (which the
+// existing panel keeps). The two views are complementary, not competing.
+// ===========================================================================
+
+export interface SourceTypeAgg {
+  source_type: string;
+  source_label: string;
+  action: string;
+  domains_count: number;       // how many unique domains in this type
+  total_mentions: number;      // sum of total_runs across domains in this type
+  client_named_mentions: number;
+  client_named_ratio: number;  // 0..1
+  avg_gap_score: number;       // weighted by total_runs
+  top_domain: string;          // domain with most mentions in this type
+  top_domain_runs: number;
+}
+
+export interface SourceTypeRollup {
+  total_mentions: number;
+  total_named: number;
+  named_ratio: number;
+  types: SourceTypeAgg[];           // sorted by total_mentions DESC
+  primary_gap: SourceTypeAgg | null; // highest avg_gap_score with signal
+  next_action: string | null;
+}
+
+export function buildSourceTypeRollup(report: GapReport | null): SourceTypeRollup | null {
+  if (!report) return null;
+  const sources = report.sources.filter((s) => !s.is_client_owned && s.source_type !== "other");
+  if (sources.length === 0) return null;
+
+  const byType = new Map<string, {
+    label: string;
+    action: string;
+    domains: Map<string, number>;
+    total_mentions: number;
+    client_named: number;
+    weighted_gap_sum: number;
+  }>();
+
+  for (const s of sources) {
+    let agg = byType.get(s.source_type);
+    if (!agg) {
+      agg = {
+        label: s.source_label,
+        action: s.action,
+        domains: new Map(),
+        total_mentions: 0,
+        client_named: 0,
+        weighted_gap_sum: 0,
+      };
+      byType.set(s.source_type, agg);
+    }
+    agg.domains.set(s.domain, s.total_runs);
+    agg.total_mentions += s.total_runs;
+    agg.client_named += s.client_named_runs;
+    agg.weighted_gap_sum += s.gap_score * s.total_runs;
+  }
+
+  const types: SourceTypeAgg[] = [];
+  for (const [source_type, a] of byType) {
+    const top = [...a.domains.entries()].sort((x, y) => y[1] - x[1])[0];
+    types.push({
+      source_type,
+      source_label: a.label,
+      action: a.action,
+      domains_count: a.domains.size,
+      total_mentions: a.total_mentions,
+      client_named_mentions: a.client_named,
+      client_named_ratio: a.total_mentions > 0 ? a.client_named / a.total_mentions : 0,
+      avg_gap_score: a.total_mentions > 0 ? a.weighted_gap_sum / a.total_mentions : 0,
+      top_domain: top ? top[0] : "",
+      top_domain_runs: top ? top[1] : 0,
+    });
+  }
+
+  types.sort((x, y) => y.total_mentions - x.total_mentions);
+
+  const total_mentions = types.reduce((s, t) => s + t.total_mentions, 0);
+  const total_named = types.reduce((s, t) => s + t.client_named_mentions, 0);
+  const named_ratio = total_mentions > 0 ? total_named / total_mentions : 0;
+
+  // Primary gap: highest weighted gap_score among types with enough signal
+  // (10+ mentions). If nothing crosses 10 mentions, take the strongest gap
+  // we have. Caller decides whether to render the next-action line.
+  const candidates = types.filter((t) => t.total_mentions >= 10);
+  const pool = candidates.length > 0 ? candidates : types;
+  const primary = [...pool].sort((x, y) => y.avg_gap_score - x.avg_gap_score)[0] || null;
+
+  const next_action = primary && primary.avg_gap_score >= 0.3
+    ? `${primary.source_label} is the biggest open content surface in your category. Engines cited ${primary.source_label.toLowerCase()} ${primary.total_mentions} times across ${primary.domains_count} ${primary.domains_count === 1 ? "domain" : "domains"} in this window. You appear in ${primary.client_named_mentions} (${Math.round(primary.client_named_ratio * 100)}%). The action is "${primary.action}" — start with ${primary.top_domain || "the highest-volume domain in this type"}.`
+    : null;
+
+  return {
+    total_mentions,
+    total_named,
+    named_ratio,
+    types,
+    primary_gap: primary,
+    next_action,
+  };
+}
+
+/** Render the source-type rollup as a panel above the existing
+ *  domain-level gap panel. Designed to read in 8 seconds. */
+export function renderSourceTypeRollupPanel(rollup: SourceTypeRollup | null): string {
+  if (!rollup) return "";
+  if (rollup.types.length === 0) return "";
+
+  const rows = rollup.types.slice(0, 8).map((t) => {
+    const namedPct = Math.round(t.client_named_ratio * 100);
+    const gapColor = t.avg_gap_score >= 0.6 ? "var(--red)" : t.avg_gap_score >= 0.3 ? "var(--gold)" : "var(--text-faint)";
+    return `
+      <tr style="border-bottom:1px solid var(--line)">
+        <td style="padding:10px 8px"><span style="color:var(--text-soft);font-weight:500">${escHtml(t.source_label)}</span><div style="font-size:10.5px;color:var(--text-faint);font-family:var(--mono);margin-top:2px">top: ${escHtml(t.top_domain || "—")} (${t.top_domain_runs})</div></td>
+        <td style="text-align:right;padding:10px 8px;font-family:var(--mono);font-size:12px;color:var(--text-soft)">${t.total_mentions}</td>
+        <td style="text-align:right;padding:10px 8px;font-family:var(--mono);font-size:12px;color:var(--text-soft)">${t.domains_count}</td>
+        <td style="text-align:right;padding:10px 8px;font-family:var(--mono);font-size:12px;color:${t.client_named_ratio >= 0.5 ? "#7fc99a" : t.client_named_ratio > 0 ? "var(--text-soft)" : "var(--text-faint)"}">${namedPct}%<span style="font-size:10.5px;color:var(--text-faint);margin-left:4px">(${t.client_named_mentions})</span></td>
+        <td style="text-align:right;padding:10px 8px;font-family:var(--mono);font-size:12px;color:${gapColor}">${t.avg_gap_score.toFixed(2)}</td>
+      </tr>
+    `;
+  }).join("");
+
+  return `
+    <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+        <div class="label" style="color:var(--gold)">§ Source types — where AI engines pull from, by category</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${rollup.types.length} types · ${rollup.total_mentions} mentions · you appear in ${Math.round(rollup.named_ratio * 100)}%</div>
+      </div>
+
+      <div style="font-size:12px;color:var(--text-mute);line-height:1.6;max-width:780px;margin-bottom:14px">
+        Strategic view above the domain table. Each row is a category of source AI engines pull from in your vertical (Wikipedia, Reddit, news, review aggregators, etc.). Lets you read the content roadmap at a category level before drilling into specific domains below.
+      </div>
+
+      <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+        <thead>
+          <tr style="border-bottom:1px solid var(--line)">
+            <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Source type</th>
+            <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Mentions</th>
+            <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Domains</th>
+            <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">You named</th>
+            <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Avg gap</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+
+      ${rollup.next_action ? `
+        <div style="margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--text-soft);line-height:1.65">
+          <span style="color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-right:8px">Next action</span>${escHtml(rollup.next_action)}
+        </div>
+      ` : ""}
+    </div>
+  `;
+}
+
+function escHtml(s: string): string {
+  return s.replace(/[&<>"']/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c] as string));
+}

@@ -15,7 +15,7 @@ import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
 import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
-import { buildCitationGapReport, renderCitationGapPanel } from "../citation-gap";
+import { buildCitationGapReport, renderCitationGapPanel, buildSourceTypeRollup, renderSourceTypeRollupPanel } from "../citation-gap";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -936,7 +936,13 @@ export async function handleCitations(
       const allDomains = (await env.DB.prepare(
         "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1"
       ).bind(slug).all<{ domain: string }>()).results.map(r => r.domain);
-      return renderCitationGapPanel(await buildCitationGapReport(slug, allDomains, env, 90));
+      const gapReport = await buildCitationGapReport(slug, allDomains, env, 90);
+      // Strategic rollup by source TYPE first (Reddit + news + Wikipedia
+      // as content categories), then the existing domain-level panel
+      // (TripAdvisor + reddit.com + staradvertiser.com as specific surfaces).
+      const rollupHtml = renderSourceTypeRollupPanel(buildSourceTypeRollup(gapReport));
+      const domainHtml = renderCitationGapPanel(gapReport);
+      return rollupHtml + domainHtml;
     })()}
 
     <!-- Content recommendations from citation gaps -->
