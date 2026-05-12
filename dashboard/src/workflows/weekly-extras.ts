@@ -58,16 +58,35 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
     const snapshotLookbackDays = event.payload?.snapshotLookbackDays ?? 7;
     const runGscAndBackup = event.payload?.runGscAndBackup ?? false;
 
-    // Plan: list out which clients we're snapshotting. (Per-keyword
-    // citation runs already happened in their own workflow instances
-    // before this one was dispatched.)
+    // Plan: list out which clients we're snapshotting.
     const plan = await step.do("plan", async () => {
       return await planCitationRun(this.env, slugFilter);
     });
 
     // Snapshot per client. Conditional -- only Mondays via cron, or
     // when manual button explicitly requests fresh same-day data.
+    //
+    // 2026-05-11: added step.sleep before snapshot to solve the race
+    // condition between this workflow and the per-keyword
+    // CitationKeywordWorkflow instances dispatched in parallel from
+    // cron. Verified empirically the Monday cron at 06:00 UTC: the
+    // snapshot used to run at 06:25 UTC while per-keyword workflows
+    // continued landing rows until 11:50 UTC (5+ hours later). The
+    // snapshot at 06:25 missed all Gemma rows + most engine rows.
+    //
+    // Sleep duration:
+    //   - Cron path: 5 minutes is enough; per-keyword workflows
+    //     complete in 30-90s each and Cloudflare runs many concurrently
+    //   - Manual button path (slugFilter set): 0 minutes -- the
+    //     button waits for the user, who wants fresh feedback fast.
+    //     Per-keyword for one client × ~15 kw × 30s = ~7-8 minutes
+    //     wall, but the snapshot can run on whatever's landed
+    //     (lookback=1 catches that day's incremental data).
     if (runSnapshot) {
+      if (!slugFilter) {
+        // Roster-wide cron path: wait for per-keyword to settle.
+        await step.sleep("wait-for-citations", "5 minutes");
+      }
       for (const slug of plan.clientSlugs) {
         await step.do(`snapshot-${slug}-lb${snapshotLookbackDays}`, async () => {
           await buildClientSnapshot(this.env, slug, snapshotLookbackDays);

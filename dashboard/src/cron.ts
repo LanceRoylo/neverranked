@@ -299,33 +299,37 @@ export async function runDailyTasks(env: Env): Promise<void> {
       }
     }
     console.log(`[cron daily] dispatched ${dispatched}/${plan.items.length} citation-keyword workflows (${dispatchErrors} errors) across ${plan.clientSlugs.length} clients`);
-
-    // Snapshot rollup -- Mondays only (7-day lookback over the prior
-    // week of daily samples). Plus GSC pull and backup. The snapshot
-    // workflow runs after the per-keyword dispatches so the rows are
-    // already landing as it queues; in practice the dispatch loop
-    // above takes seconds and the per-keyword instances each run
-    // 10-30s, so the snapshot workflow may need to wait for them.
-    // That's fine -- snapshot reads from D1 with a time window, so
-    // late-arriving rows are picked up if/when this workflow re-runs
-    // on the next Monday or via the manual button.
-    const isMonday = new Date().getUTCDay() === 1;
-    if (isMonday) {
-      try {
-        await env.WEEKLY_EXTRAS_WORKFLOW.create({
-          params: {
-            runSnapshot: true,
-            snapshotLookbackDays: 7,
-            runGscAndBackup: true,
-          },
-        });
-        console.log(`[cron daily] dispatched weekly-extras workflow (snapshot+gsc+backup, Monday)`);
-      } catch (e) {
-        console.log(`[cron daily] failed to dispatch weekly-extras workflow: ${e instanceof Error ? e.message : String(e)}`);
-      }
-    }
   } catch (e) {
     console.log(`[cron daily] citations dispatch failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Snapshot rollup + Monday-only GSC/backup -- separate try/catch so
+  // a citation-dispatch failure above does not skip the snapshot path.
+  // 2026-05-11: the prior architecture nested this under the citation
+  // try-block. Verified empirically the Monday 06:00 UTC cron did not
+  // produce a WeeklyExtras workflow instance despite isMonday=true and
+  // citation dispatches succeeding -- moved to its own block so the
+  // dispatch path is independent of upstream citation logic.
+  //
+  // The WeeklyExtras workflow itself sleeps ~5 min before the snapshot
+  // step so per-keyword workflows have time to complete and write rows
+  // before snapshot reads from citation_runs. Verified at deploy time.
+  try {
+    const isMonday = new Date().getUTCDay() === 1;
+    if (isMonday) {
+      await env.WEEKLY_EXTRAS_WORKFLOW.create({
+        params: {
+          runSnapshot: true,
+          snapshotLookbackDays: 7,
+          runGscAndBackup: true,
+        },
+      });
+      console.log(`[cron daily] dispatched weekly-extras workflow (snapshot+gsc+backup, Monday)`);
+    } else {
+      console.log(`[cron daily] skipping weekly-extras (not Monday, UTC day=${new Date().getUTCDay()})`);
+    }
+  } catch (e) {
+    console.log(`[cron daily] failed to dispatch weekly-extras workflow: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   await sendOnboardingDripEmails(env);
@@ -552,6 +556,19 @@ export async function runDailyTasks(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron] htc-events failed: ${e}`);
   }
+  // QA cross-system consistency audit. Verifies marketing claims on
+  // public surfaces still match the underlying production data
+  // ("homepage says 7 engines, do we actually run 7 engines?"). Runs
+  // daily, never blocks anything, writes red verdicts to admin_alerts.
+  // Cheap: ~3 HTTP fetches + a few D1 queries.
+  try {
+    const { runCrossSystemAudit } = await import("./lib/qa-cross-system");
+    const r = await runCrossSystemAudit(env);
+    console.log(`[cron] qa cross-system: verdict=${r.verdict} reasoning="${r.reasoning.slice(0, 200)}"`);
+  } catch (e) {
+    console.log(`[cron] qa cross-system audit failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.
   await runSchemaDriftSweep(env);
