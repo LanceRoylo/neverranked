@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>NVI Score Methodology: NeverRanked Standards</title>
+<meta name="description" content="How NeverRanked computes the NeverRanked Visibility Index, a 0-100 monthly AI presence score, with weights, worked example, and full reproducibility.">
+<link rel="canonical" href="https://neverranked.com/standards/nvi/">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta property="og:title" content="NVI Score Methodology">
+<meta property="og:description" content="How NeverRanked computes the NeverRanked Visibility Index, a 0-100 monthly AI presence score, with weights, worked example, and full reproducibility.">
+<meta property="og:type" content="article">
+<meta property="og:url" content="https://neverranked.com/standards/nvi/">
+<meta property="og:site_name" content="NeverRanked">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&family=Inter:wght@400;500;600&display=swap">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23080808'/%3E%3Ctext x='50%25' y='56%25' text-anchor='middle' font-family='Georgia,serif' font-size='22' fill='%23c9a84c' font-style='italic'%3EN%3C/text%3E%3C/svg%3E">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#080808;--text:#fbf8ef;--text-mute:#b0b0a8;--text-faint:#888378;--card:#131210;--line:#26241e;--gold-wash:rgba(232,199,103,.08);--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif;--body:Inter,-apple-system,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.7}
+a{color:var(--gold);text-decoration:none}a:hover{color:var(--gold-bright)}
+.wrap{max-width:760px;margin:0 auto;padding:48px 24px}
+.eyebrow{font-family:var(--label);text-transform:uppercase;letter-spacing:.32em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500}
+h1{font-family:var(--serif);font-weight:400;font-size:44pt;line-height:1.05;letter-spacing:-.02em;margin:0 0 24px}
+h1 em{font-style:italic;color:var(--gold)}
+h2{font-family:var(--serif);font-weight:400;font-size:22pt;letter-spacing:-.01em;margin:48px 0 16px}
+h2 em{font-style:italic;color:var(--gold)}
+h3{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:var(--gold);margin:32px 0 12px;font-weight:600}
+h4{font-family:var(--body);font-weight:600;font-size:15px;margin:20px 0 8px;color:var(--text)}
+p{margin:0 0 16px;color:var(--text-mute)}
+strong{color:var(--text);font-weight:600}
+ul,ol{margin:0 0 24px 24px;padding:0}
+li{margin-bottom:8px;color:var(--text-mute)}
+table{border-collapse:collapse;width:100%;margin:20px 0;font-size:14px}
+th,td{border:1px solid var(--line);padding:10px 14px;text-align:left}
+th{background:var(--card);font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:12px;color:var(--gold)}
+td{color:var(--text-mute)}
+pre{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:18px;overflow:auto;font-family:var(--mono);font-size:13px;line-height:1.55;margin:20px 0}
+code{font-family:var(--mono);font-size:13.5px;color:var(--gold-bright);background:var(--card);padding:2px 6px;border-radius:3px}
+pre code{background:transparent;padding:0;color:var(--text)}
+hr{border:0;border-top:1px solid var(--line);margin:48px 0}
+blockquote{border-left:3px solid var(--gold);padding:0 0 0 20px;margin:24px 0;color:var(--text-mute);font-style:italic}
+.footer{font-family:var(--mono);font-size:12px;color:var(--text-faint);line-height:1.7}
+.standards-card{display:block;background:var(--card);border:1px solid var(--line);border-radius:6px;padding:28px;margin:0 0 16px;transition:border-color .15s}
+.standards-card:hover{border-color:var(--gold)}
+.standards-card-title{font-family:var(--serif);font-style:italic;color:var(--gold);font-size:22pt;margin:0 0 8px}
+.standards-card-summary{color:var(--text-mute);font-size:14px;line-height:1.6;margin:0}
+@media(max-width:600px){h1{font-size:32pt}h2{font-size:18pt}.wrap{padding:32px 16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow"><a href="/standards/" style="color:var(--text-faint)">Standards</a></p>
+  <h1 id="neverranked-visibility-index-methodology">NVI Score Methodology</h1>
+<p>The NeverRanked Visibility Index (NVI), also called the AI Presence Score,
+is a 0-100 measurement of how present a brand is across the AI engines
+that now answer most "best X for Y" queries. It is the headline metric
+in the monthly NVI report that NeverRanked publishes for tracked clients.</p>
+<p>The NVI is distinct from the <a href="/standards/methodology/">AEO Score</a>.
+The AEO Score measures whether a site has the structured-data
+signals AI engines need (schema, llms.txt, technical hygiene). The
+NVI measures whether the engines are actually citing the brand,
+how often, in what position, and with what tone. AEO is the input.
+NVI is the outcome.</p>
+<h2 id="the-formula">The formula</h2>
+<p>NVI is a weighted sum of four sub-signals. The four weights add to
+100. There are no hidden multipliers, no proprietary boost factors,
+no "secret sauce." The arithmetic is below.</p>
+<pre><code>NVI = citation_rate_pts (40)
+    + engine_spread_pts  (25)
+    + prominence_pts     (20)
+    + sentiment_pts      (15)</code></pre>
+<p>Each component is described in its own section. The full
+implementation is open source at
+<a href="https://github.com/LanceRoylo/neverranked/blob/main/dashboard/src/nvi/score.ts">dashboard/src/nvi/score.ts</a>
+in the public repo. Anyone can read the function, run it against the
+same input rows, and reproduce our number.</p>
+<h3 id="citation-rate-40-points">1. Citation rate (40 points)</h3>
+<p>The percentage of tracked prompts where the brand appears in any
+engine's answer. A prompt is one of the 14-19 industry-specific
+questions in the brand's tracked keyword set ("best business
+checking account in Hawaii," "top performing arts venues in
+Honolulu," etc.). The set is fixed at the start of each reporting
+period so the denominator is stable.</p>
+<pre><code>citation_rate_pts = (prompts_cited / prompts_total) * 40</code></pre>
+<p>Worked example: 14 of 19 prompts cited the brand at least once
+across the engine panel. citation_rate_pts = 14/19 * 40 = 29.47.</p>
+<h3 id="engine-spread-25-points">2. Engine spread (25 points)</h3>
+<p>How many distinct engines cited the brand at least once. NVI tracks
+five engines for the spread bonus: ChatGPT, Perplexity, Gemini,
+Google AI Overviews, and Microsoft Copilot. Claude is observed but
+excluded from this component because Claude responses are
+training-only (no live web citation surface). Gemma is observed for
+reproducibility but uses a separate weighting block on the NVI
+report.</p>
+<pre><code>engine_spread_pts = min(25, engines_cited * (25 / 5))</code></pre>
+<p>Worked example: 4 of 5 tracked engines cited the brand at least
+once. engine_spread_pts = 4 * 5 = 20.</p>
+<h3 id="prominence-20-points">3. Prominence (20 points)</h3>
+<p>Where the brand appeared in each engine's answer. Prominence 1 is
+the first/hero mention. Prominence 10 is the last/footnote-tier
+mention. Each cited row maps to a per-row score of (11 - p) / 10,
+so rank 1 = 1.0 and rank 10 = 0.1. The per-row scores are averaged
+across all cited rows that carry a prominence value, then scaled by
+the 20-point cap.</p>
+<pre><code>per_row = (11 - prominence) / 10        # 1.0 (best) to 0.1 (worst)
+prominence_pts = average(per_row across cited rows) * 20</code></pre>
+<p>Worked example: brand was cited 12 times across the run. Prominence
+values: [1, 2, 2, 3, 1, 4, 5, 6, 2, 3, 4, 7]. Average per-row score
+= (1.0 + 0.9 + 0.9 + 0.8 + 1.0 + 0.7 + 0.6 + 0.5 + 0.9 + 0.8 + 0.7
++ 0.4) / 12 = 0.767. prominence_pts = 0.767 * 20 = 15.33.</p>
+<p>Rows without a prominence value (legacy data before migration 0058)
+are excluded from the denominator so historical reports are not
+penalized for missing the column.</p>
+<h3 id="sentiment-15-points">4. Sentiment (15 points)</h3>
+<p>Net positive minus negative share of cited rows that have been
+sentiment-scored. Each cited row is classified positive, neutral,
+or negative by a separate scoring pass (see
+<a href="https://github.com/LanceRoylo/neverranked/blob/main/dashboard/src/sentiment-scorer.ts">sentiment-scorer.ts</a>).
+Neutral rows and unscored rows contribute zero to the numerator.</p>
+<pre><code>scored_rows = cited rows where sentiment is not null
+net = (positive_count - negative_count) / scored_rows.length
+sentiment_pts = max(0, min(15, net * 15))</code></pre>
+<p>Worked example: 10 of 12 cited rows are sentiment-scored. 7 positive,
+2 neutral, 1 negative. net = (7 - 1) / 10 = 0.6. sentiment_pts = 0.6
+* 15 = 9.0.</p>
+<h2 id="putting-it-together">Putting it together</h2>
+<p>Continuing the worked example through every component:</p>
+<table>
+<thead>
+<tr><th>Component</th><th>Calculation</th><th>Points</th></tr>
+</thead>
+<tbody>
+<tr><td>Citation rate</td><td>14/19 prompts cited * 40</td><td>29.47</td></tr>
+<tr><td>Engine spread</td><td>4 of 5 engines cited * 5</td><td>20.00</td></tr>
+<tr><td>Prominence</td><td>avg per-row 0.767 * 20</td><td>15.33</td></tr>
+<tr><td>Sentiment</td><td>net 0.6 * 15</td><td>9.00</td></tr>
+<tr><td><strong>NVI total</strong></td><td></td><td><strong>74</strong> (rounded)</td></tr>
+</tbody>
+</table>
+<p>A 74 lands in the C band ("Threshold"). See grade bands below.</p>
+<h2 id="grade-bands">Grade bands</h2>
+<p>Same bands as the AEO Score so the two systems read consistently.</p>
+<table>
+<thead>
+<tr><th>Score</th><th>Grade</th><th>Label</th><th>Meaning</th></tr>
+</thead>
+<tbody>
+<tr><td>90-100</td><td>A</td><td>Cite-ready</td><td>AI engines can confidently use this brand as a source. Defense mode.</td></tr>
+<tr><td>75-89</td><td>B</td><td>Strong foundation</td><td>Strong foundation with a few specific gaps. A focused 30-45 day push typically moves to A.</td></tr>
+<tr><td>60-74</td><td>C</td><td>Threshold</td><td>Visible but not first-choice. Competitors with better structure are getting picked over you.</td></tr>
+<tr><td>40-59</td><td>D</td><td>Needs work</td><td>Real structural problems. AI engines are skipping you for cleaner sources.</td></tr>
+<tr><td>0-39</td><td>F</td><td>Critical</td><td>AI engines cannot parse you well enough to cite. Every week without action the gap widens.</td></tr>
+</tbody>
+</table>
+<h2 id="how-the-data-is-collected">How the data is collected</h2>
+<p>Every weekday at 06:00 UTC NeverRanked dispatches one query per
+tracked keyword to each engine via the engine's official API or
+public search surface. Each response is parsed for brand citations,
+the brand's position in the answer, and the sentiment of any
+descriptive text around the citation. Raw rows land in the
+citation_runs D1 table. The NVI for a reporting period is computed
+from those rows at month-end.</p>
+<p>Engine list and how each is reached:</p>
+<ul>
+<li>ChatGPT: OpenAI API with web search enabled</li>
+<li>Perplexity: Perplexity Sonar API</li>
+<li>Claude: Anthropic API (training-only, excluded from spread)</li>
+<li>Gemini: Google Gemini API with grounding</li>
+<li>Microsoft Copilot: Bing-grounded chat API</li>
+<li>Google AI Overviews: SERP synthesis via DataForSEO</li>
+<li>Gemma: Together AI inference on the open-weight Gemma model,
+which lets anyone re-run our prompts on the same weights and
+verify our numbers without trusting us</li>
+</ul>
+<h2 id="what-changes-a-score">What changes an NVI</h2>
+<ul>
+<li>Schema deployments (the AEO Score work): typically move NVI 5-15
+points within 30 days as engines re-crawl and start citing the
+brand.</li>
+<li>Content publishing in the brand's voice on the tracked topics:
+moves NVI through both citation_rate (more queries answered with
+the brand) and prominence (brand becomes the lead source on more
+queries).</li>
+<li>Reddit and authority-platform presence (G2, Trustpilot, Capterra,
+Google Business): moves prominence and sentiment because engines
+weight these as trust signals.</li>
+<li>Press mentions and direct media coverage: moves citation_rate and
+engine_spread.</li>
+</ul>
+<h2 id="what-does-not-change-a-score">What does NOT change an NVI</h2>
+<ul>
+<li>Backlink quantity, Domain Authority, page rank. AI engines weight
+schema + citation patterns over link graph for source selection.</li>
+<li>Paid placements. Paid links and sponsored content do not enter
+the engines' answer-generation paths in any way we have observed.</li>
+<li>Site speed beyond basic loadability. A slow site is still cited
+if its content is right.</li>
+<li>The brand's own marketing claims about itself. Engines weight
+third-party mentions and structured data, not first-person
+self-description.</li>
+</ul>
+<h2 id="independence-and-reproducibility">Independence and reproducibility</h2>
+<p>Six of the seven tracked engines are commercial APIs. We cannot
+audit what they do behind the scenes; we have to trust their
+responses. The seventh, Gemma, is Google's open-weight model. Its
+weights are public. Anyone with the same model weights can re-run
+our prompts and verify the citation numbers we observe. We track
+Gemma specifically because it lets us anchor the methodology to a
+reproducible baseline.</p>
+<p>The full scoring function, the engine integration code, and the
+data schema are open source at
+<a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>.</p>
+<h2 id="errata-and-disputes">Errata and disputes</h2>
+<p>If a client disputes a score, we re-run the engine panel within
+24 hours and publish the second run alongside the first. NVI scores
+that move more than 8 points between consecutive runs get manual
+review and either a corrected number or a "review pending" flag on
+the next report.</p>
+<h2 id="what-the-score-does-not-claim">What the NVI does NOT claim</h2>
+<p>The NVI does not predict revenue, conversion, brand value, customer
+satisfaction, or financial fitness. It is a measurement of one
+specific thing: whether AI engines are citing the brand across a
+fixed prompt set with appropriate position and tone. Sites with low
+NVIs often have excellent businesses underneath; the score measures
+the citation layer, not the business.</p>
+<p>The NVI also does not measure direct traffic. AI engines that cite
+a brand do not always send a click. Citation share is a leading
+indicator of future direct-search interest, not a measure of
+current click volume.</p>
+<h2 id="versioning">Versioning</h2>
+<p>The current methodology is v2 (this document). v1 (deprecated,
+2025) used 50/30/20 weights without the prominence component.
+v2 (current, 2026) rebalanced to 40/25/20/15 once the
+prominence and sentiment columns were populated across the row
+history. Methodology changes are announced in the NeverRanked
+changelog and re-applied retroactively to historical reports so
+year-over-year comparisons remain meaningful.</p>
+
+
+  <hr>
+  <div class="footer">
+    <p>This document is a public standard. Source code: <a href="https://github.com/LanceRoylo/neverranked/blob/main/dashboard/src/nvi/score.ts">dashboard/src/nvi/score.ts</a>. Disputes or corrections: <a href="mailto:standards@neverranked.com">standards@neverranked.com</a>. Last updated: 2026-05-12.</p>
+  </div>
+</div>
+</body>
+</html>
