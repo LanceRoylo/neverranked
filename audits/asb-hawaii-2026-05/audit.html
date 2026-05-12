@@ -290,13 +290,13 @@
       </div>
       <div class="cover-meta-cell">
         <strong>Delivered</strong>
-        2026-05-09
+        2026-05-12
       </div>
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Seven engines tracked</strong>
-        <div class="cover-meta-engines">Gemma (open-weight) &middot; ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+        <strong>Six engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
       </div>
     </div>
   </div>
@@ -1067,7 +1067,7 @@ where you are going and which deployments moved you there.</p>
 <strong>Sample date:</strong> 2026-05-08
 <strong>Engine sampled in this audit:</strong> Claude (Anthropic) via direct API
 <strong>Prompt sample:</strong> 8 representative buyer-stage prompts from the Hawaii community banking corpus
-<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all seven engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma, Google's open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.</p>
+<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all seven engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma, Google’s open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.</p>
 <hr />
 <h2 id="the-headline-number">The headline number</h2>
 <p><strong>ASB was cited in 8 of 8 sampled prompts. ASB was the first-cited bank in 1 of 8.</strong></p>
@@ -1308,7 +1308,7 @@ prompts. The production tracking layer that ships with the Signal-
 tier subscription replaces this with:</p>
 <ul>
 <li><strong>Seven engines</strong> (ChatGPT, Perplexity, Claude, Gemini, Microsoft
-Copilot, Google AI Overviews, and Gemma, Google's open-weight
+Copilot, Google AI Overviews, and Gemma, Google’s open-weight
 model) on the same prompt set every week. Gemma is the
 reproducibility anchor: its weights are public, so a compliance
 team can re-run the exact same queries and verify our numbers.</li>
@@ -1905,6 +1905,76 @@ will not be.</p>
 - All schema deployed and validated with zero errors, but rich results take 60–90 days post-deployment to appear in live search
 - Social preview cards working, but click-through lift takes 2–3 months to measure with statistical confidence
 - H1 consolidation and meta tag fixes improve crawl efficiency, observable in Search Console Coverage report but not yet in rankings</p>
+<div class="page-break">
+
+</div>
+<h1 id="proof-point-what-this-work-looks-like-shipped">Proof Point: What This Work Looks Like Shipped</h1>
+<p>The audit you just read is theoretical until you see what
+happens when the recommendations actually get deployed. Here is
+the most recent example from our portfolio.</p>
+<h2 id="hawaii-theatre">Hawaii Theatre</h2>
+<p>A historic Honolulu performing arts venue. Open since 1922.
+Eighty to a hundred thousand patrons a year. By traditional SEO
+standards the website was fine. Real content, real photos,
+working booking flows.</p>
+<p>By AI search standards, the venue was invisible.</p>
+<p>When we ran the initial AEO scan, Hawaii Theatre scored <strong>45
+out of 100. Grade D.</strong> They had zero AI citations across the
+queries that matter for their category. The structural gaps
+were textbook: no PerformingArtsTheater schema, no WebSite
+SearchAction, no AggregateRating embedded (despite a 4.6
+average across hundreds of Google reviews), no FAQPage, no
+BreadcrumbList anywhere, and zero Event schemas on a page
+listing 35 live shows.</p>
+<h2 id="what-we-shipped-in-ten-days">What we shipped, in ten days</h2>
+<p>Five schema categories, all delivered through NeverRanked’s
+one-line injection snippet. No engineering work on Hawaii
+Theatre’s site. No CMS changes. No broken design.</p>
+<ul>
+<li><strong>Foundation schemas (Day 1):</strong> PerformingArtsTheater across
+every page, WebSite with SearchAction, AggregateRating
+embedded in the venue block.</li>
+<li><strong>Event schemas (Day 2):</strong> 31 individual Event entities
+generated from the live upcoming-events page. Daily refresh
+cron activated – every morning at 6am UTC the system
+rescrapes the page and rewrites the schema set. Shows that
+drop off deactivate. New shows get picked up within 24 hours.</li>
+<li><strong>Page-level schemas (Day 4):</strong> FAQPage with 8 grounded Q&amp;A
+pairs from real homepage content. BreadcrumbList across 24
+site sections.</li>
+</ul>
+<h2 id="the-result">The result</h2>
+<ul>
+<li>AEO score moved from <strong>45 (Grade D) to 95 (Grade A)</strong> in
+ten days.</li>
+<li>On the first weekly citation log run after deployment,
+<strong>Perplexity named Hawaii Theatre on 14 of 19 tracked
+queries.</strong></li>
+</ul>
+<p>No content campaign. No press push. No paid media. No
+backlinks. The structured-data layer was the gap. Once the
+facts were in a format AI engines could parse, retrieval
+started inside the first weekly run.</p>
+<h2 id="what-this-means-for-your-audit">What this means for your audit</h2>
+<p>The work above is replicable. The schema categories listed in
+your roadmap are the same shape (adapted to your vertical) that
+Hawaii Theatre’s deployment used. The measurement framework
+(the Citation Tape, our standing AI-citation tracker covering
+seven engines including the only open-weight model, Gemma) is
+the same instrument running against your domain when you sign
+on as a tracked client.</p>
+<p>The Hawaii Theatre case study, with the full schema list and
+the citation tracking output, is at
+<a href="https://neverranked.com/case-studies/hawaii-theatre/">neverranked.com/case-studies/hawaii-theatre</a>.
+The CEO of Hawaii Theatre Center approved use of the name and
+the before/after data in conversations like this one.</p>
+<p>If you want to see the same arc on your site, the next step is
+the same as it was for Hawaii Theatre: pick the schema package
+that fits your vertical (your roadmap above is the starting
+point), ship it via the snippet, and measure citation share
+weekly from there.
+</parameter>
+</invoke></p>
 
 
 </body>

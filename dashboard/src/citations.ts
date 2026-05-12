@@ -59,12 +59,14 @@ const GEMINI_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 // Together AI hosts open-weight models including Gemma. OpenAI-compatible
 // API surface so the client code below is structurally identical to the
-// OpenAI/Anthropic patterns. We use gemma-3-27b-it (instruction-tuned)
+// OpenAI/Anthropic patterns. We use gemma-4-31B-it (instruction-tuned)
 // as the 7th tracked engine -- the only open-weight model in the set,
-// which makes our citation numbers independently reproducible. See
+// which makes our citation numbers independently reproducible. This is
+// the largest serverless Gemma variant Together hosts (May 2026); the
+// 27B and 9B variants moved to dedicated-endpoint-only pricing. See
 // content/strategy/gemma-utilization-prep.md for the strategic context.
 const TOGETHER_ENDPOINT = "https://api.together.xyz/v1/chat/completions";
-const GEMMA_MODEL = "google/gemma-3-27b-it";
+const GEMMA_MODEL = "google/gemma-4-31B-it";
 
 // ---------------------------------------------------------------------------
 // Perplexity queries
@@ -315,7 +317,7 @@ async function queryClaude(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "claude-haiku-4-20250414",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 1024,
       system: "You recommend local businesses and services. Always include specific business names and their websites when available. Respond ONLY with valid JSON in this exact format: {\"businesses\": [{\"name\": \"Business Name\", \"url\": \"https://example.com\", \"reason\": \"Why you recommend them\"}]}",
       messages: [
@@ -337,8 +339,19 @@ async function queryClaude(
   const rawContent = data.content?.[0]?.text || "{}";
   let entities: CitedEntity[] = [];
 
+  // Claude sometimes wraps its JSON response in ```json fences despite
+  // the prompt asking for ONLY JSON. Strip them defensively before
+  // parsing -- verified empirically 2026-05-11: a sample row showed
+  // "```json\n{\"businesses\":[...]}\n```" which JSON.parse rejected,
+  // so entities came back empty even though Claude returned good data.
+  // Matches the same defensive parse pattern queryGemma already uses.
+  const cleaned = rawContent
+    .replace(/^```(?:json)?\s*/i, "")
+    .replace(/```\s*$/, "")
+    .trim();
+
   try {
-    const parsed = JSON.parse(rawContent) as {
+    const parsed = JSON.parse(cleaned) as {
       businesses: { name: string; url: string | null; reason: string }[];
     };
     entities = (parsed.businesses || []).map((b) => ({
@@ -1212,6 +1225,13 @@ export async function runOneKeywordCitations(
   const runAnthropic = async () => {
     if (!env.ANTHROPIC_API_KEY) return;
     const r = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
+    // Skip insert when the API returned nothing -- usually a transient
+    // 5xx, rate limit, or model error. Empty rows poison the citation
+    // rate denominator and the engines_breakdown aggregator (verified
+    // empirically 2026-05-11: 53/53 Anthropic rows had cited_entities=[]
+    // because most calls returned response_text=""). Matches the
+    // skip-on-empty pattern Gemini / AIO / Bing already use.
+    if (r.text.length === 0 && r.entities.length === 0) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1260,6 +1280,9 @@ export async function runOneKeywordCitations(
   const runGemma = async () => {
     if (!env.TOGETHER_API_KEY) return;
     const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+    // Skip empty results to keep the snapshot aggregator clean. Same
+    // pattern as the other training-mode engines.
+    if (r.text.length === 0 && r.entities.length === 0) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
