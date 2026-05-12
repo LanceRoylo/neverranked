@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Free Tool Confession Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --card:#13110e;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --red:#c5544a;
+  --green:#7fc99a;
+  --term-bg:#0d0c0a;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+  --body:Inter,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1080px;overflow:hidden;
+  background:var(--bg);color:var(--text);font-family:var(--body);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.card{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:64px 72px 60px;
+  position:relative;
+  background:radial-gradient(ellipse at 75% 5%, #1d1813 0%, #0a0908 70%);
+}
+
+.brand-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:72px;
+}
+.brand-mark{
+  font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold);
+}
+.brand-tag{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;
+  font-size:11px;color:var(--text-faint);font-weight:500;
+}
+
+.eyebrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:13px;color:var(--gold);font-weight:700;margin-bottom:32px;
+  display:flex;align-items:center;gap:14px;
+}
+.eyebrow .dot{
+  width:7px;height:7px;background:var(--gold);border-radius:50%;
+  box-shadow:0 0 12px rgba(232,199,103,.5);
+}
+
+.headline{
+  font-family:var(--serif);font-weight:400;
+  font-size:88px;line-height:1.04;letter-spacing:-0.025em;
+  color:var(--text);max-width:960px;margin-bottom:48px;
+}
+.headline em{font-style:italic;color:var(--gold-bright)}
+
+.divider{
+  height:1px;background:var(--line);margin:0 0 36px;width:120px;
+}
+
+.sub{
+  font-family:var(--body);font-weight:400;
+  font-size:24px;line-height:1.5;color:var(--text-mute);
+  max-width:880px;margin-bottom:48px;
+}
+
+.url-block{
+  display:inline-flex;align-items:center;gap:14px;
+  background:var(--term-bg);border:1px solid var(--line);
+  padding:18px 26px;border-radius:8px;
+  box-shadow:0 14px 32px rgba(0,0,0,.5);
+  align-self:flex-start;
+}
+.url-prompt{
+  font-family:var(--mono);font-size:18px;color:var(--gold);font-weight:500;
+}
+.url-text{
+  font-family:var(--mono);font-size:22px;color:var(--text);font-weight:500;
+  letter-spacing:0.01em;
+}
+
+.bottom-row{
+  margin-top:auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:48px;border-top:1px solid var(--line);
+}
+.bottom-left{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+.bottom-right{
+  font-family:var(--mono);font-size:12px;color:var(--text-faint);
+  letter-spacing:0.04em;
+}
+
+/* Subtle ornament */
+.ornament{
+  position:absolute;top:80px;right:80px;
+  font-family:var(--serif);font-size:140px;line-height:1;
+  color:var(--gold);opacity:0.06;font-style:italic;
+  user-select:none;pointer-events:none;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="brand-row">
+    <div class="brand-mark">Never Ranked</div>
+    <div class="brand-tag">Free Tool · 30 Seconds</div>
+  </div>
+
+  <div class="eyebrow">
+    <div class="dot"></div>
+    <span>An honest confession</span>
+  </div>
+
+  <div class="headline">
+    Most business sites score <em>below 60</em> on AI search visibility.
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="sub">
+    I built a free tool that scans any URL and tells you yours.<br>
+    Some people see the score and fix it themselves. They never need my agency.<br>
+    That's fine. Both outcomes are.
+  </div>
+
+  <div class="url-block">
+    <span class="url-prompt">→</span>
+    <span class="url-text">check.neverranked.com</span>
+  </div>
+
+  <div class="bottom-row">
+    <div class="bottom-left">ChatGPT · Perplexity · Claude · Gemini · Copilot · AIO · Gemma</div>
+    <div class="bottom-right">neverranked.com</div>
+  </div>
+
+  <div class="ornament">/</div>
+
+</div>
+</body>
+</html>
+</parameter>
+</invoke>
