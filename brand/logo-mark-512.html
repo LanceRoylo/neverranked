@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:512px;height:512px;
+  background:#0a0908;
+  color:#e8c767;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%, #1d1813 0%, #0a0908 75%);
+}
+.mark{
+  position:relative;z-index:2;
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:360px;
+  line-height:1;
+  letter-spacing:-.02em;
+  color:#e8c767;
+}
+.mark sup{
+  font-style:normal;
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;
+  font-size:120px;
+  vertical-align:super;
+  margin-left:-30px;
+  color:#c9a84c;
+}
+</style>
+</head>
+<body>
+<div class="mark">N<sup>R</sup></div>
+</body>
+</html>
+</parameter>
+</invoke>

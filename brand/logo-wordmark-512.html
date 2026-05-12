@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Barlow+Condensed:wght@500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:512px;height:512px;
+  background:#0a0908;
+  color:#e8c767;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%, #1d1813 0%, #0a0908 75%);
+}
+.stack{
+  position:relative;z-index:2;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+}
+.mark{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:240px;
+  line-height:1;
+  letter-spacing:-.02em;
+  color:#e8c767;
+  margin-bottom:8px;
+}
+.word{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:42px;
+  line-height:1;
+  letter-spacing:-.01em;
+  color:#fbf8ef;
+  margin-bottom:14px;
+}
+.tag{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.32em;
+  font-size:13px;
+  color:rgba(232,199,103,.7);
+  font-weight:500;
+}
+.gold-line{
+  width:60px;height:1px;
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent);
+  margin:12px 0;
+}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="mark">NR</div>
+  <div class="word">Never Ranked</div>
+  <div class="gold-line"></div>
+  <div class="tag">AEO Measurement</div>
+</div>
+</body>
+</html>
+</parameter>
+</invoke>
