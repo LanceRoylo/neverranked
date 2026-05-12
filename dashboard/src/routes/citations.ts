@@ -707,9 +707,11 @@ export async function handleCitations(
   const { getSentimentRollup } = await import("../sentiment-scorer");
   const { getDepthRollup } = await import("../conversation-depth");
   const { generateDepthFindings } = await import("../citation-narrative");
+  const { getKeywordDeepBreakdown } = await import("../citations");
   const sentiment = await getSentimentRollup(env, slug, 90);
   const depthRollup = await getDepthRollup(env, slug, 90);
   const depth = generateDepthFindings(depthRollup, slug);
+  const keywordDeep = await getKeywordDeepBreakdown(env, slug, 30);
   const sentimentScored = sentiment.positive + sentiment.neutral + sentiment.negative;
   const sentimentHtml = sentimentScored === 0 ? "" : (() => {
     const pos = sentiment.positive, neu = sentiment.neutral, neg = sentiment.negative;
@@ -790,6 +792,94 @@ export async function handleCitations(
     `;
   })();
 
+  // Title-case helper for competitor names (which are stored lowercased
+  // by the depth scorer to deduplicate "Bank of Hawaii" vs "bank of hawaii").
+  const titleCaseName = (s: string): string => s
+    .split(/\s+/)
+    .map((w) => w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w)
+    .join(" ");
+
+  // Per-keyword fidelity table. The summary table elsewhere on the page
+  // shows "was the client cited on this keyword." This table shows the
+  // depth: citation rate per keyword, top competitor on each, dominant
+  // framing, sample framing phrase. The detail buyers need to know
+  // "where am I winning, where am I losing, who am I losing to."
+  const keywordDeepHtml = keywordDeep.length === 0 ? "" : (() => {
+    const ENGINE_LABEL_SHORT: Record<string, string> = {
+      openai: "GPT",
+      perplexity: "PPLX",
+      anthropic: "Claude",
+      gemini: "Gem",
+      bing: "Cop",
+      google_ai_overview: "AIO",
+      gemma: "Gma",
+    };
+    const FRAMING_LABEL_SHORT: Record<string, string> = {
+      value: "value",
+      premium: "premium",
+      specialist: "specialist",
+      established: "established",
+      niche: "niche",
+      budget: "budget",
+      balanced: "balanced",
+      unclear: "unclear",
+    };
+    const winners = keywordDeep.filter(k => k.citation_rate > 0).length;
+    const losers = keywordDeep.length - winners;
+    const headlineLine = `${keywordDeep.length} tracked keywords · ${winners} winning, ${losers} unconverted · 30-day window.`;
+    return `
+      <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="label" style="color:var(--gold)">§ Per-keyword fidelity — where you win, where you lose</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${esc(headlineLine)}</div>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+            <thead>
+              <tr style="border-bottom:1px solid var(--line)">
+                <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Keyword</th>
+                <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Cite rate</th>
+                <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Engines cited</th>
+                <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Top competitor</th>
+                <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Your framing</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${keywordDeep.map(k => {
+                const ratePct = Math.round(k.citation_rate * 100);
+                const rateColor = ratePct >= 60 ? "#7fc99a" : ratePct >= 20 ? "var(--gold)" : ratePct > 0 ? "var(--text-mute)" : "var(--text-faint)";
+                const enginesCitedShort = k.engines_cited.map(e => ENGINE_LABEL_SHORT[e] || e).join(", ") || "—";
+                const competitorCell = k.top_competitor
+                  ? `<span style="color:var(--text-soft)">${esc(titleCaseName(k.top_competitor))}</span> <span style="color:var(--text-faint);font-size:11px">×${k.top_competitor_count}</span>`
+                  : `<span style="color:var(--text-faint)">—</span>`;
+                const framingCell = k.dominant_framing
+                  ? `<span style="color:var(--text-soft)">${esc(FRAMING_LABEL_SHORT[k.dominant_framing] || k.dominant_framing)}</span>${k.dominant_position && k.dominant_position !== "listed" ? `<span style="color:var(--text-faint);font-size:11px"> · ${esc(k.dominant_position)}</span>` : ""}`
+                  : `<span style="color:var(--text-faint)">—</span>`;
+                return `
+                  <tr style="border-bottom:1px solid var(--line)">
+                    <td style="padding:11px 8px;color:var(--text-soft);max-width:280px">${esc(k.keyword)}</td>
+                    <td style="text-align:right;padding:11px 8px;font-family:var(--mono);color:${rateColor};font-weight:500">${ratePct}%<span style="font-size:10.5px;color:var(--text-faint);margin-left:6px">(${k.cited_runs}/${k.total_runs})</span></td>
+                    <td style="padding:11px 8px;font-family:var(--mono);font-size:11px;color:var(--text-soft)">${esc(enginesCitedShort)}</td>
+                    <td style="padding:11px 8px">${competitorCell}</td>
+                    <td style="padding:11px 8px">${framingCell}</td>
+                  </tr>
+                  ${k.sample_framing_phrase ? `
+                  <tr>
+                    <td colspan="5" style="padding:0 8px 12px;color:var(--text-faint);font-size:11.5px;font-style:italic;line-height:1.5">"${esc(k.sample_framing_phrase.length > 200 ? k.sample_framing_phrase.slice(0, 200) + "..." : k.sample_framing_phrase)}"</td>
+                  </tr>
+                  ` : ""}
+                `;
+              }).join("")}
+            </tbody>
+          </table>
+        </div>
+        <div style="padding-top:14px;margin-top:14px;border-top:1px dashed var(--line);font-size:11.5px;color:var(--text-faint);line-height:1.6">
+          Cite rate is the percentage of engine runs that cited your site for this keyword in the last 30 days. Engines cited shows which of the seven engines gave you a citation. Top competitor is the most-named alternative on this keyword. Your framing is how engines describe you when they do cite — value, premium, specialist, etc.
+        </div>
+      </div>
+    `;
+  })();
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
@@ -803,6 +893,8 @@ export async function handleCitations(
     ${sentimentHtml}
 
     ${depthHtml}
+
+    ${keywordDeepHtml}
 
     <!-- How the page works. Answers "what is citation share and what do
          these numbers mean" once, at the top, so every reader has a frame

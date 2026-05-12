@@ -1746,3 +1746,154 @@ export async function getCitationDigestData(
     totalKeywords: breakdown.length,
   };
 }
+
+// ===========================================================================
+// Per-keyword deep breakdown — Priority 3 (per-keyword fidelity)
+// ===========================================================================
+//
+// The basic keywordBreakdown stored in citation_snapshots tells you "was the
+// client cited on this keyword." This function returns the deeper view a
+// buyer actually needs:
+//
+//   - citation_rate: client_cited count / total runs for this keyword
+//   - engines_cited / engines_run: how many engines covered + cited
+//   - top_competitor: most-named competitor across mentions on this keyword
+//   - dominant_framing: most common framing class when the client is cited
+//   - dominant_position: most common competitive_position when cited
+//   - sample_framing_phrase: a real phrase an engine used to describe the
+//     client on this keyword (proof / shareable artifact for the buyer)
+//
+// Run at render time rather than baked into the snapshot, so we don't need
+// a backfill and the analysis stays close to the freshest data.
+// ===========================================================================
+
+export interface KeywordDeepRow {
+  keyword_id: number;
+  keyword: string;
+  total_runs: number;
+  cited_runs: number;
+  citation_rate: number;          // 0..1
+  engines_run: string[];          // engines that produced a row for this keyword
+  engines_cited: string[];        // engines where client_cited = 1
+  top_competitor: string | null;  // most-named competitor on this keyword
+  top_competitor_count: number;   // how often
+  dominant_framing: string | null;
+  dominant_position: string | null;
+  sample_framing_phrase: string | null;
+}
+
+export async function getKeywordDeepBreakdown(
+  env: Env,
+  clientSlug: string,
+  days: number,
+): Promise<KeywordDeepRow[]> {
+  const since = Math.floor(Date.now() / 1000) - days * 86400;
+
+  const rows = (await env.DB.prepare(
+    `SELECT
+       ck.id AS keyword_id,
+       ck.keyword,
+       cr.engine,
+       cr.client_cited,
+       cr.framing,
+       cr.framing_phrase,
+       cr.competitive_position,
+       cr.competitors_mentioned
+     FROM citation_keywords ck
+     LEFT JOIN citation_runs cr
+       ON cr.keyword_id = ck.id
+      AND cr.run_at >= ?
+     WHERE ck.client_slug = ?
+     ORDER BY ck.id`,
+  ).bind(since, clientSlug).all<{
+    keyword_id: number;
+    keyword: string;
+    engine: string | null;
+    client_cited: number | null;
+    framing: string | null;
+    framing_phrase: string | null;
+    competitive_position: string | null;
+    competitors_mentioned: string | null;
+  }>()).results;
+
+  // Group by keyword_id and aggregate
+  const byKeyword = new Map<number, {
+    keyword: string;
+    runs: typeof rows;
+  }>();
+
+  for (const r of rows) {
+    if (!byKeyword.has(r.keyword_id)) {
+      byKeyword.set(r.keyword_id, { keyword: r.keyword, runs: [] });
+    }
+    if (r.engine) byKeyword.get(r.keyword_id)!.runs.push(r);
+  }
+
+  const out: KeywordDeepRow[] = [];
+  for (const [keyword_id, { keyword, runs }] of byKeyword) {
+    const total_runs = runs.length;
+    const cited_runs = runs.filter((r) => r.client_cited === 1).length;
+    const citation_rate = total_runs > 0 ? cited_runs / total_runs : 0;
+    const engines_run = [...new Set(runs.map((r) => r.engine!).filter(Boolean))];
+    const engines_cited = [...new Set(
+      runs.filter((r) => r.client_cited === 1).map((r) => r.engine!),
+    )];
+
+    // Top competitor across all runs on this keyword
+    const competitorCounts = new Map<string, number>();
+    for (const r of runs) {
+      try {
+        const list = JSON.parse(r.competitors_mentioned || "[]") as string[];
+        for (const c of list) {
+          const k = c.toLowerCase().trim();
+          if (!k) continue;
+          competitorCounts.set(k, (competitorCounts.get(k) || 0) + 1);
+        }
+      } catch { /* skip malformed */ }
+    }
+    const sortedCompetitors = [...competitorCounts.entries()].sort((a, b) => b[1] - a[1]);
+    const top_competitor = sortedCompetitors.length > 0 ? sortedCompetitors[0][0] : null;
+    const top_competitor_count = sortedCompetitors.length > 0 ? sortedCompetitors[0][1] : 0;
+
+    // Dominant framing among cited runs
+    const framingCounts = new Map<string, number>();
+    const positionCounts = new Map<string, number>();
+    let sample_framing_phrase: string | null = null;
+    for (const r of runs) {
+      if (r.client_cited !== 1) continue;
+      if (r.framing) framingCounts.set(r.framing, (framingCounts.get(r.framing) || 0) + 1);
+      if (r.competitive_position) positionCounts.set(r.competitive_position, (positionCounts.get(r.competitive_position) || 0) + 1);
+      if (!sample_framing_phrase && r.framing_phrase && r.framing_phrase.trim().length > 0) {
+        sample_framing_phrase = r.framing_phrase.trim();
+      }
+    }
+    const dominant_framing = framingCounts.size > 0
+      ? [...framingCounts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+      : null;
+    const dominant_position = positionCounts.size > 0
+      ? [...positionCounts.entries()].sort((a, b) => b[1] - a[1])[0][0]
+      : null;
+
+    out.push({
+      keyword_id,
+      keyword,
+      total_runs,
+      cited_runs,
+      citation_rate,
+      engines_run,
+      engines_cited,
+      top_competitor,
+      top_competitor_count,
+      dominant_framing,
+      dominant_position,
+      sample_framing_phrase,
+    });
+  }
+
+  // Sort: highest citation_rate first (wins surface first); zero-rate
+  // queries cluster at the bottom where the buyer's eye goes for "gaps."
+  return out.sort((a, b) => {
+    if (b.citation_rate !== a.citation_rate) return b.citation_rate - a.citation_rate;
+    return b.total_runs - a.total_runs;
+  });
+}
