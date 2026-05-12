@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Barlow+Condensed:wght@500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:1080px;height:1080px;
+  background:#0a0908;
+  color:#fbf8ef;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%, #1d1813 0%, #0a0908 75%);
+}
+.stack{
+  position:relative;z-index:2;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding:0 80px;
+}
+.tag-top{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.34em;
+  font-size:18px;
+  color:rgba(232,199,103,.8);
+  font-weight:500;
+  margin-bottom:28px;
+}
+.name{
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;
+  font-style:italic;
+  font-size:120px;
+  line-height:1;
+  letter-spacing:-.025em;
+  color:#fbf8ef;
+  margin-bottom:0;
+}
+.name em{
+  color:#e8c767;
+  font-style:italic;
+}
+.divider{
+  width:200px;height:1px;
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent);
+  margin:36px 0;
+}
+.descriptor{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:30px;
+  line-height:1.3;
+  color:rgba(251,248,239,.78);
+  max-width:760px;
+  margin-bottom:32px;
+}
+.score-row{
+  display:flex;align-items:center;gap:32px;
+  margin-top:8px;
+}
+.score{
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;
+  font-size:84px;
+  line-height:1;
+  letter-spacing:-.03em;
+}
+.score.before{color:rgba(197,84,74,.85)}
+.score.after{color:rgba(127,201,154,.95)}
+.score-suffix{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.24em;
+  font-size:12px;
+  color:rgba(251,248,239,.6);
+  margin-top:4px;
+  font-weight:500;
+}
+.arrow{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-size:48px;
+  color:rgba(251,248,239,.4);
+}
+.tag-bottom{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.32em;
+  font-size:14px;
+  color:rgba(232,199,103,.6);
+  font-weight:500;
+  margin-top:28px;
+}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="tag-top">Case Study · Honolulu Performing Arts</div>
+  <h1 class="name">Hawaii <em>Theatre</em></h1>
+  <div class="divider"></div>
+  <p class="descriptor">From invisible to AI engines to top-cited in ten days.</p>
+  <div class="score-row">
+    <div>
+      <div class="score before">45</div>
+      <div class="score-suffix">Before / Grade D</div>
+    </div>
+    <div class="arrow">→</div>
+    <div>
+      <div class="score after">95</div>
+      <div class="score-suffix">After / Grade A</div>
+    </div>
+  </div>
+  <div class="tag-bottom">NeverRanked · 14 of 19 Perplexity Citations</div>
+</div>
+</body>
+</html>
+</parameter>
+</invoke>

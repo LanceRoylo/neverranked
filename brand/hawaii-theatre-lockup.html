@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Barlow+Condensed:wght@500&display=swap');
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  width:1200px;height:1200px;
+  background:#0a0908;
+  color:#fbf8ef;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  position:relative;
+  overflow:hidden;
+}
+body::before{
+  content:"";
+  position:absolute;inset:0;
+  background:radial-gradient(ellipse at 50% 30%, #1d1813 0%, #0a0908 70%);
+}
+.stack{
+  position:relative;z-index:2;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  max-width:900px;
+}
+
+.tag-top{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.34em;
+  font-size:22px;
+  color:rgba(232,199,103,.8);
+  font-weight:500;
+  margin-bottom:40px;
+}
+
+.name {
+  font-family:'Playfair Display',Georgia,serif;
+  font-weight:400;
+  font-style:italic;
+  font-size:144px;
+  line-height:1;
+  letter-spacing:-.025em;
+  color:#fbf8ef;
+  margin-bottom:18px;
+}
+.name em{
+  color:#e8c767;
+  font-style:italic;
+}
+
+.divider{
+  width:240px;height:1px;
+  background:linear-gradient(90deg,transparent,#c9a84c,transparent);
+  margin:32px 0;
+}
+
+.descriptor{
+  font-family:'Playfair Display',Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:36px;
+  line-height:1.3;
+  color:rgba(251,248,239,.78);
+  margin-bottom:14px;
+  max-width:700px;
+}
+
+.tag-bottom{
+  font-family:'Barlow Condensed',Helvetica,sans-serif;
+  text-transform:uppercase;
+  letter-spacing:.32em;
+  font-size:18px;
+  color:rgba(232,199,103,.7);
+  font-weight:500;
+  margin-top:10px;
+}
+</style>
+</head>
+<body>
+<div class="stack">
+  <div class="tag-top">Case Study · Honolulu</div>
+  <h1 class="name">Hawaii <em>Theatre</em></h1>
+  <div class="divider"></div>
+  <p class="descriptor">A historic performing arts venue. Open since 1922. 80,000-100,000 patrons a year.</p>
+  <div class="tag-bottom">NeverRanked · 45 to 95 in Ten Days</div>
+</div>
+</body>
+</html>
+</parameter>
+</invoke>
