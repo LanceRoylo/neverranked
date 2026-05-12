@@ -96,30 +96,33 @@ export async function sendNurtureDripEmails(env: Env): Promise<void> {
 }
 
 async function sendEmail(to: string, subject: string, html: string, env: Env): Promise<boolean> {
+  // Migrated 2026-05-11 PM to use sendEmailViaResend() with QA preflight.
+  // Preflight catches template failures (unsubstituted {{placeholders}}),
+  // suspicious recipients (test@, @example.com), suppression-list sends,
+  // and banned voice words. Red verdicts BLOCK the send; yellow only logs.
+  // This is a high-stakes outbound path (cold-ish prospect drips), so we
+  // want the preflight to actually prevent disasters, not just observe.
+  const { sendEmailViaResend, QAPreflightError } = await import("./lib/qa-email-preflight");
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "NeverRanked <reports@neverranked.com>",
-        to: [to],
-        subject,
-        html,
-      }),
-    });
+    const result = await sendEmailViaResend(env, {
+      from: "NeverRanked <reports@neverranked.com>",
+      to,
+      subject,
+      html,
+      artifact_ref: "nurture_drip",
+    }, { blocking: true });
 
-    const result = await resp.json() as any;
-    if (result.error) {
-      console.log(`Nurture email failed for ${to}: ${result.error.message}`);
+    if (!result.ok) {
+      console.log(`Nurture email failed for ${to}: ${result.error ?? `status ${result.status}`}`);
       return false;
     }
-
     return true;
   } catch (e) {
-    console.log(`Nurture email error for ${to}: ${e}`);
+    if (e instanceof QAPreflightError) {
+      console.log(`Nurture email BLOCKED by QA preflight for ${to}: ${e.audit.reasoning}`);
+      return false;
+    }
+    console.log(`Nurture email error for ${to}: ${e instanceof Error ? e.message : String(e)}`);
     return false;
   }
 }

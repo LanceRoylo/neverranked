@@ -525,3 +525,160 @@ function buildNextSteps(
 
   return steps;
 }
+
+
+// ===========================================================================
+// Citation depth findings
+// ===========================================================================
+//
+// Translates DepthRollup (framing / competitive position / prominence /
+// competitors_mentioned aggregated from citation_runs) into prose findings.
+// The capture layer (conversation-depth.ts) populates the columns; this is
+// the surface layer that turns the columns into client-readable narrative.
+//
+// Surfaced in: routes/citations.ts (client dashboard) and the weekly digest.
+// ===========================================================================
+
+import type { DepthRollup, Framing, CompetitivePosition, ProminenceClass } from "./conversation-depth";
+
+export interface DepthFindings {
+  /** True when we have enough scored mentions to make confident claims. */
+  hasBaseline: boolean;
+  /** Minimum number of scored mentions before findings are statistically meaningful. */
+  baselineThreshold: number;
+  /** Total scored mentions in the rollup window. */
+  scoredCount: number;
+  /** One-line framing summary, e.g. "Described as the value option in 64% of mentions." */
+  framingHeadline: string;
+  /** Framing distribution in plain English, e.g. "Value 64%, premium 22%, specialist 9%." */
+  framingDistribution: string;
+  /** Position summary, e.g. "Primary recommendation in 24% of mentions, secondary in 51%." */
+  positionHeadline: string;
+  /** Prominence summary, e.g. "Recommended outright in 18 mentions, listed in 89, footnote in 12." */
+  prominenceHeadline: string;
+  /** Competitive-context line, e.g. "Most often named alongside: Bank of Hawaii, First Hawaiian, CPB." */
+  competitorContext: string;
+  /** Single actionable insight derived from the depth data. */
+  actionableInsight: string;
+}
+
+const DEPTH_BASELINE_THRESHOLD = 25;
+
+const FRAMING_LABEL: Record<Framing, string> = {
+  value: "the value option",
+  premium: "the premium option",
+  specialist: "a specialist",
+  established: "an established player",
+  niche: "a niche choice",
+  budget: "the budget option",
+  balanced: "a balanced choice",
+  unclear: "unclear positioning",
+};
+
+const POSITION_LABEL: Record<CompetitivePosition, string> = {
+  sole: "the only option named",
+  primary: "the primary recommendation",
+  secondary: "a secondary option alongside competitors",
+  tertiary: "one of three named options",
+  listed: "named in a longer list",
+};
+
+const PROMINENCE_LABEL: Record<ProminenceClass, string> = {
+  recommended: "actively recommended",
+  listed: "listed without endorsement",
+  footnote: "mentioned in passing",
+};
+
+export function generateDepthFindings(rollup: DepthRollup, clientName: string): DepthFindings {
+  const scored = rollup.total;
+  const hasBaseline = scored >= DEPTH_BASELINE_THRESHOLD;
+
+  if (scored === 0) {
+    return {
+      hasBaseline: false,
+      baselineThreshold: DEPTH_BASELINE_THRESHOLD,
+      scoredCount: 0,
+      framingHeadline: "No depth-scored mentions yet.",
+      framingDistribution: `Depth scoring runs on mentions where the AI engine describes ${clientName} in context. Once ${DEPTH_BASELINE_THRESHOLD} mentions are scored, framing and positioning findings will surface here.`,
+      positionHeadline: "",
+      prominenceHeadline: "",
+      competitorContext: "",
+      actionableInsight: "",
+    };
+  }
+
+  // --- Framing distribution ---
+  const framingEntries = Object.entries(rollup.by_framing)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const topFraming = framingEntries[0];
+  const topFramingPct = Math.round((topFraming[1] / scored) * 100);
+  const framingHeadline = hasBaseline
+    ? `Described as ${FRAMING_LABEL[topFraming[0] as Framing] || topFraming[0]} in ${topFramingPct}% of mentions.`
+    : `Early signal: ${FRAMING_LABEL[topFraming[0] as Framing] || topFraming[0]} in ${topFramingPct}% of ${scored} scored mentions. Confidence will grow as the baseline reaches ${DEPTH_BASELINE_THRESHOLD}.`;
+  const framingDistribution = framingEntries
+    .slice(0, 4)
+    .map(([f, n]) => `${FRAMING_LABEL[f as Framing] || f} ${Math.round((n / scored) * 100)}%`)
+    .join(", ");
+
+  // --- Position distribution ---
+  const posEntries = Object.entries(rollup.by_position)
+    .filter(([, n]) => n > 0)
+    .sort((a, b) => b[1] - a[1]);
+  const primaryCount = rollup.by_position.primary || 0;
+  const soleCount = rollup.by_position.sole || 0;
+  const leadCount = primaryCount + soleCount;
+  const leadPct = Math.round((leadCount / scored) * 100);
+  const topPos = posEntries[0];
+  const positionHeadline = leadCount > 0
+    ? `Lead position (sole or primary recommendation) in ${leadPct}% of mentions${posEntries.length > 1 ? `; ${POSITION_LABEL[topPos[0] as CompetitivePosition] || topPos[0]} dominant overall` : ""}.`
+    : `Most common position: ${POSITION_LABEL[topPos[0] as CompetitivePosition] || topPos[0]} (${Math.round((topPos[1] / scored) * 100)}% of mentions). No lead-position citations yet.`;
+
+  // --- Prominence summary ---
+  const recommended = rollup.by_prominence.recommended || 0;
+  const listed = rollup.by_prominence.listed || 0;
+  const footnote = rollup.by_prominence.footnote || 0;
+  const prominenceHeadline = `Recommended outright in ${recommended}, listed in ${listed}, mentioned in passing in ${footnote}.`;
+
+  // --- Competitor context ---
+  const top3 = rollup.top_competitors.slice(0, 3);
+  const competitorContext = top3.length === 0
+    ? "No competitors named alongside in scored mentions yet."
+    : `Most often named alongside: ${top3.map((c) => titleCaseName(c.name)).join(", ")}.`;
+
+  // --- Actionable insight ---
+  // Priority order: a) negative or unclear framing dominance, b) low lead-position
+  // rate with high mention count, c) competitor dominance, d) positive trend.
+  let actionableInsight = "";
+  const unclearPct = ((rollup.by_framing.unclear || 0) / scored) * 100;
+  if (unclearPct > 40) {
+    actionableInsight = `${Math.round(unclearPct)}% of mentions have no clear positioning. AI engines are naming ${clientName} without describing what makes them distinctive. The work is positioning content (about, value-prop pages, founder story) that gives engines a clear category claim.`;
+  } else if (leadPct < 15 && scored >= DEPTH_BASELINE_THRESHOLD) {
+    actionableInsight = `Lead-position rate is ${leadPct}%. ${clientName} appears often but rarely leads. Closing the lead-position gap is where citation share converts to actual buyer preference. The work is authority signals (G2/Trustpilot/Capterra presence, author bio depth, schema completeness for AggregateRating).`;
+  } else if (top3.length >= 2 && top3[0].count >= scored * 0.4) {
+    actionableInsight = `${titleCaseName(top3[0].name)} appears alongside ${clientName} in ${Math.round((top3[0].count / scored) * 100)}% of mentions. This is the named competitor whose citation patterns are worth shadowing. Audit their schema, their Reddit footprint, and their authority signals against yours.`;
+  } else if (topFraming[0] === "premium" || topFraming[0] === "established") {
+    actionableInsight = `Engines consistently frame ${clientName} as ${FRAMING_LABEL[topFraming[0] as Framing]}. Lean into that framing in your content — references that reinforce premium/established cues will compound the citation pattern.`;
+  } else {
+    actionableInsight = `Depth signals are clean. Maintenance mode: monitor for any drift in framing or competitive position over the next 4 weeks.`;
+  }
+
+  return {
+    hasBaseline,
+    baselineThreshold: DEPTH_BASELINE_THRESHOLD,
+    scoredCount: scored,
+    framingHeadline,
+    framingDistribution,
+    positionHeadline,
+    prominenceHeadline,
+    competitorContext,
+    actionableInsight,
+  };
+}
+
+function titleCaseName(s: string): string {
+  return s
+    .split(/\s+/)
+    .map((w) => w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w)
+    .join(" ");
+}

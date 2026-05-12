@@ -20,6 +20,7 @@ import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./rou
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
 import { handleAdminHealth } from "./routes/health";
 import { handleAdminQa } from "./routes/qa";
+import { handleAdminQaDetail } from "./routes/qa-detail";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -552,6 +553,15 @@ export default {
     // either the Worker or D1 is unreachable. Returns ok:true only if
     // a SELECT 1 succeeds against D1 within ~200ms; otherwise ok:false
     // so the monitor pages Lance via SMS/email.
+    // Public engine status page. Aggregated, no client data exposure.
+    // Reads citation_runs grouped by engine over last 24h and 7d, classifies
+    // green/yellow/red per engine, renders a single-page report. Cached for
+    // 5 min. Linked from State of AEO when integrity caveats apply.
+    if (path === "/engine-status" && method === "GET") {
+      const { handleEngineStatus } = await import("./routes/engine-status");
+      return handleEngineStatus(env);
+    }
+
     if (path === "/health-public" && method === "GET") {
       const startedAt = Date.now();
       let dbOk = false;
@@ -1095,11 +1105,134 @@ export default {
       }
     }
 
+    // Manual trigger: alert dedupe.
+    if (path === "/admin/health/run-alert-dedupe" && method === "POST" && user.role === "admin") {
+      try {
+        const { dedupeRelatedAlerts } = await import("./lib/alert-dedupe");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await dedupeRelatedAlerts(env);
+        await logCronRun(env, "alert_dedupe", "success", Date.now() - started, `(manual) scanned=${r.scanned} acked=${r.acked} groups=${r.groups}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=alert_dedupe&acked=${r.acked}&scanned=${r.scanned}` },
+        });
+      } catch (e) {
+        return new Response(`Alert dedupe failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
+    // Manual trigger: content_voice LLM audit sweep.
+    if (path === "/admin/health/run-content-voice-sweep" && method === "POST" && user.role === "admin") {
+      try {
+        const { sweepContentVoiceAudits } = await import("./lib/qa-content-voice");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await sweepContentVoiceAudits(env);
+        await logCronRun(env, "qa_content_voice_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=content_voice&audited=${r.audited}` },
+        });
+      } catch (e) {
+        return new Response(`Content voice sweep failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
+    // Manual trigger: citation_sanity LLM audit sweep.
+    if (path === "/admin/health/run-citation-sanity-sweep" && method === "POST" && user.role === "admin") {
+      try {
+        const { sweepCitationSanityAudits } = await import("./lib/qa-citation-sanity");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await sweepCitationSanityAudits(env);
+        await logCronRun(env, "qa_citation_sanity_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=citation_sanity&audited=${r.audited}` },
+        });
+      } catch (e) {
+        return new Response(`Citation sanity sweep failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
+    // Manual trigger: nvi_drift LLM audit sweep.
+    if (path === "/admin/health/run-nvi-drift-sweep" && method === "POST" && user.role === "admin") {
+      try {
+        const { sweepNviDriftAudits } = await import("./lib/qa-nvi-drift");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await sweepNviDriftAudits(env);
+        await logCronRun(env, "qa_nvi_drift_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=nvi_drift&audited=${r.audited}` },
+        });
+      } catch (e) {
+        return new Response(`NVI drift sweep failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
     // QA audit log -- Phase 1.5. Independent grader catches what
     // operational monitoring can't (plausible-looking-but-wrong
     // outputs, schema-vs-page drift, marketing-claim drift).
     if (path === "/admin/qa" && method === "GET" && user.role === "admin") {
       return handleAdminQa(user, env, url);
+    }
+    // QA audit detail page -- drilldown for one audit row.
+    const qaDetailMatch = path.match(/^\/admin\/qa\/(\d+)\/?$/);
+    if (qaDetailMatch && method === "GET" && user.role === "admin") {
+      return handleAdminQaDetail(parseInt(qaDetailMatch[1], 10), user, env, url);
+    }
+
+    // QA decision log capture -- Phase 2. Records Lance's agree/disagree/
+    // override call on a specific audit. Foundation for the Lance-agent
+    // training data: every (audit, your_call, optional_note) tuple
+    // becomes a labeled data point.
+    const qaDecideMatch = path.match(/^\/admin\/qa\/(\d+)\/decide\/?$/);
+    if (qaDecideMatch && method === "POST" && user.role === "admin") {
+      const auditId = parseInt(qaDecideMatch[1], 10);
+      let formData: FormData;
+      try {
+        formData = await request.formData();
+      } catch {
+        return new Response("Invalid form data", { status: 400 });
+      }
+      const decision = String(formData.get("decision") ?? "").trim();
+      const newVerdict = String(formData.get("new_verdict") ?? "").trim() || null;
+      const note = String(formData.get("note") ?? "").trim() || null;
+
+      if (!["agree", "disagree", "override"].includes(decision)) {
+        return new Response("Invalid decision value", { status: 400 });
+      }
+      if ((decision === "disagree" || decision === "override") && (!note || note.length < 6)) {
+        return new Response("Note required (min 6 chars) for disagree or override", { status: 400 });
+      }
+      if (decision === "override" && !["green", "yellow", "red"].includes(newVerdict ?? "")) {
+        return new Response("Override requires new_verdict of green/yellow/red", { status: 400 });
+      }
+
+      try {
+        await env.DB.prepare(
+          "INSERT INTO qa_decisions (audit_id, decision, new_verdict, note, user_id) VALUES (?, ?, ?, ?, ?)"
+        ).bind(
+          auditId,
+          decision,
+          decision === "override" ? newVerdict : null,
+          note ? note.slice(0, 2000) : null,
+          user.id,
+        ).run();
+      } catch (e) {
+        return new Response(`Decision write failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+
+      const banner = decision === "agree" ? "agreed with grader"
+        : decision === "disagree" ? "disagreement recorded"
+        : `verdict overridden to ${newVerdict}`;
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `/admin/qa/${auditId}?decision_saved=${encodeURIComponent(banner)}` },
+      });
     }
 
     // Manual trigger for the cross-system audit. Same logic as the

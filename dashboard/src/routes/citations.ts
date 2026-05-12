@@ -705,7 +705,11 @@ export async function handleCitations(
   // attribution (n<50 low-confidence flag).
   const SENTIMENT_MIN_N = 10;
   const { getSentimentRollup } = await import("../sentiment-scorer");
+  const { getDepthRollup } = await import("../conversation-depth");
+  const { generateDepthFindings } = await import("../citation-narrative");
   const sentiment = await getSentimentRollup(env, slug, 90);
+  const depthRollup = await getDepthRollup(env, slug, 90);
+  const depth = generateDepthFindings(depthRollup, slug);
   const sentimentScored = sentiment.positive + sentiment.neutral + sentiment.negative;
   const sentimentHtml = sentimentScored === 0 ? "" : (() => {
     const pos = sentiment.positive, neu = sentiment.neutral, neg = sentiment.negative;
@@ -758,6 +762,34 @@ export async function handleCitations(
     `;
   })();
 
+  // Citation depth findings — how AI engines describe the client beyond
+  // the binary cited/not-cited and the pos/neu/neg sentiment. Surfaces
+  // framing distribution (value/premium/specialist/etc.), competitive
+  // position (sole/primary/secondary/listed/footnote), and the named
+  // competitors AI engines most often pair the client with. Populated
+  // by conversation-depth.ts; narrative built by citation-narrative.ts.
+  const depthHtml = depth.scoredCount === 0 ? "" : (() => {
+    const baselineNote = depth.hasBaseline
+      ? `${depth.scoredCount} depth-scored mentions in last 90 days`
+      : `Building baseline · ${depth.scoredCount}/${depth.baselineThreshold} scored mentions`;
+    return `
+      <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <div class="label" style="color:var(--gold)">§ Citation depth — how engines describe you</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${baselineNote}</div>
+        </div>
+        <div style="font-size:13px;color:var(--text-soft);line-height:1.7;margin-bottom:14px">
+          <div style="margin-bottom:8px"><strong style="color:var(--text)">${esc(depth.framingHeadline)}</strong></div>
+          ${depth.framingDistribution ? `<div style="font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-bottom:10px">${esc(depth.framingDistribution)}</div>` : ""}
+          ${depth.positionHeadline ? `<div style="margin-bottom:8px">${esc(depth.positionHeadline)}</div>` : ""}
+          ${depth.prominenceHeadline ? `<div style="font-family:var(--mono);font-size:11.5px;color:var(--text-faint);margin-bottom:10px">${esc(depth.prominenceHeadline)}</div>` : ""}
+          ${depth.competitorContext ? `<div style="margin-bottom:10px">${esc(depth.competitorContext)}</div>` : ""}
+        </div>
+        ${depth.actionableInsight ? `<div style="padding-top:12px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--text-soft);line-height:1.6"><span style="color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-right:8px">Insight</span>${esc(depth.actionableInsight)}</div>` : ""}
+      </div>
+    `;
+  })();
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
@@ -769,6 +801,8 @@ export async function handleCitations(
     ${sovHtml}
 
     ${sentimentHtml}
+
+    ${depthHtml}
 
     <!-- How the page works. Answers "what is citation share and what do
          these numbers mean" once, at the top, so every reader has a frame

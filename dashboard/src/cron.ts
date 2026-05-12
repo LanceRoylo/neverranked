@@ -613,6 +613,62 @@ export async function runDailyTasks(env: Env): Promise<void> {
     } catch { /* logging is best-effort */ }
   }
 
+  // Alert dedupe. Both anomaly detection and engine health check can
+  // flag the same engine for related root causes. Without this cleanup,
+  // Lance reads multiple alerts about one issue. Keeps the oldest
+  // unread per (engine, 24h window) as canonical, auto-acks the rest.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { dedupeRelatedAlerts } = await import("./lib/alert-dedupe");
+    const started = Date.now();
+    const r = await dedupeRelatedAlerts(env);
+    await logCronRun(env, "alert_dedupe", "success", Date.now() - started,
+      `scanned=${r.scanned} acked=${r.acked} groups=${r.groups}`);
+    console.log(`[cron] alert_dedupe: scanned ${r.scanned}, acked ${r.acked} dups across ${r.groups} groups`);
+  } catch (e) {
+    console.log(`[cron] alert_dedupe failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Phase 1.5 Session 2 LLM-graded audits. Three sweeps:
+  //   - content_voice: grade unaudited content_drafts (rules + GPT-4o-mini)
+  //   - citation_sanity: grade 2 random citation_runs per engine (GPT-4o-mini)
+  //   - nvi_drift: grade NVI reports with significant deltas (GPT-4o for high-stakes)
+  // Different LLM than production (Claude) on purpose -- independence
+  // principle prevents the grader from sharing the generator's blindspots.
+  // Total LLM cost: ~$3-5/month at current scale.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { sweepContentVoiceAudits } = await import("./lib/qa-content-voice");
+    const started = Date.now();
+    const r = await sweepContentVoiceAudits(env);
+    await logCronRun(env, "qa_content_voice_sweep", "success", Date.now() - started, `audited=${r.audited}`);
+    console.log(`[cron] qa_content_voice_sweep: ${r.audited} drafts audited`);
+  } catch (e) {
+    console.log(`[cron] qa_content_voice_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { sweepCitationSanityAudits } = await import("./lib/qa-citation-sanity");
+    const started = Date.now();
+    const r = await sweepCitationSanityAudits(env);
+    await logCronRun(env, "qa_citation_sanity_sweep", "success", Date.now() - started, `audited=${r.audited}`);
+    console.log(`[cron] qa_citation_sanity_sweep: ${r.audited} citation runs audited`);
+  } catch (e) {
+    console.log(`[cron] qa_citation_sanity_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { sweepNviDriftAudits } = await import("./lib/qa-nvi-drift");
+    const started = Date.now();
+    const r = await sweepNviDriftAudits(env);
+    await logCronRun(env, "qa_nvi_drift_sweep", "success", Date.now() - started, `audited=${r.audited}`);
+    console.log(`[cron] qa_nvi_drift_sweep: ${r.audited} NVI reports audited`);
+  } catch (e) {
+    console.log(`[cron] qa_nvi_drift_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Weekly summary email: Mondays only. Sent to lance@neverranked.com
   // after the morning citation cron has produced fresh data. Goes via
   // sendEmailViaResend for QA preflight + safe send.

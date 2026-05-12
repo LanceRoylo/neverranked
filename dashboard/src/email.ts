@@ -245,19 +245,14 @@ export async function sendFreeWeeklyDigestEmail(
     return true;
   }
 
-  try {
-    const resp = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${env.RESEND_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: "NeverRanked <scores@neverranked.com>",
-        to: [d.email],
-        subject: `Your AEO score this week: ${d.score}/100`,
-        text: `${d.domain}\n\nAEO score: ${d.score}/100 (grade ${d.grade})\n${trendBlock}\n\nFull dashboard: ${dashboardUrl}\nThis week's Citation Tape: ${stateOfAeoUrl}\n\nFree shows the score. Paid shows what to fix and the citation tracking across all seven engines. See paid tiers: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`,
-        html: `
+  // Migrated 2026-05-11 PM to use sendEmailViaResend() with QA preflight.
+  // Free weekly digest goes to free-tier users -- template-fail here
+  // would damage trust with the funnel-top audience. Preflight catches
+  // unsubstituted placeholders, banned recipients, suppression-list
+  // hits, and brand-voice violations. Red verdicts BLOCK the send.
+  const subject = `Your AEO score this week: ${d.score}/100`;
+  const textBody = `${d.domain}\n\nAEO score: ${d.score}/100 (grade ${d.grade})\n${trendBlock}\n\nFull dashboard: ${dashboardUrl}\nThis week's Citation Tape: ${stateOfAeoUrl}\n\nFree shows the score. Paid shows what to fix and the citation tracking across all seven engines. See paid tiers: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`;
+  const htmlBody = `
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:520px;margin:0 auto;padding:40px 20px">
             <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
             <p style="margin:0 0 8px;font-family:monospace;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#888">Weekly AEO score</p>
@@ -282,20 +277,34 @@ export async function sendFreeWeeklyDigestEmail(
               <a href="${unsubUrl}" style="color:#888">Unsubscribe</a>
             </p>
           </div>
-        `,
-      }),
-    });
+        `;
 
-    if (!resp.ok) {
-      const errBody = await resp.text();
-      console.log(`Free digest to ${d.email} failed: ${resp.status} ${errBody}`);
-      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", statusCode: resp.status, errorMessage: errBody });
+  const { sendEmailViaResend, QAPreflightError } = await import("./lib/qa-email-preflight");
+  try {
+    const result = await sendEmailViaResend(env, {
+      from: "NeverRanked <scores@neverranked.com>",
+      to: d.email,
+      subject,
+      text: textBody,
+      html: htmlBody,
+      artifact_ref: "free_weekly_digest",
+    }, { blocking: true });
+
+    if (!result.ok) {
+      const errBody = result.error ?? `status ${result.status}`;
+      console.log(`Free digest to ${d.email} failed: ${errBody}`);
+      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", statusCode: result.status, errorMessage: errBody });
       return false;
     }
 
-    await logEmailDelivery(env, { email: d.email, type: "digest", status: "queued", statusCode: resp.status });
+    await logEmailDelivery(env, { email: d.email, type: "digest", status: "queued", statusCode: result.status });
     return true;
   } catch (err) {
+    if (err instanceof QAPreflightError) {
+      console.log(`Free digest BLOCKED by QA preflight for ${d.email}: ${err.audit.reasoning}`);
+      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", errorMessage: `QA preflight blocked: ${err.audit.reasoning}` });
+      return false;
+    }
     console.error(`Free digest to ${d.email} error:`, err);
     await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", errorMessage: String(err) });
     return false;
@@ -506,8 +515,8 @@ export async function sendDigestEmail(
 
   const brand = brandFor(agency);
   const subject = digests.length === 1
-    ? buildSubjectSingle(digests[0])
-    : `Weekly AEO Report -- ${digests.length} domains scanned`;
+    ? buildSubjectSingle(digests[0], citationData)
+    : buildSubjectMulti(digests, citationData);
 
   const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo);
 
@@ -543,7 +552,33 @@ export async function sendDigestEmail(
   }
 }
 
-function buildSubjectSingle(d: DigestData): string {
+function buildSubjectSingle(d: DigestData, citationData?: Map<string, CitationDigestData>): string {
+  // Prefer citation-share movement as the headline when available. It's
+  // the more meaningful signal for Signal-tier clients — AEO score is
+  // the input; citation share is the outcome that drives revenue.
+  const cd = citationData?.get(d.clientSlug);
+  if (cd && cd.previousShare !== null) {
+    const shareDiff = (cd.citationShare - cd.previousShare) * 100;
+    const currPct = Math.round(cd.citationShare * 100);
+    if (shareDiff >= 3) {
+      return `${d.domain}: citation share up ${Math.round(shareDiff)} pts to ${currPct}%`;
+    } else if (shareDiff <= -3) {
+      return `${d.domain}: citation share down ${Math.round(Math.abs(shareDiff))} pts to ${currPct}%`;
+    } else if (cd.keywordsWon > 0 && cd.keywordsLost === 0) {
+      return `${d.domain}: gained ${cd.keywordsWon} new citation${cd.keywordsWon === 1 ? "" : "s"} this week`;
+    } else if (cd.keywordsLost > 0 && cd.keywordsWon === 0) {
+      return `${d.domain}: lost ${cd.keywordsLost} citation${cd.keywordsLost === 1 ? "" : "s"} this week`;
+    } else if (cd.keywordsWon > 0 || cd.keywordsLost > 0) {
+      return `${d.domain}: ${cd.keywordsWon} citation${cd.keywordsWon === 1 ? "" : "s"} gained, ${cd.keywordsLost} lost this week`;
+    }
+    return `${d.domain}: citation share held at ${currPct}% this week`;
+  }
+  if (cd) {
+    const currPct = Math.round(cd.citationShare * 100);
+    return `${d.domain}: first citation read, ${currPct}% share across ${cd.totalKeywords} tracked queries`;
+  }
+
+  // Fallback: AEO score framing when no citation data is available.
   const diff = d.previous && !d.previous.error
     ? d.latest.aeo_score - d.previous.aeo_score
     : null;
@@ -554,6 +589,28 @@ function buildSubjectSingle(d: DigestData): string {
     return `${d.domain}: AEO score dropped ${Math.abs(diff)} pts (${d.latest.aeo_score}/100)`;
   }
   return `${d.domain}: AEO score ${d.latest.aeo_score}/100`;
+}
+
+// Subject builder for multi-domain digests. Surfaces aggregate movement
+// across domains if citation data is present, otherwise falls back to
+// the generic count subject.
+function buildSubjectMulti(digests: DigestData[], citationData?: Map<string, CitationDigestData>): string {
+  if (citationData && citationData.size > 0) {
+    let gainedTotal = 0;
+    let lostTotal = 0;
+    let movers = 0;
+    for (const d of digests) {
+      const cd = citationData.get(d.clientSlug);
+      if (!cd) continue;
+      gainedTotal += cd.keywordsWon;
+      lostTotal += cd.keywordsLost;
+      if (cd.previousShare !== null && Math.abs(cd.citationShare - cd.previousShare) > 0.02) movers++;
+    }
+    if (movers >= Math.ceil(digests.length / 2) && (gainedTotal > 0 || lostTotal > 0)) {
+      return `Weekly citation report -- ${gainedTotal} gained, ${lostTotal} lost across ${digests.length} domains`;
+    }
+  }
+  return `Weekly AEO Report -- ${digests.length} domains scanned`;
 }
 
 // ---------------------------------------------------------------------------

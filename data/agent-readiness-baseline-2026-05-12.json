@@ -1,56 +1,73 @@
 {
-  "generated_at": "2026-05-12T04:57:10.142Z",
+  "generated_at": "2026-05-12T05:15:12.927Z",
   "detection_version": "v2",
-  "panel_size": 25,
+  "panel_size": 93,
   "summary": {
-    "scanned": 19,
-    "blocked": 6,
-    "with_jsonld": 9,
-    "with_any_action": 1,
+    "scanned": 68,
+    "blocked": 25,
+    "with_jsonld": 34,
+    "with_any_action": 12,
     "full_baseline_coverage": 0,
     "action_types_observed": [
-      "SearchAction"
+      "SearchAction",
+      "ReadAction"
     ]
   },
   "by_vertical": {
     "financial-services": {
-      "total": 6,
-      "withActions": 0
+      "total": 12,
+      "withActions": 2
     },
     "hospitality": {
-      "total": 2,
+      "total": 7,
       "withActions": 1
     },
-    "performing-arts": {
-      "total": 1,
-      "withActions": 0
-    },
     "restaurants": {
-      "total": 1,
-      "withActions": 0
+      "total": 5,
+      "withActions": 1
     },
     "commerce": {
-      "total": 2,
-      "withActions": 0
+      "total": 5,
+      "withActions": 1
     },
     "saas": {
-      "total": 3,
+      "total": 9,
       "withActions": 0
     },
     "healthcare": {
-      "total": 1,
-      "withActions": 0
+      "total": 4,
+      "withActions": 1
     },
     "education": {
-      "total": 1,
-      "withActions": 0
+      "total": 6,
+      "withActions": 1
     },
     "government": {
-      "total": 1,
+      "total": 3,
       "withActions": 0
     },
+    "performing-arts": {
+      "total": 2,
+      "withActions": 0
+    },
+    "media": {
+      "total": 3,
+      "withActions": 1
+    },
+    "real-estate": {
+      "total": 3,
+      "withActions": 1
+    },
+    "nonprofit": {
+      "total": 4,
+      "withActions": 2
+    },
+    "professional-services": {
+      "total": 2,
+      "withActions": 1
+    },
     "(no vertical)": {
-      "total": 1,
+      "total": 3,
       "withActions": 0
     }
   },
@@ -59,7 +76,7 @@
       "url": "https://www.asbhawaii.com",
       "vertical": "financial-services",
       "label": "ASB (Hawaii)",
-      "elapsed_ms": 665,
+      "elapsed_ms": 949,
       "fetch_status": 200,
       "blocks_found": 1,
       "jsonld_present": true,
@@ -77,11 +94,11 @@
       "url": "https://www.fhb.com",
       "vertical": "financial-services",
       "label": "First Hawaiian Bank",
-      "elapsed_ms": 885,
+      "elapsed_ms": 1118,
       "fetch_status": 200,
       "blocks_found": 0,
       "jsonld_present": false,
-      "html_size": 499444,
+      "html_size": 499578,
       "actions": [],
       "action_types": [],
       "missing_for_vertical": [
@@ -95,7 +112,7 @@
       "url": "https://www.boh.com",
       "vertical": "financial-services",
       "label": "Bank of Hawaii",
-      "elapsed_ms": 236,
+      "elapsed_ms": 531,
       "fetch_status": 200,
       "blocks_found": 11,
       "jsonld_present": true,
@@ -113,7 +130,7 @@
       "url": "https://www.centralpacificbank.com",
       "vertical": "financial-services",
       "label": "Central Pacific Bank",
-      "elapsed_ms": 563,
+      "elapsed_ms": 533,
       "fetch_status": 200,
       "blocks_found": 0,
       "jsonld_present": false,
@@ -130,12 +147,12 @@
     {
       "url": "https://www.chase.com",
       "vertical": "financial-services",
-      "label": "Chase (national)",
-      "elapsed_ms": 927,
+      "label": "Chase",
+      "elapsed_ms": 460,
       "fetch_status": 200,
       "blocks_found": 0,
       "jsonld_present": false,
-      "html_size": 311821,
+      "html_size": 311820,
       "actions": [],
       "action_types": [],
       "missing_for_vertical": [
@@ -148,14 +165,144 @@
     {
       "url": "https://www.wellsfargo.com",
       "vertical": "financial-services",
-      "label": "Wells Fargo (national)",
-      "elapsed_ms": 598,
+      "label": "Wells Fargo",
+      "elapsed_ms": 555,
       "fetch_status": 200,
       "blocks_found": 1,
       "jsonld_present": true,
-      "html_size": 125796,
+      "html_size": 125794,
       "actions": [],
       "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.bankofamerica.com",
+      "vertical": "financial-services",
+      "label": "Bank of America",
+      "elapsed_ms": 397,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 310166,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.citi.com",
+      "vertical": "financial-services",
+      "label": "Citi",
+      "elapsed_ms": 511,
+      "fetch_status": 200,
+      "blocks_found": 5,
+      "jsonld_present": true,
+      "html_size": 295880,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.usbank.com",
+      "vertical": "financial-services",
+      "label": "US Bank",
+      "elapsed_ms": 962,
+      "fetch_status": 200,
+      "blocks_found": 4,
+      "jsonld_present": true,
+      "html_size": 266337,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.capitalone.com",
+      "vertical": "financial-services",
+      "label": "Capital One",
+      "elapsed_ms": 526,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 746924,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.ally.com",
+      "vertical": "financial-services",
+      "label": "Ally Bank",
+      "elapsed_ms": 612,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 269381,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "ReserveAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.discover.com",
+      "vertical": "financial-services",
+      "label": "Discover",
+      "elapsed_ms": 491,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 123497,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": false
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
       "missing_for_vertical": [
         "ApplyAction",
         "ContactAction",
@@ -167,11 +314,11 @@
       "url": "https://www.marriott.com",
       "vertical": "hospitality",
       "label": "Marriott",
-      "elapsed_ms": 1295,
+      "elapsed_ms": 2797,
       "fetch_status": 200,
       "blocks_found": 0,
       "jsonld_present": false,
-      "html_size": 1058223,
+      "html_size": 1081570,
       "actions": [],
       "action_types": [],
       "missing_for_vertical": [
@@ -184,7 +331,7 @@
       "url": "https://www.hilton.com",
       "vertical": "hospitality",
       "label": "Hilton",
-      "elapsed_ms": 8908,
+      "elapsed_ms": 10774,
       "fetch_error": "HTTP 403",
       "fetch_status": 403,
       "blocks_found": 0,
@@ -197,238 +344,10 @@
       ]
     },
     {
-      "url": "https://www.hawaiitheatre.com",
-      "vertical": "performing-arts",
-      "label": "Hawaii Theatre (case study)",
-      "elapsed_ms": 567,
-      "fetch_status": 200,
-      "blocks_found": 9,
-      "jsonld_present": true,
-      "html_size": 172936,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "BuyAction",
-        "ReserveAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.opentable.com",
-      "vertical": "restaurants",
-      "label": "OpenTable",
-      "elapsed_ms": 25003,
-      "fetch_error": "This operation was aborted",
-      "fetch_status": 0,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ReserveAction",
-        "OrderAction",
-        "ContactAction"
-      ]
-    },
-    {
-      "url": "https://resy.com",
-      "vertical": "restaurants",
-      "label": "Resy",
-      "elapsed_ms": 849,
-      "fetch_status": 200,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 4957,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ReserveAction",
-        "OrderAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.amazon.com",
-      "vertical": "commerce",
-      "label": "Amazon",
-      "elapsed_ms": 241,
-      "fetch_status": 202,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 2007,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "BuyAction",
-        "OrderAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.bestbuy.com",
-      "vertical": "commerce",
-      "label": "Best Buy",
-      "elapsed_ms": 10049,
-      "fetch_status": 200,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 424418,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "BuyAction",
-        "OrderAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.shopify.com",
-      "vertical": "saas",
-      "label": "Shopify (SaaS)",
-      "elapsed_ms": 208,
-      "fetch_status": 200,
-      "blocks_found": 1,
-      "jsonld_present": true,
-      "html_size": 426414,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "SubscribeAction",
-        "ChooseAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.mayoclinic.org",
-      "vertical": "healthcare",
-      "label": "Mayo Clinic",
-      "elapsed_ms": 588,
-      "fetch_status": 200,
-      "blocks_found": 3,
-      "jsonld_present": true,
-      "html_size": 1355362,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ReserveAction",
-        "ContactAction",
-        "ApplyAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://healthy.kaiserpermanente.org",
-      "vertical": "healthcare",
-      "label": "Kaiser Permanente",
-      "elapsed_ms": 4135,
-      "fetch_error": "fetch failed",
-      "fetch_status": 0,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ReserveAction",
-        "ContactAction",
-        "ApplyAction"
-      ]
-    },
-    {
-      "url": "https://www.harvard.edu",
-      "vertical": "education",
-      "label": "Harvard",
-      "elapsed_ms": 241,
-      "fetch_status": 200,
-      "blocks_found": 1,
-      "jsonld_present": true,
-      "html_size": 139333,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ApplyAction",
-        "ContactAction",
-        "RegisterAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://stripe.com",
-      "vertical": "saas",
-      "label": "Stripe",
-      "elapsed_ms": 538,
-      "fetch_status": 200,
-      "blocks_found": 2,
-      "jsonld_present": true,
-      "html_size": 578939,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "SubscribeAction",
-        "ChooseAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://github.com",
-      "vertical": "saas",
-      "label": "GitHub",
-      "elapsed_ms": 533,
-      "fetch_status": 200,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 569369,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "SubscribeAction",
-        "ChooseAction",
-        "ContactAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.irs.gov",
-      "vertical": "government",
-      "label": "IRS",
-      "elapsed_ms": 325,
-      "fetch_status": 200,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 101716,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [
-        "ApplyAction",
-        "ContactAction",
-        "SearchAction"
-      ],
-      "full_baseline_coverage": false
-    },
-    {
-      "url": "https://www.google.com",
-      "vertical": null,
-      "label": "Google (SearchAction control)",
-      "elapsed_ms": 508,
-      "fetch_status": 200,
-      "blocks_found": 0,
-      "jsonld_present": false,
-      "html_size": 81588,
-      "actions": [],
-      "action_types": [],
-      "missing_for_vertical": [],
-      "full_baseline_coverage": null
-    },
-    {
-      "url": "https://www.yelp.com",
-      "vertical": "restaurants",
-      "label": "Yelp (control)",
-      "elapsed_ms": 349,
+      "url": "https://www.hyatt.com",
+      "vertical": "hospitality",
+      "label": "Hyatt",
+      "elapsed_ms": 561,
       "fetch_error": "HTTP 403",
       "fetch_status": 403,
       "blocks_found": 0,
@@ -437,19 +356,84 @@
       "action_types": [],
       "missing_for_vertical": [
         "ReserveAction",
-        "OrderAction",
         "ContactAction"
       ]
+    },
+    {
+      "url": "https://www.ihg.com",
+      "vertical": "hospitality",
+      "label": "IHG",
+      "elapsed_ms": 305,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.wyndhamhotels.com",
+      "vertical": "hospitality",
+      "label": "Wyndham",
+      "elapsed_ms": 899,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 379118,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.fourseasons.com",
+      "vertical": "hospitality",
+      "label": "Four Seasons",
+      "elapsed_ms": 331,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.ritzcarlton.com",
+      "vertical": "hospitality",
+      "label": "Ritz-Carlton",
+      "elapsed_ms": 610,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 267413,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
     },
     {
       "url": "https://www.airbnb.com",
       "vertical": "hospitality",
-      "label": "Airbnb (control)",
-      "elapsed_ms": 877,
+      "label": "Airbnb",
+      "elapsed_ms": 770,
       "fetch_status": 200,
       "blocks_found": 1,
       "jsonld_present": true,
-      "html_size": 646616,
+      "html_size": 646629,
       "actions": [
         {
           "type": "SearchAction",
@@ -470,10 +454,1241 @@
       "full_baseline_coverage": false
     },
     {
+      "url": "https://www.opentable.com",
+      "vertical": "restaurants",
+      "label": "OpenTable",
+      "elapsed_ms": 25002,
+      "fetch_error": "This operation was aborted",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://resy.com",
+      "vertical": "restaurants",
+      "label": "Resy",
+      "elapsed_ms": 1094,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 4957,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.yelp.com",
+      "vertical": "restaurants",
+      "label": "Yelp",
+      "elapsed_ms": 1033,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.doordash.com",
+      "vertical": "restaurants",
+      "label": "DoorDash",
+      "elapsed_ms": 1155,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.ubereats.com",
+      "vertical": "restaurants",
+      "label": "Uber Eats",
+      "elapsed_ms": 1498,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 681041,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.chipotle.com",
+      "vertical": "restaurants",
+      "label": "Chipotle",
+      "elapsed_ms": 615,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 72198,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.starbucks.com",
+      "vertical": "restaurants",
+      "label": "Starbucks",
+      "elapsed_ms": 734,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 98520,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.dominos.com",
+      "vertical": "restaurants",
+      "label": "Domino's",
+      "elapsed_ms": 1333,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 199980,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.amazon.com",
+      "vertical": "commerce",
+      "label": "Amazon",
+      "elapsed_ms": 303,
+      "fetch_status": 202,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 2007,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.bestbuy.com",
+      "vertical": "commerce",
+      "label": "Best Buy",
+      "elapsed_ms": 10856,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 348616,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.target.com",
+      "vertical": "commerce",
+      "label": "Target",
+      "elapsed_ms": 1256,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 374825,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.walmart.com",
+      "vertical": "commerce",
+      "label": "Walmart",
+      "elapsed_ms": 558,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 402409,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.ebay.com",
+      "vertical": "commerce",
+      "label": "eBay",
+      "elapsed_ms": 1271,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 439261,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.etsy.com",
+      "vertical": "commerce",
+      "label": "Etsy",
+      "elapsed_ms": 419,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.costco.com",
+      "vertical": "commerce",
+      "label": "Costco",
+      "elapsed_ms": 25001,
+      "fetch_error": "This operation was aborted",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.wayfair.com",
+      "vertical": "commerce",
+      "label": "Wayfair",
+      "elapsed_ms": 429,
+      "fetch_error": "HTTP 429",
+      "fetch_status": 429,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "OrderAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.shopify.com",
+      "vertical": "saas",
+      "label": "Shopify",
+      "elapsed_ms": 246,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 426874,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://stripe.com",
+      "vertical": "saas",
+      "label": "Stripe",
+      "elapsed_ms": 554,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 578939,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://github.com",
+      "vertical": "saas",
+      "label": "GitHub",
+      "elapsed_ms": 500,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 569369,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://slack.com",
+      "vertical": "saas",
+      "label": "Slack",
+      "elapsed_ms": 798,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 230486,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.notion.so",
+      "vertical": "saas",
+      "label": "Notion",
+      "elapsed_ms": 702,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 257368,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://asana.com",
+      "vertical": "saas",
+      "label": "Asana",
+      "elapsed_ms": 604,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 693492,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://linear.app",
+      "vertical": "saas",
+      "label": "Linear",
+      "elapsed_ms": 383,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 2354543,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.figma.com",
+      "vertical": "saas",
+      "label": "Figma",
+      "elapsed_ms": 552,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 1525166,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://vercel.com",
+      "vertical": "saas",
+      "label": "Vercel",
+      "elapsed_ms": 430,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 934507,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SubscribeAction",
+        "ChooseAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.mayoclinic.org",
+      "vertical": "healthcare",
+      "label": "Mayo Clinic",
+      "elapsed_ms": 650,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 1355362,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://healthy.kaiserpermanente.org",
+      "vertical": "healthcare",
+      "label": "Kaiser Permanente",
+      "elapsed_ms": 4665,
+      "fetch_error": "fetch failed",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ]
+    },
+    {
+      "url": "https://my.clevelandclinic.org",
+      "vertical": "healthcare",
+      "label": "Cleveland Clinic",
+      "elapsed_ms": 394,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 56568,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.mountsinai.org",
+      "vertical": "healthcare",
+      "label": "Mount Sinai",
+      "elapsed_ms": 526,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 173176,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": false
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.hopkinsmedicine.org",
+      "vertical": "healthcare",
+      "label": "Johns Hopkins Medicine",
+      "elapsed_ms": 110,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ]
+    },
+    {
+      "url": "https://www.onemedical.com",
+      "vertical": "healthcare",
+      "label": "One Medical",
+      "elapsed_ms": 298,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 174626,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.harvard.edu",
+      "vertical": "education",
+      "label": "Harvard",
+      "elapsed_ms": 334,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 139339,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.mit.edu",
+      "vertical": "education",
+      "label": "MIT",
+      "elapsed_ms": 896,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 48205,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.stanford.edu",
+      "vertical": "education",
+      "label": "Stanford",
+      "elapsed_ms": 545,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 158587,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.berkeley.edu",
+      "vertical": "education",
+      "label": "UC Berkeley",
+      "elapsed_ms": 200,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 74419,
+      "actions": [
+        {
+          "type": "ReadAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        },
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "ReadAction",
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.nyu.edu",
+      "vertical": "education",
+      "label": "NYU",
+      "elapsed_ms": 425,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 98785,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.coursera.org",
+      "vertical": "education",
+      "label": "Coursera",
+      "elapsed_ms": 699,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 806860,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "RegisterAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.irs.gov",
+      "vertical": "government",
+      "label": "IRS",
+      "elapsed_ms": 394,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 101716,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "SearchAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.ssa.gov",
+      "vertical": "government",
+      "label": "Social Security Administration",
+      "elapsed_ms": 375,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "SearchAction"
+      ]
+    },
+    {
+      "url": "https://www.usajobs.gov",
+      "vertical": "government",
+      "label": "USAJobs",
+      "elapsed_ms": 515,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 62298,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "SearchAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.healthcare.gov",
+      "vertical": "government",
+      "label": "Healthcare.gov",
+      "elapsed_ms": 1040,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 440818,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ApplyAction",
+        "ContactAction",
+        "SearchAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.hawaiitheatre.com",
+      "vertical": "performing-arts",
+      "label": "Hawaii Theatre (case study)",
+      "elapsed_ms": 762,
+      "fetch_status": 200,
+      "blocks_found": 9,
+      "jsonld_present": true,
+      "html_size": 172936,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.lincolncenter.org",
+      "vertical": "performing-arts",
+      "label": "Lincoln Center",
+      "elapsed_ms": 1043,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 925438,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.carnegiehall.org",
+      "vertical": "performing-arts",
+      "label": "Carnegie Hall",
+      "elapsed_ms": 5810,
+      "fetch_error": "fetch failed",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.kennedy-center.org",
+      "vertical": "performing-arts",
+      "label": "Kennedy Center",
+      "elapsed_ms": 206,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "BuyAction",
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.nytimes.com",
+      "vertical": "media",
+      "label": "New York Times",
+      "elapsed_ms": 718,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 1009905,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.wsj.com",
+      "vertical": "media",
+      "label": "Wall Street Journal",
+      "elapsed_ms": 316,
+      "fetch_error": "HTTP 401",
+      "fetch_status": 401,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SearchAction",
+        "SubscribeAction"
+      ]
+    },
+    {
+      "url": "https://www.bloomberg.com",
+      "vertical": "media",
+      "label": "Bloomberg",
+      "elapsed_ms": 392,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SearchAction",
+        "SubscribeAction"
+      ]
+    },
+    {
+      "url": "https://www.spotify.com",
+      "vertical": "media",
+      "label": "Spotify",
+      "elapsed_ms": 944,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 8409,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SearchAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.netflix.com",
+      "vertical": "media",
+      "label": "Netflix",
+      "elapsed_ms": 1083,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 3166341,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "SearchAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.zillow.com",
+      "vertical": "real-estate",
+      "label": "Zillow",
+      "elapsed_ms": 373,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ContactAction",
+        "ReserveAction",
+        "ApplyAction"
+      ]
+    },
+    {
+      "url": "https://www.realtor.com",
+      "vertical": "real-estate",
+      "label": "Realtor.com",
+      "elapsed_ms": 339,
+      "fetch_error": "HTTP 429",
+      "fetch_status": 429,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ContactAction",
+        "ReserveAction",
+        "ApplyAction"
+      ]
+    },
+    {
+      "url": "https://www.redfin.com",
+      "vertical": "real-estate",
+      "label": "Redfin",
+      "elapsed_ms": 397,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 275507,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ContactAction",
+        "ReserveAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.compass.com",
+      "vertical": "real-estate",
+      "label": "Compass",
+      "elapsed_ms": 653,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 386845,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ContactAction",
+        "ReserveAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.trulia.com",
+      "vertical": "real-estate",
+      "label": "Trulia",
+      "elapsed_ms": 572,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 424269,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": false
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ContactAction",
+        "ReserveAction",
+        "ApplyAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.redcross.org",
+      "vertical": "nonprofit",
+      "label": "American Red Cross",
+      "elapsed_ms": 373,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "DonateAction",
+        "ContactAction",
+        "SubscribeAction"
+      ]
+    },
+    {
+      "url": "https://www.habitat.org",
+      "vertical": "nonprofit",
+      "label": "Habitat for Humanity",
+      "elapsed_ms": 314,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 120684,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "DonateAction",
+        "ContactAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.worldvision.org",
+      "vertical": "nonprofit",
+      "label": "World Vision",
+      "elapsed_ms": 168,
+      "fetch_status": 200,
+      "blocks_found": 5,
+      "jsonld_present": true,
+      "html_size": 281056,
+      "actions": [
+        {
+          "type": "ReadAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        },
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "ReadAction",
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "DonateAction",
+        "ContactAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.aclu.org",
+      "vertical": "nonprofit",
+      "label": "ACLU",
+      "elapsed_ms": 389,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 76587,
+      "actions": [
+        {
+          "type": "ReadAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": true
+        }
+      ],
+      "action_types": [
+        "ReadAction"
+      ],
+      "missing_for_vertical": [
+        "DonateAction",
+        "ContactAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.charitynavigator.org",
+      "vertical": "nonprofit",
+      "label": "Charity Navigator",
+      "elapsed_ms": 632,
+      "fetch_status": 200,
+      "blocks_found": 1,
+      "jsonld_present": true,
+      "html_size": 122552,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "DonateAction",
+        "ContactAction",
+        "SubscribeAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.kayak.com",
+      "vertical": "hospitality",
+      "label": "Kayak",
+      "elapsed_ms": 989,
+      "fetch_status": 200,
+      "blocks_found": 3,
+      "jsonld_present": true,
+      "html_size": 1517098,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.booking.com",
+      "vertical": "hospitality",
+      "label": "Booking.com",
+      "elapsed_ms": 322,
+      "fetch_status": 202,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 8410,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.tripadvisor.com",
+      "vertical": "hospitality",
+      "label": "TripAdvisor",
+      "elapsed_ms": 313,
+      "fetch_error": "HTTP 403",
+      "fetch_status": 403,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.priceline.com",
+      "vertical": "hospitality",
+      "label": "Priceline",
+      "elapsed_ms": 852,
+      "fetch_status": 200,
+      "blocks_found": 2,
+      "jsonld_present": true,
+      "html_size": 640110,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
       "url": "https://www.expedia.com",
       "vertical": "hospitality",
-      "label": "Expedia (control)",
-      "elapsed_ms": 426,
+      "label": "Expedia",
+      "elapsed_ms": 336,
       "fetch_error": "HTTP 429",
       "fetch_status": 429,
       "blocks_found": 0,
@@ -486,10 +1701,26 @@
       ]
     },
     {
-      "url": "https://www.etsy.com",
-      "vertical": "commerce",
-      "label": "Etsy (control)",
-      "elapsed_ms": 371,
+      "url": "https://www.morganstanley.com",
+      "vertical": "professional-services",
+      "label": "Morgan Stanley",
+      "elapsed_ms": 25002,
+      "fetch_error": "This operation was aborted",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.goldmansachs.com",
+      "vertical": "professional-services",
+      "label": "Goldman Sachs",
+      "elapsed_ms": 321,
       "fetch_error": "HTTP 403",
       "fetch_status": 403,
       "blocks_found": 0,
@@ -497,10 +1728,112 @@
       "actions": [],
       "action_types": [],
       "missing_for_vertical": [
-        "BuyAction",
-        "OrderAction",
+        "ReserveAction",
         "ContactAction"
       ]
+    },
+    {
+      "url": "https://www.deloitte.com",
+      "vertical": "professional-services",
+      "label": "Deloitte",
+      "elapsed_ms": 866,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 285860,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.mckinsey.com",
+      "vertical": "professional-services",
+      "label": "McKinsey",
+      "elapsed_ms": 25001,
+      "fetch_error": "This operation was aborted",
+      "fetch_status": 0,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ]
+    },
+    {
+      "url": "https://www.ey.com",
+      "vertical": "professional-services",
+      "label": "EY",
+      "elapsed_ms": 1212,
+      "fetch_status": 200,
+      "blocks_found": 7,
+      "jsonld_present": true,
+      "html_size": 402706,
+      "actions": [
+        {
+          "type": "SearchAction",
+          "format": "json-ld",
+          "via_potential_action": true,
+          "has_name": false,
+          "has_target": true,
+          "target_is_object": false
+        }
+      ],
+      "action_types": [
+        "SearchAction"
+      ],
+      "missing_for_vertical": [
+        "ReserveAction",
+        "ContactAction"
+      ],
+      "full_baseline_coverage": false
+    },
+    {
+      "url": "https://www.google.com",
+      "vertical": null,
+      "label": "Google (search homepage)",
+      "elapsed_ms": 384,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 81553,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [],
+      "full_baseline_coverage": null
+    },
+    {
+      "url": "https://www.bing.com",
+      "vertical": null,
+      "label": "Bing",
+      "elapsed_ms": 483,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 63334,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [],
+      "full_baseline_coverage": null
+    },
+    {
+      "url": "https://duckduckgo.com",
+      "vertical": null,
+      "label": "DuckDuckGo",
+      "elapsed_ms": 466,
+      "fetch_status": 200,
+      "blocks_found": 0,
+      "jsonld_present": false,
+      "html_size": 384236,
+      "actions": [],
+      "action_types": [],
+      "missing_for_vertical": [],
+      "full_baseline_coverage": null
     }
   ]
 }
