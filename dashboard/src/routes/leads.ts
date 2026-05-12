@@ -62,7 +62,9 @@ export async function handleLeadsJson(request: Request, env: Env): Promise<Respo
   const sinceMs = sinceRaw ? Number(sinceRaw) * 1000 : 0;
   const onlyUnconverted = url.searchParams.get("not_converted") === "1";
 
-  const list = await env.LEADS.list({ prefix: "lead:", limit: 1000 });
+  const { listAllKeys } = await import("../lib/kv-paginate");
+  const allKeys = await listAllKeys(env.LEADS, "lead:");
+  const list = { keys: allKeys };
   const out: Array<{
     email: string;
     latest_domain: string | null;
@@ -119,8 +121,10 @@ interface DeliveryRecord {
 }
 
 export async function handleLeads(user: User, env: Env): Promise<Response> {
-  // Fetch all leads from KV
-  const list = await env.LEADS.list({ prefix: "lead:" });
+  // Fetch all leads from KV (paginated; see lib/kv-paginate.ts)
+  const { listAllKeys } = await import("../lib/kv-paginate");
+  const allKeys = await listAllKeys(env.LEADS, "lead:");
+  const list = { keys: allKeys };
   const rawLeads = await Promise.all(list.keys.map((k) => env.LEADS.get(k.name)));
   const leads: LeadData[] = [];
   for (const raw of rawLeads) {

@@ -21,6 +21,7 @@ import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, hand
 import { handleAdminHealth } from "./routes/health";
 import { handleAdminQa } from "./routes/qa";
 import { handleAdminQaDetail } from "./routes/qa-detail";
+import { handleAdminDecisions } from "./routes/decisions";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -1179,6 +1180,13 @@ export default {
     if (path === "/admin/qa" && method === "GET" && user.role === "admin") {
       return handleAdminQa(user, env, url);
     }
+
+    // Unified decision log -- Phase 2.5. Every approve/reject/edit/
+    // dismiss/override Lance makes across the admin surface, recorded
+    // in one table. Training-data substrate for the Lance-agent.
+    if (path === "/admin/decisions" && method === "GET" && user.role === "admin") {
+      return handleAdminDecisions(user, env, url);
+    }
     // QA audit detail page -- drilldown for one audit row.
     const qaDetailMatch = path.match(/^\/admin\/qa\/(\d+)\/?$/);
     if (qaDetailMatch && method === "GET" && user.role === "admin") {
@@ -1225,6 +1233,25 @@ export default {
       } catch (e) {
         return new Response(`Decision write failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
       }
+
+      // Phase 2.5: also mirror into the unified lance_decisions log so
+      // QA decisions show up alongside schema approvals, alert dismissals,
+      // etc. The agent learns from one unified dataset.
+      try {
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        const auditRow = await env.DB.prepare(
+          "SELECT verdict FROM qa_audits WHERE id = ?"
+        ).bind(auditId).first<{ verdict: string }>();
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_audit",
+          artifact_id: auditId,
+          decision_kind: decision,
+          prior_state: auditRow?.verdict ?? null,
+          new_state: decision === "override" ? newVerdict : null,
+          note: note ?? null,
+          metadata: { source: "qa_decisions_mirror" },
+        });
+      } catch { /* mirror is best-effort */ }
 
       const banner = decision === "agree" ? "agreed with grader"
         : decision === "disagree" ? "disagreement recorded"
@@ -1354,7 +1381,11 @@ export default {
             "SELECT * FROM request_errors ORDER BY created_at DESC LIMIT 100"
           ).all()).results;
       // Merge KV fallback rows (when D1 INSERT failed at error time).
-      const kvList = await env.LEADS.list({ prefix: "request_error:", limit: 200 });
+      // Paginated via lib/kv-paginate so we see the NEWEST entries, not
+      // just the alphabetically-first ones. Tail-slice to bound reads.
+      const { listAllKeys: listAllErrors } = await import("./lib/kv-paginate");
+      const allErrorKeys = await listAllErrors(env.LEADS, "request_error:");
+      const kvList = { keys: allErrorKeys.slice(-200) };
       const kvRows: Array<Record<string, unknown>> = [];
       for (const k of kvList.keys) {
         const raw = await env.LEADS.get(k.name);
@@ -1656,7 +1687,23 @@ export default {
     }
     if (path === "/admin/alerts/read-all" && method === "POST" && user.role === "admin") {
       const now = Math.floor(Date.now() / 1000);
+      // Capture which alerts were marked read for decision-log purposes
+      const unread = (await env.DB.prepare("SELECT id, type FROM admin_alerts WHERE read_at IS NULL").all<{ id: number; type: string }>()).results;
       await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE read_at IS NULL").bind(now).run();
+      // Phase 2.5: log a bulk-dismiss decision for each alert
+      try {
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        for (const a of unread) {
+          await recordLanceDecision(env, user.id, {
+            artifact_type: "admin_alert",
+            artifact_id: a.id,
+            decision_kind: "mark_read",
+            prior_state: "unread",
+            new_state: "read",
+            metadata: { type: a.type, via: "read_all_bulk" },
+          });
+        }
+      } catch { /* logging is best-effort */ }
       return redirect("/admin");
     }
     // Alert action: mark roadmap item done + dismiss alert
@@ -1664,7 +1711,7 @@ export default {
     if (alertCompleteMatch && method === "POST" && user.role === "admin") {
       const alertId = Number(alertCompleteMatch[1]);
       const now = Math.floor(Date.now() / 1000);
-      const alert = await env.DB.prepare("SELECT * FROM admin_alerts WHERE id = ?").bind(alertId).first<{ id: number; roadmap_item_id: number | null }>();
+      const alert = await env.DB.prepare("SELECT * FROM admin_alerts WHERE id = ?").bind(alertId).first<{ id: number; roadmap_item_id: number | null; type?: string }>();
       if (alert) {
         const stmts = [
           env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ?").bind(now, alertId),
@@ -1675,6 +1722,27 @@ export default {
           );
         }
         await env.DB.batch(stmts);
+        // Phase 2.5: log the decision
+        try {
+          const { recordLanceDecision } = await import("./lib/decision-log");
+          await recordLanceDecision(env, user.id, {
+            artifact_type: "admin_alert",
+            artifact_id: alertId,
+            decision_kind: "complete",
+            prior_state: "unread",
+            new_state: "read",
+            metadata: { roadmap_item_id: alert.roadmap_item_id, alert_type: alert.type ?? null },
+          });
+          if (alert.roadmap_item_id) {
+            await recordLanceDecision(env, user.id, {
+              artifact_type: "roadmap_item",
+              artifact_id: alert.roadmap_item_id,
+              decision_kind: "complete",
+              new_state: "done",
+              metadata: { via: "alert_complete", alert_id: alertId },
+            });
+          }
+        } catch { /* logging is best-effort */ }
       }
       return redirect("/admin");
     }
@@ -1683,7 +1751,20 @@ export default {
     if (alertDismissMatch && method === "POST" && user.role === "admin") {
       const alertId = Number(alertDismissMatch[1]);
       const now = Math.floor(Date.now() / 1000);
+      const alert = await env.DB.prepare("SELECT type FROM admin_alerts WHERE id = ?").bind(alertId).first<{ type: string }>();
       await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE id = ?").bind(now, alertId).run();
+      // Phase 2.5: log the dismiss decision
+      try {
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "admin_alert",
+          artifact_id: alertId,
+          decision_kind: "dismiss",
+          prior_state: "unread",
+          new_state: "read",
+          metadata: { alert_type: alert?.type ?? null },
+        });
+      } catch { /* logging is best-effort */ }
       return redirect("/admin");
     }
     if (path === "/admin/domain" && method === "POST" && user.role === "admin") {

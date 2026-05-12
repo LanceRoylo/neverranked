@@ -52,35 +52,14 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, url
   const view: "most-scanned" | "most-recent" =
     url?.searchParams.get("view") === "most-recent" ? "most-recent" : "most-scanned";
 
-  // Paginated KV list. Each list() call returns up to 1000 keys plus a
-  // cursor for the next page. KV.list returns keys alphabetically, which
-  // means oldest-first since our keys are epoch-prefixed
-  // (event:scan:<ms-timestamp>:<random>). To get the NEWEST entries we
-  // must paginate through every page, otherwise a single call with
-  // limit=1000 returns the OLDEST 1000 keys and the actual newest events
-  // (those beyond the first 1000) are invisible. This was the bug that
-  // caused "Most recent scans" to show 3-day-old data while real-time
-  // traffic kept landing in KV.
-  //
-  // Cap total pages to 10 (10,000 keys = ~3 years of activity at current
-  // volume) so the page render never blows the worker subrequest budget.
-  async function listAllKeys(prefix: string, maxPages = 10): Promise<{ name: string }[]> {
-    const all: { name: string }[] = [];
-    let cursor: string | undefined = undefined;
-    for (let page = 0; page < maxPages; page++) {
-      const r: KVNamespaceListResult<unknown, string> = await env.LEADS.list({ prefix, limit: 1000, cursor });
-      all.push(...r.keys);
-      if (r.list_complete) break;
-      cursor = r.cursor;
-      if (!cursor) break;
-    }
-    return all;
-  }
-
+  // Paginate every prefix through the shared lib/kv-paginate helper so
+  // we get ALL keys, not just the alphabetically-first 1000. See the
+  // comment in lib/kv-paginate.ts for the bug this prevents.
+  const { listAllKeys } = await import("../lib/kv-paginate");
   const [scanAllKeys, captureAllKeys, leadAllKeys] = await Promise.all([
-    listAllKeys("event:scan:"),
-    listAllKeys("event:capture:"),
-    listAllKeys("lead:"),
+    listAllKeys(env.LEADS, "event:scan:"),
+    listAllKeys(env.LEADS, "event:capture:"),
+    listAllKeys(env.LEADS, "lead:"),
   ]);
 
   // Now we have ALL keys. slice(-N) correctly grabs the NEWEST N.

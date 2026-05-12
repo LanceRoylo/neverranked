@@ -130,9 +130,10 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
   let freeScansTotal = 0;
   let freeCaptures = 0;
   try {
-    const listed = await env.LEADS.list({ prefix: "lead:" });
-    totalLeads = listed.keys.length;
-    for (const key of listed.keys) {
+    const { listAllKeys, countKeys } = await import("../lib/kv-paginate");
+    const leadKeys = await listAllKeys(env.LEADS, "lead:");
+    totalLeads = leadKeys.length;
+    for (const key of leadKeys) {
       const raw = await env.LEADS.get(key.name);
       if (raw) {
         const data = JSON.parse(raw);
@@ -141,11 +142,11 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
         if (ts > thirtyDaysAgo) leads30d++;
       }
     }
-    // Count free scan and capture events from KV
-    const scanEvents = await env.LEADS.list({ prefix: "event:scan:" });
-    freeScansTotal = scanEvents.keys.length;
-    const captureEvents = await env.LEADS.list({ prefix: "event:capture:" });
-    freeCaptures = captureEvents.keys.length;
+    // Count free scan and capture events from KV. countKeys paginates
+    // through every page so we see the real totals, not just the
+    // alphabetically-first 1000. See lib/kv-paginate.ts.
+    freeScansTotal = await countKeys(env.LEADS, "event:scan:");
+    freeCaptures = await countKeys(env.LEADS, "event:capture:");
   } catch {}
 
   // --- Build HTML ---

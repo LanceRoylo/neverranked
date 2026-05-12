@@ -36,6 +36,30 @@ async function sha256Hex(input: string): Promise<string> {
   return Array.from(new Uint8Array(digest)).map((b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+// Paginate KV.list to get all keys with a given prefix. Single list()
+// calls return only the alphabetically-first 1000 keys per page (which
+// is the OLDEST 1000 for epoch-prefixed keys). Past 1000 total keys,
+// a non-paginated call hides the newest events entirely. This helper
+// loops with the cursor until list_complete. Mirrors
+// dashboard/src/lib/kv-paginate.ts in the dashboard worker. The two
+// workers can't share code so this is duplicated by design.
+async function listAllKvKeys(
+  kv: KVNamespace,
+  prefix: string,
+  maxPages = 10,
+): Promise<{ name: string }[]> {
+  const all: { name: string }[] = [];
+  let cursor: string | undefined = undefined;
+  for (let page = 0; page < maxPages; page++) {
+    const r = await kv.list({ prefix, limit: 1000, cursor });
+    all.push(...r.keys);
+    if (r.list_complete) break;
+    cursor = (r as any).cursor;
+    if (!cursor) break;
+  }
+  return all;
+}
+
 // ---------- Shared analysis logic (packages/aeo-analyzer) ----------
 
 import { buildReport, buildReportFollowingSnippets, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
@@ -2089,8 +2113,9 @@ async function recordDelivery(
 async function runDripSequence(env: Env): Promise<void> {
   if (!env.RESEND_API_KEY) return;
 
-  // List all leads from KV
-  const list = await env.LEADS.list({ prefix: "lead:" });
+  // List all leads from KV (paginated; see listAllKvKeys helper above)
+  const allKeys = await listAllKvKeys(env.LEADS, "lead:");
+  const list = { keys: allKeys };
   let sent = 0;
 
   for (const key of list.keys) {
@@ -2845,10 +2870,13 @@ export default {
 
         // KV keys are sorted lexicographically. Our keys embed Date.now()
         // in millis, so the highest-numbered keys are most recent. We
-        // can't sort within a list call, so pull a generous batch and
-        // sort in-memory.
-        const scanList: any = await env.LEADS.list({ prefix: "event:scan:", limit: 500 });
-        const captureList: any = await env.LEADS.list({ prefix: "event:capture:", limit: 200 });
+        // paginate to get ALL keys (single list calls cap at oldest 1000
+        // past the namespace size); then sort in-memory for newest-first.
+        const scanAllKeys = await listAllKvKeys(env.LEADS, "event:scan:");
+        const captureAllKeys = await listAllKvKeys(env.LEADS, "event:capture:");
+        // Slice to a generous tail so per-item KV.get calls stay bounded.
+        const scanList = { keys: scanAllKeys.slice(-500) };
+        const captureList = { keys: captureAllKeys.slice(-200) };
 
         // Captured emails by domain so the scan event can be enriched
         // with a "captured" flag (visible in the dashboard feed)
@@ -2900,7 +2928,9 @@ export default {
       }
 
       try {
-        const list = await env.LEADS.list({ prefix: "event:scan:", limit: 500 });
+        // Paginate to find newest scans across the full namespace.
+        const allScanKeys = await listAllKvKeys(env.LEADS, "event:scan:");
+        const list = { keys: allScanKeys.slice(-500) };
         const referrerCounts: Record<string, number> = {};
         const utmCounts: Record<string, number> = {};
         let total = 0;
@@ -2986,7 +3016,9 @@ export default {
       }
 
       try {
-        const leadsList = await env.LEADS.list({ prefix: "lead:", limit: 1000 });
+        // Paginate so the leads list reflects ALL leads, not the oldest 1000.
+        const allLeadKeys = await listAllKvKeys(env.LEADS, "lead:");
+        const leadsList = { keys: allLeadKeys };
         const leadRaws = await Promise.all(leadsList.keys.map((k) => env.LEADS.get(k.name)));
         const leads = leadRaws
           .map((r) => { try { return r ? JSON.parse(r) as LeadData : null; } catch { return null; } })

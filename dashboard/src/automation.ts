@@ -230,21 +230,17 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   ).bind(since).first<{ n: number }>())?.n ?? 0;
 
   // --- Free-scan leads (LEADS KV) ------------------------------------
-  // The KV is shared with the schema-check Worker; event keys are
-  // prefixed with event:scan: or event:capture:. List only, don't
-  // read each entry (expensive in KV).
+  // KV shared with schema-check Worker. Event keys prefixed with
+  // event:scan: or event:capture:. Paginate via lib/kv-paginate so
+  // counts reflect ALL un-expired keys, not just the oldest 1000.
+  // KV TTL (90d) already culls old events. The single-page-list bug
+  // that caused stale numbers here is documented in lib/kv-paginate.ts.
   let newLeads = 0;
   let newCaptures = 0;
   try {
-    const scanList = await env.LEADS.list({ prefix: "event:scan:", limit: 1000 });
-    const captureList = await env.LEADS.list({ prefix: "event:capture:", limit: 1000 });
-    // Event keys encode the timestamp like event:scan:<ts>:<rand>.
-    // We could parse the ts for exact 24h filtering but list.keys doesn't
-    // give us the metadata-only TTL; for MVP count all un-expired (KV TTL
-    // already culls >90d old events) and accept the inflation.
-    // TODO: store ts in metadata for exact filtering. Good-enough for now.
-    newLeads = scanList.keys.length;
-    newCaptures = captureList.keys.length;
+    const { countKeys } = await import("./lib/kv-paginate");
+    newLeads = await countKeys(env.LEADS, "event:scan:");
+    newCaptures = await countKeys(env.LEADS, "event:capture:");
   } catch {
     /* LEADS unavailable -- skip gracefully */
   }
