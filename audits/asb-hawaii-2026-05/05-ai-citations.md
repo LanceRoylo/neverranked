@@ -187,7 +187,7 @@ does not appear because ASB has not exposed it via Schema.org.
 
 The schema deployments outlined in section 03 (Schema Review) and
 prioritized in section 07 (Roadmap) directly affect what Claude and
-the other five engines extract when they answer these prompts.
+the other six engines extract when they answer these prompts.
 
 Specifically:
 

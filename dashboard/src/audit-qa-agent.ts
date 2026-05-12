@@ -98,7 +98,7 @@ Categories:
 
 4. **action_sanity** — Is the top recommended action genuinely the highest-leverage one given the entity audit data? Verify the top action's score_lift is the highest among the listed actions, and the action targets a signal that's actually missing or weak. If the top action is wrong (e.g. recommends Wikipedia when the customer already has a Wikipedia entry), BLOCK.
 
-5. **promise_alignment** — Does the audit promise things NeverRanked actually does? In-scope: schema deployment, citation tracking across 6 engines, NVI reporting, AEO scanning, entity-graph audit, monthly reports, content drafts (Amplify only). Out-of-scope: building websites, paid media management, traditional PPC, crawl-based SEO ranking, link building, SEO audits unrelated to AEO, social media management. Out-of-scope claims are BLOCKING.
+5. **promise_alignment** — Does the audit promise things NeverRanked actually does? In-scope: schema deployment, citation tracking across 7 engines, NVI reporting, AEO scanning, entity-graph audit, monthly reports, content drafts (Amplify only). Out-of-scope: building websites, paid media management, traditional PPC, crawl-based SEO ranking, link building, SEO audits unrelated to AEO, social media management. Out-of-scope claims are BLOCKING.
 
 6. **factual_recheck** — Independent of the multi-pass factual check, re-read the prose claims against the underlying scan data. Does the AEO score in the prose match the gauge? Does the "you're missing X" claim actually correspond to a signal showing as ❌ in the entity grid? Discrepancies are blocking.
 

@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>NeverRanked — LinkedIn Cover 1128x191</title>
+<title>NeverRanked — LinkedIn Personal Cover 1584x396</title>
 <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap" media="print" onload="this.media='all'">
 <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Barlow+Condensed:wght@300;400;500;600&family=DM+Mono:ital,wght@0,300;0,400;0,500&display=swap"></noscript>
 <style>
   html, body {
     margin: 0; padding: 0;
-    width: 1128px; height: 191px;
+    width: 1584px; height: 396px;
     background: #080808;
     overflow: hidden;
     position: relative;
@@ -48,19 +48,23 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    /* CRITICAL: LinkedIn's avatar overlay covers bottom 60% of banner
+       AND left 25% horizontally on personal profiles. All content must
+       live in the top ~150px and stay center-aligned to clear avatar.  */
+    justify-content: flex-start;
+    padding-top: 22px;
     text-align: center;
     z-index: 3;
-    padding: 0 40px;
   }
   .h1 {
     font-family: "Playfair Display", serif;
     font-weight: 400;
-    font-size: 54px;
+    font-size: 64px;
     line-height: 1.02;
     letter-spacing: -0.015em;
     color: #fbf8ef;
     margin: 0 0 10px 0;
+    white-space: nowrap;
   }
   .h1 .italic {
     font-style: italic;
@@ -69,22 +73,24 @@
   .sub {
     font-family: "DM Mono", monospace;
     font-weight: 400;
-    font-size: 13px;
+    font-size: 19px;
     letter-spacing: 0.04em;
     color: rgba(251,248,239,.82);
     margin: 0;
+    white-space: nowrap;
   }
   /* Flanking rule lines, kept clear of the avatar's bottom-left zone */
   .rule {
     position: absolute;
     top: 50%;
-    width: 140px;
+    width: 200px;
     height: 1px;
     background: rgba(232,199,103,.35);
     z-index: 3;
   }
-  .rule.right { right: 56px; }
-  .rule.left  { left: 260px; } /* 260 keeps clear of desktop avatar column */
+  /* Rule lines flank the headline, anchored to top region above avatar */
+  .rule.right { right: 200px; top: 60px; width: 160px; }
+  .rule.left  { left: 200px; top: 60px; width: 160px; }
 </style>
 <!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
 </head>
@@ -97,7 +103,7 @@
 
   <div class="headline">
     <h1 class="h1">Never Ranked. <span class="italic">Until now.</span></h1>
-    <p class="sub">AI-native SEO for ChatGPT, Perplexity, Gemini, and Google AI Overviews.</p>
+    <p class="sub">AI-native SEO for ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma.</p>
   </div>
 
   <div class="vignette"></div>

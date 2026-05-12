@@ -643,19 +643,51 @@ export async function handleInjectApprove(
   request?: Request,
 ): Promise<Response> {
   const now = Math.floor(Date.now() / 1000);
+  const force = request ? new URL(request.url).searchParams.get("force") === "1" : false;
 
-  // Quality gate: re-grade the schema and block approval if below
+  // Quality gate 1: re-grade the schema and block approval if below
   // the 60-point empirical threshold. Admins can override via a
   // ?force=1 query param if the grader has a false positive.
   const inj = await env.DB.prepare(
-    "SELECT json_ld FROM schema_injections WHERE id = ? AND client_slug = ?"
-  ).bind(id, slug).first<{ json_ld: string }>();
+    "SELECT json_ld, target_pages FROM schema_injections WHERE id = ? AND client_slug = ?"
+  ).bind(id, slug).first<{ json_ld: string; target_pages: string }>();
   if (inj) {
     const grade = await gradeAndPersist(env, id, inj.json_ld, { force: true });
-    const force = request ? new URL(request.url).searchParams.get("force") === "1" : false;
     if (grade.score < 60 && !force) {
       const msg = `Quality ${grade.score}/100 is below the 60-point deploy threshold. Empirical research shows partial/generic schema produces an 18-point citation penalty vs no schema. Edit the schema to fix the issues, or re-approve with &force=1 to override.`;
       return redirect(`/admin/inject/${slug}?error=${encodeURIComponent(msg)}#i-${id}`);
+    }
+
+    // Quality gate 2: QA schema integrity audit. Different concerns from
+    // the quality grader: validates structural integrity AND checks that
+    // schema text overlaps with the target page (catches hallucinated
+    // schema that claims content the page doesn't actually support).
+    // Resolve target_pages JSON to a full URL using the client's domain.
+    try {
+      let targetUrl = "";
+      try {
+        const paths: string[] = JSON.parse(inj.target_pages);
+        const firstPath = (Array.isArray(paths) ? paths[0] : "/").replace(/\*$/, "").replace(/\/+$/, "") || "/";
+        const dom = await env.DB.prepare(
+          "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+        ).bind(slug).first<{ domain: string }>();
+        if (dom?.domain) {
+          targetUrl = `https://${dom.domain}${firstPath.startsWith("/") ? firstPath : "/" + firstPath}`;
+        }
+      } catch { /* malformed target_pages, skip URL resolution */ }
+
+      if (targetUrl) {
+        const { auditSchemaIntegrity } = await import("../lib/qa-schema-audit");
+        const audit = await auditSchemaIntegrity(env, id, inj.json_ld, targetUrl, { blocking: true });
+        if (audit.verdict === "red" && !force) {
+          const msg = `QA audit blocked: ${audit.reasoning}. Edit the schema or the target page, or re-approve with &force=1 to override.`;
+          return redirect(`/admin/inject/${slug}?error=${encodeURIComponent(msg)}#i-${id}`);
+        }
+      }
+    } catch (e) {
+      // QA failure must never break approval -- log and continue. The
+      // existing quality gate is still in force as a fallback.
+      console.log(`[qa-schema-audit] failed for injection ${id}: ${e instanceof Error ? e.message : String(e)}`);
     }
   }
 

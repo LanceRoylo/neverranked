@@ -2,7 +2,7 @@
 
 **Auditor:** Never Ranked
 **Sample date:** {YYYY-MM-DD}
-**Engines tested:** Google AI Overviews via SERP synthesis, inferred ChatGPT / Perplexity / Gemini / Claude citation behavior
+**Engines tested:** ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma (the open-weight model, independently reproducible)
 **Query count:** {N} primary queries across commercial, informational, and comparison clusters
 
 ---

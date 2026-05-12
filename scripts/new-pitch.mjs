@@ -40,7 +40,7 @@
  *     --slug "jane-acme" \
  *     --recipient "Jane Smith" \
  *     --company "Acme Corp" \
- *     --tag "Wealth Advisor &middot; Six Engines &middot; AEO Audit" \
+ *     --tag "Wealth Advisor &middot; Seven Engines &middot; AEO Audit" \
  *     --h1 "Five things AI engines can't see <em>about Acme Corp.</em>" \
  *     --description "A private brief for Jane Smith at Acme Corp comparing where AI engines do and do not cite the firm." \
  *     [--template jordan-iq360]
@@ -111,7 +111,7 @@ Required:
   --slug          URL slug, e.g. "jane-acme"
   --recipient     Full name, e.g. "Jane Smith"
   --company       Company name, e.g. "Acme Corp"
-  --tag           Recipient tag pill, e.g. "Wealth Advisor &middot; Six Engines &middot; AEO Audit"
+  --tag           Recipient tag pill, e.g. "Wealth Advisor &middot; Seven Engines &middot; AEO Audit"
   --h1            Hero h1, use <em>...</em> for the italic gold span
   --description   <meta name="description"> + og:description content
 

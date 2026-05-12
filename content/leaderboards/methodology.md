@@ -1,9 +1,10 @@
 # NeverRanked AEO Score Methodology
 
 The AEO Score is a 0-100 rating of how citable a website is to
-the six AI engines that now answer most informational queries:
-ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, and
-Google AI Overviews.
+the seven AI engines that now answer most informational queries:
+ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google
+AI Overviews, and Gemma (the open-weight model, independently
+reproducible).
 
 The score is computed from publicly observable signals on the
 homepage and the most-linked interior pages. No private data,
@@ -48,7 +49,7 @@ of other signals.
 ### 4. Citation observation (20 points)
 
 The site is queried against a category-specific prompt set on
-all six engines. Each cited mention counts toward the score.
+all seven engines. Each cited mention counts toward the score.
 Sites with zero observed citations across the prompt set score
 zero on this component, regardless of how strong their schema is.
 

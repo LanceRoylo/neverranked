@@ -295,11 +295,11 @@ ${r.pdfPath ? `        <a href="/state-of-aeo/${r.slug}.pdf">Download PDF</a>` :
   const body = `  <p class="eyebrow"><a href="/" style="color:var(--text-faint)">NeverRanked</a> &middot; The State of AEO</p>
   <h1>The State of <em>AEO</em></h1>
   <p style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--gold);margin:0 0 16px;font-weight:500">Powered by The Citation Tape</p>
-  <p style="font-size:18px;color:var(--text-mute);margin:0 0 32px;line-height:1.6">What AI engines actually cite when answering questions about the brands NeverRanked tracks. Pulled live from production citation runs across ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, and Google AI Overviews. Same script, same data sources, no manual curation. Anyone running the same query against the same database gets the same numbers.</p>
+  <p style="font-size:18px;color:var(--text-mute);margin:0 0 32px;line-height:1.6">What AI engines actually cite when answering questions about the brands NeverRanked tracks. Pulled live from production citation runs across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Same script, same data sources, no manual curation. Anyone running the same query against the same database gets the same numbers.</p>
 
   ${latest ? `<div class="summary-stats">
     <div class="summary-stats-cell"><p class="summary-stats-num">${latest.sampleRuns || '-'}</p><p class="summary-stats-label">Captured runs</p></div>
-    <div class="summary-stats-cell"><p class="summary-stats-num">6</p><p class="summary-stats-label">Engines tracked</p></div>
+    <div class="summary-stats-cell"><p class="summary-stats-num">7</p><p class="summary-stats-label">Engines tracked</p></div>
     <div class="summary-stats-cell"><p class="summary-stats-num">${reports.length}</p><p class="summary-stats-label">Reports published</p></div>
   </div>` : ''}
 

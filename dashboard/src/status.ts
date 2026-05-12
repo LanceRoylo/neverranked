@@ -171,7 +171,7 @@ export async function computeStatus(user: User, env: Env): Promise<StatusSnapsho
     if (lastCit?.ts) {
       recent.push({
         label: "Last citation run",
-        detail: "Weekly run across ChatGPT, Perplexity, Gemini, Claude",
+        detail: "Weekly run across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AIO, Gemma",
         timeHint: timeAgo(lastCit.ts),
       });
     }

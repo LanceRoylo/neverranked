@@ -776,7 +776,7 @@ export async function handleCitations(
     <div style="margin-bottom:28px;padding:16px 20px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0">
       <div class="label" style="margin-bottom:8px;color:var(--gold)">\u00a7 What this page shows</div>
       <div style="font-size:12px;color:var(--text-soft);line-height:1.7;max-width:780px">
-        Every Monday we run a fixed set of questions about your industry through ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. Your <strong style="color:var(--text);font-weight:500">citation share</strong> is the percentage of answers that cite your site. 10% means one in ten answers names you. Numbers below come from real AI responses this past week, not simulated traffic.
+        Every Monday we run a fixed set of questions about your industry through ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Your <strong style="color:var(--text);font-weight:500">citation share</strong> is the percentage of answers that cite your site. 10% means one in ten answers names you. Numbers below come from real AI responses this past week, not simulated traffic.
       </div>
     </div>
 
@@ -864,7 +864,7 @@ export async function handleAdminCitations(
   url?: URL
 ): Promise<Response> {
   const isRunning = url?.searchParams.get("running") === "1";
-  const kwRunningId = url?.searchParams.get("kw_running");
+  let kwRunningId = url?.searchParams.get("kw_running");
   const keywords = (
     await env.DB.prepare(
       "SELECT * FROM citation_keywords WHERE client_slug = ? ORDER BY active DESC, category, keyword"
@@ -874,6 +874,23 @@ export async function handleAdminCitations(
   ).results;
 
   const activeCount = keywords.filter(k => k.active).length;
+
+  // Server-side belt-and-suspenders: if the URL still says a keyword is
+  // running but the keyword already has fresh citation_runs rows
+  // (>=5 engines in the last 10 min), clear the running state. This
+  // prevents the page from being stuck on "Running..." across refreshes
+  // when the workflow has actually completed. The JS poller below
+  // handles the real-time case where the user stays on the page.
+  if (kwRunningId) {
+    const tenMinAgo = Math.floor(Date.now() / 1000) - 600;
+    const recentRow = await env.DB.prepare(
+      "SELECT COUNT(DISTINCT engine) as n FROM citation_runs WHERE keyword_id = ? AND run_at > ?"
+    ).bind(parseInt(kwRunningId, 10), tenMinAgo).first<{ n: number }>();
+    if ((recentRow?.n ?? 0) >= 5) {
+      kwRunningId = null;
+    }
+  }
+  const kwRunStartedAt = Math.floor(Date.now() / 1000) - 30; // poll window starts 30s ago for safety
 
   const body = `
     <div class="section-header">
@@ -887,7 +904,7 @@ export async function handleAdminCitations(
         <div id="scan-dot" style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
         <div>
           <div id="scan-title" style="color:var(--text);font-size:14px">Citation scan running in the background</div>
-          <div id="scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">All 6 engines, all keywords, parallel workflows. Takes 2-4 minutes. This page will update automatically when the scan finishes.</div>
+          <div id="scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">All 7 engines (Perplexity, ChatGPT, Gemini, Claude, Bing/Copilot, Google AIO, Gemma), all keywords, parallel workflows. Takes 2-4 minutes. This page will update automatically when the scan finishes.</div>
         </div>
       </div>
     </div>
@@ -913,6 +930,62 @@ export async function handleAdminCitations(
         });
       }
       setTimeout(check, 15000);
+    })();
+    </script>
+    ` : ""}
+
+    ${kwRunningId ? `
+    <div id="kw-scan-banner" class="card" style="border:1px solid var(--gold);background:rgba(232,199,103,0.06)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div id="kw-scan-dot" style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
+        <div>
+          <div id="kw-scan-title" style="color:var(--text);font-size:14px">Single-keyword scan running across 7 engines</div>
+          <div id="kw-scan-sub" style="color:var(--text-faint);font-size:12px;margin-top:4px">Workflow dispatched. <span id="kw-engines-count">0</span> of 7 engines complete. <b style="color:var(--text)">Usually finishes in 30 to 90 seconds, occasionally up to 2 minutes if an engine is slow to respond.</b> Page will update automatically when at least 5 engines have produced rows (Google AI Overviews doesn't render for every query, which is normal).</div>
+        </div>
+      </div>
+    </div>
+    <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
+    <script>
+    (function(){
+      var started = Date.now();
+      var slug = "${esc(slug)}";
+      var keywordId = "${esc(kwRunningId)}";
+      var sinceTs = ${kwRunStartedAt};
+      // Scroll the banner into view on initial load so users who clicked
+      // Run from deep in the keyword list don't miss it. Smooth scroll
+      // so the motion itself confirms something happened.
+      try {
+        var bannerEl = document.getElementById("kw-scan-banner");
+        if (bannerEl && bannerEl.scrollIntoView) {
+          bannerEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      } catch(e){}
+      function check(){
+        fetch("/api/citation-keyword-status/" + slug + "/" + keywordId + "?since=" + sinceTs)
+          .then(function(r){return r.json()})
+          .then(function(d){
+            var countEl = document.getElementById("kw-engines-count");
+            if(countEl && typeof d.enginesComplete === "number") countEl.textContent = d.enginesComplete;
+            if(d.done){
+              document.getElementById("kw-scan-dot").style.animation="none";
+              document.getElementById("kw-scan-dot").style.background="var(--green)";
+              document.getElementById("kw-scan-title").textContent="Single-keyword scan complete (" + d.enginesComplete + " of 7 engines)";
+              document.getElementById("kw-scan-sub").innerHTML='Results landed. <a href="/admin/citations/'+slug+'" style="color:var(--gold);font-weight:500">Refresh to see updated state</a> or <a href="/citations/'+slug+'" style="color:var(--gold);font-weight:500">view citation dashboard</a>.';
+              document.getElementById("kw-scan-banner").style.borderColor="var(--green)";
+              document.getElementById("kw-scan-banner").style.background="rgba(94,199,106,0.06)";
+              // Auto-reload after 2 seconds so the Run button comes back without manual refresh.
+              setTimeout(function(){ window.location.href = "/admin/citations/" + slug; }, 2000);
+            } else if(Date.now()-started < 300000){
+              setTimeout(check, 4000);
+            } else {
+              document.getElementById("kw-scan-title").textContent="Scan taking longer than expected";
+              document.getElementById("kw-scan-sub").innerHTML='Reached the 5-minute poll window. <a href="/admin/citations/'+slug+'" style="color:var(--gold);font-weight:500">Refresh manually</a> to check current state.';
+            }
+          }).catch(function(){
+            if(Date.now()-started < 300000) setTimeout(check, 6000);
+          });
+      }
+      setTimeout(check, 5000);
     })();
     </script>
     ` : ""}
@@ -973,13 +1046,13 @@ export async function handleAdminCitations(
         <div style="display:flex;align-items:center;gap:10px">
           <div style="width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1.5s infinite"></div>
           <button type="button" disabled class="btn" style="background:var(--line);color:var(--text-faint);cursor:not-allowed;border-color:var(--line)">Scan running...</button>
-          <span style="font-size:12px;color:var(--text-faint)">All 6 engines, one workflow per keyword. Takes 2-4 min. Banner at top will update.</span>
+          <span style="font-size:12px;color:var(--text-faint)">All 7 engines, one workflow per keyword. Takes 2-4 min. Banner at top will update.</span>
         </div>
         <style>@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}</style>
       ` : `
         <form method="POST" action="/admin/citations/${esc(slug)}/run" id="full-scan-form">
           <button type="submit" class="btn" id="full-scan-btn" style="background:var(--gold);color:var(--bg)" onclick="this.disabled=true;this.textContent='Starting scan...';this.style.background='var(--line)';this.style.color='var(--text-faint)';this.form.submit();">Run citation scan now</button>
-          <span style="font-size:12px;color:var(--text-faint);margin-left:8px">All keywords across all 6 engines (Perplexity, ChatGPT, Gemini, Claude, Bing/Copilot, Google AIO)</span>
+          <span style="font-size:12px;color:var(--text-faint);margin-left:8px">All keywords across all 7 engines (Perplexity, ChatGPT, Claude, Gemini, Microsoft Copilot, Google AIO, Gemma)</span>
         </form>
       `}
     </div>
@@ -1177,17 +1250,23 @@ export async function handleManualCitationRun(
   return redirect(`/admin/citations/${slug}?running=1`);
 }
 
-// Per-keyword "Run" button. Fires all 6 engines × RUNS_PER_KEYWORD on
-// one keyword only -- a single-keyword run fits inside Workers'
-// waitUntil budget where the 15-keyword roster does not. Used for
-// demos, triage, and any "did this engine actually fire?" verification.
+// Per-keyword "Run" button. Dispatches a CitationKeywordWorkflow
+// instance for the single keyword, which gets its own 1000-subrequest
+// budget. Earlier this used ctx.waitUntil(runOneKeywordCitations(...))
+// which got cancelled by Workers' wall-time budget before all 7
+// engines finished (~half the engines silently lost). Verified
+// empirically 2026-05-11 ~01:20 HST: manual runs produced 3-5 row
+// keyword runs with Gemma + AIO consistently missing. The workflow
+// path is the same architecture the daily cron uses for full roster
+// runs.
 export async function handleManualKeywordRun(
   slug: string,
   keywordId: number,
   env: Env,
-  ctx: ExecutionContext
+  _ctx: ExecutionContext
 ): Promise<Response> {
-  const { runOneKeywordCitations } = await import("../citations");
-  ctx.waitUntil(runOneKeywordCitations(env, slug, keywordId));
+  await env.CITATION_KEYWORD_WORKFLOW.create({
+    params: { clientSlug: slug, keywordId },
+  });
   return redirect(`/admin/citations/${slug}?kw_running=${keywordId}`);
 }

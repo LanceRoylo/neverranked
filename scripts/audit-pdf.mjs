@@ -402,8 +402,8 @@ const fullHtml = `<!doctype html>
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Six engines tracked</strong>
-        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+        <strong>Seven engines tracked</strong>
+        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews &middot; Gemma</div>
       </div>
     </div>
   </div>

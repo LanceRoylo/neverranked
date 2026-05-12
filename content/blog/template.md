@@ -221,7 +221,7 @@ chosen by the post archetype:
 
 | Archetype | Primary CTA |
 |---|---|
-| Vertical playbook | "Free six-engine scan at check.neverranked.com" |
+| Vertical playbook | "Free seven-engine scan at check.neverranked.com" |
 | Category education | "What is your AEO score? Free scan at check.neverranked.com" |
 | Conversion / consideration | "Start with the $750 audit" or "Book a 30-minute call" |
 

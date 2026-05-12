@@ -10,7 +10,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const targets = [
   { html: 'logo-source.html',              out: 'images/logo-300.png',           w: 300,  h: 300 },
-  { html: 'cover-source.html',             out: 'images/cover-1128x191.png',     w: 1128, h: 191 },
+  { html: 'cover-source.html',             out: 'images/cover-1584x396.png',     w: 1584, h: 396 },
   { html: 'post-01-scorecard-source.html', out: 'images/post-01-scorecard.png',  w: 1200, h: 1200 },
   { html: 'post-02-truthcard-source.html', out: 'images/post-02-truthcard.png',  w: 1200, h: 1200 },
   { html: 'post-03-scorecard-source.html', out: 'images/post-03-scorecard.png',  w: 1200, h: 1200 },

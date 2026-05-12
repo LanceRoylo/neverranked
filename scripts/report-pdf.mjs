@@ -135,8 +135,8 @@ const fullHtml = `<!doctype html>
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Six engines tracked</strong>
-        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Microsoft Copilot &middot; Google AI Overviews</div>
+        <strong>Seven engines tracked</strong>
+        <div style="font-size: 8.5pt;">ChatGPT &middot; Perplexity &middot; Claude &middot; Gemini &middot; Microsoft Copilot &middot; Google AI Overviews &middot; Gemma</div>
       </div>
     </div>
   </div>

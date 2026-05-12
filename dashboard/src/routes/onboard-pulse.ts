@@ -122,7 +122,7 @@ export async function handleOnboardPulse(
         <div style="font-size:48px;color:var(--gold);margin-bottom:16px">&#10003;</div>
         <h1 style="font-family:var(--serif);font-weight:400;font-size:32px;margin:0 0 16px 0">You're tracking ${cleaned.length} prompts.</h1>
         <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 28px 0;max-width:440px;margin-left:auto;margin-right:auto">
-          We're running your first citation scan now across ChatGPT, Perplexity, Gemini, and Claude. Initial results land in your dashboard within a few hours. Your first monthly Visibility Index PDF arrives the first business day of next month.
+          We're running your first citation scan now across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Initial results land in your dashboard within a few hours. Your first monthly Visibility Index PDF arrives the first business day of next month.
         </p>
         <a href="/citations/${encodeURIComponent(slug)}" style="display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 24px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);text-decoration:none">
           See live tracking &rarr;

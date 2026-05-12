@@ -20,7 +20,7 @@ This file has TWO things:
 
 ### Opening paragraph
 
-> Your clients are going to ask within twelve months. Some already are. AEO (Answer Engine Optimization) is the work of getting cited by ChatGPT, Perplexity, Gemini, and Google AI Overviews when their customers ask the questions your clients want to answer. Building this in-house means hiring people who do not exist yet on the open market, buying a tool stack nobody has built, and writing a methodology nobody has tested. Reselling NeverRanked means adding a line item to next month's proposal.
+> Your clients are going to ask within twelve months. Some already are. AEO (Answer Engine Optimization) is the work of getting cited by ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma when their customers ask the questions your clients want to answer. Building this in-house means hiring people who do not exist yet on the open market, buying a tool stack nobody has built, and writing a methodology nobody has tested. Reselling NeverRanked means adding a line item to next month's proposal.
 
 ### Who this is for
 

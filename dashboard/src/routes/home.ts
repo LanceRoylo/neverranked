@@ -208,7 +208,7 @@ async function buildWeeklySummary(user: User, env: Env): Promise<string> {
   // measures and why the delta arrow means what it means.
   const cardTooltips: Record<string, string> = {
     "AEO Score": "AEO Readiness on a 0-100 scale. Updated every weekly scan. Delta compares this week to last week. Green is up, red is down.",
-    "Citation Share": "Percentage of AI engine answers (ChatGPT, Perplexity, Gemini, Claude) that cite your site when asked about your industry. Measured weekly.",
+    "Citation Share": "Percentage of AI engine answers (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AIO, Gemma) that cite your site when asked about your industry. Measured weekly.",
     "Search Clicks": "Clicks from Google Search Console in the latest weekly reporting window. Delta compares to the previous week. Data is delayed ~3 days.",
     "Roadmap": "Percentage of roadmap items marked done across all phases. The fraction shows completed out of total items.",
   };
@@ -583,7 +583,7 @@ async function buildRoiCard(user: User, env: Env): Promise<string> {
         <div style="flex:1;min-width:140px">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">AI citations earned</div>
           <div style="font-family:var(--serif);font-style:italic;font-size:32px;color:var(--text);line-height:1">${citationsEarned.toLocaleString()}</div>
-          <div style="font-size:10px;color:var(--text-faint);margin-top:6px">across ChatGPT, Perplexity, Gemini, Claude</div>
+          <div style="font-size:10px;color:var(--text-faint);margin-top:6px">across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AIO, Gemma</div>
         </div>
         <div style="flex:1;min-width:140px;border-left:1px solid var(--line);padding-left:20px">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Search clicks / wk</div>

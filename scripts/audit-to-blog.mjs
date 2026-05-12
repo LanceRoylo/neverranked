@@ -239,7 +239,7 @@ will not help — and in many cases will hurt, per the published
 research showing partial schema coverage scoring lower in citation
 eligibility than no schema at all.
 
-If you want a free six-engine scan of your own site, run
+If you want a free seven-engine scan of your own site, run
 [check.neverranked.com](https://check.neverranked.com). The same
 methodology used in this audit produces a score for any URL in
 about 30 seconds.

@@ -191,7 +191,7 @@ Only when all three layers pass:
 | Voice drift | Reads like ChatGPT | Run grep for em dashes and banned words. Rewrite the offending sentences in the editorial Never Ranked voice. |
 | Swap Test fail | Post works for any AEO agency | Add a specific reference: a Never Ranked product feature, a specific stat we own, a named customer (anonymized if needed) |
 | No named lever | "Just a list of facts" | Pick a lever (Reframe, Specificity, etc.) and rewrite the opener and conclusion to lean on it |
-| Conversion path vague | "Learn more about Never Ranked" CTA | Replace with a specific action: "Free six-engine scan at check.neverranked.com" |
+| Conversion path vague | "Learn more about Never Ranked" CTA | Replace with a specific action: "Free seven-engine scan at check.neverranked.com" |
 
 ---
 

@@ -7,7 +7,8 @@
 
 ## What's happening
 
-We're adding Gemma 3 27B (Google's open-weight LLM) as the 7th tracked
+We're adding Gemma (Google's open-weight LLM, production runs Gemma 4 31B
+on Together AI as of 2026-05-11) as the 7th tracked
 engine on The Citation Tape. The strategic angle: Gemma is the only
 **reproducible** engine in the set (open weights mean anyone can verify
 our numbers by running the same model). That's the differentiator for

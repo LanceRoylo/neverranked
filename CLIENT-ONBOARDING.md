@@ -34,7 +34,7 @@ Attendees: client point-of-contact, agency point-of-contact (if applicable), Nev
 
 Agenda:
 
-- **Confirm scope.** Which pages, which subdomains, which AI engines (the default four are ChatGPT, Perplexity, Gemini, Claude — confirm anything additional).
+- **Confirm scope.** Which pages, which subdomains, which AI engines (the default seven are ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Confirm anything additional).
 - **Confirm queries.** The client tells us which 10-20 queries matter most. Default: the audit defaults if the client has no preference. For a bank: mortgage research, business banking switch, branch locator, "best Hawaii bank for X". For a venue: live shows, "what's on tonight," reservation booking. For a SaaS: comparison queries, pricing, alternatives.
 - **Install the snippet.** Hand off the snippet URL — `<script src="https://app.neverranked.com/inject/<client_slug>.js" async></script>` — for the client's CMS team or developer to drop into the `<head>` of every page. Same snippet across all pages on the same domain. For multi-domain clients (e.g. `mortgage.asbhawaii.com` as a separate subdomain from `asbhawaii.com`), each domain needs its own one-line install.
 - **Designate approvers.** Single point-of-contact at the client (or agency) who approves schema batches before they go live. Compliance approver, if separate.

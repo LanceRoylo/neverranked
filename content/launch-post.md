@@ -26,7 +26,7 @@ That's the point.
 
 Every agency says they eat their own cooking. Most don't. Most sell advice they've never had to execute on their own product, against their own metrics, with their own money on the line.
 
-Never Ranked exists because classic SEO agencies are still optimizing for the blue-link era of search while ChatGPT, Perplexity, Gemini, and Google's AI Overviews have quietly become the new front page of the internet. Google answers before it links. ChatGPT cites who it trusts. Perplexity quotes the source, not the ranking. The old playbook stopped working.
+Never Ranked exists because classic SEO agencies are still optimizing for the blue-link era of search while ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma have quietly become the new front page of the internet. Google answers before it links. ChatGPT cites who it trusts. Perplexity quotes the source, not the ranking. The old playbook stopped working.
 
 We have a new playbook. Before we sell it, we have to prove it works.
 

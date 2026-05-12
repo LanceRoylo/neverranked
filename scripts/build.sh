@@ -75,6 +75,7 @@ for d in "${DIRS[@]}"; do
       --exclude='_data' \
       --exclude='_engagement*' \
       --exclude='_meta' \
+      --exclude='.DS_Store' \
       "$ROOT/$d/" "$DIST/$d/"
     echo "  dir   $d/  (internal _data, _engagement, _meta excluded from deploy)"
   else

@@ -59,13 +59,13 @@ not earn its place.
   one or IG square.
 - **Constellation visualization.** Brand Data, Website Content,
   Knowledge Graph, Schema → Your Brand → ChatGPT, Perplexity,
-  Gemini, Google AI Overviews, Claude, Microsoft Copilot. Use
-  when the post is about how AEO works mechanically.
+  Claude, Gemini, Microsoft Copilot, Google AI Overviews, Gemma.
+  Use when the post is about how AEO works mechanically.
 
 ## The recurring data points (all true, always available)
 
-- Six engines tracked: ChatGPT, Perplexity, Gemini, Google AI
-  Overviews, Claude, Microsoft Copilot
+- Seven engines tracked: ChatGPT, Perplexity, Claude, Gemini,
+  Microsoft Copilot, Google AI Overviews, and Gemma (open-weight)
 - 1.2% click-through rate when an AI Overview appears above the
   blue links
 - Hawaii Theatre Center: AEO score 45 → 95 in less than 24 hours,

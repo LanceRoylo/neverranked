@@ -46,7 +46,7 @@ five years.
 
 ### Module 1: Foundations of AEO (3 hours)
 
-- The six-engine citation surface and how each engine retrieves
+- The seven-engine citation surface and how each engine retrieves
 - Schema.org as the substrate, and what AI actually reads
 - The 0-100 AEO score: methodology, components, weighting
 - Diagnostic vs deployment: why most "AEO tools" stop at the audit

@@ -2,7 +2,7 @@
 
 **Prepared for the meeting on _[time TBD]_**
 
-NeverRanked is an Answer Engine Optimization (AEO) service. We make websites citable by AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews). We deploy the schema, track the citations, and ship the work.
+NeverRanked is an Answer Engine Optimization (AEO) service. We make websites citable by AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma, the open-weight model). We deploy the schema, track the citations, and ship the work.
 
 ---
 

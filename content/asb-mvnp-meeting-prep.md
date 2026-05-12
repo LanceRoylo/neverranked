@@ -86,7 +86,7 @@ categories come and go.
 
 Answer: Be honest. AEO is the formalization of structured data,
 which has been core SEO infrastructure since 2011. The new part
-is that AI engines (ChatGPT, Perplexity, Gemini, Claude) are
+is that AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma) are
 also reading it now, and they cite a much smaller pool of
 sources than Google's blue-link index. The category name is
 new. The work is not. Even if "AEO" the term dies, the schema

@@ -44,7 +44,7 @@ Three failure modes have happened on this brand and must be guarded against:
 
 1. **Invented stats.** "We tested 47 sites" with no batch run behind it. If Lance has not personally run the audit at that scale, the post does not claim that scale. Use real numbers from the D1 scan_results table, real demos from the inbox, or reframe to a method ("every business I run this on") that is honest if true.
 
-2. **Engine-count drift.** NR tracks SIX engines: ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, Microsoft Copilot. Older copy says four. Every new post must name all six when listing engines. Cold emails, captions, and image text all check this.
+2. **Engine-count drift.** NR tracks SEVEN engines: ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma (the open-weight model). Older copy says four or six. Every new post must name all seven when listing engines. Cold emails, captions, and image text all check this.
 
 3. **Anonymization for cold prospects.** A cold-email recipient who has not signed is not a public testimonial. Use real city, real category, real score, no brand name. The post stays credible without burning the deal.
 

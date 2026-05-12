@@ -98,7 +98,7 @@ This is marked as a "restricted" scope. Google will require justification (Secti
 Paste this into the scope justification field:
 
 ```
-NeverRanked is an Answer Engine Optimization (AEO) measurement platform that helps small and mid-market businesses understand how their websites perform across AI search engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews) and traditional search.
+NeverRanked is an Answer Engine Optimization (AEO) measurement platform that helps small and mid-market businesses understand how their websites perform across AI search engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma) and traditional search.
 
 The webmasters.readonly scope is used exclusively to read aggregate search performance data (impressions, clicks, queries, average position) from each user's Google Search Console properties. This data is correlated with our AI citation tracking to give customers a complete picture of their search visibility across both traditional and AI-driven search surfaces.
 

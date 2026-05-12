@@ -19,7 +19,7 @@ sample_keywords: 42
 
 A standing snapshot of what AI engines actually cite when answering
 questions about NeverRanked's tracked client universe. Pulled from
-live 754 citation runs across 5 engines (bing, gemini, google_ai_overview, openai, perplexity),
+live 754 citation runs across 5 of 7 tracked engines (bing, gemini, google_ai_overview, openai, perplexity),
 42 tracked keywords, and 3 clients spanning 3 verticals.
 
 Generated weekly. Same script, same data sources, no manual curation.
@@ -32,7 +32,7 @@ anyone with the same query against the same database.
 Across 754 captured AI engine responses, the single most-cited
 third-party source is **youtube.com** (YouTube),
 appearing in 190 citation runs across
-5 engines and 22 tracked keywords.
+5 of 7 tracked engines and 22 tracked keywords.
 
 Implication: any tracked client whose category overlaps with this
 source's coverage area (and whose own brand is not yet present on

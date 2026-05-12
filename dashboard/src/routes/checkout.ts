@@ -166,7 +166,7 @@ export async function handleCheckout(
           Reserve your <em>Pulse seat.</em>
         </h1>
         <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
-          Drop your email and the domain you want monitored. We will email you a login link within seconds. Two minutes later you are tracking 10 prompts across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. No payment yet -- you are in the founding cohort and we will email a Stripe link once your seat is confirmed.
+          Drop your email and the domain you want monitored. We will email you a login link within seconds. Two minutes later you are tracking 10 prompts across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. No payment yet -- you are in the founding cohort and we will email a Stripe link once your seat is confirmed.
         </p>
         <form method="POST" action="/checkout/pulse/waitlist" style="display:flex;flex-direction:column;gap:14px">
           <input type="email" name="email" required placeholder="you@yourdomain.com"
@@ -931,7 +931,7 @@ export async function handleStripeWebhook(
             : `Plan updated`;
 
         const upgradeBenefits: Record<string, string> = {
-          signal: "Weekly citation tracking across 6 engines, 50+ tracked prompts, schema fixes auto-pushed to your live site within an hour, Reddit thread monitoring, authority-platform tracking.",
+          signal: "Weekly citation tracking across 7 engines, 50+ tracked prompts, schema fixes auto-pushed to your live site within an hour, Reddit thread monitoring, authority-platform tracking.",
           amplify: "Everything in Signal, plus brand-voice fingerprint trained on your writing, citation-shaped content drafts in your voice, auto-publish to WordPress/Webflow/Shopify, self-filling content calendar.",
           pulse: "Monthly Visibility Index PDF, 10 tracked prompts, 2 schemas deployed monthly.",
         };
@@ -1158,7 +1158,7 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
   if (plan === "audit") {
     whatHappensNext = `<p style="margin:0 0 8px">Your full AEO audit is being prepared and will be delivered within 48 hours. In the meantime, your dashboard is live -- log in now to complete onboarding so we can start immediately.</p>`;
   } else if (plan === "pulse") {
-    whatHappensNext = `<p style="margin:0 0 8px">Your seat is reserved. Click below to log in -- you will land on a 2-minute setup screen with 10 prompts we suggest tracking for you. Edit them, save, and we will run your first citation scan across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude in the background. Initial results land in your dashboard within hours.</p>`;
+    whatHappensNext = `<p style="margin:0 0 8px">Your seat is reserved. Click below to log in -- you will land on a 2-minute setup screen with 10 prompts we suggest tracking for you. Edit them, save, and we will run your first citation scan across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma in the background. Initial results land in your dashboard within hours.</p>`;
   } else {
     whatHappensNext = `<p style="margin:0 0 8px">Your dashboard is live and ready. Log in now to complete onboarding -- it takes about 2 minutes and helps us tailor everything to your business.</p>`;
   }

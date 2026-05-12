@@ -1,8 +1,8 @@
 # Engine Changelog
 
-A weekly log of how the six AI engines (ChatGPT, Perplexity, Claude,
-Gemini, Microsoft Copilot, Google AI Overviews) change the way they
-cite and rank sources.
+A weekly log of how the seven AI engines (ChatGPT, Perplexity, Claude,
+Gemini, Microsoft Copilot, Google AI Overviews, and Gemma) change the
+way they cite and rank sources.
 
 This is a moat asset. The longer it runs, the more it documents what
 nobody else is tracking. It also feeds the marketing site as

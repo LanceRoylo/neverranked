@@ -95,7 +95,7 @@ export async function handleWeeklyList(env: Env): Promise<Response> {
   <header style="margin-bottom:48px">
     <div class="label" style="margin-bottom:12px">Never Ranked</div>
     <h1 style="font-family:var(--serif);font-size:clamp(36px,5vw,52px);font-weight:400;line-height:1.1;margin:0">The Weekly <em>AEO Brief</em></h1>
-    <p style="color:var(--text-mute);font-size:15px;line-height:1.6;margin-top:16px;max-width:600px">Anonymized observations from across our tracked clients on what AI engines (ChatGPT, Perplexity, Gemini, Claude) are citing, what's surging on Reddit, and where the share is shifting. Published Fridays.</p>
+    <p style="color:var(--text-mute);font-size:15px;line-height:1.6;margin-top:16px;max-width:600px">Anonymized observations from across our tracked clients on what AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AIO, Gemma) are citing, what's surging on Reddit, and where the share is shifting. Published Fridays.</p>
   </header>
   <section>${items}</section>
   <footer style="margin-top:64px;padding-top:24px;border-top:1px solid var(--line);font-size:12px;color:var(--text-faint)">

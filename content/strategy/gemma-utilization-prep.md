@@ -16,8 +16,9 @@ a tactical cost-saver, or a distraction.
 Gemma is Google's family of open-weight LLMs -- the same lab as Gemini,
 but the weights are released publicly and the models can be run anywhere
 (your laptop, a GPU server, Vertex AI, Hugging Face Inference Endpoints,
-Together AI, Replicate, Modal). Latest generation is Gemma 3, sizes from
-1B to 27B parameters. Multimodal in the larger sizes. Commercially usable
+Together AI, Replicate, Modal). Production uses Gemma 4 31B Instruct
+(the largest serverless Gemma variant on Together as of May 2026).
+Multimodal in the larger sizes. Commercially usable
 under a permissive license. Not a hosted product like ChatGPT -- it's a
 model you call via API or run yourself.
 
@@ -97,7 +98,9 @@ LM Studio) gives instant feedback without burning API calls.
 - Doesn't ship to production; just speeds up local dev
 - Already possible today without any code change
 
-**Effort:** zero (just `brew install ollama && ollama pull gemma3:27b`)
+**Effort:** zero (just `brew install ollama && ollama pull gemma3:27b`, or
+pull whatever Gemma generation is current on Ollama -- production runs
+Gemma 4 31B on Together but any open-weight Gemma is fine for local prompt work)
 
 **Recommendation:** install it tomorrow, use it ad-hoc for prompt work.
 

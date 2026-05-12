@@ -32,7 +32,7 @@ NeverRanked is an AI-native SEO and Answer Engine Optimization agency. We get yo
 
 What we actually do:
 
-Full technical and content audit, delivered in 48 hours. Schema built for machine-readability, not 2018 best practice. AEO content drafted in your voice and reviewed by a human. Daily citation tracking across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Intent mapping across classic SERPs and generative answer engines.
+Full technical and content audit, delivered in 48 hours. Schema built for machine-readability, not 2018 best practice. AEO content drafted in your voice and reviewed by a human. Daily citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Intent mapping across classic SERPs and generative answer engines.
 
 How we work:
 

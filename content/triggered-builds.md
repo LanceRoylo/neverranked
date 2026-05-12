@@ -13,7 +13,7 @@ Never deploys.
 ## Active triggers
 
 ### Engine changelog: first real entry
-- **Trigger:** Citation tracker has accumulated 4+ consecutive weeks of the same control prompt set across all six engines
+- **Trigger:** Citation tracker has accumulated 4+ consecutive weeks of the same control prompt set across all seven engines
 - **What to build:** Run a diff query, identify any prompt where the top-3 cited sources changed week-over-week. For each material change, fill the template at `content/engine-changelog/_template.md` with the actual data. Publish to neverranked.com/engine-changelog as a public proof-of-work feed.
 - **Effort:** 2 hours when triggered. Recurring weekly thereafter.
 - **Why gated:** Cannot publish observations we have not actually measured. Premature entries kill credibility the moment a journalist asks for the underlying data.
@@ -126,7 +126,7 @@ Never deploys.
 - **Origin:** Free-check dashboard flagged 1% capture rate vs 5-15% benchmark on 2026-05-06.
 - **What to build:**
   - **Move the email gate higher in the report.** Currently gates at the end of the full report. Test gating after one specific high-tension section (e.g., "we found N specific gaps, drop your email to see them and the fix list").
-  - **Test stronger CTA copy.** "Get my full 90-day fix list" or "Send me the 6-engine citation report" beats "Email me the report."
+  - **Test stronger CTA copy.** "Get my full 90-day fix list" or "Send me the 7-engine citation report" beats "Email me the report."
   - **Add scarcity / specificity to the gate.** "We've run X scans this week. Get in line for the report." (Honest only if the volume claim is real.)
   - **Track conversion at each gate variant via the dashboard.** Use `send_log.note_variant` pattern from the outreach repo to record which gate variant the visitor saw.
 - **Effort:** ~1-2 hours dashboard worker changes + new gate component.
@@ -181,7 +181,7 @@ Never deploys.
 
 ### Sean Levy follow-up (TWS Paperie)
 - **Trigger:** Sean replies to the pitch with anything other than "no thanks"
-- **What to build:** Run the free audit on twspaperie.com (per the pitch, comped). PDF deliverable in 48 hours. Schema completeness report, six-engine citation matrix on Orlando gift-wrapping queries, competitor map.
+- **What to build:** Run the free audit on twspaperie.com (per the pitch, comped). PDF deliverable in 48 hours. Schema completeness report, seven-engine citation matrix on Orlando gift-wrapping queries, competitor map.
 - **Effort:** ~2-3 hours Claude Code work
 - **Why gated:** Audit was offered as a no-charge follow-up. Don't run it before he asks; let him drive.
 

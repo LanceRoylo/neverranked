@@ -18,6 +18,8 @@ import { handleFreeUpgrade } from "./routes/free-upgrade";
 import { handleHome } from "./routes/home";
 import { handleDomainDetail, handleScanCompare, handleClientRescan } from "./routes/domain";
 import { handleAdminHome, handleAddDomain, handleAddUser, handleManualScan, handleCronTestScan, handleEditSuggestion, handleRemoveSuggestion, handleReconcileAgency, handleAdminResendOnboarding, handleClientSettings, handleAdminTrialReset } from "./routes/admin";
+import { handleAdminHealth } from "./routes/health";
+import { handleAdminQa } from "./routes/qa";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
@@ -545,6 +547,39 @@ export default {
       return handleInstallGuide(installMatch[1], request, env);
     }
 
+    // Public uptime health endpoint. No auth, no PII. Used by external
+    // uptime monitors (BetterStack / Cronitor / etc) to detect when
+    // either the Worker or D1 is unreachable. Returns ok:true only if
+    // a SELECT 1 succeeds against D1 within ~200ms; otherwise ok:false
+    // so the monitor pages Lance via SMS/email.
+    if (path === "/health-public" && method === "GET") {
+      const startedAt = Date.now();
+      let dbOk = false;
+      let dbError: string | null = null;
+      try {
+        const row = await env.DB.prepare("SELECT 1 as one").first<{ one: number }>();
+        dbOk = row?.one === 1;
+      } catch (e) {
+        dbError = e instanceof Error ? e.message : String(e);
+      }
+      const responseTimeMs = Date.now() - startedAt;
+      const body = {
+        ok: dbOk,
+        db_ok: dbOk,
+        db_error: dbError,
+        response_time_ms: responseTimeMs,
+        ts: Math.floor(Date.now() / 1000),
+        service: "neverranked-dashboard",
+      };
+      return new Response(JSON.stringify(body), {
+        status: dbOk ? 200 : 503,
+        headers: {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+        },
+      });
+    }
+
     // Public health endpoint for the Hawaii Theatre Event cron.
     // Read-only counts and timestamps. Used by the scheduled
     // verifier so it doesn't need an admin session or D1 token.
@@ -1010,6 +1045,78 @@ export default {
     // Admin routes
     if (path === "/admin" && method === "GET" && user.role === "admin") {
       return handleCockpit(user, env);
+    }
+
+    // System health page -- Phase 1 of the agent-foundation work.
+    // Single-screen red/yellow/green status across engines, crons,
+    // approval queues, and alerts. Designed to answer "is anything
+    // broken right now?" in under a second.
+    if (path === "/admin/health" && method === "GET" && user.role === "admin") {
+      return handleAdminHealth(user, env, url);
+    }
+
+    // Manual trigger for the anomaly detection cron. Same logic as the
+    // daily cron, on-demand for verification without waiting for the
+    // 06:00 UTC tick. Also logs to cron_runs so the health page reflects
+    // this manual run as a recent heartbeat.
+    if (path === "/admin/health/run-anomaly-detection" && method === "POST" && user.role === "admin") {
+      try {
+        const { runAnomalyDetection } = await import("./lib/anomaly-detection");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await runAnomalyDetection(env);
+        await logCronRun(env, "anomaly_detection", r.totalAlerts > 0 ? "partial" : "success", Date.now() - started,
+          `(manual trigger) engineAlerts=${r.engineAlerts} cronAlerts=${r.cronAlerts}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=anomaly_detection&alerts=${r.totalAlerts}` },
+        });
+      } catch (e) {
+        return new Response(`Anomaly detection failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
+    // Manual trigger for the engine self-healing health check (Phase 4).
+    // Same logic as the daily cron, on-demand for backfill + verification.
+    if (path === "/admin/health/run-engine-health-check" && method === "POST" && user.role === "admin") {
+      try {
+        const { runEngineHealthCheck } = await import("./lib/engine-health-check");
+        const { logCronRun } = await import("./lib/cron-log");
+        const started = Date.now();
+        const r = await runEngineHealthCheck(env);
+        await logCronRun(env, "engine_health_check", r.transitions > 0 ? "partial" : "success", Date.now() - started,
+          `(manual trigger) degraded=${r.degradedCount} recovered=${r.recoveredCount}`);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/health?triggered=engine_health_check&degraded=${r.degradedCount}&recovered=${r.recoveredCount}` },
+        });
+      } catch (e) {
+        return new Response(`Engine health check failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
+    // QA audit log -- Phase 1.5. Independent grader catches what
+    // operational monitoring can't (plausible-looking-but-wrong
+    // outputs, schema-vs-page drift, marketing-claim drift).
+    if (path === "/admin/qa" && method === "GET" && user.role === "admin") {
+      return handleAdminQa(user, env, url);
+    }
+
+    // Manual trigger for the cross-system audit. Same logic as the
+    // daily cron, but on-demand so we can verify Phase 1.5 without
+    // waiting for tomorrow's 6am tick. Returns to /admin/qa with the
+    // verdict so the audits show up immediately in the log.
+    if (path === "/admin/qa/run-cross-system" && method === "POST" && user.role === "admin") {
+      try {
+        const { runCrossSystemAudit } = await import("./lib/qa-cross-system");
+        const r = await runCrossSystemAudit(env);
+        return new Response(null, {
+          status: 302,
+          headers: { Location: `/admin/qa?triggered=cross_system&triggered_verdict=${r.verdict}` },
+        });
+      } catch (e) {
+        return new Response(`Cross-system audit failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
     }
 
     // View-as-client toggle. Available to admin/agency_admin (checked
@@ -2451,6 +2558,31 @@ export default {
       );
     }
 
+    // Test-fire SEND_DIGEST_WORKFLOW for one user. Tests the exact
+    // path that's been dying silently (digest dispatch from cron has
+    // been 12 days dead per heartbeat). When no userId is provided,
+    // defaults to the current admin's userId so Lance can fire it on
+    // himself before Monday cron and verify email arrives.
+    const digestTestMatch = path.match(/^\/admin\/digest\/test(?:\/(\d+))?\/?$/);
+    if (digestTestMatch && (method === "GET" || method === "POST") && user.role === "admin") {
+      const targetUserId = digestTestMatch[1] ? parseInt(digestTestMatch[1], 10) : user.id;
+      try {
+        await env.SEND_DIGEST_WORKFLOW.create({ params: { userId: targetUserId } });
+        return new Response(
+          `Dispatched SEND_DIGEST_WORKFLOW for userId=${targetUserId}.\n\n` +
+          `Watch:\n` +
+          `  npx wrangler workflows instances list send-digest-workflow\n\n` +
+          `Check inbox in ~60s. If no email, the workflow either failed or sendWeeklyDigests has a bug.\n`,
+          { headers: { "Content-Type": "text/plain" } }
+        );
+      } catch (e) {
+        return new Response(
+          `Failed to dispatch SEND_DIGEST_WORKFLOW: ${e instanceof Error ? e.message : String(e)}`,
+          { status: 500, headers: { "Content-Type": "text/plain" } }
+        );
+      }
+    }
+
     // Manual reconciler trigger -- runs the enhanced roadmap
     // reconciler against one client (or all if no slug given) and
     // returns the result counts. Accepts GET for quick browser-bar
@@ -2581,6 +2713,42 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
         "SELECT created_at FROM citation_snapshots WHERE client_slug = ? AND created_at > ? ORDER BY created_at DESC LIMIT 1"
       ).bind(statusSlug, tenMinAgo).first<{ created_at: number }>();
       return new Response(JSON.stringify({ done: !!recent }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    // Per-keyword citation status API. Used by the auto-refresh poller
+    // on the admin citations page when a single "Run" button is fired.
+    // Returns {done, enginesComplete, totalEngines} where done = at
+    // least 5 of 7 engines have produced rows since `since` (5 of 7
+    // covers normal flakiness -- AIO often doesn't render, individual
+    // engines can rate-limit, we don't want the poller to spin forever
+    // waiting on every engine).
+    const citationKeywordStatusMatch = path.match(/^\/api\/citation-keyword-status\/([^/]+?)\/(\d+)\/?$/);
+    if (citationKeywordStatusMatch && method === "GET" && user.role === "admin") {
+      const ckSlug = decodeURIComponent(citationKeywordStatusMatch[1]);
+      const ckKeywordId = parseInt(citationKeywordStatusMatch[2], 10);
+      const sinceParam = url.searchParams.get("since");
+      const since = sinceParam ? parseInt(sinceParam, 10) : Math.floor(Date.now() / 1000) - 600;
+      // Verify the keyword belongs to this slug to avoid leakage.
+      const kw = await env.DB.prepare(
+        "SELECT id FROM citation_keywords WHERE id = ? AND client_slug = ?"
+      ).bind(ckKeywordId, ckSlug).first<{ id: number }>();
+      if (!kw) {
+        return new Response(JSON.stringify({ done: false, enginesComplete: 0, totalEngines: 7, error: "not found" }), {
+          headers: { "Content-Type": "application/json" },
+          status: 404,
+        });
+      }
+      const row = await env.DB.prepare(
+        "SELECT COUNT(DISTINCT engine) as n FROM citation_runs WHERE keyword_id = ? AND run_at > ?"
+      ).bind(ckKeywordId, since).first<{ n: number }>();
+      const enginesComplete = row?.n ?? 0;
+      return new Response(JSON.stringify({
+        done: enginesComplete >= 5,
+        enginesComplete,
+        totalEngines: 7,
+      }), {
         headers: { "Content-Type": "application/json" },
       });
     }
@@ -2845,18 +3013,15 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     //   06:00 UTC = daily tasks (drips, sweeps, backfills, weekly scans on Mon)
     //   17:00 UTC = 7am Pacific/Honolulu = founder inbox morning summary
     const hour = new Date(event.scheduledTime ?? Date.now()).getUTCHours();
+    const { withCronLogging } = await import("./lib/cron-log");
 
     if (hour === 17) {
-      ctx.waitUntil((async () => {
-        try {
-          const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
-          // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
-          // Once existing in_review drafts are surfaced, this is a no-op.
-          await backfillContentDraftsToInbox(env);
-          await sendInboxMorningSummary(env);
-        } catch (e) {
-          console.log(`[cron 17:00] inbox morning summary failed: ${e instanceof Error ? e.message : e}`);
-        }
+      ctx.waitUntil(withCronLogging(env, "inbox_morning_summary", async () => {
+        const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
+        // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
+        // Once existing in_review drafts are surfaced, this is a no-op.
+        await backfillContentDraftsToInbox(env);
+        await sendInboxMorningSummary(env);
 
         // Thursday-only: generate the Weekly AEO Brief draft for last week.
         // Lance reviews + approves via /admin/weekly-brief/<id>; on approval
@@ -2872,19 +3037,29 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
             console.log(`[cron 17:00 Thu] weekly brief generation failed: ${e instanceof Error ? e.message : e}`);
           }
         }
-      })());
+      }).catch((e) => {
+        console.log(`[cron 17:00] failed: ${e instanceof Error ? e.message : e}`);
+      }));
       return;
     }
 
     // Daily tasks: auth cleanup, onboarding drip emails
-    ctx.waitUntil(cleanupAuth(env));
-    ctx.waitUntil(runDailyTasks(env));
+    ctx.waitUntil(withCronLogging(env, "auth_cleanup", () => cleanupAuth(env)).catch((e) => {
+      console.log(`[cron] auth_cleanup failed: ${e instanceof Error ? e.message : e}`);
+    }));
+    ctx.waitUntil(withCronLogging(env, "daily_tasks", () => runDailyTasks(env)).catch((e) => {
+      console.log(`[cron] daily_tasks failed: ${e instanceof Error ? e.message : e}`);
+    }));
 
     // Weekly tasks: full domain scans + digest emails (Mondays only)
     const day = new Date().getUTCDay(); // 0=Sun, 1=Mon
     if (day === 1) {
-      ctx.waitUntil(runWeeklyScans(env));
-      ctx.waitUntil(runWeeklyBackup(env));
+      ctx.waitUntil(withCronLogging(env, "weekly_scans", () => runWeeklyScans(env)).catch((e) => {
+        console.log(`[cron] weekly_scans failed: ${e instanceof Error ? e.message : e}`);
+      }));
+      ctx.waitUntil(withCronLogging(env, "weekly_backup", () => runWeeklyBackup(env)).catch((e) => {
+        console.log(`[cron] weekly_backup failed: ${e instanceof Error ? e.message : e}`);
+      }));
     }
   },
 };

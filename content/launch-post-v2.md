@@ -24,7 +24,7 @@ That's the point.
 
 Every agency says they eat their own cooking. Most don't. Most sell advice they've never had to execute on their own product, against their own metrics, with their own money on the line.
 
-Never Ranked exists because classic SEO agencies are still optimizing for the blue-link era of search while ChatGPT, Perplexity, Gemini, and Google's AI Overviews have quietly become the new front page of the internet. Google answers before it links. ChatGPT cites who it trusts. Perplexity quotes the source, not the ranking. The old playbook stopped working.
+Never Ranked exists because classic SEO agencies are still optimizing for the blue-link era of search while ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma have quietly become the new front page of the internet. Google answers before it links. ChatGPT cites who it trusts. Perplexity quotes the source, not the ranking. The old playbook stopped working.
 
 We have a new playbook. Before we sold it, we had to prove it worked.
 
@@ -149,7 +149,7 @@ This is also how every builder's product ends up in the same state Montaic was i
 
 The foundation is live. The citations move on a machine clock, not ours. AI models absorb, index, and weight new content across a cycle of weeks, not days. So the prediction from the audit isn't a prediction anymore. It's a measurement.
 
-We're tracking eight queries daily across ChatGPT, Perplexity, Gemini, and Google AI Overviews. Share of answer, citation frequency, quote fidelity, and sentiment. The starting line was zero. We're publishing the follow-up when there's real data to publish.
+We're tracking eight queries daily across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Share of answer, citation frequency, quote fidelity, and sentiment. The starting line was zero. We're publishing the follow-up when there's real data to publish.
 
 Realistic case in 60 days: 15 to 25 percent citation share. Up from zero. A Google knowledge panel for the brand. At least one comparison page ranking in the top 10.
 

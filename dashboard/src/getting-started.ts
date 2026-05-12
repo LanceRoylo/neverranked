@@ -98,7 +98,7 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
     {
       key: "discover_prompts",
       label: "Track your first AI prompts",
-      desc: "Generate suggested prompts based on your business, then one-click track the ones worth monitoring weekly across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude.",
+      desc: "Generate suggested prompts based on your business, then one-click track the ones worth monitoring weekly across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma.",
       href: `/discover/${slug}`,
       cta: (keywordRow?.cnt || 0) > 0 ? "Add more prompts" : "Generate prompts",
       done: (keywordRow?.cnt || 0) >= 5,

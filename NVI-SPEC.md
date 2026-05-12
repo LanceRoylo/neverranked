@@ -338,14 +338,14 @@ For NVI Lite (10 prompts, 1 client, no competitors):
 
 ```
 For each of 10 prompts:
-  For each of 4 engines (ChatGPT, Perplexity, Gemini, Google AI Overview):
+  For each of 7 engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overview, Gemma):
     Run the query
     Store response in citation_runs with nvi_report_id
     Detect client mention -> set client_cited
     Score sentiment if cited (existing sentiment-scorer)
     Extract source attribution (URLs cited by the engine)
 
-Total: 40 queries per report. Cost: ~$0.10. Time: ~3-5min.
+Total: 70 queries per report. Cost: ~$0.18. Time: ~5-8min.
 ```
 
 For NVI Full (25 prompts, 1 client, 3 competitors):

@@ -56,7 +56,7 @@ mechanical. The leadership decision is to prioritize them.
 
 This report explains what AEO is, why it matters now (not in 2027),
 and what Hawaii businesses can do this quarter to lock in the
-citation surface before the six engines retrain on the next round.
+citation surface before the seven engines retrain on the next round.
 
 ---
 
@@ -116,7 +116,7 @@ The shift is not theoretical. As of May 2026:
   deployment, which means it answers questions inside Word, Excel,
   Outlook, and Teams without ever opening a browser
 
-These six engines now collectively answer the question "what is the
+These seven engines now collectively answer the question "what is the
 best X for Y in Z" hundreds of millions of times per day. The
 businesses they cite are the businesses that get the customer.
 The businesses they do not cite are invisible.

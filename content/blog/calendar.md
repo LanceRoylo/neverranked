@@ -123,7 +123,7 @@ the planned section runs short.
 
 ### Category education (foundational and reference)
 
-- `the-six-engines-that-matter-for-aeo` (named overview)
+- `the-seven-engines-that-matter-for-aeo` (named overview)
 - `how-ai-engines-actually-pick-citations` (mechanism)
 - `the-difference-between-aeo-and-llm-seo` (term clarification)
 - `what-is-entity-recognition-in-ai-search`

@@ -30,7 +30,7 @@ sample_keywords: 17
 
 A standing snapshot of what AI engines actually cite when answering
 questions about NeverRanked's tracked client universe. Pulled from
-live 437 citation runs across 5 engines (bing, gemini, google_ai_overview, openai, perplexity),
+live 437 citation runs across 5 of 7 tracked engines (bing, gemini, google_ai_overview, openai, perplexity),
 17 tracked keywords, and 3 clients spanning 3 verticals.
 
 Generated weekly. Same script, same data sources, no manual curation.

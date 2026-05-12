@@ -20,7 +20,7 @@ answering this exact prompt — here is the JSON-LD they are using and
 the four questions they answer that you do not."
 
 Competitors cannot replicate this without:
-- Six-engine citation tracking infrastructure
+- Seven-engine citation tracking infrastructure
 - Per-customer diff jobs running weekly
 - A schema-aware page-comparison engine
 - The Clarity Principle voice on the customer-facing output

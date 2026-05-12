@@ -258,7 +258,7 @@ treatment. The earlier `hero.png` shows the horizontal LinkedIn
 treatment.
 
 ### C. Citation receipts
-Five engine cards (or one zoomed in). Engine name, prompt, cited
+Seven engine cards (or one zoomed in). Engine name, prompt, cited
 domain, CITED/MISSING tag. Reads like a screenshot of evidence.
 Best for: "what we track" posts, weekly receipt series.
 File spec: `social/posts/2026-05-05-citation-receipt/hero-prompt.md`
@@ -266,8 +266,8 @@ has the brief.
 
 ### D. Constellation
 Brand Data + Website Content + Knowledge Graph + Schema → Your
-Brand → ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude,
-Copilot. Animated for Reels, static for feed.
+Brand → ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot,
+Google AI Overviews, Gemma. Animated for Reels, static for feed.
 Best for: explaining what AEO actually does mechanically.
 Already exists in the live website hero.
 

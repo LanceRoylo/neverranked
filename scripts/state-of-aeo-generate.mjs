@@ -365,7 +365,7 @@ md.push(`## What this report is`);
 md.push(``);
 md.push(`A standing snapshot of what AI engines actually cite when answering`);
 md.push(`questions about NeverRanked's tracked client universe. Pulled from`);
-md.push(`live ${runs.length} citation runs across ${totalEngines} engines (${[...byEngine.keys()].sort().join(", ")}),`);
+md.push(`live ${runs.length} citation runs across ${totalEngines} of 7 tracked engines (${[...byEngine.keys()].sort().join(", ")}),`);
 md.push(`${totalKeywords} tracked keywords, and ${totalClients} clients spanning ${byVertical.size} verticals.`);
 md.push(``);
 md.push(`Generated weekly. Same script, same data sources, no manual curation.`);

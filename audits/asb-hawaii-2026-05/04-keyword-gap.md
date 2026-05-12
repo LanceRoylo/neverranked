@@ -12,8 +12,8 @@ ASB's site has the content to rank for the queries Hawaii community
 banking buyers are running on AI engines today. The structural gap
 is not editorial. The site says the right things in the right tone
 on the right pages. What it is missing is the machine-readable layer
-that lets ChatGPT, Perplexity, Claude, Gemini, Copilot, and Google
-AI Overviews extract those answers and cite them.
+that lets ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot,
+Google AI Overviews, and Gemma extract those answers and cite them.
 
 In keyword terms, ASB ranks because Google's blue-link index reads
 the words on the page. ASB does not get cited by AI engines because

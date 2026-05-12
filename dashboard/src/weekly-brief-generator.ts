@@ -207,7 +207,7 @@ function buildUserMessage(stats: WeeklyStats): string {
   Active clients monitored: ${stats.trackedClients}
   Total tracked keywords:   ${stats.trackedKeywords}
 
-## Citation runs (4 engines: ChatGPT, Perplexity, Gemini, Claude)
+## Citation runs (7 engines: ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, Gemma)
   Total runs this week:     ${stats.totalCitationRuns}
   New client citations:     ${stats.newCitationsThisWeek} (${wow})
 

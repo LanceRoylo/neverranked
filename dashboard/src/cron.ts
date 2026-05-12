@@ -569,6 +569,69 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] qa cross-system audit failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Anomaly detection. Compares last-24h metrics vs 14-day baseline,
+  // creates admin_alerts for engine empty-rate spikes, row-count drops,
+  // and cron tasks that missed cadence. Idempotent: skips duplicate
+  // alerts that already exist unread. The layer that would have caught
+  // tonight's three engine bugs automatically the morning after each
+  // one happened.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { runAnomalyDetection } = await import("./lib/anomaly-detection");
+    const started = Date.now();
+    const r = await runAnomalyDetection(env);
+    await logCronRun(env, "anomaly_detection", r.totalAlerts > 0 ? "partial" : "success", Date.now() - started,
+      `engineAlerts=${r.engineAlerts} cronAlerts=${r.cronAlerts}`);
+    console.log(`[cron] anomaly_detection: ${r.totalAlerts} alerts (${r.engineAlerts} engine, ${r.cronAlerts} cron)`);
+  } catch (e) {
+    console.log(`[cron] anomaly_detection failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "anomaly_detection", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+
+  // Engine self-healing health check (Phase 4). Catches engines stuck
+  // in a persistently-broken state that anomaly detection misses (the
+  // gap that hid Anthropic's dead model name for weeks before tonight).
+  // Auto-degrades engines whose 7d empty rate exceeds 40%. Auto-recovers
+  // when 24h empty rate drops below 20%. Never auto-disables -- that's
+  // a Lance decision.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { runEngineHealthCheck } = await import("./lib/engine-health-check");
+    const started = Date.now();
+    const r = await runEngineHealthCheck(env);
+    await logCronRun(env, "engine_health_check", r.transitions > 0 ? "partial" : "success", Date.now() - started,
+      `degraded=${r.degradedCount} recovered=${r.recoveredCount} alerts=${r.alerts}`);
+    console.log(`[cron] engine_health_check: ${r.transitions} transitions (${r.degradedCount} degraded, ${r.recoveredCount} recovered)`);
+  } catch (e) {
+    console.log(`[cron] engine_health_check failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "engine_health_check", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+
+  // Weekly summary email: Mondays only. Sent to lance@neverranked.com
+  // after the morning citation cron has produced fresh data. Goes via
+  // sendEmailViaResend for QA preflight + safe send.
+  const isMonday = new Date().getUTCDay() === 1;
+  if (isMonday) {
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
+      const started = Date.now();
+      const r = await sendWeeklySummaryEmail(env);
+      await logCronRun(env, "weekly_summary_email", r.sent ? "success" : "failure",
+        Date.now() - started,
+        r.sent ? `subject="${r.subject}"` : (r.error ?? "unknown"));
+      console.log(`[cron] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
+    } catch (e) {
+      console.log(`[cron] weekly_summary_email failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.
   await runSchemaDriftSweep(env);

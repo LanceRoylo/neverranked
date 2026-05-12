@@ -34,13 +34,13 @@ This file has TWO things:
 
 **Idea 03 — Web-grounded, not training-data**
 
-> **Four of five.** Four of the five engines we track (Perplexity, ChatGPT, Gemini, Google AI Overviews) run live web-grounded queries against the same APIs ChatGPT, Perplexity, and Gemini use to answer their actual users. Most "AI tracking" tools query the model's training data, which is months stale. We mark every result with grounding mode (live or training) so you can audit which signals are real-time and which are reference points.
+> **Live grounding.** Several of the seven engines we track (Perplexity, ChatGPT, Gemini, Google AI Overviews, Microsoft Copilot) run live web-grounded queries against the same APIs they use to answer their actual users. Claude is reasoning-grounded. Gemma is open-weight and reproducible. Most "AI tracking" tools query the model's training data, which is months stale. We mark every result with grounding mode (live, reasoning, or reproducible) so you can audit which signals are real-time and which are reference points.
 
 ### Tier line (push directly to Signal — skip Audit framing)
 
 > **Signal — $2,000/month, 3-month minimum.**
 >
-> Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, and Claude. Reddit thread tracking broken out separately. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits for trust-platform presence and author-bio depth. Live dashboard with industry-percentile ranking. 90-day roadmap that re-evaluates against drift every quarter. Forward-ready Monday digest.
+> Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma. Reddit thread tracking broken out separately. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits for trust-platform presence and author-bio depth. Live dashboard with industry-percentile ranking. 90-day roadmap that re-evaluates against drift every quarter. Forward-ready Monday digest.
 >
 > *Amplify ($4,500/month) adds the content production engine — brand-voice drafting, auto-publish to your CMS, content calendar that fills itself from the roadmap, and Reddit reply briefs (we tell your team what to write about and what angle only you can take, a real human posts the actual reply).*
 

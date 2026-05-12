@@ -76,7 +76,7 @@ Never Ranked delivers audits in six parts:
 1. **Technical Audit** — meta tags, canonicals, OG tags, schema inventory, crawlability
 2. **Schema Review** — JSON-LD coverage, entity signals, ready-to-paste fixes
 3. **Keyword Gap Analysis** — SERP reality check, intent clusters, positioning opportunities
-4. **AI Citation Audit** — citation share across target queries in ChatGPT, Perplexity, Gemini, Google AI Overviews
+4. **AI Citation Audit** — citation share across target queries in ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma
 5. **Competitor Teardown** — side-by-side technical comparison with direct competitors
 6. **90-Day Roadmap** — prioritized, dated, effort-estimated action plan
 
@@ -120,7 +120,7 @@ The `audits/montaic/` directory contains the first Never Ranked audit, run again
 Never Ranked is deliberately small. One founder, async-first, no standing meetings.
 
 - **Audit:** $500 one-time, delivered within 48 hours. The starting diagnostic.
-- **Signal retainer:** $2,000/mo, three-month minimum. Web-grounded citation tracking across ChatGPT, Perplexity, Gemini, Claude. Reddit thread monitoring. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits. Industry-percentile benchmarks. Quarterly drift detection. Forward-ready Monday digest.
+- **Signal retainer:** $2,000/mo, three-month minimum. Web-grounded citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Reddit thread monitoring. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits. Industry-percentile benchmarks. Quarterly drift detection. Forward-ready Monday digest.
 - **Amplify retainer:** $4,500/mo, three-month minimum. Capped at 6 active clients globally. Everything in Signal plus brand-voice fingerprint, citation-shaped content drafted in your voice, auto-publish to WordPress / Webflow / Shopify, and Reddit reply briefs (per-thread strategic briefs your team uses to post real human replies — we never draft the comment itself).
 
 The dashboard is the meeting. Loom recaps replace calls. Email SLAs replace Slack channels.
