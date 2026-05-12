@@ -1,8 +1,8 @@
 ---
 title: "Email nurture template, Citation Tape launch"
-target_send: 2026-05-12 (Tuesday morning, paired with LinkedIn launch)
+target_send: 2026-05-19 (Tuesday after the May 18 Monday cadence post, was 2026-05-12 but delayed)
 audience: past audit recipients + warm prospect list
-status: draft, ready for review
+status: DELAYED -- do not send until engine integrity verified (OpenAI billing was empty, Claude model name dead, Gemma fix unverified at per-keyword level). Diagnosis 2026-05-11 ~01:25 HST. Hold until daily cron shows 7 clean engines.
 ---
 
 # Citation Tape launch nurture email
@@ -63,6 +63,8 @@ Four things to know:
 3. The 2026-05-10 archived report ships with a "partial data" banner above the headline. We caught a subrequest-budget bug in the daily cron and shipped the fix the same day. The May 10 report's banner is permanent (it documents what actually happened). From the next weekly report forward, the banner is gone.
 
 4. Your category may not yet be in the tracked universe. If you'd like it to be, hit reply.
+
+A real-client proof point worth flagging. We just published a case study on Hawaii Theatre, the historic Honolulu venue. They came to us with a 45 out of 100 AEO score and zero AI citations. Ten days later, after we deployed five schema categories (no content campaign, no press push, no paid media, just the machine-readable layer the site was missing), Hawaii Theatre scored a 95. Perplexity named them on 14 of 19 tracked queries the same week. Full write-up at https://neverranked.com/case-studies/hawaii-theatre/. The Citation Tape's job is measuring before and after like that, on real engines, for real clients, with numbers anyone can verify.
 
 The launch post explains the full thinking:
 

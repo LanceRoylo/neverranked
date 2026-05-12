@@ -2,9 +2,9 @@
 title: "The Citation Tape"
 subtitle: "A weekly, reproducible measurement of what AI engines actually cite"
 slug: citation-tape-launch
-publish_date: 2026-05-10
+publish_date: 2026-05-18
 category: methodology
-status: draft
+status: DELAYED -- do not publish until engine integrity verified (OpenAI billing was empty, Claude model name dead, Gemma fix unverified at per-keyword level). Diagnosis 2026-05-11 ~01:25 HST. Hold until daily cron shows 7 clean engines.
 description: "The Citation Tape is NeverRanked's standing measurement system for AI search citations. Weekly reports at neverranked.com/state-of-aeo, generated from production data, reproducible from public schema. Same script, same data sources, no manual curation."
 ---
 
@@ -66,6 +66,18 @@ Four properties make The Citation Tape different from every other "AI visibility
 4. **The schema is in the repo.** `citation_runs` migration is published. Build your own version of this report against your own data and compare.
 
 You can't reverse-engineer Gartner's Magic Quadrant. You can re-run our weekly report, with our exact methodology, against your own clients and decide if the numbers feel right.
+
+## What it looks like in practice
+
+Hawaii Theatre, the historic Honolulu performing arts venue, came to us with a 45 out of 100 AEO score, grade D, and zero AI citations across the queries that matter for their category. By traditional SEO standards, the site was fine. Real content, real photos, working booking flows. AI engines couldn't read it.
+
+Ten days later, after we deployed five schema categories (PerformingArtsTheater, WebSite with SearchAction, AggregateRating, FAQPage, BreadcrumbList across 24 sections, plus 35 Event schemas on a daily refresh cron), the venue's AEO score was 95 out of 100. Grade A. On the first weekly citation log run after the work shipped, Perplexity named Hawaii Theatre on 14 of 19 tracked queries.
+
+No content campaign. No press push. No paid media. Just the schema layer the site was missing. AI engines started citing the venue inside the first weekly run.
+
+This is the Citation Tape's job: measure the before and the after, on real engines, for real clients, with numbers anyone can verify.
+
+Full case study at https://neverranked.com/case-studies/hawaii-theatre/.
 
 ## What we're not claiming
 

@@ -1,7 +1,7 @@
 ---
 title: "LinkedIn drafts, Citation Tape launch"
-target_post_date: 2026-05-12 (paired with HN submission Tuesday)
-status: drafts ready for review
+target_post_date: 2026-05-18 (Monday weekly cadence, was 2026-05-12 but delayed)
+status: DELAYED -- do not post until engine integrity verified (OpenAI billing was empty, Claude model name dead, Gemma fix unverified at per-keyword level). Diagnosis 2026-05-11 ~01:25 HST. Hold until daily cron shows 7 clean engines.
 ---
 
 # LinkedIn launch posts for The Citation Tape
@@ -68,14 +68,14 @@ The methodology is the script. The source-type taxonomy is public on GitHub. The
 
 The first weekly report (May 10) carries a data-integrity banner above the headline disclosing a partial-data infrastructure issue we caught and fixed the same day. We chose transparency over polish.
 
+Real-client proof point: Hawaii Theatre, the historic Honolulu venue we work with, went from a 45 AEO score and zero AI citations to a 95 score and 14 of 19 Perplexity citations in ten days. Five schema categories deployed. No content campaign. Just the machine-readable layer the site was missing. Full case study at neverranked.com/case-studies/hawaii-theatre
+
 Read the launch post: neverranked.com/blog/the-citation-tape
 View this week's report: neverranked.com/state-of-aeo
 RSS for industry subscribers: neverranked.com/state-of-aeo/feed.xml
-
-#AEO #AISearch #ContentMarketing
 ```
 
-Char count for variant B: ~1090. Comfortably under limit.
+Char count for variant B (with Hawaii Theatre paragraph): ~1280. Under limit.
 
 ## Variant C, news-shaped (for if Lance wants to post in third person)
 
