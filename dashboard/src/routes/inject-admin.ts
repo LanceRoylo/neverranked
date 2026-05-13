@@ -473,6 +473,23 @@ export async function handleInjectAdmin(
             </div>
           </div>
         </div>
+        <div style="margin-top:24px;padding-top:16px;border-top:1px dashed var(--line)">
+          <div class="label" style="margin-bottom:10px">Client digest cadence</div>
+          <p style="color:var(--text-mute);font-size:12px;line-height:1.6;margin:0 0 12px;max-width:600px">
+            How often this client receives the consolidated Monday digest. Biweekly cuts inbox volume in half for clients who don't need a weekly touchpoint. All event-driven notifications (citations gained / lost, score changes, snippet detected, etc.) roll into the next scheduled digest either way.
+          </p>
+          <div style="display:flex;gap:14px;align-items:center">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="radio" name="digest_cadence" value="weekly" ${(config as { digest_cadence?: string }).digest_cadence !== "biweekly" ? "checked" : ""}>
+              <span>Weekly (every Monday)</span>
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+              <input type="radio" name="digest_cadence" value="biweekly" ${(config as { digest_cadence?: string }).digest_cadence === "biweekly" ? "checked" : ""}>
+              <span>Biweekly (every other Monday)</span>
+            </label>
+          </div>
+        </div>
+
         <div style="margin-top:16px">
           <button type="submit" class="btn">Save business info</button>
         </div>
@@ -514,11 +531,14 @@ export async function handleInjectConfig(
       .filter(Boolean)
   );
 
+  const cadenceRaw = (form.get("digest_cadence") as string) || "weekly";
+  const cadence = cadenceRaw === "biweekly" ? "biweekly" : "weekly";
+
   await env.DB.prepare(
     `UPDATE injection_configs SET
       business_name = ?, business_url = ?, business_description = ?,
       business_phone = ?, business_email = ?, business_logo_url = ?,
-      business_address = ?, business_social = ?, updated_at = ?
+      business_address = ?, business_social = ?, digest_cadence = ?, updated_at = ?
     WHERE client_slug = ?`
   )
     .bind(
@@ -530,6 +550,7 @@ export async function handleInjectConfig(
       (form.get("business_logo_url") as string) || null,
       address,
       social,
+      cadence,
       now,
       slug
     )
@@ -697,6 +718,22 @@ export async function handleInjectApprove(
   )
     .bind(now, now, id, slug)
     .run();
+
+  // Phase 2.5: record this decision in the unified Lance decision log
+  // so the agent has the training data point. Captures the force flag
+  // (was this an override of the quality gate?) and the slug for context.
+  try {
+    const { recordLanceDecision } = await import("../lib/decision-log");
+    const fakeUserId = 2; // Admin user; the inject handler doesn't currently thread the User object through, so we use Lance's known id. TODO: thread user properly.
+    await recordLanceDecision(env, fakeUserId, {
+      artifact_type: "schema_injection",
+      artifact_id: id,
+      decision_kind: "approve",
+      prior_state: "pending",
+      new_state: "approved",
+      metadata: { client_slug: slug, force },
+    });
+  } catch { /* logging is best-effort */ }
 
   // Stamp deployed_at + supersede any prior live variant for this
   // (client, schema_type, target_pages) tuple. This is the moment a

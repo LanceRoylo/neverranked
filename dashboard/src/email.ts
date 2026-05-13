@@ -542,6 +542,39 @@ export async function sendDigestEmail(
 
   const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient);
 
+  // Quality grader: final gate before send. Checks voice (no AI-tells,
+  // HM voice rules) and substance (real signal, not formulaic filler).
+  // Fail-closed: a digest that can't be graded never auto-sends.
+  try {
+    const { gradeDigest, htmlToPlaintext } = await import("./digest-grader");
+    const grade = await gradeDigest(env, htmlToPlaintext(emailHtml));
+    if (grade.verdict !== "pass") {
+      console.log(`[digest] held by grader for ${to}: ${grade.issues.join("; ")}`);
+      try {
+        await env.DB.prepare(
+          `INSERT INTO admin_inbox
+             (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
+           VALUES ('digest_held_by_grader', ?, ?, ?, 'digest', 0, ?, 'high', 'pending', unixepoch())`,
+        )
+          .bind(
+            `Digest held by grader: ${to}`,
+            `Voice pass: ${grade.voice_pass}. Substance pass: ${grade.substance_pass}. Issues: ${grade.issues.join("; ").slice(0, 800)}`,
+            `/admin/email-test`,
+            digests[0]?.clientSlug || to,
+          )
+          .run();
+      } catch {
+        // Inbox is non-critical
+      }
+      await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
+      return false;
+    }
+  } catch (e) {
+    console.log(`[digest] grader crashed for ${to}: ${e}`);
+    await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: `grader crash: ${String(e)}`, agencyId: agency?.id });
+    return false;
+  }
+
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
