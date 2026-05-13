@@ -568,12 +568,19 @@ the OUTCOME, not the spec. Schema type goes in Layer 3.`,
   const roadmapTpl = readFileSync(resolve(templateDir, '07-roadmap.md'), 'utf8');
   const tech = readFileSync(resolve(auditDir, '02-technical-audit.md'), 'utf8');
   const schema = readFileSync(resolve(auditDir, '03-schema-review.md'), 'utf8');
+  // 03c is a static-template section so we read it from the audit
+  // dir (already copied) -- it adds the source-presence items
+  // (Bing for Business, Apple Business Connect, NAP consistency)
+  // that should appear as Week 1 quick wins in the M1 roadmap.
+  const sourcePresence = existsSync(resolve(auditDir, '03c-source-presence.md'))
+    ? readFileSync(resolve(auditDir, '03c-source-presence.md'), 'utf8')
+    : '';
   const roadmapOut = await callClaude(buildSectionPrompt(
     'Roadmap',
     roadmapTpl,
     scan,
     client,
-    `The roadmap synthesizes the technical and schema findings into a sequenced 90-day plan. Every roadmap item must trace back to a specific finding from the prior sections (cite by section). Order: highest-impact, lowest-effort first. Group by month (M1, M2, M3) or by week if granularity helps.\n\nPRIOR SECTIONS FOR REFERENCE:\n\n## 02 (Technical Audit)\n${tech.slice(0, 4000)}\n\n## 03 (Schema Review)\n${schema.slice(0, 4000)}`
+    `The roadmap synthesizes the technical, schema, and source-presence findings into a sequenced 90-day plan. Every roadmap item must trace back to a specific finding from the prior sections (cite by section). Order: highest-impact, lowest-effort first.\n\nINCLUDE AS M1 WEEK 1 ITEMS (if the source-presence section flags them as not confirmed):\n- Claim Bing for Business profile (~20 min, free, lifts Microsoft Copilot + ChatGPT citations)\n- Claim Apple Business Connect profile (~15 min, free, lifts Apple Intelligence citations)\n\nThese are quick wins with high impact, fast turnaround, and zero engineering cost.\n\nPRIOR SECTIONS FOR REFERENCE:\n\n## 02 (Technical Audit)\n${tech.slice(0, 3000)}\n\n## 03 (Schema Review)\n${schema.slice(0, 3000)}\n\n## 03c (Source Presence)\n${sourcePresence.slice(0, 3000)}`
   ));
   writeFileSync(resolve(auditDir, '07-roadmap.md'), roadmapOut, 'utf8');
   console.log(`         wrote 07-roadmap.md (${roadmapOut.length} chars)`);
@@ -611,6 +618,26 @@ the OUTCOME, not the spec. Schema type goes in Layer 3.`,
     const dst = resolve(auditDir, '08-proof.md');
     const tpl = readFileSync(resolve(templateDir, '08-proof.md'), 'utf8');
     writeFileSync(dst, tpl, 'utf8');
+  }
+
+  // 5c. Copy the source-presence template into every audit. Static
+  // recommendations for Bing for Business, Apple Business Connect,
+  // and NAP consistency. Standard for every audit because these are
+  // industry-agnostic third-party surfaces every business benefits
+  // from claiming. {STATUS} placeholders default to "Not confirmed"
+  // unless the auditor verified before generation.
+  {
+    const dst = resolve(auditDir, '03c-source-presence.md');
+    const tpl = readFileSync(resolve(templateDir, '03c-source-presence.md'), 'utf8');
+    const today = new Date().toISOString().slice(0, 10);
+    const filled = tpl
+      .replace(/\{Client Name\}/g, client.name || client.slug)
+      .replace(/\{YYYY-MM-DD\}/g, today)
+      .replace(/\{GBP_STATUS\}/g, 'Not confirmed')
+      .replace(/\{BING_STATUS\}/g, 'Not confirmed')
+      .replace(/\{APPLE_STATUS\}/g, 'Not confirmed');
+    writeFileSync(dst, filled, 'utf8');
+    console.log('  ✓ 03c-source-presence.md');
   }
 
   // 5c. Agent readiness section. Runs the v2 agent_readiness_check

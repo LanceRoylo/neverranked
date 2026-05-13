@@ -37,9 +37,9 @@
 
 ---
 
-## The five deliverables in this audit
+## The deliverables in this audit
 
-This package contains six documents, delivered per the Never Ranked $750 audit offer. Each is a standalone deliverable.
+Each is a standalone document. Read in any order.
 
 ### 1. Technical Audit (`02-technical-audit.md`)
 {One-sentence summary of what this deliverable covers for this client.}
@@ -51,22 +51,28 @@ This package contains six documents, delivered per the Never Ranked $750 audit o
 
 **Top finding:** {The single most important schema finding.}
 
-### 3. Keyword Gap Analysis (`04-keyword-gap.md`)
+### 3. Agent Readiness (`03b-agent-readiness.md`)
+Schema.org ActionType deployment scan — whether your site is ready for the next wave of AI agents (Operator, Claude computer-use, Perplexity agents) that act on a user's behalf rather than just answering questions.
+
+### 4. Source Presence (`03c-source-presence.md`)
+External profile audit — Bing for Business, Apple Business Connect, and NAP consistency across the third-party surfaces AI engines pull verified business facts from. Bing for Business is typically the highest-leverage missing profile.
+
+### 5. Keyword Gap Analysis (`04-keyword-gap.md`)
 {One-sentence summary.}
 
 **Top finding:** {The single most important keyword finding.}
 
-### 4. AI Citation Audit (`05-ai-citations.md`)
+### 6. AI Citation Audit (`05-ai-citations.md`)
 {One-sentence summary.}
 
 **Top finding:** {The single most important AEO finding.}
 
-### 5. Competitor Teardown (`06-competitor-teardown.md`)
+### 7. Competitor Teardown (`06-competitor-teardown.md`)
 {One-sentence summary.}
 
 **Top finding:** {The single most important competitor finding.}
 
-### 6. 90-Day Roadmap (`07-roadmap.md`)
+### 8. 90-Day Roadmap (`07-roadmap.md`)
 {One-sentence summary.}
 
 **Top recommendation:** {The single highest-priority action.}
