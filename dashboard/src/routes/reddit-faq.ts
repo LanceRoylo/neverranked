@@ -174,11 +174,17 @@ export async function handleRedditFaq(
              ${faqsHtml}
            </div>
            <div style="${cardStyle}">
-             <div style="${labelStyle}">Deployable JSON-LD</div>
-             <p style="color:var(--text-mute);font-size:12px;margin:0 0 12px">${latest.status === "deployed"
-               ? `Live now via the NeverRanked snippet on ${businessContext.url ? esc(businessContext.url) : "your domain"}. Updates within the configured cache TTL.`
-               : `Build complete. Auto-deploy did not complete on this attempt — the page will pick up the deployed status once the snippet refreshes, or the Monday cron will redeploy.`}</p>
-             <pre style="background:#1a1814;color:#f5f1e6;padding:16px;border-radius:4px;overflow-x:auto;font-size:12px;line-height:1.5;font-family:var(--mono);white-space:pre-wrap;word-break:break-word">${esc(scriptTag)}</pre>
+             <div style="${labelStyle}">Live status</div>
+             ${latest.status === "deployed"
+               ? `<p style="color:var(--text);margin:0 0 8px;line-height:1.6">FAQ schema is live on ${businessContext.url ? `<a href="${esc(businessContext.url)}" target="_blank" rel="noopener" style="color:var(--gold)">${esc(businessContext.url.replace(/^https?:\/\//, ""))}</a>` : "your domain"} via the NeverRanked snippet.</p>
+                  <p style="color:var(--text-mute);font-size:13px;margin:0 0 4px;line-height:1.55">AI engines that re-crawl your site will pick up the new schema on their next pass. Updates propagate within the configured cache TTL.</p>
+                  <p style="color:var(--text-faint);font-size:12px;margin:14px 0 0">
+                    <a href="https://validator.schema.org/#url=${encodeURIComponent(businessContext.url || "")}" target="_blank" rel="noopener" style="color:var(--text-faint);text-decoration:underline">Validate schema</a>
+                    &nbsp;·&nbsp;
+                    <a href="#" id="raw-schema-toggle" style="color:var(--text-faint);text-decoration:underline">Show raw JSON-LD</a>
+                  </p>
+                  <pre id="raw-schema-pre" style="display:none;background:#1a1814;color:#f5f1e6;padding:16px;border-radius:4px;overflow-x:auto;font-size:11px;line-height:1.5;font-family:var(--mono);white-space:pre-wrap;word-break:break-word;margin-top:12px">${esc(scriptTag)}</pre>`
+               : `<p style="color:var(--text-mute);font-size:13px;margin:0;line-height:1.55">Build complete but auto-deploy did not finish on this attempt. The Monday cron will redeploy automatically, or the page will pick up the deployed status once the snippet refreshes.</p>`}
            </div>`}
 
     <script>
@@ -209,6 +215,17 @@ export async function handleRedditFaq(
       }
 
       if (autoCard) runBuild();
+
+      const rawToggle = document.getElementById('raw-schema-toggle');
+      const rawPre = document.getElementById('raw-schema-pre');
+      if (rawToggle && rawPre) {
+        rawToggle.addEventListener('click', (e) => {
+          e.preventDefault();
+          const isHidden = rawPre.style.display === 'none';
+          rawPre.style.display = isHidden ? 'block' : 'none';
+          rawToggle.textContent = isHidden ? 'Hide raw JSON-LD' : 'Show raw JSON-LD';
+        });
+      }
     </script>
   `;
 
