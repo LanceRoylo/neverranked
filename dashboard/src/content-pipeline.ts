@@ -20,7 +20,7 @@
 
 import type { Env, ScheduledDraft, ContentDraft, User, Agency } from "./types";
 import { generateDraftInVoice, scoreDraftAgainstProfile } from "./voice-engine";
-import { runContentQa } from "./content-qa";
+import { runContentQa, type QaLevel } from "./content-qa";
 import { getConnection, publishDraft } from "./cms";
 import { getAgency } from "./agency";
 import { logEmailDelivery } from "./email";
@@ -224,21 +224,102 @@ async function generateForScheduled(item: ScheduledDraft, env: Env): Promise<voi
     console.error(`[content-pipeline] QA failed for draft ${draftId}: ${err}`);
   }
 
-  await env.DB.prepare(
-    `UPDATE content_drafts SET body_markdown = ?, voice_score = ?, qa_result_json = ?, qa_level = ?, status = 'in_review', updated_at = ? WHERE id = ?`,
-  ).bind(body, score, qaJson, qaLevel, now, draftId).run();
+  // Auto-resolve warn/held drafts so they don't sit forever in
+  // in_review. The system already has a verdict; "wait for a human
+  // to click save" is the anti-pattern we keep removing.
+  //
+  //   warn  -> one re-roll with the failing QA issues as constraint.
+  //            If the re-roll passes, swap in. If it still warns or
+  //            holds, mark draft 'rejected' and the scheduled row
+  //            'failed' so the cron eventually replans.
+  //   held  -> reject immediately. No re-roll. Held means the QA
+  //            said "don't ship this." Trying again with the same
+  //            inputs won't change the verdict.
+  let finalBody = body;
+  let finalScore = score;
+  let finalQaJson = qaJson;
+  let finalQaLevel: QaLevel | null = (qaLevel as QaLevel | null);
+
+  if (finalQaLevel === "warn") {
+    try {
+      const qaIssues = qaJson ? extractQaIssues(qaJson) : "";
+      const constraintBrief = [
+        brief || "",
+        qaIssues
+          ? `Prior draft was held by QA with these issues. Fix them in this draft:\n${qaIssues}`
+          : "",
+      ].filter(Boolean).join("\n\n");
+      const retry = await generateDraftInVoice(env, item.client_slug, item.title, constraintBrief);
+      const retryBody = retry.body_markdown;
+      let retryScore: number | null = null;
+      try {
+        const s = await scoreDraftAgainstProfile(env, item.client_slug, retryBody);
+        retryScore = s?.score ?? null;
+      } catch { /* non-fatal */ }
+      const retryQa = await runContentQa(env, {
+        title: item.title,
+        body: retryBody,
+        kind: item.kind,
+        voiceScore: retryScore,
+        restrictions,
+      });
+      if (retryQa.level === "pass") {
+        finalBody = retryBody;
+        finalScore = retryScore;
+        finalQaJson = JSON.stringify(retryQa);
+        finalQaLevel = "pass";
+        console.log(`[content-pipeline] draft ${draftId} re-rolled from warn to pass`);
+      } else {
+        // Re-roll didn't fix it. Reject so it stops sitting in review.
+        finalQaJson = JSON.stringify(retryQa);
+        finalQaLevel = retryQa.level;
+        console.log(`[content-pipeline] draft ${draftId} still ${retryQa.level} after re-roll, rejecting`);
+      }
+    } catch (e) {
+      console.error(`[content-pipeline] re-roll failed for draft ${draftId}: ${e}`);
+    }
+  }
+
+  // Status decision after auto-resolve:
+  //   pass  -> in_review (auto-publish picks this up after trust window)
+  //   warn  -> rejected (re-roll already failed, stop sitting in review)
+  //   held  -> rejected (won't ship; cron replans on next sweep)
+  const finalStatus = finalQaLevel === "pass" ? "in_review" : "rejected";
 
   await env.DB.prepare(
-    "UPDATE scheduled_drafts SET status = 'drafted', draft_id = ?, updated_at = ? WHERE id = ?",
-  ).bind(draftId, now, item.id).run();
+    `UPDATE content_drafts SET body_markdown = ?, voice_score = ?, qa_result_json = ?, qa_level = ?, status = ?, updated_at = ? WHERE id = ?`,
+  ).bind(finalBody, finalScore, finalQaJson, finalQaLevel, finalStatus, now, draftId).run();
 
-  // Email the customer unless the draft was QA-held; in that case it
-  // goes to the NR ops review queue and the customer waits for a human
-  // to clear it before they see it at all.
-  if (qaLevel !== "held") {
+  // For rejected drafts, flip the scheduled row to 'failed' so the
+  // cron knows to replan rather than treating this as a successful
+  // drafted state.
+  const schedStatus = finalStatus === "rejected" ? "failed" : "drafted";
+  const schedError = finalStatus === "rejected" ? `QA ${finalQaLevel} after auto-resolve; rejected` : null;
+  await env.DB.prepare(
+    "UPDATE scheduled_drafts SET status = ?, draft_id = ?, error = ?, updated_at = ? WHERE id = ?",
+  ).bind(schedStatus, draftId, schedError, now, item.id).run();
+
+  // Customer email: only when the draft is actually shippable. No
+  // notifying the customer about content we just auto-rejected.
+  if (finalStatus === "in_review") {
     await sendDraftReadyEmail(item.client_slug, draftId, item.title, env);
   } else {
-    console.log(`[content-pipeline] draft ${draftId} held by QA, skipping customer email`);
+    console.log(`[content-pipeline] draft ${draftId} auto-rejected (${finalQaLevel}); no customer email`);
+  }
+}
+
+/**
+ * Pull a short human-readable summary of QA issues from the persisted
+ * qa_result_json so the re-roll prompt knows what to fix.
+ */
+function extractQaIssues(qaJson: string): string {
+  try {
+    const qa = JSON.parse(qaJson) as { checks?: Array<{ label: string; passed: boolean; level: string; detail: string }> };
+    const failing = (qa.checks || []).filter((c) => !c.passed);
+    if (failing.length === 0) return "";
+    return failing.map((c) => `- ${c.label}: ${c.detail}`).join("\n").slice(0, 1200);
+  } catch {
+    return "";
   }
 }
 
