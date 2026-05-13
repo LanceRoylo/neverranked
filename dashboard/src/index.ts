@@ -2280,6 +2280,13 @@ export default {
     if (redditFaqMatch && method === "GET") {
       return handleRedditFaq(decodeURIComponent(redditFaqMatch[1]), user, env, request);
     }
+    // Manual trigger for Monday cron paths (admin-only). Lets us
+    // dry-run prompt-expand / reddit-faq build / digest grader before
+    // the actual Monday fire.
+    if (path === "/admin/run-monday-now" && method === "GET" && user.role === "admin") {
+      const { handleRunMondayNow } = await import("./routes/admin-run-monday");
+      return handleRunMondayNow(user, env, new URL(request.url));
+    }
     // Phase 5 admin: backfill reddit_citations from historical
     // citation_runs (one-shot, called once per client after first
     // deploy). Idempotent.

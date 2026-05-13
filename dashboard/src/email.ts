@@ -545,7 +545,17 @@ export async function sendDigestEmail(
   // Quality grader: final gate before send. Checks voice (no AI-tells,
   // HM voice rules) and substance (real signal, not formulaic filler).
   // Fail-closed: a digest that can't be graded never auto-sends.
-  try {
+  //
+  // BYPASS: if env.DIGEST_GRADER_BYPASS === "1" the grader skips
+  // entirely. Use sparingly; intended for known-Haiku-outage moments
+  // or pre-launch verification where the alternative is no client
+  // communication. Bypass is logged to email_log so we can audit
+  // which sends went out un-graded.
+  const graderBypass = (env as { DIGEST_GRADER_BYPASS?: string }).DIGEST_GRADER_BYPASS === "1";
+  if (graderBypass) {
+    console.log(`[digest] grader BYPASSED for ${to} (DIGEST_GRADER_BYPASS=1)`);
+    await logEmailDelivery(env, { email: to, type: "digest", status: "queued", statusCode: 200, errorMessage: "grader-bypassed", agencyId: agency?.id });
+  } else try {
     const { gradeDigest, htmlToPlaintext } = await import("./digest-grader");
     const grade = await gradeDigest(env, htmlToPlaintext(emailHtml));
     if (grade.verdict !== "pass") {
