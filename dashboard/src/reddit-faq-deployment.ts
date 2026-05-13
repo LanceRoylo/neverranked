@@ -380,6 +380,107 @@ Return JSON only.`;
 }
 
 // --------------------------------------------------------------------------
+// Step 3b: Quality grader — filters FAQs before they can ship.
+//
+// Without this, Sonnet shoehorns the business into questions it doesn't
+// really answer (e.g., a performing-arts theatre answering "best comedy
+// clubs in Oahu"). The grader is a single Haiku call that scores each
+// generated FAQ on two axes and returns pass/fail per FAQ. Failing
+// FAQs are dropped before persistence so they can never be deployed.
+//
+// Two checks:
+//   - Relevance: does the business actually answer this question, or
+//     is the model stretching to make it fit?
+//   - Faithfulness: does the answer only make claims supported by the
+//     business_description? Specific numbers, services, or amenities
+//     not in the description fail this check.
+// --------------------------------------------------------------------------
+
+const GRADER_SYSTEM = `You grade FAQ entries generated for a business website. For each FAQ, return whether it should be PUBLISHED on this business's site or FILTERED OUT.
+
+Two pass criteria. Both must be true to publish.
+
+1. RELEVANCE: The business genuinely answers this question. If the model shoehorned the business into a question it doesn't really fit (e.g., a performing-arts theatre answering "best comedy clubs in town"), filter out. If the business legitimately serves this audience, pass.
+
+2. FAITHFULNESS: Every specific claim in the answer is supported by the business description. Specific numbers (capacity, year, address), specific services, specific amenities — if the answer states a fact not in the business description, filter out. Generic language about the industry that doesn't claim a specific business fact is fine.
+
+Return STRICT JSON, no prose:
+{
+  "results": [
+    { "idx": 0, "verdict": "pass" | "fail", "reason": "<short>" }
+  ]
+}`;
+
+export interface GradedFAQ extends FAQEntry {
+  verdict: "pass" | "fail";
+  grader_reason: string;
+}
+
+export async function gradeFAQs(
+  env: Env,
+  faqs: FAQEntry[],
+  businessContext: { name: string; description: string },
+): Promise<GradedFAQ[]> {
+  if (faqs.length === 0) return [];
+  if (!env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
+
+  const userMessage = `Business name: ${businessContext.name}
+
+Business description:
+${businessContext.description}
+
+FAQs to grade:
+
+${faqs.map((f, i) => `${i}. Q: ${f.question}\n   A: ${f.answer}`).join("\n\n")}
+
+Return JSON only.`;
+
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5",
+      system: [{ type: "text", text: GRADER_SYSTEM, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: userMessage }],
+      max_tokens: 2000,
+      temperature: 0.0,
+    }),
+    signal: AbortSignal.timeout(45_000),
+  });
+  if (!resp.ok) throw new Error(`Claude grader: ${resp.status} ${await resp.text()}`);
+
+  const json = (await resp.json()) as { content: { type: string; text: string }[] };
+  const raw = json.content?.[0]?.text || "";
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const m = cleaned.match(/\{[\s\S]*\}/);
+  // Fail-closed: if the grader output is unparseable, treat every FAQ
+  // as failing. We never want to ship un-graded answers to a live site.
+  if (!m) {
+    return faqs.map((f) => ({ ...f, verdict: "fail" as const, grader_reason: "grader output unparseable" }));
+  }
+  let parsed: { results?: Array<{ idx: number; verdict: string; reason: string }> };
+  try {
+    parsed = JSON.parse(m[0]);
+  } catch {
+    return faqs.map((f) => ({ ...f, verdict: "fail" as const, grader_reason: "grader JSON parse error" }));
+  }
+  const byIdx = new Map((parsed.results || []).map((r) => [r.idx, r]));
+  return faqs.map((f, i) => {
+    const r = byIdx.get(i);
+    if (!r) return { ...f, verdict: "fail" as const, grader_reason: "missing from grader response" };
+    return {
+      ...f,
+      verdict: r.verdict === "pass" ? "pass" : "fail",
+      grader_reason: r.reason || "",
+    };
+  });
+}
+
+// --------------------------------------------------------------------------
 // Step 4: Render the deployable JSON-LD
 // --------------------------------------------------------------------------
 
@@ -410,14 +511,39 @@ export async function buildFAQDeployment(
   clientSlug: string,
   businessContext: { name: string; description: string; vertical?: string; url?: string },
   days = 90,
-): Promise<FAQDeployment & { deployment_id: number; source_thread_count: number }> {
+): Promise<
+  FAQDeployment & {
+    deployment_id: number;
+    source_thread_count: number;
+    graded_faqs: GradedFAQ[];
+    rejected_faqs: GradedFAQ[];
+    auto_deployed: boolean;
+  }
+> {
   const questions = await extractRedditQuestionsForClient(env, clientSlug, days);
   const sourceThreadCount = new Set(questions.map((q) => q.source_thread_url)).size;
   const clusters = await clusterAndDedupeQuestions(env, questions);
-  const faqs = await generateFAQAnswers(env, clusters, businessContext);
-  const schema = renderFAQPageSchema(faqs, businessContext.url);
+  const rawFaqs = await generateFAQAnswers(env, clusters, businessContext);
 
-  const preview = faqs
+  // Quality grader pass. Filters out FAQs where the business doesn't
+  // really answer the question (shoehorning) or where the answer makes
+  // claims unsupported by the business description (fabrication).
+  // Anything that fails the grader never gets persisted into the
+  // schema -- it lives only in the rejected log for audit.
+  const graded = await gradeFAQs(env, rawFaqs, businessContext);
+  const passing = graded.filter((g) => g.verdict === "pass");
+  const rejected = graded.filter((g) => g.verdict === "fail");
+
+  // Strip grader metadata before they hit the schema.
+  const cleanFaqs: FAQEntry[] = passing.map((g) => ({
+    question: g.question,
+    answer: g.answer,
+    evidence: g.evidence,
+  }));
+
+  const schema = cleanFaqs.length > 0 ? renderFAQPageSchema(cleanFaqs, businessContext.url) : "";
+
+  const preview = cleanFaqs
     .map(
       (f) => `<div class="faq-entry">
   <div class="faq-q">${escHtml(f.question)}</div>
@@ -430,45 +556,65 @@ export async function buildFAQDeployment(
   const generatedAt = Math.floor(Date.now() / 1000);
   const ctxHash = await sha256Short(`${businessContext.name}|${businessContext.description}`);
 
-  // Persist. Older drafts for this client are marked superseded so
-  // /reddit-faq always shows the freshest build until one is deployed.
+  // Supersede prior drafts so /reddit-faq always shows the freshest build.
   await env.DB.prepare(
     `UPDATE reddit_faq_deployments
         SET status = 'superseded', updated_at = unixepoch()
       WHERE client_slug = ? AND status = 'draft'`,
   ).bind(clientSlug).run();
 
+  // No passing FAQs means we have nothing safe to ship. Persist with
+  // a distinct status so the UI can explain rather than going blank.
+  const initialStatus = cleanFaqs.length === 0 ? "no_faq_passed" : "draft";
+
   const insertResult = await env.DB.prepare(
     `INSERT INTO reddit_faq_deployments
        (client_slug, generated_at, faq_count, source_thread_count,
         faqs_json, schema_json_ld, schema_size_bytes,
         status, business_context_hash)
-     VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   )
     .bind(
       clientSlug,
       generatedAt,
-      faqs.length,
+      cleanFaqs.length,
       sourceThreadCount,
-      JSON.stringify(faqs),
+      JSON.stringify(cleanFaqs),
       schema,
       schema.length,
+      initialStatus,
       ctxHash,
     )
     .run();
   const deploymentId = Number(insertResult.meta?.last_row_id || 0);
 
+  // Auto-deploy if any FAQ passed the grader. With the relevance and
+  // faithfulness checks in front of it, the surviving FAQs are safe
+  // to ship. "We ship the work" — no click.
+  let autoDeployed = false;
+  if (cleanFaqs.length > 0 && deploymentId > 0) {
+    try {
+      await deployFAQToSite(env, clientSlug, deploymentId);
+      autoDeployed = true;
+    } catch (e) {
+      console.error(`reddit-faq auto-deploy failed for ${clientSlug}:`, e);
+    }
+  }
+
   return {
     client_slug: clientSlug,
     client_name: businessContext.name,
     generated_at: generatedAt,
-    faq_count: faqs.length,
-    faqs,
+    faq_count: cleanFaqs.length,
+    faqs: cleanFaqs,
     schema_json_ld: schema,
     schema_size_bytes: schema.length,
     human_preview_html: preview,
     deployment_id: deploymentId,
     source_thread_count: sourceThreadCount,
+    graded_faqs: graded,
+    rejected_faqs: rejected,
+    auto_deployed: autoDeployed,
   };
 }
 

@@ -106,7 +106,9 @@ export async function handleRedditFaq(
   const stateLabel = latest
     ? latest.status === "deployed"
       ? `<span style="color:#7fc99a;font-weight:600">Live on site</span> · deployed ${fmtAgo(latest.deployed_at || latest.generated_at)}`
-      : `<span style="color:var(--gold);font-weight:600">Draft</span> · built ${fmtAgo(latest.generated_at)} · not yet deployed`
+      : latest.status === "no_faq_passed"
+        ? `<span style="color:var(--red);font-weight:600">No FAQs passed quality checks</span> · last attempt ${fmtAgo(latest.generated_at)}`
+        : `<span style="color:var(--gold);font-weight:600">Draft</span> · built ${fmtAgo(latest.generated_at)} · auto-deploy pending`
     : "";
 
   const faqsHtml = latest
@@ -127,8 +129,7 @@ export async function handleRedditFaq(
 
   const cardStyle = "margin-bottom:18px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px";
   const labelStyle = "font-family:var(--label);font-size:10px;text-transform:uppercase;letter-spacing:0.15em;color:var(--gold);margin-bottom:10px";
-  const btnStyle = "background:var(--gold);color:#1a1814;border:0;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;border-radius:3px;font-family:inherit";
-  const secondaryBtnStyle = "background:transparent;color:var(--gold);border:1px solid var(--gold);padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;border-radius:3px;font-family:inherit";
+  // No button styles — primary actions (build, deploy) are automatic.
 
   const body = `
     <div style="margin-bottom:24px">
@@ -158,16 +159,15 @@ export async function handleRedditFaq(
              </div>
              <style>@keyframes rfq-spin { to { transform: rotate(360deg); } }</style>
            </div>`
+        : latest.status === "no_faq_passed"
+        ? `<div style="${cardStyle}">
+             <div style="font-size:13px;margin-bottom:14px">${stateLabel}</div>
+             <p style="color:var(--text-mute);line-height:1.6;margin:0 0 14px">The build ran across ${latest.source_thread_count} cited Reddit thread${latest.source_thread_count === 1 ? "" : "s"}, but every generated answer was filtered out by our quality grader (either off-topic for the business or made claims not supported by the business description).</p>
+             <p style="color:var(--text-mute);line-height:1.6;margin:0">Most often this means the business description in <code>injection_configs</code> needs more specificity. Add more detail about services, audience, and what makes the business distinctive, and the next build will have more to work with. The system rebuilds weekly on Mondays.</p>
+           </div>`
         : `<div style="${cardStyle}">
              <div style="font-size:13px;margin-bottom:14px">${stateLabel}</div>
-             <div style="display:flex;gap:8px;flex-wrap:wrap">
-               ${latest.status === "draft"
-                 ? `<button id="deploy-btn" data-id="${latest.id}" style="${btnStyle}">Deploy to site</button>`
-                 : `<span style="${btnStyle};background:#7fc99a;cursor:default">Deployed</span>`}
-               <button id="rebuild-btn" style="${secondaryBtnStyle}">Rebuild</button>
-             </div>
-             <div style="color:var(--text-faint);font-size:12px;margin-top:12px;font-family:var(--mono)">${latest.faq_count} FAQs · drawn from ${latest.source_thread_count} cited Reddit thread${latest.source_thread_count === 1 ? "" : "s"} · ${latest.schema_size_bytes} bytes</div>
-             <div style="color:var(--text-faint);font-size:12px;margin-top:6px" id="status"></div>
+             <div style="color:var(--text-faint);font-size:12px;font-family:var(--mono)">${latest.faq_count} FAQs · drawn from ${latest.source_thread_count} cited Reddit thread${latest.source_thread_count === 1 ? "" : "s"} · ${latest.schema_size_bytes} bytes</div>
            </div>
            <div style="${cardStyle}">
              <div style="${labelStyle}">Generated FAQs</div>
@@ -177,78 +177,38 @@ export async function handleRedditFaq(
              <div style="${labelStyle}">Deployable JSON-LD</div>
              <p style="color:var(--text-mute);font-size:12px;margin:0 0 12px">${latest.status === "deployed"
                ? `Live now via the NeverRanked snippet on ${businessContext.url ? esc(businessContext.url) : "your domain"}. Updates within the configured cache TTL.`
-               : `Click <strong>Deploy to site</strong> above to publish via your installed NeverRanked snippet, or paste this into the &lt;head&gt; of the target page manually.`}</p>
+               : `Build complete. Auto-deploy did not complete on this attempt — the page will pick up the deployed status once the snippet refreshes, or the Monday cron will redeploy.`}</p>
              <pre style="background:#1a1814;color:#f5f1e6;padding:16px;border-radius:4px;overflow-x:auto;font-size:12px;line-height:1.5;font-family:var(--mono);white-space:pre-wrap;word-break:break-word">${esc(scriptTag)}</pre>
            </div>`}
 
     <script>
+      // Auto-fire the build when no deployment exists yet. The page
+      // renders the build card on first visit, kicks off the work,
+      // then reloads to the deployed view when done.
       const statusEl = document.getElementById('status');
       const autoCard = document.getElementById('auto-build-card');
-      const rebuildBtn = document.getElementById('rebuild-btn');
-      const deployBtn = document.getElementById('deploy-btn');
 
-      async function runBuild(opts) {
-        opts = opts || {};
+      async function runBuild() {
         const setStatus = (msg) => { if (statusEl) statusEl.textContent = msg; };
         try {
-          setStatus('Pulling Reddit threads, calling Claude...');
+          setStatus('Pulling Reddit threads, calling Claude, grading output...');
           const r = await fetch('?action=build');
           const d = await r.json();
           if (d.error) {
-            setStatus('');
             if (autoCard) {
               autoCard.innerHTML = '<div style="color:var(--red);font-weight:600;margin-bottom:8px">Build failed</div><div style="color:var(--text-mute);font-size:13px">' + (d.error.replace(/</g,'&lt;')) + '</div>';
-            } else {
-              alert(d.error);
             }
-            return false;
-          }
-          window.location.reload();
-          return true;
-        } catch (e) {
-          setStatus('');
-          alert(String(e));
-          return false;
-        }
-      }
-
-      // Auto-fire when the empty-state card is on screen. User landed
-      // on the page expecting output, not a button.
-      if (autoCard) {
-        runBuild({ auto: true });
-      }
-
-      async function deploy(btn) {
-        if (!confirm('Deploy this FAQ schema to your site? It will be served by the NeverRanked snippet on every page where the snippet runs.')) return;
-        btn.disabled = true;
-        const prev = btn.textContent;
-        btn.textContent = 'Deploying...';
-        try {
-          const id = btn.dataset.id;
-          const r = await fetch('?action=deploy&id=' + id);
-          const d = await r.json();
-          if (d.error) {
-            alert(d.error);
-            btn.disabled = false;
-            btn.textContent = prev;
             return;
           }
           window.location.reload();
         } catch (e) {
-          alert(String(e));
-          btn.disabled = false;
-          btn.textContent = prev;
+          if (autoCard) {
+            autoCard.innerHTML = '<div style="color:var(--red);font-weight:600;margin-bottom:8px">Build failed</div><div style="color:var(--text-mute);font-size:13px">' + String(e).replace(/</g,'&lt;') + '</div>';
+          }
         }
       }
 
-      if (rebuildBtn) rebuildBtn.addEventListener('click', async () => {
-        if (!confirm('Rebuild from scratch? This calls Claude again and replaces the current draft.')) return;
-        rebuildBtn.disabled = true;
-        rebuildBtn.textContent = 'Rebuilding...';
-        await runBuild();
-        rebuildBtn.disabled = false;
-      });
-      if (deployBtn) deployBtn.addEventListener('click', () => deploy(deployBtn));
+      if (autoCard) runBuild();
     </script>
   `;
 

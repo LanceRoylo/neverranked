@@ -136,22 +136,18 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
 }
 
 async function runRedditFaqDriftCheck(env: Env): Promise<void> {
-  const { buildFAQDeployment, deployFAQToSite } = await import(
-    "../reddit-faq-deployment"
-  );
+  const { buildFAQDeployment } = await import("../reddit-faq-deployment");
 
   // Every client with the prerequisites: business_description populated
-  // and at least one Reddit-citing run in the last 90 days. The build
-  // is automatic; deploy is automatic only for clients who have
-  // already deployed once (signaling trust in the pipeline).
+  // and at least one Reddit-citing run in the last 90 days. buildFAQDeployment
+  // handles grader filtering and auto-deploy internally -- there is
+  // nothing for the cron to gate.
   const rows = (
     await env.DB.prepare(
       `SELECT ic.client_slug,
               ic.business_name, ic.business_url, ic.business_description,
               (SELECT MAX(r.generated_at) FROM reddit_faq_deployments r
                 WHERE r.client_slug = ic.client_slug) AS last_generated_at,
-              (SELECT COUNT(*) FROM reddit_faq_deployments r
-                WHERE r.client_slug = ic.client_slug AND r.status = 'deployed') AS deploy_count,
               (SELECT COUNT(*) FROM citation_runs cr
                  JOIN citation_keywords ck ON ck.id = cr.keyword_id
                 WHERE ck.client_slug = ic.client_slug
@@ -166,7 +162,6 @@ async function runRedditFaqDriftCheck(env: Env): Promise<void> {
       business_url: string | null;
       business_description: string | null;
       last_generated_at: number | null;
-      deploy_count: number;
       reddit_runs_90d: number;
     }>()
   ).results;
@@ -191,7 +186,7 @@ async function runRedditFaqDriftCheck(env: Env): Promise<void> {
     }
 
     try {
-      const deployment = await buildFAQDeployment(
+      await buildFAQDeployment(
         env,
         r.client_slug,
         {
@@ -201,12 +196,6 @@ async function runRedditFaqDriftCheck(env: Env): Promise<void> {
         },
         90,
       );
-      // Auto-deploy only for clients who've explicitly deployed once
-      // already -- they've reviewed the output and accepted it. First
-      // builds wait for a one-click deploy by the user.
-      if (r.deploy_count > 0) {
-        await deployFAQToSite(env, r.client_slug, deployment.deployment_id);
-      }
     } catch (e) {
       console.error(`reddit-faq build/drift failed for ${r.client_slug}:`, e);
     }
