@@ -120,5 +120,79 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
     await step.do("backup", async () => {
       await runWeeklyBackup(this.env);
     });
+
+    // Reddit FAQ drift check. For each client with a deployed FAQ
+    // schema, see if any new citation-generating Reddit threads have
+    // appeared since the last build. If yes, rebuild + re-deploy so
+    // the schema covers the freshest questions. Only runs on the
+    // Mondays-only path (runGscAndBackup=true) so it never piggybacks
+    // on the manual-button path that the user is waiting on. Skipped
+    // for clients with no deployment yet -- those are opt-in via the
+    // dashboard "Build first FAQ deployment" button.
+    await step.do("reddit-faq-drift-check", async () => {
+      await runRedditFaqDriftCheck(this.env);
+    });
+  }
+}
+
+async function runRedditFaqDriftCheck(env: Env): Promise<void> {
+  const { buildFAQDeployment, deployFAQToSite } = await import(
+    "../reddit-faq-deployment"
+  );
+
+  // Clients with a currently-deployed FAQ. We don't auto-build for
+  // clients who've never deployed -- that's a manual first decision.
+  const rows = (
+    await env.DB.prepare(
+      `SELECT r.client_slug,
+              MAX(r.generated_at) AS last_generated_at,
+              ic.business_name, ic.business_url, ic.business_description
+         FROM reddit_faq_deployments r
+         LEFT JOIN injection_configs ic ON ic.client_slug = r.client_slug
+        WHERE r.status = 'deployed'
+        GROUP BY r.client_slug`,
+    ).all<{
+      client_slug: string;
+      last_generated_at: number;
+      business_name: string | null;
+      business_url: string | null;
+      business_description: string | null;
+    }>()
+  ).results;
+
+  for (const r of rows) {
+    if (!r.business_description) continue;
+
+    // Skip if no new Reddit-citing runs have landed since the last build.
+    const newRuns = await env.DB.prepare(
+      `SELECT COUNT(*) AS n
+         FROM citation_runs cr
+         JOIN citation_keywords ck ON ck.id = cr.keyword_id
+        WHERE ck.client_slug = ?
+          AND cr.run_at > ?
+          AND cr.cited_urls LIKE '%reddit.com%'`,
+    )
+      .bind(r.client_slug, r.last_generated_at)
+      .first<{ n: number }>();
+    if (!newRuns || newRuns.n === 0) continue;
+
+    try {
+      const deployment = await buildFAQDeployment(
+        env,
+        r.client_slug,
+        {
+          name: r.business_name || r.client_slug,
+          description: r.business_description,
+          url: r.business_url || undefined,
+        },
+        90,
+      );
+      // Auto-deploy the fresh build so the live schema stays current.
+      // Same client opted into deployment once; rebuild stays in the
+      // same trust envelope.
+      await deployFAQToSite(env, r.client_slug, deployment.deployment_id);
+    } catch (e) {
+      console.error(`reddit-faq drift rebuild failed for ${r.client_slug}:`, e);
+    }
   }
 }

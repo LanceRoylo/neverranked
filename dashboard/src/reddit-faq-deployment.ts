@@ -410,8 +410,9 @@ export async function buildFAQDeployment(
   clientSlug: string,
   businessContext: { name: string; description: string; vertical?: string; url?: string },
   days = 90,
-): Promise<FAQDeployment> {
+): Promise<FAQDeployment & { deployment_id: number; source_thread_count: number }> {
   const questions = await extractRedditQuestionsForClient(env, clientSlug, days);
+  const sourceThreadCount = new Set(questions.map((q) => q.source_thread_url)).size;
   const clusters = await clusterAndDedupeQuestions(env, questions);
   const faqs = await generateFAQAnswers(env, clusters, businessContext);
   const schema = renderFAQPageSchema(faqs, businessContext.url);
@@ -426,16 +427,170 @@ export async function buildFAQDeployment(
     )
     .join("\n");
 
+  const generatedAt = Math.floor(Date.now() / 1000);
+  const ctxHash = await sha256Short(`${businessContext.name}|${businessContext.description}`);
+
+  // Persist. Older drafts for this client are marked superseded so
+  // /reddit-faq always shows the freshest build until one is deployed.
+  await env.DB.prepare(
+    `UPDATE reddit_faq_deployments
+        SET status = 'superseded', updated_at = unixepoch()
+      WHERE client_slug = ? AND status = 'draft'`,
+  ).bind(clientSlug).run();
+
+  const insertResult = await env.DB.prepare(
+    `INSERT INTO reddit_faq_deployments
+       (client_slug, generated_at, faq_count, source_thread_count,
+        faqs_json, schema_json_ld, schema_size_bytes,
+        status, business_context_hash)
+     VALUES (?, ?, ?, ?, ?, ?, ?, 'draft', ?)`,
+  )
+    .bind(
+      clientSlug,
+      generatedAt,
+      faqs.length,
+      sourceThreadCount,
+      JSON.stringify(faqs),
+      schema,
+      schema.length,
+      ctxHash,
+    )
+    .run();
+  const deploymentId = Number(insertResult.meta?.last_row_id || 0);
+
   return {
     client_slug: clientSlug,
     client_name: businessContext.name,
-    generated_at: Math.floor(Date.now() / 1000),
+    generated_at: generatedAt,
     faq_count: faqs.length,
     faqs,
     schema_json_ld: schema,
     schema_size_bytes: schema.length,
     human_preview_html: preview,
+    deployment_id: deploymentId,
+    source_thread_count: sourceThreadCount,
   };
+}
+
+/**
+ * Promote a draft FAQ deployment to live by writing into the existing
+ * schema_injections table. The client-side snippet picks up approved
+ * rows on its next cache TTL. Idempotent — safe to call twice.
+ */
+export async function deployFAQToSite(
+  env: Env,
+  clientSlug: string,
+  deploymentId: number,
+): Promise<{ injection_id: number; already_deployed: boolean }> {
+  const row = await env.DB.prepare(
+    `SELECT id, schema_json_ld, schema_injection_id, status
+       FROM reddit_faq_deployments
+      WHERE id = ? AND client_slug = ?`,
+  ).bind(deploymentId, clientSlug).first<{
+    id: number;
+    schema_json_ld: string;
+    schema_injection_id: number | null;
+    status: string;
+  }>();
+  if (!row) throw new Error(`deployment ${deploymentId} not found for ${clientSlug}`);
+  if (row.schema_injection_id && row.status === "deployed") {
+    return { injection_id: row.schema_injection_id, already_deployed: true };
+  }
+
+  // Supersede any prior FAQPage injection for this client so only one
+  // FAQ schema is live at a time.
+  await env.DB.prepare(
+    `UPDATE schema_injections
+        SET status = 'superseded', updated_at = unixepoch()
+      WHERE client_slug = ? AND schema_type = 'FAQPage' AND status = 'approved'`,
+  ).bind(clientSlug).run();
+
+  const now = Math.floor(Date.now() / 1000);
+  const inj = await env.DB.prepare(
+    `INSERT INTO schema_injections
+       (client_slug, schema_type, json_ld, target_pages, status, approved_at, created_at, updated_at)
+     VALUES (?, 'FAQPage', ?, '*', 'approved', ?, ?, ?)`,
+  )
+    .bind(clientSlug, row.schema_json_ld, now, now, now)
+    .run();
+  const injectionId = Number(inj.meta?.last_row_id || 0);
+
+  await env.DB.prepare(
+    `UPDATE reddit_faq_deployments
+        SET schema_injection_id = ?, status = 'deployed',
+            deployed_at = ?, updated_at = unixepoch()
+      WHERE id = ?`,
+  ).bind(injectionId, now, deploymentId).run();
+
+  return { injection_id: injectionId, already_deployed: false };
+}
+
+export async function getLatestFAQDeployment(
+  env: Env,
+  clientSlug: string,
+): Promise<{
+  id: number;
+  generated_at: number;
+  faq_count: number;
+  source_thread_count: number;
+  faqs: FAQEntry[];
+  schema_json_ld: string;
+  schema_size_bytes: number;
+  status: string;
+  deployed_at: number | null;
+  schema_injection_id: number | null;
+} | null> {
+  const row = await env.DB.prepare(
+    `SELECT id, generated_at, faq_count, source_thread_count, faqs_json,
+            schema_json_ld, schema_size_bytes, status, deployed_at,
+            schema_injection_id
+       FROM reddit_faq_deployments
+      WHERE client_slug = ?
+        AND status IN ('draft', 'deployed')
+      ORDER BY generated_at DESC
+      LIMIT 1`,
+  )
+    .bind(clientSlug)
+    .first<{
+      id: number;
+      generated_at: number;
+      faq_count: number;
+      source_thread_count: number;
+      faqs_json: string;
+      schema_json_ld: string;
+      schema_size_bytes: number;
+      status: string;
+      deployed_at: number | null;
+      schema_injection_id: number | null;
+    }>();
+  if (!row) return null;
+  let faqs: FAQEntry[] = [];
+  try {
+    faqs = JSON.parse(row.faqs_json);
+  } catch {
+    faqs = [];
+  }
+  return {
+    id: row.id,
+    generated_at: row.generated_at,
+    faq_count: row.faq_count,
+    source_thread_count: row.source_thread_count,
+    faqs,
+    schema_json_ld: row.schema_json_ld,
+    schema_size_bytes: row.schema_size_bytes,
+    status: row.status,
+    deployed_at: row.deployed_at,
+    schema_injection_id: row.schema_injection_id,
+  };
+}
+
+async function sha256Short(s: string): Promise<string> {
+  const data = new TextEncoder().encode(s);
+  const buf = await crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(buf)]
+    .slice(0, 8)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 function escHtml(s: string): string {
