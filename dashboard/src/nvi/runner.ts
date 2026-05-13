@@ -88,13 +88,17 @@ export async function runMonthlyNviReport(
     action = `Review the missed prompts list and identify one prompt where a content or schema improvement would close the gap. Most leverage tends to come from prompts where competitors are cited but you are not.`;
   }
 
-  // 5. INSERT the report row as 'pending'. Status flips to
-  //    'approved' when admin reviews, then 'sent' after delivery.
+  // 5. INSERT the report row as 'approved'. The generator already
+  //    ran the pipeline that produces a valid NVI report; an admin
+  //    "review and approve" step in between is the same anti-pattern
+  //    we removed elsewhere -- the system already decided. Status
+  //    flips to 'sent' after delivery.
+  const nowUnix = Math.floor(Date.now() / 1000);
   const result = await env.DB.prepare(
     `INSERT INTO nvi_reports
        (client_slug, reporting_period, tier, ai_presence_score, prev_score,
-        prompts_evaluated, citations_found, insight, action, status)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`
+        prompts_evaluated, citations_found, insight, action, status, approved_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'approved', ?)`
   ).bind(
     clientSlug,
     reportingPeriod,
@@ -105,6 +109,7 @@ export async function runMonthlyNviReport(
     presence.citedRows,
     insight,
     action,
+    nowUnix,
   ).run();
 
   const reportId = Number(result.meta?.last_row_id ?? 0);
@@ -119,19 +124,22 @@ export async function runMonthlyNviReport(
          AND keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)`
   ).bind(reportId, runStartedAt, runFinishedAt + 30, clientSlug).run();
 
-  // 7. Write an admin_inbox row so the report surfaces in cockpit
-  //    + 7am founder email + sidebar pending count. The inbox
-  //    item's action_url sends Lance directly to the preview page,
-  //    no hunting required.
+  // 7. Inbox item used to surface a "review and approve" step here.
+  //    The report is now auto-approved at insert because the pipeline
+  //    that produced it is the same pipeline the rest of the product
+  //    is built on -- if we trust the citation data, we trust the
+  //    report. The inbox item is reduced to a status notification
+  //    rather than a review queue so Lance sees it landed but doesn't
+  //    need to act.
   try {
     const now = Math.floor(Date.now() / 1000);
     await env.DB.prepare(
       `INSERT INTO admin_inbox
          (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-       VALUES ('nvi_report_review', ?, ?, ?, 'nvi_report', ?, ?, 'normal', 'pending', ?)`
+       VALUES ('nvi_report_generated', ?, ?, ?, 'nvi_report', ?, ?, 'low', 'pending', ?)`
     ).bind(
-      `NVI report ready for review: ${clientSlug} (${reportingPeriod})`,
-      `AI Presence Score ${presence.score}/100 (Grade ${presence.grade}). ${presence.promptsCited} of ${presence.promptsTotal} tracked prompts cited across ${presence.enginesCited} engines. Insight + action drafted by Claude Haiku, awaiting your review before customer delivery.`,
+      `NVI report generated: ${clientSlug} (${reportingPeriod})`,
+      `AI Presence Score ${presence.score}/100 (Grade ${presence.grade}). ${presence.promptsCited} of ${presence.promptsTotal} tracked prompts cited across ${presence.enginesCited} engines. Auto-approved and ready to send.`,
       `/admin/nvi/preview/${reportId}`,
       reportId,
       clientSlug,

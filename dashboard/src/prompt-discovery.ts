@@ -214,6 +214,20 @@ ${flags}
 ${gsc}`.trim();
 }
 
+/**
+ * DEPRECATED 2026-05-13.
+ *
+ * The functions below (generateAndStorePromptSuggestions, getPendingSuggestions,
+ * acceptSuggestion, dismissSuggestion) implemented the "generate and review"
+ * workflow that has been replaced by prompt-auto-expand.ts. The new module
+ * generates, runs four quality gates (format / tone / similarity / relevance),
+ * and inserts survivors directly into citation_keywords with no review queue.
+ *
+ * These exports remain only for the discoverContext() consumer above. The
+ * suggestion-queue side is dead. The prompt_suggestions table is no longer
+ * written by the product on any code path.
+ */
+
 export interface GenerationResult {
   generated: number;
   inserted: number;

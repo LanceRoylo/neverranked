@@ -191,8 +191,9 @@ export async function generateArticlesFromSitemap(
     const { nextVariantLetter } = await import("./lib/schema-variants");
     const variant = await nextVariantLetter(env, clientSlug, "Article", targetPagesJson);
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
-      "VALUES (?, 'Article', ?, ?, 'pending', ?, ?, unixepoch())"
+      // Auto-approve: grade.meetsDeployThreshold already gated this.
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at, approved_at) " +
+      "VALUES (?, 'Article', ?, ?, 'approved', ?, ?, unixepoch(), unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),

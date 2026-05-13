@@ -149,8 +149,9 @@ export async function generateHowToForPage(
   const { nextVariantLetter } = await import("./lib/schema-variants");
   const variant = await nextVariantLetter(env, clientSlug, "HowTo", targetPagesJson);
   const result = await env.DB.prepare(
-    "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
-    "VALUES (?, 'HowTo', ?, ?, 'pending', ?, ?, unixepoch())"
+    // Auto-approve: deploy threshold already passed.
+    "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at, approved_at) " +
+    "VALUES (?, 'HowTo', ?, ?, 'approved', ?, ?, unixepoch(), unixepoch())"
   ).bind(
     clientSlug,
     JSON.stringify(schema),

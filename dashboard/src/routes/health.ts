@@ -166,9 +166,9 @@ export async function handleAdminHealth(user: User, env: Env, url?: URL): Promis
   const pendingNvi = await env.DB.prepare(
     "SELECT COUNT(*) as n FROM nvi_reports WHERE status IN ('draft','rendered')"
   ).first<{ n: number }>();
-  const pendingSuggestions = await env.DB.prepare(
-    "SELECT COUNT(*) as n FROM prompt_suggestions WHERE status = 'pending'"
-  ).first<{ n: number }>();
+  // prompt_suggestions table is no longer written; prompt expansion is
+  // fully automated via prompt-auto-expand.ts. Count is always 0 now.
+  const pendingSuggestions = { n: 0 };
 
   // --- Section 4: Open alerts ---
   const openAlerts = (await env.DB.prepare(

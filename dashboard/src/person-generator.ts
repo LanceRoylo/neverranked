@@ -155,8 +155,9 @@ export async function generatePersonsForPage(
     const { nextVariantLetter } = await import("./lib/schema-variants");
     const variant = await nextVariantLetter(env, clientSlug, "Person", targetPagesJson);
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
-      "VALUES (?, 'Person', ?, ?, 'pending', ?, ?, unixepoch())"
+      // Auto-approve: deploy threshold already passed.
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at, approved_at) " +
+      "VALUES (?, 'Person', ?, ?, 'approved', ?, ?, unixepoch(), unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),

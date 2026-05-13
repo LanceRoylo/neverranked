@@ -1615,21 +1615,9 @@ export default {
       if (user.client_slug) return redirect(`/discover/${user.client_slug}`);
       return renderClientPicker("Discover prompts", "discover", user, env);
     }
-    const discoverGenMatch = path.match(/^\/discover\/([^/]+)\/generate$/);
-    if (discoverGenMatch && method === "POST") {
-      const { handleDiscoverGenerate } = await import("./routes/discover");
-      return handleDiscoverGenerate(decodeURIComponent(discoverGenMatch[1]), user, env);
-    }
-    const discoverActionMatch = path.match(/^\/discover\/([^/]+)\/(\d+)\/(accept|dismiss)$/);
-    if (discoverActionMatch && method === "POST") {
-      const { handleDiscoverAction } = await import("./routes/discover");
-      return handleDiscoverAction(
-        decodeURIComponent(discoverActionMatch[1]),
-        parseInt(discoverActionMatch[2], 10),
-        discoverActionMatch[3] as "accept" | "dismiss",
-        user, env,
-      );
-    }
+    // Discover generate/accept/dismiss POSTs removed: prompt expansion
+    // is now fully automated via prompt-auto-expand.ts on the Monday
+    // cron. /discover/<slug> is read-only.
     const discoverListMatch = path.match(/^\/discover\/([^/]+)$/);
     if (discoverListMatch && method === "GET") {
       const { handleDiscoverList } = await import("./routes/discover");

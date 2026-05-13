@@ -144,8 +144,11 @@ export async function generateServicesForPage(
     const { nextVariantLetter } = await import("./lib/schema-variants");
     const variant = await nextVariantLetter(env, clientSlug, "Service", targetPagesJson);
     const result = await env.DB.prepare(
-      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at) " +
-      "VALUES (?, 'Service', ?, ?, 'pending', ?, ?, unixepoch())"
+      // Auto-approve: grade.meetsDeployThreshold already gated this
+      // upstream. Asking for human approval after the grader said yes
+      // is the anti-pattern we keep removing.
+      "INSERT INTO schema_injections (client_slug, schema_type, json_ld, target_pages, status, variant, quality_score, quality_graded_at, approved_at) " +
+      "VALUES (?, 'Service', ?, ?, 'approved', ?, ?, unixepoch(), unixepoch())"
     ).bind(
       clientSlug,
       JSON.stringify(schema),
