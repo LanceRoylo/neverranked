@@ -198,18 +198,27 @@ export async function extractRedditQuestionsForClient(
 // Step 2: Cluster + dedupe via Claude
 // --------------------------------------------------------------------------
 
-const CLUSTER_SYSTEM = `You cluster Reddit questions to find the canonical phrasing of each distinct question.
+const CLUSTER_SYSTEM = `You cluster Reddit questions to find the canonical phrasing of each distinct SEARCH INTENT.
 
 You will receive a JSON array of questions, each with the source subreddit and thread URL. Your job:
 
-1. Group questions that are asking the same thing (different phrasing, same underlying question)
+1. Group questions that share the SAME search intent — what the asker would have typed into a search engine. Different intents stay in different clusters even when they could happen at the same business. Examples:
+   - "best comedy in Honolulu" and "where to see stand-up in Oahu" → SAME cluster (comedy search intent)
+   - "best comedy in Honolulu" and "live music venues in Oahu" → DIFFERENT clusters (comedy vs. music)
+   - "theater in Honolulu" and "musicals in Oahu" → DIFFERENT clusters (theatre vs. musical theatre is similar but distinct)
+   - "where to see a show in Honolulu" + "what to do in Oahu at night" → DIFFERENT clusters (specific show vs. nightlife)
+   Prefer SPLITTING over MERGING. Each FAQ should answer one specific kind of search.
+
 2. For each cluster, pick the CANONICAL phrasing — the version that most naturally fits a FAQPage on a business website. Should be:
    - First-person from the asker's perspective ("Which bank should I use for my LLC?")
    - 30-100 characters
    - Plain language, no Reddit-specific slang
+   - Specific about the category being asked about (don't generalize "comedy" or "concerts" into "live entertainment")
    - Question form, ends with ?
-3. Return up to 12 clusters total, ranked by cluster_size descending
-4. Only include clusters with at least 1 source
+
+3. Return between 4 and 12 clusters. If the input has fewer distinct intents than 4, return what you have. Rank by cluster_size descending.
+
+4. Only include clusters with at least 1 source.
 
 Return STRICT JSON, no prose:
 {
