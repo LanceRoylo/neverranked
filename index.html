@@ -671,9 +671,63 @@ h1,h2,h3,h4{
   display:block;
   width:100%;
   height:auto;
+  cursor:pointer;
 }
 @media(max-width:600px){
   .citation-demo-section{padding:48px 0 64px}
+}
+
+/* Custom unmute/mute control. Positioned bottom-right of the video
+   container. Pulsing gold ring while muted to draw attention to the
+   audio call-to-action. Solid gold when unmuted, no pulse. */
+.video-unmute-btn{
+  position:absolute;
+  bottom:18px;
+  right:18px;
+  z-index:10;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  background:rgba(8,8,8,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--gold);
+  border-radius:4px;
+  color:var(--gold);
+  font-family:var(--label);
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background .2s, color .2s, transform .2s;
+  font-weight:500;
+}
+.video-unmute-btn[data-state="muted"]{
+  animation:video-unmute-pulse 2s ease-in-out infinite;
+}
+.video-unmute-btn[data-state="playing"]{
+  background:rgba(8,8,8,0.65);
+  border-color:rgba(232,199,103,0.4);
+  animation:none;
+}
+.video-unmute-btn:hover{
+  background:var(--gold);
+  color:var(--bg);
+  transform:translateY(-1px);
+}
+.video-unmute-btn svg{
+  width:14px;
+  height:14px;
+  flex-shrink:0;
+}
+@keyframes video-unmute-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(232,199,103,0.55)}
+  50%{box-shadow:0 0 0 10px rgba(232,199,103,0)}
+}
+@media(max-width:600px){
+  .video-unmute-btn{bottom:10px;right:10px;padding:8px 10px;font-size:10px}
+  .video-unmute-btn svg{width:12px;height:12px}
 }
 .hero-grid{
   display:grid;
@@ -5003,7 +5057,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <span>watch the walkthrough</span>
         </div>
       </div>
-      <div class="citation-demo-video reveal" style="transition-delay:.1s">
+      <div class="citation-demo-video reveal" style="transition-delay:.1s" data-video-with-audio>
         <video
           src="/citation-demo.mp4"
           autoplay
@@ -5013,6 +5067,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           preload="metadata"
           aria-label="NeverRanked citation tracking walkthrough"
         ></video>
+        <button class="video-unmute-btn" type="button" data-state="muted" aria-label="Unmute video">
+          <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+          <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 010 7.07"></path><path d="M19.07 4.93a10 10 0 010 14.14"></path></svg>
+          <span class="video-unmute-label">Tap to unmute</span>
+        </button>
       </div>
     </div>
   </section>
@@ -7377,6 +7436,50 @@ window.scrollTo(0,0);
       heroForm.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
     }, 650);
     hide();
+  });
+})();
+
+/* Video unmute/mute toggle. Any [data-video-with-audio] container
+   gets click-to-toggle on both the video and the .video-unmute-btn.
+   Pulsing gold ring while muted draws attention to the audio CTA.
+   Once unmuted the pulse stops and the button shows "Mute". */
+(function(){
+  document.querySelectorAll('[data-video-with-audio]').forEach(function(wrap){
+    var video = wrap.querySelector('video');
+    var btn   = wrap.querySelector('.video-unmute-btn');
+    if (!video || !btn) return;
+    var label   = btn.querySelector('.video-unmute-label');
+    var iconMut = btn.querySelector('.icon-muted');
+    var iconSnd = btn.querySelector('.icon-sound');
+    function render(){
+      if (video.muted){
+        btn.setAttribute('data-state','muted');
+        btn.setAttribute('aria-label','Unmute video');
+        if (label) label.textContent = 'Tap to unmute';
+        if (iconMut) iconMut.style.display = '';
+        if (iconSnd) iconSnd.style.display = 'none';
+      } else {
+        btn.setAttribute('data-state','playing');
+        btn.setAttribute('aria-label','Mute video');
+        if (label) label.textContent = 'Mute';
+        if (iconMut) iconMut.style.display = 'none';
+        if (iconSnd) iconSnd.style.display = '';
+      }
+    }
+    function toggle(e){
+      if (e) e.stopPropagation();
+      video.muted = !video.muted;
+      // Bring the video to the beginning when unmuting so the visitor
+      // hears the line from the top; if already mid-play they get the
+      // full story rather than catching mid-sentence.
+      if (!video.muted && video.currentTime > 5){
+        try { video.currentTime = 0; } catch(_) {}
+      }
+      render();
+    }
+    btn.addEventListener('click', toggle);
+    video.addEventListener('click', toggle);
+    render();
   });
 })();
 

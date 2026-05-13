@@ -295,12 +295,12 @@ p a:hover,ul a:hover{opacity:.8}
     <h1>Six things AI engines can't see <em>about Hawaii Energy</em>. We track seven AI engines now. The site is invisible to all of them.</h1>
   </div>
 </section>
-<!-- Citation Demo video. Embedded across all active pitch pages as a
-     consistent intro element. Autoplay muted, loops. The recipient
-     hears nothing unless they unmute, the visual carries the brand. -->
+<!-- Citation Demo video. Embedded across all active pitch pages with
+     a visible unmute control. Autoplay muted, the gold-pulse button
+     bottom-right invites the viewer to turn on audio. -->
 <section style="background:#0a0a0a;padding:60px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
   <div class="wrap" style="display:flex;justify-content:center">
-    <div style="width:100%;max-width:880px;border-radius:6px;overflow:hidden;border:1px solid var(--line);box-shadow:0 24px 80px rgba(0,0,0,0.5);background:var(--bg-lift)">
+    <div data-video-with-audio style="position:relative;width:100%;max-width:880px;border-radius:6px;overflow:hidden;border:1px solid var(--line);box-shadow:0 24px 80px rgba(0,0,0,0.5);background:var(--bg-lift)">
       <video
         src="https://neverranked.com/citation-demo.mp4"
         autoplay
@@ -308,12 +308,58 @@ p a:hover,ul a:hover{opacity:.8}
         loop
         playsinline
         preload="metadata"
-        style="display:block;width:100%;height:auto"
+        style="display:block;width:100%;height:auto;cursor:pointer"
         aria-label="NeverRanked citation tracking walkthrough"
       ></video>
+      <button class="video-unmute-btn" type="button" data-state="muted" aria-label="Unmute video" style="position:absolute;bottom:18px;right:18px;z-index:10;display:inline-flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(8,8,8,0.85);border:1px solid var(--gold);border-radius:4px;color:var(--gold);font-family:var(--label);font-size:11px;letter-spacing:0.18em;text-transform:uppercase;cursor:pointer;font-weight:500;animation:video-unmute-pulse 2s ease-in-out infinite">
+        <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="width:14px;height:14px"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+        <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none;width:14px;height:14px"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 010 7.07"></path><path d="M19.07 4.93a10 10 0 010 14.14"></path></svg>
+        <span class="video-unmute-label">Tap to unmute</span>
+      </button>
     </div>
   </div>
 </section>
+<style>
+  @keyframes video-unmute-pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,199,103,0.55)}50%{box-shadow:0 0 0 10px rgba(232,199,103,0)}}
+  .video-unmute-btn[data-state="playing"]{background:rgba(8,8,8,0.65) !important;border-color:rgba(232,199,103,0.4) !important;animation:none !important}
+  .video-unmute-btn:hover{background:var(--gold) !important;color:var(--bg) !important}
+</style>
+<script>
+(function(){
+  document.querySelectorAll('[data-video-with-audio]').forEach(function(wrap){
+    var video = wrap.querySelector('video');
+    var btn   = wrap.querySelector('.video-unmute-btn');
+    if (!video || !btn) return;
+    var label   = btn.querySelector('.video-unmute-label');
+    var iconMut = btn.querySelector('.icon-muted');
+    var iconSnd = btn.querySelector('.icon-sound');
+    function render(){
+      if (video.muted){
+        btn.setAttribute('data-state','muted');
+        btn.setAttribute('aria-label','Unmute video');
+        if (label) label.textContent = 'Tap to unmute';
+        if (iconMut) iconMut.style.display = '';
+        if (iconSnd) iconSnd.style.display = 'none';
+      } else {
+        btn.setAttribute('data-state','playing');
+        btn.setAttribute('aria-label','Mute video');
+        if (label) label.textContent = 'Mute';
+        if (iconMut) iconMut.style.display = 'none';
+        if (iconSnd) iconSnd.style.display = '';
+      }
+    }
+    function toggle(e){
+      if (e) e.stopPropagation();
+      video.muted = !video.muted;
+      if (!video.muted && video.currentTime > 5){ try { video.currentTime = 0; } catch(_) {} }
+      render();
+    }
+    btn.addEventListener('click', toggle);
+    video.addEventListener('click', toggle);
+    render();
+  });
+})();
+</script>
 
 
 <section class="legal-section">
