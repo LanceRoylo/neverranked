@@ -645,10 +645,21 @@ h1,h2,h3,h4{
 /* Hero content needs to sit above the grain overlay (z-index:1) and
    the gradient top-border pseudo (z-index:2). */
 .hero .wrap{z-index:2}
-.hero-video{
+/* Citation Demo video section (below hero). Sits on the first scroll
+   beat, max 960px centered. Frame-only treatment so the video reads
+   as a polished artifact, not a YouTube embed. */
+.citation-demo-section{
+  background:var(--bg);
+  padding:80px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.citation-demo-head{
+  margin-bottom:36px;
+}
+.citation-demo-video{
   width:100%;
   max-width:960px;
-  margin:0 auto 56px;
+  margin:0 auto;
   position:relative;
   border-radius:6px;
   overflow:hidden;
@@ -656,10 +667,13 @@ h1,h2,h3,h4{
   box-shadow:0 24px 80px rgba(0,0,0,0.5);
   background:var(--bg-lift);
 }
-.hero-video video{
+.citation-demo-video video{
   display:block;
   width:100%;
   height:auto;
+}
+@media(max-width:600px){
+  .citation-demo-section{padding:48px 0 64px}
 }
 .hero-grid{
   display:grid;
@@ -4885,23 +4899,6 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         <span class="tag">BY APPOINTMENT</span>
       </div>
 
-      <!-- Citation Demo video. 55s walkthrough: 7-engine measurement,
-           Hawaii Theatre proof, CTA. Autoplay muted so it plays without
-           user interaction across browsers; preload="metadata" keeps
-           the initial page weight light; controls hidden by default
-           (clicking the video pauses it). -->
-      <div class="hero-video reveal" style="transition-delay:.05s">
-        <video
-          src="/citation-demo.mp4"
-          autoplay
-          muted
-          loop
-          playsinline
-          preload="metadata"
-          aria-label="NeverRanked citation tracking walkthrough"
-        ></video>
-      </div>
-
       <div class="hero-grid">
         <div class="reveal">
           <h1>
@@ -4986,6 +4983,37 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="hero-scroll" aria-hidden="true">
       <span>Scroll</span>
       <span class="hero-scroll-line"></span>
+    </div>
+  </section>
+
+  <!-- ============ CITATION DEMO VIDEO ============ -->
+  <!-- 55-second walkthrough of the seven-engine measurement, Hawaii
+       Theatre proof, and CTA. Placed below the hero (not inside it)
+       so the URL checker remains the primary above-the-fold CTA, per
+       B2B SaaS conversion best-practices (Wistia 2023, VWO). The
+       video catches the first-scroll attention of engaged visitors
+       without crowding out the conversion path. -->
+  <section class="citation-demo-section" aria-labelledby="citationDemoLabel">
+    <div class="wrap">
+      <div class="citation-demo-head reveal">
+        <div class="section-label">
+          <span class="num">§</span>
+          <span id="citationDemoLabel">The platform, in one minute</span>
+          <span class="rule"></span>
+          <span>watch the walkthrough</span>
+        </div>
+      </div>
+      <div class="citation-demo-video reveal" style="transition-delay:.1s">
+        <video
+          src="/citation-demo.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label="NeverRanked citation tracking walkthrough"
+        ></video>
+      </div>
     </div>
   </section>
 
