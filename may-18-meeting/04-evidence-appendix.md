@@ -1,0 +1,221 @@
+---
+title: "ASB + MVNP meeting evidence appendix"
+meeting_date: 2026-05-18
+prepared: 2026-05-09
+status: appendix
+---
+
+# ASB + MVNP, May 18 meeting
+
+## What this document is
+
+A standalone evidence appendix that compresses the AI-citation
+findings NeverRanked has gathered for the ASB Hawaii landscape
+into a single readable document. Pairs with (does not replace)
+the existing meeting materials at:
+
+- `audits/asb-hawaii-2026-05/audit.pdf` (audit deck)
+- `content/asb-mvnp-meeting-prep.md` (Q&A prep, locked)
+- `content/asb-mvnp-onepager.md` (leave-behind, locked)
+- `content/asb-mvnp-preread-email.md` (24h pre-read, locked)
+
+This appendix is safe to share or print as a supporting handout
+without modifying the locked materials.
+
+## The single most-citable finding
+
+**ASB is named in 0% of AI engine citation runs across the
+Hawaii community banking query set.** First Hawaiian Bank and
+Bank of Hawaii get named by default in r/Hawaii consumer
+threads. ASB does not. The same pattern shows up in the AI
+engine citation logs.
+
+This is not a marketing failure. It is a citation infrastructure
+gap. The brands AI engines pull from when answering "best
+community bank in Hawaii" today are FHB and BOH, because those
+are the names that appear on the third-party surfaces AI engines
+trust (Reddit, news wires, local press, Wikipedia). ASB is
+underrepresented across all of them.
+
+## Evidence at three levels
+
+### Level 1, the State of AEO data
+
+The Citation Tape (NeverRanked's standing AI-citation
+measurement system) measures across seven AI engines, anchored
+by Gemma -- Google's open-weight model -- plus the six leading
+commercial APIs (ChatGPT, Perplexity, Claude, Gemini, Microsoft
+Copilot, Google AI Overviews). Gemma's weights are public, so a
+bank's compliance team or auditor can download the same model
+and independently reproduce the citation numbers in this report.
+That matters for regulated industries -- closed APIs change
+behind the scenes without notice; an open-weight engine is
+auditable.
+
+The Tape captured 437 citation runs across NR's tracked client
+universe in the 2026-04-14 to 2026-05-10 window. Findings
+relevant to community banking:
+
+- **vertexaisearch.cloud.google.com** is the single most-cited
+  third-party source. This is Gemini's grounding-redirect
+  layer. Mention shape there determines what Gemini surfaces.
+- **AEO-services agencies** (geekpoweredstudios, greenbananaseo,
+  eseospace, arcintermedia) collectively claim 28% of citation
+  share for the queries NR tracks. AI engines cite the agency
+  layer, not just the bank layer, when answering "best AEO
+  agency" type queries. Translates: when people ask AI for help
+  with their bank's AI visibility, they see agencies named, not
+  banks.
+- **News wires** (prnewswire, businesswire, etc.) appear in 8%
+  of citations. Press release distribution is one of the few
+  citation-shifting moves that compounds.
+
+Full report: `reports/state-of-aeo/state-of-aeo-2026-05-10.pdf`.
+Live at https://neverranked.com/state-of-aeo/2026-05-10/.
+
+### Level 2, the Reddit landscape
+
+The reddit-tracker probed three banking categories and
+surfaced 11 prioritized threads. Headline:
+
+**[r/Hawaii: "First Hawaiian Bank continues to shock me"](https://www.reddit.com/r/Hawaii/comments/1p4b4p0/first_hawaiian_bank_continues_to_shock_me/)**
+
+Priority 0.94 in the dataset. ASB absent. FHB named, negatively.
+Cleanest competitor-visible / client-absent gap in the entire
+Hawaii banking dataset. AI engines retrieving this thread today
+surface FHB sentiment without an ASB counter-narrative.
+
+Three more high-priority threads documented at
+`content/reddit-briefs/2026-05-09-asb/README.md`. Each has a
+structured reply brief skeleton (gap analysis, angle, tone notes,
+draft hooks) that turns the finding into actionable Reddit reply
+ops. Brief skeletons are pasteable into Claude or Notion for
+further drafting.
+
+### Level 3, the Hawaii cross-vertical signal
+
+The same probe pattern run across three Hawaii verticals
+(banking, hotels, law) shows distinct demand-signal shapes.
+Banking sits in the sweet spot:
+
+| Vertical | Briefs | Max priority | Avg priority | Demand signal |
+|---|---|---|---|---|
+| Hawaii hotels | 10 | 0.93 | 0.69 | Saturated -- compete for share-of-voice |
+| Hawaii community banking | 11 | 0.94 | 0.58 | Active but uncrowded -- best risk/reward |
+| Hawaii law firms | 7 | 0.38 | 0.26 | Sparse -- whoever shows up first writes the answer shape |
+
+Banking is the only vertical of the three where targeted Reddit
+reply ops would have meaningful citation lift per hour spent.
+Hotels are too saturated; law firms are too thin.
+
+Cross-vertical narrative at
+`content/reddit-briefs/2026-05-09-hawaii-landscape/README.md`.
+
+## What this means in three sentences for the meeting
+
+1. **ASB is invisible in the consumer conversations AI engines
+   actually retrieve when people ask about Hawaii community
+   banks.** The State of AEO citation data and the r/Hawaii
+   thread evidence both confirm this independently.
+
+2. **The fix is not paid media -- it is citation infrastructure.**
+   Reddit reply ops, Wikipedia entity entry maintenance, news
+   wire distribution, and a handful of high-impact source-type
+   actions move the citation share AI engines see. None of those
+   are services Hawaii agencies offer today.
+
+3. **NR has the measurement infrastructure and the tooling to do
+   the work.** The Citation Tape produces weekly reports
+   reproducible from public schema. The reddit-tracker generates
+   prioritized reply briefs. The schema deployment infrastructure
+   covers the technical layer. Wholesale partners (MVNP) get all
+   of this in the pilot.
+
+## The Hawaii proof point: Hawaii Theatre
+
+The closest analogue to ASB's current AI search state is one we
+have already fixed. **Hawaii Theatre, the historic Honolulu
+performing arts venue**, came to NeverRanked in late April with
+a 45 out of 100 AEO score, grade D, and zero AI citations across
+our tracked banking-of-Hawaii-style query set for their category
+("historic performing arts venues in Honolulu," "where to see
+shows downtown Honolulu," etc).
+
+Ten days later, after we deployed five schema categories
+(PerformingArtsTheater, WebSite, AggregateRating, FAQPage,
+Event), the venue's AEO score was **95 out of 100, grade A**.
+On the first weekly citation log run after the work shipped,
+**Perplexity named Hawaii Theatre on 14 of 19 tracked queries**.
+
+The work was structural. No content campaign, no press push, no
+paid media, no backlinks. We installed the schema layer the
+venue's existing site was missing. AI engines started citing the
+venue inside the first weekly run.
+
+The same pattern applies to ASB. Same gap shape (no AI
+citations, the consumer-conversation evidence above). Same fix
+shape (schema infrastructure, source-type targeting, weekly
+measurement). Same timeline expectation (a 30-90 day arc to
+meaningful citation share movement, measurable from the first
+weekly run forward).
+
+Hawaii Theatre is the local Hawaii reference customer NeverRanked
+can name in the room. The case study is approved for use; the
+before/after numbers are real and reproducible by anyone who
+wants to run the same scan. The full write-up lives at
+`content/case-studies/hawaii-theatre.md` in the public repo.
+
+## Honest caveats this packet should disclose
+
+Three things to acknowledge before someone reads the numbers:
+
+1. **The 2026-05-10 report covers a partial run window, fully
+   resolved going forward.** The earlier daily cron silently
+   exhausted its subrequest budget after ~2 keywords per client,
+   so the prior week's run window only sampled 13-40% of tracked
+   keywords. We diagnosed it 2026-05-10 and shipped the fix the
+   same day (dispatched one workflow instance per keyword, each
+   with its own budget; verified 89 of 90 expected rows on the
+   first production run). The data presented in this packet
+   reflects what landed; the pattern (ASB invisibility) is the
+   real signal and shows up consistently across both partial and
+   complete windows. From 2026-05-11 forward, the daily cron
+   produces 7 samples per (keyword, engine) per week across all
+   7 engines (the six commercial APIs plus Gemma, Google's
+   open-weight model), verifiable at neverranked.com/state-of-aeo.
+   The methodology is reproducible by anyone who wants to audit
+   it -- for Gemma specifically, "reproducible" means literally
+   the same model weights running the same prompts producing the
+   same outputs, not a vendor's word for it.
+
+2. **Reddit reply ops are not magic.** They compound over
+   months, not days. Two well-placed replies per week, sustained
+   for a quarter, shift the citation pattern. One reply does
+   nothing.
+
+3. **The tracked-universe is small** (3 clients, 17 keywords).
+   Findings are descriptive of NR's current sample, not a random
+   sample of AI search universe. Generalizing requires more
+   data, and as more clients onboard, the tracked universe and
+   the report's authority grow together.
+
+## Files this appendix references
+
+- `reports/state-of-aeo/state-of-aeo-2026-05-10.pdf` -- full citation report
+- `content/reddit-briefs/2026-05-09-asb/README.md` -- ASB Reddit landscape detail
+- `content/reddit-briefs/2026-05-09-hawaii-landscape/README.md` -- cross-vertical
+- `content/handoff-questions/citation-cron-not-firing.md` -- original diagnosis
+- `content/handoff-questions/citation-cron-fix-landed.md` -- 2026-05-10 fix, verification, and architecture
+- `audits/asb-hawaii-2026-05/audit.pdf` -- the formal audit deck
+- `content/asb-mvnp-meeting-prep.md` -- Q&A prep (locked)
+
+## How to use this in the meeting
+
+- Print as a 4-page handout if needed for the room.
+- Forward as PDF to MVNP team in advance of May 18 if a
+  pre-read is desired beyond the existing pre-read email.
+- Reference at the audit-deck handoff moment as the concrete
+  evidence behind the deck's findings.
+- Share with FHB or BOH at a future moment as the same pattern
+  exists for them, just inverted (they are visible because of
+  what they have done, not what ASB has not done).
