@@ -340,7 +340,7 @@ Return JSON only.`;
       "anthropic-version": "2023-06-01",
     },
     body: JSON.stringify({
-      model: "claude-sonnet-4-7-20250514",
+      model: "claude-sonnet-4-5",
       system: [{ type: "text", text: ANSWER_SYSTEM, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userMessage }],
       max_tokens: 3500,
