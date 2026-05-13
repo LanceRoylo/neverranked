@@ -645,6 +645,22 @@ h1,h2,h3,h4{
 /* Hero content needs to sit above the grain overlay (z-index:1) and
    the gradient top-border pseudo (z-index:2). */
 .hero .wrap{z-index:2}
+.hero-video{
+  width:100%;
+  max-width:960px;
+  margin:0 auto 56px;
+  position:relative;
+  border-radius:6px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  background:var(--bg-lift);
+}
+.hero-video video{
+  display:block;
+  width:100%;
+  height:auto;
+}
 .hero-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -4867,6 +4883,23 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="hero-eyebrow reveal">
         <span class="tag"><span style="display:inline-block;width:6px;height:6px;background:var(--gold);border-radius:50%;margin-right:10px;transform:translateY(-2px);box-shadow:0 0 0 3px rgba(201,168,76,.15)"></span>SEVEN ENGINES TRACKED &middot; INCLUDING GEMMA, THE ONLY OPEN-WEIGHT ONE</span>
         <span class="tag">BY APPOINTMENT</span>
+      </div>
+
+      <!-- Citation Demo video. 55s walkthrough: 7-engine measurement,
+           Hawaii Theatre proof, CTA. Autoplay muted so it plays without
+           user interaction across browsers; preload="metadata" keeps
+           the initial page weight light; controls hidden by default
+           (clicking the video pauses it). -->
+      <div class="hero-video reveal" style="transition-delay:.05s">
+        <video
+          src="/citation-demo.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label="NeverRanked citation tracking walkthrough"
+        ></video>
       </div>
 
       <div class="hero-grid">

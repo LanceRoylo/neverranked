@@ -16,6 +16,7 @@ mkdir -p "$DIST"
 # Root files that make up the public site
 FILES=(
   index.html
+  citation-demo.mp4
   404.html
   og.jpg
   og-source.html
