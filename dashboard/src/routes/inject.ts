@@ -132,6 +132,30 @@ export async function handleInjectScript(
     ? referrerTrackingSnippet(config.snippet_token, dashboardOrigin)
     : "";
 
+  // Snippet behavior:
+  //
+  // 1. JSON-LD injection (existing, unchanged): every approved schema
+  //    becomes a <script type="application/ld+json"> tag in <head>.
+  //    AI engines that parse JSON-LD pick up the structured data.
+  //
+  // 2. Visible HTML for FAQPage schemas (new): some AI crawlers and
+  //    most non-AI crawlers either don't execute JS or don't parse
+  //    JSON-LD deeply. For FAQPage entries we ALSO render semantic
+  //    HTML with Schema.org microdata so the same Q&A content is
+  //    readable in two formats.
+  //
+  //    Placement is opt-in via a marker div on the page:
+  //       <div data-nr-faq></div>
+  //    If the marker exists, we render the FAQ block into it. If
+  //    not, we render nothing visible -- no surprise content on the
+  //    client's site. Existing deployments (no marker on the page)
+  //    see zero visual change.
+  //
+  //    The visible content uses <details>/<summary> for native
+  //    accordion behavior with no CSS dependency. Microdata
+  //    attributes (itemscope/itemtype/itemprop) provide structured
+  //    data redundantly to JSON-LD.
+
   const js = `(function(){
 var schemas=[${schemas.join(",")}];
 var path=location.pathname;
@@ -148,8 +172,43 @@ schemas.forEach(function(s){
     el.type="application/ld+json";
     el.textContent=JSON.stringify(s.ld);
     document.head.appendChild(el);
+    if(s.ld&&s.ld["@type"]==="FAQPage"&&Array.isArray(s.ld.mainEntity)){
+      injectFAQVisible(s.ld);
+    }
   }
 });
+function injectFAQVisible(ld){
+  var marker=document.querySelector("[data-nr-faq]");
+  if(!marker)return;
+  if(marker.getAttribute("data-nr-faq-rendered")==="1")return;
+  marker.setAttribute("data-nr-faq-rendered","1");
+  marker.setAttribute("itemscope","");
+  marker.setAttribute("itemtype","https://schema.org/FAQPage");
+  ld.mainEntity.forEach(function(q){
+    if(!q||q["@type"]!=="Question")return;
+    var d=document.createElement("details");
+    d.className="nr-faq-item";
+    d.setAttribute("itemscope","");
+    d.setAttribute("itemtype","https://schema.org/Question");
+    d.setAttribute("itemprop","mainEntity");
+    var s=document.createElement("summary");
+    s.className="nr-faq-q";
+    s.setAttribute("itemprop","name");
+    s.textContent=q.name||"";
+    d.appendChild(s);
+    var a=document.createElement("div");
+    a.className="nr-faq-a";
+    a.setAttribute("itemscope","");
+    a.setAttribute("itemtype","https://schema.org/Answer");
+    a.setAttribute("itemprop","acceptedAnswer");
+    var at=document.createElement("div");
+    at.setAttribute("itemprop","text");
+    at.textContent=(q.acceptedAnswer&&q.acceptedAnswer.text)?q.acceptedAnswer.text:"";
+    a.appendChild(at);
+    d.appendChild(a);
+    marker.appendChild(d);
+  });
+}
 })();${referrerTracker}`;
 
   const ttl = config.cache_ttl || 3600;
