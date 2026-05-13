@@ -65,11 +65,11 @@ export interface ActionDefinition {
 const BING_FOR_BUSINESS: ActionDefinition = {
   type: "bing_for_business",
   title: "Claim your Bing for Business profile",
-  one_liner: "Bing is what ChatGPT and Microsoft Copilot search under the hood.",
+  one_liner: "Get named in ChatGPT and Microsoft Copilot answers about businesses like yours.",
   boundary_framing:
     "We can't sign in as you. Microsoft requires the business owner. Everything else is ready. Your business info, description, and category are pre-filled below. Each field has a Copy button.",
   why_this_matters:
-    "ChatGPT routes most grounded queries through Bing's index. Without a claimed Bing for Business profile, Bing's local pack returns unverified info or skips your business entirely, and ChatGPT often skips you too. Setup is free, takes about 20 minutes, and meaningfully lifts Microsoft Copilot + Bing-routed ChatGPT citations within 14 days of verification.",
+    "ChatGPT routes most grounded queries through Bing's index. Without a claimed Bing profile, Bing's local pack returns unverified info or skips your business entirely. ChatGPT skips you with it. Free, 20 minutes, measurable lift in citations within 14 days of verification.",
   time_estimate_minutes: 20,
   progress_shape: "step_driven",
   prerequisites: ["business_name", "business_url"],
@@ -166,11 +166,11 @@ const BING_FOR_BUSINESS: ActionDefinition = {
 const FAQ_REVIEW: ActionDefinition = {
   type: "faq_review",
   title: "Review your AI-facing FAQ schema",
-  one_liner: "FAQs we propose to put on your domain, sourced from your AI citation data.",
+  one_liner: "Approve FAQs that close the gaps where AI engines answer about your category without naming you.",
   boundary_framing:
-    "We can't decide your brand voice. Review each FAQ below: approve it, edit the wording to match how you'd say it, or reject anything off-brand. Approved FAQs deploy automatically to your domain.",
+    "We can't decide your brand voice. Review each FAQ below: approve the ones that fit, edit anything that needs your voice, reject anything off-brand. Approved FAQs deploy automatically to your domain.",
   why_this_matters:
-    "We track which questions AI engines answer in your category and which they answer without naming you. For each gap, we generate a FAQ proposal in your voice that closes the gap. The proposals below each include a 'why this is here' line explaining the citation data behind it.",
+    "AI engines answer questions in your category every day. For each query where they answered without naming you, we generated a FAQ in your voice. Approve it and it deploys to your domain. Next time the engine answers the same question, your schema is the citation source.",
   time_estimate_minutes: 5,
   progress_shape: "item_driven",
   prerequisites: ["business_description"],

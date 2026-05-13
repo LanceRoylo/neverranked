@@ -112,7 +112,7 @@ export async function handleActionsIndex(slug: string, user: User, env: Env): Pr
         Heavy lifting is done. The clicks are yours.
       </p>
       <p style="color:var(--text-mute);margin-top:10px;line-height:1.65;font-size:13px">
-        A few tasks require your authentication or your physical verification. We can't do those as you. Everything else is prepared below, with every field filled in and every step explained.
+        Each task below moves the needle on how often AI engines cite your business. We've handled the prep work. Your data is pre-filled, every step is explained, every field has a Copy button. The clicks are yours because they require your authentication or your physical verification.
       </p>
     </div>
     ${cards.join("\n")}
