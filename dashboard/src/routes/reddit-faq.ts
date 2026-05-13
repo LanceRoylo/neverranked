@@ -117,7 +117,24 @@ export async function handleRedditFaq(
           (f) => `<div style="padding:14px 0;border-bottom:1px solid var(--line)">
             <div style="font-weight:600;color:var(--text);margin-bottom:6px">${esc(f.question)}</div>
             <div style="color:var(--text-mute);margin-bottom:6px;line-height:1.55">${esc(f.answer)}</div>
-            <div style="color:var(--text-faint);font-size:11px;font-family:var(--mono)">From ${f.evidence.cluster_size} Reddit ${f.evidence.cluster_size === 1 ? "thread" : "threads"} — ${f.evidence.top_sources.map((s) => `r/${esc(s.subreddit)}`).join(", ")}</div>
+            <div style="color:var(--text-faint);font-size:11px;font-family:var(--mono)">${(() => {
+              // Source-aware evidence line. Tracked-prompt gaps are
+              // the highest-signal source; reddit threads are still
+              // shown but de-emphasized as a secondary input.
+              const trackedGap = f.evidence.sources_by_type?.tracked_prompt_gap ?? 0;
+              const trackedDef = f.evidence.sources_by_type?.tracked_prompt_defense ?? 0;
+              const reddit = f.evidence.sources_by_type?.reddit_thread ?? 0;
+              const parts: string[] = [];
+              if (trackedGap) parts.push(`${trackedGap} tracked prompt${trackedGap === 1 ? "" : "s"} where you weren't cited`);
+              if (trackedDef) parts.push(`${trackedDef} tracked prompt${trackedDef === 1 ? "" : "s"} with competitor pressure`);
+              if (reddit) parts.push(`${reddit} cited Reddit thread${reddit === 1 ? "" : "s"}`);
+              const sourceLabels = (f.evidence.top_sources || []).slice(0, 3).map((s) => {
+                if (s.source === "reddit_thread" && s.subreddit) return `r/${esc(s.subreddit)}`;
+                if (s.keyword) return `"${esc(s.keyword)}"`;
+                return "";
+              }).filter(Boolean).join(", ");
+              return `From ${parts.join(" + ") || `${f.evidence.cluster_size} source${f.evidence.cluster_size === 1 ? "" : "s"}`}${sourceLabels ? ` — ${sourceLabels}` : ""}`;
+            })()}</div>
           </div>`,
         )
         .join("")

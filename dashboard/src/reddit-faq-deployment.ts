@@ -40,17 +40,59 @@
 
 import type { Env } from "./types";
 
-export interface RedditQuestion {
+/**
+ * FAQ candidate sources. The pipeline supports multiple input
+ * channels; the source tag flows through clustering and grading so
+ * the dashboard can later show "this FAQ exists because AI engines
+ * have been answering this query without naming you."
+ *
+ *   reddit_thread          — extracted from a Reddit thread cited
+ *                            by an AI engine
+ *   tracked_prompt_gap     — sourced from a citation_keyword for
+ *                            this client where client_cited = 0 on
+ *                            recent runs (a clear gap to close)
+ *   tracked_prompt_defense — sourced from a tracked prompt where
+ *                            the client IS cited but multiple
+ *                            competitors are also named (defensive)
+ */
+export type FAQCandidateSource =
+  | "reddit_thread"
+  | "tracked_prompt_gap"
+  | "tracked_prompt_defense";
+
+export interface FAQCandidate {
   question: string;
-  source_subreddit: string;
-  source_thread_url: string;
-  source_thread_title: string;
+  source: FAQCandidateSource;
+  // reddit_thread fields
+  source_subreddit?: string;
+  source_thread_url?: string;
+  source_thread_title?: string;
+  // tracked_prompt_* fields
+  source_keyword?: string;
+  source_engines?: string[];
+  source_run_count?: number;
+  source_competitors?: string[];
+}
+
+// Backward-compat alias: existing code that referenced RedditQuestion
+// still compiles. New code should use FAQCandidate.
+export type RedditQuestion = FAQCandidate;
+
+export interface ClusterSource {
+  source: FAQCandidateSource;
+  // populated based on source type
+  subreddit?: string;
+  thread_url?: string;
+  thread_title?: string;
+  keyword?: string;
+  engines?: string[];
+  competitors?: string[];
 }
 
 export interface ClusteredQuestion {
   canonical: string;          // canonical phrasing
   variants: string[];         // all observed phrasings of this question
-  sources: { subreddit: string; thread_url: string; thread_title: string }[];
+  sources: ClusterSource[];
   cluster_size: number;
 }
 
@@ -59,7 +101,8 @@ export interface FAQEntry {
   answer: string;             // voice-matched answer, 80-280 chars
   evidence: {
     cluster_size: number;
-    top_sources: { subreddit: string; thread_url: string }[];
+    sources_by_type: Record<FAQCandidateSource, number>;
+    top_sources: ClusterSource[];
   };
 }
 
@@ -246,18 +289,148 @@ export async function extractRedditQuestionsForClient(
   const extracted = await extractQuestionsViaClaude(env, threads);
   const byIdx = new Map(extracted.map((e) => [e.thread_idx, e.questions]));
 
-  const out: RedditQuestion[] = [];
+  const out: FAQCandidate[] = [];
   threads.forEach((t, i) => {
     const questions = byIdx.get(i) || [];
     for (const q of questions) {
       out.push({
         question: q,
+        source: "reddit_thread",
         source_subreddit: t.subreddit,
         source_thread_url: t.url,
         source_thread_title: t.title,
       });
     }
   });
+  return out;
+}
+
+// --------------------------------------------------------------------------
+// Step 1b: Extract FAQ candidates from this client's own citation_runs.
+//
+// This is the higher-signal source: for every tracked prompt where the
+// AI engine has been answering without naming the client, we have a
+// gap. A FAQ on the client's domain that answers that exact prompt
+// closes the gap on the next engine crawl.
+//
+// Priority levels:
+//   tracked_prompt_gap     — client_cited = 0 across multiple runs;
+//                            schema deployment puts the client into
+//                            the next answer
+//   tracked_prompt_defense — client_cited = 1 alongside multiple
+//                            competitors; strengthens citation share
+//
+// We cap candidates to keep Claude $ bounded. Priority gaps fill
+// slots first, defenses use remaining capacity.
+// --------------------------------------------------------------------------
+
+interface KeywordRollup {
+  keyword: string;
+  total_runs: number;
+  cited_runs: number;
+  engines: Set<string>;
+  competitors: Set<string>;
+}
+
+export async function extractFAQCandidatesFromCitationRuns(
+  env: Env,
+  clientSlug: string,
+  days: number,
+  maxCandidates = 24,
+): Promise<FAQCandidate[]> {
+  const since = Math.floor(Date.now() / 1000) - days * 86400;
+
+  // Pull every citation_run for this client in the window, including
+  // the keyword text and whether the client was cited. cited_entities
+  // gives us competitor names so we can flag the defense case.
+  const rows = (
+    await env.DB.prepare(
+      `SELECT ck.keyword,
+              cr.engine,
+              cr.client_cited,
+              cr.cited_entities
+         FROM citation_runs cr
+         JOIN citation_keywords ck ON ck.id = cr.keyword_id
+        WHERE ck.client_slug = ?
+          AND ck.active = 1
+          AND cr.run_at >= ?`,
+    )
+      .bind(clientSlug, since)
+      .all<{ keyword: string; engine: string; client_cited: number; cited_entities: string | null }>()
+  ).results;
+
+  if (rows.length === 0) return [];
+
+  // Roll up by keyword. Track engine coverage and competitor presence.
+  const byKeyword = new Map<string, KeywordRollup>();
+  for (const r of rows) {
+    let rollup = byKeyword.get(r.keyword);
+    if (!rollup) {
+      rollup = {
+        keyword: r.keyword,
+        total_runs: 0,
+        cited_runs: 0,
+        engines: new Set(),
+        competitors: new Set(),
+      };
+      byKeyword.set(r.keyword, rollup);
+    }
+    rollup.total_runs++;
+    if (r.client_cited) rollup.cited_runs++;
+    rollup.engines.add(r.engine);
+    if (r.cited_entities) {
+      try {
+        const ents = JSON.parse(r.cited_entities) as Array<{ name?: string }>;
+        for (const e of ents) {
+          if (e && typeof e.name === "string" && e.name.trim().length > 0) {
+            rollup.competitors.add(e.name.trim().toLowerCase());
+          }
+        }
+      } catch {
+        // skip
+      }
+    }
+  }
+
+  // Classify each keyword and sort priority gaps first.
+  type Classified = { rollup: KeywordRollup; priority: 1 | 2 | 3 };
+  const classified: Classified[] = [];
+  for (const rollup of byKeyword.values()) {
+    if (rollup.total_runs === 0) continue;
+    // Need at least 2 runs to consider — single-run signal is too thin.
+    if (rollup.total_runs < 2) continue;
+
+    const cited_ratio = rollup.cited_runs / rollup.total_runs;
+    if (cited_ratio === 0) {
+      // Pure gap. Highest priority.
+      classified.push({ rollup, priority: 1 });
+    } else if (cited_ratio < 1 && rollup.competitors.size >= 2) {
+      // Partial cite + competitors. Defense candidate.
+      classified.push({ rollup, priority: 2 });
+    } else if (cited_ratio < 1) {
+      // Partial cite, no competitor pressure. Lower priority.
+      classified.push({ rollup, priority: 3 });
+    }
+    // cited_ratio === 1 means full coverage; no FAQ needed.
+  }
+
+  // Order: priority asc (1 first), then total_runs desc (higher confidence first).
+  classified.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    return b.rollup.total_runs - a.rollup.total_runs;
+  });
+
+  const out: FAQCandidate[] = [];
+  for (const { rollup, priority } of classified.slice(0, maxCandidates)) {
+    out.push({
+      question: rollup.keyword,
+      source: priority === 1 ? "tracked_prompt_gap" : "tracked_prompt_defense",
+      source_keyword: rollup.keyword,
+      source_engines: [...rollup.engines],
+      source_run_count: rollup.total_runs,
+      source_competitors: [...rollup.competitors].slice(0, 6),
+    });
+  }
   return out;
 }
 
@@ -300,16 +473,22 @@ Return STRICT JSON, no prose:
 
 export async function clusterAndDedupeQuestions(
   env: Env,
-  questions: RedditQuestion[],
+  questions: FAQCandidate[],
 ): Promise<ClusteredQuestion[]> {
   if (questions.length === 0) return [];
   if (!env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
 
+  // Source context flows into the clusterer so it can group across
+  // mixed inputs. Reddit candidates show subreddit; tracked-prompt
+  // candidates show the keyword itself.
   const userMessage = JSON.stringify(
     questions.map((q, i) => ({
       i,
       question: q.question,
-      subreddit: q.source_subreddit,
+      source: q.source,
+      ...(q.source === "reddit_thread"
+        ? { subreddit: q.source_subreddit }
+        : { keyword: q.source_keyword, run_count: q.source_run_count }),
     })),
     null,
     0,
@@ -346,14 +525,27 @@ export async function clusterAndDedupeQuestions(
   }
   const clusters = parsed.clusters || [];
   return clusters.map((c) => {
-    const sources = (c.source_indices || []).map((i) => questions[i]).filter(Boolean);
-    const uniqueSources = [
-      ...new Map(sources.map((s) => [s.source_thread_url, s])).values(),
-    ].map((s) => ({
-      subreddit: s.source_subreddit,
-      thread_url: s.source_thread_url,
-      thread_title: s.source_thread_title,
-    }));
+    const candidates = (c.source_indices || []).map((i) => questions[i]).filter(Boolean);
+    // Dedupe by a source-appropriate key, then map to the unified
+    // ClusterSource shape so downstream code is type-uniform.
+    const seenKeys = new Set<string>();
+    const uniqueSources: ClusterSource[] = [];
+    for (const q of candidates) {
+      const key = q.source === "reddit_thread"
+        ? `r:${q.source_thread_url || ""}`
+        : `k:${q.source_keyword || ""}`;
+      if (seenKeys.has(key)) continue;
+      seenKeys.add(key);
+      uniqueSources.push({
+        source: q.source,
+        subreddit: q.source_subreddit,
+        thread_url: q.source_thread_url,
+        thread_title: q.source_thread_title,
+        keyword: q.source_keyword,
+        engines: q.source_engines,
+        competitors: q.source_competitors,
+      });
+    }
     return {
       canonical: c.canonical,
       variants: c.variants || [],
@@ -442,17 +634,26 @@ Return JSON only.`;
     (parsed.faqs || []).map((f) => [f.question.trim().toLowerCase(), f.answer]),
   );
 
-  return clusters.slice(0, 10).map((c) => ({
-    question: c.canonical,
-    answer: byQuestion.get(c.canonical.trim().toLowerCase()) || "",
-    evidence: {
-      cluster_size: c.cluster_size,
-      top_sources: c.sources.slice(0, 3).map((s) => ({
-        subreddit: s.subreddit,
-        thread_url: s.thread_url,
-      })),
-    },
-  })).filter((e) => e.answer.length > 0);
+  return clusters.slice(0, 10).map((c) => {
+    // Roll up source-type counts for the evidence panel so the
+    // dashboard can show "3 from tracked-prompt gaps, 1 from reddit"
+    // and prove why each FAQ exists.
+    const sources_by_type: Record<FAQCandidateSource, number> = {
+      reddit_thread: 0,
+      tracked_prompt_gap: 0,
+      tracked_prompt_defense: 0,
+    };
+    for (const s of c.sources) sources_by_type[s.source]++;
+    return {
+      question: c.canonical,
+      answer: byQuestion.get(c.canonical.trim().toLowerCase()) || "",
+      evidence: {
+        cluster_size: c.cluster_size,
+        sources_by_type,
+        top_sources: c.sources.slice(0, 3),
+      },
+    };
+  }).filter((e) => e.answer.length > 0);
 }
 
 // --------------------------------------------------------------------------
@@ -591,13 +792,41 @@ export async function buildFAQDeployment(
   FAQDeployment & {
     deployment_id: number;
     source_thread_count: number;
+    source_tracked_prompt_count: number;
+    accepted_by_source: Record<FAQCandidateSource, number>;
     graded_faqs: GradedFAQ[];
     rejected_faqs: GradedFAQ[];
     auto_deployed: boolean;
   }
 > {
-  const questions = await extractRedditQuestionsForClient(env, clientSlug, days);
-  const sourceThreadCount = new Set(questions.map((q) => q.source_thread_url)).size;
+  // Multi-source extraction. Primary signal is our own citation_runs
+  // data (tracked prompts where the client has gaps or competitor
+  // pressure). Secondary is Reddit threads cited by AI engines (still
+  // useful for surfacing questions we don't have in our tracked set).
+  // Both feed the same cluster/answer/grade pipeline.
+  const [citationCandidates, redditCandidates] = await Promise.all([
+    extractFAQCandidatesFromCitationRuns(env, clientSlug, days),
+    extractRedditQuestionsForClient(env, clientSlug, days),
+  ]);
+
+  // Merge with a simple dedupe: candidates with the same lowercased
+  // question text collapse to one row, preserving the higher-priority
+  // source. Order matters because the cluster pass capacity is bounded.
+  const seenQuestions = new Map<string, FAQCandidate>();
+  for (const c of citationCandidates) {
+    const key = c.question.trim().toLowerCase();
+    if (!seenQuestions.has(key)) seenQuestions.set(key, c);
+  }
+  for (const c of redditCandidates) {
+    const key = c.question.trim().toLowerCase();
+    if (!seenQuestions.has(key)) seenQuestions.set(key, c);
+  }
+  const questions: FAQCandidate[] = [...seenQuestions.values()];
+  const sourceThreadCount = new Set(
+    redditCandidates.map((q) => q.source_thread_url).filter(Boolean),
+  ).size;
+  const sourceTrackedPromptCount = citationCandidates.length;
+  console.log(`[faq-build] ${clientSlug}: ${citationCandidates.length} citation candidates + ${redditCandidates.length} reddit candidates = ${questions.length} unique to cluster`);
   const clusters = await clusterAndDedupeQuestions(env, questions);
   const rawFaqs = await generateFAQAnswers(env, clusters, businessContext);
 
@@ -620,13 +849,21 @@ export async function buildFAQDeployment(
   const schema = cleanFaqs.length > 0 ? renderFAQPageSchema(cleanFaqs, businessContext.url) : "";
 
   const preview = cleanFaqs
-    .map(
-      (f) => `<div class="faq-entry">
+    .map((f) => {
+      // Source-aware meta line. Reddit candidates show subreddit;
+      // tracked-prompt candidates show the keyword that drove the
+      // FAQ to exist. Defensive against undefined fields.
+      const sourceLabels = (f.evidence.top_sources || []).slice(0, 3).map((s) => {
+        if (s.source === "reddit_thread" && s.subreddit) return `r/${escHtml(s.subreddit)}`;
+        if (s.keyword) return `"${escHtml(s.keyword)}"`;
+        return "";
+      }).filter(Boolean).join(", ");
+      return `<div class="faq-entry">
   <div class="faq-q">${escHtml(f.question)}</div>
   <div class="faq-a">${escHtml(f.answer)}</div>
-  <div class="faq-meta">From ${f.evidence.cluster_size} Reddit ${f.evidence.cluster_size === 1 ? "thread" : "threads"} — ${f.evidence.top_sources.map((s) => `r/${escHtml(s.subreddit)}`).join(", ")}</div>
-</div>`,
-    )
+  <div class="faq-meta">From ${f.evidence.cluster_size} source${f.evidence.cluster_size === 1 ? "" : "s"}${sourceLabels ? ` — ${sourceLabels}` : ""}</div>
+</div>`;
+    })
     .join("\n");
 
   const generatedAt = Math.floor(Date.now() / 1000);
@@ -677,6 +914,20 @@ export async function buildFAQDeployment(
     }
   }
 
+  // Roll up acceptance counts by source type so the verification
+  // endpoint and the dashboard can show "X of these FAQs came from
+  // tracked-prompt gaps; Y came from Reddit."
+  const accepted_by_source: Record<FAQCandidateSource, number> = {
+    reddit_thread: 0,
+    tracked_prompt_gap: 0,
+    tracked_prompt_defense: 0,
+  };
+  for (const f of cleanFaqs) {
+    for (const k of Object.keys(f.evidence.sources_by_type) as FAQCandidateSource[]) {
+      if (f.evidence.sources_by_type[k] > 0) accepted_by_source[k]++;
+    }
+  }
+
   return {
     client_slug: clientSlug,
     client_name: businessContext.name,
@@ -688,6 +939,8 @@ export async function buildFAQDeployment(
     human_preview_html: preview,
     deployment_id: deploymentId,
     source_thread_count: sourceThreadCount,
+    source_tracked_prompt_count: sourceTrackedPromptCount,
+    accepted_by_source,
     graded_faqs: graded,
     rejected_faqs: rejected,
     auto_deployed: autoDeployed,
