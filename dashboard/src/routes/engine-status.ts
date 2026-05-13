@@ -51,12 +51,18 @@ interface EngineHealth {
   status_note: string;
 }
 
+// "Empty" here means the engine returned no usable response at all
+// (response_text is null or empty). That's a pipeline failure worth
+// flagging. Rows where text is present but cited_entities is [] are
+// legitimate AI responses that simply didn't name entities -- those
+// are content variation, not pipeline health issues, and should NOT
+// trigger a watch/degraded state on the public status page.
 async function getEngineHealth(env: Env, engineId: string): Promise<{ rows: number; empty: number; lastRun: number | null }> {
   const since = Math.floor(Date.now() / 1000) - 86400;
   const stmt = await env.DB.prepare(
     `SELECT
        COUNT(*) AS rows,
-       SUM(CASE WHEN cited_entities IS NULL OR cited_entities = '[]' THEN 1 ELSE 0 END) AS empty,
+       SUM(CASE WHEN response_text IS NULL OR response_text = '' THEN 1 ELSE 0 END) AS empty,
        MAX(run_at) AS last_run
      FROM citation_runs
      WHERE engine = ? AND run_at >= ?`,
@@ -73,7 +79,7 @@ async function getEngine7d(env: Env, engineId: string): Promise<{ rows: number; 
   const stmt = await env.DB.prepare(
     `SELECT
        COUNT(*) AS rows,
-       SUM(CASE WHEN cited_entities IS NULL OR cited_entities = '[]' THEN 1 ELSE 0 END) AS empty
+       SUM(CASE WHEN response_text IS NULL OR response_text = '' THEN 1 ELSE 0 END) AS empty
      FROM citation_runs
      WHERE engine = ? AND run_at >= ?`,
   ).bind(engineId, since).first<{ rows: number; empty: number }>();
