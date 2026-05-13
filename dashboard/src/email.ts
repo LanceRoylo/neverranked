@@ -494,6 +494,14 @@ export interface RoadmapDigestData {
 }
 
 /** Send a digest email to one recipient */
+export interface DigestEvent {
+  kind: string;
+  severity: "info" | "win" | "concern";
+  title: string;
+  body: string | null;
+  occurred_at: number;
+}
+
 export async function sendDigestEmail(
   to: string,
   userName: string | null,
@@ -505,6 +513,7 @@ export async function sendDigestEmail(
   unsubToken?: string,
   agency?: Agency | null,
   stateOfAeo?: StateOfAeoLatest | null,
+  eventsByClient?: Map<string, DigestEvent[]>,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -518,7 +527,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0], citationData)
     : buildSubjectMulti(digests, citationData);
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -2092,7 +2101,7 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null): string {
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>): string {
   const brand = brandFor(agency);
   const headerCellHtml = brand.logo
     ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
@@ -2213,6 +2222,34 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             <div style="font-family:Georgia,serif;font-size:14px;color:#888888;line-height:1.6">Here's your weekly AEO scan from ${scanDate}.</div>
           </td>
         </tr>
+
+        <!-- This week's highlights: events that used to fire their own
+             dedicated emails (citation gained / lost, grade up,
+             snippet detected, regression, phase complete, etc.) now
+             roll up into one section per digest. Respects the inbox. -->
+        ${(() => {
+          if (!eventsByClient || eventsByClient.size === 0) return "";
+          const slugsSeen = new Set<string>();
+          const sections: string[] = [];
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const evs = eventsByClient.get(d.clientSlug);
+            if (!evs || evs.length === 0) continue;
+            const items = evs.slice(0, 8).map((e) => {
+              const accent = e.severity === "win" ? "#7fc99a" : e.severity === "concern" ? "#dc6c6c" : "#bfa04d";
+              return `<tr><td style="padding:10px 0;border-bottom:1px solid #2a2620">
+                <div style="font-family:Georgia,serif;font-size:14px;color:#fbf8ef;margin-bottom:4px"><span style="display:inline-block;width:8px;height:8px;background:${accent};border-radius:50%;margin-right:8px;vertical-align:middle"></span>${escEmail(e.title)}</div>
+                ${e.body ? `<div style="font-family:Georgia,serif;font-size:13px;color:#888;margin-left:16px;line-height:1.5">${escEmail(e.body)}</div>` : ""}
+              </td></tr>`;
+            }).join("");
+            sections.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0 20px">
+              <tr><td style="padding:0 0 8px"><div style="font-family:monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d">${escEmail(d.domain)} this week</div></td></tr>
+              ${items}
+            </table>`);
+          }
+          return sections.length > 0 ? `<tr><td style="padding-bottom:8px">${sections.join("")}</td></tr>` : "";
+        })()}
 
         <!-- Domain blocks -->
         <tr>

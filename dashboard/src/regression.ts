@@ -5,9 +5,10 @@
  * REGRESSION_THRESHOLD or more, alerts all relevant users immediately.
  */
 
-import type { Env, Domain, User, ScanResult } from "./types";
-import { sendRegressionAlert, REGRESSION_THRESHOLD, sendGradeUpEmail } from "./email";
-import { resolveAgencyForEmail } from "./agency";
+import type { Env, Domain, ScanResult } from "./types";
+import { REGRESSION_THRESHOLD } from "./email";
+// resolveAgencyForEmail no longer needed: per-event email blasts replaced
+// by client_events log + Monday digest renderer.
 
 // Grades worth celebrating, in ascending order. We fire the celebration
 // the first time the grade reaches each tier. Going down then back up
@@ -40,26 +41,21 @@ export async function checkAndCelebrateGradeUp(domain: Domain, env: Env): Promis
   ).bind(domain.client_slug, alertType).first<{ id: number }>();
   if (already) return;
 
-  const users = (await env.DB.prepare(
-    "SELECT * FROM users WHERE (email_regression = 1 OR email_regression IS NULL) AND (role = 'admin' OR client_slug = ?)"
-  ).bind(domain.client_slug).all<User>()).results;
-  const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-  if (agency?.contact_email && !users.some((u) => u.email === agency.contact_email)) {
-    users.push({ email: agency.contact_email, name: null } as User);
-  }
-
-  let sent = 0;
-  for (const user of users) {
-    const ok = await sendGradeUpEmail(user.email, user.name, {
+  // Was: per-event grade-up email blast. Now: log to client_events;
+  // the Monday digest renders this as a "Score improved" highlight.
+  const { logClientEvent } = await import("./client-events");
+  await logClientEvent(env, {
+    client_slug: domain.client_slug,
+    kind: "grade_up",
+    title: `${domain.domain} reached grade ${latest.grade}`,
+    body: `Up from ${previous?.grade || "F"}. Score ${latest.aeo_score}/100.`,
+    payload: {
       domain: domain.domain,
-      clientSlug: domain.client_slug,
       newGrade: latest.grade,
       previousGrade: previous?.grade || "F",
       newScore: latest.aeo_score,
-    }, env, agency);
-    if (ok) sent++;
-    await new Promise((r) => setTimeout(r, 200));
-  }
+    },
+  });
 
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
@@ -67,11 +63,11 @@ export async function checkAndCelebrateGradeUp(domain: Domain, env: Env): Promis
   ).bind(
     domain.client_slug, alertType,
     `${domain.domain} reached grade ${latest.grade}`,
-    `Up from ${previous?.grade || "F"}. Score ${latest.aeo_score}/100. ${sent}/${users.length} celebration emails sent.`,
+    `Up from ${previous?.grade || "F"}. Score ${latest.aeo_score}/100. Event logged for next digest.`,
     now,
   ).run();
 
-  console.log(`[grade-up] celebrated ${domain.client_slug} reaching ${latest.grade} (${sent}/${users.length} emails)`);
+  console.log(`[grade-up] logged event for ${domain.client_slug} reaching ${latest.grade}`);
 }
 
 /** Check if a domain's latest scan shows a significant regression, and alert users */
@@ -94,43 +90,26 @@ export async function checkAndAlertRegression(domain: Domain, env: Env): Promise
 
   console.log(`Regression detected: ${domain.domain} dropped ${drop} pts (${previous.aeo_score} -> ${latest.aeo_score})`);
 
-  // Find users to alert: clients with this slug + all admins, who have regression alerts on
-  const users = (await env.DB.prepare(
-    "SELECT * FROM users WHERE (email_regression = 1 OR email_regression IS NULL) AND (role = 'admin' OR client_slug = ?)"
-  ).bind(domain.client_slug).all<User>()).results;
+  // Was: per-event regression alert email blast. Now: log to
+  // client_events. Critical: regressions still need fast visibility
+  // for the operator, but the CLIENT inbox no longer gets hammered.
+  // The digest renders this as a "concern" section with the score
+  // delta. If it's severe enough we can short-circuit later, but
+  // for now the digest is the right cadence.
+  const { logClientEvent } = await import("./client-events");
+  await logClientEvent(env, {
+    client_slug: domain.client_slug,
+    kind: "regression_alert",
+    title: `${domain.domain} score dropped ${drop} points`,
+    body: `From ${previous.aeo_score} to ${latest.aeo_score} (grade ${latest.grade}).`,
+    payload: {
+      domain: domain.domain,
+      drop,
+      newScore: latest.aeo_score,
+      previousScore: previous.aeo_score,
+      newGrade: latest.grade,
+    },
+  });
 
-  // Domain-scoped lookup: every recipient of an alert about this domain
-  // should see the same agency branding (or NeverRanked if unaffiliated).
-  const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-
-  let sent = 0;
-  for (const user of users) {
-    const ok = await sendRegressionAlert(
-      user.email,
-      user.name,
-      domain.domain,
-      domain.id,
-      latest.aeo_score,
-      previous.aeo_score,
-      latest.grade,
-      latest,
-      env,
-      agency
-    );
-    if (ok) sent++;
-
-    // Log it
-    try {
-      const now = Math.floor(Date.now() / 1000);
-      await env.DB.prepare(
-        "INSERT INTO email_log (email, type, created_at) VALUES (?, 'regression_alert', ?)"
-      ).bind(user.email, now).run();
-    } catch {
-      // Non-critical
-    }
-
-    await new Promise(r => setTimeout(r, 200));
-  }
-
-  console.log(`Regression alerts sent: ${sent} of ${users.length} for ${domain.domain}`);
+  console.log(`[regression] logged event for ${domain.domain}: dropped ${drop} pts`);
 }

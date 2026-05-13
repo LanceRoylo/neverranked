@@ -175,35 +175,28 @@ export async function checkPhaseCompletion(clientSlug: string, env: Env): Promis
         "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 LIMIT 1"
       ).bind(clientSlug).first<Domain>();
       if (domain) {
-        const { resolveAgencyForEmail } = await import("../agency");
-        const { sendPhaseCompleteEmail } = await import("../email");
-        const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-        const recipients = (await env.DB.prepare(
-          `SELECT email, name FROM users
-            WHERE (role = 'client' AND client_slug = ?) OR role = 'admin'`
-        ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
-        if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
-          recipients.push({ email: agency.contact_email, name: null });
-        }
-        let sent = 0;
-        for (const r of recipients) {
-          const ok = await sendPhaseCompleteEmail(r.email, r.name, {
+        // Was: per-event phase-complete email blast. Now: log to
+        // client_events; Monday digest renders.
+        const { logClientEvent } = await import("../client-events");
+        await logClientEvent(env, {
+          client_slug: clientSlug,
+          kind: "phase_complete",
+          title: `Phase ${activePhase.phase_number} complete: ${activePhase.title}`,
+          body: `${items.length} items delivered${nextPhase ? `. Phase ${activePhase.phase_number + 1} unlocked.` : "."}`,
+          payload: {
             domain: domain.domain,
-            clientSlug,
             phaseTitle: activePhase.title,
             phaseNumber: activePhase.phase_number,
             itemsCompleted: items.length,
             nextPhaseTitle: nextPhase?.title || null,
-          }, env, agency);
-          if (ok) sent++;
-          await new Promise((r) => setTimeout(r, 200));
-        }
+          },
+        });
         await env.DB.prepare(
           "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, ?, ?, ?, ?)"
         ).bind(
           clientSlug, alertType,
           `${domain.domain}: Phase ${activePhase.phase_number} (${activePhase.title}) completed`,
-          `${items.length} items delivered. ${sent}/${recipients.length} celebration emails sent.${nextPhase ? ` Phase ${activePhase.phase_number + 1} unlocked.` : ""}`,
+          `${items.length} items delivered. Event logged for next digest.${nextPhase ? ` Phase ${activePhase.phase_number + 1} unlocked.` : ""}`,
           now,
         ).run();
       }

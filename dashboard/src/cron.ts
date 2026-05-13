@@ -247,15 +247,67 @@ export async function sendWeeklyDigests(
     // White-label branding: agency for Mode-2 clients, null otherwise.
     const agency = await resolveAgencyForEmail(env, { email: user.email });
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo);
+    // Pull pending client events for every domain in this digest so the
+    // renderer can show a "this week's highlights" section. Respect
+    // per-client digest_cadence (weekly vs biweekly) and skip if the
+    // last send is too recent. Track which event ids land in this
+    // digest so we can mark them delivered after send.
+    const { getPendingEvents, markEventsDelivered } = await import("./client-events");
+    const eventsByClient = new Map<string, Array<{ kind: string; severity: "info" | "win" | "concern"; title: string; body: string | null; occurred_at: number }>>();
+    const eventIdsToMark: number[] = [];
+    const nowEpoch = Math.floor(Date.now() / 1000);
+    const cadenceSkipSlugs = new Set<string>();
+    for (const d of digests) {
+      const cfg = await env.DB.prepare(
+        `SELECT digest_cadence, last_digest_sent_at FROM injection_configs WHERE client_slug = ?`,
+      ).bind(d.clientSlug).first<{ digest_cadence: string | null; last_digest_sent_at: number | null }>();
+      if (cfg?.digest_cadence === "biweekly" && cfg.last_digest_sent_at && nowEpoch - cfg.last_digest_sent_at < 13 * 86400) {
+        cadenceSkipSlugs.add(d.clientSlug);
+        continue;
+      }
+      const bundle = await getPendingEvents(env, d.clientSlug);
+      if (bundle.events.length > 0) {
+        eventsByClient.set(d.clientSlug, bundle.events.map((e) => ({
+          kind: e.kind, severity: e.severity, title: e.title, body: e.body, occurred_at: e.occurred_at,
+        })));
+        for (const ev of bundle.events) eventIdsToMark.push(ev.id);
+      }
+    }
+    // If every domain in this digest is on biweekly cooldown, skip the
+    // send entirely rather than mail an empty digest.
+    const allSkipped = digests.every((d) => cadenceSkipSlugs.has(d.clientSlug));
+    if (allSkipped) {
+      continue;
+    }
+
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient);
     if (ok) {
       sent++;
-      // Log to email_log
+      // Mark events delivered (use digest id = 0 since we don't persist
+      // a digest row per send today; the non-null sentinel is enough to
+      // exclude these events from next week's bundle).
+      if (eventIdsToMark.length > 0) {
+        try {
+          await markEventsDelivered(env, eventIdsToMark, 0);
+        } catch (e) {
+          console.log(`[digest] markEventsDelivered failed: ${e}`);
+        }
+      }
+      // Bump last_digest_sent_at per client so biweekly cadence works.
+      for (const d of digests) {
+        if (cadenceSkipSlugs.has(d.clientSlug)) continue;
+        try {
+          await env.DB.prepare(
+            `UPDATE injection_configs SET last_digest_sent_at = ?, updated_at = unixepoch() WHERE client_slug = ?`,
+          ).bind(nowEpoch, d.clientSlug).run();
+        } catch {
+          // Non-critical
+        }
+      }
       try {
-        const now = Math.floor(Date.now() / 1000);
         await env.DB.prepare(
           "INSERT INTO email_log (email, type, created_at) VALUES (?, 'digest', ?)"
-        ).bind(user.email, now).run();
+        ).bind(user.email, nowEpoch).run();
       } catch {
         // Non-critical logging
       }
@@ -1813,36 +1865,23 @@ export async function runSnippetSweep(env: Env): Promise<void> {
         detected++;
         if (wasNeverDetectedBefore) {
           try {
-            const { resolveAgencyForEmail } = await import("./agency");
-            const { sendSnippetDetectedEmail } = await import("./email");
-            const agencyForBrand = await resolveAgencyForEmail(env, { domainId: d.id });
-            const recipients = (await env.DB.prepare(
-              `SELECT email, name FROM users
-                WHERE (role = 'client' AND client_slug = ?) OR role = 'admin'`
-            ).bind(d.client_slug).all<{ email: string; name: string | null }>()).results;
-            // Add the agency contact if this domain is agency-owned. Direct
-            // clients (agency_id IS NULL) skip this whole block; the
-            // agency_id! assertion was the second part of the gap that
-            // would have crashed celebration for any direct client.
-            if (d.agency_id) {
-              const agencyRow = await getAgency(env, d.agency_id);
-              if (agencyRow?.contact_email && !recipients.some((r) => r.email === agencyRow.contact_email)) {
-                recipients.push({ email: agencyRow.contact_email, name: null });
-              }
-            }
+            // Was: per-event snippet-detected email. Now: log event;
+            // Monday digest renders.
             const daysSinceDelivery = d.snippet_email_sent_at
               ? Math.floor((now - d.snippet_email_sent_at) / 86400) : 0;
-            for (const r of recipients) {
-              await sendSnippetDetectedEmail(r.email, r.name, {
-                domain: d.domain, clientSlug: d.client_slug, daysSinceDelivery,
-              }, env, agencyForBrand);
-              await new Promise((res) => setTimeout(res, 200));
-            }
+            const { logClientEvent } = await import("./client-events");
+            await logClientEvent(env, {
+              client_slug: d.client_slug,
+              kind: "snippet_detected",
+              title: `NeverRanked snippet went live on ${d.domain}`,
+              body: daysSinceDelivery > 0 ? `Took ${daysSinceDelivery} days from delivery.` : undefined,
+              payload: { domain: d.domain, daysSinceDelivery },
+            });
             await env.DB.prepare(
               "INSERT INTO admin_alerts (client_slug, type, title, detail, created_at) VALUES (?, 'snippet_detected', ?, ?, ?)"
-            ).bind(d.client_slug, `Snippet went live on ${d.domain}`, `${recipients.length} celebration emails sent. Took ${daysSinceDelivery} days from delivery.`, now).run();
+            ).bind(d.client_slug, `Snippet went live on ${d.domain}`, `Took ${daysSinceDelivery} days from delivery. Event logged for next digest.`, now).run();
           } catch (e) {
-            console.log(`[snippet-sweep] celebration failed for ${d.id}: ${e}`);
+            console.log(`[snippet-sweep] event log failed for ${d.id}: ${e}`);
           }
         }
       } else {

@@ -1013,43 +1013,28 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           ).bind(clientSlug, now - 30 * 86400).first<{ id: number }>();
 
           if (!recentAlert) {
-            const { resolveAgencyForEmail } = await import("./agency");
-            const { sendCitationLostEmail } = await import("./email");
-            const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-
-            const recipients = (await env.DB.prepare(
-              `SELECT email, name FROM users
-                WHERE (email_regression = 1 OR email_regression IS NULL)
-                  AND ((role = 'client' AND client_slug = ?) OR role = 'admin')`
-            ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
-            if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
-              recipients.push({ email: agency.contact_email, name: null });
-            }
-
+            // Was: per-event email blast. Now: log to client_events so
+            // the Monday digest renders this as a section. Respects the
+            // user's inbox -- one weekly digest beats N event emails.
             const daysBetween = Math.max(1, Math.floor((now - previousSnapshot.created_at) / 86400));
-            let sent = 0;
-            for (const r of recipients) {
-              const ok = await sendCitationLostEmail(r.email, r.name, {
-                domain: domain.domain,
-                clientSlug,
-                previousCitations: previousSnapshot.client_citations,
-                previousQueries: previousSnapshot.total_queries,
-                daysBetween,
-              }, env, agency);
-              if (ok) sent++;
-              await new Promise((res) => setTimeout(res, 200));
-            }
-
+            const { logClientEvent } = await import("./client-events");
+            await logClientEvent(env, {
+              client_slug: clientSlug,
+              kind: "citation_lost",
+              title: `Citations dropped to zero on ${domain.domain}`,
+              body: `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}.`,
+              payload: { domain: domain.domain, previousCitations: previousSnapshot.client_citations, previousQueries: previousSnapshot.total_queries, daysBetween },
+            });
             await env.DB.prepare(
               `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
                  VALUES (?, 'citation_lost', ?, ?, ?)`
             ).bind(
               clientSlug,
               `Citations dropped to zero on ${domain.domain}`,
-              `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. ${sent}/${recipients.length} alert emails sent.`,
+              `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. Event logged for next digest.`,
               now,
             ).run();
-            console.log(`[citation-lost] alerted ${clientSlug} -- ${sent}/${recipients.length} emails`);
+            console.log(`[citation-lost] logged event for ${clientSlug}`);
           }
         }
       }
@@ -1080,35 +1065,17 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
             : "an AI engine";
           const keyword = firstCited?.keyword || "your tracked keywords";
 
-          // Resolve agency for branding (domain-scoped).
-          const { resolveAgencyForEmail } = await import("./agency");
-          const { sendFirstCitationEmail } = await import("./email");
-          const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-
-          // Recipients: client-role users for this slug + the agency
-          // contact when agency-owned. Same audience as regression alerts.
-          const recipients = (await env.DB.prepare(
-            `SELECT email, name FROM users
-              WHERE (role = 'client' AND client_slug = ?)
-                 OR role = 'admin'`
-          ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
-          if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
-            recipients.push({ email: agency.contact_email, name: null });
-          }
-
-          let sent = 0;
-          for (const r of recipients) {
-            const ok = await sendFirstCitationEmail(r.email, r.name, {
-              domain: domain.domain,
-              clientSlug,
-              engineName,
-              keyword,
-              citationsThisRun: clientCitations,
-              totalQueries,
-            }, env, agency);
-            if (ok) sent++;
-            await new Promise((res) => setTimeout(res, 200));
-          }
+          // Was: per-event celebration email. Now: log to client_events;
+          // the Monday digest renders this as a "First citation" highlight
+          // when present in the pending event set.
+          const { logClientEvent } = await import("./client-events");
+          await logClientEvent(env, {
+            client_slug: clientSlug,
+            kind: "first_citation",
+            title: `First AI citation: ${domain.domain} cited by ${engineName}`,
+            body: `${clientCitations} of ${totalQueries} tracked queries cited this week.`,
+            payload: { domain: domain.domain, engineName, keyword, citationsThisRun: clientCitations, totalQueries },
+          });
 
           // Persistent guard: this admin_alert serves dual purpose --
           // visibility for ops AND prevents re-celebration on future
@@ -1119,11 +1086,11 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
           ).bind(
             clientSlug,
             `First AI citation: ${domain.domain} cited by ${engineName}`,
-            `${clientCitations} of ${totalQueries} tracked queries cited this week. ${sent} of ${recipients.length} celebration emails sent.`,
+            `${clientCitations} of ${totalQueries} tracked queries cited this week. Event logged for next digest.`,
             now,
           ).run();
 
-          console.log(`[first-citation] celebrated ${clientSlug} -- ${sent}/${recipients.length} emails sent`);
+          console.log(`[first-citation] logged event for ${clientSlug}`);
         }
       }
     } catch (e) {
@@ -1500,43 +1467,26 @@ export async function buildClientSnapshot(
         ).bind(clientSlug, now - 30 * 86400).first<{ id: number }>();
 
         if (!recentAlert) {
-          const { resolveAgencyForEmail } = await import("./agency");
-          const { sendCitationLostEmail } = await import("./email");
-          const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-
-          const recipients = (await env.DB.prepare(
-            `SELECT email, name FROM users
-              WHERE (email_regression = 1 OR email_regression IS NULL)
-                AND ((role = 'client' AND client_slug = ?) OR role = 'admin')`
-          ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
-          if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
-            recipients.push({ email: agency.contact_email, name: null });
-          }
-
+          // Was: per-event email. Now: log to client_events; digest renders.
           const daysBetween = Math.max(1, Math.floor((now - previousSnapshot.created_at) / 86400));
-          let sent = 0;
-          for (const r of recipients) {
-            const ok = await sendCitationLostEmail(r.email, r.name, {
-              domain: domain.domain,
-              clientSlug,
-              previousCitations: previousSnapshot.client_citations,
-              previousQueries: previousSnapshot.total_queries,
-              daysBetween,
-            }, env, agency);
-            if (ok) sent++;
-            await new Promise((res) => setTimeout(res, 200));
-          }
-
+          const { logClientEvent } = await import("./client-events");
+          await logClientEvent(env, {
+            client_slug: clientSlug,
+            kind: "citation_lost",
+            title: `Citations dropped to zero on ${domain.domain}`,
+            body: `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}.`,
+            payload: { domain: domain.domain, previousCitations: previousSnapshot.client_citations, previousQueries: previousSnapshot.total_queries, daysBetween },
+          });
           await env.DB.prepare(
             `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
                VALUES (?, 'citation_lost', ?, ?, ?)`
           ).bind(
             clientSlug,
             `Citations dropped to zero on ${domain.domain}`,
-            `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. ${sent}/${recipients.length} alert emails sent.`,
+            `Was ${previousSnapshot.client_citations}/${previousSnapshot.total_queries} cited ${daysBetween}d ago, now 0/${totalQueries}. Event logged for next digest.`,
             now,
           ).run();
-          console.log(`[citation-lost] alerted ${clientSlug} -- ${sent}/${recipients.length} emails`);
+          console.log(`[citation-lost] logged event for ${clientSlug}`);
         }
       }
     }
@@ -1565,32 +1515,16 @@ export async function buildClientSnapshot(
           : engineKey || "an AI engine";
         const keyword = firstCited?.keyword || "your tracked keywords";
 
-        const { resolveAgencyForEmail } = await import("./agency");
-        const { sendFirstCitationEmail } = await import("./email");
-        const agency = await resolveAgencyForEmail(env, { domainId: domain.id });
-
-        const recipients = (await env.DB.prepare(
-          `SELECT email, name FROM users
-            WHERE (role = 'client' AND client_slug = ?)
-               OR role = 'admin'`
-        ).bind(clientSlug).all<{ email: string; name: string | null }>()).results;
-        if (agency?.contact_email && !recipients.some((r) => r.email === agency.contact_email)) {
-          recipients.push({ email: agency.contact_email, name: null });
-        }
-
-        let sent = 0;
-        for (const r of recipients) {
-          const ok = await sendFirstCitationEmail(r.email, r.name, {
-            domain: domain.domain,
-            clientSlug,
-            engineName,
-            keyword,
-            citationsThisRun: clientCitations,
-            totalQueries,
-          }, env, agency);
-          if (ok) sent++;
-          await new Promise((res) => setTimeout(res, 200));
-        }
+        // Was: per-event celebration email. Now: log to client_events;
+        // digest renders.
+        const { logClientEvent } = await import("./client-events");
+        await logClientEvent(env, {
+          client_slug: clientSlug,
+          kind: "first_citation",
+          title: `First AI citation: ${domain.domain} cited by ${engineName}`,
+          body: `${clientCitations} of ${totalQueries} tracked queries cited this week.`,
+          payload: { domain: domain.domain, engineName, keyword, citationsThisRun: clientCitations, totalQueries },
+        });
 
         await env.DB.prepare(
           `INSERT INTO admin_alerts (client_slug, type, title, detail, created_at)
@@ -1598,11 +1532,11 @@ export async function buildClientSnapshot(
         ).bind(
           clientSlug,
           `First AI citation: ${domain.domain} cited by ${engineName}`,
-          `${clientCitations} of ${totalQueries} tracked queries cited this week. ${sent} of ${recipients.length} celebration emails sent.`,
+          `${clientCitations} of ${totalQueries} tracked queries cited this week. Event logged for next digest.`,
           now,
         ).run();
 
-        console.log(`[first-citation] celebrated ${clientSlug} -- ${sent}/${recipients.length} emails sent`);
+        console.log(`[first-citation] logged event for ${clientSlug}`);
       }
     }
   } catch (e) {
