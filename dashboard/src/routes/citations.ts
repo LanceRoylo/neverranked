@@ -707,11 +707,12 @@ export async function handleCitations(
   const { getSentimentRollup } = await import("../sentiment-scorer");
   const { getDepthRollup } = await import("../conversation-depth");
   const { generateDepthFindings } = await import("../citation-narrative");
-  const { getKeywordDeepBreakdown } = await import("../citations");
+  const { getKeywordDeepBreakdown, getRedditCitationSurface } = await import("../citations");
   const sentiment = await getSentimentRollup(env, slug, 90);
   const depthRollup = await getDepthRollup(env, slug, 90);
   const depth = generateDepthFindings(depthRollup, slug);
   const keywordDeep = await getKeywordDeepBreakdown(env, slug, 30);
+  const reddit = await getRedditCitationSurface(env, slug, 90);
   const sentimentScored = sentiment.positive + sentiment.neutral + sentiment.negative;
   const sentimentHtml = sentimentScored === 0 ? "" : (() => {
     const pos = sentiment.positive, neu = sentiment.neutral, neg = sentiment.negative;
@@ -880,6 +881,65 @@ export async function handleCitations(
     `;
   })();
 
+  // Reddit citation surface — break out Reddit as a first-class panel.
+  // AI engines pull "best X for Y" answers heavily from Reddit, so the
+  // subreddits where the client's category is discussed are an
+  // actionable content roadmap on their own. Renders only when there
+  // is at least one Reddit citation in the last 90 days.
+  const redditHtml = !reddit.has_signal ? "" : (() => {
+    const overallPct = Math.round(reddit.client_named_ratio * 100);
+    return `
+      <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
+          <div class="label" style="color:var(--gold)">§ Reddit citation surface — where AI pulls "best X for Y" answers from</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${reddit.total_reddit_mentions} reddit mentions · you named in ${reddit.client_named_in_reddit} (${overallPct}%) · ${reddit.briefs_drafted} briefs drafted</div>
+        </div>
+
+        <div style="font-size:12px;color:var(--text-mute);line-height:1.6;max-width:780px;margin-bottom:18px">
+          Each row is a subreddit where AI engines cited a Reddit thread when answering one of your tracked queries. "You named" is how often the engine mentioned you alongside the Reddit citation. Subreddits where you're at 0% are content opportunities — that's where your category is being discussed without you in the conversation.
+        </div>
+
+        <table style="width:100%;border-collapse:collapse;font-size:12.5px">
+          <thead>
+            <tr style="border-bottom:1px solid var(--line)">
+              <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Subreddit</th>
+              <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Mentions</th>
+              <th style="text-align:right;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">You named</th>
+              <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Top competitor</th>
+              <th style="text-align:left;padding:10px 8px;font-family:var(--label);text-transform:uppercase;letter-spacing:0.15em;font-size:10px;color:var(--text-faint);font-weight:500">Example query</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${reddit.subreddits.map((s) => {
+              const namedPct = Math.round(s.client_named_ratio * 100);
+              const namedColor = s.client_named_ratio >= 0.5 ? "#7fc99a" : s.client_named_ratio > 0 ? "var(--text-soft)" : "var(--text-faint)";
+              const competitorCell = s.top_competitor
+                ? `<span style="color:var(--text-soft)">${esc(titleCaseName(s.top_competitor))}</span> <span style="color:var(--text-faint);font-size:11px">×${s.top_competitor_count}</span>`
+                : `<span style="color:var(--text-faint)">—</span>`;
+              return `
+                <tr style="border-bottom:1px solid var(--line)">
+                  <td style="padding:11px 8px"><a href="https://www.reddit.com/r/${esc(s.subreddit)}/" target="_blank" rel="noopener" style="color:var(--text-soft);text-decoration:none;border-bottom:1px dashed var(--line)">r/${esc(s.subreddit)}</a></td>
+                  <td style="text-align:right;padding:11px 8px;font-family:var(--mono);color:var(--text-soft);font-weight:500">${s.mention_count}</td>
+                  <td style="text-align:right;padding:11px 8px;font-family:var(--mono);color:${namedColor};font-weight:500">${namedPct}%<span style="font-size:10.5px;color:var(--text-faint);margin-left:6px">(${s.client_named_count})</span></td>
+                  <td style="padding:11px 8px">${competitorCell}</td>
+                  <td style="padding:11px 8px;color:var(--text-faint);max-width:280px;font-size:11.5px">${esc(s.example_keyword || "—")}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <div style="padding-top:14px;margin-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--text-soft);line-height:1.65">
+          <span style="color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-right:8px">Reddit content roadmap</span>${
+            reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 0
+              ? `${reddit.subreddits.filter(s => s.client_named_ratio === 0).length} subreddit${reddit.subreddits.filter(s => s.client_named_ratio === 0).length === 1 ? "" : "s"} cite your category but never mention you. ${reddit.subreddits.filter(s => s.client_named_ratio === 0).slice(0,3).map(s => "r/" + s.subreddit).join(", ")}${reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 3 ? "..." : ""} are the highest-leverage threads to engage in. ${reddit.briefs_drafted > 0 ? `NeverRanked has drafted ${reddit.briefs_drafted} thread-specific reply briefs for you on the <a href="/admin/reddit-briefs/${esc(slug)}" style="color:var(--gold)">briefs page</a>.` : "On Amplify, NeverRanked drafts thread-specific reply briefs telling your team what to write."}`
+              : "You're named in every subreddit that cites your category. Defense mode."
+          }
+        </div>
+      </div>
+    `;
+  })();
+
   const body = `
     <div class="section-header">
       <h1>AI Citation Share</h1>
@@ -895,6 +955,8 @@ export async function handleCitations(
     ${depthHtml}
 
     ${keywordDeepHtml}
+
+    ${redditHtml}
 
     <!-- How the page works. Answers "what is citation share and what do
          these numbers mean" once, at the top, so every reader has a frame

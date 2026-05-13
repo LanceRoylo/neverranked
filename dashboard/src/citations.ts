@@ -1897,3 +1897,157 @@ export async function getKeywordDeepBreakdown(
     return b.total_runs - a.total_runs;
   });
 }
+
+// ===========================================================================
+// Reddit citation surface — break out Reddit as a first-class signal
+// ===========================================================================
+//
+// AI engines pull "best X for Y" answers heavily from Reddit. The
+// source-type rollup we ship surfaces Reddit as one row in a bigger
+// list. This function drills deeper, per-subreddit:
+//
+//   - Which subreddits cite the client's category
+//   - How often the client is named vs. ignored on each
+//   - Top competitor on each subreddit
+//   - Total threads NR's reddit_briefs has surfaced for this client
+//   - Top sources cited alongside the client on Reddit
+//
+// Output drives a dedicated dashboard panel that turns Reddit from a
+// passive citation stat into an actionable content roadmap (Amplify
+// tier sells the deployment of Reddit engagement based on this).
+// ===========================================================================
+
+export interface RedditSubredditRow {
+  subreddit: string;            // e.g. "hawaii" (lowercase, no r/ prefix)
+  mention_count: number;        // citation_runs rows with a reddit.com URL in this subreddit
+  client_named_count: number;   // of those, how many had client_cited = 1
+  client_named_ratio: number;   // 0..1
+  top_competitor: string | null;
+  top_competitor_count: number;
+  example_keyword: string | null;
+}
+
+export interface RedditCitationSurface {
+  total_reddit_mentions: number;
+  client_named_in_reddit: number;
+  client_named_ratio: number;
+  subreddits: RedditSubredditRow[];
+  briefs_drafted: number;        // count of reddit_briefs rows for this client
+  has_signal: boolean;           // false when there are zero Reddit citations
+}
+
+const SUBREDDIT_RE = /reddit\.com\/r\/([A-Za-z0-9_]+)/i;
+
+export async function getRedditCitationSurface(
+  env: Env,
+  clientSlug: string,
+  days: number,
+): Promise<RedditCitationSurface> {
+  const since = Math.floor(Date.now() / 1000) - days * 86400;
+
+  // Pull every citation_run row for this client where cited_urls contains
+  // a reddit.com link. SQLite's LIKE keeps the work in-database; we still
+  // parse the JSON in app code because subreddit extraction needs regex.
+  const rows = (await env.DB.prepare(
+    `SELECT cr.cited_urls, cr.client_cited, cr.competitors_mentioned, ck.keyword
+       FROM citation_runs cr
+       JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ?
+        AND cr.run_at >= ?
+        AND cr.cited_urls LIKE '%reddit.com%'`,
+  ).bind(clientSlug, since).all<{
+    cited_urls: string;
+    client_cited: number;
+    competitors_mentioned: string;
+    keyword: string;
+  }>()).results;
+
+  // Aggregate per-subreddit
+  const bySub = new Map<string, {
+    mentions: number;
+    client_named: number;
+    competitors: Map<string, number>;
+    example_keyword: string | null;
+  }>();
+  let totalRedditMentions = 0;
+  let clientNamedInReddit = 0;
+
+  for (const r of rows) {
+    let urls: string[] = [];
+    try { urls = JSON.parse(r.cited_urls || "[]") as string[]; } catch { /* skip */ }
+    const redditUrls = urls.filter((u) => typeof u === "string" && u.includes("reddit.com"));
+    if (redditUrls.length === 0) continue;
+
+    // De-dupe to unique subreddits within this row so a single response
+    // citing five threads in r/hawaii counts as one mention, not five.
+    const subsThisRow = new Set<string>();
+    for (const url of redditUrls) {
+      const m = url.match(SUBREDDIT_RE);
+      if (m && m[1]) subsThisRow.add(m[1].toLowerCase());
+    }
+    if (subsThisRow.size === 0) continue;
+
+    totalRedditMentions++;
+    if (r.client_cited === 1) clientNamedInReddit++;
+
+    const competitorsHere: string[] = [];
+    try {
+      const list = JSON.parse(r.competitors_mentioned || "[]") as string[];
+      for (const c of list) {
+        const k = (c || "").toLowerCase().trim();
+        if (k) competitorsHere.push(k);
+      }
+    } catch { /* skip */ }
+
+    for (const sub of subsThisRow) {
+      let agg = bySub.get(sub);
+      if (!agg) {
+        agg = { mentions: 0, client_named: 0, competitors: new Map(), example_keyword: null };
+        bySub.set(sub, agg);
+      }
+      agg.mentions++;
+      if (r.client_cited === 1) agg.client_named++;
+      if (!agg.example_keyword) agg.example_keyword = r.keyword;
+      for (const c of competitorsHere) {
+        agg.competitors.set(c, (agg.competitors.get(c) || 0) + 1);
+      }
+    }
+  }
+
+  // Reddit briefs count (for Amplify clients, this is the count of
+  // threads NR has produced briefs for). Best-effort - if the table
+  // doesn't exist for this account or query errors, treat as zero.
+  let briefsDrafted = 0;
+  try {
+    const briefRow = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM reddit_briefs WHERE client_slug = ?",
+    ).bind(clientSlug).first<{ n: number }>();
+    briefsDrafted = Number(briefRow?.n || 0);
+  } catch { /* table may not exist on every deployment */ }
+
+  // Build sorted subreddit rows
+  const subreddits: RedditSubredditRow[] = [];
+  for (const [sub, agg] of bySub) {
+    const sortedComps = [...agg.competitors.entries()].sort((a, b) => b[1] - a[1]);
+    const topComp = sortedComps[0] || null;
+    subreddits.push({
+      subreddit: sub,
+      mention_count: agg.mentions,
+      client_named_count: agg.client_named,
+      client_named_ratio: agg.mentions > 0 ? agg.client_named / agg.mentions : 0,
+      top_competitor: topComp ? topComp[0] : null,
+      top_competitor_count: topComp ? topComp[1] : 0,
+      example_keyword: agg.example_keyword,
+    });
+  }
+  subreddits.sort((a, b) => b.mention_count - a.mention_count);
+
+  return {
+    total_reddit_mentions: totalRedditMentions,
+    client_named_in_reddit: clientNamedInReddit,
+    client_named_ratio: totalRedditMentions > 0 ? clientNamedInReddit / totalRedditMentions : 0,
+    subreddits: subreddits.slice(0, 10),
+    briefs_drafted: briefsDrafted,
+    has_signal: totalRedditMentions > 0,
+  };
+}
