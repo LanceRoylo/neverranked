@@ -252,8 +252,10 @@ export async function sendWeeklyDigests(
     // per-client digest_cadence (weekly vs biweekly) and skip if the
     // last send is too recent. Track which event ids land in this
     // digest so we can mark them delivered after send.
-    const { getPendingEvents, markEventsDelivered } = await import("./client-events");
+    const { getPendingEvents, markEventsDelivered, getNviReportForDigest, markNviReportSent } = await import("./client-events");
     const eventsByClient = new Map<string, Array<{ kind: string; severity: "info" | "win" | "concern"; title: string; body: string | null; occurred_at: number }>>();
+    const nviByClient = new Map<string, { id: number; reporting_period: string; ai_presence_score: number; prev_score: number | null; prompts_evaluated: number; citations_found: number; insight: string | null; action: string | null; pdf_url: string | null }>();
+    const nviIdsToMark: number[] = [];
     const eventIdsToMark: number[] = [];
     const nowEpoch = Math.floor(Date.now() / 1000);
     const cadenceSkipSlugs = new Set<string>();
@@ -272,6 +274,24 @@ export async function sendWeeklyDigests(
         })));
         for (const ev of bundle.events) eventIdsToMark.push(ev.id);
       }
+      // NVI: pull the latest approved-but-unsent report for this client.
+      // Hold-back logic (score dropped > 15 pts) lives inside the helper
+      // and returns held_back=true so we don't include it in the digest.
+      const nvi = await getNviReportForDigest(env, d.clientSlug);
+      if (nvi && !nvi.held_back) {
+        nviByClient.set(d.clientSlug, {
+          id: nvi.id,
+          reporting_period: nvi.reporting_period,
+          ai_presence_score: nvi.ai_presence_score,
+          prev_score: nvi.prev_score,
+          prompts_evaluated: nvi.prompts_evaluated,
+          citations_found: nvi.citations_found,
+          insight: nvi.insight,
+          action: nvi.action,
+          pdf_url: nvi.pdf_url,
+        });
+        nviIdsToMark.push(nvi.id);
+      }
     }
     // If every domain in this digest is on biweekly cooldown, skip the
     // send entirely rather than mail an empty digest.
@@ -280,7 +300,7 @@ export async function sendWeeklyDigests(
       continue;
     }
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient);
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient);
     if (ok) {
       sent++;
       // Mark events delivered (use digest id = 0 since we don't persist
@@ -291,6 +311,16 @@ export async function sendWeeklyDigests(
           await markEventsDelivered(env, eventIdsToMark, 0);
         } catch (e) {
           console.log(`[digest] markEventsDelivered failed: ${e}`);
+        }
+      }
+      // Mark NVI reports as sent so they don't reappear in next week's
+      // digest. Hold-back reports were never added to nviIdsToMark so
+      // they stay 'approved' until Lance reviews + sends manually.
+      for (const nviId of nviIdsToMark) {
+        try {
+          await markNviReportSent(env, nviId);
+        } catch (e) {
+          console.log(`[digest] markNviReportSent failed for ${nviId}: ${e}`);
         }
       }
       // Bump last_digest_sent_at per client so biweekly cadence works.

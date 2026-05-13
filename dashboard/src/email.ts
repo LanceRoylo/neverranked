@@ -502,6 +502,18 @@ export interface DigestEvent {
   occurred_at: number;
 }
 
+export interface DigestNviReport {
+  id: number;
+  reporting_period: string;
+  ai_presence_score: number;
+  prev_score: number | null;
+  prompts_evaluated: number;
+  citations_found: number;
+  insight: string | null;
+  action: string | null;
+  pdf_url: string | null;
+}
+
 export async function sendDigestEmail(
   to: string,
   userName: string | null,
@@ -514,6 +526,7 @@ export async function sendDigestEmail(
   agency?: Agency | null,
   stateOfAeo?: StateOfAeoLatest | null,
   eventsByClient?: Map<string, DigestEvent[]>,
+  nviByClient?: Map<string, DigestNviReport>,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -527,7 +540,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0], citationData)
     : buildSubjectMulti(digests, citationData);
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient);
 
   try {
     const res = await fetch("https://api.resend.com/emails", {
@@ -2101,7 +2114,7 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>): string {
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>, nviByClient?: Map<string, DigestNviReport>): string {
   const brand = brandFor(agency);
   const headerCellHtml = brand.logo
     ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
@@ -2249,6 +2262,36 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             </table>`);
           }
           return sections.length > 0 ? `<tr><td style="padding-bottom:8px">${sections.join("")}</td></tr>` : "";
+        })()}
+
+        <!-- Monthly NVI report section. Auto-included in the next
+             weekly digest when a fresh report has been generated and
+             approved. Replaces the standalone monthly NVI email so
+             clients hear from us through one channel. -->
+        ${(() => {
+          if (!nviByClient || nviByClient.size === 0) return "";
+          const slugsSeen = new Set<string>();
+          const blocks: string[] = [];
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const n = nviByClient.get(d.clientSlug);
+            if (!n) continue;
+            const delta = n.prev_score !== null ? n.ai_presence_score - n.prev_score : null;
+            const deltaColor = delta === null ? "#888" : delta > 0 ? "#7fc99a" : delta < 0 ? "#dc6c6c" : "#888";
+            const deltaLabel = delta === null ? "first report" : delta > 0 ? `+${delta} pts vs prior` : delta < 0 ? `${delta} pts vs prior` : "flat vs prior";
+            const reportUrl = n.pdf_url || `https://app.neverranked.com/admin/nvi/preview/${n.id}`;
+            blocks.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0 8px;border:1px solid #2a2620;border-radius:4px;background:#1c1812">
+              <tr><td style="padding:18px 22px">
+                <div style="font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d;margin-bottom:8px">${escEmail(d.domain)} · ${escEmail(n.reporting_period)} NVI report</div>
+                <div style="font-family:Georgia,serif;font-size:24px;color:#fbf8ef;margin-bottom:6px">AI Presence Score ${n.ai_presence_score}/100 <span style="font-size:13px;color:${deltaColor};margin-left:6px">${deltaLabel}</span></div>
+                <div style="font-family:Georgia,serif;font-size:13px;color:#888;line-height:1.6;margin-bottom:12px">${escEmail((n.insight || "").slice(0, 320))}</div>
+                ${n.action ? `<div style="font-family:Georgia,serif;font-size:13px;color:#bfa04d;line-height:1.6;margin-bottom:14px"><strong style="color:#fbf8ef">Recommended action:</strong> ${escEmail(n.action.slice(0, 320))}</div>` : ""}
+                <a href="${escEmail(reportUrl)}" style="display:inline-block;padding:8px 16px;background:#bfa04d;color:#1a1814;text-decoration:none;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;border-radius:3px">View full report</a>
+              </td></tr>
+            </table>`);
+          }
+          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}
 
         <!-- Domain blocks -->
