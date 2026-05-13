@@ -132,6 +132,18 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
     await step.do("reddit-faq-drift-check", async () => {
       await runRedditFaqDriftCheck(this.env);
     });
+
+    // Auto-expand the tracked prompt set. Generates ~12 candidates
+    // per eligible client (active prompts < 40, has business_description),
+    // runs them through format/tone/similarity/relevance gates, and
+    // inserts survivors directly into citation_keywords. No customer
+    // review queue -- if the system can decide, the system decides.
+    await step.do("prompt-auto-expand", async () => {
+      const { runAutoExpandSweep } = await import("../prompt-auto-expand");
+      const results = await runAutoExpandSweep(this.env);
+      const total = results.reduce((s, r) => s + r.accepted.length, 0);
+      console.log(`prompt-auto-expand: added ${total} prompts across ${results.length} clients`);
+    });
   }
 }
 
