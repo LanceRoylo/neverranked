@@ -81,58 +81,118 @@ export interface FAQDeployment {
 const REDDIT_UA =
   "Mozilla/5.0 (compatible; NeverRanked-FAQ/1.0; +https://neverranked.com/bot)";
 
-async function fetchRedditThreadQuestions(
-  threadUrl: string,
-): Promise<{ title: string; questions: string[] }> {
+interface RawRedditThread {
+  url: string;
+  subreddit: string;
+  title: string;
+  body: string;
+  top_comments: string[];
+}
+
+async function fetchRawRedditThread(threadUrl: string): Promise<RawRedditThread | null> {
   const cleanedUrl = threadUrl.replace(/\/+$/, "");
-  const jsonUrl = `${cleanedUrl}.json?raw_json=1&limit=15`;
+  const jsonUrl = `${cleanedUrl}.json?raw_json=1&limit=8`;
   let data: unknown;
   try {
     const resp = await fetch(jsonUrl, {
       headers: { "User-Agent": REDDIT_UA, Accept: "application/json" },
       signal: AbortSignal.timeout(8000),
     });
-    if (!resp.ok) return { title: "", questions: [] };
+    if (!resp.ok) return null;
     data = await resp.json();
   } catch {
-    return { title: "", questions: [] };
+    return null;
   }
-  if (!Array.isArray(data) || data.length === 0) return { title: "", questions: [] };
+  if (!Array.isArray(data) || data.length === 0) return null;
+
+  const subMatch = cleanedUrl.match(/reddit\.com\/r\/([^/]+)/i);
+  const subreddit = subMatch ? subMatch[1].toLowerCase() : "";
 
   const listing0 = (data[0] as Record<string, unknown>)?.data as Record<string, unknown> | undefined;
   const children0 = listing0?.children as Array<Record<string, unknown>> | undefined;
   const opPost = children0?.[0]?.data as Record<string, unknown> | undefined;
-  const title = String(opPost?.title || "");
+  const title = String(opPost?.title || "").trim();
+  const body = String(opPost?.selftext || "").trim().slice(0, 1200);
 
-  const out: string[] = [];
-  if (title && /\?/.test(title)) out.push(title.trim());
-  // OP body — sometimes the question is in the body
-  const body = String(opPost?.selftext || "");
-  if (body) {
-    for (const sentence of body.split(/[.!?\n]+/)) {
-      const trimmed = sentence.trim();
-      if (trimmed.length > 12 && trimmed.length < 200 && /\?/.test(sentence)) {
-        out.push(trimmed.endsWith("?") ? trimmed : trimmed + "?");
-      }
-    }
-  }
-
-  // Top comments often contain follow-up questions
+  const top_comments: string[] = [];
   const listing1 = (data[1] as Record<string, unknown>)?.data as Record<string, unknown> | undefined;
   const children1 = listing1?.children as Array<Record<string, unknown>> | undefined;
   if (children1) {
-    for (const c of children1.slice(0, 5)) {
-      const cBody = String((c?.data as Record<string, unknown>)?.body || "");
-      for (const sentence of cBody.split(/[.!?\n]+/)) {
-        const trimmed = sentence.trim();
-        if (trimmed.length > 12 && trimmed.length < 200 && /\?$/.test(sentence)) {
-          out.push(trimmed.endsWith("?") ? trimmed : trimmed + "?");
-        }
-      }
+    for (const c of children1.slice(0, 4)) {
+      const cBody = String((c?.data as Record<string, unknown>)?.body || "").trim();
+      if (cBody && cBody.length > 20) top_comments.push(cBody.slice(0, 500));
     }
   }
 
-  return { title, questions: out };
+  return { url: cleanedUrl, subreddit, title, body, top_comments };
+}
+
+const QUESTION_EXTRACTOR_SYSTEM = `You extract the QUESTIONS being asked in Reddit threads. The input is one or more thread bundles (title + body + top comments). The output is a list of normalized search-intent questions for each thread.
+
+Reddit threads rarely use literal question form. People write "Looking for X in [place]" or "Visiting next month, recs?" or "Anyone been to [venue]?" Your job is to convert these into the search-engine questions someone would type to land on this thread.
+
+Rules:
+- Output 1-4 questions per thread, only the questions that are clearly being asked
+- Skip threads that aren't asking anything (news posts, rants, status updates)
+- Normalize to first-person searcher form ("Where can I find X in Y?", "What is the best X for Y?")
+- 30-100 characters per question
+- Specific to the category mentioned, not generic ("best comedy venues in Oahu" not "best entertainment")
+- End each with ?
+- No duplicate questions across threads — the clusterer runs after you
+
+Return STRICT JSON, no prose:
+{
+  "threads": [
+    { "thread_idx": 0, "questions": ["<question 1>", "<question 2>"] }
+  ]
+}`;
+
+async function extractQuestionsViaClaude(
+  env: Env,
+  threads: RawRedditThread[],
+): Promise<Array<{ thread_idx: number; questions: string[] }>> {
+  if (threads.length === 0) return [];
+  if (!env.ANTHROPIC_API_KEY) throw new Error("ANTHROPIC_API_KEY not set");
+
+  const userMessage = threads
+    .map(
+      (t, i) =>
+        `--- Thread ${i} (r/${t.subreddit}) ---
+TITLE: ${t.title}
+${t.body ? `BODY: ${t.body}` : ""}
+${t.top_comments.length > 0 ? `TOP COMMENTS:\n${t.top_comments.map((c, j) => `[${j}] ${c}`).join("\n")}` : ""}`,
+    )
+    .join("\n\n");
+
+  const resp = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": env.ANTHROPIC_API_KEY,
+      "anthropic-version": "2023-06-01",
+    },
+    body: JSON.stringify({
+      model: "claude-haiku-4-5",
+      system: [{ type: "text", text: QUESTION_EXTRACTOR_SYSTEM, cache_control: { type: "ephemeral" } }],
+      messages: [{ role: "user", content: userMessage.slice(0, 24000) }],
+      max_tokens: 3000,
+      temperature: 0.1,
+    }),
+    signal: AbortSignal.timeout(45_000),
+  });
+  if (!resp.ok) throw new Error(`Claude question-extract: ${resp.status} ${await resp.text()}`);
+
+  const json = (await resp.json()) as { content: { type: string; text: string }[] };
+  const raw = json.content?.[0]?.text || "";
+  const cleaned = raw.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const m = cleaned.match(/\{[\s\S]*\}/);
+  if (!m) return [];
+  try {
+    const parsed = JSON.parse(m[0]) as { threads?: Array<{ thread_idx: number; questions: string[] }> };
+    return parsed.threads || [];
+  } catch {
+    return [];
+  }
 }
 
 /**
@@ -174,23 +234,30 @@ export async function extractRedditQuestionsForClient(
     }
   }
 
-  const SUB_RE = /reddit\.com\/r\/([^/]+)/i;
-  const out: RedditQuestion[] = [];
+  // Fetch raw content for up to 20 unique threads. Reddit fetches run
+  // in parallel since they don't depend on each other.
+  const urlList = [...threadUrls].slice(0, 20);
+  const fetched = await Promise.all(urlList.map((u) => fetchRawRedditThread(u)));
+  const threads: RawRedditThread[] = fetched.filter((t): t is RawRedditThread => t !== null);
 
-  // Process up to 20 unique threads per scan to bound API calls
-  for (const url of [...threadUrls].slice(0, 20)) {
-    const subMatch = url.match(SUB_RE);
-    const subreddit = subMatch ? subMatch[1].toLowerCase() : "";
-    const { title, questions } = await fetchRedditThreadQuestions(url);
+  // One Claude pass that converts raw thread content into normalized
+  // search-intent questions. Catches implicit asks ("Looking for X in
+  // Honolulu") that the old regex-only extractor dropped.
+  const extracted = await extractQuestionsViaClaude(env, threads);
+  const byIdx = new Map(extracted.map((e) => [e.thread_idx, e.questions]));
+
+  const out: RedditQuestion[] = [];
+  threads.forEach((t, i) => {
+    const questions = byIdx.get(i) || [];
     for (const q of questions) {
       out.push({
         question: q,
-        source_subreddit: subreddit,
-        source_thread_url: url,
-        source_thread_title: title,
+        source_subreddit: t.subreddit,
+        source_thread_url: t.url,
+        source_thread_title: t.title,
       });
     }
-  }
+  });
   return out;
 }
 
