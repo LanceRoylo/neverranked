@@ -61,6 +61,7 @@ export function layout(
       <div class="sidebar-section">
         <div class="sidebar-section-header">Overview</div>
         <a href="/" class="sidebar-item${active('Dashboard')}">Dashboard</a>
+        <a href="${slugify('/actions')}" class="sidebar-item${active('Things to do')}" title="Walkthroughs and FAQ reviews — heavy lifting is done, the clicks are yours">Things to do</a>
         <a href="/alerts" class="sidebar-item${active('Alerts')}">Alerts${alertBadge}</a>
       </div>
       <div class="sidebar-section collapsible" data-section="measure">

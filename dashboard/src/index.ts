@@ -47,6 +47,19 @@ import { handleTrust } from "./routes/trust";
 import { handleReddit } from "./routes/reddit";
 import { handleBriefGenerate, handleBriefView } from "./routes/reddit-briefs";
 import { handleRedditFaq } from "./routes/reddit-faq";
+import {
+  handleActionsIndex,
+  handleActionDetail,
+  handleStepComplete,
+  handleActionComplete,
+  handleActionSkip,
+  handleInlineFieldSave,
+  handleFAQApprove,
+  handleFAQEdit,
+  handleFAQReject,
+  handleFAQRestore,
+  handleFAQRemove,
+} from "./routes/actions";
 import { handleBenchmark } from "./routes/benchmark";
 import { recomputeIndustryBenchmarks } from "./industry-benchmarks";
 import { backfillRedditCitations, maybeAddRedditRoadmapItems } from "./reddit-citations";
@@ -2279,6 +2292,100 @@ export default {
     const redditFaqMatch = path.match(/^\/reddit-faq\/([^/]+)$/);
     if (redditFaqMatch && method === "GET") {
       return handleRedditFaq(decodeURIComponent(redditFaqMatch[1]), user, env, request);
+    }
+
+    // Client actions surface: /actions/<slug>, /actions/<slug>/<action_type>,
+    // plus POSTs for step completion, FAQ approve/edit/reject, inline data
+    // capture, etc. The 'things to do' page where heavy lifting is done
+    // and the clicks are theirs.
+    if (path === "/actions" || path === "/actions/") {
+      if (user.client_slug) return redirect(`/actions/${user.client_slug}`);
+      return renderClientPicker("Things to do", "actions", user, env);
+    }
+    const actionsIndexMatch = path.match(/^\/actions\/([^/]+)$/);
+    if (actionsIndexMatch && method === "GET") {
+      return handleActionsIndex(decodeURIComponent(actionsIndexMatch[1]), user, env);
+    }
+    const actionDetailMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)$/);
+    if (actionDetailMatch && method === "GET") {
+      return handleActionDetail(
+        decodeURIComponent(actionDetailMatch[1]),
+        decodeURIComponent(actionDetailMatch[2]),
+        user, env,
+      );
+    }
+    const stepCompleteMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)\/step\/([a-z_]+)\/complete$/);
+    if (stepCompleteMatch && method === "POST") {
+      return handleStepComplete(
+        decodeURIComponent(stepCompleteMatch[1]),
+        decodeURIComponent(stepCompleteMatch[2]),
+        decodeURIComponent(stepCompleteMatch[3]),
+        user, env,
+      );
+    }
+    const actionCompleteMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)\/complete$/);
+    if (actionCompleteMatch && method === "POST") {
+      return handleActionComplete(
+        decodeURIComponent(actionCompleteMatch[1]),
+        decodeURIComponent(actionCompleteMatch[2]),
+        user, env,
+      );
+    }
+    const actionSkipMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)\/skip$/);
+    if (actionSkipMatch && method === "POST") {
+      return handleActionSkip(
+        decodeURIComponent(actionSkipMatch[1]),
+        decodeURIComponent(actionSkipMatch[2]),
+        user, env,
+      );
+    }
+    const inlineFieldMatch = path.match(/^\/actions\/([^/]+)\/inline\/([a-z_]+)$/);
+    if (inlineFieldMatch && method === "POST") {
+      return handleInlineFieldSave(
+        decodeURIComponent(inlineFieldMatch[1]),
+        decodeURIComponent(inlineFieldMatch[2]),
+        request, user, env,
+      );
+    }
+    const faqApproveMatch = path.match(/^\/actions\/([^/]+)\/faq\/(\d+)\/approve$/);
+    if (faqApproveMatch && method === "POST") {
+      return handleFAQApprove(
+        decodeURIComponent(faqApproveMatch[1]),
+        parseInt(faqApproveMatch[2], 10),
+        user, env,
+      );
+    }
+    const faqEditMatch = path.match(/^\/actions\/([^/]+)\/faq\/(\d+)\/edit$/);
+    if (faqEditMatch && method === "POST") {
+      return handleFAQEdit(
+        decodeURIComponent(faqEditMatch[1]),
+        parseInt(faqEditMatch[2], 10),
+        request, user, env,
+      );
+    }
+    const faqRejectMatch = path.match(/^\/actions\/([^/]+)\/faq\/(\d+)\/reject$/);
+    if (faqRejectMatch && method === "POST") {
+      return handleFAQReject(
+        decodeURIComponent(faqRejectMatch[1]),
+        parseInt(faqRejectMatch[2], 10),
+        request, user, env,
+      );
+    }
+    const faqRestoreMatch = path.match(/^\/actions\/([^/]+)\/faq\/(\d+)\/restore$/);
+    if (faqRestoreMatch && method === "POST") {
+      return handleFAQRestore(
+        decodeURIComponent(faqRestoreMatch[1]),
+        parseInt(faqRestoreMatch[2], 10),
+        user, env,
+      );
+    }
+    const faqRemoveMatch = path.match(/^\/actions\/([^/]+)\/faq\/(\d+)\/remove$/);
+    if (faqRemoveMatch && method === "POST") {
+      return handleFAQRemove(
+        decodeURIComponent(faqRemoveMatch[1]),
+        parseInt(faqRemoveMatch[2], 10),
+        user, env,
+      );
     }
     // Manual trigger for Monday cron paths (admin-only). Lets us
     // dry-run prompt-expand / reddit-faq build / digest grader before
