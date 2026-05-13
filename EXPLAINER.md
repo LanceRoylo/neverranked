@@ -42,7 +42,7 @@ This file has TWO things:
 >
 > Weekly citation tracking across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, Microsoft Copilot, and Gemma. Reddit thread tracking broken out separately. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits for trust-platform presence and author-bio depth. Live dashboard with industry-percentile ranking. 90-day roadmap that re-evaluates against drift every quarter. Forward-ready Monday digest.
 >
-> *Amplify ($4,500/month) adds the content production engine — brand-voice drafting, auto-publish to your CMS, content calendar that fills itself from the roadmap, and Reddit reply briefs (we tell your team what to write about and what angle only you can take, a real human posts the actual reply).*
+> *Amplify ($4,500/month) adds the content production engine — brand-voice drafting, auto-publish to your CMS, content calendar that fills itself from the roadmap, and Reddit-aware FAQ deployment (we pull the questions being asked on the Reddit threads AI engines are citing, generate voice-matched answers from your business profile, and ship a FAQPage schema deployed on your own domain).*
 
 ### Receipts line (typographic, like terminal output)
 

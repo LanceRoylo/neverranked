@@ -27,7 +27,7 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 - Everything in Signal + brand-voice fingerprint trained on existing writing
 - Citation-shaped content drafts in your voice
 - Auto-publish to WordPress / Webflow / Shopify
-- Reddit reply briefs
+- Reddit-aware FAQ deployment (questions from cited threads → FAQPage schema shipped to your domain)
 
 ### Agency partner: MVNP across the portfolio
 

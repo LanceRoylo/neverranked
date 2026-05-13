@@ -1,4 +1,15 @@
 /**
+ * DEPRECATED 2026-05-13 — kept dormant for historical brief views.
+ *
+ * The per-thread reply brief surface produced zero usage in production.
+ * The feature has been replaced by reddit-faq-deployment.ts, which
+ * extracts the QUESTIONS being asked on cited Reddit threads and
+ * generates FAQPage schema deployed on the client's own domain. Same
+ * AI citation lift, client owns the source, no Reddit account
+ * required. New surface lives at /reddit-faq/<slug>.
+ *
+ * Do not extend this file. New work goes to reddit-faq-deployment.ts.
+ *
  * Reddit reply briefs (Phase 5B).
  *
  * For Amplify clients, generates a STRUCTURED BRIEF for any reddit

@@ -46,6 +46,7 @@ import { handleCompetitors, handleAddCompetitorFromPage, handleRemoveCompetitorF
 import { handleTrust } from "./routes/trust";
 import { handleReddit } from "./routes/reddit";
 import { handleBriefGenerate, handleBriefView } from "./routes/reddit-briefs";
+import { handleRedditFaq } from "./routes/reddit-faq";
 import { handleBenchmark } from "./routes/benchmark";
 import { recomputeIndustryBenchmarks } from "./industry-benchmarks";
 import { backfillRedditCitations, maybeAddRedditRoadmapItems } from "./reddit-citations";
@@ -2284,6 +2285,12 @@ export default {
     const redditMatch = path.match(/^\/reddit\/([^/]+)$/);
     if (redditMatch && method === "GET") {
       return handleReddit(decodeURIComponent(redditMatch[1]), user, env);
+    }
+    // Reddit FAQ deployment — the pivot from per-thread reply briefs to
+    // FAQPage schema deployed on the client's own domain.
+    const redditFaqMatch = path.match(/^\/reddit-faq\/([^/]+)$/);
+    if (redditFaqMatch && method === "GET") {
+      return handleRedditFaq(decodeURIComponent(redditFaqMatch[1]), user, env, request);
     }
     // Phase 5 admin: backfill reddit_citations from historical
     // citation_runs (one-shot, called once per client after first

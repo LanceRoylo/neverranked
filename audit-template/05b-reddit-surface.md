@@ -29,6 +29,8 @@ This is different from your citation share number. Your overall share covers all
 
 {REDDIT_DEPLOYMENT_BLOCK}
 
+NeverRanked converts the Reddit citation surface into FAQ schema deployed on your own domain. We pull the questions being asked on the threads AI engines are citing, cluster them into the distinct underlying questions, generate voice-matched answers from your business profile, and emit a FAQPage JSON-LD block ready to paste into a page on your site. The same AI engines that cite Reddit threads cite well-structured FAQ schema on authoritative domains. You own the source, you own the answer, no Reddit account required.
+
 ## What's NOT in this section
 
 This section measures Reddit citations triggered by your tracked query set. It does NOT measure:

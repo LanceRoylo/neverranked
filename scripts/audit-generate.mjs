@@ -403,7 +403,7 @@ function populateRedditSurfaceTemplate(tpl, client, surface) {
   let summary;
   if (isTrackedClientWithSignal) {
     const pct = Math.round(surface.client_named_ratio * 100);
-    summary = `Across the last 90 days, AI engines cited Reddit threads ${surface.total_reddit_mentions} times when answering ${client.name || client.slug}'s tracked queries. ${client.name || client.slug} was named alongside ${surface.client_named_in_reddit} of those (${pct}%).${surface.briefs_drafted > 0 ? ` NeverRanked has drafted ${surface.briefs_drafted} thread-specific reply briefs that the in-house team can ship.` : ""}`;
+    summary = `Across the last 90 days, AI engines cited Reddit threads ${surface.total_reddit_mentions} times when answering ${client.name || client.slug}'s tracked queries. ${client.name || client.slug} was named alongside ${surface.client_named_in_reddit} of those (${pct}%). NeverRanked converts that surface into FAQPage schema deployed on your own domain so the same engines cite you directly.`;
   } else if (isTrackedClientNoSignal) {
     summary = `In the 90-day tracking window, AI engines did not cite any Reddit threads when answering ${client.name || client.slug}'s tracked queries. That can mean Reddit volume is genuinely low for the category, or it can mean our query set hasn't surfaced the subreddits where the category is being discussed. Adding 5-10 broader prompts to the tracking set is usually enough to confirm which.`;
   } else {
@@ -442,9 +442,9 @@ function populateRedditSurfaceTemplate(tpl, client, surface) {
   // --- Deployment block ---
   let deployment;
   if (isTrackedClientWithSignal) {
-    deployment = `For each subreddit in the table above where you are at 0% citation rate, NeverRanked's Amplify tier produces a thread-specific reply brief. The brief tells your in-house team what topic to address, what tone the subreddit expects, what NOT to do, and a draft of the reply itself. Your team posts (so the comment is from a real human practitioner with a real account history), and NeverRanked monitors weekly to see when AI engines start citing your reply.`;
+    deployment = `For every subreddit in the table above, NeverRanked pulls the questions being asked on the cited threads, clusters them into the distinct underlying questions, and generates voice-matched answers from your business profile. The output is a FAQPage JSON-LD block we deploy to your domain. AI engines cite well-structured FAQ schema on authoritative domains the same way they cite Reddit. You own the source, you own the answer, no Reddit account required.`;
   } else {
-    deployment = `When NeverRanked detects a citation-generating Reddit thread in your category, the Amplify tier produces a thread-specific reply brief: subject, tone, subreddit norms, what to avoid, and a draft of the reply. Your team posts under their own account; NeverRanked monitors for AI-engine citation lift week-over-week.`;
+    deployment = `When NeverRanked detects citation-generating Reddit threads in your category, we extract the questions being asked, cluster them, and generate FAQPage schema deployed on your own domain. The same AI engines that cite Reddit cite well-structured FAQ schema on authoritative sites. You ship the answer on your domain, no Reddit account required.`;
   }
 
   return tpl

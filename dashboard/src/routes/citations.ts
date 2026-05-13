@@ -892,7 +892,7 @@ export async function handleCitations(
       <div style="margin-bottom:28px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:12px;flex-wrap:wrap">
           <div class="label" style="color:var(--gold)">§ Reddit citation surface — where AI pulls "best X for Y" answers from</div>
-          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${reddit.total_reddit_mentions} reddit mentions · you named in ${reddit.client_named_in_reddit} (${overallPct}%) · ${reddit.briefs_drafted} briefs drafted</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${reddit.total_reddit_mentions} reddit mentions · you named in ${reddit.client_named_in_reddit} (${overallPct}%)</div>
         </div>
 
         <div style="font-size:12px;color:var(--text-mute);line-height:1.6;max-width:780px;margin-bottom:18px">
@@ -932,7 +932,7 @@ export async function handleCitations(
         <div style="padding-top:14px;margin-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--text-soft);line-height:1.65">
           <span style="color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-right:8px">Reddit content roadmap</span>${
             reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 0
-              ? `${reddit.subreddits.filter(s => s.client_named_ratio === 0).length} subreddit${reddit.subreddits.filter(s => s.client_named_ratio === 0).length === 1 ? "" : "s"} cite your category but never mention you. ${reddit.subreddits.filter(s => s.client_named_ratio === 0).slice(0,3).map(s => "r/" + s.subreddit).join(", ")}${reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 3 ? "..." : ""} are the highest-leverage threads to engage in. ${reddit.briefs_drafted > 0 ? `NeverRanked has drafted ${reddit.briefs_drafted} thread-specific reply briefs for you on the <a href="/admin/reddit-briefs/${esc(slug)}" style="color:var(--gold)">briefs page</a>.` : "On Amplify, NeverRanked drafts thread-specific reply briefs telling your team what to write."}`
+              ? `${reddit.subreddits.filter(s => s.client_named_ratio === 0).length} subreddit${reddit.subreddits.filter(s => s.client_named_ratio === 0).length === 1 ? "" : "s"} cite your category but never mention you. ${reddit.subreddits.filter(s => s.client_named_ratio === 0).slice(0,3).map(s => "r/" + s.subreddit).join(", ")}${reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 3 ? "..." : ""} carry the questions AI engines are answering without you. NeverRanked extracts those questions, generates voice-matched answers from your business profile, and deploys a FAQPage schema to your own domain. <a href="/reddit-faq/${esc(slug)}" style="color:var(--gold)">Build the FAQ deployment →</a>`
               : "You're named in every subreddit that cites your category. Defense mode."
           }
         </div>
