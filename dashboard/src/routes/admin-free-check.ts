@@ -111,8 +111,21 @@ export async function handleAdminFreeCheckStats(user: User | null, env: Env, url
     }
     if (evt.grade && gradeCounts[evt.grade] !== undefined) gradeCounts[evt.grade]++;
 
+    // Source attribution priority:
+    //   1. utm_source from the URL the visitor landed with (cold-email,
+    //      paid campaigns, partner links, etc.) -- most reliable signal
+    //   2. Referer header hostname (organic clicks from another site)
+    //   3. "(direct)" fallback (typed URL, stripped referer, untagged
+    //      Gmail click, etc.)
+    // Reading utm_source first is critical: Gmail strips Referer on many
+    // clients, so cold-email clicks that DO carry utm_source were
+    // previously being miscategorized as direct. utm wins because it
+    // travels in the URL itself and isn't dropped by mail clients.
     let refHost = "(direct)";
-    if (evt.referrer) {
+    const utmSource = evt.utm && typeof evt.utm.source === "string" ? evt.utm.source.trim() : "";
+    if (utmSource) {
+      refHost = utmSource;
+    } else if (evt.referrer) {
       try { refHost = new URL(evt.referrer).hostname; } catch { refHost = evt.referrer; }
     }
     byReferrer.set(refHost, (byReferrer.get(refHost) || 0) + 1);

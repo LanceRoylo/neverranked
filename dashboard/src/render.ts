@@ -100,6 +100,7 @@ export function layout(
         <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/health" class="sidebar-item${title === 'System Health' ? ' active' : ''}" title="System health: engines, crons, queues, alerts">Health</a>
         <a href="/admin/qa" class="sidebar-item${title === 'QA Audits' ? ' active' : ''}" title="QA audit log: independent grader for production outputs">QA Audits</a>
+        <a href="/admin/decisions" class="sidebar-item${title === 'Decision Log' ? ' active' : ''}" title="Unified decision log: every approve/reject/edit you make across the admin">Decisions</a>
         <a href="/admin/inbox" class="sidebar-item${title === 'Inbox' ? ' active' : ''}">Inbox</a>
         <a href="/admin/weekly-brief" class="sidebar-item${title === 'Weekly briefs' || title === 'Weekly brief' ? ' active' : ''}">Weekly briefs</a>
         <a href="/admin/nvi" class="sidebar-item${title === 'NVI Inbox' ? ' active' : ''}">NVI Inbox${nviBadge}</a>

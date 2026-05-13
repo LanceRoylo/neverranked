@@ -2644,6 +2644,19 @@ export default {
       // (a raw HTML scrape can't see client-side-injected schema).
       const report = await buildReportFollowingSnippets(targetUrl, html);
 
+      // Internal-source filter: the outreach pipeline scans every
+      // prospect's site as part of email generation, and those scans
+      // were polluting the free-check activity dashboards (real-visitor
+      // counts inflated, "(direct)" attribution column dominated by
+      // pipeline traffic). The pipeline sets X-Internal-Source on every
+      // call to /api/check, so any request carrying that header gets
+      // its report back but is excluded from the event log entirely.
+      // Real-visitor scans (no such header) continue to log normally.
+      const internalSource = request.headers.get("X-Internal-Source") || "";
+      if (internalSource === "outreach-scan") {
+        return Response.json(report, { headers: corsHeaders });
+      }
+
       // Log anonymous scan event to KV (with referrer/UTM attribution).
       // Enriched with ip_hash + user-agent so we can dedupe unique humans
       // and filter out internal/test traffic in the admin report.
@@ -2967,6 +2980,87 @@ export default {
         return Response.json({ total, referrers, utmSources }, { headers: corsHeaders });
       } catch (e) {
         return Response.json({ error: "Failed to read events" }, { status: 500, headers: corsHeaders });
+      }
+    }
+
+    // Admin: one-time cleanup of historical pipeline-scan pollution.
+    // Before the X-Internal-Source filter on POST /api/check was deployed
+    // on 2026-05-13, the outreach pipeline's AEO scans were being logged
+    // to KV as if they were real visitor scans. This inflated the
+    // free-check activity dashboard counts and polluted "Where visitors
+    // came from" attribution. Filter is now live going forward; this
+    // endpoint removes the pre-deploy pollution.
+    //
+    // Detection (a scan event is pipeline pollution if EITHER):
+    //   1. ua contains "NeverRanked-Outreach" -- exclusive to the
+    //      outreach project's aeo-scan.js client. Strongest signal.
+    //   2. domain starts with "www." AND no utm AND no referrer --
+    //      fallback for older pipeline calls that may not have had the
+    //      UA set yet. Pipeline calls https://www.xxx.com (full URL with
+    //      protocol), real recipient clicks canonicalize to xxx.com.
+    //
+    // Default mode is DRY-RUN: walk KV, identify polluted keys, return
+    // counts + sample. No deletion. To actually delete add ?confirm=yes.
+    //
+    // Safe to leave deployed: admin-secret gated, dry-run default,
+    // idempotent (re-running after a real-run is a no-op).
+    if (url.pathname === "/api/admin/cleanup-pipeline-scans" && request.method === "POST") {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
+      }
+      const confirm = url.searchParams.get("confirm") === "yes";
+
+      try {
+        const allScanKeys = await listAllKvKeys(env.LEADS, "event:scan:");
+        const polluted: { key: string; domain: string; ts: string; reason: string }[] = [];
+        let scanned = 0;
+
+        for (const key of allScanKeys) {
+          const raw = await env.LEADS.get(key.name);
+          if (!raw) continue;
+          scanned++;
+          let evt: any;
+          try { evt = JSON.parse(raw); } catch { continue; }
+          if (evt.type !== "free_scan") continue;
+
+          const ua = String(evt.ua || "");
+          const domain = String(evt.domain || "");
+          const hasUtm = evt.utm && (evt.utm.utm_source || evt.utm.source);
+          const hasReferrer = !!evt.referrer;
+
+          let reason = "";
+          if (ua.includes("NeverRanked-Outreach")) {
+            reason = "ua=NeverRanked-Outreach";
+          } else if (domain.startsWith("www.") && !hasUtm && !hasReferrer) {
+            reason = "www-prefix+no-utm+no-referrer";
+          }
+          if (reason) {
+            polluted.push({ key: key.name, domain, ts: evt.ts || "", reason });
+          }
+        }
+
+        let deleted = 0;
+        if (confirm) {
+          for (const p of polluted) {
+            await env.LEADS.delete(p.key);
+            deleted++;
+          }
+        }
+
+        return Response.json({
+          mode: confirm ? "real-run" : "dry-run",
+          scanned,
+          identified: polluted.length,
+          deleted,
+          sample: polluted.slice(0, 5).map(p => ({ domain: p.domain, ts: p.ts, reason: p.reason })),
+          hint: confirm ? "Pollution removed." : "Add ?confirm=yes to actually delete these keys.",
+        }, { headers: corsHeaders });
+      } catch (e) {
+        return Response.json({
+          error: "Cleanup failed",
+          message: e instanceof Error ? e.message : String(e),
+        }, { status: 500, headers: corsHeaders });
       }
     }
 
