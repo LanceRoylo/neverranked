@@ -140,41 +140,55 @@ async function runRedditFaqDriftCheck(env: Env): Promise<void> {
     "../reddit-faq-deployment"
   );
 
-  // Clients with a currently-deployed FAQ. We don't auto-build for
-  // clients who've never deployed -- that's a manual first decision.
+  // Every client with the prerequisites: business_description populated
+  // and at least one Reddit-citing run in the last 90 days. The build
+  // is automatic; deploy is automatic only for clients who have
+  // already deployed once (signaling trust in the pipeline).
   const rows = (
     await env.DB.prepare(
-      `SELECT r.client_slug,
-              MAX(r.generated_at) AS last_generated_at,
-              ic.business_name, ic.business_url, ic.business_description
-         FROM reddit_faq_deployments r
-         LEFT JOIN injection_configs ic ON ic.client_slug = r.client_slug
-        WHERE r.status = 'deployed'
-        GROUP BY r.client_slug`,
+      `SELECT ic.client_slug,
+              ic.business_name, ic.business_url, ic.business_description,
+              (SELECT MAX(r.generated_at) FROM reddit_faq_deployments r
+                WHERE r.client_slug = ic.client_slug) AS last_generated_at,
+              (SELECT COUNT(*) FROM reddit_faq_deployments r
+                WHERE r.client_slug = ic.client_slug AND r.status = 'deployed') AS deploy_count,
+              (SELECT COUNT(*) FROM citation_runs cr
+                 JOIN citation_keywords ck ON ck.id = cr.keyword_id
+                WHERE ck.client_slug = ic.client_slug
+                  AND cr.run_at > unixepoch() - 90*86400
+                  AND cr.cited_urls LIKE '%reddit.com%') AS reddit_runs_90d
+         FROM injection_configs ic
+        WHERE ic.business_description IS NOT NULL
+          AND LENGTH(ic.business_description) > 50`,
     ).all<{
       client_slug: string;
-      last_generated_at: number;
       business_name: string | null;
       business_url: string | null;
       business_description: string | null;
+      last_generated_at: number | null;
+      deploy_count: number;
+      reddit_runs_90d: number;
     }>()
   ).results;
 
   for (const r of rows) {
     if (!r.business_description) continue;
+    if (r.reddit_runs_90d === 0) continue;
 
-    // Skip if no new Reddit-citing runs have landed since the last build.
-    const newRuns = await env.DB.prepare(
-      `SELECT COUNT(*) AS n
-         FROM citation_runs cr
-         JOIN citation_keywords ck ON ck.id = cr.keyword_id
-        WHERE ck.client_slug = ?
-          AND cr.run_at > ?
-          AND cr.cited_urls LIKE '%reddit.com%'`,
-    )
-      .bind(r.client_slug, r.last_generated_at)
-      .first<{ n: number }>();
-    if (!newRuns || newRuns.n === 0) continue;
+    // For clients with an existing build, skip if no new Reddit-citing
+    // runs have landed since the last build (saves Claude calls when
+    // nothing changed).
+    if (r.last_generated_at) {
+      const newRuns = await env.DB.prepare(
+        `SELECT COUNT(*) AS n FROM citation_runs cr
+           JOIN citation_keywords ck ON ck.id = cr.keyword_id
+          WHERE ck.client_slug = ? AND cr.run_at > ?
+            AND cr.cited_urls LIKE '%reddit.com%'`,
+      )
+        .bind(r.client_slug, r.last_generated_at)
+        .first<{ n: number }>();
+      if (!newRuns || newRuns.n === 0) continue;
+    }
 
     try {
       const deployment = await buildFAQDeployment(
@@ -187,12 +201,14 @@ async function runRedditFaqDriftCheck(env: Env): Promise<void> {
         },
         90,
       );
-      // Auto-deploy the fresh build so the live schema stays current.
-      // Same client opted into deployment once; rebuild stays in the
-      // same trust envelope.
-      await deployFAQToSite(env, r.client_slug, deployment.deployment_id);
+      // Auto-deploy only for clients who've explicitly deployed once
+      // already -- they've reviewed the output and accepted it. First
+      // builds wait for a one-click deploy by the user.
+      if (r.deploy_count > 0) {
+        await deployFAQToSite(env, r.client_slug, deployment.deployment_id);
+      }
     } catch (e) {
-      console.error(`reddit-faq drift rebuild failed for ${r.client_slug}:`, e);
+      console.error(`reddit-faq build/drift failed for ${r.client_slug}:`, e);
     }
   }
 }

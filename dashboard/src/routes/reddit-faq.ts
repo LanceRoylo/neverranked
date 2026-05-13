@@ -149,11 +149,14 @@ export async function handleRedditFaq(
              <div style="color:var(--text)"><strong>${esc(businessContext.name)}</strong>${businessContext.url ? ` <span style="color:var(--text-faint)">· ${esc(businessContext.url)}</span>` : ""}</div>
              <div style="color:var(--text-mute);margin-top:6px;font-size:13px;line-height:1.5">${esc(businessContext.description).slice(0, 320)}${businessContext.description.length > 320 ? "..." : ""}</div>
            </div>
-           <div style="${cardStyle}">
-             <div style="${labelStyle}">No deployment yet</div>
-             <p style="color:var(--text-mute);margin:0 0 14px;line-height:1.55">Pulls Reddit threads cited in the last 90 days, extracts questions, clusters via Haiku, generates answers via Sonnet, renders FAQPage JSON-LD. ~30-60s, ~$0.05-0.15 in Claude calls.</p>
-             <button id="build-btn" style="${btnStyle}">Build first FAQ deployment</button>
-             <span style="color:var(--text-faint);margin-left:12px;font-size:12px" id="status"></span>
+           <div style="${cardStyle}" id="auto-build-card">
+             <div style="${labelStyle}">Building your FAQ deployment</div>
+             <p style="color:var(--text-mute);margin:0 0 14px;line-height:1.55">Pulling the Reddit threads AI engines cited for your tracked queries in the last 90 days, clustering the questions, generating voice-matched answers. Usually 30 to 60 seconds. This page refreshes automatically when the build is ready.</p>
+             <div style="display:flex;align-items:center;gap:10px">
+               <div style="width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:rfq-spin 1s linear infinite"></div>
+               <span style="color:var(--text-faint);font-size:12px" id="status">Working...</span>
+             </div>
+             <style>@keyframes rfq-spin { to { transform: rotate(360deg); } }</style>
            </div>`
         : `<div style="${cardStyle}">
              <div style="font-size:13px;margin-bottom:14px">${stateLabel}</div>
@@ -180,31 +183,39 @@ export async function handleRedditFaq(
 
     <script>
       const statusEl = document.getElementById('status');
-      const buildBtn = document.getElementById('build-btn');
+      const autoCard = document.getElementById('auto-build-card');
       const rebuildBtn = document.getElementById('rebuild-btn');
       const deployBtn = document.getElementById('deploy-btn');
 
-      async function build(btn) {
-        btn.disabled = true;
-        const prev = btn.textContent;
-        btn.textContent = 'Building...';
-        if (statusEl) statusEl.textContent = '~30-60s, calling Claude';
+      async function runBuild(opts) {
+        opts = opts || {};
+        const setStatus = (msg) => { if (statusEl) statusEl.textContent = msg; };
         try {
+          setStatus('Pulling Reddit threads, calling Claude...');
           const r = await fetch('?action=build');
           const d = await r.json();
           if (d.error) {
-            if (statusEl) statusEl.textContent = '';
-            alert(d.error);
-            btn.disabled = false;
-            btn.textContent = prev;
-            return;
+            setStatus('');
+            if (autoCard) {
+              autoCard.innerHTML = '<div style="color:var(--red);font-weight:600;margin-bottom:8px">Build failed</div><div style="color:var(--text-mute);font-size:13px">' + (d.error.replace(/</g,'&lt;')) + '</div>';
+            } else {
+              alert(d.error);
+            }
+            return false;
           }
           window.location.reload();
+          return true;
         } catch (e) {
+          setStatus('');
           alert(String(e));
-          btn.disabled = false;
-          btn.textContent = prev;
+          return false;
         }
+      }
+
+      // Auto-fire when the empty-state card is on screen. User landed
+      // on the page expecting output, not a button.
+      if (autoCard) {
+        runBuild({ auto: true });
       }
 
       async function deploy(btn) {
@@ -230,8 +241,13 @@ export async function handleRedditFaq(
         }
       }
 
-      if (buildBtn) buildBtn.addEventListener('click', () => build(buildBtn));
-      if (rebuildBtn) rebuildBtn.addEventListener('click', () => build(rebuildBtn));
+      if (rebuildBtn) rebuildBtn.addEventListener('click', async () => {
+        if (!confirm('Rebuild from scratch? This calls Claude again and replaces the current draft.')) return;
+        rebuildBtn.disabled = true;
+        rebuildBtn.textContent = 'Rebuilding...';
+        await runBuild();
+        rebuildBtn.disabled = false;
+      });
       if (deployBtn) deployBtn.addEventListener('click', () => deploy(deployBtn));
     </script>
   `;
