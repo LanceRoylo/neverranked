@@ -368,6 +368,95 @@ function populateAgentReadinessTemplate(tpl, client, r) {
 }
 
 // ---------------------------------------------------------------------------
+// Reddit citation surface helpers
+// ---------------------------------------------------------------------------
+
+/**
+ * Substitutes Reddit citation surface findings into the 05b template.
+ *
+ * Three modes:
+ *
+ * 1. Tracked client with Reddit data: fills in specific subreddits + the
+ *    "you named in N of M" deployment block. Surface object is fetched
+ *    via wrangler d1 execute; if that fails for any reason, falls through
+ *    to mode 2.
+ *
+ * 2. Tracked client with zero Reddit citations in window: educational
+ *    beat + "Reddit volume in your category is below the detection
+ *    threshold" note.
+ *
+ * 3. Prospect (no client_slug yet in citation_keywords): educational
+ *    beat + "you'll see your specific subreddit surface once tracking
+ *    starts" CTA.
+ *
+ * The educational content lands in every audit regardless. Specific
+ * data is a bonus when it's available.
+ */
+function populateRedditSurfaceTemplate(tpl, client, surface) {
+  const today = new Date().toISOString().slice(0, 10);
+
+  // Mode selection
+  const isTrackedClientWithSignal = surface && surface.has_signal && surface.total_reddit_mentions > 0;
+  const isTrackedClientNoSignal = surface && !surface.has_signal;
+
+  // --- Summary block ---
+  let summary;
+  if (isTrackedClientWithSignal) {
+    const pct = Math.round(surface.client_named_ratio * 100);
+    summary = `Across the last 90 days, AI engines cited Reddit threads ${surface.total_reddit_mentions} times when answering ${client.name || client.slug}'s tracked queries. ${client.name || client.slug} was named alongside ${surface.client_named_in_reddit} of those (${pct}%).${surface.briefs_drafted > 0 ? ` NeverRanked has drafted ${surface.briefs_drafted} thread-specific reply briefs that the in-house team can ship.` : ""}`;
+  } else if (isTrackedClientNoSignal) {
+    summary = `In the 90-day tracking window, AI engines did not cite any Reddit threads when answering ${client.name || client.slug}'s tracked queries. That can mean Reddit volume is genuinely low for the category, or it can mean our query set hasn't surfaced the subreddits where the category is being discussed. Adding 5-10 broader prompts to the tracking set is usually enough to confirm which.`;
+  } else {
+    summary = `${client.name || client.slug} is not yet in NeverRanked's continuous citation tracking, so the specific Reddit surface for your category is not in this report. Once tracking starts (Pulse tier or above), this section populates automatically with the subreddits where AI engines pull "best X for Y" answers about your category, and where your brand appears (or doesn't) in those threads.`;
+  }
+
+  // --- Subreddit table ---
+  let table;
+  if (isTrackedClientWithSignal) {
+    table = "| Subreddit | Mentions | You named | Top competitor | Example query |\n";
+    table += "|---|---|---|---|---|\n";
+    for (const s of surface.subreddits) {
+      const pct = Math.round(s.client_named_ratio * 100);
+      const comp = s.top_competitor ? `${s.top_competitor} (×${s.top_competitor_count})` : "—";
+      const example = (s.example_keyword || "—").slice(0, 60);
+      table += `| r/${s.subreddit} | ${s.mention_count} | ${pct}% (${s.client_named_count}) | ${comp} | ${example} |\n`;
+    }
+  } else {
+    table = "_No subreddit data for this audit. See the Summary above for the reason._";
+  }
+
+  // --- Interpretation block ---
+  let interpretation;
+  if (isTrackedClientWithSignal) {
+    const zeroSubs = surface.subreddits.filter((s) => s.client_named_ratio === 0);
+    if (zeroSubs.length > 0) {
+      const top3 = zeroSubs.slice(0, 3).map((s) => "r/" + s.subreddit).join(", ");
+      interpretation = `${zeroSubs.length} of the subreddits in the table cite your category but never mention you. ${top3}${zeroSubs.length > 3 ? "..." : ""} are the highest-leverage threads to engage with. These are not necessarily the biggest subreddits — they are the ones AI engines are actively pulling from when answering questions in your category, which means a presence there compounds twice (the engine cites the thread, and your reply is in the thread).`;
+    } else {
+      interpretation = `You appear in every subreddit our tracking found citing your category. That is the defense position. The work shifts from "get into the conversation" to "stay in the conversation as new threads appear." NeverRanked monitors weekly for new citation-generating Reddit threads and flags them as they emerge.`;
+    }
+  } else {
+    interpretation = `Reddit is one of the highest-leverage citation surfaces because subreddits operate as topic-specific Q&A archives that AI engines treat as authoritative. A single well-placed reply on a citation-generating thread can produce months of AI-search visibility because the thread keeps being cited in answers as long as it ranks within the subreddit. The action is not "post a lot on Reddit" — the action is "be present on the threads AI engines are already pulling from."`;
+  }
+
+  // --- Deployment block ---
+  let deployment;
+  if (isTrackedClientWithSignal) {
+    deployment = `For each subreddit in the table above where you are at 0% citation rate, NeverRanked's Amplify tier produces a thread-specific reply brief. The brief tells your in-house team what topic to address, what tone the subreddit expects, what NOT to do, and a draft of the reply itself. Your team posts (so the comment is from a real human practitioner with a real account history), and NeverRanked monitors weekly to see when AI engines start citing your reply.`;
+  } else {
+    deployment = `When NeverRanked detects a citation-generating Reddit thread in your category, the Amplify tier produces a thread-specific reply brief: subject, tone, subreddit norms, what to avoid, and a draft of the reply. Your team posts under their own account; NeverRanked monitors for AI-engine citation lift week-over-week.`;
+  }
+
+  return tpl
+    .replace(/\{Client Name\}/g, client.name || client.slug)
+    .replace(/\{YYYY-MM-DD\}/g, today)
+    .replace(/\{REDDIT_SUMMARY_BLOCK\}/g, summary)
+    .replace(/\{REDDIT_SUBREDDIT_TABLE_OR_NONE\}/g, table)
+    .replace(/\{REDDIT_INTERPRETATION_BLOCK\}/g, interpretation)
+    .replace(/\{REDDIT_DEPLOYMENT_BLOCK\}/g, deployment);
+}
+
+// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 
@@ -548,6 +637,95 @@ the OUTCOME, not the spec. Schema type goes in Layer 3.`,
     // Fall back to copying the raw template so 03b exists in the audit folder
     const tpl = readFileSync(resolve(templateDir, '03b-agent-readiness.md'), 'utf8');
     writeFileSync(resolve(auditDir, '03b-agent-readiness.md'), tpl, 'utf8');
+  }
+
+  // 5d. Reddit citation surface. Educational beat for every audit
+  // (works for prospects). If client_slug has tracking data, the
+  // populate helper fills in the specific subreddit table; otherwise
+  // it ships as the educational variant.
+  //
+  // Optional D1 lookup: skipped by default to keep audit-generate fast.
+  // To enable per-client data, set REDDIT_SURFACE_FETCH=1 and ensure
+  // the wrangler CLI can reach the remote D1 database.
+  {
+    console.log('[5d] Composing Reddit citation surface section...');
+    let surface = null;
+    if (process.env.REDDIT_SURFACE_FETCH === '1') {
+      try {
+        const sinceSec = Math.floor(Date.now() / 1000) - 90 * 86400;
+        const sql = `SELECT cr.cited_urls, cr.client_cited, cr.competitors_mentioned, ck.keyword FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id WHERE ck.client_slug = '${client.slug}' AND cr.run_at >= ${sinceSec} AND cr.cited_urls LIKE '%reddit.com%'`;
+        const out = execSync(
+          `cd "${resolve(REPO_ROOT, 'dashboard')}" && npx wrangler d1 execute neverranked-app --remote --json --command "${sql.replace(/"/g, '\\"')}"`,
+          { encoding: 'utf8' },
+        );
+        // Parse the JSON output and aggregate in-process (mirrors
+        // getRedditCitationSurface in dashboard/src/citations.ts).
+        const parsed = JSON.parse(out);
+        const rows = parsed?.[0]?.results || [];
+        if (rows.length > 0) {
+          const SUBREDDIT_RE = /reddit\.com\/r\/([A-Za-z0-9_]+)/i;
+          const bySub = new Map();
+          let total = 0, named = 0;
+          for (const r of rows) {
+            let urls = [];
+            try { urls = JSON.parse(r.cited_urls || '[]'); } catch {}
+            const subs = new Set();
+            for (const u of urls) {
+              const m = String(u).match(SUBREDDIT_RE);
+              if (m && m[1]) subs.add(m[1].toLowerCase());
+            }
+            if (subs.size === 0) continue;
+            total++;
+            if (r.client_cited === 1) named++;
+            let comps = [];
+            try {
+              const list = JSON.parse(r.competitors_mentioned || '[]');
+              for (const c of list) { const k = String(c || '').toLowerCase().trim(); if (k) comps.push(k); }
+            } catch {}
+            for (const sub of subs) {
+              let agg = bySub.get(sub);
+              if (!agg) { agg = { mentions: 0, named: 0, competitors: new Map(), example_keyword: null }; bySub.set(sub, agg); }
+              agg.mentions++;
+              if (r.client_cited === 1) agg.named++;
+              if (!agg.example_keyword) agg.example_keyword = r.keyword;
+              for (const c of comps) agg.competitors.set(c, (agg.competitors.get(c) || 0) + 1);
+            }
+          }
+          const subreddits = [...bySub.entries()].map(([sub, a]) => {
+            const sorted = [...a.competitors.entries()].sort((x, y) => y[1] - x[1]);
+            return {
+              subreddit: sub,
+              mention_count: a.mentions,
+              client_named_count: a.named,
+              client_named_ratio: a.mentions > 0 ? a.named / a.mentions : 0,
+              top_competitor: sorted[0]?.[0] || null,
+              top_competitor_count: sorted[0]?.[1] || 0,
+              example_keyword: a.example_keyword,
+            };
+          }).sort((a, b) => b.mention_count - a.mention_count).slice(0, 10);
+          surface = {
+            total_reddit_mentions: total,
+            client_named_in_reddit: named,
+            client_named_ratio: total > 0 ? named / total : 0,
+            subreddits,
+            briefs_drafted: 0,
+            has_signal: total > 0,
+          };
+        } else {
+          surface = { total_reddit_mentions: 0, client_named_in_reddit: 0, client_named_ratio: 0, subreddits: [], briefs_drafted: 0, has_signal: false };
+        }
+        console.log(`         Reddit surface: ${surface.total_reddit_mentions} mentions across ${surface.subreddits.length} subreddits`);
+      } catch (err) {
+        console.warn(`[5d] D1 fetch failed — falling back to educational template: ${err.message || err}`);
+        surface = null;
+      }
+    } else {
+      console.log('         (educational mode — set REDDIT_SURFACE_FETCH=1 for client-specific data)');
+    }
+    const tpl = readFileSync(resolve(templateDir, '05b-reddit-surface.md'), 'utf8');
+    const populated = populateRedditSurfaceTemplate(tpl, client, surface);
+    writeFileSync(resolve(auditDir, '05b-reddit-surface.md'), populated, 'utf8');
+    console.log(`         wrote 05b-reddit-surface.md`);
   }
 
   // 6. Delivery email draft — what Lance sends when delivering the audit

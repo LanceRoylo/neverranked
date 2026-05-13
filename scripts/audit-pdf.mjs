@@ -61,6 +61,7 @@ const SECTIONS = [
   '03b-agent-readiness.md',
   '04-keyword-gap.md',
   '05-ai-citations.md',
+  '05b-reddit-surface.md',
   '06-competitor-teardown.md',
   '07-roadmap.md',
   '08-proof.md',
