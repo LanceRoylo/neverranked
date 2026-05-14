@@ -87,6 +87,9 @@ function resolveValueRef(ctx: BusinessCtx, ref: string): string | null {
     case "business_address_city": return addr.city ?? null;
     case "business_address_state": return addr.state ?? null;
     case "business_address_zip": return addr.zip ?? null;
+    // Static generated values used by walkthrough steps. Not pulled
+    // from injection_configs; always returns the same string.
+    case "faq_marker_html": return '<div data-nr-faq></div>';
     default: return null;
   }
 }

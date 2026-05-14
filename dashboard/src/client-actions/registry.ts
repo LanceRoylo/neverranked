@@ -160,6 +160,178 @@ const BING_FOR_BUSINESS: ActionDefinition = {
 };
 
 // ---------------------------------------------------------------------------
+// Action: Apple Business Connect setup
+// ---------------------------------------------------------------------------
+
+const APPLE_BUSINESS_CONNECT: ActionDefinition = {
+  type: "apple_business_connect",
+  title: "Claim your Apple Business Connect profile",
+  one_liner: "Get named in Apple Intelligence, Siri, Spotlight, and Maps answers about your business.",
+  boundary_framing:
+    "We can't sign in as you. Apple requires the business owner's Apple ID. Everything else is ready below, with your business info pre-filled and every step explained.",
+  why_this_matters:
+    "Apple Business Connect is the source of truth Apple Intelligence, Siri, Spotlight, and Maps use to surface your business. Without a claimed profile, Apple devices either show stale info scraped from elsewhere or skip your business entirely. Free, 15 minutes, and Apple's index refreshes within 7 days of verification, faster than most other engines.",
+  time_estimate_minutes: 15,
+  progress_shape: "step_driven",
+  prerequisites: ["business_name", "business_url"],
+  steps: [
+    {
+      id: "open_apple_business_connect",
+      title: "Open Apple Business Connect",
+      goal_line: "Sign in with the Apple ID associated with your business.",
+      external_url: "https://businessconnect.apple.com",
+      external_url_label: "businessconnect.apple.com",
+      actions: [
+        "Click to open Apple Business Connect in a new tab",
+        "Sign in with the Apple ID you want to use for your business profile",
+        "If you don't have a dedicated business Apple ID, create one using your business domain email",
+      ],
+    },
+    {
+      id: "add_location",
+      title: "Add your business location",
+      goal_line: "Tell Apple where your business is so it can attach the profile to Maps.",
+      actions: [
+        "Click Add Location on the dashboard",
+        "Search for your business by name and address",
+        "If Apple shows an existing unclaimed listing for your business, choose Claim This Place",
+        "Otherwise choose Create a New Place",
+      ],
+    },
+    {
+      id: "verify_ownership",
+      title: "Verify business ownership",
+      goal_line: "Apple needs to confirm you own this business before letting you edit the profile.",
+      actions: [
+        "Choose a verification method when prompted (typically phone call or document upload)",
+        "Phone verification: Apple calls the business phone number and reads a 6-digit code",
+        "Document verification: upload a recent utility bill, business license, or lease",
+        "Complete the verification step and wait for confirmation (usually within 24 hours)",
+      ],
+      closing_note:
+        "If you're verifying by phone, make sure someone can answer the business line during business hours on the day you submit. If you're verifying by document, scan or photograph it clearly with all four corners visible.",
+    },
+    {
+      id: "fill_basics",
+      title: "Fill in the business basics",
+      goal_line: "Copy each value below into the matching field on Apple's form.",
+      actions: [
+        "Click Edit Profile on your verified location",
+        "Copy each value below into the matching field",
+        "Click Save once all fields are filled",
+      ],
+      copy_fields: [
+        { label: "Business name", value_ref: "business_name" },
+        { label: "Address line 1", value_ref: "business_address_street" },
+        { label: "City", value_ref: "business_address_city" },
+        { label: "State", value_ref: "business_address_state" },
+        { label: "ZIP", value_ref: "business_address_zip" },
+        { label: "Phone", value_ref: "business_phone" },
+        { label: "Website", value_ref: "business_url" },
+      ],
+    },
+    {
+      id: "description_and_category",
+      title: "Paste your description and pick a category",
+      goal_line: "Apple uses these to match your business to relevant user queries.",
+      actions: [
+        "Copy the description below into the Description field",
+        "Pick the primary category that best matches your business",
+        "Add up to 5 secondary categories so Apple shows your business for more search intents",
+      ],
+      copy_blob: {
+        label: "Business description",
+        value_ref: "business_description",
+        helper: "Apple supports up to 750 characters. Edit before pasting if you want to expand or adjust.",
+      },
+    },
+    {
+      id: "showcases_optional",
+      title: "Add Showcases (optional)",
+      goal_line: "Showcases are Apple's content cards that appear in Maps and Spotlight when users find your business. You can skip this step at first and add Showcases later.",
+      actions: [
+        "Click Showcases in the left navigation",
+        "Add up to 3 cards with photos, headlines, and links to relevant pages on your website",
+        "Recommended Showcases: a hero card with your most popular service, an Events card for upcoming events, an About card with your story",
+      ],
+      optional: true,
+      closing_note:
+        "Showcases significantly improve how your business surfaces in Maps and Spotlight, but they're not required for the profile to go live. Skip if you don't have content ready and come back after verification.",
+    },
+    {
+      id: "submit_and_wait",
+      title: "Submit for review",
+      goal_line: "Apple reviews submitted profiles within a few business days.",
+      actions: [
+        "Click Submit for Review in Apple Business Connect",
+        "Wait for Apple's email confirmation (usually 1 to 3 business days)",
+        "Once confirmed, your profile is live across Apple Intelligence, Maps, Spotlight, and Siri",
+      ],
+      closing_note:
+        "After submission we'll mark this action as Submitted and check back with you in 5 days to see if Apple confirmed your profile. The profile starts surfacing on Apple devices the moment Apple flips it live.",
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Action: FAQ marker install (single-step, copy-paste one line of HTML)
+// ---------------------------------------------------------------------------
+
+const FAQ_MARKER_INSTALL: ActionDefinition = {
+  type: "faq_marker_install",
+  title: "Show your FAQs to visitors and to non-JSON-LD crawlers",
+  one_liner: "Add one line of HTML to a page on your site to render the FAQ schema as a visible Q&A section.",
+  boundary_framing:
+    "We can't edit your website's source code. You decide where the marker goes. Everything else is prepared below, including the exact line to paste and per-CMS guidance for the most common platforms.",
+  why_this_matters:
+    "Your FAQ schema today is invisible structured data that AI engines read but visitors and non-JavaScript crawlers cannot. Adding the marker div renders the same FAQ content as a visible accordion on the page you choose. Visitors see it. Crawlers that don't run JavaScript see it. AI engines see it twice (in JSON-LD and in semantic HTML with Schema.org microdata).",
+  time_estimate_minutes: 5,
+  progress_shape: "step_driven",
+  prerequisites: [],
+  steps: [
+    {
+      id: "pick_a_page",
+      title: "Pick the page where the FAQ section should appear",
+      goal_line: "Most clients put the FAQ accordion on their About page or a dedicated FAQ page.",
+      actions: [
+        "Choose a page on your site that's a natural home for an FAQ section",
+        "Good options: About, FAQ, Help, Contact, Visit, Tickets",
+        "Avoid: the homepage hero, checkout flows, or any page where the FAQ would interrupt a specific user task",
+      ],
+    },
+    {
+      id: "paste_marker",
+      title: "Paste this one line of HTML into that page",
+      goal_line: "The line is a marker. Our snippet detects it and renders the FAQ content into that spot when a visitor loads the page.",
+      actions: [
+        "Open the page editor for the page you picked",
+        "Switch to HTML or Code view (most editors have this toggle)",
+        "Paste the line below where you want the FAQ section to appear",
+        "Save and publish",
+      ],
+      copy_blob: {
+        label: "The marker line",
+        value_ref: "faq_marker_html",
+        helper: "Paste exactly as written. No additional attributes or classes needed. The accordion styling uses your site's existing CSS.",
+      },
+    },
+    {
+      id: "verify_render",
+      title: "Verify the FAQ section appears on the page",
+      goal_line: "Reload the page where you pasted the marker. The FAQ accordion should render in that spot.",
+      actions: [
+        "Open the page in a fresh browser tab (no cache)",
+        "Scroll to where you pasted the marker",
+        "Confirm a list of expandable question rows is visible (your approved FAQs)",
+        "If nothing appears, check that the NeverRanked snippet is still installed on that page",
+      ],
+      closing_note:
+        "Per-CMS notes: in WordPress, use the Custom HTML block or paste into Code Editor view. In Webflow, use an Embed component. In Shopify, edit the page Content and switch to <> source view. In Squarespace, use a Code block.",
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // Action: FAQ review (item-driven, no walkthrough steps)
 // ---------------------------------------------------------------------------
 
@@ -184,10 +356,15 @@ const FAQ_REVIEW: ActionDefinition = {
 export const ACTION_REGISTRY: Record<ActionType, ActionDefinition> = {
   faq_review: FAQ_REVIEW,
   bing_for_business: BING_FOR_BUSINESS,
-  // Apple Business Connect, NAP audit, FAQ marker install land in v2.
-  apple_business_connect: BING_FOR_BUSINESS, // placeholder; v1 only ships the two above
+  apple_business_connect: APPLE_BUSINESS_CONNECT,
+  faq_marker_install: FAQ_MARKER_INSTALL,
+  // NAP audit lands in v2.
   nap_audit: BING_FOR_BUSINESS,               // placeholder
-  faq_marker_install: BING_FOR_BUSINESS,      // placeholder
 };
 
-export const V1_ACTIVE_ACTIONS: ActionType[] = ["faq_review", "bing_for_business"];
+export const V1_ACTIVE_ACTIONS: ActionType[] = [
+  "faq_review",
+  "bing_for_business",
+  "apple_business_connect",
+  "faq_marker_install",
+];
