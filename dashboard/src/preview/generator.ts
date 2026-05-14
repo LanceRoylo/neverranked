@@ -20,6 +20,12 @@ export interface PreviewInput {
   recipient_name?: string;
   company_name?: string;
   domain?: string;
+  // Rich intel Lance provides via the build form. These flow into
+  // the Sonnet prompt verbatim so the output is personalized like
+  // the existing hand-crafted /pitch/<slug>/ pages.
+  audit_findings?: string;            // headline finding to lead with
+  what_we_would_do?: string;          // concrete plan
+  extra_context?: string;             // background on the relationship
 }
 
 export interface PreviewOutput {
@@ -45,18 +51,27 @@ VOICE RULES (violation = unusable output):
 
 STRUCTURE (return as inner-HTML, no <html>/<head>/<body> wrappers):
 
-1. <section class="hero"> — one-line opener that gives the headline finding for THIS prospect. If we don't have specific data on them, make a category-level claim that's true for businesses like theirs.
+Lance gives you concrete inputs: recipient_name, company_name, domain, headline_finding, what_we_would_do, and optional extra_context. USE THESE LITERALLY. Do not generalize. Do not paraphrase the finding into something softer. The personalization is the whole point.
 
-2. <section class="proof"> — short proof point referencing the Hawaii Theatre case study (CEO-approved May 2026). 'Forty-five out of one hundred to ninety-five in ten days. Same week, first weekly citation log run, Perplexity named them on 14 of 19 tracked queries.' Cite as factual evidence the methodology works.
+1. <section class="hero">
+   - <h1> that names the company directly and states the headline_finding as a strong claim. Example: "<h1>ASB is named in zero percent of AI engine citations across the Hawaii community banking query set.</h1>"
+   - One or two sentences below the h1 expanding the implication for THIS company specifically.
 
-3. <section class="what-happens"> — three to four sentences describing what NR would do for them concretely. Be specific where you can; if we don't have their data, describe the methodology in their category's language.
+2. <section class="proof">
+   - The Hawaii Theatre proof point. Use these exact numbers: 'Forty-five out of one hundred to ninety-five in ten days. Same week, first weekly citation log run, Perplexity named them on 14 of 19 tracked queries.' Pair with one sentence connecting the case study to the recipient's category if relevant.
 
-4. <section class="next"> — one-line CTA. Examples:
+3. <section class="what-happens">
+   - Use what_we_would_do as the substance. Break it into 2-3 concrete bullet items inside a <ul> if the input has multiple actions. Each bullet starts with a verb. Be specific about the schema types, the cadence, the deliverable shape.
+
+4. <section class="next">
+   - One-line CTA inviting them to reply. Examples below. Vary the wording slightly per Preview so each feels written, not templated:
    - 'If this is the shape of work you want, reply with a yes and we kick off in five business days.'
-   - 'Read once, decide if it fits. Reply when you're ready.'
+   - 'Read once, decide if it fits. Reply when you are ready.'
    - 'No call needed. Reply and we set up the deployment.'
 
 NEVER include a meeting/call/chat ask anywhere on the page.
+
+If extra_context is provided, weave one reference to it naturally into the hero or what-happens section so the recipient knows you remembered the conversation.
 
 OUTPUT FORMAT (strict JSON):
 {
@@ -105,13 +120,23 @@ export async function generatePreview(
 ): Promise<PreviewOutput | null> {
   if (!env.ANTHROPIC_API_KEY) return null;
 
-  const userMessage = `Recipient info we have:
+  const userMessage = `Recipient:
 ${input.recipient_name ? `Name: ${input.recipient_name}` : ""}
 ${input.company_name ? `Company: ${input.company_name}` : ""}
 ${input.domain ? `Domain: ${input.domain}` : ""}
-${(!input.recipient_name && !input.company_name && !input.domain) ? "No specific info on file. Write a category-neutral brief that works for any business considering AI-citation tracking work." : ""}
 
-Write the brief. Return JSON only.`;
+${input.audit_findings ? `HEADLINE FINDING (lead with this verbatim in the hero):
+${input.audit_findings}` : ""}
+
+${input.what_we_would_do ? `WHAT WE WOULD DO (use as the substance of the what-happens section):
+${input.what_we_would_do}` : ""}
+
+${input.extra_context ? `EXTRA CONTEXT (weave one reference into the hero or what-happens):
+${input.extra_context}` : ""}
+
+${(!input.audit_findings && !input.what_we_would_do) ? "No specific intel provided. Write a category-neutral brief, but flag this in the meta_description so Lance knows to add specifics in the editor." : ""}
+
+Write the brief. Use the company name and domain throughout where natural. Return JSON only.`;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

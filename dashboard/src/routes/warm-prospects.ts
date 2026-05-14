@@ -277,10 +277,8 @@ export async function handleWarmProspectDetail(
       previewCard = `
         <div style="${cardStyle}">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Preview not built yet</div>
-          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Hot prospects warrant a personalized brief. Build a Preview page at a private URL you can share in the follow-up email. ~20 seconds to generate, edit before publishing.</p>
-          <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/build" style="margin:0">
-            <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Preview</button>
-          </form>
+          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Hot prospects warrant a personalized brief. Next page collects the prospect intel (name, company, domain, headline finding) so the Preview reads like the pages you built for Greg, Shawn, and MVNP. ~20 seconds to generate, edit before publishing.</p>
+          <a href="/admin/warm-prospects/${prospect_id}/preview/build" style="display:inline-block;padding:10px 22px;background:var(--gold);color:#1a1814;text-decoration:none;font-weight:600;font-size:13px;border-radius:4px;font-family:inherit">Build Preview</a>
         </div>
       `;
     }

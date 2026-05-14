@@ -1909,12 +1909,18 @@ export default {
         user, env,
       );
     }
-    // Preview build for a hot warm prospect. Generates a personalized
-    // brief via Sonnet, persists as a draft, redirects to the editor.
+    // Preview build for a hot warm prospect. Two-step: GET shows the
+    // input form (recipient name, company, domain, headline finding,
+    // what we would do, extra context). POST runs the Sonnet pass
+    // with those inputs and persists as a draft, then redirects to
+    // the editor. The form-input pattern fixes the generic-Preview
+    // problem caused by having only prospect_id available.
     const previewBuildMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/preview\/build$/);
-    if (previewBuildMatch && method === "POST" && user.role === "admin") {
-      const { handlePreviewBuildForProspect } = await import("./routes/preview");
-      return handlePreviewBuildForProspect(parseInt(previewBuildMatch[1], 10), user, env);
+    if (previewBuildMatch && user.role === "admin") {
+      const { handlePreviewBuildForProspectGet, handlePreviewBuildForProspectPost } = await import("./routes/preview");
+      const pid = parseInt(previewBuildMatch[1], 10);
+      if (method === "GET") return handlePreviewBuildForProspectGet(pid, user, env);
+      if (method === "POST") return handlePreviewBuildForProspectPost(pid, request, user, env);
     }
     const previewEditMatch = path.match(/^\/admin\/preview\/([a-z0-9-]+)\/edit$/);
     if (previewEditMatch && user.role === "admin") {
