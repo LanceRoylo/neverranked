@@ -1871,6 +1871,36 @@ export default {
       return handleLeads(user, env);
     }
 
+    // Warm outreach prospects: ranks multi-opener prospects by signal
+    // tier, drafts voice-clean follow-ups gated to the tier, and tracks
+    // whether each draft was sent or declined. Names + emails live in
+    // the local outreach SQLite; this surface tracks WHAT we propose
+    // and WHETHER we sent it.
+    if (path === "/admin/warm-prospects" && method === "GET" && user.role === "admin") {
+      const { handleWarmProspectsIndex } = await import("./routes/warm-prospects");
+      return handleWarmProspectsIndex(user, env);
+    }
+    const warmProspectDetailMatch = path.match(/^\/admin\/warm-prospects\/(\d+)$/);
+    if (warmProspectDetailMatch && method === "GET" && user.role === "admin") {
+      const { handleWarmProspectDetail } = await import("./routes/warm-prospects");
+      return handleWarmProspectDetail(parseInt(warmProspectDetailMatch[1], 10), user, env);
+    }
+    const warmProspectDraftMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/draft$/);
+    if (warmProspectDraftMatch && method === "POST" && user.role === "admin") {
+      const { handleProspectDraft } = await import("./routes/warm-prospects");
+      return handleProspectDraft(parseInt(warmProspectDraftMatch[1], 10), user, env);
+    }
+    const warmProspectActionMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/action\/(\d+)\/(sent|declined)$/);
+    if (warmProspectActionMatch && method === "POST" && user.role === "admin") {
+      const { handleProspectActionSent, handleProspectActionDeclined } = await import("./routes/warm-prospects");
+      const prospectId = parseInt(warmProspectActionMatch[1], 10);
+      const actionId = parseInt(warmProspectActionMatch[2], 10);
+      if (warmProspectActionMatch[3] === "sent") {
+        return handleProspectActionSent(prospectId, actionId, user, env);
+      }
+      return handleProspectActionDeclined(prospectId, actionId, user, env);
+    }
+
     if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
       return handleAdminFreeCheckStats(user, env, url);
     }
@@ -1897,7 +1927,7 @@ export default {
     }
     const injectPauseMatch = path.match(/^\/admin\/inject\/([^/]+)\/pause\/(\d+)$/);
     if (injectPauseMatch && method === "POST" && user.role === "admin") {
-      return handleInjectPause(decodeURIComponent(injectPauseMatch[1]), Number(injectPauseMatch[2]), env);
+      return handleInjectPause(decodeURIComponent(injectPauseMatch[1]), Number(injectPauseMatch[2]), env, request);
     }
     const injectEditMatch = path.match(/^\/admin\/inject\/([^/]+)\/edit\/(\d+)$/);
     if (injectEditMatch && method === "POST" && user.role === "admin") {
@@ -1905,7 +1935,7 @@ export default {
     }
     const injectDeleteMatch = path.match(/^\/admin\/inject\/([^/]+)\/delete\/(\d+)$/);
     if (injectDeleteMatch && method === "POST" && user.role === "admin") {
-      return handleInjectDelete(decodeURIComponent(injectDeleteMatch[1]), Number(injectDeleteMatch[2]), env);
+      return handleInjectDelete(decodeURIComponent(injectDeleteMatch[1]), Number(injectDeleteMatch[2]), env, request);
     }
     const injectPublishMatch = path.match(/^\/admin\/inject\/([^/]+)\/publish$/);
     if (injectPublishMatch && method === "POST" && user.role === "admin") {
