@@ -59,6 +59,7 @@ import {
   handleFAQReject,
   handleFAQRestore,
   handleFAQRemove,
+  handleChecklistMark,
 } from "./routes/actions";
 import { handleBenchmark } from "./routes/benchmark";
 import { recomputeIndustryBenchmarks } from "./industry-benchmarks";
@@ -2312,6 +2313,16 @@ export default {
         decodeURIComponent(actionDetailMatch[1]),
         decodeURIComponent(actionDetailMatch[2]),
         user, env,
+      );
+    }
+    const checklistMarkMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)\/check\/([a-z_]+)\/(clean|mismatch|reset)$/);
+    if (checklistMarkMatch && method === "POST") {
+      return handleChecklistMark(
+        decodeURIComponent(checklistMarkMatch[1]),
+        decodeURIComponent(checklistMarkMatch[2]),
+        decodeURIComponent(checklistMarkMatch[3]),
+        checklistMarkMatch[4] as "clean" | "mismatch" | "reset",
+        request, user, env,
       );
     }
     const stepCompleteMatch = path.match(/^\/actions\/([^/]+)\/([a-z_]+)\/step\/([a-z_]+)\/complete$/);

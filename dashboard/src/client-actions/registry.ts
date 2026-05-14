@@ -23,7 +23,15 @@ export type ActionType =
   | "nap_audit"
   | "faq_marker_install";
 
-export type ProgressShape = "step_driven" | "item_driven";
+export type ProgressShape = "step_driven" | "item_driven" | "checklist_driven";
+
+export interface ChecklistItem {
+  id: string;                  // stable identifier; used as map key in metadata
+  label: string;               // human-readable directory name
+  url_template: string;        // URL with {business_name_url}, {city_url}, {phone_url} placeholders
+  helper?: string;             // one-line why-this-matters
+  category?: "directory" | "review" | "social" | "industry";
+}
 
 export interface ActionStep {
   id: string;
@@ -54,7 +62,8 @@ export interface ActionDefinition {
   why_this_matters: string;       // 2-3 sentences of context for the client
   time_estimate_minutes: number;
   progress_shape: ProgressShape;
-  steps: ActionStep[];            // empty for item_driven actions
+  steps: ActionStep[];            // empty for item_driven and checklist_driven actions
+  checklist_items?: ChecklistItem[]; // populated for checklist_driven actions
   prerequisites?: string[];       // list of injection_configs fields required to start
 }
 
@@ -334,6 +343,96 @@ const FAQ_MARKER_INSTALL: ActionDefinition = {
 };
 
 // ---------------------------------------------------------------------------
+// Action: NAP audit across the top 10 business directories
+// ---------------------------------------------------------------------------
+
+const NAP_AUDIT: ActionDefinition = {
+  type: "nap_audit",
+  title: "Audit your name, address, and phone across business directories",
+  one_liner: "AI engines cross-reference directory listings to confirm you're who you say you are. Inconsistencies make engines trust you less.",
+  boundary_framing:
+    "We can't update directory listings as you. Each platform requires the business owner to sign in. Below is your verified name, address, and phone, plus a pre-built search link to each directory. Confirm what you see matches, or flag a mismatch and we'll track it.",
+  why_this_matters:
+    "AI engines (and Google's own ranking signals) cross-reference your business name, address, and phone across multiple directories to confirm you're a legitimate, established business. A phone number that doesn't match between Yelp and your website, or an old address still listed on Yellow Pages, makes engines downgrade their confidence in citing you. The fix is one quick visual check per directory; mismatches get a short fix list you can work through over a week.",
+  time_estimate_minutes: 25,
+  progress_shape: "checklist_driven",
+  prerequisites: ["business_name"],
+  steps: [],
+  checklist_items: [
+    {
+      id: "yelp",
+      label: "Yelp",
+      url_template: "https://www.yelp.com/search?find_desc={business_name_url}&find_loc={city_url}",
+      helper: "AI engines treat Yelp as a primary review and citation source for local businesses.",
+      category: "review",
+    },
+    {
+      id: "yellow_pages",
+      label: "Yellow Pages",
+      url_template: "https://www.yellowpages.com/search?search_terms={business_name_url}&geo_location_terms={city_url}",
+      helper: "Legacy directory still indexed by Bing and used by older citation aggregators.",
+      category: "directory",
+    },
+    {
+      id: "bbb",
+      label: "Better Business Bureau",
+      url_template: "https://www.bbb.org/search?find_country=USA&find_text={business_name_url}&find_loc={city_url}",
+      helper: "Trust signal for AI engines on financial, legal, and service-business queries.",
+      category: "review",
+    },
+    {
+      id: "foursquare",
+      label: "Foursquare",
+      url_template: "https://foursquare.com/explore?q={business_name_url}&near={city_url}",
+      helper: "Powers location data for Apple Maps, Uber, Square, and many travel apps.",
+      category: "directory",
+    },
+    {
+      id: "tripadvisor",
+      label: "TripAdvisor",
+      url_template: "https://www.tripadvisor.com/Search?q={business_name_url}",
+      helper: "Critical for hospitality, dining, and attractions. AI engines weight TripAdvisor heavily on tourism queries.",
+      category: "review",
+    },
+    {
+      id: "trustpilot",
+      label: "Trustpilot",
+      url_template: "https://www.trustpilot.com/search?query={business_name_url}",
+      helper: "AI engines cite Trustpilot reviews on ecommerce and software queries.",
+      category: "review",
+    },
+    {
+      id: "linkedin",
+      label: "LinkedIn Company Page",
+      url_template: "https://www.linkedin.com/search/results/companies/?keywords={business_name_url}",
+      helper: "Confirms business is a real organization for B2B queries.",
+      category: "social",
+    },
+    {
+      id: "facebook",
+      label: "Facebook Business Page",
+      url_template: "https://www.facebook.com/search/pages/?q={business_name_url}",
+      helper: "Indexed by both Google and Bing as a verified business signal.",
+      category: "social",
+    },
+    {
+      id: "glassdoor",
+      label: "Glassdoor",
+      url_template: "https://www.glassdoor.com/Search/results.htm?keyword={business_name_url}",
+      helper: "Employer-side signal that confirms business is operating and hiring.",
+      category: "directory",
+    },
+    {
+      id: "industry",
+      label: "Your industry-specific directory",
+      url_template: "https://www.google.com/search?q={business_name_url}+best+of+{city_url}+directory",
+      helper: "Healthgrades for medical. Avvo for legal. ZocDoc for healthcare. Find your category's top directory and check NAP there too.",
+      category: "industry",
+    },
+  ],
+};
+
+// ---------------------------------------------------------------------------
 // Action: FAQ review (item-driven, no walkthrough steps)
 // ---------------------------------------------------------------------------
 
@@ -360,8 +459,7 @@ export const ACTION_REGISTRY: Record<ActionType, ActionDefinition> = {
   bing_for_business: BING_FOR_BUSINESS,
   apple_business_connect: APPLE_BUSINESS_CONNECT,
   faq_marker_install: FAQ_MARKER_INSTALL,
-  // NAP audit lands in v2.
-  nap_audit: BING_FOR_BUSINESS,               // placeholder
+  nap_audit: NAP_AUDIT,
 };
 
 export const V1_ACTIVE_ACTIONS: ActionType[] = [
@@ -369,4 +467,5 @@ export const V1_ACTIVE_ACTIONS: ActionType[] = [
   "bing_for_business",
   "apple_business_connect",
   "faq_marker_install",
+  "nap_audit",
 ];

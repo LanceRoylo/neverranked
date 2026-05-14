@@ -56,16 +56,18 @@ export async function getActionsDigestSection(
       continue;
     }
 
-    // Step-driven action. Pending if walkthrough is unstarted with
-    // prerequisites met, in_progress, or submitted-awaiting-verification.
+    // Step-driven or checklist-driven action. Pending if walkthrough
+    // is unstarted with prerequisites met, in_progress, or
+    // submitted-awaiting-verification.
     const progress = await env.DB.prepare(
-      `SELECT status, current_step_id, completed_steps_json
+      `SELECT status, current_step_id, completed_steps_json, metadata_json
          FROM client_action_progress
         WHERE client_slug = ? AND action_type = ?`,
     ).bind(clientSlug, actionType).first<{
       status: string;
       current_step_id: string | null;
       completed_steps_json: string;
+      metadata_json: string | null;
     }>();
 
     // Skip if action requires injection_configs fields the client
@@ -96,15 +98,31 @@ export async function getActionsDigestSection(
         cta_url: ctaUrl,
       });
     } else if (progress.status === "in_progress") {
-      let completed: string[] = [];
-      try { completed = JSON.parse(progress.completed_steps_json) as string[]; } catch { /* skip */ }
-      const total = def.steps.length;
-      items.push({
-        type: actionType,
-        title: def.title,
-        status_label: `In progress · step ${Math.min(completed.length + 1, total)} of ${total}`,
-        cta_url: ctaUrl,
-      });
+      if (def.progress_shape === "checklist_driven") {
+        const items_def = def.checklist_items || [];
+        let checked = 0;
+        try {
+          const meta = JSON.parse(progress.metadata_json || "{}") as { directory_states?: Record<string, { status?: string }> };
+          const states = meta.directory_states || {};
+          checked = Object.values(states).filter((s) => s?.status && s.status !== "not_checked").length;
+        } catch { /* skip */ }
+        items.push({
+          type: actionType,
+          title: def.title,
+          status_label: `In progress · ${checked} of ${items_def.length} directories checked`,
+          cta_url: ctaUrl,
+        });
+      } else {
+        let completed: string[] = [];
+        try { completed = JSON.parse(progress.completed_steps_json) as string[]; } catch { /* skip */ }
+        const total = def.steps.length;
+        items.push({
+          type: actionType,
+          title: def.title,
+          status_label: `In progress · step ${Math.min(completed.length + 1, total)} of ${total}`,
+          cta_url: ctaUrl,
+        });
+      }
     } else if (progress.status === "submitted") {
       items.push({
         type: actionType,

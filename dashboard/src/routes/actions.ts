@@ -153,9 +153,17 @@ async function renderActionCard(env: Env, slug: string, def: ActionDefinition): 
         status_color = "var(--gold)";
         badge = `<span style="background:var(--gold);color:#1a1814;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">awaiting verification</span>`;
       } else if (progress.status === "in_progress") {
-        const completed = progress.completed_steps.length;
-        const total = def.steps.length;
-        status_label = `In progress (${completed} of ${total} steps)`;
+        if (def.progress_shape === "checklist_driven") {
+          // For checklist actions, completed_steps_json isn't used.
+          // Count directory_states in metadata_json instead.
+          const items = def.checklist_items || [];
+          const checkedCount = await countChecklistChecked(env, slug, def.type, items.length);
+          status_label = `In progress (${checkedCount} of ${items.length} directories)`;
+        } else {
+          const completed = progress.completed_steps.length;
+          const total = def.steps.length;
+          status_label = `In progress (${completed} of ${total} steps)`;
+        }
         status_color = "var(--gold)";
         badge = `<span style="background:var(--gold);color:#1a1814;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600">in progress</span>`;
       } else if (progress.status === "skipped") {
@@ -191,7 +199,11 @@ async function renderActionCard(env: Env, slug: string, def: ActionDefinition): 
       ${metricLine}
       <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:12px;font-family:var(--mono)">
         <span style="color:${status_color}">${status_label}</span>
-        <span style="color:var(--text-faint)">${def.time_estimate_minutes} min · ${def.progress_shape === "step_driven" ? `${def.steps.length} steps` : "review and approve"}</span>
+        <span style="color:var(--text-faint)">${def.time_estimate_minutes} min · ${
+          def.progress_shape === "step_driven" ? `${def.steps.length} steps`
+            : def.progress_shape === "checklist_driven" ? `${(def.checklist_items || []).length} directories`
+            : "review and approve"
+        }</span>
       </div>
     </a>
   `;
@@ -218,6 +230,9 @@ export async function handleActionDetail(
 
   if (def.progress_shape === "item_driven" && def.type === "faq_review") {
     return renderFAQReview(slug, user, env, def, ctx);
+  }
+  if (def.progress_shape === "checklist_driven") {
+    return renderChecklist(slug, user, env, def, ctx);
   }
   return renderWalkthrough(slug, user, env, def, ctx);
 }
@@ -458,6 +473,236 @@ function renderStep(
 }
 
 // ---------------------------------------------------------------------------
+// Checklist viewer (checklist_driven actions like NAP audit)
+//
+// Different from the linear walkthrough renderer. Each row in the
+// checklist is a directory to check. Per-row state lives in
+// client_action_progress.metadata_json as a directory_states object:
+//   { "yelp": { status: "checked_clean", checked_at: ... },
+//     "yellow_pages": { status: "checked_mismatch", details: "..." } }
+// Once every required item has a status, the action is complete.
+// ---------------------------------------------------------------------------
+
+interface ChecklistItemState {
+  status: "not_checked" | "checked_clean" | "checked_mismatch";
+  checked_at?: number;
+  details?: string;
+}
+
+async function renderChecklist(
+  slug: string,
+  user: User,
+  env: Env,
+  def: ActionDefinition,
+  ctx: BusinessCtx,
+): Promise<Response> {
+  const items = def.checklist_items || [];
+  const progress = await env.DB.prepare(
+    `SELECT status, metadata_json FROM client_action_progress
+      WHERE client_slug = ? AND action_type = ?`,
+  ).bind(slug, def.type).first<{ status: string; metadata_json: string | null }>();
+
+  let directoryStates: Record<string, ChecklistItemState> = {};
+  if (progress?.metadata_json) {
+    try {
+      const meta = JSON.parse(progress.metadata_json) as { directory_states?: Record<string, ChecklistItemState> };
+      directoryStates = meta.directory_states || {};
+    } catch { /* skip */ }
+  }
+
+  const addr = parseAddress(ctx.business_address);
+  const businessName = ctx.business_name || slug;
+  const city = addr.city || "";
+  const nameUrl = encodeURIComponent(businessName);
+  const cityUrl = encodeURIComponent(city);
+
+  function expandUrl(template: string): string {
+    return template
+      .replace(/\{business_name_url\}/g, nameUrl)
+      .replace(/\{city_url\}/g, cityUrl);
+  }
+
+  const totalRequired = items.length;
+  const checkedCount = items.filter((it) => directoryStates[it.id]?.status && directoryStates[it.id].status !== "not_checked").length;
+  const mismatchCount = items.filter((it) => directoryStates[it.id]?.status === "checked_mismatch").length;
+
+  const cardStyle = "margin-bottom:18px;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:6px";
+
+  const headerBlock = `
+    <div style="${cardStyle}">
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Why this matters</div>
+      <p style="margin:0 0 14px;color:var(--text);line-height:1.65;font-size:14px">${esc(def.why_this_matters)}</p>
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px;margin-top:18px">Heavy lifting is done. The clicks are yours.</div>
+      <p style="margin:0;color:var(--text-mute);line-height:1.65;font-size:13px">${esc(def.boundary_framing)}</p>
+    </div>
+  `;
+
+  // The NAP to verify against. Shown once at the top, with copy
+  // buttons per field, so the user can keep a single tab open
+  // for the comparison work.
+  const napCard = `
+    <div style="${cardStyle}">
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Your verified NAP — confirm each directory shows this exactly</div>
+      <table style="width:100%;border-collapse:separate;border-spacing:0;border:1px solid var(--line);border-radius:4px;background:var(--bg-edge)">
+        ${renderNapRow("Name", ctx.business_name, slug, "business_name")}
+        ${renderNapRow("Address", addr.street || null, slug, "business_address_street")}
+        ${renderNapRow("City", addr.city || null, slug, "business_address_city")}
+        ${renderNapRow("State", addr.state || null, slug, "business_address_state")}
+        ${renderNapRow("ZIP", addr.zip || null, slug, "business_address_zip")}
+        ${renderNapRow("Phone", ctx.business_phone, slug, "business_phone")}
+        ${renderNapRow("Website", ctx.business_url, slug, "business_url")}
+      </table>
+    </div>
+  `;
+
+  const checklistRows = items.map((it) => {
+    const state = directoryStates[it.id] || { status: "not_checked" };
+    const url = expandUrl(it.url_template);
+    let statusPill = "";
+    let actionsHtml = "";
+
+    if (state.status === "checked_clean") {
+      statusPill = `<span style="display:inline-block;padding:3px 9px;background:rgba(127,201,154,0.15);color:#7fc99a;font-family:var(--mono);font-size:11px;font-weight:600;border-radius:10px">Looks good</span>`;
+      actionsHtml = `
+        <form method="POST" action="/actions/${esc(slug)}/${esc(def.type)}/check/${esc(it.id)}/reset" style="margin:0">
+          <button type="submit" style="padding:6px 12px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-size:11px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Re-check</button>
+        </form>`;
+    } else if (state.status === "checked_mismatch") {
+      statusPill = `<span style="display:inline-block;padding:3px 9px;background:rgba(220,108,108,0.18);color:#dc6c6c;font-family:var(--mono);font-size:11px;font-weight:600;border-radius:10px">Mismatch</span>`;
+      actionsHtml = `
+        <form method="POST" action="/actions/${esc(slug)}/${esc(def.type)}/check/${esc(it.id)}/reset" style="margin:0">
+          <button type="submit" style="padding:6px 12px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-size:11px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Re-check</button>
+        </form>`;
+    } else {
+      statusPill = `<span style="display:inline-block;padding:3px 9px;background:transparent;color:var(--text-faint);font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:10px">Not checked</span>`;
+      actionsHtml = `
+        <form method="POST" action="/actions/${esc(slug)}/${esc(def.type)}/check/${esc(it.id)}/clean" style="margin:0">
+          <button type="submit" style="padding:7px 13px;background:var(--gold);color:#1a1814;border:0;font-size:11.5px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Looks good</button>
+        </form>
+        <button type="button" onclick="document.getElementById('mismatch-${esc(it.id)}').style.display='block';this.style.display='none'"
+                style="padding:7px 13px;background:transparent;color:var(--red);border:1px solid var(--red);font-size:11.5px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Found mismatch</button>`;
+    }
+
+    const detailsLine = state.status === "checked_mismatch" && state.details
+      ? `<div style="color:var(--text-faint);font-size:12px;margin-top:6px;font-style:italic">${esc(state.details)}</div>`
+      : "";
+
+    const mismatchForm = `
+      <form id="mismatch-${esc(it.id)}" method="POST" action="/actions/${esc(slug)}/${esc(def.type)}/check/${esc(it.id)}/mismatch" style="display:none;margin-top:10px">
+        <input type="text" name="details" placeholder="What's wrong? e.g. 'Phone is (808) 555-XXXX, should be (808) 555-YYYY'"
+               style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:7px 10px;border-radius:3px;font-family:inherit;font-size:12.5px;margin-bottom:8px">
+        <div style="display:flex;gap:8px">
+          <button type="submit" style="padding:6px 14px;background:var(--red);color:#fff;border:0;font-size:11.5px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Save mismatch</button>
+          <button type="button" onclick="document.getElementById('mismatch-${esc(it.id)}').style.display='none'"
+                  style="padding:6px 14px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-size:11.5px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Cancel</button>
+        </div>
+      </form>`;
+
+    return `
+      <tr style="border-bottom:1px solid var(--line)">
+        <td style="padding:14px 12px;vertical-align:top">
+          <div style="font-size:14px;color:var(--text);font-weight:600;margin-bottom:4px">${esc(it.label)}</div>
+          <div style="color:var(--text-faint);font-size:11.5px;line-height:1.5;margin-bottom:8px">${esc(it.helper || "")}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="${esc(url)}" target="_blank" rel="noopener"
+               style="display:inline-block;padding:6px 12px;background:var(--bg-edge);color:var(--gold);text-decoration:none;font-size:11px;font-weight:600;border:1px solid var(--gold);border-radius:3px">Search ${esc(it.label)} ↗</a>
+            <button type="button" class="copy-btn" data-copy="${esc(url)}"
+                    style="padding:6px 12px;background:transparent;color:var(--text-faint);border:1px solid var(--line);font-size:11px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Copy URL</button>
+          </div>
+        </td>
+        <td style="padding:14px 12px;vertical-align:top;width:120px;text-align:right">${statusPill}${detailsLine}</td>
+        <td style="padding:14px 12px;vertical-align:top;width:200px;text-align:right">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">${actionsHtml}</div>
+          ${mismatchForm}
+        </td>
+      </tr>`;
+  }).join("");
+
+  const checklistTable = `
+    <div style="${cardStyle}">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)">Directories — ${checkedCount} of ${totalRequired} checked${mismatchCount > 0 ? ` · ${mismatchCount} mismatch${mismatchCount === 1 ? "" : "es"}` : ""}</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse">${checklistRows}</table>
+    </div>
+  `;
+
+  const allChecked = checkedCount === totalRequired;
+  const completionCard = allChecked && progress?.status !== "complete"
+    ? `<div style="${cardStyle};border-color:#7fc99a">
+         <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#7fc99a;margin-bottom:10px">All ${totalRequired} directories checked</div>
+         <p style="margin:0 0 14px;color:var(--text);line-height:1.6;font-size:14px">${mismatchCount === 0 ? "No mismatches found. Your NAP is consistent across the directories AI engines cross-reference." : `${mismatchCount} mismatch${mismatchCount === 1 ? "" : "es"} flagged. Work through them at your own pace — engines re-crawl directory listings on 30 to 90 day cycles, so fixes compound over time.`}</p>
+         <form method="POST" action="/actions/${esc(slug)}/${esc(def.type)}/complete" style="margin:0">
+           <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Mark audit complete</button>
+         </form>
+       </div>`
+    : progress?.status === "complete"
+    ? `<div style="${cardStyle};border-color:#7fc99a;background:rgba(127,201,154,0.06)">
+         <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#7fc99a;margin-bottom:8px">Complete</div>
+         <p style="margin:0;color:var(--text);line-height:1.6;font-size:14px">Audit complete. Re-run this any time your business info changes.</p>
+       </div>`
+    : "";
+
+  const body = `
+    <div style="margin-bottom:8px">
+      <div class="label" style="margin-bottom:8px"><a href="/actions/${esc(slug)}" style="color:var(--text-mute)">Things to do</a> / ${esc(def.title)}</div>
+      <h1>${esc(def.title)}</h1>
+    </div>
+    ${headerBlock}
+    ${napCard}
+    ${checklistTable}
+    ${completionCard}
+    ${COPY_BUTTON_SCRIPT}
+  `;
+
+  return html(layout(def.title, body, user, slug));
+}
+
+async function countChecklistChecked(
+  env: Env,
+  slug: string,
+  actionType: ActionType,
+  _maxItems: number,
+): Promise<number> {
+  void _maxItems;
+  const row = await env.DB.prepare(
+    `SELECT metadata_json FROM client_action_progress
+      WHERE client_slug = ? AND action_type = ?`,
+  ).bind(slug, actionType).first<{ metadata_json: string | null }>();
+  if (!row?.metadata_json) return 0;
+  try {
+    const meta = JSON.parse(row.metadata_json) as { directory_states?: Record<string, { status?: string }> };
+    const states = meta.directory_states || {};
+    return Object.values(states).filter((s) => s?.status && s.status !== "not_checked").length;
+  } catch {
+    return 0;
+  }
+}
+
+function renderNapRow(label: string, value: string | null, slug: string, valueRef: string): string {
+  if (value === null) {
+    return `<tr>
+      <td style="padding:8px 12px;color:var(--text-faint);font-size:12px;width:30%;vertical-align:top">${esc(label)}</td>
+      <td colspan="2" style="padding:8px 12px">
+        <form method="POST" action="/actions/${esc(slug)}/inline/${esc(valueRef)}" style="display:flex;gap:8px;flex-wrap:wrap;margin:0">
+          <input type="text" name="value" placeholder="We don't have this on file. Add it once and we'll remember."
+                 style="flex:1;min-width:200px;background:var(--bg-lift);color:var(--text);border:1px solid var(--line);padding:6px 10px;border-radius:3px;font-family:inherit;font-size:13px" />
+          <button type="submit" style="padding:6px 14px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:12px;border-radius:3px;cursor:pointer;font-family:inherit">Save</button>
+        </form>
+      </td>
+    </tr>`;
+  }
+  return `<tr>
+      <td style="padding:8px 12px;color:var(--text-faint);font-size:12px;width:30%;vertical-align:top">${esc(label)}</td>
+      <td style="padding:8px 12px;color:var(--text);font-size:13.5px;font-family:var(--mono)">${esc(value)}</td>
+      <td style="padding:8px 12px;width:90px;text-align:right">
+        <button type="button" class="copy-btn" data-copy="${esc(value)}"
+                style="padding:5px 12px;background:transparent;color:var(--gold);border:1px solid var(--gold);font-size:11px;font-weight:600;border-radius:3px;cursor:pointer;font-family:inherit">Copy</button>
+      </td>
+    </tr>`;
+}
+
+// ---------------------------------------------------------------------------
 // FAQ review viewer (item-driven action)
 // ---------------------------------------------------------------------------
 
@@ -627,6 +872,84 @@ async function renderFAQReview(
 // ===========================================================================
 // POST handlers
 // ===========================================================================
+
+/**
+ * Mark a checklist item (e.g. a NAP audit directory) with a status.
+ * Status is one of: 'clean', 'mismatch', 'reset'.
+ * Stores per-item state in client_action_progress.metadata_json.
+ * Once every required item has a non-reset status, the action's
+ * overall status flips to 'submitted' (the user clicks 'Mark audit
+ * complete' to finalize).
+ */
+export async function handleChecklistMark(
+  slug: string,
+  actionType: string,
+  itemId: string,
+  outcome: "clean" | "mismatch" | "reset",
+  request: Request,
+  user: User,
+  env: Env,
+): Promise<Response> {
+  if (!(await canAccessClient(env, user, slug))) return redirect("/");
+  const def = ACTION_REGISTRY[actionType as ActionType];
+  if (!def || def.progress_shape !== "checklist_driven") {
+    return redirect(`/actions/${encodeURIComponent(slug)}`);
+  }
+  const items = def.checklist_items || [];
+  if (!items.find((it) => it.id === itemId)) {
+    return redirect(`/actions/${encodeURIComponent(slug)}/${encodeURIComponent(actionType)}`);
+  }
+
+  let details: string | null = null;
+  if (outcome === "mismatch") {
+    const form = await request.formData();
+    details = (form.get("details") as string)?.trim() || null;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const existing = await env.DB.prepare(
+    `SELECT id, metadata_json FROM client_action_progress
+      WHERE client_slug = ? AND action_type = ?`,
+  ).bind(slug, actionType).first<{ id: number; metadata_json: string | null }>();
+
+  let directoryStates: Record<string, ChecklistItemState> = {};
+  if (existing?.metadata_json) {
+    try {
+      const meta = JSON.parse(existing.metadata_json) as { directory_states?: Record<string, ChecklistItemState> };
+      directoryStates = meta.directory_states || {};
+    } catch { /* skip */ }
+  }
+
+  if (outcome === "reset") {
+    delete directoryStates[itemId];
+  } else {
+    directoryStates[itemId] = {
+      status: outcome === "clean" ? "checked_clean" : "checked_mismatch",
+      checked_at: now,
+      ...(details ? { details } : {}),
+    };
+  }
+
+  const checkedCount = items.filter((it) => directoryStates[it.id]?.status && directoryStates[it.id].status !== "not_checked").length;
+  const newStatus = checkedCount === items.length ? "submitted" : "in_progress";
+  const metadataJson = JSON.stringify({ directory_states: directoryStates });
+
+  if (existing) {
+    await env.DB.prepare(
+      `UPDATE client_action_progress
+          SET status = ?, metadata_json = ?, last_activity_at = ?
+        WHERE id = ?`,
+    ).bind(newStatus, metadataJson, now, existing.id).run();
+  } else {
+    await env.DB.prepare(
+      `INSERT INTO client_action_progress
+         (client_slug, action_type, status, metadata_json, last_activity_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    ).bind(slug, actionType, newStatus, metadataJson, now, now).run();
+  }
+
+  return redirect(`/actions/${encodeURIComponent(slug)}/${encodeURIComponent(actionType)}`);
+}
 
 export async function handleStepComplete(
   slug: string, actionType: string, stepId: string, user: User, env: Env,
