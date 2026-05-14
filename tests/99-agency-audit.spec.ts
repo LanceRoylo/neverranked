@@ -14,12 +14,15 @@ import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 
-const DASH = "/Users/lanceroylo/Desktop/neverranked/dashboard";
+// Resolve relative to repo root so this works on any machine when
+// invoked manually (not in CI -- 99-* is testIgnore'd).
+const REPO_ROOT = path.resolve(__dirname, "..");
+const DASH = path.join(REPO_ROOT, "dashboard");
 const TS = Date.now();
 const AUDIT_EMAIL = `audit-${TS}@neverranked.test`;
 const AUDIT_AGENCY = `Audit Agency ${TS}`;
 const AUDIT_SITE = `https://audit-${TS}.test`;
-const SHOTS = "/Users/lanceroylo/Desktop/neverranked/test-results/agency-audit";
+const SHOTS = path.join(REPO_ROOT, "test-results", "agency-audit");
 fs.mkdirSync(SHOTS, { recursive: true });
 
 function sql(q: string): any {

@@ -6,9 +6,13 @@
  */
 
 import { execSync } from "child_process";
+import * as path from "path";
 import { BrowserContext } from "@playwright/test";
 
-const DASHBOARD_DIR = "/Users/lanceroylo/Desktop/neverranked/dashboard";
+// Resolve relative to the test file location so this works on any
+// developer's machine AND on CI runners (which previously failed
+// because the path was hardcoded to one Mac's filesystem).
+const DASHBOARD_DIR = path.resolve(__dirname, "..", "dashboard");
 
 /**
  * Get a valid session token for a user by email.
