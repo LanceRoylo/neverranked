@@ -113,6 +113,7 @@ const BING_FOR_BUSINESS: ActionDefinition = {
         { label: "ZIP", value_ref: "business_address_zip" },
         { label: "Phone", value_ref: "business_phone" },
         { label: "Website", value_ref: "business_url" },
+        { label: "Email", value_ref: "business_email" },
       ],
     },
     {
@@ -145,8 +146,8 @@ const BING_FOR_BUSINESS: ActionDefinition = {
     },
     {
       id: "submit_and_verify",
-      title: "Submit and wait for the verification postcard",
-      goal_line: "Bing mails a postcard to your business address with a verification code.",
+      title: "Submit and wait for verification + publish",
+      goal_line: "Bing's process has two slow steps: a verification postcard, then a publish review.",
       actions: [
         "Click Submit in Bing Places",
         "Confirm your mailing address on the verification screen",
@@ -154,7 +155,7 @@ const BING_FOR_BUSINESS: ActionDefinition = {
         "When it arrives, log back into Bing Places and enter the verification code",
       ],
       closing_note:
-        "Once you submit, we'll mark this action as Submitted and check back with you in 7 days to see if the postcard arrived. The profile goes live the moment you enter the verification code.",
+        "Setting expectations honestly: even after you enter the verification code, Bing takes another 7 to 12 days to publish your listing. The pending publish state is normal. Total time from submit to live is roughly 3 weeks. We'll mark this action as Submitted now and check back with you when the publish window closes.",
     },
   ],
 };
@@ -228,6 +229,7 @@ const APPLE_BUSINESS_CONNECT: ActionDefinition = {
         { label: "ZIP", value_ref: "business_address_zip" },
         { label: "Phone", value_ref: "business_phone" },
         { label: "Website", value_ref: "business_url" },
+        { label: "Email", value_ref: "business_email" },
       ],
     },
     {
