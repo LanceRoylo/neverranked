@@ -22,6 +22,7 @@ import { html, layout, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { ACTION_REGISTRY, V1_ACTIVE_ACTIONS, type ActionType, type ActionStep, type ActionDefinition } from "../client-actions/registry";
 import { getProgress, markStepComplete, markActionComplete, skipAction } from "../client-actions/progress";
+import { getActionMetric } from "../client-actions/metrics";
 import {
   getClientFAQs,
   approveFAQ,
@@ -161,6 +162,19 @@ async function renderActionCard(env: Env, slug: string, def: ActionDefinition): 
     }
   }
 
+  // Pull per-client concrete data line if we have one for this action.
+  // Example for HTC's FAQ review card:
+  //   "1 from a tracked AI query where you weren't cited
+  //    · 4 from queries with competitor pressure
+  //    · 2 from cited Reddit threads"
+  // Example for Bing card:
+  //   "Currently missing from 11 of 17 tracked Microsoft Copilot and
+  //    ChatGPT answers (65%)"
+  const metric = await getActionMetric(env, slug, def.type);
+  const metricLine = metric
+    ? `<p style="color:var(--gold);margin:0 0 14px;font-size:13px;line-height:1.55;font-family:var(--mono)">${esc(metric)}</p>`
+    : "";
+
   return `
     <a href="/actions/${esc(slug)}/${esc(def.type)}"
        style="display:block;text-decoration:none;color:inherit;margin-bottom:18px;padding:24px 28px;
@@ -170,7 +184,8 @@ async function renderActionCard(env: Env, slug: string, def: ActionDefinition): 
         <h2 style="margin:0;font-size:18px;line-height:1.35;color:var(--text)">${esc(def.title)}</h2>
         ${badge}
       </div>
-      <p style="color:var(--text-mute);margin:0 0 14px;font-size:14px;line-height:1.55">${esc(def.one_liner)}</p>
+      <p style="color:var(--text-mute);margin:0 0 10px;font-size:14px;line-height:1.55">${esc(def.one_liner)}</p>
+      ${metricLine}
       <div style="display:flex;justify-content:space-between;align-items:center;gap:14px;font-size:12px;font-family:var(--mono)">
         <span style="color:${status_color}">${status_label}</span>
         <span style="color:var(--text-faint)">${def.time_estimate_minutes} min · ${def.progress_shape === "step_driven" ? `${def.steps.length} steps` : "review and approve"}</span>
