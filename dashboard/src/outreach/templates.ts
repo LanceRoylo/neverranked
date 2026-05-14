@@ -64,6 +64,10 @@ interface DraftInput {
   // Cross-referenced data we may have on them
   audit_findings?: string | null;
   citation_data?: string | null;
+  // The actual published Preview URL for this prospect, if one exists.
+  // When set, the draft references this URL directly instead of the
+  // placeholder pattern.
+  preview_url?: string;
 }
 
 // Internal tier framing for Claude. NONE of this language should
@@ -91,9 +95,13 @@ export async function generateFollowupDraft(
   // the tone signal; the body is content-driven, not behavior-
   // driven. Sending the raw engagement numbers to Claude tempts it
   // to surface them, which is the creepy outcome we're avoiding.
+  // Pick the URL to embed. If we have a real published Preview, use
+  // it. Otherwise emit a placeholder Lance can replace by hand.
   const slugForUrl = input.prospect_domain
     ? input.prospect_domain.replace(/^https?:\/\//, "").replace(/[^a-z0-9]+/gi, "-").toLowerCase().replace(/^-|-$/g, "")
     : `prospect-${warmth.prospect_id}`;
+  const previewUrl = input.preview_url
+    || `neverranked.com/preview/${slugForUrl}`;
 
   const userMessage = `Tier tone: ${TIER_FRAMING[warmth.tier]}
 
@@ -103,7 +111,8 @@ ${input.prospect_domain ? `Domain: ${input.prospect_domain}` : ""}
 ${input.audit_findings ? `\nWhat's in the Preview (use these as the substance of the email):\n${input.audit_findings}` : ""}
 ${input.citation_data ? `\nCitation data the Preview shows:\n${input.citation_data}` : ""}
 
-Preview URL to use: neverranked.com/preview/${slugForUrl}
+Preview URL to use: ${previewUrl}
+${input.preview_url ? "(This Preview is live -- the URL above is the real published page.)" : "(Placeholder URL -- Lance will replace with the actual Preview after building it.)"}
 
 Write the follow-up. Return JSON only.`;
 

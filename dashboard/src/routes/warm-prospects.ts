@@ -23,6 +23,7 @@ import {
   type SignalTier,
 } from "../outreach/warmth";
 import { generateFollowupDraft, templateKindForTier } from "../outreach/templates";
+import { getPreviewByProspectId } from "../preview/generator";
 
 const TIER_COLORS: Record<SignalTier, string> = {
   cold: "var(--text-faint)",
@@ -233,6 +234,43 @@ export async function handleWarmProspectDetail(
          </form>
        </div>`;
 
+  // Preview card: only show for hot tier (per Lance's spec). Either
+  // surfaces the existing Preview's URL + status, or offers a Build
+  // Preview button if one hasn't been generated yet.
+  let previewCard = "";
+  if (warmth.tier === "hot") {
+    const existingPreview = await getPreviewByProspectId(env, prospect_id);
+    if (existingPreview) {
+      const previewUrl = `https://app.neverranked.com/preview/${existingPreview.slug}`;
+      const statusColor = existingPreview.status === "published" ? "#7fc99a" : "var(--gold)";
+      previewCard = `
+        <div style="${cardStyle};border-color:${statusColor}">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;flex-wrap:wrap;gap:10px">
+            <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:${statusColor}">Preview · ${esc(existingPreview.status)}</div>
+            <div style="color:var(--text-faint);font-size:11px;font-family:var(--mono)">${existingPreview.viewed_count > 0 ? `viewed ${existingPreview.viewed_count}x` : "not viewed yet"}</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--text-soft);padding:8px 12px;background:var(--bg-edge);border:1px solid var(--line);border-radius:3px;margin-bottom:14px">${esc(previewUrl)}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <a href="${esc(previewUrl)}" target="_blank" rel="noopener" style="padding:9px 18px;background:transparent;color:var(--gold);text-decoration:none;font-weight:600;font-size:13px;border:1px solid var(--gold);border-radius:4px">Open Preview ↗</a>
+            <button type="button" class="copy-btn" data-copy="${esc(previewUrl)}"
+                    style="padding:9px 18px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Copy URL</button>
+            <a href="/admin/preview/${esc(existingPreview.slug)}/edit" style="padding:9px 18px;background:var(--gold);color:#1a1814;text-decoration:none;font-weight:600;font-size:13px;border-radius:4px">Edit Preview</a>
+          </div>
+        </div>
+      `;
+    } else {
+      previewCard = `
+        <div style="${cardStyle}">
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Preview not built yet</div>
+          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Hot prospects warrant a personalized brief. Build a Preview page at a private URL you can share in the follow-up email. ~20 seconds to generate, edit before publishing.</p>
+          <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/build" style="margin:0">
+            <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Preview</button>
+          </form>
+        </div>
+      `;
+    }
+  }
+
   const historyCard = history.length > 1
     ? `<div style="${cardStyle}">
          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);margin-bottom:14px">Follow-up history</div>
@@ -269,6 +307,7 @@ export async function handleWarmProspectDetail(
       <div class="label" style="margin-bottom:8px"><a href="/admin/warm-prospects" style="color:var(--text-mute)">Warm prospects</a> / Prospect #${prospect_id}</div>
     </div>
     ${summaryCard}
+    ${previewCard}
     ${draftCard}
     ${opensTimeline}
     ${historyCard}
@@ -295,8 +334,17 @@ export async function handleProspectDraft(prospect_id: number, user: User, env: 
     return redirect(`/admin/warm-prospects/${prospect_id}`);
   }
 
+  // If a Preview already exists for this prospect, weave the real
+  // URL into the follow-up draft so the email points at the actual
+  // brief instead of a placeholder.
+  const existingPreview = await getPreviewByProspectId(env, prospect_id);
+  const previewUrl = existingPreview
+    ? `https://app.neverranked.com/preview/${existingPreview.slug}`
+    : undefined;
+
   const draft = await generateFollowupDraft(env, {
     warmth,
+    preview_url: previewUrl,
   });
   if (!draft) {
     return redirect(`/admin/warm-prospects/${prospect_id}`);

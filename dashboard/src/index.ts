@@ -1909,6 +1909,32 @@ export default {
         user, env,
       );
     }
+    // Preview build for a hot warm prospect. Generates a personalized
+    // brief via Sonnet, persists as a draft, redirects to the editor.
+    const previewBuildMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/preview\/build$/);
+    if (previewBuildMatch && method === "POST" && user.role === "admin") {
+      const { handlePreviewBuildForProspect } = await import("./routes/preview");
+      return handlePreviewBuildForProspect(parseInt(previewBuildMatch[1], 10), user, env);
+    }
+    const previewEditMatch = path.match(/^\/admin\/preview\/([a-z0-9-]+)\/edit$/);
+    if (previewEditMatch && user.role === "admin") {
+      const { handlePreviewEditGet, handlePreviewEditPost } = await import("./routes/preview");
+      const slug = decodeURIComponent(previewEditMatch[1]);
+      if (method === "GET") return handlePreviewEditGet(slug, user, env);
+      if (method === "POST") return handlePreviewEditPost(slug, request, user, env);
+    }
+    const previewPublishMatch = path.match(/^\/admin\/preview\/([a-z0-9-]+)\/publish$/);
+    if (previewPublishMatch && method === "POST" && user.role === "admin") {
+      const { handlePreviewPublishPost } = await import("./routes/preview");
+      return handlePreviewPublishPost(decodeURIComponent(previewPublishMatch[1]), request, user, env);
+    }
+    // Public Preview render. No auth. This is the URL a prospect
+    // clicks from the follow-up email.
+    const previewPublicMatch = path.match(/^\/preview\/([a-z0-9-]+)$/);
+    if (previewPublicMatch && method === "GET") {
+      const { handlePreviewPublic } = await import("./routes/preview");
+      return handlePreviewPublic(decodeURIComponent(previewPublicMatch[1]), env);
+    }
 
     if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
       return handleAdminFreeCheckStats(user, env, url);
