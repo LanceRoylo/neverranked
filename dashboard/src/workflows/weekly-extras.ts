@@ -144,6 +144,17 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
       const total = results.reduce((s, r) => s + r.accepted.length, 0);
       console.log(`prompt-auto-expand: added ${total} prompts across ${results.length} clients`);
     });
+
+    // Admin nudges: surface stale FAQ proposals and unfinished
+    // walkthroughs to the admin inbox so Lance can manually nudge
+    // clients who have been sitting on action work for too long.
+    // Dedups against recent inserts so we don't pile up duplicate
+    // inbox items every Monday.
+    await step.do("admin-action-nudges", async () => {
+      const { surfaceStaleActionNudges } = await import("../client-actions/admin-nudges");
+      const summary = await surfaceStaleActionNudges(this.env);
+      console.log(`admin-action-nudges: ${summary.faq_nudges} faq + ${summary.walkthrough_nudges} walkthrough`);
+    });
   }
 }
 
