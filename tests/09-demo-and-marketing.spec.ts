@@ -464,7 +464,13 @@ test.describe("Marketing site -- refresh", () => {
         if (!/favicon\.ico|cdn-cgi\/rum/.test(t)) errors.push(`console.error: ${t}`);
       }
     });
-    await page.reload({ waitUntil: "networkidle" });
+    // 'load' instead of 'networkidle' -- the homepage has long-lived
+    // background streams (Citation Demo video, analytics beacons) that
+    // never let networkidle fire within the default timeout. 'load'
+    // captures DOM-ready + initial resources, which is what we care
+    // about for console error detection.
+    await page.reload({ waitUntil: "load" });
+    await page.waitForTimeout(800);
     expect(errors, errors.join("\n")).toEqual([]);
   });
 
