@@ -130,9 +130,19 @@ export async function handleWarmProspectDetail(
   prospect_id: number,
   user: User,
   env: Env,
+  request?: Request,
 ): Promise<Response> {
   if (user.role !== "admin") {
     return html(layout("Not authorized", `<div class="empty"><h3>Admin only</h3></div>`, user), 403);
+  }
+  // Build errors from /preview/build redirect here with ?build_error=...
+  // so the user sees why their click didn't produce a Preview.
+  let buildError: string | null = null;
+  if (request) {
+    try {
+      const u = new URL(request.url);
+      buildError = u.searchParams.get("build_error");
+    } catch { /* skip */ }
   }
 
   const allWarmth = await getProspectWarmth(env);
@@ -277,8 +287,10 @@ export async function handleWarmProspectDetail(
       previewCard = `
         <div style="${cardStyle}">
           <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Preview not built yet</div>
-          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Hot prospects warrant a personalized brief. Next page collects the prospect intel (name, company, domain, headline finding) so the Preview reads like the pages you built for Greg, Shawn, and MVNP. ~20 seconds to generate, edit before publishing.</p>
-          <a href="/admin/warm-prospects/${prospect_id}/preview/build" style="display:inline-block;padding:10px 22px;background:var(--gold);color:#1a1814;text-decoration:none;font-weight:600;font-size:13px;border-radius:4px;font-family:inherit">Build Preview</a>
+          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Click Build Preview and the system handles everything: looks up prospect intel from the sync, runs a lightweight scan on their domain, generates a personalized brief with depth scaled to the signal tier. Hot prospects get the deepest version. ~10 to 20 seconds, then edit before publishing.</p>
+          <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/build" style="margin:0">
+            <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Preview</button>
+          </form>
         </div>
       `;
     }
@@ -320,6 +332,10 @@ export async function handleWarmProspectDetail(
       <div class="label" style="margin-bottom:8px"><a href="/admin/warm-prospects" style="color:var(--text-mute)">Warm prospects</a> / Prospect #${prospect_id}</div>
     </div>
     ${summaryCard}
+    ${buildError ? `<div style="margin-bottom:18px;padding:18px 22px;background:rgba(220,108,108,0.08);border:1px solid #dc6c6c;border-radius:6px">
+      <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#dc6c6c;margin-bottom:6px">Build failed</div>
+      <p style="margin:0;color:var(--text);font-size:13.5px;line-height:1.55">${esc(buildError)}</p>
+    </div>` : ""}
     ${previewCard}
     ${draftCard}
     ${opensTimeline}

@@ -20,12 +20,26 @@ export interface PreviewInput {
   recipient_name?: string;
   company_name?: string;
   domain?: string;
-  // Rich intel Lance provides via the build form. These flow into
-  // the Sonnet prompt verbatim so the output is personalized like
-  // the existing hand-crafted /pitch/<slug>/ pages.
-  audit_findings?: string;            // headline finding to lead with
-  what_we_would_do?: string;          // concrete plan
-  extra_context?: string;             // background on the relationship
+  vertical?: string;
+  city?: string;
+  notes?: string;
+  // Tier from warm-prospect signal classification. Higher tier =
+  // deeper Preview (more sections, more specific findings).
+  signal_tier?: "warm" | "very_warm" | "hot" | "fading";
+  open_count?: number;
+  // Rich auto-detected intel from the lightweight domain enrichment.
+  // Pre-filled by buildAutonomousPreview before calling Sonnet.
+  enrichment?: {
+    page_title: string | null;
+    meta_description: string | null;
+    og_site_name: string | null;
+    schema_types_found: string[];
+    notable_gaps: string[];
+  };
+  // Manual overrides if Lance wants to specify (legacy form path).
+  audit_findings?: string;
+  what_we_would_do?: string;
+  extra_context?: string;
 }
 
 export interface PreviewOutput {
@@ -80,6 +94,42 @@ OUTPUT FORMAT (strict JSON):
   "body_html": "<inner HTML with the four sections above, no DOCTYPE or wrappers>"
 }`;
 
+function depthForTier(tier: PreviewInput["signal_tier"]): string {
+  switch (tier) {
+    case "hot":
+      return `DEPTH: HOT prospect. They've engaged repeatedly. The Preview should be the deepest version. Include:
+- A strong hero headline naming the company directly
+- The Hawaii Theatre proof point
+- A what-happens section with 3-4 specific items as a bulleted <ul>
+- A 'why now' moment that ties to their current AEO gap
+- A clear, low-pressure CTA pointing to reply
+Aim for ~5 sections, ~400-600 words total.`;
+    case "very_warm":
+      return `DEPTH: VERY_WARM prospect. Active consideration. Standard depth:
+- Hero with the headline finding
+- Proof point
+- What we'd do (3 items)
+- CTA
+Aim for ~4 sections, ~300-450 words.`;
+    case "warm":
+      return `DEPTH: WARM prospect. Moderate engagement. Lighter version:
+- Hero finding
+- Brief proof
+- What's in scope (2-3 items, can be inline prose not a list)
+- CTA
+Aim for ~4 sections, ~250-350 words.`;
+    case "fading":
+      return `DEPTH: FADING prospect. They went quiet. Lightest touch, no pressure:
+- Hero that names the gap without urgency
+- One-sentence proof point
+- One sentence about what we'd do
+- A 'this stays here whenever you're ready' close
+Aim for ~3 sections, ~150-250 words.`;
+    default:
+      return `DEPTH: Unknown tier. Default to moderate depth.`;
+  }
+}
+
 function randomToken(length = 6): string {
   const chars = "abcdefghjkmnpqrstuvwxyz23456789";
   let out = "";
@@ -120,23 +170,35 @@ export async function generatePreview(
 ): Promise<PreviewOutput | null> {
   if (!env.ANTHROPIC_API_KEY) return null;
 
+  // Depth scaling by tier. Hot prospects get the deepest version
+  // (more sections, more specific findings); fading gets a lighter
+  // touch.
+  const depthInstruction = depthForTier(input.signal_tier);
+
+  const enrichmentBlock = input.enrichment ? `
+DETECTED SITE INTEL (use these literally to make the Preview specific):
+- Page title: ${input.enrichment.page_title || "(none detected)"}
+- Meta description: ${input.enrichment.meta_description || "(none)"}
+- Site name: ${input.enrichment.og_site_name || "(none)"}
+- Schema types found on the homepage: ${input.enrichment.schema_types_found.length > 0 ? input.enrichment.schema_types_found.join(", ") : "NONE -- this is a major AEO gap; lead with this in the hero"}
+- Notable gaps from the scan: ${input.enrichment.notable_gaps.length > 0 ? input.enrichment.notable_gaps.join("; ") : "none"}` : "";
+
   const userMessage = `Recipient:
 ${input.recipient_name ? `Name: ${input.recipient_name}` : ""}
 ${input.company_name ? `Company: ${input.company_name}` : ""}
 ${input.domain ? `Domain: ${input.domain}` : ""}
+${input.vertical ? `Vertical: ${input.vertical}` : ""}
+${input.city ? `City: ${input.city}` : ""}
+${input.notes ? `Notes from prior contact: ${input.notes}` : ""}
 
-${input.audit_findings ? `HEADLINE FINDING (lead with this verbatim in the hero):
-${input.audit_findings}` : ""}
+${depthInstruction}
+${enrichmentBlock}
 
-${input.what_we_would_do ? `WHAT WE WOULD DO (use as the substance of the what-happens section):
-${input.what_we_would_do}` : ""}
+${input.audit_findings ? `HEADLINE FINDING (overrides auto-detected; lead with this verbatim):\n${input.audit_findings}` : ""}
+${input.what_we_would_do ? `WHAT WE WOULD DO (overrides auto-detected):\n${input.what_we_would_do}` : ""}
+${input.extra_context ? `EXTRA CONTEXT:\n${input.extra_context}` : ""}
 
-${input.extra_context ? `EXTRA CONTEXT (weave one reference into the hero or what-happens):
-${input.extra_context}` : ""}
-
-${(!input.audit_findings && !input.what_we_would_do) ? "No specific intel provided. Write a category-neutral brief, but flag this in the meta_description so Lance knows to add specifics in the editor." : ""}
-
-Write the brief. Use the company name and domain throughout where natural. Return JSON only.`;
+Write the brief. Use the company name and domain throughout where natural. Lead with the most specific finding you can derive from the inputs above. Return JSON only.`;
 
   const resp = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
@@ -260,6 +322,80 @@ export async function updatePreviewBody(env: Env, id: number, body_html: string)
 /**
  * Log a view. Bumps viewed_count, sets first/last_viewed_at.
  */
+/**
+ * Autonomous Preview build. The flow Lance asked for:
+ *   1. Look up prospect metadata in outreach_prospects (synced from
+ *      the local outreach tool)
+ *   2. If we have a domain, run a lightweight enrichment scan
+ *   3. Pull the signal tier from the warmth scoring
+ *   4. Generate a Preview with depth scaled to tier and content
+ *      specific to whatever we found
+ *
+ * Returns the slug of the new draft on success, or null on failure
+ * (with a reason logged). The slug is the URL fragment for /preview/<slug>.
+ */
+export async function buildAutonomousPreview(
+  env: Env,
+  prospect_id: number,
+  signal_tier: "warm" | "very_warm" | "hot" | "fading",
+  open_count: number,
+): Promise<{ slug: string } | { error: string }> {
+  // 1. Lookup metadata
+  const { getProspectMetadata } = await import("../routes/sync-prospects");
+  const metadata = await getProspectMetadata(env, prospect_id);
+  if (!metadata) {
+    return { error: "Prospect metadata not synced. Push prospect data from the local outreach tool to /api/admin/sync-prospects first." };
+  }
+  if (!metadata.domain) {
+    return { error: "Prospect has no domain on file. Update the prospect in the local outreach tool with a domain, then re-sync." };
+  }
+
+  // 2. Enrich
+  let enrichment: PreviewInput["enrichment"] = undefined;
+  try {
+    const { enrichDomain } = await import("./domain-enrich");
+    const e = await enrichDomain(metadata.domain);
+    if (e.reachable) {
+      enrichment = {
+        page_title: e.page_title,
+        meta_description: e.meta_description,
+        og_site_name: e.og_site_name,
+        schema_types_found: e.schema_types_found,
+        notable_gaps: e.notable_gaps,
+      };
+    }
+  } catch (e) {
+    console.error("Preview enrichment failed:", e);
+    // Continue without enrichment.
+  }
+
+  // 3. Generate
+  const generated = await generatePreview(env, {
+    prospect_id,
+    recipient_name: metadata.name || undefined,
+    company_name: metadata.company_name || undefined,
+    domain: metadata.domain,
+    vertical: metadata.vertical || undefined,
+    city: metadata.city || undefined,
+    notes: metadata.notes || undefined,
+    signal_tier,
+    open_count,
+    enrichment,
+  });
+  if (!generated) {
+    return { error: "Sonnet generation failed (check ANTHROPIC_API_KEY and logs)" };
+  }
+
+  // 4. Persist
+  const slug = await savePreviewDraft(env, {
+    prospect_id,
+    recipient_name: metadata.name || undefined,
+    company_name: metadata.company_name || undefined,
+    domain: metadata.domain,
+  }, generated);
+  return { slug };
+}
+
 export async function recordPreviewView(env: Env, slug: string): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(

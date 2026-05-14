@@ -18,7 +18,9 @@ import {
   publishPreview,
   updatePreviewBody,
   recordPreviewView,
+  buildAutonomousPreview,
 } from "../preview/generator";
+import { getProspectWarmth } from "../outreach/warmth";
 
 // ===========================================================================
 // Public Preview render. No auth. Logs a view on every load.
@@ -169,113 +171,44 @@ function renderArchived(): string {
 // existing pitch/<slug>/ pages, not generic.
 // ===========================================================================
 
-export async function handlePreviewBuildForProspectGet(
-  prospect_id: number, user: User, env: Env,
-): Promise<Response> {
-  if (user.role !== "admin") {
-    return html(layout("Not authorized", `<div class="empty"><h3>Admin only</h3></div>`, user), 403);
-  }
-  // Existing Preview? Redirect straight to editor instead of re-collecting input.
-  const existing = await getPreviewByProspectId(env, prospect_id);
-  if (existing && (existing.status === "draft" || existing.status === "published")) {
-    return redirect(`/admin/preview/${encodeURIComponent(existing.slug)}/edit`);
-  }
-
-  const cardStyle = "margin-bottom:18px;padding:22px 26px;background:var(--bg-lift);border:1px solid var(--line);border-radius:6px";
-
-  const body = `
-    <div style="margin-bottom:18px">
-      <div class="label" style="margin-bottom:8px"><a href="/admin/warm-prospects/${prospect_id}" style="color:var(--text-mute)">Warm prospect #${prospect_id}</a> / Build Preview</div>
-      <h1>Build <em>Preview</em></h1>
-      <p style="color:var(--text-mute);margin-top:10px;line-height:1.6;font-size:14px;max-width:680px">
-        Give the generator real prospect intel so the Preview reads like the pages you built for Greg, Shawn, and MVNP. The more specific you make these inputs, the more personalized the page. Lance can edit any line before publishing.
-      </p>
-    </div>
-
-    <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/build" style="margin:0">
-      <div style="${cardStyle}">
-        <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Who is this for</div>
-
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">Recipient name</label>
-          <input type="text" name="recipient_name" placeholder="e.g. Mark Cunningham" required style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:9px 12px;border-radius:3px;font-family:inherit;font-size:14px">
-        </div>
-
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">Company name</label>
-          <input type="text" name="company_name" placeholder="e.g. American Savings Bank" required style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:9px 12px;border-radius:3px;font-family:inherit;font-size:14px">
-        </div>
-
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">Domain</label>
-          <input type="text" name="domain" placeholder="e.g. asbhawaii.com" required style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:9px 12px;border-radius:3px;font-family:inherit;font-size:14px">
-        </div>
-      </div>
-
-      <div style="${cardStyle}">
-        <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">What's the angle</div>
-        <p style="color:var(--text-faint);font-size:12px;margin:0 0 14px;line-height:1.55">
-          The headline finding or angle the Preview should lead with. Be specific. The Sonnet pass uses this verbatim as the page's hero claim.
-        </p>
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">Headline finding (one sentence)</label>
-          <textarea name="headline_finding" rows="2" placeholder="e.g. ASB is named in 0% of AI engine citations across the Hawaii community banking query set. FHB and BOH get named by default." required style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:10px 12px;border-radius:3px;font-family:inherit;font-size:14px;line-height:1.55;resize:vertical"></textarea>
-        </div>
-
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">What we'd do for them (two or three sentences)</label>
-          <textarea name="what_we_would_do" rows="3" placeholder="e.g. Deploy FinancialService and AggregateRating schema first month. Reddit FAQ generation cycle two. Citation tracking weekly from day one." required style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:10px 12px;border-radius:3px;font-family:inherit;font-size:14px;line-height:1.55;resize:vertical"></textarea>
-        </div>
-
-        <div style="margin-bottom:14px">
-          <label style="display:block;font-size:12px;color:var(--text-mute);margin-bottom:6px">Anything else they should know (optional)</label>
-          <textarea name="extra_context" rows="2" placeholder="Background on the conversation, specific competitors mentioned, time-sensitive context, etc." style="width:100%;background:var(--bg-edge);color:var(--text);border:1px solid var(--line);padding:10px 12px;border-radius:3px;font-family:inherit;font-size:14px;line-height:1.55;resize:vertical"></textarea>
-        </div>
-      </div>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Generate Preview</button>
-        <a href="/admin/warm-prospects/${prospect_id}" style="padding:10px 22px;background:transparent;color:var(--text-mute);text-decoration:none;border:1px solid var(--line);font-weight:600;font-size:13px;border-radius:4px">Cancel</a>
-      </div>
-    </form>
-  `;
-  return html(layout("Build Preview", body, user));
-}
-
+/**
+ * Autonomous Build Preview.
+ *
+ * POST only. No form. The flow:
+ *   1. Look up prospect metadata from outreach_prospects (synced via
+ *      /api/admin/sync-prospects from the local outreach tool)
+ *   2. Pull the prospect's signal tier from the warmth scoring
+ *   3. Auto-enrich the domain via a lightweight homepage scan
+ *   4. Sonnet generates the Preview with depth scaled to tier
+ *   5. Redirect to the editor for any final tweaks
+ *
+ * Failures redirect back to the warm-prospect detail page with an
+ * explanation surfaced via query string (so we don't hit a dead-end
+ * page when sync hasn't happened yet).
+ */
 export async function handlePreviewBuildForProspectPost(
-  prospect_id: number, request: Request, user: User, env: Env,
+  prospect_id: number, _request: Request, user: User, env: Env,
 ): Promise<Response> {
   if (user.role !== "admin") return redirect("/");
 
+  // Existing Preview? Skip straight to editor.
   const existing = await getPreviewByProspectId(env, prospect_id);
   if (existing && (existing.status === "draft" || existing.status === "published")) {
     return redirect(`/admin/preview/${encodeURIComponent(existing.slug)}/edit`);
   }
 
-  const form = await request.formData();
-  const recipient_name = String(form.get("recipient_name") || "").trim();
-  const company_name = String(form.get("company_name") || "").trim();
-  const domain = String(form.get("domain") || "").trim();
-  const headline_finding = String(form.get("headline_finding") || "").trim();
-  const what_we_would_do = String(form.get("what_we_would_do") || "").trim();
-  const extra_context = String(form.get("extra_context") || "").trim();
-
-  const generated = await generatePreview(env, {
-    prospect_id,
-    recipient_name,
-    company_name,
-    domain,
-    audit_findings: headline_finding,
-    what_we_would_do,
-    extra_context,
-  });
-  if (!generated) {
-    return html(layout("Preview build failed", `<div class="empty"><h3>Preview generation failed</h3><p>Check that ANTHROPIC_API_KEY is set and try again.</p></div>`, user), 500);
+  // Look up the prospect's signal tier so the Preview depth scales.
+  const allWarmth = await getProspectWarmth(env);
+  const warmth = allWarmth.find((p) => p.prospect_id === prospect_id);
+  if (!warmth) {
+    return redirect(`/admin/warm-prospects/${prospect_id}?build_error=${encodeURIComponent("Prospect is not in the warmth list (needs at least 2 opens)")}`);
   }
-  const slug = await savePreviewDraft(env, {
-    prospect_id, recipient_name, company_name, domain,
-  }, generated);
-  return redirect(`/admin/preview/${encodeURIComponent(slug)}/edit`);
+
+  const result = await buildAutonomousPreview(env, prospect_id, warmth.tier === "cold" ? "warm" : warmth.tier, warmth.open_count);
+  if ("error" in result) {
+    return redirect(`/admin/warm-prospects/${prospect_id}?build_error=${encodeURIComponent(result.error)}`);
+  }
+  return redirect(`/admin/preview/${encodeURIComponent(result.slug)}/edit`);
 }
 
 // ===========================================================================

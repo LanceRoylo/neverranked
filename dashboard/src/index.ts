@@ -1883,7 +1883,7 @@ export default {
     const warmProspectDetailMatch = path.match(/^\/admin\/warm-prospects\/(\d+)$/);
     if (warmProspectDetailMatch && method === "GET" && user.role === "admin") {
       const { handleWarmProspectDetail } = await import("./routes/warm-prospects");
-      return handleWarmProspectDetail(parseInt(warmProspectDetailMatch[1], 10), user, env);
+      return handleWarmProspectDetail(parseInt(warmProspectDetailMatch[1], 10), user, env, request);
     }
     const warmProspectDraftMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/draft$/);
     if (warmProspectDraftMatch && method === "POST" && user.role === "admin") {
@@ -1909,18 +1909,20 @@ export default {
         user, env,
       );
     }
-    // Preview build for a hot warm prospect. Two-step: GET shows the
-    // input form (recipient name, company, domain, headline finding,
-    // what we would do, extra context). POST runs the Sonnet pass
-    // with those inputs and persists as a draft, then redirects to
-    // the editor. The form-input pattern fixes the generic-Preview
-    // problem caused by having only prospect_id available.
+    // Autonomous Build Preview. No form. Pulls prospect metadata
+    // from outreach_prospects (synced via /api/admin/sync-prospects),
+    // auto-enriches the domain, generates with tier-aware depth.
     const previewBuildMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/preview\/build$/);
-    if (previewBuildMatch && user.role === "admin") {
-      const { handlePreviewBuildForProspectGet, handlePreviewBuildForProspectPost } = await import("./routes/preview");
-      const pid = parseInt(previewBuildMatch[1], 10);
-      if (method === "GET") return handlePreviewBuildForProspectGet(pid, user, env);
-      if (method === "POST") return handlePreviewBuildForProspectPost(pid, request, user, env);
+    if (previewBuildMatch && method === "POST" && user.role === "admin") {
+      const { handlePreviewBuildForProspectPost } = await import("./routes/preview");
+      return handlePreviewBuildForProspectPost(parseInt(previewBuildMatch[1], 10), request, user, env);
+    }
+    // POST /api/admin/sync-prospects -- local outreach tool pushes
+    // prospect metadata (name, email, company, domain) so the
+    // dashboard can auto-personalize Previews without any form input.
+    if (path === "/api/admin/sync-prospects" && method === "POST") {
+      const { handleSyncProspects } = await import("./routes/sync-prospects");
+      return handleSyncProspects(request, env);
     }
     const previewEditMatch = path.match(/^\/admin\/preview\/([a-z0-9-]+)\/edit$/);
     if (previewEditMatch && user.role === "admin") {
