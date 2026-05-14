@@ -1,0 +1,108 @@
+# Dependabot config — scans all package.json directories in this repo
+# for known-vulnerable dependencies and opens PRs to update them.
+# Security updates are filed immediately when a CVE is published.
+# Version updates are batched weekly to keep PR noise low.
+#
+# Reference: https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+version: 2
+updates:
+  # Root package.json (playwright tests, scripts)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
+
+  # mcp-server (the published @neverranked/mcp package)
+  - package-ecosystem: "npm"
+    directory: "/mcp-server"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "mcp-server"
+
+  # Dashboard worker (the admin app — highest-value attack surface)
+  - package-ecosystem: "npm"
+    directory: "/dashboard"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "dashboard"
+
+  # Admin app
+  - package-ecosystem: "npm"
+    directory: "/admin"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+
+  # Schema check worker (check.neverranked.com)
+  - package-ecosystem: "npm"
+    directory: "/tools/schema-check"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "schema-check"
+
+  # Reddit tracker
+  - package-ecosystem: "npm"
+    directory: "/tools/reddit-tracker"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+
+  # Citation gap tool
+  - package-ecosystem: "npm"
+    directory: "/tools/citation-gap"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+
+  # GitHub Actions workflows — keep CI dependencies current
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Pacific/Honolulu"
+    open-pull-requests-limit: 3
+    labels:
+      - "ci"
+      - "dependencies"
