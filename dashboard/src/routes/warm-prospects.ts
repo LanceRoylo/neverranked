@@ -22,7 +22,7 @@ import {
   markFollowupDeclined,
   type SignalTier,
 } from "../outreach/warmth";
-import { generateFollowupDraft, templateKindForTier } from "../outreach/templates";
+import { generateFollowupDraft, templateKindForTier, TEMPLATE_VERSION } from "../outreach/templates";
 import { getPreviewByProspectId } from "../preview/generator";
 
 const TIER_COLORS: Record<SignalTier, string> = {
@@ -149,6 +149,21 @@ export async function handleWarmProspectDetail(
         ORDER BY opened_at ASC`,
     ).bind(prospect_id).all<{ opened_at: number; ip_hash: string | null; ua: string | null }>()
   ).results;
+
+  // Auto-retire stale drafts. Anything in 'drafted' status that was
+  // generated under an older template version gets declined on page
+  // load so it doesn't appear as current advice. The dedup logic
+  // for re-drafting kicks in correctly because the row is no longer
+  // 'drafted'.
+  await env.DB.prepare(
+    `UPDATE outreach_followup_actions
+        SET status = 'declined',
+            declined_at = unixepoch(),
+            declined_reason = 'auto-retired by template version upgrade'
+      WHERE prospect_id = ?
+        AND status = 'drafted'
+        AND created_at < ?`,
+  ).bind(prospect_id, TEMPLATE_VERSION).run();
 
   // Follow-up history for this prospect
   const history = (

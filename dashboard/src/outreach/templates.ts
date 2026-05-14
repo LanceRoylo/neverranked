@@ -16,6 +16,20 @@
 import type { Env } from "../types";
 import type { SignalTier, ProspectWarmth } from "./warmth";
 
+/**
+ * Bump TEMPLATE_VERSION whenever the system prompt or tier framing
+ * changes in a way that would make older drafts off-voice. The
+ * warm-prospect detail page auto-retires any drafted-not-sent
+ * follow-ups created before this timestamp, so stale prompts
+ * never show as current recommendations.
+ *
+ * History:
+ *   2026-05-14 03:30 UTC -- killed the creepy ("you've opened this N
+ *     times") language, switched CTA to Preview URL, banned meeting
+ *     asks. Anything drafted before this should be regenerated.
+ */
+export const TEMPLATE_VERSION = 1779025800;
+
 const VOICE_SYSTEM = `You write short, direct cold-email follow-ups in Lance's voice for NeverRanked (an AI-citation tracking and content-shipping service).
 
 Hard voice rules. Violating any of these makes the draft unusable.
