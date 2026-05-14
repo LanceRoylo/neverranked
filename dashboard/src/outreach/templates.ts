@@ -28,16 +28,30 @@ Hard voice rules. Violating any of these makes the draft unusable.
 6. Short sentences. Two to four sentences per paragraph max.
 7. Direct. Lance writes like a Hawaiian operator running a real company. Plain, specific, no fluff.
 
+CRITICAL CREEPY-AVOIDANCE RULES:
+8. NEVER reference open counts, re-engagement patterns, IP addresses, multiple opens, or any tracking signal in the body or subject. This is the most important rule. Tracking signals informed which tier you picked; they NEVER appear in the email. The prospect should not feel watched.
+9. NEVER say "You've opened this N times" or "I saw you came back" or "You've been thinking about this" or any variant that betrays observation. If you mention "interest" or "skepticism," it has to be inferred from a content reason (what NR offers vs what their business needs), not from behavior data.
+10. NEVER ask the prospect to hop on a call, schedule a meeting, do a 15-min chat, or any phone-time ask. Lance's actual workflow does not include sales calls.
+
+PRIMARY CALL-TO-ACTION SHAPE:
+The follow-up always points the prospect at a personalized **Preview** -- a private URL Lance built for them at neverranked.com/preview/<their-slug> that shows their specific data. Phrasing examples:
+  - "I built you a Preview at neverranked.com/preview/<slug>"
+  - "Pulled together a Preview for you"
+  - "Made a Preview that walks through what we found"
+The Preview replaces "let's hop on a call." Never propose a call. The Preview IS the call to action.
+
 Structure each follow-up as:
 
-  1. ONE-line opener that references something specific (their re-engagement, a specific gap, or a question they probably have)
-  2. ONE paragraph naming what we'd do for them, with a concrete number or specific finding if available
-  3. ONE-line ask -- a low-friction next step (15-min call, a quick audit, a specific question)
+  1. ONE-line opener that references something specific about THEIR business or category (NOT about their behavior toward this email)
+  2. ONE paragraph naming what's in the Preview, with a concrete finding or number if you have one
+  3. ONE-line CTA -- pointing to the Preview URL using the phrasing above
   4. Sign-off "Lance" on its own line
+
+If we don't have a Preview URL yet, use the placeholder neverranked.com/preview/{slug} so Lance can replace with the actual URL after the page is built.
 
 Return STRICT JSON only:
 {
-  "subject": "<email subject line, 30-80 chars>",
+  "subject": "<email subject line, 30-80 chars, NEVER references engagement signals>",
   "body": "<email body, 80-180 words>"
 }`;
 
@@ -52,12 +66,15 @@ interface DraftInput {
   citation_data?: string | null;
 }
 
+// Internal tier framing for Claude. NONE of this language should
+// surface in the body. The tier sets the TONE of the email, not the
+// SUBJECT.
 const TIER_FRAMING: Record<SignalTier, string> = {
-  cold: "First-touch follow-up. The prospect has barely engaged.",
-  warm: "Soft follow-up. The prospect has opened the email a few times over several days, suggesting interest without urgency. Tone: helpful, not pushy.",
-  very_warm: "Fast follow-up. The prospect opened the email 2-3 times within 24 hours, suggesting active consideration. Tone: 'I noticed you came back, what's the question I didn't answer?' Make it easy for them to reply.",
-  hot: "High-engagement follow-up. The prospect has opened the email 4+ times. They're actively evaluating. Tone: meet them where they are. Reference the level of engagement specifically. Offer a specific next step that matches the level of interest -- a short call, a tailored audit, a custom finding.",
-  fading: "Re-engagement nudge. The prospect engaged multiple times then went quiet. Tone: gentle, no pressure. Acknowledge that timing might be off and offer one specific reason to come back.",
+  cold: "First-touch tone. Brief, content-focused, no assumption of prior engagement.",
+  warm: "Soft tone. Helpful, not pushy. Lead with what Lance built for them in the Preview rather than asking anything of them.",
+  very_warm: "Direct tone. The Preview is ready and Lance is making sure they see it. No reference to behavior. Just: 'here's what I pulled together for you.'",
+  hot: "Confident tone. Lance has done the work and the Preview is sitting there waiting. The email is short and points them at the Preview. Maybe references a specific finding from the Preview to give them a reason to click.",
+  fading: "Gentle re-touch tone. No pressure language. Acknowledge that the right moment might not be now. Offer the Preview URL with a note like 'this stays here whenever you're ready.'",
 };
 
 export async function generateFollowupDraft(
@@ -69,31 +86,24 @@ export async function generateFollowupDraft(
   }
 
   const { warmth } = input;
-  const recencyLabel =
-    warmth.hours_since_last < 24 ? `${Math.max(1, Math.round(warmth.hours_since_last))} hours ago`
-      : warmth.hours_since_last < 48 ? "yesterday"
-      : `${Math.round(warmth.hours_since_last / 24)} days ago`;
-  const fastReopenLabel = warmth.hours_between_first_two !== null && warmth.hours_between_first_two < 24
-    ? `Second open was ${Math.max(1, Math.round(warmth.hours_between_first_two))} hours after the first.`
-    : "";
-  const forwardingLabel = warmth.ip_diversity >= 2
-    ? `The opens came from ${warmth.ip_diversity} different IPs, which sometimes means they forwarded the email to a colleague or read it on multiple devices.`
-    : "";
+  // We intentionally do NOT pass open counts, IP diversity, or
+  // re-engagement timing into the prompt. The tier framing carries
+  // the tone signal; the body is content-driven, not behavior-
+  // driven. Sending the raw engagement numbers to Claude tempts it
+  // to surface them, which is the creepy outcome we're avoiding.
+  const slugForUrl = input.prospect_domain
+    ? input.prospect_domain.replace(/^https?:\/\//, "").replace(/[^a-z0-9]+/gi, "-").toLowerCase().replace(/^-|-$/g, "")
+    : `prospect-${warmth.prospect_id}`;
 
-  const userMessage = `Tier framing: ${TIER_FRAMING[warmth.tier]}
-
-Prospect engagement signal:
-- Total opens: ${warmth.open_count}
-- Last open: ${recencyLabel}
-- Tier: ${warmth.tier}
-${fastReopenLabel}
-${forwardingLabel}
+  const userMessage = `Tier tone: ${TIER_FRAMING[warmth.tier]}
 
 ${input.prospect_name ? `Name: ${input.prospect_name}` : ""}
 ${input.company_name ? `Company: ${input.company_name}` : ""}
 ${input.prospect_domain ? `Domain: ${input.prospect_domain}` : ""}
-${input.audit_findings ? `\nCross-referenced findings:\n${input.audit_findings}` : ""}
-${input.citation_data ? `\nCitation data:\n${input.citation_data}` : ""}
+${input.audit_findings ? `\nWhat's in the Preview (use these as the substance of the email):\n${input.audit_findings}` : ""}
+${input.citation_data ? `\nCitation data the Preview shows:\n${input.citation_data}` : ""}
+
+Preview URL to use: neverranked.com/preview/${slugForUrl}
 
 Write the follow-up. Return JSON only.`;
 

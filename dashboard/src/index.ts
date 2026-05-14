@@ -1900,6 +1900,15 @@ export default {
       }
       return handleProspectActionDeclined(prospectId, actionId, user, env);
     }
+    const warmProspectRegenMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/regenerate\/(\d+)$/);
+    if (warmProspectRegenMatch && method === "POST" && user.role === "admin") {
+      const { handleProspectRegenerate } = await import("./routes/warm-prospects");
+      return handleProspectRegenerate(
+        parseInt(warmProspectRegenMatch[1], 10),
+        parseInt(warmProspectRegenMatch[2], 10),
+        user, env,
+      );
+    }
 
     if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
       return handleAdminFreeCheckStats(user, env, url);
