@@ -253,8 +253,10 @@ export async function sendWeeklyDigests(
     // last send is too recent. Track which event ids land in this
     // digest so we can mark them delivered after send.
     const { getPendingEvents, markEventsDelivered, getNviReportForDigest, markNviReportSent } = await import("./client-events");
+    const { getActionsDigestSection } = await import("./client-actions/digest");
     const eventsByClient = new Map<string, Array<{ kind: string; severity: "info" | "win" | "concern"; title: string; body: string | null; occurred_at: number }>>();
     const nviByClient = new Map<string, { id: number; reporting_period: string; ai_presence_score: number; prev_score: number | null; prompts_evaluated: number; citations_found: number; insight: string | null; action: string | null; pdf_url: string | null }>();
+    const actionsByClient = new Map<string, { client_slug: string; total_pending: number; items: Array<{ type: string; title: string; status_label: string; cta_url: string }> }>();
     const nviIdsToMark: number[] = [];
     const eventIdsToMark: number[] = [];
     const nowEpoch = Math.floor(Date.now() / 1000);
@@ -292,6 +294,17 @@ export async function sendWeeklyDigests(
         });
         nviIdsToMark.push(nvi.id);
       }
+
+      // Things to do: pending FAQ proposals + unfinished walkthroughs.
+      // The renderer skips the section entirely when this is null.
+      try {
+        const actions = await getActionsDigestSection(env, d.clientSlug);
+        if (actions) {
+          actionsByClient.set(d.clientSlug, actions);
+        }
+      } catch (e) {
+        console.log(`[digest] actions section failed for ${d.clientSlug}: ${e}`);
+      }
     }
     // If every domain in this digest is on biweekly cooldown, skip the
     // send entirely rather than mail an empty digest.
@@ -300,7 +313,7 @@ export async function sendWeeklyDigests(
       continue;
     }
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient);
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient, actionsByClient);
     if (ok) {
       sent++;
       // Mark events delivered (use digest id = 0 since we don't persist

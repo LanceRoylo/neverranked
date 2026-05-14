@@ -514,6 +514,19 @@ export interface DigestNviReport {
   pdf_url: string | null;
 }
 
+export interface DigestActionItem {
+  type: string;
+  title: string;
+  status_label: string;
+  cta_url: string;
+}
+
+export interface DigestActionsSection {
+  client_slug: string;
+  total_pending: number;
+  items: DigestActionItem[];
+}
+
 export async function sendDigestEmail(
   to: string,
   userName: string | null,
@@ -527,6 +540,7 @@ export async function sendDigestEmail(
   stateOfAeo?: StateOfAeoLatest | null,
   eventsByClient?: Map<string, DigestEvent[]>,
   nviByClient?: Map<string, DigestNviReport>,
+  actionsByClient?: Map<string, DigestActionsSection>,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -540,7 +554,7 @@ export async function sendDigestEmail(
     ? buildSubjectSingle(digests[0], citationData)
     : buildSubjectMulti(digests, citationData);
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient);
+  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient, actionsByClient);
 
   // Quality grader: final gate before send. Checks voice (no AI-tells,
   // HM voice rules) and substance (real signal, not formulaic filler).
@@ -2157,7 +2171,7 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>, nviByClient?: Map<string, DigestNviReport>): string {
+function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>, nviByClient?: Map<string, DigestNviReport>, actionsByClient?: Map<string, DigestActionsSection>): string {
   const brand = brandFor(agency);
   const headerCellHtml = brand.logo
     ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
@@ -2305,6 +2319,36 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             </table>`);
           }
           return sections.length > 0 ? `<tr><td style="padding-bottom:8px">${sections.join("")}</td></tr>` : "";
+        })()}
+
+        <!-- Things to do section. Surfaces pending FAQ proposals and
+             unfinished walkthroughs (Bing for Business setup, etc.)
+             for each client domain. Renders only when at least one
+             action has a pending state. CTA links straight into the
+             /actions/<slug> surface where the work happens. -->
+        ${(() => {
+          if (!actionsByClient || actionsByClient.size === 0) return "";
+          const slugsSeen = new Set<string>();
+          const blocks: string[] = [];
+          for (const d of digests) {
+            if (slugsSeen.has(d.clientSlug)) continue;
+            slugsSeen.add(d.clientSlug);
+            const section = actionsByClient.get(d.clientSlug);
+            if (!section || section.items.length === 0) continue;
+            const rows = section.items.map((it) => `<tr><td style="padding:11px 0;border-bottom:1px solid #2a2620">
+                <div style="font-family:Georgia,serif;font-size:14px;color:#fbf8ef;margin-bottom:4px">${escEmail(it.title)}</div>
+                <div style="font-family:Georgia,serif;font-size:13px;color:#bfa04d;margin-bottom:8px;line-height:1.4">${escEmail(it.status_label)}</div>
+                <a href="${escEmail(it.cta_url)}" style="display:inline-block;font-family:monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#bfa04d;text-decoration:none;border:1px solid #bfa04d;padding:6px 12px;border-radius:3px">Open task &rarr;</a>
+              </td></tr>`).join("");
+            blocks.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0 8px;border:1px solid #2a2620;border-radius:4px;background:#1c1812">
+              <tr><td style="padding:16px 22px 6px">
+                <div style="font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d;margin-bottom:6px">Things to do for ${escEmail(d.domain)}</div>
+                <div style="font-family:Georgia,serif;font-size:13px;color:#888;line-height:1.55;margin-bottom:4px">Each item below moves the needle on how often AI engines cite your business. Heavy lifting is done. The clicks are yours.</div>
+              </td></tr>
+              <tr><td style="padding:0 22px 16px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr>
+            </table>`);
+          }
+          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}
 
         <!-- Monthly NVI report section. Auto-included in the next
