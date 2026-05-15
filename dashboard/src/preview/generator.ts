@@ -72,7 +72,12 @@ Lance gives you concrete inputs: recipient_name, company_name, domain, headline_
    - One or two sentences below the h1 expanding the implication for THIS company specifically.
 
 2. <section class="proof">
-   - The Hawaii Theatre proof point. Use these exact numbers: 'Forty-five out of one hundred to ninety-five in ten days. Same week, first weekly citation log run, Perplexity named them on 14 of 19 tracked queries.' Pair with one sentence connecting the case study to the recipient's category if relevant.
+   - The Hawaii Theatre proof point. State it EXACTLY as these facts, do not rephrase the numbers or invent a different framing:
+     * The client is "Hawaii Theatre Center" (use that exact name, never "Hawaii Theatre Company" or any variant).
+     * Their NeverRanked AEO score went from 45 to 95 (out of 100) in ten days.
+     * In the same week, on the first weekly citation log run, Perplexity named them in 14 of 19 tracked queries.
+   - Do NOT say "zero citations," do NOT say "zero to forty-five," do NOT change "45 to 95" into any other pair of numbers. The score moved 45 -> 95. That is the only correct framing.
+   - Pair with one sentence connecting the case study to the recipient's category if relevant.
 
 3. <section class="what-happens">
    - Use what_we_would_do as the substance. Break it into 2-3 concrete bullet items inside a <ul> if the input has multiple actions. Each bullet starts with a verb. Be specific about the schema types, the cadence, the deliverable shape.
@@ -251,12 +256,13 @@ export async function savePreviewDraft(
   env: Env,
   input: PreviewInput,
   generated: PreviewOutput,
+  status: "draft" | "held" = "draft",
 ): Promise<string> {
   await env.DB.prepare(
     `INSERT INTO previews
        (slug, prospect_id, client_slug, recipient_name, company_name, domain,
         body_html, meta_title, meta_description, status, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft', unixepoch(), unixepoch())`,
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`,
   )
     .bind(
       generated.slug,
@@ -268,6 +274,7 @@ export async function savePreviewDraft(
       generated.body_html,
       generated.meta_title,
       generated.meta_description || null,
+      status,
     )
     .run();
   return generated.slug;
@@ -386,13 +393,56 @@ export async function buildAutonomousPreview(
     return { error: "Sonnet generation failed (check ANTHROPIC_API_KEY and logs)" };
   }
 
-  // 4. Persist
-  const slug = await savePreviewDraft(env, {
+  // 3b. Fail-closed grade. Nothing reaches a prospect ungraded. A
+  // fabricated client name or wrong case-study stat (the 2026-05-14
+  // incident) gets caught here and the Preview is saved 'held', not
+  // 'draft' -- the public route refuses to serve 'held'.
+  const { gradeProspectOutput } = await import("./output-grader");
+  const groundTruth = [
+    `Prospect domain: ${metadata.domain}`,
+    `Prospect business: ${metadata.company_name || "(unknown)"}`,
+    `Vertical: ${metadata.vertical || "(unknown)"}`,
+    enrichment
+      ? `Verified site intel — schema types found: ${enrichment.schema_types_found.length ? enrichment.schema_types_found.join(", ") : "NONE"}; notable gaps: ${enrichment.notable_gaps.length ? enrichment.notable_gaps.join("; ") : "none"}`
+      : "Site enrichment: unavailable (site unreachable at generation time) — the Preview must NOT assert specific schema findings as fact",
+  ].join("\n");
+  const grade = await gradeProspectOutput(
+    env,
+    `${generated.meta_title}\n\n${generated.body_html}`,
+    "Preview brief (autonomous, prospect-facing)",
+    groundTruth,
+  );
+
+  const persistInput = {
     prospect_id,
     recipient_name: metadata.name || undefined,
     company_name: metadata.company_name || undefined,
     domain: metadata.domain,
-  }, generated);
+  };
+
+  if (grade.verdict !== "pass") {
+    // 4a. Held path: persist with status 'held' (never served), log
+    // to admin_inbox so Lance can review/override.
+    const slug = await savePreviewDraft(env, persistInput, generated, "held");
+    try {
+      await env.DB.prepare(
+        `INSERT OR REPLACE INTO admin_inbox (kind, title, body, target_type, target_id, status, created_at)
+         VALUES ('preview_held', ?, ?, 'preview', ?, 'pending', unixepoch())`,
+      )
+        .bind(
+          `Preview HELD by grader: ${metadata.company_name || metadata.domain}`,
+          `Autonomous Preview for prospect ${prospect_id} failed the fail-closed grader and was NOT published.\n\nFactual: ${grade.factual_pass ? "pass" : "FAIL"} | Voice: ${grade.voice_pass ? "pass" : "FAIL"} | Overall: ${grade.overall_pass ? "pass" : "FAIL"}\n\nIssues:\n- ${grade.issues.join("\n- ")}\n\nReview at /admin/preview/${slug}/edit. Fix the data/prompt or override-publish.`,
+          prospect_id,
+        )
+        .run();
+    } catch (e) {
+      console.error(`[preview-grader] admin_inbox insert failed: ${e instanceof Error ? e.message : e}`);
+    }
+    return { error: `Preview held by grader (factual=${grade.factual_pass} voice=${grade.voice_pass} overall=${grade.overall_pass}): ${grade.issues.join("; ")}` };
+  }
+
+  // 4b. Passed: persist as draft (existing behavior).
+  const slug = await savePreviewDraft(env, persistInput, generated, "draft");
   return { slug };
 }
 

@@ -22,6 +22,7 @@ import {
   markFollowupDeclined,
   type SignalTier,
 } from "../outreach/warmth";
+import { isPrefetchOpen } from "../outreach/prefetch";
 import { generateFollowupDraft, templateKindForTier, TEMPLATE_VERSION } from "../outreach/templates";
 import { getPreviewByProspectId } from "../preview/generator";
 
@@ -210,19 +211,34 @@ export async function handleWarmProspectDetail(
         <tr><td style="padding:8px 12px;color:var(--text-faint)">Hours since last</td><td style="padding:8px 12px;color:var(--text);font-family:var(--mono)">${warmth.hours_since_last.toFixed(1)}h</td></tr>
         ${warmth.hours_between_first_two !== null ? `<tr><td style="padding:8px 12px;color:var(--text-faint)">Time to second open</td><td style="padding:8px 12px;color:var(--text);font-family:var(--mono)">${warmth.hours_between_first_two.toFixed(1)}h</td></tr>` : ""}
         <tr><td style="padding:8px 12px;color:var(--text-faint)">Distinct IPs</td><td style="padding:8px 12px;color:var(--text);font-family:var(--mono)">${warmth.ip_diversity}${warmth.ip_diversity >= 2 ? " (possibly forwarded)" : ""}</td></tr>
+        ${warmth.prefetch_count > 0 ? `<tr><td style="padding:8px 12px;color:var(--text-faint)">Filtered (proxy/bot)</td><td style="padding:8px 12px;color:var(--text-faint);font-family:var(--mono)">${warmth.prefetch_count} ignored</td></tr>` : ""}
       </table>
     </div>
   `;
 
+  // Annotate each open with its pre-fetch verdict so a dimmed row in
+  // the timeline tells you why the count doesn't match the row total.
+  const annotatedOpens = opens.map((o) => ({ ...o, verdict: isPrefetchOpen(o.ua) }));
+  const realCount = annotatedOpens.filter((o) => !o.verdict.isPrefetch).length;
+  const proxyCount = annotatedOpens.length - realCount;
+
   const opensTimeline = `
     <div style="${cardStyle}">
-      <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Open timeline</div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px;gap:10px;flex-wrap:wrap">
+        <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold)">Open timeline</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--text-faint)">${realCount} real${proxyCount > 0 ? ` · ${proxyCount} proxy/bot (dimmed)` : ""}</div>
+      </div>
       <table style="width:100%;border-collapse:collapse;font-size:12.5px">
-        ${opens.map((o, i) => `<tr style="border-bottom:1px solid var(--line)">
-          <td style="padding:8px 12px;color:var(--text-faint);font-family:var(--mono);width:60px">#${i + 1}</td>
-          <td style="padding:8px 12px;color:var(--text);font-family:var(--mono)">${new Date(o.opened_at * 1000).toISOString().slice(0, 19).replace("T", " ")} UTC</td>
-          <td style="padding:8px 12px;color:var(--text-faint);font-family:var(--mono);font-size:11px">${o.ip_hash ? o.ip_hash.slice(0, 12) + "..." : "no ip"}</td>
-        </tr>`).join("")}
+        ${annotatedOpens.map((o, i) => {
+          const dim = o.verdict.isPrefetch;
+          const rowStyle = dim ? "opacity:0.42" : "";
+          const tag = dim ? `<span style="display:inline-block;margin-left:8px;padding:1px 6px;background:rgba(255,255,255,0.06);color:var(--text-faint);font-size:10px;border-radius:3px;font-family:var(--mono);text-transform:uppercase;letter-spacing:0.05em">${o.verdict.reason}</span>` : "";
+          return `<tr style="border-bottom:1px solid var(--line);${rowStyle}">
+            <td style="padding:8px 12px;color:var(--text-faint);font-family:var(--mono);width:60px">#${i + 1}</td>
+            <td style="padding:8px 12px;color:var(--text);font-family:var(--mono)">${new Date(o.opened_at * 1000).toISOString().slice(0, 19).replace("T", " ")} UTC${tag}</td>
+            <td style="padding:8px 12px;color:var(--text-faint);font-family:var(--mono);font-size:11px">${o.ip_hash ? o.ip_hash.slice(0, 12) + "..." : "no ip"}</td>
+          </tr>`;
+        }).join("")}
       </table>
     </div>
   `;
@@ -263,7 +279,12 @@ export async function handleWarmProspectDetail(
   // surfaces the existing Preview's URL + status, or offers a Build
   // Preview button if one hasn't been generated yet.
   let previewCard = "";
-  if (warmth.tier === "hot") {
+  // Preview card shows for hot AND very_warm. buildAutonomousPreview
+  // scales depth by tier, so very_warm gets a proportionate (shorter)
+  // Preview while hot gets the full treatment. Gate widened 2026-05-14:
+  // a fast double-open from two IPs is real buying signal and the
+  // CTA philosophy is "send a URL, not a meeting" regardless of tier.
+  if (warmth.tier === "hot" || warmth.tier === "very_warm") {
     const existingPreview = await getPreviewByProspectId(env, prospect_id);
     if (existingPreview) {
       const previewUrl = `https://app.neverranked.com/preview/${existingPreview.slug}`;
@@ -394,6 +415,14 @@ export async function handleProspectActionSent(
 ): Promise<Response> {
   if (user.role !== "admin") return redirect("/");
   await markFollowupSent(env, action_id, user.id);
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "prospect_followup",
+    artifact_id: action_id,
+    decision_kind: "sent",
+    new_state: "sent",
+    metadata: { prospect_id },
+  });
   return redirect(`/admin/warm-prospects/${prospect_id}`);
 }
 
@@ -402,6 +431,14 @@ export async function handleProspectActionDeclined(
 ): Promise<Response> {
   if (user.role !== "admin") return redirect("/");
   await markFollowupDeclined(env, action_id, null, user.id);
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "prospect_followup",
+    artifact_id: action_id,
+    decision_kind: "decline",
+    new_state: "declined",
+    metadata: { prospect_id },
+  });
   return redirect(`/admin/warm-prospects/${prospect_id}`);
 }
 
@@ -417,6 +454,15 @@ export async function handleProspectRegenerate(
   if (user.role !== "admin") return redirect("/");
   // Decline the existing draft so dedup logic lets us re-draft.
   await markFollowupDeclined(env, action_id, "Regenerated by admin", user.id);
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "prospect_followup",
+    artifact_id: action_id,
+    decision_kind: "regenerate",
+    prior_state: "drafted",
+    new_state: "declined",
+    metadata: { prospect_id, intent: "redraft_with_latest_templates" },
+  });
   // Now re-draft using the latest templates.
   return handleProspectDraft(prospect_id, user, env);
 }

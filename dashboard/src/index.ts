@@ -656,6 +656,28 @@ export default {
       return handleTrackPitch(pitchTrackMatch[1], request, env);
     }
 
+    // Public read-only render of a client's live FAQ deployment.
+    // Used as the demo surface during prospect meetings without
+    // exposing admin chrome. No new info disclosure -- the FAQ
+    // JSON-LD is already public via the snippet on the client's
+    // own domain and via /inject/<slug>.json. Noindex,nofollow.
+    const redditFaqPublicMatch = path.match(/^\/reddit-faq\/([a-z0-9][a-z0-9-]{0,63})\/public$/);
+    if (redditFaqPublicMatch && (method === "GET" || method === "HEAD")) {
+      const { handleRedditFaqPublic } = await import("./routes/reddit-faq-public");
+      return handleRedditFaqPublic(redditFaqPublicMatch[1], env);
+    }
+
+    // Public Preview render. No auth. This is the URL a prospect
+    // clicks from the follow-up email. MUST stay above the auth gate
+    // (previously sat after it at ~line 2009 and silently 302'd every
+    // prospect to /login -- the page a recipient hit was the sign-in
+    // wall, not their brief).
+    const previewPublicMatch = path.match(/^\/preview\/([a-z0-9-]+)$/);
+    if (previewPublicMatch && (method === "GET" || method === "HEAD")) {
+      const { handlePreviewPublic } = await import("./routes/preview");
+      return handlePreviewPublic(decodeURIComponent(previewPublicMatch[1]), env);
+    }
+
     // Stripe checkout (no auth -- public pricing links)
     // Pulse waitlist POST — must come BEFORE the general /checkout/<plan>
     // matcher so the form submit doesn't fall through to handleCheckout.
@@ -743,6 +765,22 @@ export default {
     // localhost outreach tool without a browser session.
     if (path === "/api/admin/leads.json" && method === "GET") {
       return handleLeadsJson(request, env);
+    }
+
+    // Admin API: external-decision push from non-dashboard tools
+    // (cold-outreach CLI, scripts). Pre-auth so X-Admin-Secret header
+    // can authenticate before the session-cookie redirect kicks in.
+    if (path === "/api/admin/external-decision" && method === "POST") {
+      const { handleExternalDecision } = await import("./routes/external-decision");
+      return handleExternalDecision(request, env);
+    }
+
+    // Admin API: sync-prospects from the outreach repo. Same reasoning
+    // as leads.json — header-auth, pre-auth registration so localhost
+    // tools without a browser session can hit it.
+    if (path === "/api/admin/sync-prospects" && method === "POST") {
+      const { handleSyncProspects } = await import("./routes/sync-prospects");
+      return handleSyncProspects(request, env);
     }
 
 
@@ -1093,6 +1131,13 @@ export default {
         const r = await runAnomalyDetection(env);
         await logCronRun(env, "anomaly_detection", r.totalAlerts > 0 ? "partial" : "success", Date.now() - started,
           `(manual trigger) engineAlerts=${r.engineAlerts} cronAlerts=${r.cronAlerts}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "anomaly_detection", alerts: r.totalAlerts, engine_alerts: r.engineAlerts, cron_alerts: r.cronAlerts },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=anomaly_detection&alerts=${r.totalAlerts}` },
@@ -1112,6 +1157,13 @@ export default {
         const r = await runEngineHealthCheck(env);
         await logCronRun(env, "engine_health_check", r.transitions > 0 ? "partial" : "success", Date.now() - started,
           `(manual trigger) degraded=${r.degradedCount} recovered=${r.recoveredCount}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "engine_health_check", degraded: r.degradedCount, recovered: r.recoveredCount, transitions: r.transitions },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=engine_health_check&degraded=${r.degradedCount}&recovered=${r.recoveredCount}` },
@@ -1129,6 +1181,13 @@ export default {
         const started = Date.now();
         const r = await dedupeRelatedAlerts(env);
         await logCronRun(env, "alert_dedupe", "success", Date.now() - started, `(manual) scanned=${r.scanned} acked=${r.acked} groups=${r.groups}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "alert_dedupe", scanned: r.scanned, acked: r.acked, groups: r.groups },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=alert_dedupe&acked=${r.acked}&scanned=${r.scanned}` },
@@ -1146,6 +1205,13 @@ export default {
         const started = Date.now();
         const r = await sweepContentVoiceAudits(env);
         await logCronRun(env, "qa_content_voice_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "content_voice", audited: r.audited },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=content_voice&audited=${r.audited}` },
@@ -1163,6 +1229,13 @@ export default {
         const started = Date.now();
         const r = await sweepCitationSanityAudits(env);
         await logCronRun(env, "qa_citation_sanity_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "citation_sanity", audited: r.audited },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=citation_sanity&audited=${r.audited}` },
@@ -1180,6 +1253,13 @@ export default {
         const started = Date.now();
         const r = await sweepNviDriftAudits(env);
         await logCronRun(env, "qa_nvi_drift_sweep", "success", Date.now() - started, `(manual) audited=${r.audited}`);
+        const { recordLanceDecision } = await import("./lib/decision-log");
+        await recordLanceDecision(env, user.id, {
+          artifact_type: "qa_sweep",
+          artifact_id: 0,
+          decision_kind: "run_manual",
+          metadata: { sweep: "nvi_drift", audited: r.audited },
+        });
         return new Response(null, {
           status: 302,
           headers: { Location: `/admin/health?triggered=nvi_drift&audited=${r.audited}` },
@@ -1920,10 +2000,7 @@ export default {
     // POST /api/admin/sync-prospects -- local outreach tool pushes
     // prospect metadata (name, email, company, domain) so the
     // dashboard can auto-personalize Previews without any form input.
-    if (path === "/api/admin/sync-prospects" && method === "POST") {
-      const { handleSyncProspects } = await import("./routes/sync-prospects");
-      return handleSyncProspects(request, env);
-    }
+    // sync-prospects + external-decision moved to pre-auth section above.
     const previewEditMatch = path.match(/^\/admin\/preview\/([a-z0-9-]+)\/edit$/);
     if (previewEditMatch && user.role === "admin") {
       const { handlePreviewEditGet, handlePreviewEditPost } = await import("./routes/preview");
@@ -1936,14 +2013,6 @@ export default {
       const { handlePreviewPublishPost } = await import("./routes/preview");
       return handlePreviewPublishPost(decodeURIComponent(previewPublishMatch[1]), request, user, env);
     }
-    // Public Preview render. No auth. This is the URL a prospect
-    // clicks from the follow-up email.
-    const previewPublicMatch = path.match(/^\/preview\/([a-z0-9-]+)$/);
-    if (previewPublicMatch && method === "GET") {
-      const { handlePreviewPublic } = await import("./routes/preview");
-      return handlePreviewPublic(decodeURIComponent(previewPublicMatch[1]), env);
-    }
-
     if (path === "/admin/free-check" && method === "GET" && user.role === "admin") {
       return handleAdminFreeCheckStats(user, env, url);
     }

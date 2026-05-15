@@ -40,6 +40,16 @@ export async function handlePreviewPublic(slug: string, env: Env): Promise<Respo
       headers: { "content-type": "text/html; charset=utf-8" },
     });
   }
+  // Fail-closed: only graded-and-cleared statuses are ever served. A
+  // Preview the output-grader held ('held') -- or any unexpected
+  // status -- must NOT render to a prospect even via a direct slug
+  // hit, because the outreach email already contains this URL.
+  if (preview.status !== "draft" && preview.status !== "published") {
+    return new Response(renderNotFound(), {
+      status: 404,
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
   // Log the view (best-effort).
   try { await recordPreviewView(env, slug); } catch { /* skip */ }
 
