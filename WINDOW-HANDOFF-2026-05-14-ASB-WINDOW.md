@@ -152,10 +152,37 @@ to a single `outreach_prospects` (Option B). Full reasoning locked in
 `MIGRATION_TO_WORKERS.md` → "DECISION LOCKED — prospects schema". Do not
 re-litigate; do not cram the full table into the narrow one.
 
-Remaining migration work: Phase 3 (Worker scaffold/port, the 6-8h
-arc), Phase 4 (Fly.io send host), Phase 5 (cutover + the A→B
+## Phase 3 — Worker port DONE for everything portable (2026-05-15)
+
+Ported + tsc-clean + dry-run-passing + committed/pushed/backed-up,
+`neverranked-outreach/worker/`:
+- scaffold (inert, no cron), `outreach_config` D1 table (single-row,
+  secrets excluded), limiter.ts (config seam), db.ts (44 fns,
+  measure-twice-verified, 3 inferred fns caught wrong + fixed),
+  generator.ts (verbatim prompts incl. HT "ten days"), aeo-scan.ts,
+  output-grader.ts (CANONICAL_FACTS byte-identical, guardrail held),
+  apollo-fetch.ts (paging fix preserved), generate.ts (keystone;
+  fail-closed grader gate intact), index.ts (read-only + inert
+  scheduled() gate). ~12 commits, each verified.
+
+## MEASURED SCOPE CORRECTION — the host is NOT a thin relay
+
+Port-time measurement found FOUR modules cannot run in Workers
+(not one): email.js (SMTP), linkedin.js (playwright),
+check-replies.js (net/dns/playwright), find-emails.js (DNS MX +
+SMTP-socket verify + playwright). The Fly host's real scope =
+**SMTP send + find-emails + check-replies**, a meaningful Node
+service, NOT ~100 lines. `daily-run` is a HYBRID (Worker:
+apollo/generate/grade/trigger; host: find-emails/check-replies/
+SMTP). Phase 4 effort re-estimate REQUIRED. Full detail locked
+in `MIGRATION_TO_WORKERS.md` → "MEASURED HOST SCOPE CORRECTION".
+Caught at port time, not cutover — by design (measure twice).
+
+Remaining: Phase 4 (host service — bigger than first scoped),
+Phase 5 (hybrid daily-run orchestration + cutover + A→B
 consolidation), Phase 6 (cleanup). All gated on the coordinated
-window. Phase 1-2 being done de-risks the rest.
+window + Lance's Phase-4 prereqs. The Worker side is essentially
+complete: everything that CAN run in a Worker is ported.
 
 ## Held work — Phase 3+ (NOT started)
 
