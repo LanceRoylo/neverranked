@@ -107,6 +107,34 @@ pipeline run.
   ASB/MVNP docs — this window has not touched any of those.
 - Read-only anything.
 
+## Migration prerequisites — ALL 4 GREEN (2026-05-15)
+
+The 4 Lance-only prerequisites for the outreach→Workers migration
+(Option A) are now all satisfied. Migration is execution-ready; only
+the coordinated cross-window window remains.
+
+1. Send-host account + payment — Fly.io account created, card on
+   file, free trial active. NOT deployed yet (correct — that's the
+   migration execution step, held for the coordinated window). Do NOT
+   click "Select repository" on Fly until the migration runs.
+2. Gmail app password — verified valid (16-char, authed against
+   smtp.gmail.com, no email sent). The send host reuses this exact
+   credential from neverranked-outreach/config.json smtp_password.
+3. DKIM/SPF on hi.neverranked.com — already fully configured (Google
+   Workspace: SPF include:_spf.google.com, valid google._domainkey
+   DKIM, DMARC p=none, MX smtp.google.com). No new DNS needed because
+   Option A sends via Gmail SMTP. Later optimization (not a blocker):
+   DMARC is p=none; tightening to p=quarantine improves deliverability.
+4. Cloudflare account 2FA — enabled via TOTP (Mobile App Auth).
+   Required setting a Cloudflare password first (account was GitHub-
+   SSO, no standalone password) via the forgot-password email flow.
+   Recovery codes saved by Lance.
+
+Safety gate status: the fail-closed output grader (roadmap #2) is
+LIVE (dashboard deployed). Per the ASB window's hard-ordering rule,
+#2 had to be live before any auto-send path — it is. The migration's
+send path is now safe to build in the coordinated window.
+
 ## NOT safe without a heads-up to this window
 
 - `git push` (rebase coordination needed)

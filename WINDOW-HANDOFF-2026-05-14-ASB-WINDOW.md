@@ -165,6 +165,24 @@ Lance-only prerequisites before the migration can run (not automatable,
 safety boundary): create the host account + payment, confirm Gmail app
 password, DKIM/SPF on hi.neverranked.com, Cloudflare account 2FA on.
 
+**UPDATE 2026-05-15: ALL 4 PREREQUISITES GREEN.** Per the infra
+handoff "Migration prerequisites — ALL 4 GREEN": Fly.io account live
+(NOT deployed — held; do not click "Select repository" until the
+coordinated window), Gmail app password verified, DKIM/SPF already
+configured (Option A sends via Gmail SMTP, no DNS work needed),
+Cloudflare 2FA enabled. Grader #2 is live, so the send-path safety
+gate is satisfied. **Migration is execution-ready. The ONLY remaining
+blocker is the coordinated cross-window execution window.**
+
+Recommended sequence before the coordinated window opens: reconcile
+git first (local is ahead 5 / behind 1 origin — `pull --rebase` then
+push the 5 commits) so the migration is built on a clean synced base,
+not stacked on a diverged tree. The git reconcile is itself a
+coordination step (shared `index.ts`/`warm-prospects.ts` are the
+likely conflict points). Then the migration runs Phases 1-5 of
+`MIGRATION_TO_WORKERS.md` per the locked Option A spec, ideally in a
+low-volume outreach window per that plan's Mailreach guidance.
+
 ## Background task spawned
 
 A `spawn_task` is queued (chip showing for Lance): fix the cold-outreach
