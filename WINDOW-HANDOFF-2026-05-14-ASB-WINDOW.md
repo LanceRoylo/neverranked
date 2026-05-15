@@ -136,7 +136,28 @@ Build on that fix, do not revert it.
 Roadmap ownership recap: #1 held (SMTP decision pending). #2 assigned to
 infra window (this entry). #3, #4 unassigned, gated behind #2.
 
-## Held work — outreach → D1 migration (NOT started)
+## Migration Phase 1-2 — DONE (2026-05-15)
+
+Schema + data migrated to D1, count-verified, additive (laptop tool
+untouched, zero deliverability risk):
+- `outreach_send_log` 835, `outreach_packages` 481,
+  `outreach_daily_limits` 30 (migrations 0087-0089)
+- `outreach_prospects_master` 508 (migration 0090)
+
+**Prospects schema DECIDED (Lance, 2026-05-15): Option A now, B at
+cutover.** Full 22-col mirror in SEPARATE `outreach_prospects_master`;
+narrow `outreach_prospects` (Preview-sync target) left untouched so the
+live Preview/warm flow keeps working. At Phase 5/6 cutover, consolidate
+to a single `outreach_prospects` (Option B). Full reasoning locked in
+`MIGRATION_TO_WORKERS.md` → "DECISION LOCKED — prospects schema". Do not
+re-litigate; do not cram the full table into the narrow one.
+
+Remaining migration work: Phase 3 (Worker scaffold/port, the 6-8h
+arc), Phase 4 (Fly.io send host), Phase 5 (cutover + the A→B
+consolidation), Phase 6 (cleanup). All gated on the coordinated
+window. Phase 1-2 being done de-risks the rest.
+
+## Held work — Phase 3+ (NOT started)
 
 Phases 1+2 of `neverranked-outreach/MIGRATION_TO_WORKERS.md` were
 planned and approved by Lance but **deliberately not executed** after
