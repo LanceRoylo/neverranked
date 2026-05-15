@@ -6,13 +6,13 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 
 ---
 
-## What we'd ship — two parallel paths
+## What we'd ship: two parallel paths
 
 ### Direct: ASB as a customer
 
 **Pulse** (entry tier): $497/mo, 3-month minimum.
 - Monthly Visibility Index report across all seven engines (six commercial APIs plus Gemma, the open-weight model your compliance team can independently audit)
-- 10 tracked prompts (e.g. "best Hawaii business bank", "small business loans Honolulu")
+- 10 tracked prompts (for example, "best Hawaii business bank" or "small business loans Honolulu")
 - 2 schemas auto-deployed monthly
 - Read-only summary dashboard
 
@@ -76,7 +76,7 @@ Our 3-month minimum exists to protect customers from quitting before the work ha
 
 ## Honest current state
 
-- NeverRanked has one paying retail customer (a Honolulu performing arts venue, anonymized — moved D-45 to A-95 in seven days, 39 schemas deployed).
+- NeverRanked has one paying retail customer, a Honolulu performing arts venue (anonymized). Moved D-45 to A-95 in ten days, 39 schemas deployed.
 - We have **zero agency partners** so far.
 - MVNP would be the first.
 - Being first is the offer: first pick of vertical territory, direct founder access, shaping the program before it opens up. We're not pretending to be at scale we're not at.

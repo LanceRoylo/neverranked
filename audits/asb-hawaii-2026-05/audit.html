@@ -290,7 +290,7 @@
       </div>
       <div class="cover-meta-cell">
         <strong>Delivered</strong>
-        2026-05-13
+        2026-05-15
       </div>
     </div>
     <div class="cover-meta-row">
@@ -884,8 +884,18 @@ Start with the Schema Review. The code blocks are pasteable. Then the Technical 
 <h1 id="agent-readiness-american-savings-bank">Agent Readiness — American Savings Bank</h1>
 <p><strong>Auditor:</strong> Never Ranked
 <strong>Sample date:</strong> 2026-05-12
-<strong>Scope:</strong> Schema.org ActionType deployment, root URL
+<strong>Re-verified:</strong> 2026-05-14 — no change. ASB still has 0 Action schemas on the root URL.
+<strong>Scope:</strong> Schema.org ActionType deployment, root URL <strong>(this is the agent-readiness subscore only, not the composite AEO score)</strong>
 <strong>Tool:</strong> <code>agent_readiness_check</code> v2 (27 ActionTypes recognized, JSON-LD + Microdata, deep-nesting traversal up to depth 12)</p>
+<blockquote>
+<p><strong>Important framing for the meeting:</strong> This 0/100 number is the <em>agent-readiness subscore</em> — Schema.org Action types specifically. It is NOT the same as ASB’s full AEO score from <code>check.neverranked.com</code>, which is a composite of citations + schema coverage + technical + content + agent-readiness, and which sits at <strong>~55/100</strong> for asbhawaii.com as of 2026-05-14.</p>
+<p>The combined story is sharper than either number alone:</p>
+<ul>
+<li><strong>Overall AEO: 55/100</strong> — ASB is middling. They’ve shipped basic schemas (Organization, etc.), the site is technically clean, and they get <em>some</em> citation surface.</li>
+<li><strong>Agent-readiness: 0/100</strong> — but the specific bottleneck is Action schemas. Where the puck is going (agent-completable transactional surfaces) ASB has nothing.</li>
+</ul>
+<p>Use both numbers in the meeting. “You’re at 55 overall, 0 on the agent layer specifically. That’s the gap and that’s the work.”</p>
+</blockquote>
 <hr />
 <h2 id="what-this-section-measures">What this section measures</h2>
 <p>This section is forward-looking. It does not measure how AI engines cite you today. It measures whether your site is ready for the next generation of AI tooling — agents that act on a user’s behalf to book, apply, buy, and contact, rather than just answering questions.</p>

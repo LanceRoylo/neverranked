@@ -2,8 +2,18 @@
 
 **Auditor:** Never Ranked
 **Sample date:** 2026-05-12
-**Scope:** Schema.org ActionType deployment, root URL
+**Re-verified:** 2026-05-14 — no change. ASB still has 0 Action schemas on the root URL.
+**Scope:** Schema.org ActionType deployment, root URL **(this is the agent-readiness subscore only, not the composite AEO score)**
 **Tool:** `agent_readiness_check` v2 (27 ActionTypes recognized, JSON-LD + Microdata, deep-nesting traversal up to depth 12)
+
+> **Important framing for the meeting:** This 0/100 number is the *agent-readiness subscore* — Schema.org Action types specifically. It is NOT the same as ASB's full AEO score from `check.neverranked.com`, which is a composite of citations + schema coverage + technical + content + agent-readiness, and which sits at **~55/100** for asbhawaii.com as of 2026-05-14.
+>
+> The combined story is sharper than either number alone:
+>
+> - **Overall AEO: 55/100** — ASB is middling. They've shipped basic schemas (Organization, etc.), the site is technically clean, and they get *some* citation surface.
+> - **Agent-readiness: 0/100** — but the specific bottleneck is Action schemas. Where the puck is going (agent-completable transactional surfaces) ASB has nothing.
+>
+> Use both numbers in the meeting. "You're at 55 overall, 0 on the agent layer specifically. That's the gap and that's the work."
 
 ---
 

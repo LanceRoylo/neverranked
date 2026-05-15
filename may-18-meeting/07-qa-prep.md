@@ -113,7 +113,7 @@ Behind it: testing whether this is generic outreach or specific.
 
 Answer: ASB is a regional bank with strong content (we counted
 10,923 words on your Common Questions page). That's the rarest
-asset in your category — most banks publish thin content.
+asset in your category. Most banks publish thin content.
 Right now AI engines are paraphrasing competitors who have
 worse content but better structured data. You have the input.
 You're missing the output layer. That gap is unusual and
@@ -124,7 +124,7 @@ to ASB because the audit shows it.
 
 Answer: Pulse $497/mo, Signal $2,000/mo, Amplify $4,500/mo.
 3-month minimum. No contract beyond that. For ASB
-specifically, Signal is the right tier — you have the content
+specifically, Signal is the right tier. You have the content
 maturity to leverage citation tracking and competitor monitoring,
 not just the entry-tier reporting.
 
@@ -149,7 +149,7 @@ is daily probes aggregated weekly for trend signal, which
 filters out per-day noise while still catching engine behavior
 shifts within the same week they happen. The seven-engine
 choice is deliberate: six are commercial APIs that can change
-behind the scenes; Gemma's weights are public, so your
+behind the scenes. Gemma's weights are public, so your
 compliance team can re-run the same prompts against the same
 model and verify our numbers independently. That matters for a
 regulated bank. Web-grounded engines (Perplexity, Copilot,
@@ -171,7 +171,7 @@ not measured in GA4 (GA4 only sees on-site traffic). What
 we measure is citation share on AI engines, which is
 upstream of any traffic. Then we cross-reference with
 GA4 referrer data when it shows attribution from
-chat.openai.com, perplexity.ai, etc.
+chat.openai.com, perplexity.ai, and the other engine domains.
 
 ### "What if you push bad schema and break our site?"
 
@@ -200,7 +200,7 @@ access to your CMS.
 (3) Citation tracking + reporting: NR runs entirely.
 
 If you want NR to do category 2 work too, that's the Amplify
-tier — we write content drafts, propose page changes, and
+tier. We write content drafts, propose page changes, and
 auto-publish to your CMS with your review.
 
 ### "Have you handled an account our size?"
@@ -209,7 +209,7 @@ Behind it: scale skepticism. Be honest.
 
 Answer: No. We have one paying retail customer (a Honolulu
 performing arts venue, anonymized). ASB is bigger. The
-mechanical work scales without issue — schema deployment is
+mechanical work scales without issue. Schema deployment is
 schema deployment whether the site has 50 pages or 500. The
 reporting scales linearly with tracked prompts. The thing
 that's actually different at ASB scale is the review chain
@@ -224,8 +224,8 @@ before expanding to the full site.
 Behind it: he's done the homework.
 
 Answer: Honestly: Profound has more brand recognition. They
-charge $30,000/year for tracking. They don't deploy schema —
-they only report. Athena is similar, focused on enterprise.
+charge $30,000/year for tracking. They don't deploy schema.
+They only report. Athena is similar, focused on enterprise.
 Otterly tracks LLM citations only, no schema deployment, no
 implementation work. Diib is more of a marketing automation
 play, not specifically AEO.
@@ -275,11 +275,11 @@ What it concretely gives the team:
   ("Certified by NeverRanked in partnership with MVNP")
 - Hawaii financial services compliance track customized for
   the partnership
-- If ASB consents, the capstone uses real ASB pilot data —
+- If ASB consents, the capstone uses real ASB pilot data,
   meaning the certification work IS production work
 - Public roster placement (referral pipeline from NeverRanked
   customers we route to MVNP)
-- No cost (vs $1,500/practitioner standard rate — $12,000 of
+- No cost (vs $1,500/practitioner standard rate, so $12,000 of
   program value complimentary as founding partner term)
 
 Why this matters: the Hawaii agency that has the first
@@ -317,7 +317,7 @@ will know about. Use it strategically.
 
 What it is, in one sentence: llms.txt is a markdown file at the
 root of a website that gives AI engines a curated map of what to
-cite — proposed by Anthropic, adopted preferentially by Claude,
+cite. Proposed by Anthropic, adopted preferentially by Claude,
 and being followed by other engines through 2026.
 
 Why it matters: Sites with a curated llms.txt get cited by Claude
@@ -343,7 +343,7 @@ Phrasing for Mark and James:
 > your site that AI engines read first when deciding what to
 > cite. Anthropic's Claude already follows it preferentially.
 > OpenAI's stated they will. Right now zero Hawaii banks have it
-> deployed — yours included. We have templates ready and the
+> deployed, yours included. We have templates ready and the
 > deployment infrastructure to ship it the same week we ship the
 > schema work. The bank that deploys first locks in the lead before
 > the rest of the engines catch up to the standard."
@@ -361,7 +361,7 @@ Frame it as a moat-deepening artifact we're shipping in the next
 
 The numbers (live scan May 7, 2026, domain-level scoring of the
 homepage of each bank):
-- ASB: 55 (D) — leader
+- ASB: 55 (D), leader
 - BOH: 50 (D)
 - FHB: 45 (D)
 - CPB: 25 (F)
@@ -377,7 +377,7 @@ Note on two scoring scopes (have this clear before the room):
   prep): ASB /personal/checking returns 96, BOH homepage
   returns 95. This is the same scoring methodology applied to
   specific deep pages. The /personal/checking score is high
-  because that page has strong schema; the homepage scores are
+  because that page has strong schema. The homepage scores are
   lower because the homepage carries less structured data
   across the four banks.
 
@@ -387,14 +387,14 @@ number (55) because that's the publishable comparison. Use the
 per-page 96 as a follow-up: "On specific product pages like
 your checking landing, you're at 96. The variance shows the
 opportunity. The homepage is the hardest page to score because
-it has to cover everything; deeper product pages can carry
+it has to cover everything. Deeper product pages can carry
 focused schema."
 
 Phrasing:
 
 > "One thing we're shipping in the next 30 days is a public
 > leaderboard for Hawaii community banking, weekly updated. You're
-> on it — currently #1 by 5 points. We wanted you to see your
+> on it, currently #1 by 5 points. We wanted you to see your
 > position privately before it goes live. The lead is real but
 > thin. Whoever ships the Phase 1 schema work first this quarter
 > takes the category lead by an unrecoverable margin. That's
@@ -410,7 +410,7 @@ What this does:
 Be ready for: "Don't publish that without my approval." Honest
 answer: "We're giving the category lead 14 days of pre-publication
 notice. After that we publish whether you sign or not. The
-methodology is reproducible — anyone can run check.neverranked.com
+methodology is reproducible. Anyone can run check.neverranked.com
 on these four domains and verify the numbers themselves. We're
 not asking permission to score the category, we're asking whether
 you want to extend your lead before everyone can see the gap."
@@ -468,8 +468,8 @@ or Bank of Hawaii catch on, you've moved.
 
 ### "Can we do a 1-month trial?"
 
-Answer: Honestly, no. Not because we want to lock you in —
-because the data isn't meaningful at 30 days. The schema we
+Answer: Honestly, no. Not because we want to lock you in.
+Because the data isn't meaningful at 30 days. The schema we
 ship in week one gets absorbed into AI training cycles around
 day 60. A 1-month trial would tell you the implementation
 went smoothly (week 2-3 metrics) but would NOT tell you if
@@ -500,14 +500,14 @@ Hawaii banking for ASB if that matters.
 
 ### "What's your team size?"
 
-Answer: One person — me. Lance Roylo, founder. I built the
+Answer: One person. Me. Lance Roylo, founder. I built the
 product, ship the implementations personally, run the reporting,
 and am the only point of contact. The product is heavily
 automated (the snippet, the scanner, the dashboard, the
 generation pipeline) so most of the work runs without my
 hands on it. The hands-on work is the audit deliverables and
 the customer relationships. If MVNP signs as an agency partner,
-this is part of the answer — you can support 5-25 client slots
+this is part of the answer. You can support 5-25 client slots
 without me being the bottleneck on each one.
 
 ### "What happens if you go away?"
@@ -529,7 +529,7 @@ Answer: We have a written Founder Continuity Plan at
 3. **For $10K+ ACV contracts, three options are pre-built:**
    source escrow with Iron Mountain, multi-cloud failover
    under your own Cloudflare, or on-site weekly export to your
-   data warehouse. Standard contract addenda — no price
+   data warehouse. Standard contract addenda, no price
    increase.
 4. **A successor plan exists in writing with legal counsel.**
    Cloudflare, GitHub, and Stripe transfer to a designated
@@ -557,7 +557,7 @@ the standard subscription agreement.
 The guarantee is *detection*, not absolute score performance.
 Engines retrain, competitors deploy, content gets stale. We
 don't promise your score never moves. We promise that if it
-moves, we catch it before you do — and if we miss, we eat the
+moves, we catch it before you do. And if we miss, we eat the
 month.
 
 What this signals to ASB: we have to be excellent at detection
@@ -569,7 +569,7 @@ funded competitors realize it's possible.
 
 ### "Have you thought about the agent transition?"
 
-Maybe from James — he reads enough to know the next AI shift
+Maybe from James. He reads enough to know the next AI shift
 is from "answering questions" to "performing tasks."
 
 Answer: Yes, and we have shipped for it. The
@@ -587,12 +587,16 @@ agent-readiness opportunities are:
 3. **ContactAction on the wealth-advisor scheduling page.**
 4. **ReserveAction for branch appointments.**
 
-The headline finding from our scan: ASB scores 0/F on
-agent-readiness. So does every other Hawaii bank. So does
-every Hawaii hotel we scanned, including the ones at 90/A on
-citation. The agent-readiness moat is wide open.
+The headline finding from our scan: ASB scores **55/100 on
+composite AEO** (middling, basic schemas shipped, technical
+clean) but **0/100 on the agent-readiness subscore** specifically.
+Zero Action schemas deployed. So does every other Hawaii bank.
+So does every Hawaii hotel we scanned, including the ones at
+90/A on citation. The composite-vs-subscore split matters: ASB
+is not at zero overall. They're at zero on the specific layer
+where the puck is going. The agent-readiness moat is wide open.
 
-Not blocking the citation work — these are stacked layers,
+Not blocking the citation work. These are stacked layers,
 not alternatives. We deploy citation schema first (Phase 1),
 agent-readiness schema second (Phase 2, ~30 days later). Both
 ride the same snippet.
@@ -607,7 +611,7 @@ ride the same snippet.
 - "AI is changing everything." (Generic VC-pitch language;
   Mark and James have heard it 100 times.)
 - Any reference to "leverage," "transform," "unlock,"
-  "synergy," "cutting-edge," etc. (Brand voice violations,
+  "synergy," or "cutting-edge." (Brand voice violations,
   these are banned.)
 - Claims about other agencies / banks NR has worked with.
   (We haven't. The honest pilot framing is stronger.)
@@ -650,8 +654,8 @@ get treated as partners.
 5. Your phone with calendar open in case they say "let's
    schedule the next meeting now."
 
-What NOT to bring: a deck with NR's vision, mission, market
-opportunity, etc. Mark and James will skip past it. Lead with
+What NOT to bring: a deck with NR's vision, mission, or market
+opportunity. Mark and James will skip past it. Lead with
 the audit and the work.
 
 ---
@@ -660,9 +664,9 @@ the audit and the work.
 
 Same-day follow-up email by EOD: thank, recap one thing each
 person said that you heard, name the one decision still open,
-suggest the next concrete step (e.g. "I'll send the SOC 2
+suggest the next concrete step. For example: "I'll send the SOC 2
 documentation by Friday" or "I'll wait for legal review before
-proposing terms"). Short. Specific. Not a sales pitch.
+proposing terms." Short. Specific. Not a sales pitch.
 
 Update pitch/_meta/log.md the next morning with status and
 follow-on items.
