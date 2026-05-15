@@ -12,6 +12,7 @@
  */
 
 import { fetchWithRetry } from "../lib/fetch-with-retry.js";
+import { USER_AGENT } from "../lib/pkg-info.js";
 
 const ENDPOINT = "https://check.neverranked.com/api/check";
 
@@ -42,7 +43,7 @@ export async function aeoScan(args: { url: string }): Promise<ScanResult> {
     ENDPOINT,
     {
       method: "POST",
-      headers: { "content-type": "application/json", "user-agent": "neverranked-mcp/0.1.2" },
+      headers: { "content-type": "application/json", "user-agent": USER_AGENT },
       body: JSON.stringify({ url }),
     },
     {

@@ -140,9 +140,25 @@ export async function handleNviInbox(user: User, env: Env, url: URL): Promise<Re
 export async function handleNviApprove(reportId: number, user: User, env: Env): Promise<Response> {
   if (user.role !== "admin") return new Response("Forbidden", { status: 403 });
   const now = Math.floor(Date.now() / 1000);
+  const priorRow = await env.DB.prepare(
+    "SELECT status, client_slug, reporting_period, score FROM nvi_reports WHERE id = ?"
+  ).bind(reportId).first<{ status: string; client_slug: string; reporting_period: string; score: number | null }>();
   await env.DB.prepare(
     "UPDATE nvi_reports SET status = 'approved', approved_at = ?, approver_user_id = ? WHERE id = ? AND status = 'pending'"
   ).bind(now, user.id, reportId).run();
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "nvi_report",
+    artifact_id: reportId,
+    decision_kind: "approve",
+    prior_state: priorRow?.status ?? null,
+    new_state: "approved",
+    metadata: {
+      client_slug: priorRow?.client_slug,
+      reporting_period: priorRow?.reporting_period,
+      score: priorRow?.score,
+    },
+  });
   // Auto-render the PDF AND send the email. Approve = ship.
   // If you've already reviewed the insight + action and clicked
   // approve, the second click to "Send" is pure friction.
@@ -185,6 +201,13 @@ export async function handleNviRender(reportId: number, user: User, env: Env): P
   if (!r.ok) {
     return new Response(`Render failed: ${r.reason}`, { status: 500 });
   }
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "nvi_report",
+    artifact_id: reportId,
+    decision_kind: "render",
+    metadata: { retry_path: true },
+  });
   return redirect(`/admin/nvi?status=approved`);
 }
 
@@ -210,6 +233,13 @@ export async function handleNviSend(reportId: number, user: User, env: Env): Pro
   const { sendNviReport } = await import("../nvi/email");
   const r = await sendNviReport(env, reportId);
   if (!r.ok) return new Response(`Send failed: ${r.reason}`, { status: 500 });
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "nvi_report",
+    artifact_id: reportId,
+    decision_kind: "send",
+    metadata: { retry_path: true },
+  });
   return redirect("/admin/nvi?status=sent");
 }
 

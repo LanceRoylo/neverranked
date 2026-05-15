@@ -719,6 +719,32 @@ export async function handleInjectApprove(
     .bind(now, now, id, slug)
     .run();
 
+  // Append-only audit log: every approval is recorded with a SHA-256
+  // hash of the payload, the actor, and a timestamp. See migration
+  // 0079_schema_audit_log.sql for rationale (defense-in-depth against
+  // infrastructure compromise + customer-verifiable audit trail).
+  try {
+    const { recordSchemaAudit } = await import("../lib/schema-audit");
+    const auditRow = await env.DB.prepare(
+      "SELECT schema_type, json_ld FROM schema_injections WHERE id = ?"
+    ).bind(id).first<{ schema_type: string; json_ld: string }>();
+    if (auditRow) {
+      await recordSchemaAudit({
+        env,
+        actorUserId: 2, // TODO: thread User through inject handlers
+        actorEmail: "lance@hi.neverranked.com",
+        request,
+        clientSlug: slug,
+        schemaInjectionId: id,
+        schemaType: auditRow.schema_type,
+        action: "approve",
+        jsonLd: auditRow.json_ld,
+      });
+    }
+  } catch (e) {
+    console.error("audit log for approve failed:", e instanceof Error ? e.message : String(e));
+  }
+
   // Phase 2.5: record this decision in the unified Lance decision log
   // so the agent has the training data point. Captures the force flag
   // (was this an override of the quality gate?) and the slug for context.
@@ -763,7 +789,8 @@ export async function handleInjectApprove(
 export async function handleInjectPause(
   slug: string,
   id: number,
-  env: Env
+  env: Env,
+  request?: Request,
 ): Promise<Response> {
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
@@ -771,6 +798,29 @@ export async function handleInjectPause(
   )
     .bind(now, id, slug)
     .run();
+
+  try {
+    const { recordSchemaAudit } = await import("../lib/schema-audit");
+    const auditRow = await env.DB.prepare(
+      "SELECT schema_type, json_ld FROM schema_injections WHERE id = ?"
+    ).bind(id).first<{ schema_type: string; json_ld: string }>();
+    if (auditRow) {
+      await recordSchemaAudit({
+        env,
+        actorUserId: 2,
+        actorEmail: "lance@hi.neverranked.com",
+        request,
+        clientSlug: slug,
+        schemaInjectionId: id,
+        schemaType: auditRow.schema_type,
+        action: "pause",
+        jsonLd: auditRow.json_ld,
+      });
+    }
+  } catch (e) {
+    console.error("audit log for pause failed:", e instanceof Error ? e.message : String(e));
+  }
+
   return redirect(`/admin/inject/${slug}`);
 }
 
@@ -797,6 +847,12 @@ export async function handleInjectEdit(
     return redirect(`/admin/inject/${slug}`);
   }
 
+  // Capture prior payload BEFORE update so the audit log can record
+  // the hash of what is being replaced.
+  const priorRow = await env.DB.prepare(
+    "SELECT schema_type, json_ld FROM schema_injections WHERE id = ? AND client_slug = ?"
+  ).bind(id, slug).first<{ schema_type: string; json_ld: string }>();
+
   await env.DB.prepare(
     "UPDATE schema_injections SET json_ld = ?, target_pages = ?, updated_at = ? WHERE id = ? AND client_slug = ?"
   )
@@ -807,20 +863,67 @@ export async function handleInjectEdit(
   // a low-quality schema, so we want the badge to update immediately.
   await gradeAndPersist(env, id, jsonLd, { force: true });
 
+  try {
+    const { recordSchemaAudit } = await import("../lib/schema-audit");
+    if (priorRow) {
+      await recordSchemaAudit({
+        env,
+        actorUserId: 2,
+        actorEmail: "lance@hi.neverranked.com",
+        request,
+        clientSlug: slug,
+        schemaInjectionId: id,
+        schemaType: priorRow.schema_type,
+        action: "edit",
+        jsonLd,
+        priorJsonLd: priorRow.json_ld,
+      });
+    }
+  } catch (e) {
+    console.error("audit log for edit failed:", e instanceof Error ? e.message : String(e));
+  }
+
   return redirect(`/admin/inject/${slug}`);
 }
 
 export async function handleInjectDelete(
   slug: string,
   id: number,
-  env: Env
+  env: Env,
+  request?: Request,
 ): Promise<Response> {
+  // Capture details BEFORE archive so the audit log can record the
+  // payload that is being taken out of service.
+  const priorRow = await env.DB.prepare(
+    "SELECT schema_type, json_ld FROM schema_injections WHERE id = ? AND client_slug = ?"
+  ).bind(id, slug).first<{ schema_type: string; json_ld: string }>();
+
   const now = Math.floor(Date.now() / 1000);
   await env.DB.prepare(
     "UPDATE schema_injections SET status = 'archived', updated_at = ? WHERE id = ? AND client_slug = ?"
   )
     .bind(now, id, slug)
     .run();
+
+  try {
+    const { recordSchemaAudit } = await import("../lib/schema-audit");
+    if (priorRow) {
+      await recordSchemaAudit({
+        env,
+        actorUserId: 2,
+        actorEmail: "lance@hi.neverranked.com",
+        request,
+        clientSlug: slug,
+        schemaInjectionId: id,
+        schemaType: priorRow.schema_type,
+        action: "archive",
+        jsonLd: priorRow.json_ld,
+      });
+    }
+  } catch (e) {
+    console.error("audit log for archive failed:", e instanceof Error ? e.message : String(e));
+  }
+
   return redirect(`/admin/inject/${slug}`);
 }
 

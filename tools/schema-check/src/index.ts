@@ -368,6 +368,37 @@ body::before{
   padding:40px 0;
   animation:fadeUp .6s var(--ease) both;
 }
+/* directional band — shown above the gate before email capture */
+.grade-band-domain{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  margin-bottom:24px;
+}
+.grade-band-headline{
+  font-family:var(--serif);
+  font-size:42px;
+  color:var(--text);
+  line-height:1.2;
+  margin-bottom:16px;
+}
+.grade-band-headline strong{
+  color:var(--gold);
+  font-weight:400;
+}
+.grade-band-sub{
+  font-size:15px;
+  color:var(--text-mute);
+  max-width:480px;
+  margin:0 auto;
+  line-height:1.5;
+}
+@media (max-width:640px){
+  .grade-band-headline{font-size:32px}
+  .grade-band-sub{font-size:14px;padding:0 20px}
+}
 .grade-circle{
   display:inline-flex;
   align-items:center;justify-content:center;
@@ -1224,7 +1255,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
         <div id="cta-tier-audit" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">One-time audit</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$500</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$750</div>
           <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Full AEO teardown<br>90-day roadmap</div>
           <a href="https://app.neverranked.com/checkout/audit" id="cta-audit" class="btn btn-ghost-link" style="margin-top:8px;font-size:10px;display:inline-block">Get audit</a>
         </div>
@@ -1252,6 +1283,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
       <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
         <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See what the full dashboard looks like first</a>
+        <a href="https://neverranked.com/#pricing" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want monthly tracking without full citation infrastructure? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Pulse, $497/mo &rarr;</span></a>
         <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
       </div>
     </div>
@@ -1309,23 +1341,24 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   // runCheck replaced by runCheckFinal below
 
   function renderResults(data){
-    // Grade
+    // Aggressive-gate UX (rolled out 2026-05-13): above the gate the
+    // visitor sees ONLY a directional band ("top half" vs "bottom
+    // half"). The actual letter grade, the exact score, the insight
+    // line, and the full report are revealed AFTER email capture by
+    // revealGatedDetails(). The mild version (grade-letter + insight
+    // visible above gate) gave a 1% capture rate; this aggressive
+    // version targets 4-6% by trading some of the "free score" value
+    // for higher conversion. Reverts cleanly to the old behavior by
+    // restoring the old gradeSection.innerHTML block.
     var gradeClass = 'grade-'+data.grade.toLowerCase();
     // Show the exact URL scanned (host + path), not just the hostname. A
     // prospect scanning /products/foo vs the homepage can see why the score
     // differs when they check the same domain at two different URLs.
     var scannedDisplay = (data.url || data.domain || '')
       .replace(/^https?:\\/\\//i,'').replace(/^www\\./i,'').replace(/\\/$/,'');
-    gradeSection.innerHTML=
-      '<div class="grade-circle '+gradeClass+'">'+
-        '<span class="letter">'+data.grade+'</span>'+
-      '</div>'+
-      '<div class="aeo-score">AEO Readiness: <span>'+data.aeo_score+'</span>/100</div>'+
-      '<div class="grade-domain">'+escHtml(scannedDisplay)+'</div>';
-
-    // Grade-specific insight
-    var insight = document.getElementById('grade-insight');
     var score = data.aeo_score;
+
+    // Grade-specific insight (computed now, stored on data for revealGatedDetails)
     var insightText = '';
     if(score >= 80){
       insightText = 'Your site is in strong shape for AI search. The technical foundation is there. The question is whether you are <em>maintaining this lead</em> as competitors catch up -- and whether AI engines are actually <strong>citing you</strong> when it counts.';
@@ -1336,7 +1369,38 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     } else {
       insightText = 'AI engines cannot reliably parse your site. You are <em>invisible</em> to the fastest-growing search channel. The gap between you and AI-optimized competitors is widening every week.';
     }
-    insight.innerHTML = insightText;
+    // Build the full grade markup once; how it's rendered depends on
+    // gateLevel below.
+    var fullGradeHtml =
+      '<div class="grade-circle '+gradeClass+'">'+
+        '<span class="letter">'+data.grade+'</span>'+
+      '</div>'+
+      '<div class="aeo-score">AEO Readiness: <span>'+data.aeo_score+'</span>/100</div>'+
+      '<div class="grade-domain">'+escHtml(scannedDisplay)+'</div>';
+
+    var insight = document.getElementById('grade-insight');
+
+    if (gateLevel === 'aggressive') {
+      // AGGRESSIVE variant: directional band above the gate. Full grade
+      // and insight are stashed on the report data and swapped in by
+      // revealGatedDetails() after email capture.
+      data._fullGradeHtml = fullGradeHtml;
+      data._insightText = insightText;
+      var inTopHalf = score >= 50;
+      gradeSection.innerHTML =
+        '<div class="grade-band-domain">'+escHtml(scannedDisplay)+'</div>'+
+        '<div class="grade-band-headline">Your site is in the '+
+          '<strong>'+(inTopHalf ? 'top half' : 'bottom half')+'</strong>'+
+        '</div>'+
+        '<div class="grade-band-sub">of sites we have audited. Enter your email below to see your exact score, your grade, and the full breakdown.</div>';
+      if (insight) insight.innerHTML = '';
+    } else {
+      // MILD variant (original behavior): score + grade + insight all
+      // visible above the gate. The gate only hides the detailed report
+      // (schema coverage, technical signals, red flags, fixes).
+      gradeSection.innerHTML = fullGradeHtml;
+      if (insight) insight.innerHTML = insightText;
+    }
 
     // Schema coverage
     schemaGrid.innerHTML='';
@@ -1682,6 +1746,25 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     }
   })();
 
+  // Second A/B test (orthogonal to gate-COPY above): gate-LEVEL.
+  // mild       = old behavior. Score + grade + insight visible above gate.
+  // aggressive = directional band only above gate; score + grade + insight
+  //              swapped in after email capture.
+  // Hypothesis: aggressive lifts capture rate 2-4x at modest scan-volume
+  // cost. Decision after 7 days of data.
+  var GATE_LEVEL_KEY = 'nr_gate_level';
+  var gateLevel = (function(){
+    try {
+      var v = localStorage.getItem(GATE_LEVEL_KEY);
+      if (v === 'mild' || v === 'aggressive') return v;
+      var pick = Math.random() < 0.5 ? 'mild' : 'aggressive';
+      localStorage.setItem(GATE_LEVEL_KEY, pick);
+      return pick;
+    } catch (e) {
+      return 'mild'; // safest default — show the score
+    }
+  })();
+
   // Variant copy table. Two distinct angles being tested:
   //   A: "show me every fix" — emphasizes COMPLETENESS (every gap, every fix)
   //   B: "send me the 90-day fix list" — emphasizes OUTCOME (going from
@@ -1689,16 +1772,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   // Each variant has title (with {count} placeholder), body, and button.
   var GATE_COPY = {
     A: {
-      title: 'more gaps below this fold',
-      body: 'The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.',
-      button: 'Show me every fix',
+      title: 'gaps holding back your AI search visibility',
+      body: 'Enter your email to see your exact AEO score, your letter grade, every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap.',
+      button: 'Show me my score and the fixes',
       buttonInProgress: 'Sending...'
     },
     B: {
-      title: "gaps. We will fix them.",
-      body: "Drop your email. We will send the full breakdown: every schema, every fix, priority order, and a 90-day roadmap to move your score toward A.",
-      button: "Send me the 90-day fix list",
-      buttonInProgress: "Sending..."
+      title: 'gaps. We will fix them.',
+      body: 'Drop your email. We will show you your exact score, your grade, and the full breakdown: every schema, every fix, priority order, and a 90-day roadmap to move your score toward A.',
+      button: 'Send me my score and the 90-day fix list',
+      buttonInProgress: 'Sending...'
     }
   };
 
@@ -1719,6 +1802,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
           variant: gateVariant,
+          gate_level: gateLevel,
           domain: reportData ? reportData.domain : null,
           score: reportData ? reportData.aeo_score : null
         })
@@ -1729,6 +1813,15 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   function revealGatedDetails(){
     if(gatedDetails) gatedDetails.style.display = 'block';
     if(emailGateEl) emailGateEl.style.display = 'none';
+    // Swap the directional band for the full grade reveal once email
+    // is captured. lastReportData was set when the scan completed and
+    // carries the cached HTML/insight produced by renderResults.
+    if(lastReportData && lastReportData._fullGradeHtml){
+      var gs = document.getElementById('grade-section');
+      if(gs) gs.innerHTML = lastReportData._fullGradeHtml;
+      var insightEl = document.getElementById('grade-insight');
+      if(insightEl) insightEl.innerHTML = lastReportData._insightText || '';
+    }
     // Bottom-of-page email form is redundant once they've unlocked — hide it
     var bottomCapture = document.getElementById('email-capture');
     if(bottomCapture) bottomCapture.style.display = 'none';
@@ -1799,7 +1892,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       var resp = await fetch('/api/send-report', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({email: email, report: lastReportData, variant: gateVariant})
+        body: JSON.stringify({email: email, report: lastReportData, variant: gateVariant, gate_level: gateLevel})
       });
       if(!resp.ok) throw new Error('Failed');
       setCapturedEmail(email);
@@ -2021,7 +2114,7 @@ function buildReportEmail(report: any): string {
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks your AEO score weekly, benchmarks you against competitors, and gives you a clear action plan.</div>
     <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
     <div style="margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $500</a>
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
       <span style="color:#555555;margin:0 8px">|</span>
       <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
     </div>
@@ -2249,7 +2342,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores. Not averages.</div>
     <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
     <div style="margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $500</a>
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $750</a>
     </div>
   </td></tr>
 
@@ -2333,7 +2426,7 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
       <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
     </div>
     <div style="text-align:center;margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $500</a>
+      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
       <span style="color:#555555;margin:0 8px">|</span>
       <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
     </div>
@@ -2714,16 +2807,18 @@ export default {
       if (isRateLimited(ip)) {
         return Response.json({ ok: false }, { status: 429, headers: corsHeaders });
       }
-      let imp: { variant?: string; domain?: string; score?: number };
+      let imp: { variant?: string; gate_level?: string; domain?: string; score?: number };
       try { imp = await request.json(); } catch {
         return Response.json({ ok: false }, { status: 400, headers: corsHeaders });
       }
       const variant = imp.variant === "A" || imp.variant === "B" ? imp.variant : "A";
+      const gateLevel = imp.gate_level === "mild" || imp.gate_level === "aggressive" ? imp.gate_level : "unknown";
       try {
         const key = `event:gate_impression:${variant}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`;
         await env.LEADS.put(key, JSON.stringify({
           type: "gate_impression",
           variant,
+          gate_level: gateLevel,
           domain: imp.domain || null,
           score: typeof imp.score === "number" ? imp.score : null,
           ts: new Date().toISOString(),
@@ -2798,7 +2893,7 @@ export default {
         return Response.json({ error: "Rate limit exceeded." }, { status: 429, headers: corsHeaders });
       }
 
-      let body: { email?: string; report?: any; variant?: string };
+      let body: { email?: string; report?: any; variant?: string; gate_level?: string };
       try {
         body = await request.json();
       } catch {
@@ -2808,6 +2903,7 @@ export default {
       const email = body.email?.trim().toLowerCase();
       const report = body.report;
       const variant = body.variant === "A" || body.variant === "B" ? body.variant : null;
+      const gateLevel = body.gate_level === "mild" || body.gate_level === "aggressive" ? body.gate_level : "unknown";
 
       // Server-side check mirrors client validation -- belt and suspenders.
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || !report) {
@@ -2835,7 +2931,8 @@ export default {
           type: "email_captured",
           domain: report.domain,
           score: report.aeo_score,
-          variant: variant,  // A/B test attribution (null on legacy or missing)
+          variant: variant,  // gate-COPY A/B (null on legacy or missing)
+          gate_level: gateLevel,  // gate-LEVEL A/B: mild | aggressive | unknown
           ts: new Date().toISOString(),
         }), { expirationTtl: 90 * 24 * 60 * 60 });
       } catch (e) {
@@ -3010,13 +3107,25 @@ export default {
         return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
       }
       const confirm = url.searchParams.get("confirm") === "yes";
+      const start = Math.max(0, parseInt(url.searchParams.get("start") || "0", 10) || 0);
+
+      // Cloudflare Workers cap at 1000 subrequests per invocation. Each
+      // KV.get() and KV.delete() counts as one. Process at most
+      // BATCH_KEYS keys per call (each requires a get; deletes only run
+      // for matches so are usually a smaller second pass). Returns a
+      // cursor so the caller can loop until done.
+      const BATCH_KEYS = 400;
 
       try {
         const allScanKeys = await listAllKvKeys(env.LEADS, "event:scan:");
+        const totalKeys = allScanKeys.length;
+        const end = Math.min(start + BATCH_KEYS, totalKeys);
+        const chunk = allScanKeys.slice(start, end);
+
         const polluted: { key: string; domain: string; ts: string; reason: string }[] = [];
         let scanned = 0;
 
-        for (const key of allScanKeys) {
+        for (const key of chunk) {
           const raw = await env.LEADS.get(key.name);
           if (!raw) continue;
           scanned++;
@@ -3048,13 +3157,23 @@ export default {
           }
         }
 
+        const moreRemaining = end < totalKeys;
+        const baseUrl = `${url.origin}/api/admin/cleanup-pipeline-scans?key=${secret}${confirm ? "&confirm=yes" : ""}&start=${end}`;
+
         return Response.json({
           mode: confirm ? "real-run" : "dry-run",
+          batch_start: start,
+          batch_end: end,
+          total_keys: totalKeys,
           scanned,
           identified: polluted.length,
           deleted,
           sample: polluted.slice(0, 5).map(p => ({ domain: p.domain, ts: p.ts, reason: p.reason })),
-          hint: confirm ? "Pollution removed." : "Add ?confirm=yes to actually delete these keys.",
+          more_remaining: moreRemaining,
+          next_call: moreRemaining ? baseUrl : null,
+          hint: confirm
+            ? (moreRemaining ? "Batch deleted. Call next_call to continue." : "All batches processed.")
+            : (moreRemaining ? "Dry-run batch done. Add ?confirm=yes to delete, then walk via next_call." : "Dry-run done. Add ?confirm=yes for real-run."),
         }, { headers: corsHeaders });
       } catch (e) {
         return Response.json({

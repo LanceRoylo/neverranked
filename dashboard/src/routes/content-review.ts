@@ -117,5 +117,18 @@ export async function handleContentReviewClear(draftId: number, user: User, env:
     `UPDATE scheduled_drafts SET status = 'drafted', updated_at = ? WHERE draft_id = ? AND status = 'planned'`,
   ).bind(now, draftId).run();
 
+  const { recordLanceDecision } = await import("../lib/decision-log");
+  await recordLanceDecision(env, user.id, {
+    artifact_type: "content_draft",
+    artifact_id: draftId,
+    decision_kind: "clear",
+    prior_state: "held",
+    new_state: "warn",
+    metadata: {
+      client_slug: draft.client_slug,
+      had_qa_flags: draft.qa_result_json !== null,
+    },
+  });
+
   return redirect("/admin/content-review");
 }

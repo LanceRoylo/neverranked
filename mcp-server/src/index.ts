@@ -28,9 +28,31 @@ import {
 import { aeoScan } from "./tools/aeo-scan.js";
 import { llmsTxtCheck } from "./tools/llms-txt-check.js";
 import { agentReadinessCheck } from "./tools/agent-readiness-check.js";
+import { PKG_NAME, PKG_VERSION } from "./lib/pkg-info.js";
 
-const SERVER_NAME = "@neverranked/mcp";
-const SERVER_VERSION = "0.1.0";
+const SERVER_NAME = PKG_NAME;
+const SERVER_VERSION = PKG_VERSION;
+
+// Vertical enum kept in sync with VERTICAL_BASELINES in
+// tools/agent-readiness-check.ts. If a vertical is added there but
+// not here, MCP clients that validate against this enum will reject
+// the call. If a value is here but not there, the call succeeds with
+// no vertical-specific comparison.
+const VERTICAL_ENUM = [
+  "hospitality",
+  "restaurants",
+  "financial-services",
+  "professional-services",
+  "healthcare",
+  "education",
+  "commerce",
+  "saas",
+  "media",
+  "real-estate",
+  "nonprofit",
+  "government",
+  "performing-arts",
+];
 
 const server = new Server(
   { name: SERVER_NAME, version: SERVER_VERSION },
@@ -85,7 +107,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
           },
           vertical: {
             type: "string",
-            enum: ["hospitality", "financial-services", "professional-services", "commerce"],
+            enum: VERTICAL_ENUM,
             description:
               "Optional vertical baseline to score against. If omitted, the tool reports actions present without comparing to a vertical-specific expected set.",
           },

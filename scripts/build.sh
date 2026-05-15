@@ -30,6 +30,7 @@ FILES=(
 
 # Public folders — each is rsync'd into dist/ preserving structure
 DIRS=(
+  .well-known
   about
   agencies
   blog
