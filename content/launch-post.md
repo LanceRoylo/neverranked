@@ -8,7 +8,7 @@
 
 ## The short version
 
-Before launching Never Ranked — an AI-native SEO and AEO agency — we ran our entire audit methodology against our own in-house product, Montaic, a real estate listing content platform we built and operate. The result was humbling.
+Before launching Never Ranked -- an AI-native SEO and AEO agency -- we ran our entire audit methodology against our own in-house product, Montaic, a real estate listing content platform we built and operate. The result was humbling.
 
 Montaic has 222 pages, a full programmatic SEO build, a comparison page directory, a marine vertical, and a thoughtful editorial blog. It should be everywhere.
 
@@ -16,7 +16,7 @@ Montaic has 222 pages, a full programmatic SEO build, a comparison page director
 
 Competitors like ListingAI are cited in 100% of the same queries. Write.Homes and Jasper AI each in 50%.
 
-This post walks through why that happened, what we found, and what we're fixing — on our own software first, before we ever pitch the same playbook to a paying client. Everything in this article is real. The audit is real. The findings are real. If you audit Montaic yourself today, you'll see the same gaps we did.
+This post walks through why that happened, what we found, and what we're fixing -- on our own software first, before we ever pitch the same playbook to a paying client. Everything in this article is real. The audit is real. The findings are real. If you audit Montaic yourself today, you'll see the same gaps we did.
 
 That's the point.
 
@@ -30,7 +30,7 @@ Never Ranked exists because classic SEO agencies are still optimizing for the bl
 
 We have a new playbook. Before we sell it, we have to prove it works.
 
-So we picked the hardest target we had: ourselves. Montaic is a real product with real users, real traffic, and real competitors. If our methodology could find real gaps on Montaic — and if fixing those gaps moved real citation share — we had a business. If not, we had an opinion.
+So we picked the hardest target we had: ourselves. Montaic is a real product with real users, real traffic, and real competitors. If our methodology could find real gaps on Montaic -- and if fixing those gaps moved real citation share -- we had a business. If not, we had an opinion.
 
 This is the first half of that experiment. The second half, where we implement the fixes and measure the result, comes later.
 
@@ -50,7 +50,7 @@ Montaic appeared in zero of them.
 
 ListingAI appeared in all eight. HAR.com in five. Write.Homes in four. Jasper AI in four. Even AgentListingAI, which is newer than Montaic, appeared in two.
 
-This is the finding that justifies the whole audit's existence. Classic SEO metrics made Montaic look fine — good page count, decent content, reasonable technical hygiene. The AEO reality was that the machines didn't know we existed.
+This is the finding that justifies the whole audit's existence. Classic SEO metrics made Montaic look fine -- good page count, decent content, reasonable technical hygiene. The AEO reality was that the machines didn't know we existed.
 
 ### Finding 2: Google thinks we're "Monti" / "Monte" / "Montana"
 
@@ -78,13 +78,13 @@ The tool pages and market pages do have canonicals. The template was clearly wri
 
 ### Finding 5: 95% of pages have no og:image
 
-Every Montaic page we sampled except the homepage had a blank OpenGraph image. This means every time anyone shares a Montaic URL on LinkedIn, iMessage, Twitter, Slack, or Facebook — the preview is blank.
+Every Montaic page we sampled except the homepage had a blank OpenGraph image. This means every time anyone shares a Montaic URL on LinkedIn, iMessage, Twitter, Slack, or Facebook -- the preview is blank.
 
 It also means AI engines that display thumbnails beside their citations (which is more and more of them) have nothing to show for Montaic. We're literally invisible next to competitors who have branded social previews.
 
 ### Finding 6: The word "voice" is lost to audio AI
 
-Montaic's core differentiator is that the AI writes in your writing style — your voice. We've used the word "voice" throughout the site, throughout the marketing, throughout the positioning.
+Montaic's core differentiator is that the AI writes in your writing style -- your voice. We've used the word "voice" throughout the site, throughout the marketing, throughout the positioning.
 
 The problem: when you search "voice AI real estate" or "AI that writes in your own voice," every top result is an audio AI tool. ElevenLabs. Voiceflow. Retell AI. NLPearl. Voice.ai. None of them compete with Montaic, but they own the keyword.
 
@@ -92,11 +92,11 @@ The AI engines have learned that "voice" means audio. Montaic can't win this key
 
 ### Finding 7: Our comparison pages aren't ranking for comparison queries
 
-We have eight dedicated comparison pages: Montaic vs ChatGPT, vs Jasper, vs ListingAI, vs Copy.ai, vs Writesonic, vs Canva. These pages should dominate their exact-match queries — there's literally nobody else writing "Montaic vs Jasper" content.
+We have eight dedicated comparison pages: Montaic vs ChatGPT, vs Jasper, vs ListingAI, vs Copy.ai, vs Writesonic, vs Canva. These pages should dominate their exact-match queries -- there's literally nobody else writing "Montaic vs Jasper" content.
 
 Only one of them ranks anywhere. The Montaic vs ChatGPT blog post ranks at position 5 for its exact query. The other seven comparison pages are ghost pages. They exist, they're in the sitemap, and they're invisible for the searches they were built to own.
 
-The reason: thin content (most are under 800 words), no AggregateRating schema, no Review schema, and no inbound links pointing at them. Comparison pages win by being the best comparison of the subject — not just by having the URL.
+The reason: thin content (most are under 800 words), no AggregateRating schema, no Review schema, and no inbound links pointing at them. Comparison pages win by being the best comparison of the subject -- not just by having the URL.
 
 ---
 
@@ -106,7 +106,7 @@ None of these findings are dramatic. None of them required special tools to disc
 
 We didn't run one.
 
-Here's the thing: when you're building a product, you're optimizing for a thousand small things at once. You're adding features. You're shipping bug fixes. You're writing new blog posts. You're pushing the roadmap. The foundational stuff — the title tags, the canonical structure, the schema coverage, the entity registration — gets deferred. "We'll get to that when we have time." Nobody ever has time.
+Here's the thing: when you're building a product, you're optimizing for a thousand small things at once. You're adding features. You're shipping bug fixes. You're writing new blog posts. You're pushing the roadmap. The foundational stuff -- the title tags, the canonical structure, the schema coverage, the entity registration -- gets deferred. "We'll get to that when we have time." Nobody ever has time.
 
 This is also how every builder's product ends up in the same state as Montaic: well-built at the product layer, invisible at the discovery layer. And the higher the product quality goes, the more frustrating the invisibility gets, because you know you have something worth recommending and the machines don't know it exists.
 
@@ -116,11 +116,11 @@ This is also how every builder's product ends up in the same state as Montaic: w
 
 We published the 90-day roadmap as part of the audit. Here's the short version.
 
-**Month 1 — Foundation.** Add Organization schema. Register in Wikidata, Crunchbase, LinkedIn Company, G2, Capterra, Product Hunt. Fix the canonicals. Rewrite the pricing page title. Ship og:image generation site-wide. Add HowTo schema to tool pages. Add BreadcrumbList schema site-wide.
+**Month 1 -- Foundation.** Add Organization schema. Register in Wikidata, Crunchbase, LinkedIn Company, G2, Capterra, Product Hunt. Fix the canonicals. Rewrite the pricing page title. Ship og:image generation site-wide. Add HowTo schema to tool pages. Add BreadcrumbList schema site-wide.
 
-**Month 2 — Content citation hooks.** Expand the comparison pages from 700-word ghosts to 1,200-word real comparisons with Review schema. Publish a Fair Housing pillar article tied to the 2024 HUD guidance nobody else is writing about. Collect real reviews and add AggregateRating. Rewrite every page's "voice" language to "writing style."
+**Month 2 -- Content citation hooks.** Expand the comparison pages from 700-word ghosts to 1,200-word real comparisons with Review schema. Publish a Fair Housing pillar article tied to the 2024 HUD guidance nobody else is writing about. Collect real reviews and add AggregateRating. Rewrite every page's "voice" language to "writing style."
 
-**Month 3 — Authority plus measurement.** Set up continuous AI citation tracking via LLM Pulse so the before/after becomes real data. Publish three HowTo-schema informational pillars. Guest post on three real estate trade publications linking back to the pillar content.
+**Month 3 -- Authority plus measurement.** Set up continuous AI citation tracking via LLM Pulse so the before/after becomes real data. Publish three HowTo-schema informational pillars. Guest post on three real estate trade publications linking back to the pillar content.
 
 Every task traces back to a specific finding in the audit. Nothing here is invented. Nothing is marketing theater. It's just the work.
 
@@ -144,7 +144,7 @@ Any of these is a case study. We'll publish the follow-up with the real numbers 
 
 The honest truth: you probably have some version of the same problem. Not because you're doing anything wrong at the product level. Because the discovery layer moved while you weren't watching.
 
-Classic SEO hygiene — schema, canonicals, meta tags, breadcrumbs — is necessary but no longer sufficient. Citation share in the AI engines is the new category leadership metric, and the agencies still selling keyword rankings are optimizing for the wrong goal.
+Classic SEO hygiene -- schema, canonicals, meta tags, breadcrumbs -- is necessary but no longer sufficient. Citation share in the AI engines is the new category leadership metric, and the agencies still selling keyword rankings are optimizing for the wrong goal.
 
 If you want to see what your own citation share looks like today, the Montaic audit is open source in the Never Ranked repo. You can read our methodology, steal the queries we used, and run the same test against your own domain in about an hour.
 
@@ -160,7 +160,7 @@ Or, if you want someone to run it for you with a full deliverable and a 90-day r
 
 **Follow the before/after:** We'll publish the 60-day follow-up with real citation share numbers. Subscribe to updates at [neverranked.com](https://neverranked.com).
 
-**Montaic itself:** [montaic.com](https://montaic.com) — the real estate AI content platform we built, audited, and are about to fix in public.
+**Montaic itself:** [montaic.com](https://montaic.com) -- the real estate AI content platform we built, audited, and are about to fix in public.
 
 ---
 
@@ -181,4 +181,4 @@ Or, if you want someone to run it for you with a full deliverable and a 90-day r
 - [ ] Submit to Indie Hackers
 - [ ] Pitch the story to Inman, HousingWire, The Close, and Real Estate News Alliance
 
-The post is designed to be the lead magnet for the entire Never Ranked launch. It's long (~2,800 words) on purpose — short posts don't earn citations, long posts do. It's honest about the gaps on purpose — honesty earns trust, and trust earns inbound. And it's a cliffhanger (before, implementation, after) on purpose — the follow-up is the second act of the launch narrative.
+The post is designed to be the lead magnet for the entire Never Ranked launch. It's long (~2,800 words) on purpose -- short posts don't earn citations, long posts do. It's honest about the gaps on purpose -- honesty earns trust, and trust earns inbound. And it's a cliffhanger (before, implementation, after) on purpose -- the follow-up is the second act of the launch narrative.

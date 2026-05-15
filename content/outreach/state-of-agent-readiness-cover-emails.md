@@ -1,4 +1,4 @@
-# State of Agent Readiness — cover email templates
+# State of Agent Readiness -- cover email templates
 
 The seed report at `reports/state-of-agent-readiness/state-of-agent-readiness-2026-05.pdf` is a private outreach asset. Three send variants below depending on the recipient relationship.
 
@@ -6,11 +6,11 @@ The seed report at `reports/state-of-agent-readiness/state-of-agent-readiness-20
 
 ---
 
-## Variant A — For prospects whose site is IN the panel
+## Variant A -- For prospects whose site is IN the panel
 
 Use this for recipients whose domain we scanned and have data on. Personalize the bracketed details.
 
-> Subject: [Site Name] in our agent-readiness panel — your score and what's missing
+> Subject: [Site Name] in our agent-readiness panel -- your score and what's missing
 >
 > [First name],
 >
@@ -28,7 +28,7 @@ Use this for recipients whose domain we scanned and have data on. Personalize th
 
 ---
 
-## Variant B — For prospects NOT in the panel
+## Variant B -- For prospects NOT in the panel
 
 Use this for fresh outreach where you want to lead with the forward-looking framing and offer to scan their site.
 
@@ -36,7 +36,7 @@ Use this for fresh outreach where you want to lead with the forward-looking fram
 >
 > [First name],
 >
-> Quick research piece I wanted to share. NeverRanked scanned 25 production sites across 10 verticals last week looking for Schema.org ActionTypes — the structured signals AI agents need to book, apply, buy, or contact on a user's behalf.
+> Quick research piece I wanted to share. NeverRanked scanned 25 production sites across 10 verticals last week looking for Schema.org ActionTypes -- the structured signals AI agents need to book, apply, buy, or contact on a user's behalf.
 >
 > Of 19 sites we successfully scanned, 1 had any ActionType on its root URL. That's 5.3%. Banks, hospitality chains, e-commerce, healthcare, education, government. Almost universal zero.
 >
@@ -50,17 +50,17 @@ Use this for fresh outreach where you want to lead with the forward-looking fram
 
 ---
 
-## Variant C — For existing clients
+## Variant C -- For existing clients
 
 Use this for clients on Pulse/Signal/Amplify retainer who should hear about agent-readiness because it's the next deployment layer after core schema.
 
-> Subject: Next layer after schema — agent-readiness data we just published
+> Subject: Next layer after schema -- agent-readiness data we just published
 >
 > [First name],
 >
 > Quick update on the layer of work that comes after the schema deployments in your roadmap.
 >
-> NeverRanked just finished a 25-site agent-readiness scan looking for Schema.org ActionTypes — the structured signals AI agents need to act on a user's behalf. Of 19 sites we successfully scanned across 10 verticals, 1 had any ActionType on root. 95% of enterprise sites are at zero today.
+> NeverRanked just finished a 25-site agent-readiness scan looking for Schema.org ActionTypes -- the structured signals AI agents need to act on a user's behalf. Of 19 sites we successfully scanned across 10 verticals, 1 had any ActionType on root. 95% of enterprise sites are at zero today.
 >
 > Your site's current agent-readiness score is in your audit at section 03b (if you have the May 2026 audit version or later). If you don't, I can re-run the scan against your current state and update you.
 >
@@ -86,7 +86,7 @@ Use this for clients on Pulse/Signal/Amplify retainer who should hear about agen
 
 In rough priority order based on existing relationship + vertical:
 
-1. **The 7 stale 2026-05-07 audit recipients** (BOH, CPB, FHB, MVNP, Ward Village, Drake, Emanate) — Variant A if you ran the scan on their site, Variant B if you haven't. This is the warmest re-engage path you have.
-2. **Shawn (Hamada Financial)** — Variant C since he already has the brief and is in financial-services.
-3. **Flash (Blue Note Hawaii)** — Variant B since Blue Note isn't in the current panel. Offers a reason to look at the brief again with a fresh angle.
-4. **Mark (ASB)** — already getting Wednesday's email with the v2 audit. Don't send this on top. After the May 18 meeting, possibly Variant C as a follow-up.
+1. **The 7 stale 2026-05-07 audit recipients** (BOH, CPB, FHB, MVNP, Ward Village, Drake, Emanate) -- Variant A if you ran the scan on their site, Variant B if you haven't. This is the warmest re-engage path you have.
+2. **Shawn (Hamada Financial)** -- Variant C since he already has the brief and is in financial-services.
+3. **Flash (Blue Note Hawaii)** -- Variant B since Blue Note isn't in the current panel. Offers a reason to look at the brief again with a fresh angle.
+4. **Mark (ASB)** -- already getting Wednesday's email with the v2 audit. Don't send this on top. After the May 18 meeting, possibly Variant C as a follow-up.

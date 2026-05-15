@@ -6,7 +6,7 @@ NeverRanked is an Answer Engine Optimization (AEO) service. We make websites cit
 
 ---
 
-## What we'd ship — two parallel paths
+## What we'd ship -- two parallel paths
 
 ### Direct: ASB as a customer
 
@@ -76,7 +76,7 @@ Our 3-month minimum exists to protect customers from quitting before the work ha
 
 ## Honest current state
 
-- NeverRanked has one paying retail customer (a Honolulu performing arts venue, anonymized — moved D-45 to A-95 in seven days, 39 schemas deployed).
+- NeverRanked has one paying retail customer (a Honolulu performing arts venue, anonymized -- moved D-45 to A-95 in seven days, 39 schemas deployed).
 - We have **zero agency partners** so far.
 - MVNP would be the first.
 - Being first is the offer: first pick of vertical territory, direct founder access, shaping the program before it opens up. We're not pretending to be at scale we're not at.

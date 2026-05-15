@@ -4,7 +4,7 @@ status: queued for 2026-05-14
 session_context: continued from 2026-05-13 actions-surface session
 ---
 
-# GSC verification — next action surface
+# GSC verification -- next action surface
 
 ## What this is
 
@@ -33,8 +33,8 @@ completes themselves. After GSC, the system can:
 
 ## What's already in the codebase
 
-- `dashboard/src/gsc.ts` — OAuth flow + data pull functions
-- `gsc_snapshots` table — schema is already there
+- `dashboard/src/gsc.ts` -- OAuth flow + data pull functions
+- `gsc_snapshots` table -- schema is already there
 - Weekly digest reads from this when present
 - Most existing clients are NOT verified (the connection flow exists
   but isn't surfaced cleanly)

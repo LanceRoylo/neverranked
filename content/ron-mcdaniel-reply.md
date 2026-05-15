@@ -1,17 +1,17 @@
-# Reply to Ron McDaniel — dashboard menu fix + team invites
+# Reply to Ron McDaniel -- dashboard menu fix + team invites
 
 **To:** ronmcdaniel@hawaiitheatre.com
 **Cc:** Greg
-**Subject:** Re: Welcome to NeverRanked, Lance — your dashboard is ready
+**Subject:** Re: Welcome to NeverRanked, Lance -- your dashboard is ready
 
 Ron,
 
-Thanks for the detailed report and the screenshot — that bug was real,
+Thanks for the detailed report and the screenshot -- that bug was real,
 and you helped me find it in about ten minutes.
 
 **The menu loop is fixed and adding teammates is now self-service.**
 Settings, Support, and Sign Out all click through normally now. I also
-shipped the missing teammate-invite UI tonight — the platform did not
+shipped the missing teammate-invite UI tonight -- the platform did not
 previously have one for direct retail customers like Hawaii Theatre,
 which is why you couldn't find it.
 
@@ -20,7 +20,7 @@ which is why you couldn't find it.
 1. Go to **Settings** (avatar menu, top right).
 2. Find the new **"Team members"** card and click **"Manage team →"**.
 3. Enter the email address of any teammate you want to add and submit.
-4. They'll get an email with a 7-day sign-in link — no password needed.
+4. They'll get an email with a 7-day sign-in link -- no password needed.
 
 Each teammate you add will see the same scans, roadmap, and reports
 you do.
@@ -36,7 +36,7 @@ would see it before handing you the keys. That's a process gap on my
 end, not a Cloudflare issue. I've changed how launches work going
 forward.
 
-## Optional — 15-minute call this week
+## Optional -- 15-minute call this week
 
 Happy to walk through the dashboard with you and your team if it's
 useful. Just send me a time that works (mornings or afternoons,

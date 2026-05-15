@@ -1,4 +1,4 @@
-# Customer Dashboard Audit — May 7, 2026
+# Customer Dashboard Audit -- May 7, 2026
 
 **Trigger:** Ron McDaniel (Hawaii Theatre Center, our only paying
 direct retail customer) reported that every avatar-menu item
@@ -10,7 +10,7 @@ what is still wrong. Ron deserves better than what we shipped.
 
 ---
 
-## Part 1 — The fix I just shipped
+## Part 1 -- The fix I just shipped
 
 ### What it does
 
@@ -27,8 +27,8 @@ Settings and Support. The redirect loop is gone.
 
 ### Is the fix complete?
 
-**No.** Ron's underlying goal — "set up some additional users
-on our dashboard" — is **not solvable on the current platform**
+**No.** Ron's underlying goal -- "set up some additional users
+on our dashboard" -- is **not solvable on the current platform**
 even after my fix. Here is what I found:
 
 - The teammate-invite UI exists only for agency admins, at
@@ -54,7 +54,7 @@ Either:
   same invite mechanism agency admins have, scoped to the
   client's slug
 - OR a clear note in the Settings page: "To invite teammates,
-  contact lance@neverranked.com — we'll send the invite for you"
+  contact lance@neverranked.com -- we'll send the invite for you"
 
 Right now there is neither. Ron will hit a soft dead-end.
 
@@ -73,7 +73,7 @@ Right now there is neither. Ron will hit a soft dead-end.
 
 ---
 
-## Part 2 — Why this happened
+## Part 2 -- Why this happened
 
 ### Root cause of the bug
 
@@ -99,7 +99,7 @@ would experience it. There is a "view as client" toggle for
 admins ([commit 672a071](https://github.com/lanceroylo/neverranked/commit/672a071))
 but I did not use it before going live. Even if I had, the flag
 keeps `user.role === "admin"`, which means the onboarding gate
-at line 828 would not have fired for me — only for an actual
+at line 828 would not have fired for me -- only for an actual
 client account.
 
 In other words: I literally cannot reproduce the bug as the
@@ -117,7 +117,7 @@ happy path looked right.
 
 ---
 
-## Part 3 — Audit of the rest of the dashboard
+## Part 3 -- Audit of the rest of the dashboard
 
 I went looking for other landmines like this. The list below is
 ordered by blast radius.
@@ -164,7 +164,7 @@ fix on affected accounts.**
 
 **5. The "Getting Started" avatar menu entry is a POST form, not
 a link.**
-Unusual UX — users expect menu items to navigate, not submit. The
+Unusual UX -- users expect menu items to navigate, not submit. The
 form posts to `/onboarding/checklist/reset` which clears the
 dismissed flag and redirects. If the POST fails (CSRF, expired
 session, network blip), the user sees nothing happen and has no
@@ -172,7 +172,7 @@ recovery path. Convert to a GET link to a route that does the
 same thing. **Effort: 30 minutes.**
 
 **6. 2FA redirect chain for admin users.**
-[dashboard/src/index.ts:708](dashboard/src/index.ts:708) —
+[dashboard/src/index.ts:708](dashboard/src/index.ts:708) --
 admins without TOTP enrolled get redirected to `/settings/2fa`
 on every request. If the enrollment page itself errors, an admin
 is locked out of their own dashboard. We do not have a "skip 2FA
@@ -193,7 +193,7 @@ functional.**
 intentionally stopped mutating `user.role` because it broke 211
 admin auth gates. The trade-off is that admins now have NO way
 to QA the actual client experience. We need a "use client
-account" mechanism — either impersonation (with audit log) or a
+account" mechanism -- either impersonation (with audit log) or a
 test client account we use for QA. **Effort: 1 day for impersonation
 with audit log; 1 hour for test client + login link.**
 
@@ -207,7 +207,7 @@ gate. **Effort: 3 days to refactor into a route registry.**
 
 **10. No structured logging on customer journeys.**
 We log page views and events to KV but there is no funnel view.
-"How many users land on Settings, click Invite, hit a 404" — we
+"How many users land on Settings, click Invite, hit a 404" -- we
 cannot answer this question. We need to. **Effort: 2 days for
 basic funnel instrumentation.**
 
@@ -245,7 +245,7 @@ Compounds churn.
 
 ---
 
-## Part 4 — What this means and what to do
+## Part 4 -- What this means and what to do
 
 ### The honest summary
 
@@ -262,7 +262,7 @@ hits it. We were lucky Ron emailed instead of churning quietly.
 
 ### Immediate (next 24 hours)
 
-1. ✅ Ship the menu-redirect fix (done — commit d2fddd6)
+1. ✅ Ship the menu-redirect fix (done -- commit d2fddd6)
 2. **Reply to Ron with the truth:** the menu is fixed, AND we
    do not yet have a teammate-invite UI for direct clients but
    I will add the additional users manually if he sends the
@@ -272,7 +272,7 @@ hits it. We were lucky Ron emailed instead of churning quietly.
    for >7 days. Hawaii Theatre is one of them.
 4. Add a "Team Members" placeholder section to the client
    Settings page with copy: "Need to add teammates? Email
-   lance@neverranked.com with their addresses — we will send the
+   lance@neverranked.com with their addresses -- we will send the
    invites within one business day."
 
 ### This week

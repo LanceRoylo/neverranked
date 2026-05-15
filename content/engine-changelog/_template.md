@@ -17,11 +17,11 @@ not generalize beyond what the data shows.
 
 **After (week of YYYY-MM-DD):** What we observed.
 
-**What it means for citation strategy.** Practical takeaway —
+**What it means for citation strategy.** Practical takeaway --
 should be testable against the dataset, not speculative.
 
 **Action for current customers.** What we are doing about it on
 their behalf.
 
-**Action for non-customers.** Honest framing — what they would
+**Action for non-customers.** Honest framing -- what they would
 need to do, with no scare tactics.

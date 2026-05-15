@@ -8,7 +8,7 @@ target_form: https://console.cloud.google.com/auth/branding?project=neverranked
 # Everything ready for the Google brand verification form
 
 When you open the form tomorrow, we go field by field. Below is the content
-for each field. Copy-paste only — no writing on the fly.
+for each field. Copy-paste only -- no writing on the fly.
 
 ---
 
@@ -23,7 +23,7 @@ NeverRanked
 ```
 lance@neverranked.com
 ```
-(If that bounces or you'd rather not expose it publicly, alternates: `support@neverranked.com`, `hello@neverranked.com` — whichever inbox you actually monitor.)
+(If that bounces or you'd rather not expose it publicly, alternates: `support@neverranked.com`, `hello@neverranked.com` -- whichever inbox you actually monitor.)
 
 ### App logo
 - File: `/Users/lanceroylo/Desktop/neverranked/linkedin/images/logo-300.png` (300×300px)
@@ -150,7 +150,7 @@ Narration suggestions:
 - "We pull aggregate search performance data weekly. Here it is rendered in the dashboard."
 - "If they want to revoke access, they can disconnect right here, and we delete the token."
 
-Upload to YouTube as **Unlisted** (not Private — Google needs to be able to view it). Paste the link into Google's verification form when it asks for "a demonstration of how your application uses the requested scopes."
+Upload to YouTube as **Unlisted** (not Private -- Google needs to be able to view it). Paste the link into Google's verification form when it asks for "a demonstration of how your application uses the requested scopes."
 
 ---
 
@@ -249,7 +249,7 @@ That last paragraph (the Google API Services User Data Policy disclosure) is req
 
 6. **Approval typically lands in 4-6 business days** for legitimate businesses
    with clean privacy policies. If they request additional security review,
-   we'll cross that bridge then — most apps in our profile don't need it.
+   we'll cross that bridge then -- most apps in our profile don't need it.
 
 7. **Once approved**: refresh tokens never expire on day 7 again. Lance does
    one final GSC OAuth re-auth after approval to issue a "real" production-grade

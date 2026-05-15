@@ -1,4 +1,4 @@
-# State of Agent Readiness — Seed Report
+# State of Agent Readiness -- Seed Report
 
 **Sample date:** 2026-05-12
 **Panel:** 25 production sites across 10 verticals (banking, hospitality, restaurants, e-commerce, healthcare, education, SaaS, government, performing arts, plus 5 known-positive controls)
@@ -38,7 +38,7 @@ This is not a detection failure. The scan caught Airbnb's SearchAction in nested
 
 ## What this means for the agent-commerce shift
 
-When an OpenAI Operator, Anthropic computer-use agent, or Perplexity agent tries to complete a task on one of these sites — book a hotel, apply for a loan, place an order, contact support — it has to interpret the form from raw HTML. This works some of the time, fails the rest. The fail mode varies:
+When an OpenAI Operator, Anthropic computer-use agent, or Perplexity agent tries to complete a task on one of these sites -- book a hotel, apply for a loan, place an order, contact support -- it has to interpret the form from raw HTML. This works some of the time, fails the rest. The fail mode varies:
 
 - **Correct page, wrong field:** agent fills the wrong input because field labels are ambiguous
 - **Correct form, validation rejection:** agent submits and gets a server-side error it cannot interpret

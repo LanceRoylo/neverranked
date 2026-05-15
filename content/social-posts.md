@@ -10,7 +10,7 @@ Platform targets: LinkedIn (primary), X/Twitter (secondary).
 
 ---
 
-### Post 1 — The Invisible Storefront
+### Post 1 -- The Invisible Storefront
 **Maps to:** /blog/check-if-business-shows-up-chatgpt/
 **Creative lever:** Specificity
 **Goal:** Drive traffic to check.neverranked.com
@@ -31,7 +31,7 @@ No email required. No sales pitch. Just the data.
 
 ---
 
-### Post 2 — The Competitor Question
+### Post 2 -- The Competitor Question
 **Maps to:** /blog/why-chatgpt-recommends-your-competitor/
 **Creative lever:** Contrast
 **Goal:** Reframe competitive anxiety into action
@@ -52,7 +52,7 @@ Full breakdown: neverranked.com/blog/why-chatgpt-recommends-your-competitor/
 
 ---
 
-### Post 3 — The Traffic Drop Truth
+### Post 3 -- The Traffic Drop Truth
 **Maps to:** /blog/website-traffic-dropped/
 **Creative lever:** Reframe
 **Goal:** Capture fear-driven audience, reposition as AEO opportunity
@@ -73,7 +73,7 @@ neverranked.com/blog/website-traffic-dropped/
 
 ---
 
-### Post 4 — SEO Is Not Dead
+### Post 4 -- SEO Is Not Dead
 **Maps to:** /blog/is-seo-dead/
 **Creative lever:** Reframe
 **Goal:** Capture high-volume search intent, build authority
@@ -92,7 +92,7 @@ neverranked.com/blog/is-seo-dead/
 
 ---
 
-### Post 5 — The AEO Score Explained
+### Post 5 -- The AEO Score Explained
 **Maps to:** /blog/aeo-score-what-it-means/
 **Creative lever:** Specificity
 **Goal:** Drive traffic to check tool, establish scoring framework
@@ -115,7 +115,7 @@ Check yours free: check.neverranked.com
 
 ---
 
-### Post 6 — The Schema Reality
+### Post 6 -- The Schema Reality
 **Maps to:** /blog/schema-markup-ai-search/
 **Creative lever:** Contrast
 **Goal:** Technical authority, attract SEO-adjacent audience
@@ -137,7 +137,7 @@ neverranked.com/blog/schema-markup-ai-search/
 
 ---
 
-### Post 7 — 90 Days
+### Post 7 -- 90 Days
 **Maps to:** /blog/how-long-does-aeo-take/
 **Creative lever:** Specificity + Confession
 **Goal:** Set realistic expectations, filter serious buyers
@@ -158,7 +158,7 @@ neverranked.com/blog/how-long-does-aeo-take/
 
 ---
 
-### Post 8 — The Dentist Who Disappeared
+### Post 8 -- The Dentist Who Disappeared
 **Maps to:** /blog/aeo-for-dentists/
 **Creative lever:** Specificity
 **Goal:** Vertical targeting, dental industry
@@ -179,7 +179,7 @@ neverranked.com/blog/aeo-for-dentists/
 
 ---
 
-### Post 9 — The Vertical Shift
+### Post 9 -- The Vertical Shift
 **Maps to:** Multiple vertical articles (lawyers, med spas, HVAC, real estate, financial advisors, restaurants, chiropractors)
 **Creative lever:** Specificity + Contrast
 **Goal:** Broad vertical awareness, funnel to blog
@@ -207,7 +207,7 @@ neverranked.com/blog/aeo-for-chiropractors/
 
 ---
 
-### Post 10 — What Is AEO (The Foundational Post)
+### Post 10 -- What Is AEO (The Foundational Post)
 **Maps to:** /blog/what-is-aeo/
 **Creative lever:** Reframe
 **Goal:** Define the category, establish thought leadership
@@ -232,7 +232,7 @@ Short-form versions. Each is standalone, does not require a thread.
 
 ---
 
-### Tweet 1 — The Check
+### Tweet 1 -- The Check
 **Maps to:** check.neverranked.com
 
 Open ChatGPT. Search your business category + your city.
@@ -243,7 +243,7 @@ Free AI visibility check: check.neverranked.com
 
 ---
 
-### Tweet 2 — The Reframe
+### Tweet 2 -- The Reframe
 
 SEO is not dead.
 
@@ -253,7 +253,7 @@ neverranked.com/blog/is-seo-dead/
 
 ---
 
-### Tweet 3 — The Stat
+### Tweet 3 -- The Stat
 
 Most businesses we audit score between 30 and 55 on a 0-100 AI visibility scale.
 
@@ -263,7 +263,7 @@ check.neverranked.com
 
 ---
 
-### Tweet 4 — The Contrast
+### Tweet 4 -- The Contrast
 
 A dental practice with 847 Google reviews and a 4.9-star rating.
 
@@ -277,7 +277,7 @@ neverranked.com/blog/aeo-for-dentists/
 
 ---
 
-### Tweet 5 — The Timeline
+### Tweet 5 -- The Timeline
 
 AEO takes 90 days.
 
@@ -291,7 +291,7 @@ neverranked.com/blog/how-long-does-aeo-take/
 
 ---
 
-### Tweet 6 — The Traffic Truth
+### Tweet 6 -- The Traffic Truth
 
 Your website traffic dropped this quarter.
 
@@ -303,7 +303,7 @@ neverranked.com/blog/website-traffic-dropped/
 
 ---
 
-### Tweet 7 — The Schema Gap
+### Tweet 7 -- The Schema Gap
 
 Most schema markup is optimized for Google rich snippets.
 
@@ -315,7 +315,7 @@ neverranked.com/blog/schema-markup-ai-search/
 
 ---
 
-### Tweet 8 — The Vertical Hook
+### Tweet 8 -- The Vertical Hook
 
 We audited AI visibility across 8 industries.
 
@@ -327,7 +327,7 @@ neverranked.com/blog/
 
 ---
 
-### Tweet 9 — The Competitor
+### Tweet 9 -- The Competitor
 
 Asked ChatGPT for a recommendation in your industry?
 
@@ -337,7 +337,7 @@ neverranked.com/blog/why-chatgpt-recommends-your-competitor/
 
 ---
 
-### Tweet 10 — The Definition
+### Tweet 10 -- The Definition
 
 AEO = Answer Engine Optimization.
 

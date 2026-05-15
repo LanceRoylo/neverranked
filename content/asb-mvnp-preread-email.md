@@ -1,8 +1,8 @@
-# Pre-read email — send 24h before meeting
+# Pre-read email -- send 24h before meeting
 
 **To:** Mark Cunningham <mark@asbhawaii.com>
 **Cc:** James Malins <james@mvnp.com>
-**Subject:** ASB audit — pre-read for tomorrow
+**Subject:** ASB audit -- pre-read for tomorrow
 
 Mark, James,
 

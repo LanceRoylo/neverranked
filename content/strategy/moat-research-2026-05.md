@@ -1,5 +1,5 @@
 ---
-title: "NeverRanked Moat Research — May 2026"
+title: "NeverRanked Moat Research -- May 2026"
 author: Lance + Claude
 date: 2026-05-07
 status: working draft
@@ -7,7 +7,7 @@ status: working draft
 
 # Where AEO Is, Where It's Going, and Where the Moats Are
 
-## State of AEO, May 2026 — honest read
+## State of AEO, May 2026 -- honest read
 
 The category exists but no clear leader. Profound and Athena have raised
 money. Otterly is positioning as the analytics layer. Diib is layering AEO
@@ -39,24 +39,24 @@ patterns. The ones that matter most for NR are starred.
 
 | Type | Description | NR has it? |
 |---|---|---|
-| **Data moat** ★ | Proprietary dataset competitors cannot replicate without doing the same ground-up work | Partial — citation_runs accumulating; not yet at scale |
-| **Network effect** | Each new user makes the product better for existing users | Not yet — possible via benchmarks + schema marketplace |
-| **Vertical depth** ★ | Per-vertical playbooks, prompts, schema, compliance | Active — Hawaii banking + real estate shipped |
-| **Switching cost** | Painful to leave (data, integrations, workflow) | Light — citation history + schema deployment lock-in only |
+| **Data moat** ★ | Proprietary dataset competitors cannot replicate without doing the same ground-up work | Partial -- citation_runs accumulating; not yet at scale |
+| **Network effect** | Each new user makes the product better for existing users | Not yet -- possible via benchmarks + schema marketplace |
+| **Vertical depth** ★ | Per-vertical playbooks, prompts, schema, compliance | Active -- Hawaii banking + real estate shipped |
+| **Switching cost** | Painful to leave (data, integrations, workflow) | Light -- citation history + schema deployment lock-in only |
 | **Brand / voice** ★ | The Clarity Principle, the way audits read | Codified, growing |
-| **Distribution** | Channels competitors don't have | Weak — needs work |
-| **Speed advantage** ★ | Faster to detect engine changes than in-house teams | Active — engine-changelog scaffold |
-| **Regulatory / compliance** ★ | Customers need certified vendors | Active — financial services schema shipped |
-| **Trust / accuracy** ★ | Defensible because being wrong costs us | Possible — hallucination defense layer |
-| **Scarcity / exclusivity** | Limited supply we control | Active — agency partner exclusivity clause |
-| **Ecosystem position** | Become the substrate others build on | Long-term — partner API, MCP layer |
+| **Distribution** | Channels competitors don't have | Weak -- needs work |
+| **Speed advantage** ★ | Faster to detect engine changes than in-house teams | Active -- engine-changelog scaffold |
+| **Regulatory / compliance** ★ | Customers need certified vendors | Active -- financial services schema shipped |
+| **Trust / accuracy** ★ | Defensible because being wrong costs us | Possible -- hallucination defense layer |
+| **Scarcity / exclusivity** | Limited supply we control | Active -- agency partner exclusivity clause |
+| **Ecosystem position** | Become the substrate others build on | Long-term -- partner API, MCP layer |
 
 The most defensible moats are the ones that compound over time AND are
 hard to copy quickly. Data moats and vertical depth dominate that
 quadrant. Speed and brand are second-tier but real. Distribution and
 ecosystem position are slow-burn but eventually structural.
 
-## Where AEO is heading — six observations grounded in current trends
+## Where AEO is heading -- six observations grounded in current trends
 
 ### 1. Agentic AI changes the citation surface fundamentally
 
@@ -103,12 +103,12 @@ engines mostly don't pass referrer info.
 Implication: Whoever builds even a partial solution to AI-driven
 attribution captures the budget that currently flows to SEO/SEM
 attribution platforms ($14B market). The half-solution is good
-enough — UTM-tagged "AI-friendly" link patterns + first-party
+enough -- UTM-tagged "AI-friendly" link patterns + first-party
 analytics correlation.
 
 ### 5. Vertical specialization beats horizontal scale
 
-The current AEO platforms are horizontal — same dashboard for a SaaS
+The current AEO platforms are horizontal -- same dashboard for a SaaS
 company and a hospital. The vertical winners (HighLevel for agencies,
 Mindbody for fitness, Toast for restaurants) all started horizontal
 and got destroyed by vertical-first competitors.
@@ -116,7 +116,7 @@ and got destroyed by vertical-first competitors.
 Implication: NR's Hawaii banking and Hawaii real estate moves are
 correct. Each new vertical playbook is a moat. Hawaii law firms, Hawaii
 medical practices, Hawaii hotels, mainland community banking, mainland
-boutique law — each is a structural compounding asset.
+boutique law -- each is a structural compounding asset.
 
 ### 6. The "schema marketplace" is the network-effect play nobody is building
 
@@ -130,7 +130,7 @@ notices.
 
 ## Moats ranked by impact × buildability for solo founder NR May 2026
 
-### Tier S — build NOW, big impact, solo-buildable
+### Tier S -- build NOW, big impact, solo-buildable
 
 **1. llms.txt deployment + tracking layer.** Build the canonical
 "is your llms.txt right" tool at neverranked.com/llms-check. Track
@@ -141,7 +141,7 @@ use after our schema scanner. **Effort: 1 week. Distribution moat
 + data moat + speed moat.**
 
 **2. Per-vertical leaderboard machine.** We built one Hawaii leaderboard.
-Build the publishing infrastructure that scales — Hawaii law firms,
+Build the publishing infrastructure that scales -- Hawaii law firms,
 Hawaii medical practices, Hawaii hotels, mainland community banking,
 mainland boutique hotels. Each leaderboard is half a day of audit
 work + half a day of publishing. **Effort: 1 day per leaderboard,
@@ -161,7 +161,7 @@ public hub at neverranked.com/state-of-aeo. The Tape is the
 apparatus; the State of AEO reports are its artifacts. Naming
 decision documented in `content/strategy/aeo-framework-naming.md`.
 
-### Tier A — build in next 90 days, big impact but more effort
+### Tier A -- build in next 90 days, big impact but more effort
 
 **4. Citation accuracy auditing.** When ChatGPT mentions a customer,
 is it accurate? Run continuous comparison of cited claims against the
@@ -182,7 +182,7 @@ Be the vendor that talks about agentic readiness before competitors
 do. **Effort: 1 week to research and build first templates. Speed +
 vertical depth + future-proofing.**
 
-### Tier B — build in next 6 months, structural longer-term moats
+### Tier B -- build in next 6 months, structural longer-term moats
 
 **7. Schema marketplace.** Open contribution catalog. NR validates.
 Customers contribute back templates from their deployments. The catalog
@@ -204,7 +204,7 @@ for agency operators. MVNP's team is the first cohort if they sign.
 Free. Builds talent and evangelist moat. **Effort: 3 days curriculum
 + 2 days landing page.**
 
-### Tier C — strategic / opportunistic, build when triggered
+### Tier C -- strategic / opportunistic, build when triggered
 
 **11. Open-source AEO scorer.** Release a tier of the methodology
 open-source under a non-commercial license. Other agencies use it,
@@ -220,7 +220,7 @@ liability rises. Gated on the trend. **Effort: 1 month.**
 in voice. Build a voice-citation tracker for Siri/Alexa/Google
 Assistant. Niche but defensible. **Effort: 2 weeks.**
 
-**14. AEO insurance / SLA.** "Citation share floor guarantee — if
+**14. AEO insurance / SLA.** "Citation share floor guarantee -- if
 your AEO score drops more than 10 points and we don't catch it
 within 7 days, we credit the month." Sales weapon. Forces excellence.
 Effort is contractual not engineering. **Effort: 2 days.**
@@ -248,9 +248,9 @@ Most of these moats compound only if shipped in sequence. Specifically:
    features.
 2. **Next 90 days:** Tier A. Builds the differentiation that makes
    NR feel categorically different, not just better.
-3. **6-12 months:** Tier B. Makes NR structural — the substrate
+3. **6-12 months:** Tier B. Makes NR structural -- the substrate
    others build on.
-4. **12-24 months:** Tier C. Plays the future — agentic AI, voice,
+4. **12-24 months:** Tier C. Plays the future -- agentic AI, voice,
    regulatory, canonical reference texts.
 
 If we execute Tier S in the next 30 days we have:
@@ -276,12 +276,12 @@ brand authority pages) should be prioritized by definition.
 
 Focus this week on three of Tier S:
 
-1. **llms.txt deployment + tracking** — biggest impact, biggest
+1. **llms.txt deployment + tracking** -- biggest impact, biggest
    surprise factor in the meeting (very few people know what
    llms.txt is yet)
-2. **State of AEO 2026 report — Hawaii edition first** — uses
+2. **State of AEO 2026 report -- Hawaii edition first** -- uses
    data we already have, becomes a meeting weapon
-3. **Vertical leaderboard machine** — formalizes the Hawaii banking
+3. **Vertical leaderboard machine** -- formalizes the Hawaii banking
    leaderboard pattern into something reproducible across verticals
 
 Skip Tier B and Tier C for now. Discipline matters more than ambition

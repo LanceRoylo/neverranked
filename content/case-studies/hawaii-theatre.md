@@ -31,24 +31,24 @@ By AI search standards, it was invisible.
 When we ran the initial AEO scan, the venue scored **45 out of
 100**. Grade D. The structural issues were textbook:
 
-- **No PerformingArtsTheater schema** — AI engines couldn't tell
+- **No PerformingArtsTheater schema** -- AI engines couldn't tell
   what kind of business they were looking at, just "another
   Hawaii website"
-- **No WebSite schema with SearchAction** — Google's sitelinks
+- **No WebSite schema with SearchAction** -- Google's sitelinks
   search box was inert; AI engines retrieving the homepage had
   no way to surface specific shows or pages
-- **No AggregateRating embedded** — the venue has a 4.6 average
+- **No AggregateRating embedded** -- the venue has a 4.6 average
   Google rating across hundreds of reviews, but the rating wasn't
   expressed in structured data anywhere on the site. Social proof
   AI engines look for to validate a recommendation was missing
-- **No FAQPage schema** — none of the questions a curious patron
+- **No FAQPage schema** -- none of the questions a curious patron
   might ask ("when did Hawaii Theatre open," "how many patrons
   per year," "is it ADA accessible") were answerable in the
   structured form AI retrieval models actually parse
-- **No BreadcrumbList anywhere** — the site's hierarchy was
+- **No BreadcrumbList anywhere** -- the site's hierarchy was
   invisible to engines that build entity graphs from breadcrumb
   trails
-- **No Event schema on /upcoming-events/** — every show, every
+- **No Event schema on /upcoming-events/** -- every show, every
   ticket link, every date, every venue confirmation was rendered
   in HTML AI engines couldn't reliably extract
 
@@ -71,22 +71,22 @@ the client's end, no CMS changes, no broken design):
 
 ### Day 1, Foundation schemas
 
-- **PerformingArtsTheater** schema deployed on every page —
+- **PerformingArtsTheater** schema deployed on every page --
   identifies the venue type, address, telephone, opening hours,
   founding year, capacity, accessibility features
-- **WebSite** schema with SearchAction — enables sitelinks
+- **WebSite** schema with SearchAction -- enables sitelinks
   search and lets AI engines retrieve specific page targets
   from the homepage
 - **AggregateRating** embedded in the PerformingArtsTheater
-  block — surfaces the 4.6 Google rating in structured form,
+  block -- surfaces the 4.6 Google rating in structured form,
   giving AI engines a social-proof hook to cite
 
 ### Day 2, Event schemas
 
 - **31 individual Event schemas** generated from the live
-  /upcoming-events/ page — title, date, ticket URL, image,
+  /upcoming-events/ page -- title, date, ticket URL, image,
   venue location, performer when known
-- **Daily event refresh cron** activated — every morning at 6am
+- **Daily event refresh cron** activated -- every morning at 6am
   UTC the system rescrapes the events page and rewrites the
   Event schema set. Shows that drop off (sold out, cancelled,
   past dates) deactivate automatically. New shows added by the
@@ -95,12 +95,12 @@ the client's end, no CMS changes, no broken design):
 
 ### Day 4, Page-level schemas
 
-- **FAQPage** generated from real homepage content — 8 grounded
+- **FAQPage** generated from real homepage content -- 8 grounded
   questions and answers covering founding year, mission, annual
   patron count, awards, member benefits, accessibility, gift
   cards, educational programs. Reviewed, approved by NeverRanked,
   deployed
-- **BreadcrumbList** schemas deployed across 24 site sections —
+- **BreadcrumbList** schemas deployed across 24 site sections --
   home, upcoming events, tickets, video-on-demand, the theatre
   history, board of directors, parking, donor information, every
   major page. AI engines now have a full hierarchical map of the
