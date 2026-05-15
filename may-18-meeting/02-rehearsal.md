@@ -13,15 +13,24 @@ nothing in the room is a surprise.
 
 ## What you walk in with
 
-- The audit deck PDF (`audits/asb-hawaii-2026-05/audit.pdf`)
-- The evidence appendix PDF (`content/meeting-evidence/asb-2026-05-18.pdf`)
-- The composite packet PDF (`content/meeting-evidence/asb-2026-05-18-packet.pdf`)
-- A laptop with the dashboard open at `/admin/citations/neverranked`
-  (live demo readiness)
-- A laptop with `check.neverranked.com` open in another tab
-  (free-tool live demo readiness)
-- The Hawaii Theatre case study URL as a follow-up resource
-  (`neverranked.com/case-studies/hawaii-theatre`)
+All physical/printed material lives in `may-18-meeting/`, the
+canonical folder. Copies elsewhere lag. This folder wins:
+
+- The audit deck PDF (`may-18-meeting/audit-deck.pdf`)
+- The evidence appendix PDF (`may-18-meeting/evidence-appendix.pdf`)
+- The composite packet PDF (`may-18-meeting/composite-packet.pdf`)
+- `08-mvnp-track.md` open on the laptop if the room pivots agency-side
+
+Live-demo tabs pre-loaded the night before (all public, no admin
+login. Never open an `/admin/` URL in the room. It hits a login
+wall):
+
+1. `neverranked.com/case-studies/hawaii-theatre/` (the proof)
+2. `check.neverranked.com` (the free live scanner)
+3. `neverranked.com/state-of-aeo/` (the methodology)
+4. `neverranked.com/pitch/asb-hawaii/` (the brief they saw)
+5. `app.neverranked.com/reddit-faq/hawaii-theatre/public` (live
+   current-product surface, public read-only view)
 
 ## What the room is doing
 
@@ -57,6 +66,23 @@ That sentence is the meeting. Everything else explains it or
 fixes it. If they nod, keep going. If they push, the audit deck
 has the citation matrix to back it up.
 
+### Moment 1.5: The split-score, if asked "where do we actually stand"
+
+A banker will run `check.neverranked.com` on `asbhawaii.com`
+during or after the meeting. It returns ~55, not 0. Get ahead
+of it. Concede the 55 before pivoting to the 0:
+
+> "On the composite AEO score you're around 55 out of 100.
+> That's middling, not failing. You've shipped basic schema,
+> the site is technically clean, you get some citation surface.
+> The gap is specific, not general. On the agent-readiness
+> layer, the Schema.org Action types AI agents use to complete
+> tasks, you're at zero. So is every other Hawaii bank. The
+> work closes that specific gap before the category catches up."
+
+The concession-then-pivot survives a phone check. "You're at
+zero" does not. Same framing as the pre-read and the gameplan.
+
 ### Moment 2: The local proof point
 
 Before they ask "have you fixed this for anyone real," lead with
@@ -80,7 +106,7 @@ measure that." If asked:
 
 > "We track seven AI engines. Six are commercial APIs. The
 > seventh is Gemma, Google's open-weight model. Closed APIs
-> can change behind the scenes; Gemma's weights are public,
+> can change behind the scenes. Gemma's weights are public,
 > so anyone, including your compliance team, can independently
 > reproduce our citation numbers by running the same prompts
 > against the same model. This is the only AEO platform doing
@@ -97,10 +123,16 @@ Frame as three parallel tracks:
    FAQPage, BreadcrumbList. The same five-category playbook that
    moved Hawaii Theatre. Deployed via a one-line snippet, no
    engineering work on ASB's site, no CMS changes.
-2. **Reddit reply ops.** Two well-placed replies per week, named
-   threads in the priority list, MVNP can execute under their
-   own brand or under a NR-managed pseudonym. Compounds over
-   90 days.
+2. **Reddit-aware FAQ deployment.** We pull the questions Hawaii
+   Reddit users actually ask in threads AI engines cite for the
+   category, generate voice-matched answers from the client's
+   business profile, run a fail-closed quality grader, and
+   auto-deploy a FAQPage schema to the client's own domain. No
+   Reddit account, no posting, no pseudonyms, nothing on a
+   third-party surface. Live on hawaiitheatre.com today. (The
+   old "reply ops / two posts a week" model is retired. If MVNP
+   read it in earlier material, redirect: we moved the work onto
+   us and kept the client in control of their own domain.)
 3. **News wire + Wikipedia entity work.** Press release
    distribution and Wikipedia entity entry maintenance are two
    of the highest-impact source-type actions. Wikipedia
@@ -125,22 +157,35 @@ If they push on what NR delivers vs what MVNP delivers, see
 
 ### Moment 6: The ask
 
-Two parallel asks. Don't try for both, but offer both:
+ASB already has the audit. Do NOT offer a free audit as the
+next step. That ask is retired and offering it makes you look
+like you forgot you already sent one. The asks are now the
+pilot. (Canonical: `01-GAMEPLAN.md` Asks A/B/C.)
 
-A. **For ASB**: "Let's run a free audit on `asbhawaii.com` with
-   six to twelve pages of vertical-specific findings, including
-   the deployment plan. Yours to keep. No charge. No pitch on
-   the call back. If you want NR to do the deployment, that's a
-   separate conversation."
+A. **Ask A (primary, for ASB)**: "The pilot is a 90-day
+   deployment of the five-schema package and the Reddit-aware
+   FAQ infrastructure on asbhawaii.com. Amplify tier,
+   $4,500/month, billed monthly, 90-day minimum, cancellable
+   after. Kickoff call in the next 14 days to confirm the schema
+   set and the brand-voice transfer. From kickoff to first
+   measurable citation movement is about 30 days. The deployment
+   plan is section 07 of the audit Mark already has."
 
-B. **For MVNP**: "Pilot partnership for the Hawaii market, first
-   agency to sign gets geography exclusivity. We onboard ASB
-   together as the first joint client. If it works for ASB, we
-   bring two or three more MVNP clients in over the next 90
-   days. If it doesn't, the audit work is yours either way."
+B. **Ask B (for MVNP)**: "Wholesale through MVNP is $1,800/month
+   per Amplify slot. MVNP retail margin is $2,700/month per slot
+   plus 3 to 8 hours of billable implementation at your rate.
+   First Hawaii agency to commit gets geography exclusivity in
+   the vertical. ASB becomes the joint pilot. If it works, two
+   or three more MVNP clients over 90 days. If not, the audit
+   work for those clients is still yours."
 
-Pick the ask that fits the room. If Mark is engaged, A. If
-MVNP is engaged, B. Both is the best outcome.
+C. **Ask C (fallback)**: "30-minute follow-up call within 14
+   days to scope the pilot. Two concrete slots in the
+   post-meeting email."
+
+Pick the ask that fits the room. Mark engaged → A. MVNP
+engaged → B. Room non-committal → C. Both A and B is the
+best outcome.
 
 ## Likely objections + crisp answers
 
@@ -169,7 +214,7 @@ MVNP is engaged, B. Both is the best outcome.
 > AI engines weren't retrieving from third-party surfaces the
 > way they do now. ChatGPT only added native web search in late
 > 2024. AEO as a practice is roughly six months old as a
-> measurable thing. ASB is not behind; ASB is at the moment
+> measurable thing. ASB is not behind. ASB is at the moment
 > when getting started matters most."
 
 ### Objection 4: "Isn't this just adding code to our website?"
@@ -187,9 +232,9 @@ MVNP is engaged, B. Both is the best outcome.
 > "MVNP owns the client relationship, the strategy conversation,
 > and the integration with the broader marketing program. NR
 > ships the schema deployment, the weekly citation tracking,
-> and the Reddit reply briefs. Think of NR as the AEO toolchain
+> and the auto-deployed Reddit-aware FAQ. Think of NR as the AEO toolchain
 > MVNP plugs into to deliver something MVNP can't currently
-> deliver. MVNP's hourly rate applies to the strategy work; the
+> deliver. MVNP's hourly rate applies to the strategy work. The
 > NR subscription covers the infrastructure layer. The pilot
 > agreement keeps roles clear."
 
@@ -200,31 +245,32 @@ MVNP is engaged, B. Both is the best outcome.
 > shows what that looks like (45 to 95 in ten days). Second, if
 > the lift doesn't materialize within 90 days, the audit work
 > is still yours. The schema deployment, the source-type briefs,
-> the Reddit reply ops list. You keep all of it. The downside
-> is bounded; the upside is the citation share we can measure."
+> the FAQ schema live on your own domain. You keep all of it. The
+> downside is bounded. The upside is the citation share we can measure."
 
 ### Objection 7: "Why are you talking to ASB and not BoH or First Hawaiian?"
 
 > "Two reasons. First, ASB is the bank our data identifies as
-> having the largest visible gap; the others already have entity
+> having the largest visible gap. The others already have entity
 > infrastructure in place. Second, we're a Hawaii-founded
 > company. We'd rather build the first community bank case
 > study with a local. Both First Hawaiian and Bank of Hawaii are
-> already getting cited; we don't need to fix what's working
+> already getting cited. We don't need to fix what's working
 > for them to make a point. We need to fix what's not working
 > for ASB."
 
 ### Objection 8: "We'd want to think about it. What's the timeline?"
 
-> "The audit is the lowest-friction next step. Free, 72-hour
-> turnaround, vertical-specific, yours to keep. The audit gives
-> us both the data to talk through. After the audit, if the
-> right move is the pilot, the kickoff is a 30-minute call to
-> set up the schema deployment snippet on asbhawaii.com. From
-> there, the first weekly citation run lands 7 days later. So
-> the path from this meeting to first measurable data point is
-> about 10 days. The path to first measurable citation lift is
-> about 30 days."
+> "You already have the audit, so the lowest-friction next step
+> is a 30-minute kickoff call to confirm the schema set and the
+> brand-voice transfer, then we set the deployment snippet on
+> asbhawaii.com. The first weekly citation run lands 7 days
+> after deployment. Path from a yes to first measurable data
+> point is about 10 days. Path to first measurable citation
+> lift is about 30 days. If you'd rather not commit to the
+> 90-day pilot yet, the fallback is a scoping call in the next
+> two weeks. No free-audit step. That work is already done and
+> in your hands."
 
 ### Objection 9 (from MVNP): "How does this affect our agency margin?"
 
@@ -233,7 +279,7 @@ MVNP is engaged, B. Both is the best outcome.
 > $1,200/month plus 3 to 8 hours of billable implementation
 > work per month at your hourly rate. For a 10-client book,
 > that's $16K to $32K per month in new recurring revenue on
-> top of existing retainers. No new headcount required; NR
+> top of existing retainers. No new headcount required. NR
 > handles the deployment toolchain, MVNP handles the strategy
 > and the relationship."
 
@@ -248,6 +294,12 @@ MVNP is engaged, B. Both is the best outcome.
 
 - ASB's AI citation share across tracked Hawaii community
   banking queries: **0%**.
+- ASB composite AEO score (check.neverranked.com): **~55/100**
+  (middling, not failing). Agent-readiness subscore: **0/100**
+  (zero Action schemas). Memorize both. "0% citations" and
+  "0 agent-readiness" are different metrics from the 55
+  composite. A banker will run the scanner; have all three
+  numbers straight.
 - First Hawaiian Bank cited in **all 8** of the tracked
   prompts. Bank of Hawaii cited in **most**.
 - The single most-cited third-party source across the entire
@@ -265,10 +317,12 @@ MVNP is engaged, B. Both is the best outcome.
 - Seven engines tracked: ChatGPT, Perplexity, Claude, Gemini,
   Microsoft Copilot, Google AI Overviews, **Gemma (open-weight)**.
 - Reddit landscape: r/Hawaii's "First Hawaiian Bank continues to
-  shock me" thread ranks at **priority 0.94** in the prioritized
-  reply-ops list. ASB absent from that thread. Cleanest
-  competitor-visible / client-absent gap in the Hawaii banking
-  dataset.
+  shock me" thread is a top-priority signal in the Hawaii
+  banking dataset. ASB absent from that thread while a
+  competitor is visible. This is the kind of thread the
+  Reddit-aware FAQ deployment mines for questions (not a place
+  we post. We extract the question and answer it on ASB's own
+  domain via FAQPage schema).
 
 ## Things to NOT say in the room
 
