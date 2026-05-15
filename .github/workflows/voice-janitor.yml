@@ -1,0 +1,125 @@
+name: Voice janitor
+
+# Daily cron that scans content/ for Hello Momentum voice violations.
+#
+# Two halves:
+#   1. SAFE AUTO-FIXES (em dashes, smart quotes, unicode ellipsis) are
+#      applied directly and committed to main via the neverranked-bot
+#      account. No human in the loop -- these are mechanical.
+#   2. JUDGMENT FLAGS (banned words, AI tells, semicolons in marketing
+#      copy) are NOT fixed automatically. If any are found, a GitHub
+#      Issue is opened (or updated) with the report. Lance reviews and
+#      decides per-flag whether to edit.
+#
+# Manual run: Actions tab -> Voice janitor -> Run workflow.
+
+on:
+  schedule:
+    # 13:00 UTC daily = 3am HST. Lands after the dashboard's overnight
+    # cron has produced any new content_drafts or strategy docs, but
+    # well before the working day so any auto-commits don't interleave
+    # with active editing.
+    - cron: '0 13 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  janitor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+
+      - name: Run voice janitor (apply safe auto-fixes)
+        id: janitor
+        run: |
+          set +e
+          node scripts/voice-janitor.mjs --fix --strict > /tmp/janitor.txt 2>&1
+          JANITOR_EXIT=$?
+          echo "exit_code=$JANITOR_EXIT" >> $GITHUB_OUTPUT
+          cat /tmp/janitor.txt
+          {
+            echo "report<<EOF"
+            cat /tmp/janitor.txt
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+          # Never fail the workflow -- exit code is informational only.
+          # We use it below to decide whether to open an issue.
+          exit 0
+
+      - name: Commit any auto-fixes
+        run: |
+          git config user.name 'neverranked-bot'
+          git config user.email 'bot@neverranked.com'
+          git add content/
+          if git diff --cached --quiet; then
+            echo "No auto-fixes to commit."
+          else
+            DATE=$(date -u +%Y-%m-%d)
+            git commit -m "Voice janitor: auto-fix em dashes, smart quotes, ellipses ($DATE)"
+            git push
+          fi
+
+      - name: Open issue if judgment flags exist
+        if: steps.janitor.outputs.exit_code != '0'
+        uses: actions/github-script@v7
+        env:
+          REPORT: ${{ steps.janitor.outputs.report }}
+        with:
+          script: |
+            const report = process.env.REPORT || '(no report captured)';
+            const today = new Date().toISOString().slice(0, 10);
+            const title = `Voice janitor: judgment flags detected ${today}`;
+
+            // Look for an existing open issue from today to avoid dupes.
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'voice-janitor',
+              per_page: 50,
+            });
+            const todayIssue = existing.data.find(i => i.title === title);
+
+            const body = [
+              "The daily voice janitor found judgment-call flags in `content/` that need Lance's eyes.",
+              "",
+              "Safe auto-fixes (em dashes, smart quotes, unicode ellipsis) have already been applied and committed.",
+              "The flags below are NOT auto-fixed because they require context judgment.",
+              "",
+              "```",
+              report,
+              "```",
+              "",
+              "**How to address:**",
+              "- Open each flagged file at the noted line",
+              "- Either rewrite the offending phrase OR if it's a meta-reference (the file is *describing* the banned word, not using it), no action needed",
+              "- Close this issue when the queue is clear",
+              "",
+              "**False positive?** The janitor's meta-reference filter may have missed a documentation context. Improve the heuristic in `scripts/voice-janitor.mjs` and re-run.",
+            ].join("\n");
+
+            if (todayIssue) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: todayIssue.number,
+                body: `Re-scanned at ${new Date().toISOString()}:\n\n\`\`\`\n${report}\n\`\`\``,
+              });
+              console.log(`Updated existing issue #${todayIssue.number}`);
+            } else {
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                labels: ['voice-janitor'],
+              });
+              console.log(`Opened issue #${created.data.number}`);
+            }
