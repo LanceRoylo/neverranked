@@ -11,6 +11,7 @@
  */
 
 import type { Env } from "../types";
+import { SQL_IS_PREFETCH } from "./prefetch";
 
 export type SignalTier =
   | "cold"          // 0-1 opens
@@ -22,7 +23,8 @@ export type SignalTier =
 export interface ProspectWarmth {
   prospect_id: number;
   tier: SignalTier;
-  open_count: number;
+  open_count: number;             // real human opens after pre-fetch filter
+  prefetch_count: number;         // opens filtered as proxy/bot (informational)
   first_open_at: number;
   last_open_at: number;
   ip_diversity: number;          // distinct IP hashes; 2+ suggests forwarded
@@ -35,45 +37,59 @@ export interface ProspectWarmth {
  * Score every prospect with >= 2 opens. Returns sorted by score desc.
  */
 export async function getProspectWarmth(env: Env): Promise<ProspectWarmth[]> {
+  // Aggregate real (non-pre-fetch) opens alongside the pre-fetch count.
+  // The HAVING clause runs on real_opens, not total opens, so a
+  // prospect with 8 Gmail-proxy hits and 0 human opens never qualifies.
+  // Pre-fetch count is carried through so the UI can show
+  // "5 real opens (12 filtered as proxy)" for transparency.
   const rows = (
     await env.DB.prepare(
       `SELECT prospect_id,
-              COUNT(*) AS opens,
-              MIN(opened_at) AS first_open,
-              MAX(opened_at) AS last_open,
-              COUNT(DISTINCT COALESCE(ip_hash, '?')) AS ip_count
+              SUM(CASE WHEN ${SQL_IS_PREFETCH} THEN 0 ELSE 1 END) AS real_opens,
+              SUM(CASE WHEN ${SQL_IS_PREFETCH} THEN 1 ELSE 0 END) AS prefetch_opens,
+              MIN(CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE opened_at END) AS first_real_open,
+              MAX(CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE opened_at END) AS last_real_open,
+              COUNT(DISTINCT CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE COALESCE(ip_hash, '?') END) AS ip_count
          FROM email_opens
         GROUP BY prospect_id
-       HAVING opens >= 2`,
-    ).all<{ prospect_id: number; opens: number; first_open: number; last_open: number; ip_count: number }>()
+       HAVING real_opens >= 2`,
+    ).all<{
+      prospect_id: number;
+      real_opens: number;
+      prefetch_opens: number;
+      first_real_open: number;
+      last_real_open: number;
+      ip_count: number;
+    }>()
   ).results;
 
   const now = Math.floor(Date.now() / 1000);
   const out: ProspectWarmth[] = [];
 
   for (const r of rows) {
-    // For tier classification we need to know how fast the second
-    // open landed after the first. One extra targeted query per
-    // prospect; rows are small.
+    // For tier classification we need the second REAL open. The
+    // prefetch filter is applied here too -- otherwise a Gmail proxy
+    // hit at T+0s would always make every prospect look "very_warm".
     const secondOpen = await env.DB.prepare(
       `SELECT opened_at FROM email_opens
-        WHERE prospect_id = ?
+        WHERE prospect_id = ? AND NOT ${SQL_IS_PREFETCH}
         ORDER BY opened_at ASC LIMIT 1 OFFSET 1`,
     ).bind(r.prospect_id).first<{ opened_at: number }>();
     const hoursBetweenFirstTwo = secondOpen
-      ? (secondOpen.opened_at - r.first_open) / 3600
+      ? (secondOpen.opened_at - r.first_real_open) / 3600
       : null;
-    const hoursSinceLast = (now - r.last_open) / 3600;
+    const hoursSinceLast = (now - r.last_real_open) / 3600;
 
     const tier = classifyTier({
-      opens: r.opens,
+      opens: r.real_opens,
       hours_since_last: hoursSinceLast,
       hours_between_first_two: hoursBetweenFirstTwo,
     });
 
     // Score: weighted combo so high-engagement, recent, fast prospects
-    // float to the top.
-    let score = r.opens * 8;
+    // float to the top. Uses real_opens only; pre-fetch count never
+    // contributes to score.
+    let score = r.real_opens * 8;
     if (hoursSinceLast < 24) score += 20;
     else if (hoursSinceLast < 72) score += 10;
     else if (hoursSinceLast < 168) score += 5;
@@ -85,9 +101,10 @@ export async function getProspectWarmth(env: Env): Promise<ProspectWarmth[]> {
     out.push({
       prospect_id: r.prospect_id,
       tier,
-      open_count: r.opens,
-      first_open_at: r.first_open,
-      last_open_at: r.last_open,
+      open_count: r.real_opens,
+      prefetch_count: r.prefetch_opens,
+      first_open_at: r.first_real_open,
+      last_open_at: r.last_real_open,
       ip_diversity: r.ip_count,
       hours_since_last: hoursSinceLast,
       hours_between_first_two: hoursBetweenFirstTwo,
