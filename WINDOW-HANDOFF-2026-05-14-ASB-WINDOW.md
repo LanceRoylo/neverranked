@@ -302,3 +302,7 @@ Whoever runs the generator-fix task: read this section first.
 
 Prepared by: ASB + MVNP meeting-prep window
 2026-05-14 night
+
+## ✅ DONE 2026-05-15 — Greg/HTC FAQ curation applied
+
+Greg's hand-curated 13-FAQ set is LIVE (schema_injections 358, status=approved, snippet serving; .js ~1hr cache). reddit_faq_deployments 7 faq_count=13. 6 deviations from Greg's literal text (Pickles->Forté authorized; #9 competitors removed per Greg; #6/#7 draft meta-notes stripped; #4 'a seat' + #13 Dolby per the Pickles obvious-typo precedent; #11/12/13 markdown->plain URL). All in clients/hawaii-theatre/2026-05-14-faq-expansion-ranked-questions.md. Reversible via snippet kill-switch. The URGENT cross-window item from WINDOW-HANDOFF-2026-05-14.md is CLOSED.

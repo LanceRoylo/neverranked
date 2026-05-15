@@ -151,3 +151,31 @@ Expected outcome window: 7-14 days for AI engines to recrawl, re-ground, and sta
 The fastest path is to reply to Lance's email with this doc marked up — checkboxes filled, drafts edited inline, programming questions answered in 1-2 sentences each. Lance ships the approved versions within 24 hours of getting your response. Anything you skip stays skipped; no further FAQ deployment happens without your explicit yes.
 
 If easier, just send Lance bullet-point answers ("yes ship Q1.1 as-is, edit Q3.1 to say X, skip Q5.1, the rental answer is Y") and he'll handle the formatting.
+
+---
+
+## RESOLVED 2026-05-15 — Greg curated, 13-FAQ set LIVE
+
+Greg Dunn (CEO) replied to Lance's 13-item email, hand-curating the
+set. Greg's reply is final authority; the overstatement filter is
+moot (client reviewed + chose). Applied to live schema_injections
+id=358 (status=approved, 13 questions, serving via snippet;
+.json endpoint immediate, .js ~1hr cache). reddit_faq_deployments
+id=7 faq_count=13.
+
+Final set: all 13 questions live. #1/#3/#5/#8/#10 green-lit as
+drafted. #2/#4/#6/#7 = drafted answer + Greg's appended text.
+#9 reworked HT-only (Greg: "remove mention of competing venues").
+#11/#12/#13 replaced verbatim with Greg's blocks.
+
+Deviations from Greg's literal text (all transparent, reversible
+via snippet kill-switch):
+1. #6 "Pickles on Forte" -> "Pickles at Forté" (Lance pre-authorized)
+2. #9 Blaisdell/Waikiki removed (Greg's explicit instruction)
+3. #6/#7 draft meta-notes stripped ("I'll verify..."/"Want me to
+   confirm...") — never answer content
+4. #4 "ticket for  seat" -> "ticket for a seat" (Pickles precedent:
+   obvious transcription slip)
+5. #13 "Dobly" -> "Dolby" (Pickles precedent: unambiguous brand typo)
+6. #11/#12/#13 Greg's markdown links -> plain URLs (JSON-LD is
+   plain text; markdown wouldn't render)
