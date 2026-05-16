@@ -694,6 +694,16 @@ export default {
       return handleCheckoutSuccess(request, env);
     }
 
+    // Outreach cold-email unsubscribe (no auth -- HMAC token).
+    // GET = footer link, POST = RFC 8058 one-click. Had NO handler
+    // before -> every outreach unsubscribe 404'd (CAN-SPAM +
+    // Gmail/Yahoo one-click deliverability). Token verified against
+    // the real OUTREACH_UNSUBSCRIBE_SECRET and the host's default.
+    if (path === "/unsubscribe" && (method === "GET" || method === "POST")) {
+      const { handleOutreachUnsubscribe } = await import("./routes/outreach-unsubscribe");
+      return handleOutreachUnsubscribe(request, env);
+    }
+
     // Digest unsubscribe (no auth -- token-based)
     if (path === "/digest/unsubscribe" && method === "GET") {
       const token = url.searchParams.get("token") || "";
