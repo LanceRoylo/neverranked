@@ -63,103 +63,121 @@ export async function handlePreviewPublic(slug: string, env: Env): Promise<Respo
 }
 
 function renderPreviewHtml(title: string, description: string, body: string): string {
-  // Visual shell matches the look-and-feel of the existing /pitch/<slug>/
-  // pages: dark background, serif headings, gold accent, generous spacing.
+  // Visual shell ported from the hand-crafted /pitch/<slug>/ pages
+  // (Playfair/DM Mono/Barlow, #121212 + gold, grain + vignette,
+  // numbered legal-section device, signed footer, print-to-PDF).
+  // `body` carries the generator's page-hero + numbered legal-sections
+  // + signed close. Marketing-site nav/hamburger intentionally omitted
+  // — a Preview is one focused brief, not the full site.
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#080808">
   <meta name="robots" content="noindex, nofollow">
   <title>${esc(title)}</title>
   <meta name="description" content="${esc(description)}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500&family=Barlow+Condensed:wght@300;400;500;600&display=swap">
   <style>
-    :root {
-      --bg: #1a1814;
-      --bg-lift: #221f1a;
-      --line: #2f2a23;
-      --text: #f5f1e6;
-      --text-mute: #b3a99a;
-      --text-faint: #7a7165;
-      --gold: #bfa04d;
+    :root{
+      --bg:#121212;--bg-lift:#1c1c1c;--bg-edge:#242424;
+      --gold:#e8c767;--gold-dim:#bfa04d;--gold-wash:rgba(232,199,103,.14);
+      --text:#fbf8ef;--text-soft:rgba(251,248,239,.98);--text-mute:rgba(251,248,239,.86);
+      --text-faint:rgba(251,248,239,.78);--line:rgba(251,248,239,.28);--line-strong:rgba(251,248,239,.44);
+      --serif:"Playfair Display",Georgia,serif;
+      --mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+      --label:"Barlow Condensed","Arial Narrow",sans-serif;
+      --gutter:clamp(20px,4vw,64px);--max:1080px;
     }
-    * { box-sizing: border-box; }
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: var(--text);
-      font-family: Georgia, "Source Serif Pro", serif;
-      font-size: 17px;
-      line-height: 1.65;
-      -webkit-font-smoothing: antialiased;
+    *,*::before,*::after{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:14px;line-height:1.65;font-weight:400;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden}
+    a{color:inherit;text-decoration:none}
+    ::selection{background:var(--gold);color:var(--bg)}
+    .grain{position:fixed;inset:-50%;width:200%;height:200%;pointer-events:none;z-index:100;opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");background-size:260px 260px;animation:grain 1.2s steps(6) infinite}
+    @keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-2%)}80%{transform:translate(3%,3%)}100%{transform:translate(0,0)}}
+    body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:99;background:radial-gradient(120% 80% at 50% 0%,transparent 40%,rgba(0,0,0,.45) 100%),radial-gradient(80% 60% at 50% 100%,transparent 45%,rgba(0,0,0,.4) 100%)}
+    .wrap{width:100%;max-width:var(--max);margin:0 auto;padding:0 var(--gutter);position:relative}
+    .nav{position:fixed;top:0;left:0;right:0;z-index:80;padding:22px var(--gutter);display:flex;align-items:center;mix-blend-mode:difference;color:#f0ece3}
+    .nav .mark{font-family:var(--serif);font-style:italic;font-size:20px;letter-spacing:-.01em}
+    .nav .mark sup{font-family:var(--label);font-style:normal;font-size:11px;letter-spacing:.2em;margin-left:4px;vertical-align:super;opacity:.78}
+    .page-hero{padding:180px 0 80px;border-bottom:1px solid var(--line)}
+    .page-hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(32px,5vw,56px);line-height:1.1;letter-spacing:-.02em;margin:0 0 16px}
+    .page-hero .updated{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--text-faint)}
+    .legal-section{padding:60px 0;border-bottom:1px solid var(--line)}
+    .section-label{display:flex;align-items:center;gap:14px;font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:11px;color:var(--text-mute);margin-bottom:32px}
+    .section-label .num{color:var(--gold);font-weight:500}
+    .section-label .rule{flex:1;height:1px;background:var(--line)}
+    .compare{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin:28px 0;border-radius:2px;overflow:hidden}
+    .compare .col{background:var(--bg);padding:24px 22px}
+    .compare .col:last-child{background:var(--gold-wash)}
+    .compare .col-h{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;color:var(--gold);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+    .compare ul{margin:0;padding-left:18px;max-width:none}
+    .compare li{margin-bottom:10px;font-size:13px;color:var(--text-mute)}
+    @media (max-width:640px){.compare{grid-template-columns:1fr}}
+    h2{font-family:var(--serif);font-weight:400;font-size:clamp(22px,3vw,32px);line-height:1.2;letter-spacing:-.01em;margin:0 0 18px;color:var(--text)}
+    h3{font-family:var(--serif);font-weight:500;font-size:18px;margin:24px 0 10px;color:var(--text)}
+    p{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px}
+    ul{color:var(--text-soft);max-width:62ch;line-height:1.7;margin:0 0 16px;padding-left:20px}
+    li{margin-bottom:8px}
+    p a,ul a,li a{color:var(--gold);text-decoration:underline;text-underline-offset:3px}
+    p a:hover,ul a:hover{opacity:.8}
+    strong,b{color:var(--text);font-weight:600}
+    em{color:var(--gold);font-style:italic}
+    pre{background:var(--bg-edge);color:var(--text-soft);border:1px solid var(--line);font-size:12px;line-height:1.5;padding:14px;margin:14px 0;white-space:pre-wrap;word-break:break-word;overflow:auto;font-family:var(--mono);border-radius:2px}
+    code{background:var(--bg-edge);padding:1px 5px;border-radius:2px;font-size:12px;font-family:var(--mono)}
+    .sign{font-family:var(--serif);font-style:italic;font-size:20px;color:var(--text);margin:6px 0 2px}
+    .legal-footer{border-top:1px solid var(--line);padding:40px 0;display:flex;justify-content:space-between;align-items:center;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--text-faint)}
+    .legal-footer a:hover{color:var(--gold)}
+    .print-btn{position:fixed;bottom:24px;right:24px;background:var(--gold);color:var(--bg);border:none;padding:12px 18px;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;cursor:pointer;border-radius:2px;box-shadow:0 6px 24px rgba(0,0,0,.4);z-index:50}
+    .print-btn:hover{background:var(--gold-dim)}
+    @page{size:letter;margin:.5in}
+    @media print{
+      html,body{background:#fff !important;color:#0a0a0a !important;font-size:10pt;line-height:1.5;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+      body{font-family:"Playfair Display",Georgia,serif !important}
+      body::before,.grain,.no-print,.print-btn,.nav{display:none !important}
+      .wrap{max-width:none !important;padding:0 !important;width:100% !important}
+      *{position:static !important;box-shadow:none !important}
+      .page-hero{padding:0 0 14pt !important;border-bottom:1px solid #999;margin-bottom:14pt}
+      .page-hero h1{font-size:20pt !important;line-height:1.15 !important;margin:0 0 8pt !important;color:#0a0a0a !important;font-family:"Playfair Display",Georgia,serif !important}
+      .page-hero h1 em{color:#9c7a1f !important;font-style:italic}
+      .page-hero .updated{color:#666 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.12em}
+      .legal-section{padding:12pt 0 !important;border-bottom:1px solid #ccc !important;break-inside:auto}
+      .legal-section:last-child{border-bottom:none !important}
+      .section-label{margin-bottom:8pt !important;color:#444 !important;font-family:Arial,sans-serif !important;font-size:8pt !important;letter-spacing:.16em}
+      .section-label .num{color:#9c7a1f !important;font-weight:600}
+      .section-label .rule{background:#ccc !important}
+      h2{font-size:13pt !important;color:#0a0a0a !important;margin:0 0 6pt !important;font-family:"Playfair Display",Georgia,serif !important}
+      h3{font-size:11pt !important;color:#0a0a0a !important;margin:0 0 4pt !important;font-family:"Playfair Display",Georgia,serif !important;font-weight:500}
+      p,ul,ol{color:#1a1a1a !important;max-width:none !important;margin:0 0 6pt !important;orphans:3;widows:3;font-family:Georgia,"Times New Roman",serif !important}
+      ul,ol{padding-left:18pt !important}
+      li{margin-bottom:3pt !important;color:#1a1a1a !important}
+      b,strong{color:#0a0a0a !important;font-weight:600}
+      p a,ul a,li a,a{color:#9c7a1f !important;text-decoration:underline}
+      .sign{color:#0a0a0a !important}
+      .compare{display:grid !important;grid-template-columns:1fr 1fr !important;gap:0 !important;border:1px solid #ccc !important;background:#fff !important;page-break-inside:avoid;break-inside:avoid;margin:8pt 0 !important}
+      .compare .col{background:#fff !important;padding:8pt !important;border-right:1px solid #ccc}
+      .compare .col:last-child{background:#faf7ec !important;border-right:none}
+      .compare .col-h{color:#9c7a1f !important;font-family:Arial,sans-serif !important;font-size:8pt !important;border-bottom:1px solid #ccc !important}
+      .compare li{color:#1a1a1a !important;font-size:8.5pt !important;font-family:Georgia,serif !important}
+      .legal-footer{display:none !important}
+      a[href^="http"]:after{content:" (" attr(href) ")";font-size:7pt;color:#666;font-family:"DM Mono",monospace;word-break:break-all}
+      a[href^="mailto:"]:after{content:""}
     }
-    .wrap {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 64px 32px 96px;
-    }
-    .brand {
-      font-family: Georgia, serif;
-      font-style: italic;
-      font-size: 18px;
-      color: var(--gold);
-      margin-bottom: 56px;
-      letter-spacing: 0.02em;
-    }
-    .brand .small {
-      font-style: normal;
-      font-size: 11px;
-      color: var(--text-faint);
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-      margin-left: 6px;
-      vertical-align: super;
-    }
-    h1, h2, h3 {
-      font-family: Georgia, serif;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.25;
-    }
-    h1 { font-size: 32px; margin: 0 0 24px; }
-    h2 { font-size: 22px; margin: 48px 0 16px; }
-    h3 { font-size: 17px; margin: 28px 0 12px; }
-    section { margin-bottom: 48px; }
-    section.hero { margin-bottom: 56px; }
-    section.proof {
-      background: var(--bg-lift);
-      border: 1px solid var(--line);
-      border-radius: 4px;
-      padding: 24px 28px;
-    }
-    section.next {
-      border-top: 1px solid var(--line);
-      padding-top: 32px;
-    }
-    a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
-    strong { color: var(--text); }
-    em { color: var(--gold); font-style: normal; font-weight: 600; }
-    .footer {
-      margin-top: 96px;
-      padding-top: 24px;
-      border-top: 1px dashed var(--line);
-      font-family: monospace;
-      font-size: 11px;
-      color: var(--text-faint);
-      letter-spacing: 0.06em;
-    }
-    .footer a { color: var(--text-faint); text-decoration: none; }
   </style>
 </head>
 <body>
+  <div class="grain"></div>
+  <nav class="nav"><span class="mark">Never Ranked<sup>app</sup></span></nav>
   <div class="wrap">
-    <div class="brand">Never Ranked <span class="small">app</span></div>
     ${body}
-    <div class="footer">
-      Private brief. Built for one recipient. <a href="https://neverranked.com">neverranked.com</a>
-    </div>
+    <div class="legal-footer"><span>Private brief. Built for one recipient.</span><a href="https://neverranked.com">neverranked.com</a></div>
   </div>
+  <button class="print-btn no-print" onclick="window.print()">Save as PDF</button>
 </body>
 </html>`;
 }

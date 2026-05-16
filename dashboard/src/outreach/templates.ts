@@ -28,7 +28,17 @@ import type { SignalTier, ProspectWarmth } from "./warmth";
  *     times") language, switched CTA to Preview URL, banned meeting
  *     asks. Anything drafted before this should be regenerated.
  */
-export const TEMPLATE_VERSION = 1779025800;
+// Epoch of the LAST real change to this template/voice file. Drafts
+// with created_at < this are "stale" (written under an older
+// template) and auto-retired on prospect-page load. MUST be a PAST
+// timestamp — the git commit time of the last meaningful edit here.
+// Bug 2026-05-16: this was 1779025800 (May 17, a FUTURE time), so
+// created_at < TEMPLATE_VERSION was always true and EVERY freshly
+// generated draft was silently auto-declined on the redirect back.
+// Set to the git commit epoch of the last templates.ts change
+// (3c3441e, 2026-05-14T01:32-10:00). Bump ONLY to a past epoch when
+// the voice rules below actually change.
+export const TEMPLATE_VERSION = 1778758324;
 
 const VOICE_SYSTEM = `You write short, direct cold-email follow-ups in Lance's voice for NeverRanked (an AI-citation tracking and content-shipping service).
 

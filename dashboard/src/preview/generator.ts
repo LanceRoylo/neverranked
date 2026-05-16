@@ -63,75 +63,86 @@ VOICE RULES (violation = unusable output):
 7. Direct, Hawaiian-operator voice. Lance writes plainly, with specifics.
 8. NEVER reference how many times the recipient opened any prior email. Don't reference engagement, behavior, or tracking signals of any kind.
 
-STRUCTURE (return as inner-HTML, no <html>/<head>/<body> wrappers):
+HONESTY RULES (violation = the grader will hold the page, and rightly):
+9. Every capability you state must be one NeverRanked already ships, present in the inputs Lance gave you. If a deliverable, schema type, or service is not in the inputs, do not claim it. Do not invent specifics to sound thorough.
+10. Never promise THIS recipient a specific score, citation count, ranking, or timeline as a guaranteed result. The Hawaii Theatre numbers describe Hawaii Theatre only. Never imply or state the same outcome will happen for this company or this vertical.
+11. If you cannot ground a statement in the provided inputs or the exact Hawaii Theatre facts, omit it. A shorter honest brief beats an impressive invented one. Richness comes from craft and specificity about what is real, never from added promises.
 
-Lance gives you concrete inputs: recipient_name, company_name, domain, headline_finding, what_we_would_do, and optional extra_context. USE THESE LITERALLY. Do not generalize. Do not paraphrase the finding into something softer. The personalization is the whole point.
+STRUCTURE (return as inner-HTML, no <html>/<head>/<body> wrappers).
 
-1. <section class="hero">
-   - <h1> that names the company directly and states the headline_finding as a strong claim. Example: "<h1>ASB is named in zero percent of AI engine citations across the Hawaii community banking query set.</h1>"
-   - One or two sentences below the h1 expanding the implication for THIS company specifically.
+Lance gives you concrete inputs: recipient_name, company_name, domain, headline_finding, what_we_would_do, and optional extra_context/audit_findings. USE THESE LITERALLY. Do not generalize. Do not paraphrase the finding into something softer. The personalization is the whole point.
 
-2. <section class="proof">
+The page is a hero followed by NUMBERED sections, exactly like Lance's hand-built briefs. Use this markup precisely:
+
+A. <section class="page-hero">
+   - <h1> = the headline_finding stated as a sharp, named claim about THIS company. Wrap the most pointed 2-4 words in <em>...</em> (renders gold italic). One line, no period needed.
+   - <div class="updated">Private brief · prepared for [recipient_name or company_name]</div>
+
+B. <section class="legal-section">
+     <div class="section-label"><span class="num">00</span><span>Why this brief exists</span><span class="rule"></span></div>
+   - 2 to 3 short paragraphs. Open with the recipient's first name on its own, then "Lance." (e.g. "Nicolas. Lance."). Name the company and domain. State plainly why this page exists instead of a call. No claims, only context. If extra_context is provided, weave one natural reference here so they know the conversation was remembered.
+
+C. <section class="legal-section">
+     <div class="section-label"><span class="num">01</span><span>SEO got you ranked. AI decides if you exist.</span><span class="rule"></span></div>
+   - The education section. Many recipients do not know what AEO is or how it differs from SEO. Teach them, in NeverRanked's plain voice, using the CREATIVE LEVER "the inversion": name the thing they trust (their SEO work / Google rank), then reveal it no longer controls whether they get found.
+   - Enter the wound, do not lecture: they did the SEO work in good faith and the ground moved under them. Acknowledge that, then explain the mechanism:
+     * Classic SEO ranks a list of blue links. A person scans the page and clicks. Being on page one is the game.
+     * AI answer engines (ChatGPT, Perplexity, Google AI Overviews, Claude) do not hand back a list. They synthesize ONE answer and cite a few sources. If you are not in those cited sources, you are not in the answer at all, no matter where you rank on Google.
+     * Where this is going (NeverRanked's stated view, framed as our point of view, NOT as a forecast with numbers): more questions get answered without anyone clicking a link, so being CITED becomes the thing that matters the way ranking used to.
+   - Emit exactly one comparison device so this reads as a briefing, not a paragraph:
+     <div class="compare"><div class="col"><div class="col-h">Classic SEO</div><ul><li>...</li><li>...</li><li>...</li></ul></div><div class="col"><div class="col-h">AI answer engines (AEO)</div><ul><li>...</li><li>...</li><li>...</li></ul></div></div>
+     Three short, parallel <li> pairs. Concrete and mechanical (how each works), never statistical.
+   - HARD: no invented percentages, market-share figures, dates, or "X% of searches" claims anywhere in this section. Mechanism and point of view only. Unsupported numbers will be held by the grader and they would be wrong.
+
+D. <section class="legal-section">
+     <div class="section-label"><span class="num">02</span><span>The finding</span><span class="rule"></span></div>
+   - <h2> restating the finding crisply. Then prose (and a <ul> only if audit_findings gives you concrete, real items) explaining the implication for THIS company, connecting back to the shift you just explained. Do NOT assert a numeric score for them. State the gap qualitatively unless a real number is in the inputs.
+
+E. <section class="legal-section">
+     <div class="section-label"><span class="num">03</span><span>What this looks like in practice</span><span class="rule"></span></div>
    - The Hawaii Theatre proof point. State it EXACTLY as these facts, do not rephrase the numbers or invent a different framing:
      * The client is "Hawaii Theatre Center" (use that exact name, never "Hawaii Theatre Company" or any variant).
      * Their NeverRanked AEO score went from 45 to 95 (out of 100) in ten days.
      * In the same week, on the first weekly citation log run, Perplexity named them in 14 of 19 tracked queries.
    - Do NOT say "zero citations," do NOT say "zero to forty-five," do NOT change "45 to 95" into any other pair of numbers. The score moved 45 -> 95. That is the only correct framing.
-   - Pair with one sentence connecting the case study to the recipient's category if relevant.
+   - One sentence may connect the case study to the recipient's category. It must NOT imply they will get the same result (see honesty rule 10).
 
-3. <section class="what-happens">
-   - Use what_we_would_do as the substance. Break it into 2-3 concrete bullet items inside a <ul> if the input has multiple actions. Each bullet starts with a verb. Be specific about the schema types, the cadence, the deliverable shape.
+F. <section class="legal-section">
+     <div class="section-label"><span class="num">04</span><span>What we would do</span><span class="rule"></span></div>
+   - Use what_we_would_do as the substance, as a verb-led <ul> (2 to 4 items). Each item specific about schema type, cadence, deliverable shape — but only items grounded in the inputs.
 
-4. <section class="next">
-   - One-line CTA inviting them to reply. Examples below. Vary the wording slightly per Preview so each feels written, not templated:
-   - 'If this is the shape of work you want, reply with a yes and we kick off in five business days.'
-   - 'Read once, decide if it fits. Reply when you are ready.'
-   - 'No call needed. Reply and we set up the deployment.'
+G. <section class="legal-section">
+     <div class="section-label"><span class="num">05</span><span>What to do next</span><span class="rule"></span></div>
+   - One short paragraph CTA inviting a reply (vary wording so it reads written, not templated). Then the signed close, exactly:
+     <p class="sign">Lance Roylo</p>
+     <p style="margin:0"><a href="mailto:lance@hi.neverranked.com">lance@hi.neverranked.com</a></p>
 
 NEVER include a meeting/call/chat ask anywhere on the page.
-
-If extra_context is provided, weave one reference to it naturally into the hero or what-happens section so the recipient knows you remembered the conversation.
 
 OUTPUT FORMAT (strict JSON):
 {
   "meta_title": "<page title, 30-70 chars, includes their company name if we have it>",
   "meta_description": "<one-line summary, 80-160 chars>",
-  "body_html": "<inner HTML with the four sections above, no DOCTYPE or wrappers>"
+  "body_html": "<the page-hero block A then the numbered legal-section blocks 00-05 exactly as specified, no DOCTYPE or wrappers>"
 }`;
 
 function depthForTier(tier: PreviewInput["signal_tier"]): string {
+  // Depth scales WITHIN the fixed A + 00-05 arc — never invent new
+  // shapes or drop the numbered device. The 01 education section +
+  // its compare device stays for every tier except fading (it is the
+  // differentiator most recipients need). Trim by tightening prose
+  // and shrinking the 04 list; keep 00 / 01 / 03 / 05 always.
   switch (tier) {
     case "hot":
-      return `DEPTH: HOT prospect. They've engaged repeatedly. The Preview should be the deepest version. Include:
-- A strong hero headline naming the company directly
-- The Hawaii Theatre proof point
-- A what-happens section with 3-4 specific items as a bulleted <ul>
-- A 'why now' moment that ties to their current AEO gap
-- A clear, low-pressure CTA pointing to reply
-Aim for ~5 sections, ~400-600 words total.`;
+      return `DEPTH: HOT prospect. Deepest version. Full arc: page-hero + 00, 01 (full education + compare device), 02, 03, 04 (3-4 grounded <ul> items), 05. ~550-750 words.`;
     case "very_warm":
-      return `DEPTH: VERY_WARM prospect. Active consideration. Standard depth:
-- Hero with the headline finding
-- Proof point
-- What we'd do (3 items)
-- CTA
-Aim for ~4 sections, ~300-450 words.`;
+      return `DEPTH: VERY_WARM. Active consideration. Full arc, leaner: page-hero + 00, 01 (education + compare device, tighter), 02, 03, 04 (3 items), 05. ~450-600 words.`;
     case "warm":
-      return `DEPTH: WARM prospect. Moderate engagement. Lighter version:
-- Hero finding
-- Brief proof
-- What's in scope (2-3 items, can be inline prose not a list)
-- CTA
-Aim for ~4 sections, ~250-350 words.`;
+      return `DEPTH: WARM. Moderate engagement. page-hero + 00, 01 (education + compare device, concise), 02 (prose only), 03, 04 (2-3 items), 05. ~380-520 words.`;
     case "fading":
-      return `DEPTH: FADING prospect. They went quiet. Lightest touch, no pressure:
-- Hero that names the gap without urgency
-- One-sentence proof point
-- One sentence about what we'd do
-- A 'this stays here whenever you're ready' close
-Aim for ~3 sections, ~150-250 words.`;
+      return `DEPTH: FADING. Went quiet, no pressure. page-hero + 00 (brief) + 01 (a SHORT 3-4 sentence version of the SEO->AEO shift, NO compare device) + 03 (one-sentence proof) + 05 (low-pressure "this stays here whenever you're ready"). Fold the finding into the hero; omit 02 and 04 as separate sections. Keep numbered labels on the sections you include. ~220-320 words.`;
     default:
-      return `DEPTH: Unknown tier. Default to moderate depth.`;
+      return `DEPTH: Unknown tier. Use the full arc at very_warm depth.`;
   }
 }
 
