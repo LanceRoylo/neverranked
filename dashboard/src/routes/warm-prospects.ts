@@ -77,8 +77,9 @@ export async function handleWarmProspectsIndex(user: User, env: Env): Promise<Re
   const rows = list.map((p) => `
     <tr style="border-bottom:1px solid var(--line)">
       <td style="padding:14px 12px;vertical-align:top">
-        <div style="font-family:var(--mono);font-size:13px;color:var(--text);margin-bottom:4px">Prospect #${p.prospect_id}</div>
-        <div style="color:var(--text-faint);font-size:11.5px">Cross-reference this ID in your outreach tool for name + email</div>
+        <div style="font-size:14px;color:var(--text);margin-bottom:3px">${esc(p.name || `Prospect #${p.prospect_id}`)}</div>
+        <div style="color:var(--text-soft);font-size:12px;margin-bottom:2px">${esc(p.company_name || "")}${p.company_name && p.market ? " · " : ""}${esc(p.market || "")}</div>
+        <div style="color:var(--text-faint);font-size:11.5px;font-family:var(--mono)">${esc(p.email || "")}${p.email ? " · " : ""}#${p.prospect_id}</div>
       </td>
       <td style="padding:14px 12px;vertical-align:top">
         <span style="display:inline-block;padding:3px 9px;background:rgba(191,160,77,0.15);color:${TIER_COLORS[p.tier]};font-family:var(--mono);font-size:11px;font-weight:600;border-radius:10px;border:1px solid ${TIER_COLORS[p.tier]}">${TIER_LABELS[p.tier]}</span>
@@ -99,7 +100,7 @@ export async function handleWarmProspectsIndex(user: User, env: Env): Promise<Re
         Outreach prospects ranked by signal strength. Multiple opens, fast re-engagement, and forwarding behavior all lift the score. Click any row to draft a voice-clean follow-up email gated to the right tier.
       </p>
       <p style="color:var(--text-faint);margin-top:8px;line-height:1.6;font-size:12px">
-        Names and emails live in your local outreach tool's SQLite, not in D1. Use prospect IDs to cross-reference.
+        Two steps per lead: <strong>Build Preview</strong> first (the personalized brief page at a private URL the lead clicks), then <strong>Build Draft</strong> (the follow-up email that links to that Preview URL). Build Preview before Build Draft so the email has a URL to point at.
       </p>
     </div>
 
@@ -200,8 +201,10 @@ export async function handleWarmProspectDetail(
     <div style="${cardStyle}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:14px">
         <div>
-          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">Prospect #${prospect_id}</div>
-          <h2 style="margin:0;font-size:18px;color:var(--text)">${TIER_LABELS[warmth.tier]} · ${warmth.open_count} opens · score ${warmth.score}</h2>
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-faint);margin-bottom:6px">${esc(warmth.company_name || `Prospect #${prospect_id}`)} · #${prospect_id}</div>
+          <h2 style="margin:0 0 4px;font-size:20px;color:var(--text)">${esc(warmth.name || `Prospect #${prospect_id}`)}</h2>
+          <div style="color:var(--text-soft);font-size:13px;font-family:var(--mono)">${esc(warmth.email || "no email on file")}${warmth.market ? " · " + esc(warmth.market) : ""}</div>
+          <div style="color:var(--text-faint);font-size:13px;margin-top:4px">${TIER_LABELS[warmth.tier]} · ${warmth.open_count} opens · score ${warmth.score}</div>
         </div>
         <span style="display:inline-block;padding:5px 12px;background:rgba(191,160,77,0.15);color:${TIER_COLORS[warmth.tier]};font-family:var(--mono);font-size:12px;font-weight:600;border-radius:12px;border:1px solid ${TIER_COLORS[warmth.tier]}">${TIER_LABELS[warmth.tier]}</span>
       </div>
@@ -268,10 +271,10 @@ export async function handleWarmProspectDetail(
          </div>
        </div>`
     : `<div style="${cardStyle}">
-         <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">No draft yet</div>
-         <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Generate a voice-clean follow-up for this prospect's current signal tier. Uses Claude. ~10 to 20 seconds.</p>
+         <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:14px">Step 2 · The email · No draft yet</div>
+         <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px"><strong>This builds the follow-up EMAIL</strong> — voice-clean, scaled to this prospect's signal tier, with the Preview URL linked inside it. Build the Preview first (step 1) so the email has a URL to point at. Uses Claude, ~10 to 20 seconds.</p>
          <form method="POST" action="/admin/warm-prospects/${prospect_id}/draft" style="margin:0">
-           <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Draft follow-up</button>
+           <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Draft (the email)</button>
          </form>
        </div>`;
 
@@ -307,10 +310,10 @@ export async function handleWarmProspectDetail(
     } else {
       previewCard = `
         <div style="${cardStyle}">
-          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Preview not built yet</div>
-          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px">Click Build Preview and the system handles everything: looks up prospect intel from the sync, runs a lightweight scan on their domain, generates a personalized brief with depth scaled to the signal tier. Hot prospects get the deepest version. ~10 to 20 seconds, then edit before publishing.</p>
+          <div style="font-family:var(--label);font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold);margin-bottom:10px">Step 1 · The URL · Preview not built yet</div>
+          <p style="color:var(--text-mute);font-size:14px;line-height:1.6;margin:0 0 14px"><strong>This builds the personalized brief PAGE</strong> at a private URL (app.neverranked.com/preview/&lt;slug&gt;) — the link the lead clicks. The system looks up prospect intel, runs a lightweight scan on their domain, and writes a brief with depth scaled to the signal tier (hot gets the deepest). ~10 to 20 seconds, then edit before publishing. <strong>Do this before Build Draft</strong> — the email links to this URL.</p>
           <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/build" style="margin:0">
-            <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Preview</button>
+            <button type="submit" style="padding:10px 22px;background:var(--gold);color:#1a1814;border:0;font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Build Preview (the URL)</button>
           </form>
         </div>
       `;

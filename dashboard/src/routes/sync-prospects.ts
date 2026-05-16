@@ -127,12 +127,33 @@ export interface ProspectMetadata {
   last_synced_at: number;
 }
 
+// REPOINTED 2026-05-16 (Workers cutover): the narrow outreach_prospects
+// table was fed by the now-retired laptop via /api/admin/sync-prospects
+// and is no longer updated. The full prospect data lives in
+// outreach_prospects_master (migrated + delta-synced, 508 rows). Read
+// from there with a faithful column mapping so Build Preview / Build
+// Draft / the warm list all work post-cutover. domain is derived from
+// the email (master has no domain column); the old endpoint + narrow
+// table are intentionally left in place (blast-radius minimal).
 export async function getProspectMetadata(
   env: Env,
   prospect_id: number,
 ): Promise<ProspectMetadata | null> {
-  return await env.DB.prepare(
-    `SELECT prospect_id, email, name, company_name, domain, vertical, city, notes, last_synced_at
-       FROM outreach_prospects WHERE prospect_id = ?`,
+  const row = await env.DB.prepare(
+    `SELECT id              AS prospect_id,
+            email,
+            broker_name     AS name,
+            brokerage_name  AS company_name,
+            CASE
+              WHEN email LIKE '%@%'
+              THEN LOWER(SUBSTR(email, INSTR(email, '@') + 1))
+              ELSE NULL
+            END             AS domain,
+            vertical,
+            market          AS city,
+            notes,
+            CAST(strftime('%s', COALESCE(updated_at, CURRENT_TIMESTAMP)) AS INTEGER) AS last_synced_at
+       FROM outreach_prospects_master WHERE id = ?`,
   ).bind(prospect_id).first<ProspectMetadata>();
+  return row;
 }

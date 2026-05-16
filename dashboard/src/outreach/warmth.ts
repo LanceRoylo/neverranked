@@ -31,6 +31,13 @@ export interface ProspectWarmth {
   hours_since_last: number;
   hours_between_first_two: number | null;
   score: number;                 // numeric 0-100 for sort ordering
+  // Identity (joined from outreach_prospects_master post-cutover —
+  // the migrated table now holds this; the old narrow sync table is
+  // dead). Null only if the prospect row is somehow absent.
+  name: string | null;
+  company_name: string | null;
+  email: string | null;
+  market: string | null;
 }
 
 /**
@@ -44,14 +51,19 @@ export async function getProspectWarmth(env: Env): Promise<ProspectWarmth[]> {
   // "5 real opens (12 filtered as proxy)" for transparency.
   const rows = (
     await env.DB.prepare(
-      `SELECT prospect_id,
+      `SELECT o.prospect_id,
               SUM(CASE WHEN ${SQL_IS_PREFETCH} THEN 0 ELSE 1 END) AS real_opens,
               SUM(CASE WHEN ${SQL_IS_PREFETCH} THEN 1 ELSE 0 END) AS prefetch_opens,
               MIN(CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE opened_at END) AS first_real_open,
               MAX(CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE opened_at END) AS last_real_open,
-              COUNT(DISTINCT CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE COALESCE(ip_hash, '?') END) AS ip_count
-         FROM email_opens
-        GROUP BY prospect_id
+              COUNT(DISTINCT CASE WHEN ${SQL_IS_PREFETCH} THEN NULL ELSE COALESCE(ip_hash, '?') END) AS ip_count,
+              MAX(m.broker_name)    AS name,
+              MAX(m.brokerage_name) AS company_name,
+              MAX(m.email)          AS email,
+              MAX(m.market)         AS market
+         FROM email_opens o
+         LEFT JOIN outreach_prospects_master m ON m.id = o.prospect_id
+        GROUP BY o.prospect_id
        HAVING real_opens >= 2`,
     ).all<{
       prospect_id: number;
@@ -60,6 +72,10 @@ export async function getProspectWarmth(env: Env): Promise<ProspectWarmth[]> {
       first_real_open: number;
       last_real_open: number;
       ip_count: number;
+      name: string | null;
+      company_name: string | null;
+      email: string | null;
+      market: string | null;
     }>()
   ).results;
 
@@ -109,6 +125,10 @@ export async function getProspectWarmth(env: Env): Promise<ProspectWarmth[]> {
       hours_since_last: hoursSinceLast,
       hours_between_first_two: hoursBetweenFirstTwo,
       score,
+      name: r.name,
+      company_name: r.company_name,
+      email: r.email,
+      market: r.market,
     });
   }
 
