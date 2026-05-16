@@ -3532,6 +3532,18 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
       console.log(`[cron] daily_tasks failed: ${e instanceof Error ? e.message : e}`);
     }));
 
+    // Phase 2: auto-build hot/warm Previews + digest to Lance.
+    // No-op while config.phase2_autopreview_enabled is false
+    // (ships inert). Build then digest, same cron run.
+    ctx.waitUntil(withCronLogging(env, "phase2_autopreview", async () => {
+      const { runAutoPreviewBuild, sendPhase2Digest } = await import("./phase2-autopreview");
+      const r = await runAutoPreviewBuild(env);
+      console.log(`[cron] phase2_autopreview: ${JSON.stringify(r)}`);
+      await sendPhase2Digest(env);
+    }).catch((e) => {
+      console.log(`[cron] phase2_autopreview failed: ${e instanceof Error ? e.message : e}`);
+    }));
+
     // Weekly tasks: full domain scans + digest emails (Mondays only)
     const day = new Date().getUTCDay(); // 0=Sun, 1=Mon
     if (day === 1) {

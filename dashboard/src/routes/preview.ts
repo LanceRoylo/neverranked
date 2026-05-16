@@ -360,5 +360,17 @@ export async function handlePreviewPublishPost(
     await updatePreviewBody(env, preview.id, String(body_html));
   }
   await publishPreview(env, preview.id);
+
+  // Phase 2: for an auto-built Preview, approval (= publish) also
+  // enqueues the send the outreach Worker drains. Gated: no-op
+  // while config.phase2_autopreview_enabled is false, and only for
+  // source='auto' (manual Previews are still sent by Lance by hand,
+  // unchanged). UNIQUE(prospect_id,preview_slug) makes it idempotent.
+  if ((preview as any).source === "auto" && (preview as any).prospect_id) {
+    const { phase2Enabled, enqueuePreviewSend } = await import("../phase2-autopreview");
+    if (await phase2Enabled(env)) {
+      await enqueuePreviewSend(env, (preview as any).prospect_id, slug);
+    }
+  }
   return redirect(`/admin/preview/${encodeURIComponent(slug)}/edit`);
 }
