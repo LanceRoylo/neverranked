@@ -13,6 +13,15 @@ DIST="$ROOT/dist"
 
 mkdir -p "$DIST"
 
+# Pitch ship-gate (advisory, non-fatal): a pitch/<slug>/ that is
+# untracked or dirty will NOT deploy from CI (CI builds the committed
+# tree). Warn loudly in the deploy log instead of silently 404'ing.
+# Never aborts the build — an unrelated homepage/blog deploy must not
+# be blocked by a half-finished pitch draft.
+if [ -x "$ROOT/scripts/check-pitch-deploys.sh" ]; then
+  "$ROOT/scripts/check-pitch-deploys.sh" || true
+fi
+
 # Root files that make up the public site
 FILES=(
   index.html
