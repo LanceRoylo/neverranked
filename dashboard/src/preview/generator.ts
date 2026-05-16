@@ -348,6 +348,24 @@ export async function updatePreviewBody(env: Env, id: number, body_html: string)
 }
 
 /**
+ * Archive every draft/published Preview for a prospect so a fresh
+ * build regenerates under the current template. status='archived'
+ * is already treated as gone by the public renderer, so the old
+ * /preview/<slug> stops resolving. Non-destructive (kept for audit).
+ * Replaces the manual "wrangler d1 UPDATE" hack.
+ */
+export async function archivePreviewsForProspect(
+  env: Env,
+  prospect_id: number,
+): Promise<number> {
+  const r = await env.DB.prepare(
+    `UPDATE previews SET status='archived', updated_at=unixepoch()
+       WHERE prospect_id = ? AND status IN ('draft','published')`,
+  ).bind(prospect_id).run();
+  return r.meta.changes ?? 0;
+}
+
+/**
  * Log a view. Bumps viewed_count, sets first/last_viewed_at.
  */
 /**

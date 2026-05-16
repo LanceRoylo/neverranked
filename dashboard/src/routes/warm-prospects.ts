@@ -304,6 +304,9 @@ export async function handleWarmProspectDetail(
             <button type="button" class="copy-btn" data-copy="${esc(previewUrl)}"
                     style="padding:9px 18px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit">Copy URL</button>
             <a href="/admin/preview/${esc(existingPreview.slug)}/edit" style="padding:9px 18px;background:var(--gold);color:#1a1814;text-decoration:none;font-weight:600;font-size:13px;border-radius:4px">Edit Preview</a>
+            <form method="POST" action="/admin/warm-prospects/${prospect_id}/preview/rebuild" style="margin:0" onsubmit="return confirm('Rebuild discards this draft and regenerates the Preview under the current template. Continue?')">
+              <button type="submit" style="padding:9px 18px;background:transparent;color:var(--text-mute);border:1px solid var(--line);font-weight:600;font-size:13px;border-radius:4px;cursor:pointer;font-family:inherit" title="Archive this Preview and generate a fresh one with the latest template + prompt">Rebuild</button>
+            </form>
           </div>
         </div>
       `;

@@ -239,6 +239,19 @@ export async function handlePreviewBuildForProspectPost(
   return redirect(`/admin/preview/${encodeURIComponent(result.slug)}/edit`);
 }
 
+// Rebuild: archive the stale Preview, then run the normal build path
+// (its short-circuit no longer fires because nothing draft/published
+// remains). Used when the template/prompt improved. Replaces the
+// manual "wrangler d1 UPDATE previews SET status='archived'" step.
+export async function handlePreviewRebuildForProspectPost(
+  prospect_id: number, request: Request, user: User, env: Env,
+): Promise<Response> {
+  if (user.role !== "admin") return redirect("/");
+  const { archivePreviewsForProspect } = await import("../preview/generator");
+  await archivePreviewsForProspect(env, prospect_id);
+  return handlePreviewBuildForProspectPost(prospect_id, request, user, env);
+}
+
 // ===========================================================================
 // Admin: edit + publish
 // ===========================================================================

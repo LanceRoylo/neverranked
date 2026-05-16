@@ -1997,6 +1997,11 @@ export default {
       const { handlePreviewBuildForProspectPost } = await import("./routes/preview");
       return handlePreviewBuildForProspectPost(parseInt(previewBuildMatch[1], 10), request, user, env);
     }
+    const previewRebuildMatch = path.match(/^\/admin\/warm-prospects\/(\d+)\/preview\/rebuild$/);
+    if (previewRebuildMatch && method === "POST" && user.role === "admin") {
+      const { handlePreviewRebuildForProspectPost } = await import("./routes/preview");
+      return handlePreviewRebuildForProspectPost(parseInt(previewRebuildMatch[1], 10), request, user, env);
+    }
     // POST /api/admin/sync-prospects -- local outreach tool pushes
     // prospect metadata (name, email, company, domain) so the
     // dashboard can auto-personalize Previews without any form input.
