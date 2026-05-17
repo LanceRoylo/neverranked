@@ -1,0 +1,12 @@
+# Cloudflare Workers Static Assets _redirects (same format as Pages).
+#
+# /check -> the AEO scanner. Cold outreach emails link to the
+# 2-label apex (neverranked.com/check?url=...&utm_*) instead of the
+# 3-label check.neverranked.com, because SpamAssassin's URI_TRY_3LD
+# penalizes a 3-label "try this" hostname by ~2 points (measured:
+# the single biggest content deduction, mail-tester 7/10). The
+# original query string (?url= + every utm_*) is preserved on the
+# redirect, so the recipient lands on the real scanner with UTM
+# attribution intact and the spam filter only sees the clean 2LD.
+/check      https://check.neverranked.com/          302
+/check/*    https://check.neverranked.com/:splat    302

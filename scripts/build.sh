@@ -35,6 +35,7 @@ FILES=(
   sitemap.xml
   llms.txt
   _headers
+  _redirects
 )
 
 # Public folders — each is rsync'd into dist/ preserving structure
