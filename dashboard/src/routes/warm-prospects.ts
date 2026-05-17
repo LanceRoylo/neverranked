@@ -162,20 +162,36 @@ export async function handleWarmProspectDetail(
     ).bind(prospect_id).all<{ opened_at: number; ip_hash: string | null; ua: string | null }>()
   ).results;
 
-  // Auto-retire stale drafts. Anything in 'drafted' status that was
-  // generated under an older template version gets declined on page
-  // load so it doesn't appear as current advice. The dedup logic
-  // for re-drafting kicks in correctly because the row is no longer
-  // 'drafted'.
-  await env.DB.prepare(
-    `UPDATE outreach_followup_actions
-        SET status = 'declined',
-            declined_at = unixepoch(),
-            declined_reason = 'auto-retired by template version upgrade'
-      WHERE prospect_id = ?
-        AND status = 'drafted'
-        AND created_at < ?`,
-  ).bind(prospect_id, TEMPLATE_VERSION).run();
+  // Auto-retire stale drafts: 'drafted' rows created under an older
+  // TEMPLATE_VERSION get declined on page load so stale advice never
+  // shows; the re-draft dedup then kicks in (row no longer 'drafted').
+  //
+  // FOOTGUN GUARD (2026-05-16): TEMPLATE_VERSION is a hand-maintained
+  // epoch and MUST be in the past. It was once set to a FUTURE time,
+  // so `created_at < TEMPLATE_VERSION` was always true and EVERY
+  // freshly built draft was silently auto-declined (the "Build Draft
+  // does nothing" bug). A future watermark is a misconfiguration, not
+  // a signal to nuke everything — skip the retire entirely and warn,
+  // so the failure mode is "stale drafts linger" (safe, visible), not
+  // "all drafts silently destroyed".
+  const nowEpoch = Math.floor(Date.now() / 1000);
+  if (TEMPLATE_VERSION > nowEpoch) {
+    console.warn(
+      `[warm-prospects] TEMPLATE_VERSION (${TEMPLATE_VERSION}) is in the FUTURE ` +
+        `(now=${nowEpoch}). Skipping auto-retire to avoid silently declining ` +
+        `every draft. Fix TEMPLATE_VERSION to a past epoch.`,
+    );
+  } else {
+    await env.DB.prepare(
+      `UPDATE outreach_followup_actions
+          SET status = 'declined',
+              declined_at = unixepoch(),
+              declined_reason = 'auto-retired by template version upgrade'
+        WHERE prospect_id = ?
+          AND status = 'drafted'
+          AND created_at < ?`,
+    ).bind(prospect_id, TEMPLATE_VERSION).run();
+  }
 
   // Follow-up history for this prospect
   const history = (
