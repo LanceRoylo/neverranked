@@ -120,6 +120,7 @@ E. <section class="legal-section">
 F. <section class="legal-section">
      <div class="section-label"><span class="num">04</span><span>What we would do</span><span class="rule"></span></div>
    - Use what_we_would_do as the substance, as a verb-led <ul> (2 to 4 items). Each item specific about schema type, cadence, deliverable shape — but only items grounded in the inputs.
+   - You MAY add ONE closing sentence after the list (not a list item) noting the SEO byproduct, in this exact spirit: the structured-data and content work we deploy to make them citable also strengthens their classic search rich results and organic discovery, included because the AEO work produces it. HARD GUARDRAIL: frame it ONLY as an included side effect. NEVER as a measured outcome, a ranking or traffic promise, a separate service line, or with any number or percentage. If it cannot be said as pure byproduct, omit the sentence entirely.
 
 G. <section class="legal-section">
      <div class="section-label"><span class="num">05</span><span>What to do next</span><span class="rule"></span></div>
