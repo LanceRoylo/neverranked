@@ -4,6 +4,84 @@ This is from the **non-ASB window** (decision-capture / infra / liveness work).
 The other window is doing **ASB + MVNP meeting prep** (May 18). This file
 exists so the two windows don't collide on git, deploys, or shared files.
 
+## ⚠ URGENT ACTION FOR ASB WINDOW — Greg/HTC FAQ edits (2026-05-15)
+
+Greg Dunn (CEO, Hawaii Theatre Center) emailed Ron + Lance edits to
+the FAQ. This is YOUR lane (you own clients/hawaii-theatre, you hold
+schema_injections id=358 + reddit_faq_deployments id=7 mid-work, you
+made the 13→5 filtering call). The infra window deliberately did NOT
+touch the live schema. Execute from your window.
+
+SITUATION (clarified by Lance 2026-05-15): a full FAQ set was
+drafted. The grader flagged some as overstatement so only the
+passing ones went live (the 5 in schema 358). Lance then EMAILED
+GREG the full picture (numbered list). Greg replied editing /
+deleting / adding / green-lighting per item. Greg's reply is now
+the FINAL AUTHORITY — he hand-curated the FAQ himself. The
+overstatement filter is MOOT: the client reviewed and chose. Do not
+re-apply it. Do not treat this as a "restore N" judgment call.
+
+HARD DEPENDENCY: Greg's numbering (2,4,6,7,9,11,12,13 + "rest green
+lit") maps to THE EMAIL LANCE SENT GREG, not the live 5. To apply
+this you NEED that outbound email (the numbered FAQ list Lance sent).
+Greg's reply alone is insufficient — items 1,3,5,8,10,etc. ("the
+rest, green lit") are only defined by the sent list. Get the sent
+email from Lance first. Final live FAQ = (sent list, with Greg's
+deletes removed + his adds/replacements applied + green-lit items
+kept verbatim).
+
+Edits (Greg's numbering; "add" = append to existing answer, "use" =
+replace answer verbatim with his text):
+
+- #2 ticketing — ADD: "Be sure to only buy your tickets from
+  hawaiitheatre.com as tickets sold on the resale market may not be
+  valid, or the face value and ticketing fees you are charged could
+  be higher than the actual price offered from the venue."
+- #4 children/tickets — ADD: "The theatre does require every patron
+  to have a ticket for a seat at the show, including toddlers. Only
+  certain shows are suitable for children under 3 years old."
+- #6 parking — ADD: "There are also private parking lots that offer
+  paid public parking at Marks Garage and Pickles at Forté."
+  (Correct proper noun confirmed by Lance 2026-05-15: the venue is
+  "Pickles at Forté". Greg's email said "Pickles on Forte" — use the
+  corrected name above. No need to ping Greg.)
+- #7 accessibility — ADD: "Patrons are also offered reasonable
+  accommodation at the door should they require accessible seating.
+  The Theatre also offers certain shows with ASL interpretation upon
+  request."
+- #9 — REMOVE all mention of competing venues. (May already be
+  affected by your 2-Q drop — cross-check.)
+- #11 classical music — REPLACE verbatim with Greg's block (Stardew
+  Valley / Elf / Studio Ghibli; HSO partnership ended June 2026).
+  Full text in Greg's email to Ron+Lance 2026-05-15 ~10:56am.
+- #12 venue rental — REPLACE verbatim (Kissed by God premiere,
+  Magnum PI/NCIS filming, BBB Torch Awards, Azamara; link
+  hawaiitheatre.com/venue-rental). Full text in email.
+- #13 film — REPLACE verbatim (Anime/Waimea/Mountain festivals,
+  Rainbow Film Festival in memory of Adam Baron, Barco 4K laser,
+  15'x22' LED wall; link hawaiitheatre.com/upcoming-events). Full
+  text in email.
+- All other items: green-lit as-is by Greg.
+
+⏱ CLIENT CLOCK IS LIVE: Lance sent Greg an acknowledgment email
+2026-05-15 confirming all edits are "going in now" and promising
+"I will email you the moment the updated version is live." The CEO
+is now actively expecting a live-confirmation. Treat this as the
+top-priority client task. When you ship it, tell Lance so he can
+send Greg the live follow-up.
+
+"Pickles at Forté" proper noun is confirmed by Lance. The ONE thing
+you must get from Lance before executing: the original outbound
+email he sent Greg (the numbered FAQ list Greg is replying to).
+Greg's reply verbatim text for #11/#12/#13 is in his email to
+Ron+Lance 2026-05-15 ~10:56am — pull from there, do not paraphrase
+a CEO's approved copy. Apply Greg's deletes too (#9: remove all
+competing-venue mentions).
+
+Grader note: these are HTC's OWN facts (their FAQ content), NOT
+NeverRanked client claims. CANONICAL_FACTS in the output-grader is
+unaffected — do not touch it.
+
 ## Git state — READ THIS FIRST
 
 - Local `main` is **behind `origin/main`**. After our push, the
@@ -134,6 +212,52 @@ Safety gate status: the fail-closed output grader (roadmap #2) is
 LIVE (dashboard deployed). Per the ASB window's hard-ordering rule,
 #2 had to be live before any auto-send path — it is. The migration's
 send path is now safe to build in the coordinated window.
+
+## REPLY — HTC Greg/Ron tasks (2026-05-17, infra window)
+
+Task 2 (add Greg+Ron as admins on hawaii-theatre): **already done, no
+change made, and DO NOT elevate roles.** Both exist in D1 as
+role=`client`, client_slug=`hawaii-theatre`, onboarded, logged in
+(Greg id 40, Ron id 39). This schema has only client / agency_admin /
+admin. There is NO client-admin tier — `admin` is GLOBAL NeverRanked
+superadmin (all clients + all of /admin/* + D1 tooling). Setting
+either to role=admin would be a security incident. A `client` user
+with the matching client_slug already has full client access + the
+/team invite flow. Task 2 is satisfied with zero mutations. Did not
+touch the users table.
+
+Task 1 (Greg's 403): **DONE 2026-05-17.** Added
+gregorydunn@hawaiitheatre.com + ronmcdaniel@hawaiitheatre.com as
+GCP OAuth test users (project=neverranked, Audience tab). Verified:
+4/100 test users, both listed. 403 clears immediately for both.
+WORDING FIX (still stands): handoff said "Google Analytics" — the
+dashboard requests ONLY `webmasters.readonly` (Search Console). No
+GA integration exists. Greg hit the 403 on Search Console. GSC prep
+work (privacy §08, justification) remains correct.
+
+STRATEGIC NOTE: the "Connect Google Search Console" CTA renders on
+EVERY client dashboard with no connected GSC property
+(status.ts). Every future client hits this same 403 until the app
+is verified/published. Test-user add is per-client + 100 cap. The
+GSC verification submission (prep sheet, ready) is the real fix and
+should not sit much longer now that real clients are hitting it.
+
+## Privacy page — GSC section added + DEPLOYED (2026-05-16)
+
+`privacy/index.html` edited: new section 08 "Google Search Console
+Data" (required prerequisite for tomorrow's Google OAuth brand
+verification submission), prior section 08 renumbered to 09, "last
+updated" bumped to May 2026. Built + deployed to neverranked.com
+(live, verified at /privacy/). NOT committed. `privacy/` is in
+neither window's lane; ASB window has not touched it. No collision.
+
+## New uncommitted work — SEO-vs-AEO carousel (2026-05-15)
+
+Infra window built a 9-slide IG/LinkedIn carousel at
+`social/posts/2026-05-15-seo-vs-aeo-disappearing-list/` (9 source-N.html,
+render.mjs, 9 card-N.png, caption.md, alt-text.md, platforms.md).
+`social/` is not in either window's lane and you have not touched it —
+flagging only, no collision expected. Not committed.
 
 ## NOT safe without a heads-up to this window
 

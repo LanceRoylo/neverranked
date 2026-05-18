@@ -1,0 +1,13 @@
+# NeverRanked security contact
+# https://securitytxt.org/
+
+Contact: mailto:security@neverranked.com
+Expires: 2027-05-14T00:00:00Z
+Acknowledgments: https://neverranked.com/security
+Preferred-Languages: en
+Canonical: https://neverranked.com/.well-known/security.txt
+Policy: https://neverranked.com/security
+
+# Found something? Email us. We respond within 48 hours to credible
+# reports. The whole codebase is public at github.com/lanceroylo/neverranked
+# so feel free to reference specific file paths.
