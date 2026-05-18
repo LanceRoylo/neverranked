@@ -109,7 +109,7 @@ function renderGauge(score: number, max: number): string {
   const tip = polar(fillEndAngle);
 
   const scaledScore = max > 0 ? Math.round((score / max) * 100) : 0;
-  const grade = scaledScore >= 80 ? "Strong" : scaledScore >= 50 ? "Building" : scaledScore >= 25 ? "Weak" : "Absent";
+  const grade = scaledScore >= 80 ? "Latent — not converted" : scaledScore >= 50 ? "Partial" : scaledScore >= 25 ? "Weak" : "Absent";
   const gradeColor = scaledScore >= 80 ? COLOR.good : scaledScore >= 50 ? COLOR.warn : COLOR.bad;
 
   // Tick marks every 25% along the dial. The active range glows; the
@@ -380,6 +380,9 @@ export function renderEntityAuditCard(audit: PartialEntityAudit): string {
         <div style="display:flex;align-items:center;gap:10px;margin-top:10px;font-family:SF Mono, ui-monospace, monospace;font-size:12px;color:${COLOR.textMute}">
           <span style="display:inline-block;width:14px;height:1px;background:${COLOR.gold};opacity:0.6"></span>
           <span>${esc(audit.domain)}</span>
+        </div>
+        <div style="margin-top:16px;padding:12px 14px;border:1px solid ${COLOR.gold};border-radius:6px;font-family:SF Mono, ui-monospace, monospace;font-size:12px;line-height:1.55;color:${COLOR.text};max-width:54ch">
+          <b style="color:${COLOR.gold}">This is off-site brand authority only.</b> It does not measure your on-site schema or whether AI engines actually cite you today. Those are scored separately and are typically far lower. A high number here means authority you own but are not yet converting into AI citations.
         </div>
       </div>
       <div style="margin-right:-14px">${renderGauge(score, fullMax)}</div>
