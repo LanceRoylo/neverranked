@@ -1,22 +1,25 @@
--- One-time backfill: Greg-approved page meta description for Hawaii
--- Theatre Center (hawaiitheatre.com), targeted at the homepage path
--- the technical-signals scan flagged as "Meta description: Missing".
+-- Seed: Greg-approved page meta description for Hawaii Theatre Center.
+--
+-- This is a numbered migration on purpose, not a separate backfill
+-- file. The dashboard's D1 lives in an account only the CI deploy
+-- token (deploy-dashboard.yml) can write -- a founder laptop on a
+-- personal Cloudflare account gets API error 7403. CI runs
+-- `wrangler d1 migrations apply`, which applies numbered migrations
+-- only, so the approved copy has to ship as one to deploy itself
+-- with no manual D1 access.
 --
 -- Approval: Greg (CEO, Hawaii Theatre Center) approved this exact
 -- string on 2026-05-18 after the em dash was removed (NeverRanked
 -- voice rule: zero em dashes). See
 -- clients/hawaii-theatre/2026-05-18-meta-description-deploy.md.
 --
--- Targeted to ["/"] only, not '*', on purpose: a single brand/homepage
+-- Targeted to ["/"] only, not '*', on purpose: a single brand/home
 -- description repeated site-wide is a duplicate-meta-description SEO
 -- anti-pattern. The scan flagged the homepage; that is what we fix.
 --
--- Run once with:
---   wrangler d1 execute neverranked-app --remote \
---     --file=migrations/backfill-htc-meta-description.sql
---
--- Idempotent: the WHERE NOT EXISTS guard makes re-running a no-op once
--- the row is present (there is no UNIQUE constraint to rely on).
+-- Idempotent: the WHERE NOT EXISTS guard makes re-application a
+-- no-op (migrations apply runs a file once, but the guard also keeps
+-- a manual re-run safe).
 
 INSERT INTO meta_descriptions
   (client_slug, content, target_pages, status, approved_at, created_at, updated_at)
