@@ -21,9 +21,9 @@ NeverRanked
 
 ### User support email
 ```
-lance@neverranked.com
+lance@hi.neverranked.com
 ```
-(If that bounces or you'd rather not expose it publicly, alternates: `support@neverranked.com`, `hello@neverranked.com` -- whichever inbox you actually monitor.)
+(Confirmed by Lance 2026-05-17. This is the monitored inbox.)
 
 ### App logo
 - File: `/Users/lanceroylo/Desktop/neverranked/linkedin/images/logo-300.png` (300×300px)
@@ -43,7 +43,7 @@ https://neverranked.com
 ```
 https://neverranked.com/privacy
 ```
-**Important:** before submitting, the privacy policy needs a GSC-specific section added. See Section 7 below.
+**DONE 2026-05-16:** the GSC privacy section (08. Google Search Console Data) is written, deployed, and verified live at https://neverranked.com/privacy/. Prerequisite cleared. Section 7 below is kept for reference only.
 
 ### Application terms of service link
 ```
@@ -73,9 +73,9 @@ check.neverranked.com
 
 ### Email addresses
 ```
-lance@neverranked.com
+lance@hi.neverranked.com
 ```
-(Add additional emails you want Google to reach you at. They use this for verification updates, security notices, and policy changes. Recommend at least one inbox you check daily.)
+(Confirmed by Lance 2026-05-17. Google uses this for verification updates, security notices, and policy changes.)
 
 ---
 
@@ -226,11 +226,8 @@ That last paragraph (the Google API Services User Data Policy disclosure) is req
 
 ## Section 8: Order of operations tomorrow
 
-1. **Ship the privacy policy update first.** The Google reviewer will check
-   `https://neverranked.com/privacy` and look for the GSC section. If it's not
-   there, the verification request gets rejected and you start over. So: paste
-   the addendum from Section 7 into the live `/privacy` page, commit, push,
-   verify it shows up at the live URL.
+1. ~~Ship the privacy policy update first.~~ **DONE 2026-05-16.** Section 08
+   is live and verified at `https://neverranked.com/privacy/`. Skip this step.
 
 2. **Open the Branding form.** Walk through Sections 1-4 above, copy-pasting
    field by field.
@@ -259,8 +256,7 @@ That last paragraph (the Google API Services User Data Policy disclosure) is req
 
 ## Open questions to resolve before submission
 
-- [ ] Is `lance@neverranked.com` the right support email for public disclosure,
-      or should we use a generic alias like `support@`?
+- [x] Support email: RESOLVED 2026-05-17 -> `lance@hi.neverranked.com`
 - [ ] Do you want to add `app.neverranked.com` and `check.neverranked.com` to
       authorized domains, or leave them out and let Google ask if needed?
 - [ ] Logo: use `linkedin/images/logo-300.png` or generate a fresh 512×512 PNG

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GSC Brand Verification — Fill Sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;1,500&family=DM+Mono:wght@400;500&family=Barlow+Condensed:wght@500;600&display=swap">
+<style>
+  :root{
+    --bg:#0e0d0b;--card:#161512;--edge:#2a2620;--gold:#e8c767;--gold-dim:#bfa04d;
+    --text:#fbf8ef;--mute:#b8b2a5;--faint:#7c7669;
+    --serif:"Playfair Display",Georgia,serif;--mono:"DM Mono",Menlo,monospace;
+    --label:"Barlow Condensed","Arial Narrow",sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);
+    font-size:18px;line-height:1.7;padding:32px 18px 120px;-webkit-text-size-adjust:100%}
+  .wrap{max-width:760px;margin:0 auto}
+  h1{font-family:var(--serif);font-style:italic;font-size:38px;line-height:1.15;color:var(--gold);margin-bottom:8px}
+  .sub{font-family:var(--label);text-transform:uppercase;letter-spacing:.22em;font-size:14px;color:var(--faint);margin-bottom:28px}
+  .banner{background:rgba(232,199,103,.10);border:1px solid var(--gold-dim);border-radius:10px;padding:20px 22px;margin-bottom:34px;font-size:17px}
+  .banner b{color:var(--gold)}
+  .formlink{display:inline-block;margin-top:10px;font-size:15px;color:var(--gold);word-break:break-all;border-bottom:1px solid var(--gold-dim);padding-bottom:2px}
+  h2{font-family:var(--serif);font-size:26px;color:var(--text);margin:46px 0 6px;padding-top:24px;border-top:1px solid var(--edge)}
+  h2 .n{font-family:var(--mono);font-size:18px;color:var(--gold);margin-right:12px}
+  .note{font-size:16px;color:var(--mute);margin:10px 0 20px}
+  .field{margin:24px 0}
+  .field .lbl{font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:14px;color:var(--gold-dim);margin-bottom:8px}
+  .val{background:#000;border:1px solid var(--edge);border-left:3px solid var(--gold);
+    border-radius:6px;padding:18px 20px;font-size:19px;color:var(--text);
+    white-space:pre-wrap;word-break:break-word;line-height:1.65}
+  .val.lg{font-size:16px;line-height:1.75}
+  .hint{font-size:15px;color:var(--faint);margin-top:8px}
+  ol.steps{counter-reset:s;list-style:none;margin:18px 0}
+  ol.steps li{position:relative;padding:14px 0 14px 52px;border-bottom:1px solid var(--edge);font-size:18px}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:12px;
+    width:34px;height:34px;border:1px solid var(--gold-dim);color:var(--gold);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:16px}
+  ol.steps li.done{color:var(--faint)}
+  ol.steps li.done::before{content:"\2713";border-color:var(--faint);color:var(--faint)}
+  ul.plain{margin:10px 0 0 22px}ul.plain li{margin-bottom:8px;color:var(--mute);font-size:16px}
+  .deprioritized{opacity:.55}
+  .tag{display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;
+    font-size:12px;padding:3px 10px;border-radius:20px;border:1px solid var(--gold-dim);color:var(--gold);margin-left:10px;vertical-align:middle}
+  .tag.done{border-color:#5a8a5a;color:#7fae7f}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>GSC Brand Verification</h1>
+  <div class="sub">Field-by-field fill sheet · prepared 2026-05-10 · updated 2026-05-17</div>
+
+  <div class="banner">
+    <b>Privacy prerequisite is DONE.</b> Section 08 of the privacy policy is live and
+    verified at neverranked.com/privacy. You do not need to ship anything before
+    submitting. Open the form and copy each value below straight in.
+    <a class="formlink" href="https://console.cloud.google.com/auth/branding?project=neverranked">console.cloud.google.com/auth/branding?project=neverranked</a>
+  </div>
+
+  <h2><span class="n">A</span>Order of operations today</h2>
+  <ol class="steps">
+    <li class="done">Ship privacy policy GSC section — done 2026-05-16, live and verified</li>
+    <li>Open the Branding form (link in the banner above)</li>
+    <li>Walk Sections 1 to 4 below, paste each field</li>
+    <li>Open the Data Access / Scopes tab, add the scope in Section 5</li>
+    <li>Click "Publish App" (moves it Testing to In Production)</li>
+    <li>Google emails within ~24h asking for the justification + demo video (Section 6)</li>
+    <li>Approval typically 4 to 6 business days</li>
+  </ol>
+
+  <h2><span class="n">1</span>App information</h2>
+  <div class="field">
+    <div class="lbl">App name</div>
+    <div class="val">NeverRanked</div>
+  </div>
+  <div class="field">
+    <div class="lbl">User support email</div>
+    <div class="val">lance@hi.neverranked.com</div>
+    <div class="hint">Confirmed 2026-05-17. The monitored inbox.</div>
+  </div>
+  <div class="field">
+    <div class="lbl">App logo</div>
+    <div class="val">/Users/lanceroylo/Desktop/neverranked/linkedin/images/logo-300.png</div>
+    <div class="hint">300x300 PNG. Google needs 120x120 minimum square. This works, Google scales it. Fresh option: favicon.png in repo root.</div>
+  </div>
+
+  <h2><span class="n">2</span>App domain</h2>
+  <div class="field">
+    <div class="lbl">Application home page</div>
+    <div class="val">https://neverranked.com</div>
+  </div>
+  <div class="field">
+    <div class="lbl">Privacy policy link</div>
+    <div class="val">https://neverranked.com/privacy</div>
+    <div class="hint">Section 08 (Google Search Console Data) is live here. Reviewer will check it. Already handled.</div>
+  </div>
+  <div class="field">
+    <div class="lbl">Terms of service link</div>
+    <div class="val">https://neverranked.com/terms</div>
+  </div>
+
+  <h2><span class="n">3</span>Authorized domains</h2>
+  <div class="note">Domain roots only. No protocol, no paths. Add one at a time.</div>
+  <div class="field">
+    <div class="lbl">Primary</div>
+    <div class="val">neverranked.com</div>
+  </div>
+  <div class="field">
+    <div class="lbl">If Google asks for more (sometimes it does)</div>
+    <div class="val">app.neverranked.com
+check.neverranked.com</div>
+  </div>
+
+  <h2><span class="n">4</span>Developer contact email</h2>
+  <div class="field">
+    <div class="lbl">Email addresses</div>
+    <div class="val">lance@hi.neverranked.com</div>
+    <div class="hint">Confirmed 2026-05-17. Google uses this for verification updates and security notices.</div>
+  </div>
+
+  <h2><span class="n">5</span>Scope <span class="tag">restricted</span></h2>
+  <div class="note">After the Branding tab, open the Data Access / Scopes tab. Add exactly this:</div>
+  <div class="field">
+    <div class="val">https://www.googleapis.com/auth/webmasters.readonly</div>
+    <div class="hint">Marked "restricted" by Google. They will ask for the justification in Section 6.</div>
+  </div>
+
+  <h2><span class="n">6</span>Verification submission</h2>
+  <div class="field">
+    <div class="lbl">Why your app needs this scope (justification — paste verbatim)</div>
+    <div class="val lg">NeverRanked is an Answer Engine Optimization (AEO) measurement platform that helps small and mid-market businesses understand how their websites perform across AI search engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma) and traditional search.
+
+The webmasters.readonly scope is used exclusively to read aggregate search performance data (impressions, clicks, queries, average position) from each user's Google Search Console properties. This data is correlated with our AI citation tracking to give customers a complete picture of their search visibility across both traditional and AI-driven search surfaces.
+
+Specifically, we use:
+- searchanalytics.query: weekly pulls of top queries, clicks, impressions, and average position per property
+- sites.list: enumerate the GSC properties the authenticated user has access to, so customers can pick which property maps to which dashboard client
+
+We do not write to any Search Console property. We do not modify, submit, verify, or remove anything. Access is strictly read-only and limited to the authenticated user's existing GSC properties.
+
+Data is stored encrypted in our Cloudflare D1 database, retained for the active subscription period plus 30 days, and never shared with third parties or used for model training.
+
+A service-account alternative was evaluated but is not viable: our customers grant access to their own GSC properties, and the GSC UI does not accept service-account emails through "Users and permissions" without DNS-level domain verification, which most of our small-business customers cannot perform on demand. User-OAuth is the only path that allows our customers to grant read access to NeverRanked through a one-click consent flow.</div>
+  </div>
+  <div class="field">
+    <div class="lbl">How user data is handled (paste verbatim)</div>
+    <div class="val lg">GSC data fetched via webmasters.readonly is stored exclusively for the dashboard's customer-facing reports and for internal pattern analysis (e.g., aggregating "GSC clicks lost when AI citation share rose" across customers, anonymized).
+
+Specifically:
+- Search performance rows are stored in our Cloudflare D1 database under the gsc_snapshots table, scoped per customer
+- Data is retained for 12 weeks rolling for customer dashboards, plus a full historical archive available to the customer for their own period of active subscription
+- 30 days after subscription cancellation, all GSC data tied to that customer is purged
+- We do not share GSC data with any third party
+- We do not use GSC data for advertising, lookalike modeling, or training any machine learning model
+- We do not aggregate GSC data across customers in ways that expose any individual customer's data to another</div>
+  </div>
+  <div class="field">
+    <div class="lbl">Demo video — record 1 to 3 min, upload to YouTube as UNLISTED (not Private — Google must be able to view it)</div>
+    <div class="val lg">Show, in order:
+1. Signing in to NeverRanked (dashboard login)
+2. Navigating to the GSC integration page (/admin/gsc)
+3. Clicking "Connect Google Search Console"
+4. The Google OAuth consent screen with webmasters.readonly visible
+5. Granting consent, returning to NeverRanked
+6. The GSC properties list that appears after consent
+7. Linking a GSC property to a customer dashboard client slug
+8. Pulling latest GSC data, dashboard shows queries/clicks/impressions
+9. Disconnecting (showing the user can revoke any time)</div>
+    <div class="hint">Narration lines are in the source doc if you want them. Paste the unlisted YouTube link into the form where it asks for "a demonstration of how your application uses the requested scopes."</div>
+  </div>
+
+  <h2 class="deprioritized"><span class="n">7</span>Privacy block <span class="tag done">already shipped</span></h2>
+  <div class="note deprioritized">Reference only. This HTML is already live as Section 08 at neverranked.com/privacy. Nothing to do here. Full text is in the source markdown if you ever need to re-verify it.</div>
+
+  <h2><span class="n">B</span>Open questions — mostly resolved</h2>
+  <ul class="plain">
+    <li>Support email: RESOLVED -> lance@hi.neverranked.com</li>
+    <li>Privacy GSC section: RESOLVED -> live and verified</li>
+    <li>Authorized domains: decide live — add app/check subdomains only if Google asks</li>
+    <li>Logo: linkedin/images/logo-300.png is ready; swap to a 512px wordmark render only if you want higher res</li>
+    <li>Demo video channel: NR channel or your personal channel, set Unlisted — decide when you record it (after Google requests it, ~24h post-submit)</li>
+  </ul>
+
+</div>
+</body>
+</html>
