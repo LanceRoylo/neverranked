@@ -26,7 +26,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Last dashboard deploy on main must be green
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const runs = await github.rest.actions.listWorkflowRuns({
@@ -52,7 +52,7 @@ jobs:
 
       - name: Alert if anything above failed
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = "🚨 Prod healthcheck failing";

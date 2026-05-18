@@ -72,7 +72,7 @@ jobs:
       # single rolling issue so it surfaces where it's seen.
       - name: Alert on deploy failure
         if: failure()
-        uses: actions/github-script@v7
+        uses: actions/github-script@v9
         with:
           script: |
             const title = "🚨 Dashboard deploy is failing";
