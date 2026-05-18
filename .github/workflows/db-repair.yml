@@ -1,0 +1,84 @@
+name: DB repair - resync migration ledger
+
+# Manually-triggered, ONE-SHOT remediation for the migration-ledger
+# drift that has failed deploy-dashboard.yml on every run.
+#
+# Root cause: prod D1 has the objects for migrations 0073-0094 but
+# the d1_migrations bookkeeping table never recorded them, so
+# `wrangler d1 migrations apply` re-runs 0073 and dies on
+# "index idx_cron_runs_task_ranat already exists". Nothing past 0072
+# (incl. 0095 meta_descriptions + the HTC seed) can deploy.
+#
+# Fix: SELF-VERIFYING ledger backfill. Each drifted migration is
+# recorded as applied ONLY IF the object it creates already exists
+# in the live schema (read-gated write). A migration whose object is
+# genuinely absent is left untouched, so `migrations apply` will run
+# it normally. This cannot skip real work or corrupt state regardless
+# of the exact prod condition. It writes only to the d1_migrations
+# bookkeeping table -- no application table is touched. Idempotent
+# (NOT EXISTS guards) so re-running is a no-op.
+#
+# Then `migrations apply` runs: it skips everything just recorded and
+# applies only the genuinely-new tail (0095, 0096/backfills). Does
+# NOT deploy the worker -- the normal pipeline does that next.
+#
+# Trigger: Actions tab -> this workflow -> Run workflow (main).
+
+on:
+  workflow_dispatch:
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: dashboard
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: dashboard/package-lock.json
+
+      - run: npm ci
+
+      - name: Self-verifying ledger resync (gated on real object existence)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          set -o pipefail
+          npx wrangler d1 execute neverranked-app --remote --command "
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0073_cron_runs.sql'                 WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='cron_runs')                 AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0073_cron_runs.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0074_qa_audits.sql'                 WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='qa_audits')                 AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0074_qa_audits.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0075_engine_status.sql'             WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='engine_status')             AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0075_engine_status.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0076_qa_decisions.sql'              WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='qa_decisions')              AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0076_qa_decisions.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0079_schema_audit_log.sql'          WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='schema_audit_log')          AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0079_schema_audit_log.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0079_reddit_faq_deployments.sql'    WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='reddit_faq_deployments')    AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0079_reddit_faq_deployments.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0087_outreach_send_log.sql'         WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_send_log')         AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0087_outreach_send_log.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0088_outreach_packages.sql'         WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_packages')         AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0088_outreach_packages.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0089_outreach_daily_limits.sql'     WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_daily_limits')     AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0089_outreach_daily_limits.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0090_outreach_prospects_master.sql' WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_prospects_master') AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0090_outreach_prospects_master.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0091_outreach_config.sql'           WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_config')           AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0091_outreach_config.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0092_outreach_processed_replies.sql' WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_processed_replies') AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0092_outreach_processed_replies.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0093_outreach_processed_opens.sql'  WHERE EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='outreach_processed_opens')  AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0093_outreach_processed_opens.sql');
+            INSERT OR IGNORE INTO d1_migrations (name) SELECT '0094_phase2_preview_automation.sql' WHERE EXISTS (SELECT 1 FROM pragma_table_info('previews') WHERE name='source')                       AND NOT EXISTS (SELECT 1 FROM d1_migrations WHERE name='0094_phase2_preview_automation.sql');
+          "
+
+      - name: Apply remaining migrations (now unblocked)
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx wrangler d1 migrations apply neverranked-app --remote
+
+      - name: Verify - meta_descriptions table + HTC row -> Summary
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          OUT=$(npx wrangler d1 execute neverranked-app --remote --command "
+            SELECT 'meta_descriptions table' AS check_, COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name='meta_descriptions'
+            UNION ALL
+            SELECT 'hawaii-theatre rows', COUNT(*) FROM meta_descriptions WHERE client_slug='hawaii-theatre';
+          " 2>&1)
+          { echo "## Post-repair verification"; echo '```'; echo "$OUT"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          echo "$OUT"
