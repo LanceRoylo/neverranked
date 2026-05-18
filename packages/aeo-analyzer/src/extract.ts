@@ -260,6 +260,23 @@ export interface InjectedSchema {
   ld: unknown;
 }
 
+export interface InjectedMeta {
+  content: string;
+  pages: string | string[];
+}
+
+/** Shared page matcher: mirrors the .js snippet matcher exactly so
+ *  the scanner sees what the browser sees. `pages` is the literal
+ *  string "*" (every page) or an array of patterns, each exact-match
+ *  unless it ends in "*" (prefix match). */
+export function pathMatchesPages(path: string, pages: string | string[]): boolean {
+  if (pages === "*") return true;
+  if (!Array.isArray(pages)) return false;
+  return pages.some((p) =>
+    p.endsWith("*") ? path.startsWith(p.slice(0, -1)) : path === p
+  );
+}
+
 const INJECT_SNIPPET_RE = /<script[^>]*\bsrc=["'](https?:\/\/[^"']*\/inject\/[a-z0-9_-]+)\.js["']/gi;
 
 /** Return the set of inject snippet base URLs (without the .js
@@ -285,10 +302,10 @@ export function findInjectSnippetUrls(html: string): string[] {
  *  schemas. Returns [] on any failure -- never throws, since a
  *  scanner shouldn't fail because the snippet endpoint is briefly
  *  unreachable. */
-export async function fetchInjectedSchemas(
+export async function fetchInjectedPayload(
   baseUrl: string,
   fetchFn: typeof fetch,
-): Promise<InjectedSchema[]> {
+): Promise<{ schemas: InjectedSchema[]; metas: InjectedMeta[] }> {
   const url = baseUrl + ".json";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 5000);
@@ -299,18 +316,27 @@ export async function fetchInjectedSchemas(
     });
     if (!resp.ok) {
       console.log(`[extract] inject fetch ${url} -> HTTP ${resp.status}`);
-      return [];
+      return { schemas: [], metas: [] };
     }
-    const body = await resp.json() as { schemas?: InjectedSchema[] };
+    const body = await resp.json() as { schemas?: InjectedSchema[]; meta_descriptions?: InjectedMeta[] };
     const schemas = Array.isArray(body.schemas) ? body.schemas : [];
-    console.log(`[extract] inject fetch ${url} -> ${schemas.length} schemas`);
-    return schemas;
+    const metas = Array.isArray(body.meta_descriptions) ? body.meta_descriptions : [];
+    console.log(`[extract] inject fetch ${url} -> ${schemas.length} schemas, ${metas.length} meta`);
+    return { schemas, metas };
   } catch (e) {
     console.log(`[extract] inject fetch ${url} failed: ${e}`);
-    return [];
+    return { schemas: [], metas: [] };
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Back-compat wrapper: schemas only. */
+export async function fetchInjectedSchemas(
+  baseUrl: string,
+  fetchFn: typeof fetch,
+): Promise<InjectedSchema[]> {
+  return (await fetchInjectedPayload(baseUrl, fetchFn)).schemas;
 }
 
 /** Filter a list of injected schemas to those whose `pages` config
@@ -319,13 +345,43 @@ export async function fetchInjectedSchemas(
 export function filterByUrl(schemas: InjectedSchema[], url: string): InjectedSchema[] {
   let path: string;
   try { path = new URL(url).pathname; } catch { return []; }
-  return schemas.filter((s) => {
-    if (s.pages === "*") return true;
-    if (!Array.isArray(s.pages)) return false;
-    return s.pages.some((p) =>
-      p.endsWith("*") ? path.startsWith(p.slice(0, -1)) : path === p
-    );
-  });
+  return schemas.filter((s) => pathMatchesPages(path, s.pages));
+}
+
+/** First injected meta description whose `pages` matches the scanned
+ *  URL, or null. A page has exactly one description, so first match
+ *  wins -- same precedence as the .js snippet. */
+export function pickMetaForUrl(metas: InjectedMeta[], url: string): string | null {
+  let path: string;
+  try { path = new URL(url).pathname; } catch { return null; }
+  for (const m of metas) {
+    if (pathMatchesPages(path, m.pages)) return m.content;
+  }
+  return null;
+}
+
+/** Mirror the browser snippet's "own the description" behavior so the
+ *  scanner sees what the browser renders: drop any existing
+ *  <meta name="description"> and inject the approved one. */
+export function injectMetaIntoHtml(html: string, content: string | null): string {
+  if (!content) return html;
+  const stripped = html.replace(
+    /<meta\s+[^>]*name=["']description["'][^>]*>/gi,
+    "",
+  ).replace(
+    /<meta\s+[^>]*content=["'][^"']*["'][^>]*name=["']description["'][^>]*>/gi,
+    "",
+  );
+  const esc = content
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  const tag = `<meta name="description" content="${esc}" data-nr-source="injected">`;
+  if (/<\/head>/i.test(stripped)) {
+    return stripped.replace(/<\/head>/i, tag + "\n</head>");
+  }
+  return tag + "\n" + stripped;
 }
 
 /** Append injected JSON-LD blocks to the HTML as inline script

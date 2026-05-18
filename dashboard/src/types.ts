@@ -451,6 +451,17 @@ export interface SchemaInjection {
   updated_at: number;
 }
 
+export interface MetaDescription {
+  id: number;
+  client_slug: string;
+  content: string;
+  target_pages: string;
+  status: "draft" | "approved" | "paused" | "archived";
+  approved_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
 export interface InjectionConfig {
   id: number;
   client_slug: string;
