@@ -1,0 +1,78 @@
+name: Prod healthcheck
+
+# Audits the DEPLOYED ARTIFACT, not just git. The nightly git audits
+# were green and truthful the whole time prod was weeks stale --
+# because "is it committed?" is a different question from "did it
+# actually deploy and is it up?". This closes that gap.
+#
+# Every 6h (and on demand) it asserts:
+#   1. the most recent deploy-dashboard run on main SUCCEEDED
+#   2. the live worker answers (public inject endpoint -> 200 + JSON)
+# On either failure it raises the same kind of loud, deduped issue
+# the deploy workflow uses.
+
+on:
+  schedule:
+    - cron: "0 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+  issues: write
+
+jobs:
+  healthcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Last dashboard deploy on main must be green
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner, repo: context.repo.repo,
+              workflow_id: "deploy-dashboard.yml",
+              branch: "main", per_page: 1,
+            });
+            const latest = runs.data.workflow_runs[0];
+            if (!latest) { core.setFailed("No deploy-dashboard runs found on main"); return; }
+            core.info(`Latest deploy run #${latest.run_number}: status=${latest.status} conclusion=${latest.conclusion}`);
+            if (latest.status !== "completed" || latest.conclusion !== "success") {
+              core.setFailed(`Latest deploy-dashboard run on main is ${latest.status}/${latest.conclusion}, not success: ${latest.html_url}`);
+            }
+
+      - name: Live worker must answer
+        run: |
+          set -e
+          code=$(curl -s -o /tmp/h.json -w "%{http_code}" --max-time 20 \
+            https://app.neverranked.com/inject/hawaii-theatre.json)
+          echo "HTTP $code"
+          test "$code" = "200"
+          grep -q '"client_slug"' /tmp/h.json
+
+      - name: Alert if anything above failed
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const title = "🚨 Prod healthcheck failing";
+            const run = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const body = `Prod healthcheck failed (${new Date().toISOString()}).\n\n`
+              + `Either the last dashboard deploy on main was not green, or the live worker did not answer.\n\n`
+              + `Run: ${run}\n\n`
+              + `_Auto-filed by prod-healthcheck. Close once a healthcheck run is green._`;
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner, repo: context.repo.repo,
+              state: "open", labels: "prod-healthcheck", per_page: 1,
+            });
+            if (existing.data.length > 0) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner, repo: context.repo.repo,
+                issue_number: existing.data[0].number, body,
+              });
+            } else {
+              await github.rest.issues.create({
+                owner: context.repo.owner, repo: context.repo.repo,
+                title, body, labels: ["prod-healthcheck"],
+              });
+            }
