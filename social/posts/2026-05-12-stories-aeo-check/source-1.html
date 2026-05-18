@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Story 1 - Hook + poll</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1920px;overflow:hidden;
+  background:var(--bg);color:var(--text);
+}
+.story{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:280px 80px 280px;
+  position:relative;
+  background:radial-gradient(ellipse at 50% 35%, #1d1813 0%, #0a0908 65%);
+}
+
+.brand-mark{
+  font-family:var(--serif);font-style:italic;font-size:34px;color:var(--gold);
+  position:absolute;top:280px;left:80px;
+}
+
+.center-block{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;text-align:center;
+}
+
+.headline{
+  font-family:var(--serif);font-weight:400;
+  font-size:108px;line-height:1.05;letter-spacing:-0.025em;
+  color:var(--text);
+}
+.headline em{font-style:italic;color:var(--gold-bright)}
+
+.sub-prompt{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.42em;
+  font-size:22px;color:var(--gold);font-weight:700;
+  margin-top:80px;
+}
+
+.bottom-prompt{
+  position:absolute;bottom:280px;left:0;right:0;
+  text-align:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.4em;
+  font-size:18px;color:var(--text-faint);font-weight:500;
+}
+.bottom-prompt em{color:var(--gold);font-style:normal;font-weight:700}
+</style>
+</head>
+<body>
+<div class="story">
+
+  <div class="brand-mark">Never Ranked</div>
+
+  <div class="center-block">
+    <div class="headline">
+      Do you know<br>
+      what <em>schema</em> is?
+    </div>
+    <div class="sub-prompt">Honest answer below</div>
+  </div>
+
+  <div class="bottom-prompt">Card 1 of 4 &middot; <em>AEO 101</em></div>
+
+</div>
+</body>
+</html>

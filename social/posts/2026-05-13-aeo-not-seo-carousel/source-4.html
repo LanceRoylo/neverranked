@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Carousel Slide 4 - The Silent Penalty</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --red:#c5544a;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1350px;overflow:hidden;
+  background:var(--bg);color:var(--text);
+}
+.card{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:80px 80px 64px;
+  position:relative;
+  background:radial-gradient(ellipse at 30% 50%, #1d1310 0%, #0a0908 65%);
+}
+
+.brand-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:46px;
+}
+.brand-mark{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold)}
+.brand-tag{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+
+.eyebrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:20px;color:var(--red);font-weight:700;margin-bottom:60px;
+  display:flex;align-items:center;gap:14px;
+}
+.eyebrow .dot{
+  width:8px;height:8px;background:var(--red);border-radius:50%;
+  box-shadow:0 0 12px rgba(197,84,74,.5);
+}
+
+.center-block{
+  display:flex;flex-direction:column;align-items:flex-start;
+  flex:1;justify-content:center;text-align:left;
+}
+
+.line-a{
+  font-family:var(--serif);font-weight:400;
+  font-size:88px;line-height:1.08;letter-spacing:-0.025em;
+  color:var(--text);margin-bottom:48px;
+}
+.line-a em{font-style:italic;color:var(--gold-bright)}
+
+.divider{
+  width:200px;height:2px;background:var(--gold);margin-bottom:48px;
+}
+
+.line-b{
+  font-family:var(--serif);font-weight:400;font-style:italic;
+  font-size:38px;line-height:1.35;letter-spacing:-0.02em;
+  color:var(--text-mute);max-width:880px;
+}
+.line-b em{color:var(--gold-bright);font-style:italic;font-weight:400}
+
+.bottom-accent{
+  margin-top:30px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;
+  font-size:18px;line-height:1.7;color:var(--gold);font-weight:700;
+}
+
+.bottom-row{
+  margin-top:auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:36px;border-top:1px solid var(--line);
+}
+.bottom-left{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+.bottom-right{
+  font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:500;
+  letter-spacing:0.08em;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="brand-row">
+    <div class="brand-mark">Never Ranked</div>
+    <div class="brand-tag">Carousel &middot; May 2026</div>
+  </div>
+
+  <div class="eyebrow">
+    <div class="dot"></div>
+    <span>The failure mode</span>
+  </div>
+
+  <div class="center-block">
+    <div class="line-a">There is no error message.<br>No ranking drop.<br><em>Just silence.</em></div>
+    <div class="divider"></div>
+    <div class="line-b">When AI engines can't parse your site, <em>they don't tell you.</em> They cite a competitor instead.</div>
+    <div class="bottom-accent">The site looks fine to you.<br>The engines see noise.</div>
+  </div>
+
+  <div class="bottom-row">
+    <div class="bottom-left">The silent penalty</div>
+    <div class="bottom-right">4 / 6</div>
+  </div>
+
+</div>
+</body>
+</html>

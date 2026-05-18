@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Story 4 - CTA</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --term-bg:#0d0c0a;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1920px;overflow:hidden;
+  background:var(--bg);color:var(--text);
+}
+.story{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:280px 80px 280px;
+  position:relative;
+  background:radial-gradient(ellipse at 50% 50%, #251c12 0%, #0a0908 65%);
+}
+.brand-mark{
+  font-family:var(--serif);font-style:italic;font-size:34px;color:var(--gold);
+  position:absolute;top:280px;left:80px;
+}
+.center-block{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  flex:1;text-align:center;
+}
+.headline{
+  font-family:var(--serif);font-weight:400;font-style:italic;
+  font-size:120px;line-height:1.05;letter-spacing:-0.025em;
+  color:var(--gold-bright);margin-bottom:80px;
+}
+
+.url-block{
+  display:inline-flex;align-items:center;gap:18px;
+  background:var(--term-bg);border:1px solid var(--line);
+  padding:28px 40px;border-radius:12px;
+  box-shadow:0 20px 50px rgba(0,0,0,.7);
+  margin-bottom:60px;
+}
+.url-prompt{font-family:var(--mono);font-size:26px;color:var(--gold);font-weight:500}
+.url-text{font-family:var(--mono);font-size:30px;color:var(--text);font-weight:500;letter-spacing:0.01em}
+
+.subtext{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:22px;color:var(--text-mute);font-weight:500;line-height:1.6;
+}
+
+.link-sticker-hint{
+  position:absolute;bottom:380px;left:0;right:0;
+  text-align:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.38em;
+  font-size:16px;color:var(--gold);font-weight:700;
+}
+
+.bottom-prompt{
+  position:absolute;bottom:280px;left:0;right:0;
+  text-align:center;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.4em;
+  font-size:18px;color:var(--text-faint);font-weight:500;
+}
+</style>
+</head>
+<body>
+<div class="story">
+
+  <div class="brand-mark">Never Ranked</div>
+
+  <div class="center-block">
+    <div class="headline">Find out<br>yours.</div>
+
+    <div class="url-block">
+      <span class="url-prompt">&rarr;</span>
+      <span class="url-text">check.neverranked.com</span>
+    </div>
+
+    <div class="subtext">
+      30 seconds.<br>
+      No signup. No card.
+    </div>
+  </div>
+
+  <div class="link-sticker-hint">&uarr; Tap the link sticker above</div>
+  <div class="bottom-prompt">Card 4 of 4</div>
+
+</div>
+</body>
+</html>

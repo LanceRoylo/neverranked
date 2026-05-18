@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Carousel — Slide 7 the mechanic</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{--gold:#c9a84c;--gold-bright:#e8c767;--bg:#0a0908;--text:#fbf8ef;--text-mute:#a8a298;--text-faint:#6b665a;--line:#2a2620;--serif:"Playfair Display",Georgia,serif;--mono:"DM Mono","Menlo",monospace;--label:"Barlow Condensed","Helvetica Neue",sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1350px;overflow:hidden;background:var(--bg);color:var(--text);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.card{width:100%;height:100%;display:flex;flex-direction:column;padding:80px 80px 64px;position:relative;background:radial-gradient(ellipse at 50% 26%, #1a1611 0%, #0a0908 72%)}
+.brand-row{display:flex;align-items:center;justify-content:space-between}
+.brand-mark{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold)}
+.brand-tag{font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;font-size:12px;color:var(--text-faint);font-weight:500}
+.stack{display:flex;flex-direction:column;justify-content:center;flex:1}
+.kicker{font-family:var(--label);text-transform:uppercase;letter-spacing:0.4em;font-size:24px;color:var(--text-faint);font-weight:600;margin:0 0 16px}
+.title{font-family:var(--serif);font-weight:400;font-size:74px;line-height:1.04;letter-spacing:-0.02em;margin-bottom:52px}
+.title em{font-style:italic;color:var(--gold-bright)}
+.items{display:flex;flex-direction:column;gap:22px}
+.item{display:flex;align-items:flex-start;gap:26px;border-bottom:1px solid var(--line);padding-bottom:22px}
+.item .n{font-family:var(--mono);font-size:22px;color:var(--gold);width:44px;flex-shrink:0;padding-top:6px}
+.item .t{font-family:var(--label);font-size:38px;color:var(--text);line-height:1.25;font-weight:500}
+.not{font-family:var(--label);font-size:32px;color:var(--text-faint);margin-top:38px;letter-spacing:0.01em}
+.not b{color:var(--text-mute);font-weight:600}
+.bottom-row{margin-top:30px;display:flex;align-items:center;justify-content:space-between;padding-top:30px;border-top:1px solid var(--line)}
+.bottom-left{font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;font-size:12px;color:var(--text-faint);font-weight:500}
+.bottom-right{font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:500;letter-spacing:0.08em}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand-row"><div class="brand-mark">Never Ranked</div><div class="brand-tag">Carousel · May 2026</div></div>
+  <div class="stack">
+    <div class="kicker">What actually decides it</div>
+    <div class="title">A different stack <em>entirely.</em></div>
+    <div class="items">
+      <div class="item"><span class="n">01</span><span class="t">Structured data the AI can parse</span></div>
+      <div class="item"><span class="n">02</span><span class="t">Entity clarity, so it knows who you are</span></div>
+      <div class="item"><span class="n">03</span><span class="t">Third-party signals it already trusts</span></div>
+      <div class="item"><span class="n">04</span><span class="t">Content shaped like answers, not pages</span></div>
+    </div>
+    <div class="not">Not backlinks. <b>Not keyword density.</b> Not more blog posts.</div>
+  </div>
+  <div class="bottom-row"><div class="bottom-left">The real inputs</div><div class="bottom-right">7 / 9</div></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR AEO vs SEO Card</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --card:#13110e;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --red:#c5544a;
+  --red-deep:#7a2c25;
+  --green:#7fc99a;
+  --green-deep:#2f5a3d;
+  --term-bg:#0d0c0a;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+  --body:Inter,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1350px;overflow:hidden;
+  background:var(--bg);color:var(--text);font-family:var(--body);
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+}
+.card{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:70px 70px 56px;
+  position:relative;
+  background:radial-gradient(ellipse at 70% 0%, #1d1813 0%, #0a0908 75%);
+}
+
+.brand-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.brand-mark{font-family:var(--serif);font-style:italic;font-size:26px;color:var(--gold)}
+.brand-tag{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;
+  font-size:11px;color:var(--text-faint);font-weight:500;
+}
+
+.headline{
+  font-family:var(--serif);font-weight:400;
+  font-size:78px;line-height:1.04;letter-spacing:-0.025em;
+  color:var(--text);margin-bottom:18px;
+}
+.headline em{font-style:italic;color:var(--gold-bright)}
+
+.subhead{
+  font-family:var(--body);font-weight:400;
+  font-size:26px;color:var(--text-mute);
+  margin-bottom:60px;line-height:1.4;
+}
+
+/* Two-column comparison */
+.compare{
+  display:grid;grid-template-columns:1fr 1fr;gap:0;
+  border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  margin-bottom:60px;
+}
+.col-head{
+  padding:28px 32px;border-bottom:1px solid var(--line);
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:24px;font-weight:700;
+}
+.col-head.left{background:rgba(197,84,74,0.10);color:var(--red);border-right:1px solid var(--line)}
+.col-head.right{background:rgba(232,199,103,0.10);color:var(--gold-bright)}
+
+.row{
+  display:contents;
+}
+.cell{
+  padding:26px 32px;font-family:var(--body);font-size:25px;line-height:1.4;
+  border-bottom:1px solid var(--line);
+}
+.cell.left{color:var(--text-mute);border-right:1px solid var(--line);background:rgba(122,44,37,0.04)}
+.cell.right{color:var(--text);background:rgba(232,199,103,0.04)}
+.cell .strong{color:var(--text);font-weight:500}
+.cell.right .strong{color:var(--gold-bright)}
+
+.row:last-of-type .cell{border-bottom:none}
+
+.takeaway{
+  font-family:var(--serif);font-weight:400;font-style:italic;
+  font-size:38px;line-height:1.3;color:var(--gold-bright);
+  margin-bottom:36px;text-align:center;
+}
+
+.url-block{
+  display:inline-flex;align-items:center;gap:16px;
+  background:var(--term-bg);border:1px solid var(--line);
+  padding:20px 28px;border-radius:10px;
+  box-shadow:0 14px 32px rgba(0,0,0,.5);
+  align-self:center;
+}
+.url-prompt{font-family:var(--mono);font-size:22px;color:var(--gold);font-weight:500}
+.url-text{font-family:var(--mono);font-size:24px;color:var(--text);font-weight:500;letter-spacing:0.01em}
+
+.bottom-row{
+  margin-top:auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:32px;border-top:1px solid var(--line);
+}
+.bottom-left{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+.bottom-right{
+  font-family:var(--mono);font-size:12px;color:var(--text-faint);
+  letter-spacing:0.04em;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="brand-row">
+    <div class="brand-mark">Never Ranked</div>
+    <div class="brand-tag">AEO 101 &middot; May 2026</div>
+  </div>
+
+  <div class="headline">Same internet. <em>Different game.</em></div>
+  <div class="subhead">Most marketers learned SEO in the 2010s and never had to relearn.</div>
+
+  <div class="compare">
+    <div class="col-head left">SEO</div>
+    <div class="col-head right">AEO</div>
+
+    <div class="row">
+      <div class="cell left">Ranks <span class="strong">pages</span></div>
+      <div class="cell right">Generates <span class="strong">citations</span></div>
+    </div>
+    <div class="row">
+      <div class="cell left">Optimizes for <span class="strong">1</span> engine</div>
+      <div class="cell right">Optimizes for <span class="strong">7+</span> engines</div>
+    </div>
+    <div class="row">
+      <div class="cell left">Title tags, backlinks</div>
+      <div class="cell right">Schema, llms.txt, agent-readiness</div>
+    </div>
+    <div class="row">
+      <div class="cell left"><span class="strong">25</span> years old</div>
+      <div class="cell right"><span class="strong">18</span> months old</div>
+    </div>
+    <div class="row">
+      <div class="cell left">Mature playbook</div>
+      <div class="cell right">Up for grabs</div>
+    </div>
+  </div>
+
+  <div class="takeaway">The agencies who learn the new game first <br>will own the next decade.</div>
+
+  <div class="url-block">
+    <span class="url-prompt">&rarr;</span>
+    <span class="url-text">check.neverranked.com</span>
+  </div>
+
+  <div class="bottom-row">
+    <div class="bottom-left">ChatGPT &middot; Perplexity &middot; Claude &middot; Gemini &middot; Copilot &middot; AIO &middot; Gemma</div>
+    <div class="bottom-right">free check &middot; no signup</div>
+  </div>
+
+</div>
+</body>
+</html>

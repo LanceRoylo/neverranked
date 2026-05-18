@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>NR Carousel Slide 5 - Five schema types</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=DM+Mono:ital,wght@0,300;0,400;0,500;0,600&family=Barlow+Condensed:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+:root{
+  --gold:#c9a84c;
+  --gold-bright:#e8c767;
+  --bg:#0a0908;
+  --text:#fbf8ef;
+  --text-mute:#a8a298;
+  --text-faint:#6b665a;
+  --line:#2a2620;
+  --serif:"Playfair Display",Georgia,serif;
+  --mono:"DM Mono","Menlo",monospace;
+  --label:"Barlow Condensed","Helvetica Neue",sans-serif;
+  --body:Inter,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{
+  width:1080px;height:1350px;overflow:hidden;
+  background:var(--bg);color:var(--text);font-family:var(--body);
+}
+.card{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;
+  padding:80px 80px 64px;
+  position:relative;
+  background:radial-gradient(ellipse at 50% 50%, #1d1813 0%, #0a0908 70%);
+}
+
+.brand-row{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:38px;
+}
+.brand-mark{font-family:var(--serif);font-style:italic;font-size:28px;color:var(--gold)}
+.brand-tag{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.34em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+
+.eyebrow{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.28em;
+  font-size:18px;color:var(--gold);font-weight:700;margin-bottom:40px;
+  display:flex;align-items:center;gap:14px;line-height:1.4;
+}
+.eyebrow .dot{
+  width:8px;height:8px;background:var(--gold);border-radius:50%;
+  box-shadow:0 0 12px rgba(232,199,103,.5);flex-shrink:0;
+}
+
+.list{
+  display:flex;flex-direction:column;gap:24px;
+}
+.item{
+  display:flex;align-items:flex-start;gap:24px;
+  padding-bottom:18px;border-bottom:1px solid var(--line);
+}
+.item:last-child{border-bottom:none}
+.num{
+  font-family:var(--serif);font-style:italic;font-weight:400;
+  font-size:54px;line-height:1;color:var(--gold-bright);
+  min-width:64px;text-align:right;flex-shrink:0;
+}
+.body{
+  display:flex;flex-direction:column;gap:4px;padding-top:4px;
+}
+.label{
+  font-family:var(--serif);font-weight:400;
+  font-size:42px;line-height:1;letter-spacing:-0.02em;color:var(--text);
+}
+.desc{
+  font-family:var(--body);font-size:17px;line-height:1.4;color:var(--text-mute);
+}
+
+.footnote{
+  margin-top:30px;
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.36em;
+  font-size:16px;color:var(--text-mute);font-weight:500;line-height:1.7;
+  text-align:center;
+}
+.footnote em{color:var(--gold);font-style:normal;font-weight:700}
+
+.bottom-row{
+  margin-top:auto;
+  display:flex;align-items:center;justify-content:space-between;
+  padding-top:30px;border-top:1px solid var(--line);
+}
+.bottom-left{
+  font-family:var(--label);text-transform:uppercase;letter-spacing:0.32em;
+  font-size:12px;color:var(--text-faint);font-weight:500;
+}
+.bottom-right{
+  font-family:var(--mono);font-size:13px;color:var(--gold);font-weight:500;
+  letter-spacing:0.08em;
+}
+</style>
+</head>
+<body>
+<div class="card">
+
+  <div class="brand-row">
+    <div class="brand-mark">Never Ranked</div>
+    <div class="brand-tag">Carousel &middot; May 2026</div>
+  </div>
+
+  <div class="eyebrow">
+    <div class="dot"></div>
+    <span>The five most-missing schema types in 2026</span>
+  </div>
+
+  <div class="list">
+    <div class="item">
+      <div class="num">1.</div>
+      <div class="body">
+        <div class="label">FAQPage</div>
+        <div class="desc">Answers the "best X for Y" queries AI engines route on.</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="num">2.</div>
+      <div class="body">
+        <div class="label">BreadcrumbList</div>
+        <div class="desc">Tells engines where this page sits in your site's hierarchy.</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="num">3.</div>
+      <div class="body">
+        <div class="label">Article</div>
+        <div class="desc">Marks editorial content as such. Without it, AI treats blogs as marketing.</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="num">4.</div>
+      <div class="body">
+        <div class="label">Event</div>
+        <div class="desc">Time-bound content. Booking flows and dates depend on it.</div>
+      </div>
+    </div>
+    <div class="item">
+      <div class="num">5.</div>
+      <div class="body">
+        <div class="label">AggregateRating</div>
+        <div class="desc">Embedded review signal AI engines weight heavily.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footnote"><em>None cost money.</em> All are invisible to users.</div>
+
+  <div class="bottom-row">
+    <div class="bottom-left">Screenshot this slide</div>
+    <div class="bottom-right">5 / 6</div>
+  </div>
+
+</div>
+</body>
+</html>
