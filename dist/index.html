@@ -149,7 +149,7 @@
           {
             "@type": "Offer",
             "name": "Amplify",
-            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (citation tracking across all seven engines including Gemma, the open-weight reproducibility anchor, plus Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit reply briefs that tell your team what to write about and what angle only you can take so a human practitioner posts the actual reply. Three-month minimum engagement.",
+            "description": "Full-cover monthly retainer for teams ready to ship the work, not just see what's needed. Everything in Signal (citation tracking across all seven engines including Gemma, the open-weight reproducibility anchor, plus Reddit thread tracking, authority audits, schema-graded fixes, industry-percentile benchmarks, quarterly drift detection) plus a brand voice fingerprint trained on your existing writing, citation-shaped content drafts in your voice, auto-publish to WordPress, Webflow, or Shopify, a content calendar that fills itself from the roadmap, and Reddit-aware FAQ deployment that extracts the questions being asked on the Reddit threads AI engines are citing for your category, generates voice-matched answers, and ships a FAQPage schema deployed on your own domain. Three-month minimum engagement.",
             "price": "4500",
             "priceCurrency": "USD",
             "priceSpecification": {
@@ -536,9 +536,9 @@ h1,h2,h3,h4{
 .hero{
   min-height:100vh;
   min-height:100svh;
-  padding:160px 0 80px;
+  padding:140px 0 80px;
   display:flex;
-  align-items:flex-end;
+  align-items:center;
   position:relative;
   border-bottom:1px solid var(--line);
   overflow:hidden;
@@ -645,6 +645,90 @@ h1,h2,h3,h4{
 /* Hero content needs to sit above the grain overlay (z-index:1) and
    the gradient top-border pseudo (z-index:2). */
 .hero .wrap{z-index:2}
+/* Citation Demo video section (below hero). Sits on the first scroll
+   beat, max 960px centered. Frame-only treatment so the video reads
+   as a polished artifact, not a YouTube embed. */
+.citation-demo-section{
+  background:var(--bg);
+  padding:80px 0 100px;
+  border-bottom:1px solid var(--line);
+}
+.citation-demo-head{
+  margin-bottom:36px;
+}
+.citation-demo-video{
+  width:100%;
+  max-width:960px;
+  margin:0 auto;
+  position:relative;
+  border-radius:6px;
+  overflow:hidden;
+  border:1px solid var(--line);
+  box-shadow:0 24px 80px rgba(0,0,0,0.5);
+  background:var(--bg-lift);
+}
+.citation-demo-video video{
+  display:block;
+  width:100%;
+  height:auto;
+  cursor:pointer;
+}
+@media(max-width:600px){
+  .citation-demo-section{padding:48px 0 64px}
+}
+
+/* Custom unmute/mute control. Positioned bottom-right of the video
+   container. Pulsing gold ring while muted to draw attention to the
+   audio call-to-action. Solid gold when unmuted, no pulse. */
+.video-unmute-btn{
+  position:absolute;
+  bottom:18px;
+  right:18px;
+  z-index:10;
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 14px;
+  background:rgba(8,8,8,0.85);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--gold);
+  border-radius:4px;
+  color:var(--gold);
+  font-family:var(--label);
+  font-size:11px;
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:background .2s, color .2s, transform .2s;
+  font-weight:500;
+}
+.video-unmute-btn[data-state="muted"]{
+  animation:video-unmute-pulse 2s ease-in-out infinite;
+}
+.video-unmute-btn[data-state="playing"]{
+  background:rgba(8,8,8,0.65);
+  border-color:rgba(232,199,103,0.4);
+  animation:none;
+}
+.video-unmute-btn:hover{
+  background:var(--gold);
+  color:var(--bg);
+  transform:translateY(-1px);
+}
+.video-unmute-btn svg{
+  width:14px;
+  height:14px;
+  flex-shrink:0;
+}
+@keyframes video-unmute-pulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(232,199,103,0.55)}
+  50%{box-shadow:0 0 0 10px rgba(232,199,103,0)}
+}
+@media(max-width:600px){
+  .video-unmute-btn{bottom:10px;right:10px;padding:8px 10px;font-size:10px}
+  .video-unmute-btn svg{width:12px;height:12px}
+}
 .hero-grid{
   display:grid;
   grid-template-columns:1fr;
@@ -677,7 +761,7 @@ h1,h2,h3,h4{
 .hero-eyebrow .tag b{color:var(--gold);font-weight:500}
 
 .hero h1{
-  font-size:clamp(56px,11vw,188px);
+  font-size:clamp(56px,9vw,148px);
   line-height:.92;
   letter-spacing:-.025em;
   margin-bottom:40px;
@@ -4879,9 +4963,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
         </div>
         <div class="reveal" style="transition-delay:.15s">
           <p class="hero-sub" style="margin-bottom:36px">
-            <b>When your customer asks an AI engine to find a business, it picks one or two.</b> We make sure yours is one of them.
-            <br><br>
-            Other AEO services hand you a dashboard. We ship the work itself. Schema deployed to your live site, content drafted in your voice, citations measured daily across seven engines. <b style="color:var(--gold)">The seventh is the only AEO measurement engine you can audit yourself</b>: Gemma's weights are public, so your compliance team can re-run our prompts and verify our numbers. No other platform does this.
+            <b>Ask an AI engine to recommend a business in your category. Ask again.</b> The answer keeps changing, and most days you are not in it. We deploy the schema and content that make you citable, then measure it every day across <b style="color:var(--gold)">seven engines</b>.
           </p>
 
           <div class="url-check" id="urlCheck" data-state="idle">
@@ -4951,6 +5033,42 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="hero-scroll" aria-hidden="true">
       <span>Scroll</span>
       <span class="hero-scroll-line"></span>
+    </div>
+  </section>
+
+  <!-- ============ CITATION DEMO VIDEO ============ -->
+  <!-- 55-second walkthrough of the seven-engine measurement, Hawaii
+       Theatre proof, and CTA. Placed below the hero (not inside it)
+       so the URL checker remains the primary above-the-fold CTA, per
+       B2B SaaS conversion best-practices (Wistia 2023, VWO). The
+       video catches the first-scroll attention of engaged visitors
+       without crowding out the conversion path. -->
+  <section class="citation-demo-section" aria-labelledby="citationDemoLabel">
+    <div class="wrap">
+      <div class="citation-demo-head reveal">
+        <div class="section-label">
+          <span class="num">§</span>
+          <span id="citationDemoLabel">The platform, in one minute</span>
+          <span class="rule"></span>
+          <span>watch the walkthrough</span>
+        </div>
+      </div>
+      <div class="citation-demo-video reveal" style="transition-delay:.1s" data-video-with-audio>
+        <video
+          src="/citation-demo.mp4"
+          autoplay
+          muted
+          loop
+          playsinline
+          preload="metadata"
+          aria-label="NeverRanked citation tracking walkthrough"
+        ></video>
+        <button class="video-unmute-btn" type="button" data-state="muted" aria-label="Unmute video">
+          <svg class="icon-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+          <svg class="icon-sound" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="display:none"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M15.54 8.46a5 5 0 010 7.07"></path><path d="M19.07 4.93a10 10 0 010 14.14"></path></svg>
+          <span class="video-unmute-label">Tap to unmute</span>
+        </button>
+      </div>
     </div>
   </section>
 
@@ -5422,6 +5540,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
                 Most agencies stop at the report. Amplify finishes the loop: gap surfaced &rarr; draft generated &rarr; reviewed &rarr; published. Without you assembling a content team.
               </div>
             </li>
+            <li>
+              <span class="del-num">06</span>
+              <div>
+                <strong>Your classic search presence strengthens too.</strong>
+                The structured data and content we deploy to make you citable also strengthens your classic search rich results and organic discovery. Included, because the AEO work produces it. Not a separate SEO service we bill or measure.
+              </div>
+            </li>
           </ol>
           <a href="https://app.neverranked.com/checkout/amplify" class="del-cta">Start Amplify</a>
         </div>
@@ -5859,9 +5984,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   <section class="tool-banner reveal" id="competitorCheck">
     <div class="wrap">
       <div class="inner">
-        <span class="kicker">Competitor check · 30 seconds</span>
-        <h2>See who ChatGPT cites <em>instead of you.</em></h2>
-        <p class="sub">Drop a competitor's domain. We'll grade their AEO readiness and show you where they're winning. The gaps are the opening.</p>
+        <span class="kicker">Category check · 30 seconds</span>
+        <h2>See how unstable your category's <em>AI answers are.</em></h2>
+        <p class="sub">Drop any domain in your category. We grade its AEO readiness and show how consistently the engines actually cite it. Inconsistency is the opening.</p>
         <form class="comp-form" id="compForm" data-state="idle" autocomplete="off" novalidate>
           <div class="comp-field">
             <span class="prefix">https://</span>
@@ -7314,6 +7439,50 @@ window.scrollTo(0,0);
       heroForm.dispatchEvent(new Event('submit',{cancelable:true,bubbles:true}));
     }, 650);
     hide();
+  });
+})();
+
+/* Video unmute/mute toggle. Any [data-video-with-audio] container
+   gets click-to-toggle on both the video and the .video-unmute-btn.
+   Pulsing gold ring while muted draws attention to the audio CTA.
+   Once unmuted the pulse stops and the button shows "Mute". */
+(function(){
+  document.querySelectorAll('[data-video-with-audio]').forEach(function(wrap){
+    var video = wrap.querySelector('video');
+    var btn   = wrap.querySelector('.video-unmute-btn');
+    if (!video || !btn) return;
+    var label   = btn.querySelector('.video-unmute-label');
+    var iconMut = btn.querySelector('.icon-muted');
+    var iconSnd = btn.querySelector('.icon-sound');
+    function render(){
+      if (video.muted){
+        btn.setAttribute('data-state','muted');
+        btn.setAttribute('aria-label','Unmute video');
+        if (label) label.textContent = 'Tap to unmute';
+        if (iconMut) iconMut.style.display = '';
+        if (iconSnd) iconSnd.style.display = 'none';
+      } else {
+        btn.setAttribute('data-state','playing');
+        btn.setAttribute('aria-label','Mute video');
+        if (label) label.textContent = 'Mute';
+        if (iconMut) iconMut.style.display = 'none';
+        if (iconSnd) iconSnd.style.display = '';
+      }
+    }
+    function toggle(e){
+      if (e) e.stopPropagation();
+      video.muted = !video.muted;
+      // Bring the video to the beginning when unmuting so the visitor
+      // hears the line from the top; if already mid-play they get the
+      // full story rather than catching mid-sentence.
+      if (!video.muted && video.currentTime > 5){
+        try { video.currentTime = 0; } catch(_) {}
+      }
+      render();
+    }
+    btn.addEventListener('click', toggle);
+    video.addEventListener('click', toggle);
+    render();
   });
 })();
 

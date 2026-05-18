@@ -294,11 +294,11 @@ p a:hover,ul a:hover{opacity:.8}
     <ul>
       <li><b>It does not read cookies.</b> The word "cookie" appears nowhere in the snippet code.</li>
       <li><b>It does not read forms.</b> No <code>document.querySelector</code> calls against inputs, no listeners on submit events.</li>
-      <li><b>It does not read DOM contents.</b> Doesn't traverse the page, doesn't read text, doesn't see what your visitors typed.</li>
-      <li><b>It does not make outbound requests.</b> No <code>fetch</code>, no <code>XMLHttpRequest</code>, no <code>navigator.sendBeacon</code>. The snippet is purely DOM-injection.</li>
+      <li><b>It does not read DOM contents</b> beyond looking for an optional <code>data-nr-faq</code> marker element you control. No page-text traversal, no read of what your visitors typed.</li>
       <li><b>It does not run <code>eval</code> or use the <code>Function</code> constructor.</b> The injected JSON is parsed by <code>JSON.stringify</code> on our side and the browser's native <code>application/ld+json</code> handler on yours.</li>
       <li><b>It does not contain credentials, tokens, or anything that could be used to identify your customer base if leaked.</b> The URL contains a public client_slug. That's it.</li>
     </ul>
+    <p style="margin-top:18px"><b>One narrow outbound call:</b> when a visitor lands on your site and their <code>document.referrer</code> matches a hardcoded list of AI engine domains (ChatGPT, Perplexity, Gemini, Claude, Microsoft Copilot, DeepSeek, Meta AI), the snippet sends a small <code>navigator.sendBeacon</code> payload to <code>app.neverranked.com/track/referral/&lt;snippet_token&gt;</code>. The payload contains the referrer host (e.g. <code>chatgpt.com</code>), the landing path (truncated to 200 chars), and nothing else. No cookies, no visitor identity, no form data. Server-side hashes the IP (SHA-256, truncated to 32 chars) for dedup. This powers the "AI engines drove N visitors to your site this week" view on your dashboard and is the only outbound call the snippet ever makes. Source: <code>dashboard/src/referrer-tracking.ts</code>.</p>
   </div>
 </section>
 
@@ -331,6 +331,34 @@ p a:hover,ul a:hover{opacity:.8}
     </p>
     <p>
       Compromising any one customer's snippet does not reach any other customer. Our database queries are parameterized (using D1 prepared statements) so the slug cannot be used as an injection vector against the server.
+    </p>
+  </div>
+</section>
+
+<section class="legal-section">
+  <div class="wrap">
+    <div class="section-label">
+      <span class="num">04.5</span>
+      <span>Append-only audit log on every schema change</span>
+      <span class="rule"></span>
+    </div>
+    <p>
+      Every approval, edit, pause, and archive on a schema we deploy through our snippet is recorded in an append-only audit log (<code>schema_audit_log</code> table in our database). Each row captures:
+    </p>
+    <ul>
+      <li>The client_slug, schema type, and schema_injection_id</li>
+      <li>The SHA-256 hash of the JSON-LD payload as of that change</li>
+      <li>The prior payload's hash (for edits), so the lineage of every byte that has been deployed is traceable</li>
+      <li>A 280-character preview of the payload for human readability</li>
+      <li>The user_id and email of the actor who approved the change</li>
+      <li>A hash of the actor's IP (SHA-256, truncated to 16 chars)</li>
+      <li>A Unix timestamp</li>
+    </ul>
+    <p>
+      Application code never issues <code>UPDATE</code> or <code>DELETE</code> against this table. Append-only is the whole point. If an attacker compromised our infrastructure and pushed malicious schema to a customer site, the push would be recorded in this log alongside legitimate approvals. Detection-and-revert is the layer this enables. Source: <code>dashboard/src/lib/schema-audit.ts</code> and migration <code>0079_schema_audit_log.sql</code>.
+    </p>
+    <p>
+      Cryptographic signing of payloads with cold-storage keys (i.e. signing keys that do not live in our Cloudflare Worker, so a Worker compromise does not also compromise the signing key) is a roadmap item that activates when we onboard our first enterprise customer requiring it. Until then, the append-only audit log is the defense-in-depth layer.
     </p>
   </div>
 </section>
@@ -433,7 +461,7 @@ p a:hover,ul a:hover{opacity:.8}
       A few risks we want named because they're real, not because they're alarming:
     </p>
     <ul>
-      <li><b>If our infrastructure is breached, an attacker could push bad schema to all active customer sites simultaneously.</b> Mitigation: all schema passes the completeness grader before serving, and any push triggers an entry in our admin alerts. Detection-then-revert is the layer we currently have. Cryptographic signing of schema payloads is on the roadmap.</li>
+      <li><b>If our infrastructure is breached, an attacker could push bad schema to all active customer sites simultaneously.</b> Mitigation: all schema passes the completeness grader before serving, every push is recorded in our append-only <code>schema_audit_log</code> table with a SHA-256 hash and the actor (see section 04.5), and any push triggers an entry in our admin alerts. Detection-then-revert is the layer we currently have. Cryptographic signing of payloads with cold-storage keys is a roadmap item that activates when an enterprise customer requires it -- doing it earlier would put the signing key inside the same Worker that holds the schema generator, which is security theater rather than defense-in-depth.</li>
       <li><b>WordPress Application Passwords are revocable but not multi-factor.</b> If your WordPress admin account is breached, the attacker could revoke or replace our credential. Recommend you set up 2FA on your WP admin.</li>
       <li><b>We do not hold any audited compliance certificate yet.</b> If your procurement process requires SOC 2 or ISO 27001, we are not ready for that engagement. Email us so we know it's on the demand list.</li>
     </ul>
