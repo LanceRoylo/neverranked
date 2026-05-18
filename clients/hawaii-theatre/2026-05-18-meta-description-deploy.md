@@ -50,28 +50,49 @@ dash (–) before going live.**
 
 ## Deploy work order (for Claude Code on the laptop)
 
-The actual injection is NOT configured in the `neverranked` static
-site repo — grep hits for "hawaiitheatre" there are tooling/test
-harnesses only. Deployment happens in the NeverRanked snippet
-delivery system that serves `hawaiitheatre.com`.
+Correction to the earlier draft of this doc: the snippet delivery IS
+in this repo. The Worker serves `GET /inject/:client_slug.js` from
+D1 (`dashboard/src/routes/inject.ts`) and that is what's live on
+`hawaiitheatre.com`. It previously injected JSON-LD and FAQ HTML only
+— there was no meta-description path. That path now exists.
 
-Steps:
+### Code (done on branch `claude/htc-greg-inquiry-QJ35p`)
 
-1. Locate the per-client snippet/profile config for the
-   `hawaii-theatre` client in the NeverRanked delivery codebase
-   (the system that serves the live JS snippet, not this marketing
-   repo). Confirm where injected `<head>` signals (schema, FAQs)
-   are defined for this client — the meta description goes in the
-   same place.
-2. Add a `<meta name="description" content="...">` injection (or
-   the delivery system's equivalent field) with the approved copy
-   verbatim. If a meta description tag already exists on the page,
-   the snippet must replace/own it rather than create a duplicate.
-3. Sanity-check the rendered string: no em dash, no en dash, no
-   smart-quote artifacts, exact 218-char copy, single `description`
-   meta tag on the page.
-4. Deploy to the live snippet for `hawaiitheatre.com`.
-5. Re-run the NeverRanked technical signals scan on
+- `dashboard/migrations/0095_meta_descriptions.sql` — new
+  `meta_descriptions` table (per-client, `target_pages`,
+  draft/approved workflow; mirrors `schema_injections`).
+- `dashboard/migrations/backfill-htc-meta-description.sql` —
+  idempotent insert of the approved copy for `hawaii-theatre`,
+  `status='approved'`, `target_pages='["/"]'` (homepage only).
+- `dashboard/src/routes/inject.ts` — `.js` endpoint now injects a
+  single `<meta name="description">` for matching pages (reuses an
+  existing tag if present, else creates one — owns/replaces, never
+  duplicates). `.json` sibling now returns `meta_descriptions` so
+  the scanner can follow them.
+- `packages/aeo-analyzer/src/extract.ts` + `report.ts` — the
+  scanner's snippet-follower now fetches and applies injected meta
+  descriptions, so the technical-signals scan reflects reality.
+- `dashboard/src/types.ts` — `MetaDescription` type.
+- `dashboard/test/inject-meta.test.ts` — coverage (Missing→present,
+  no sitewide bleed, owns existing tag, no em dash). Full dashboard
+  suite green (24/24); analyzer regression green (47/47).
+
+### Remaining production steps (run on NeverRanked infra)
+
+These touch the live D1 DB and Worker, so they are not run from the
+dev container. From `dashboard/`:
+
+1. Apply the schema migration to remote D1:
+   `npm run db:migrate`
+   (= `wrangler d1 migrations apply neverranked-app --remote`)
+2. Seed Greg's approved copy (idempotent, safe to re-run):
+   `wrangler d1 execute neverranked-app --remote --file=migrations/backfill-htc-meta-description.sql`
+3. Deploy the Worker: `npm run deploy`
+   (or let the normal `deploy-dashboard.yml` pipeline ship it).
+4. Verify the snippet now carries it:
+   `curl -s https://app.neverranked.com/inject/hawaii-theatre.js | grep -c 'name","description"'`
+   and `curl -s https://app.neverranked.com/inject/hawaii-theatre.json | jq '.meta_descriptions'`
+5. Re-run the technical-signals scan on
    `https://www.hawaiitheatre.com/` and confirm "Meta description"
    flips from Missing to present with the approved text.
 

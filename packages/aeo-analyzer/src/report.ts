@@ -8,7 +8,8 @@
  */
 
 import type { Report } from "./types";
-import { extractMeta, findInjectSnippetUrls, fetchInjectedSchemas, filterByUrl, injectIntoHtml } from "./extract";
+import { extractMeta, findInjectSnippetUrls, fetchInjectedPayload, filterByUrl, injectIntoHtml, pickMetaForUrl, injectMetaIntoHtml } from "./extract";
+import type { InjectedSchema, InjectedMeta } from "./extract";
 import { generateRedFlags } from "./flags";
 import { calculateAeoScore, calculateGrade } from "./score";
 import { generateTechnicalSignals, CRITICAL_SCHEMAS } from "./signals";
@@ -71,12 +72,15 @@ export async function buildReportFollowingSnippets(
 ): Promise<Report & { injected_schema_count?: number }> {
   const snippetBases = findInjectSnippetUrls(html);
   console.log(`[report] ${url}: found ${snippetBases.length} inject snippets: ${JSON.stringify(snippetBases)}`);
-  const allInjected = (await Promise.all(
-    snippetBases.map((b) => fetchInjectedSchemas(b, fetchFn))
-  )).flat();
+  const payloads = await Promise.all(
+    snippetBases.map((b) => fetchInjectedPayload(b, fetchFn))
+  );
+  const allInjected: InjectedSchema[] = payloads.flatMap((p) => p.schemas);
+  const allMetas: InjectedMeta[] = payloads.flatMap((p) => p.metas);
   const matched = filterByUrl(allInjected, url);
-  console.log(`[report] ${url}: ${allInjected.length} total injected, ${matched.length} matched this URL`);
-  const augmented = injectIntoHtml(html, matched);
+  const matchedMeta = pickMetaForUrl(allMetas, url);
+  console.log(`[report] ${url}: ${allInjected.length} total injected, ${matched.length} matched this URL; meta ${matchedMeta ? "injected" : "none"}`);
+  const augmented = injectMetaIntoHtml(injectIntoHtml(html, matched), matchedMeta);
   const report = buildReport(url, augmented);
   return { ...report, injected_schema_count: matched.length };
 }

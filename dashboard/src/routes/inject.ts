@@ -11,7 +11,7 @@
  * path so a logging failure can't slow down or break the response.
  */
 
-import type { Env, SchemaInjection, InjectionConfig } from "../types";
+import type { Env, SchemaInjection, InjectionConfig, MetaDescription } from "../types";
 import { logBotHit, refererPath } from "../bot-analytics";
 import { referrerTrackingSnippet } from "../referrer-tracking";
 
@@ -108,8 +108,19 @@ export async function handleInjectScript(
       .all<Pick<SchemaInjection, "schema_type" | "json_ld" | "target_pages">>()
   ).results;
 
-  if (injections.length === 0) {
-    return new Response("/* NeverRanked: no active schema */", {
+  // Approved meta descriptions (same per-page targeting + workflow as
+  // schema_injections). A client can have a description with no schema
+  // or vice versa, so we only bail when BOTH are empty.
+  const metaRows = (
+    await env.DB.prepare(
+      "SELECT content, target_pages FROM meta_descriptions WHERE client_slug = ? AND status = 'approved' ORDER BY id"
+    )
+      .bind(slug)
+      .all<Pick<MetaDescription, "content" | "target_pages">>()
+  ).results;
+
+  if (injections.length === 0 && metaRows.length === 0) {
+    return new Response("/* NeverRanked: no active schema or meta */", {
       headers: {
         "Content-Type": "application/javascript; charset=utf-8",
         "Cache-Control": "public, max-age=300, s-maxage=300",
@@ -122,6 +133,14 @@ export async function handleInjectScript(
   const schemas = injections.map((inj) => {
     const pages = inj.target_pages === "*" ? '"*"' : inj.target_pages;
     return `{pages:${pages},ld:${inj.json_ld}}`;
+  });
+
+  // Build the meta-description array for the JS. JSON.stringify gives a
+  // safe double-quoted JS string literal for the content; pages reuses
+  // the schema_injections encoding ('*' literal or a JSON array).
+  const metas = metaRows.map((m) => {
+    const pages = m.target_pages === "*" ? '"*"' : m.target_pages;
+    return `{pages:${pages},content:${JSON.stringify(m.content)}}`;
   });
 
   // Append the AI referrer tracking snippet only when we have a token
@@ -158,7 +177,22 @@ export async function handleInjectScript(
 
   const js = `(function(){
 var schemas=[${schemas.join(",")}];
+var metas=[${metas.join(",")}];
 var path=location.pathname;
+function pagesMatch(pages){
+  if(pages==="*")return true;
+  if(!Array.isArray(pages))return false;
+  return pages.some(function(p){
+    return p.endsWith("*")?path.startsWith(p.slice(0,-1)):path===p;
+  });
+}
+for(var mi=0;mi<metas.length;mi++){
+  if(!pagesMatch(metas[mi].pages))continue;
+  var dtag=document.querySelector('meta[name="description"]');
+  if(!dtag){dtag=document.createElement("meta");dtag.setAttribute("name","description");document.head.appendChild(dtag);}
+  dtag.setAttribute("content",metas[mi].content);
+  break;
+}
 schemas.forEach(function(s){
   var match=false;
   if(s.pages==="*"){match=true}
@@ -219,6 +253,7 @@ function injectFAQVisible(ld){
       "Cache-Control": `public, max-age=${ttl}, s-maxage=${ttl}`,
       "Access-Control-Allow-Origin": "*",
       "X-NR-Schemas": String(injections.length),
+      "X-NR-Meta": String(metaRows.length),
     },
   });
 }
@@ -247,7 +282,7 @@ export async function handleInjectJson(
   ).bind(slug).first<{ enabled: number }>();
 
   if (!config || !config.enabled) {
-    return jsonResponse({ client_slug: slug, schemas: [], note: "not configured or disabled" });
+    return jsonResponse({ client_slug: slug, schemas: [], meta_descriptions: [], note: "not configured or disabled" });
   }
 
   const injections = (
@@ -268,7 +303,22 @@ export async function handleInjectJson(
     return { schema_type: inj.schema_type, pages, ld };
   }).filter((s) => s.ld !== null);
 
-  return jsonResponse({ client_slug: slug, schemas });
+  const metaRows = (
+    await env.DB.prepare(
+      "SELECT content, target_pages FROM meta_descriptions WHERE client_slug = ? AND status = 'approved' ORDER BY id"
+    ).bind(slug).all<Pick<MetaDescription, "content" | "target_pages">>()
+  ).results;
+
+  const meta_descriptions = metaRows.map((m) => {
+    let pages: string | string[] = "*";
+    if (m.target_pages !== "*") {
+      try { pages = JSON.parse(m.target_pages); }
+      catch { pages = "*"; /* malformed -- treat as all-pages, mirrors schema handling */ }
+    }
+    return { content: m.content, pages };
+  });
+
+  return jsonResponse({ client_slug: slug, schemas, meta_descriptions });
 }
 
 function jsonResponse(body: unknown): Response {
