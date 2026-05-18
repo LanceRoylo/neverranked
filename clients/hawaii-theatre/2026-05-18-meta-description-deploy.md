@@ -77,24 +77,40 @@ D1 (`dashboard/src/routes/inject.ts`) and that is what's live on
   no sitewide bleed, owns existing tag, no em dash). Full dashboard
   suite green (24/24); analyzer regression green (47/47).
 
-### Remaining production steps (run on NeverRanked infra)
+### Deployment is fully automated (do NOT run wrangler by hand)
 
-These touch the live D1 DB and Worker, so they are not run from the
-dev container. From `dashboard/`:
+The dashboard's D1 (`neverranked-app`, db id `def9e1a6…`) lives in
+the Cloudflare account the CI deploy token owns — NOT a founder's
+personal account. A laptop on a personal OAuth login gets API error
+`7403 (account not authorized)` even with a `d1 (write)` token,
+because the database simply is not in that account. This is by
+design: `.github/workflows/deploy-dashboard.yml` is the only thing
+that may write this D1.
 
-1. Apply the schema migration to remote D1:
-   `npm run db:migrate`
-   (= `wrangler d1 migrations apply neverranked-app --remote`)
-2. Seed Greg's approved copy (idempotent, safe to re-run):
-   `wrangler d1 execute neverranked-app --remote --file=migrations/backfill-htc-meta-description.sql`
-3. Deploy the Worker: `npm run deploy`
-   (or let the normal `deploy-dashboard.yml` pipeline ship it).
-4. Verify the snippet now carries it:
-   `curl -s https://app.neverranked.com/inject/hawaii-theatre.js | grep -c 'name","description"'`
-   and `curl -s https://app.neverranked.com/inject/hawaii-theatre.json | jq '.meta_descriptions'`
-5. Re-run the technical-signals scan on
-   `https://www.hawaiitheatre.com/` and confirm "Meta description"
-   flips from Missing to present with the approved text.
+That workflow fires on every push to `main` touching `dashboard/**`
+and runs, with the correct CI credentials:
+
+1. `wrangler deploy --dry-run` (build check)
+2. `wrangler d1 migrations apply neverranked-app --remote`
+3. `wrangler deploy`
+
+So both migrations ship themselves on merge:
+
+- `0095_meta_descriptions.sql` — creates the table.
+- `0096_seed_htc_meta_description.sql` — seeds Greg's approved copy.
+  This is a numbered migration on purpose (step 2 above applies
+  numbered migrations only; a separate backfill file would never run
+  because no one has hand-write access to this D1).
+
+There is nothing to run on a laptop. To confirm after the
+deploy-dashboard workflow goes green on the merge commit:
+
+- `curl -s https://app.neverranked.com/inject/hawaii-theatre.json | grep -o '"meta_descriptions":\[[^]]*\]'`
+  → expect Greg's sentence with `"pages":["/"]`.
+- Re-run the technical-signals scan on
+  `https://www.hawaiitheatre.com/` and confirm "Meta description"
+  flips from Missing to the approved text (yellow "will truncate"
+  at 218 chars — the known, client-approved tradeoff).
 
 ## Acceptance criteria
 
