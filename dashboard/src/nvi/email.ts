@@ -11,6 +11,7 @@
  * + send -- human-in-the-loop is the entire deal.
  */
 import type { Env } from "../types";
+import { sendViaResend } from "../email";
 import { fetchNviPdf } from "./pdf";
 import { gradeBand } from "../../../packages/aeo-analyzer/src/grade-bands";
 
@@ -118,7 +119,7 @@ neverranked.com`;
   const attachmentFilename = `nvi-${report.client_slug}-${report.reporting_period}.pdf`;
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,

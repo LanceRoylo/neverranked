@@ -17,6 +17,7 @@ import { createMagicLink } from "../auth";
 import { scanDomain } from "../scanner";
 import { autoGenerateRoadmap } from "../auto-provision";
 import { sendSnippetDeliveryEmail } from "../agency-emails";
+import { sendViaResend } from "../email";
 import {
   handleAgencyCheckoutCompleted,
   handleAgencySubscriptionDeleted,
@@ -750,7 +751,7 @@ export async function handleStripeWebhook(
             const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent(next)}`;
             const planConfig = PLANS[plan];
 
-            const welcomeResp = await fetch("https://api.resend.com/emails", {
+            const welcomeResp = await sendViaResend(env, {
               method: "POST",
               headers: {
                 "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -792,7 +793,7 @@ export async function handleStripeWebhook(
         // Send notification to admin (same explicit-status pattern as above)
         try {
           const planConfig = PLANS[plan];
-          const adminResp = await fetch("https://api.resend.com/emails", {
+          const adminResp = await sendViaResend(env, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -938,7 +939,7 @@ export async function handleStripeWebhook(
 
         try {
           const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
-          await fetch("https://api.resend.com/emails", {
+          await sendViaResend(env, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -961,7 +962,7 @@ NeverRanked`,
             }),
           });
           // Also notify admin
-          await fetch("https://api.resend.com/emails", {
+          await sendViaResend(env, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -998,7 +999,7 @@ NeverRanked`,
             "SELECT email FROM users WHERE stripe_customer_id = ?"
           ).bind(subscription.customer).first<{ email: string }>();
 
-          await fetch("https://api.resend.com/emails", {
+          await sendViaResend(env, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1041,7 +1042,7 @@ NeverRanked`,
 
           // Admin alert (existing behavior, names whichever attribution we found)
           const adminLabel = user?.email || agencyRow?.contact_email || customerId;
-          await fetch("https://api.resend.com/emails", {
+          await sendViaResend(env, {
             method: "POST",
             headers: {
               "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1334,7 +1335,7 @@ export async function handlePulseWaitlist(
       if (magicToken) {
         const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
         const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent("/onboard/pulse")}`;
-        const welcomeResp = await fetch("https://api.resend.com/emails", {
+        const welcomeResp = await sendViaResend(env, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${env.RESEND_API_KEY}`,

@@ -11,7 +11,7 @@
  */
 
 import type { Env, Agency, Domain } from "./types";
-import { logEmailDelivery } from "./email";
+import { logEmailDelivery, emailGloballyPaused } from "./email";
 
 const BRAND_FROM = "NeverRanked <hello@neverranked.com>";
 
@@ -71,6 +71,10 @@ async function sendResend(
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Would send "${subject}" to ${to}`);
+    return true;
+  }
+  if (emailGloballyPaused(env)) {
+    console.log(`[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed agency email "${subject}" to ${to}`);
     return true;
   }
   try {

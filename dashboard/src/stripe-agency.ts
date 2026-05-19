@@ -20,6 +20,7 @@
  */
 
 import type { Agency, Env } from "./types";
+import { sendViaResend } from "./email";
 import { getAgency } from "./agency";
 
 // ---------------------------------------------------------------------------
@@ -297,7 +298,7 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
   // Ops notification (unchanged from before)
   if (env.RESEND_API_KEY && env.ADMIN_EMAIL) {
     try {
-      await fetch("https://api.resend.com/emails", {
+      await sendViaResend(env, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -341,7 +342,7 @@ export async function handleAgencyInvoiceFailed(event: any, env: Env): Promise<v
     // Email the agency contact (separate from the ops email above).
     if (env.RESEND_API_KEY && agency.contact_email) {
       try {
-        await fetch("https://api.resend.com/emails", {
+        await sendViaResend(env, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${env.RESEND_API_KEY}`,

@@ -23,6 +23,7 @@
  */
 
 import type { Env } from "./types";
+import { sendViaResend } from "./email";
 
 // ---------------------------------------------------------------------------
 // Pause switch
@@ -386,7 +387,7 @@ ${alertsHtml}
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,

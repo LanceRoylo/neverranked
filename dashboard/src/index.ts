@@ -77,6 +77,7 @@ import { handleLeads, handleLeadsJson } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal, handlePulseWaitlist } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
 import { runWeeklyScans, runDailyTasks, dispatchWeeklyDeliveries } from "./cron";
+import { sendViaResend } from "./email";
 import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript, handleInjectJson } from "./routes/inject";
@@ -1574,7 +1575,7 @@ export default {
         // ADMIN_EMAIL using the same code path as the webhook. This
         // bypasses the silent-401 problem -- we capture the actual
         // response body so we know whether sending works at all.
-        const testSendResp = await fetch("https://api.resend.com/emails", {
+        const testSendResp = await sendViaResend(env, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${env.RESEND_API_KEY}`,

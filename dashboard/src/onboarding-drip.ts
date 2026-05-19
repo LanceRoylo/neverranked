@@ -8,6 +8,7 @@
  */
 
 import type { Env, User, ScanResult } from "./types";
+import { sendViaResend } from "./email";
 
 const DAY_IN_SECONDS = 86400;
 
@@ -102,7 +103,7 @@ async function getLatestScan(user: DripUser, env: Env): Promise<ScanResult | nul
 
 async function sendEmail(to: string, subject: string, html: string, env: Env): Promise<boolean> {
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,

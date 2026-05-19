@@ -14,6 +14,7 @@
  */
 
 import type { Env } from "./types";
+import { sendViaResend } from "./email";
 
 // 2026-05-12 07:00 UTC = 9pm Pacific/Honolulu 2026-05-11. The first
 // daily cron fires at 06:00 UTC -- so this triggers on the morning of
@@ -94,7 +95,7 @@ async function sendEmail(env: Env, subject: string, text: string): Promise<boole
     console.log(text);
     return true;
   }
-  const resp = await fetch("https://api.resend.com/emails", {
+  const resp = await sendViaResend(env, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${env.RESEND_API_KEY}`,

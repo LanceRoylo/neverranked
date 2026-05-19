@@ -151,6 +151,12 @@ export async function sendPendingDigests(env: Env): Promise<{ digestsSent: numbe
     const html = buildDigestHtml(c.client_slug, alerts);
 
     let delivered = false;
+    // Global email kill switch. Inline to avoid a circular import
+    // (email.ts -> citations.ts -> citation-alerts.ts).
+    if ((env as { EMAIL_GLOBAL_PAUSE?: string }).EMAIL_GLOBAL_PAUSE === "1") {
+      console.log(`[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed citation alert for ${c.client_slug}`);
+      continue;
+    }
     try {
       const resp = await fetch("https://api.resend.com/emails", {
         method: "POST",

@@ -7,6 +7,7 @@
 
 import type { Env, User } from "../types";
 import { layout, html, redirect, esc } from "../render";
+import { sendViaResend } from "../email";
 
 export async function handleSupport(user: User, env: Env, url?: URL): Promise<Response> {
   const sent = url?.searchParams.get("sent") === "1";
@@ -136,7 +137,7 @@ export async function handleSupportSubmit(request: Request, user: User, env: Env
   // Send via Resend
   if (env.RESEND_API_KEY) {
     try {
-      await fetch("https://api.resend.com/emails", {
+      await sendViaResend(env, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${env.RESEND_API_KEY}`,

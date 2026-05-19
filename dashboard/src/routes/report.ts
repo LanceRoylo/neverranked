@@ -7,6 +7,7 @@
 
 import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscSnapshot, Agency, BrandingContext } from "../types";
 import { layout, html, esc, redirect, safeParse, shortDate } from "../render";
+import { sendViaResend } from "../email";
 import { canAccessClient } from "../agency";
 
 interface MonthBounds {
@@ -576,7 +577,7 @@ export async function handleSendReport(clientSlug: string, monthSlug: string, us
   const fromLine = `${brandName} <reports@neverranked.com>`;
   for (const client of clients) {
     try {
-      await fetch("https://api.resend.com/emails", {
+      await sendViaResend(env, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${env.RESEND_API_KEY}`,

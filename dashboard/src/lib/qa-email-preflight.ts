@@ -228,6 +228,14 @@ export async function sendEmailViaResend(
   // Preflight first. Throws QAPreflightError if red and blocking.
   await preflightEmail(env, input, options);
 
+  // Global email kill switch. Inline (not imported from ./email) to
+  // avoid a circular dependency -- email.ts already imports this module.
+  // Synthetic success so callers neither retry nor raise alerts.
+  if ((env as { EMAIL_GLOBAL_PAUSE?: string }).EMAIL_GLOBAL_PAUSE === "1") {
+    console.log(`[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed preflight send "${input.subject}"`);
+    return { ok: true, status: 200, resend_id: "paused-suppressed" };
+  }
+
   const apiKey = (env as { RESEND_API_KEY?: string }).RESEND_API_KEY;
   if (!apiKey) {
     return { ok: false, status: 0, error: "RESEND_API_KEY not configured" };

@@ -19,6 +19,7 @@
  */
 
 import type { Env } from "./types";
+import { sendViaResend } from "./email";
 import { buildAuditTemplateWithCache } from "./audit-template";
 import { runAuditQa, recordQaRun, type QaRunResult } from "./audit-qa-agent";
 import { addInboxItem } from "./admin-inbox";
@@ -260,7 +261,7 @@ neverranked.com`;
 </body></html>`;
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,

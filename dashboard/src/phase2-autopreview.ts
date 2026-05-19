@@ -15,6 +15,7 @@
  * deployed-but-dormant exactly like the migration's PHASE5 gate.
  */
 import type { Env } from "./types";
+import { sendViaResend } from "./email";
 
 /** Shared inert flag — single source of truth, the same single-row
  * outreach_config the outreach Worker's limiter reads. */
@@ -179,7 +180,7 @@ export async function sendPhase2Digest(env: Env): Promise<void> {
 </div>`;
 
   try {
-    await fetch("https://api.resend.com/emails", {
+    await sendViaResend(env, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,

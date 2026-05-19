@@ -9,6 +9,32 @@ import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
 import { buildStateOfAeoBlock, type StateOfAeoLatest } from "./state-of-aeo";
 
+/**
+ * Global email kill switch. When EMAIL_GLOBAL_PAUSE === "1" every send
+ * routed through sendViaResend() is suppressed -- no Resend call, no
+ * email -- and reported as a synthetic success so callers neither retry
+ * nor raise admin alerts. Toggled via `wrangler secret put/delete
+ * EMAIL_GLOBAL_PAUSE`. Auth/magic-link is intentionally NOT routed
+ * through this and keeps sending, so a pause can never lock anyone out
+ * of the dashboard. Added 2026-05-18 per a deliberate all-channel
+ * pause directive; remove the secret to resume.
+ */
+export function emailGloballyPaused(env: Env): boolean {
+  return (env as { EMAIL_GLOBAL_PAUSE?: string }).EMAIL_GLOBAL_PAUSE === "1";
+}
+
+/** Single Resend chokepoint. Every non-auth send goes through here. */
+export async function sendViaResend(env: Env, init: RequestInit): Promise<Response> {
+  if (emailGloballyPaused(env)) {
+    console.log("[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed a Resend send (no email dispatched)");
+    return new Response(JSON.stringify({ id: "paused-suppressed", paused: true }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }
+  return fetch("https://api.resend.com/emails", init);
+}
+
 // Default brand visuals used when no agency override is supplied.
 const NR_BRAND_NAME = "Never Ranked";
 const NR_PRIMARY = "#e8c767";
@@ -112,7 +138,10 @@ export async function sendMagicLinkEmail(
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    // AUTH email: intentionally a raw fetch, NOT sendViaResend -- it
+    // must keep sending during a global email pause so no one is
+    // locked out of the dashboard.
+    const resp = await fetch("https://api.resend.com/emails", /* pause-exempt */ {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -170,7 +199,7 @@ export async function sendFreeMagicLinkEmail(
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -343,7 +372,7 @@ export async function sendFreeScoreDropAlertEmail(
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -435,7 +464,7 @@ export async function sendInviteEmail(
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -600,7 +629,7 @@ export async function sendDigestEmail(
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -774,7 +803,7 @@ export async function sendAnnualRecapEmail(
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -905,7 +934,7 @@ export async function sendDormancyCheckInEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1028,7 +1057,7 @@ export async function sendSnippetDetectedEmail(
   ].filter(Boolean).join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1085,7 +1114,7 @@ export async function sendGradeUpEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1144,7 +1173,7 @@ export async function sendPhaseCompleteEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1220,7 +1249,7 @@ export async function sendPaymentFailedEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1296,7 +1325,7 @@ export async function sendCardExpiringEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1405,7 +1434,7 @@ export async function sendCitationLostEmail(
     : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: { "Authorization": `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1551,7 +1580,7 @@ export async function sendMonthlyRecapEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1698,7 +1727,7 @@ export async function sendFirstCitationEmail(
   ].join("\n");
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -1815,7 +1844,7 @@ export async function sendRegressionAlert(
   const emailHtml = buildRegressionHtml(userName, domain, domainId, newScore, oldScore, newGrade, latest, agency);
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,
@@ -2582,7 +2611,7 @@ export async function sendTwoFactorStateChangeEmail(
   }
 
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${env.RESEND_API_KEY}`,

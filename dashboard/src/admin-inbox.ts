@@ -17,6 +17,7 @@
  */
 
 import type { Env, AdminInboxItem, InboxStatus, InboxUrgency } from "./types";
+import { sendViaResend } from "./email";
 
 export interface AddInboxParams {
   kind: string;
@@ -187,7 +188,7 @@ async function sendAdminEmail(env: Env, subject: string, text: string): Promise<
     console.log(`[admin-inbox] no RESEND_API_KEY (dev mode)\n${subject}\n${text}`);
     return true;
   }
-  const resp = await fetch("https://api.resend.com/emails", {
+  const resp = await sendViaResend(env, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${env.RESEND_API_KEY}`,

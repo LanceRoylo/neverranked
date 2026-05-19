@@ -23,7 +23,7 @@ import { generateDraftInVoice, scoreDraftAgainstProfile } from "./voice-engine";
 import { runContentQa, type QaLevel } from "./content-qa";
 import { getConnection, publishDraft } from "./cms";
 import { getAgency } from "./agency";
-import { logEmailDelivery } from "./email";
+import { logEmailDelivery, sendViaResend } from "./email";
 
 const GENERATE_LEAD_DAYS = 3;
 const TRUST_WINDOW_APPROVALS = 3;
@@ -63,7 +63,7 @@ async function sendDraftReadyEmail(clientSlug: string, draftId: number, title: s
     return;
   }
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -98,7 +98,7 @@ async function sendContentPublishedEmail(clientSlug: string, title: string, live
     return;
   }
   try {
-    const resp = await fetch("https://api.resend.com/emails", {
+    const resp = await sendViaResend(env, {
       method: "POST",
       headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
