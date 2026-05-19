@@ -1,10 +1,11 @@
 # Cloudflare Workers Static Assets _redirects.
 #
-# SITE IN REBUILD (2026-05-19): full-site holder. Every path serves
-# the holder at /index.html. The old marketing pages are also pruned
-# out of dist/ in the deploy step, so this is belt-and-suspenders.
-# The /check redirect and all marketing routes are intentionally
-# down during the rebuild. The instrument (app.neverranked.com) is a
-# separate Worker and is unaffected. To restore the old site: revert
-# this file + index.html, restore the old build, run a normal build.
-/*    /index.html    200
+# SITE IN REBUILD (2026-05-19): full-site holder. No redirect rules.
+# The holder is served for every non-matching path via the Worker's
+# not_found_handling = "single-page-application" (wrangler.jsonc),
+# plus the deploy step prunes pitch/blog/etc out of dist so there are
+# no old assets to match. A `/* /index.html 200` rule here is INVALID
+# (Cloudflare rejects it as an infinite loop, code 10021) — do not
+# re-add it. /check and all marketing routes are intentionally down.
+# Instrument (app.neverranked.com) is a separate Worker, unaffected.
+# Restore: revert this + index.html + wrangler.jsonc, normal build.
