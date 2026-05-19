@@ -394,6 +394,14 @@ p a:hover,ul a:hover{opacity:.8}
     <p>
       Mark &mdash; this is the full audit deliverable, not a teaser. You and your agency can read it cold, take it offline, print it for your team. The work below was done against asbhawaii.com directly, including the mortgage subdomain.
     </p>
+
+    <div style="margin:24px 0;border:1px solid var(--gold);border-radius:6px;padding:22px 24px;background:var(--bg-edge)">
+      <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--gold);margin-bottom:8px">asbhawaii.com &middot; AI readiness today</div>
+      <div style="font-family:var(--serif);font-size:38px;font-weight:400;line-height:1;margin:0 0 4px">55 <span style="font-size:18px;color:var(--text-soft)">/ 100</span> &nbsp;&middot;&nbsp; Grade D</div>
+      <p style="margin:14px 0 0;color:var(--text-soft)">This is the starting line, not a verdict. The gaps that produce it are structured-data gaps, the fastest kind to close. Hawaii Theatre opened at 45 with zero AI citations. Ten days and five schema deployments later it scored 95, and Perplexity cited it on 14 of 19 tracked queries. ASB starts above that line, on a stronger brand foundation. The distance from here to cited is short and it is mostly engineering, not brand-building.</p>
+      <p style="margin:14px 0 0;font-size:13px;color:var(--text-faint);line-height:1.65">How to read the three numbers in this brief. <b style="color:var(--text-soft)">55 of 100</b> is asbhawaii.com's overall AI readiness today, the headline. The per-page figures in the schema map below score <b style="color:var(--text-soft)">JSON-LD completeness only</b>, one component of that total, which is why a single page can read higher than the site. The entity-graph snapshot of <b style="color:var(--text-soft)">80</b> measures off-site brand authority, which is already strong. You own the hard part. The work is converting it into citations.</p>
+    </div>
+
     <p>
       <b>The headline.</b> ASB has the technical capability to publish strong structured data &mdash; some pages prove it (your /personal/checking page scores 96 out of 100, in the same green-zone band as Bank of Hawaii's homepage at 95). But the implementation is wildly inconsistent across the site, and one page (/personal/savings) is currently in the partial-schema penalty zone, where a page gives AI engines materially weaker structured signal than a complete one. Several high-LTV conversion pages publish no structured data whatsoever.
     </p>
@@ -435,8 +443,8 @@ p a:hover,ul a:hover{opacity:.8}
       <span>Site-wide schema map</span>
       <span class="rule"></span>
     </div>
-    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is the gold zone (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone, where a page gives AI engines materially weaker structured signal than a complete one.</p>
-    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                          Score   Status        Schema present
+    <p>These are per-page <b>JSON-LD completeness</b> scores, the component metric, not the site's overall 55/100 AI readiness from the summary above. A single well-built page can read high here while the site as a whole still scores a D, which is exactly ASB's situation. The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is the gold zone (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone, where a page gives AI engines materially weaker structured signal than a complete one.</p>
+    <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                          JSON-LD Status        Schema present
 asbhawaii.com (homepage)                      85      green         Organization
 asbhawaii.com/personal/                       85      green         Organization
 asbhawaii.com/personal/checking               96      green         BankAccount, FAQPage
