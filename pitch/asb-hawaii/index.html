@@ -395,7 +395,7 @@ p a:hover,ul a:hover{opacity:.8}
       Mark &mdash; this is the full audit deliverable, not a teaser. You and your agency can read it cold, take it offline, print it for your team. The work below was done against asbhawaii.com directly, including the mortgage subdomain.
     </p>
     <p>
-      <b>The headline.</b> ASB has the technical capability to publish strong structured data &mdash; some pages prove it (your /personal/checking page scores 96 out of 100, in the same green-zone band as Bank of Hawaii's homepage at 95). But the implementation is wildly inconsistent across the site, and one page (/personal/savings) is currently in the partial-schema penalty zone, where empirical research shows an 18-percentage-point AI citation penalty versus no schema at all. Several high-LTV conversion pages publish no structured data whatsoever.
+      <b>The headline.</b> ASB has the technical capability to publish strong structured data &mdash; some pages prove it (your /personal/checking page scores 96 out of 100, in the same green-zone band as Bank of Hawaii's homepage at 95). But the implementation is wildly inconsistent across the site, and one page (/personal/savings) is currently in the partial-schema penalty zone, where a page gives AI engines materially weaker structured signal than a complete one. Several high-LTV conversion pages publish no structured data whatsoever.
     </p>
     <p>
       <b>Where ASB sits competitively.</b> Among Hawaii's main banking competitors, Bank of Hawaii is significantly ahead (95 score, 11 schema nodes, BankOrCreditUnion + Place + Rating). First Hawaiian Bank and Central Pacific Bank both publish zero schema on their homepages. ASB sits in the middle &mdash; not the worst, not the leader. The work I'm describing closes the gap to BoH and pulls away from FHB and CPB.
@@ -435,12 +435,12 @@ p a:hover,ul a:hover{opacity:.8}
       <span>Site-wide schema map</span>
       <span class="rule"></span>
     </div>
-    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is the gold zone (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone &mdash; empirical research on AI citation behavior shows an 18-percentage-point penalty in this range versus no schema at all.</p>
+    <p>The grader scores JSON-LD completeness from 0 to 100. Above 80 is the green zone (AI engines treat the page as confidently structured). 60 to 79 is the gold zone (deploys, but limits citation potential). Below 60 is the partial-schema penalty zone, where a page gives AI engines materially weaker structured signal than a complete one.</p>
     <pre style="background:var(--bg-edge);padding:18px;border:1px solid var(--line);border-radius:4px;overflow:auto;font-size:11px;line-height:1.7;color:var(--text-soft);font-family:var(--mono);margin:16px 0">Page                                          Score   Status        Schema present
 asbhawaii.com (homepage)                      85      green         Organization
 asbhawaii.com/personal/                       85      green         Organization
 asbhawaii.com/personal/checking               96      green         BankAccount, FAQPage
-asbhawaii.com/personal/savings                33      RED, -18pp    BankAccount x7 + 1 broken JSON block
+asbhawaii.com/personal/savings                33      RED           BankAccount x7 + 1 broken JSON block
 asbhawaii.com/personal/credit-cards            0      RED           NONE
 asbhawaii.com/personal/home-loans             75      gold          MortgageLoan partial
 asbhawaii.com/business/                       95      green         BankOrCreditUnion
@@ -476,7 +476,7 @@ mortgage.asbhawaii.com                         0      RED           NONE</pre>
       <b>The fix.</b> Find and repair the malformed JSON-LD block. The seven BankAccount nodes are fine and should remain. The total work is one developer-hour with a JSON validator. After the fix, this page should jump to ~95 and exit the penalty zone immediately.
     </p>
     <p>
-      <b>Why this is the headline finding.</b> Of all the work in this audit, this is the highest impact-per-hour fix. The ratio of effort (single block repair) to lift (exiting an 18pp citation penalty zone) is the best you'll see anywhere on the site. If ASB does nothing else from this audit, do this.
+      <b>Why this is the headline finding.</b> Of all the work in this audit, this is the highest impact-per-hour fix. The ratio of effort (single block repair) to lift (restoring a high-value page from parse-broken to fully machine-readable) is the best you'll see anywhere on the site. If ASB does nothing else from this audit, do this.
     </p>
   </div>
 </section>
@@ -587,7 +587,7 @@ Central Pacific Bank              0           0               NONE</pre>
     <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
       <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:10px;color:var(--gold);margin-bottom:8px">Priority 01 &middot; Day 1</div>
       <h3 style="font-family:var(--serif);font-size:20px;font-weight:400;margin:0 0 8px">Fix the malformed JSON-LD on /personal/savings</h3>
-      <p style="margin:0">One developer-hour. Validate every JSON-LD block on the page; identify the malformed block; either fix it or remove it. Page should immediately jump from 33 to ~95 and exit the 18pp penalty zone. This is the single most leveraged fix on the site.</p>
+      <p style="margin:0">One developer-hour. Validate every JSON-LD block on the page; identify the malformed block; either fix it or remove it. Removing the malformed block lets the page be scored on its seven valid BankAccount nodes instead of being dragged down by the parse failure. A large, immediate gain from one developer-hour. This is the single most leveraged fix on the site.</p>
     </div>
 
     <div style="border:1px solid var(--line);border-radius:6px;padding:20px;margin:16px 0">
