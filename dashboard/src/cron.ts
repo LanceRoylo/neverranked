@@ -56,42 +56,99 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   // when it's a Monday). All citations/snapshot/GSC/backup work happens
   // through the daily path now.
 
-  // --- Phase 3: Fan out one SendDigestWorkflow per opted-in user ---
-  // Done here in the cron handler (not from inside WeeklyExtras)
-  // because Cloudflare Workflows share subrequest budget across all
-  // steps in one instance. Citations burns through ~1000 subreqs over
-  // 3 minutes; dispatching from inside the same workflow afterwards
-  // fails with "Too many subrequests" on the first .create() call.
-  // The cron handler is a separate invocation, so per-user dispatches
-  // here have a fresh budget. Verified working: instance 3edf55da.
+  // --- Phase 3/4: REMOVED from this path on 2026-05-18 ---
+  // Digest + free-tier fan-out used to run here. The original comment
+  // claimed "the cron handler is a separate invocation, so per-user
+  // dispatches here have a fresh budget" -- that was FALSE. runWeeklyScans
+  // runs via ctx.waitUntil() in the SAME 06:00 scheduled() invocation as
+  // runDailyTasks (the citation sweep), so it shares ONE subrequest
+  // budget. The sweep drained it and every SEND_DIGEST_WORKFLOW.create()
+  // here failed silently (~12 days dead before the heartbeat caught it).
+  // Delivery dispatch now lives in dispatchWeeklyDeliveries(), invoked by
+  // its own dedicated 06:15 cron trigger (a genuinely separate invocation
+  // with its own fresh budget). See scheduled() in index.ts.
+}
+
+/** Revenue-critical weekly delivery dispatch. Runs in its OWN Worker
+ *  invocation (06:15 cron trigger) so the heavy 06:00 citation sweep
+ *  cannot starve it of subrequest budget. Returns counts so the caller
+ *  can record an honest cron_runs status -- this path must NEVER log
+ *  success while delivering zero. Mondays only; caller gates the day. */
+export async function dispatchWeeklyDeliveries(
+  env: Env
+): Promise<{ digestTotal: number; digestDispatched: number; digestErrors: number; freeOk: boolean }> {
+  const { logCronRun } = await import("./lib/cron-log");
+
+  // --- Paid digests: one SendDigestWorkflow per opted-in user ---
+  let digestTotal = 0;
+  let digestDispatched = 0;
+  let digestErrors = 0;
+  const started = Date.now();
   try {
     const users = (await env.DB.prepare(
       "SELECT id FROM users WHERE email_digest = 1"
     ).all<{ id: number }>()).results;
-    let digestsDispatched = 0;
+    digestTotal = users.length;
     for (const u of users) {
       try {
         await env.SEND_DIGEST_WORKFLOW.create({ params: { userId: u.id } });
-        digestsDispatched++;
+        digestDispatched++;
       } catch (e) {
-        console.log(`[cron] failed to dispatch digest for user ${u.id}: ${e}`);
+        digestErrors++;
+        console.log(`[delivery] failed to dispatch digest for user ${u.id}: ${e instanceof Error ? e.message : String(e)}`);
       }
     }
-    console.log(`[cron] dispatched ${digestsDispatched}/${users.length} digest workflows`);
   } catch (e) {
-    console.log(`[cron] failed to enumerate digest users: ${e}`);
+    digestErrors++;
+    console.log(`[delivery] failed to enumerate digest users: ${e instanceof Error ? e.message : String(e)}`);
   }
+  // Fail loud: success ONLY if every opted-in user was dispatched with
+  // zero errors. Anything less is failure/partial so the heartbeat and
+  // cron_runs surface it the same day instead of an 8-day window hiding it.
+  const digestStatus =
+    digestErrors === 0 && digestDispatched === digestTotal
+      ? "success"
+      : digestDispatched === 0
+        ? "failure"
+        : "partial";
+  await logCronRun(
+    env,
+    "digest_dispatch",
+    digestStatus,
+    Date.now() - started,
+    `dispatched=${digestDispatched}/${digestTotal} errors=${digestErrors}`
+  );
+  console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors})`);
 
-  // --- Phase 4: Free-tier weekly digest fan-out ---
-  // Inline (not workflow-dispatched) because per-user load is small:
-  // one scan_results query and one email per free user. Wrap in
-  // try/catch so a free-tier failure cannot affect paid digests.
+  // --- Free-tier weekly digest fan-out (small per-user load, inline) ---
+  let freeOk = true;
   try {
     const { runFreeWeeklyDigests } = await import("./free-cron");
     await runFreeWeeklyDigests(env);
   } catch (e) {
-    console.log(`[cron] free weekly digest sweep failed: ${e}`);
+    freeOk = false;
+    console.log(`[delivery] free weekly digest sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
+
+  // --- Founder weekly summary email (relocated from runDailyTasks) ---
+  try {
+    const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
+    const sStarted = Date.now();
+    const r = await sendWeeklySummaryEmail(env);
+    await logCronRun(
+      env,
+      "weekly_summary_email",
+      r.sent ? "success" : "failure",
+      Date.now() - sStarted,
+      r.sent ? `subject="${r.subject}"` : (r.error ?? "unknown")
+    );
+    console.log(`[delivery] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
+  } catch (e) {
+    await logCronRun(env, "weekly_summary_email", "failure", 0, e instanceof Error ? e.message : String(e));
+    console.log(`[delivery] weekly_summary_email failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  return { digestTotal, digestDispatched, digestErrors, freeOk };
 }
 
 /** Send digest emails. If `usersOverride` is supplied, only those users
@@ -234,9 +291,13 @@ export async function sendWeeklyDigests(
           total: total.cnt,
           done: done?.cnt || 0,
           inProgress: inProg?.cnt || 0,
-          recentlyCompleted: recentDone.map(r => r.title),
-          newGapItems: newGapItems.length > 0 ? newGapItems.map(r => r.title) : undefined,
-          gapResolved: gapResolved.length > 0 ? gapResolved.map(r => r.title) : undefined,
+          // Dedupe by title: roadmap_items can hold same-title rows
+          // (citation-gap auto-creation re-adds an item that already
+          // exists), which surfaced as the grader-flagged duplicate
+          // "Publish canonical bio on social" line in completed items.
+          recentlyCompleted: [...new Set(recentDone.map(r => r.title))],
+          newGapItems: newGapItems.length > 0 ? [...new Set(newGapItems.map(r => r.title))] : undefined,
+          gapResolved: gapResolved.length > 0 ? [...new Set(gapResolved.map(r => r.title))] : undefined,
         });
       }
     }
@@ -764,24 +825,11 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] qa_nvi_drift_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Weekly summary email: Mondays only. Sent to lance@neverranked.com
-  // after the morning citation cron has produced fresh data. Goes via
-  // sendEmailViaResend for QA preflight + safe send.
-  const isMonday = new Date().getUTCDay() === 1;
-  if (isMonday) {
-    try {
-      const { logCronRun } = await import("./lib/cron-log");
-      const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
-      const started = Date.now();
-      const r = await sendWeeklySummaryEmail(env);
-      await logCronRun(env, "weekly_summary_email", r.sent ? "success" : "failure",
-        Date.now() - started,
-        r.sent ? `subject="${r.subject}"` : (r.error ?? "unknown"));
-      console.log(`[cron] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
-    } catch (e) {
-      console.log(`[cron] weekly_summary_email failed: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
+  // Weekly summary email: RELOCATED 2026-05-18 to dispatchWeeklyDeliveries()
+  // (the dedicated 06:15 delivery cron). It used to run here inside
+  // runDailyTasks on the shared 06:00 invocation, where the citation
+  // sweep exhausted the subrequest budget and the send died with
+  // "Too many subrequests". Keeping it on its own invocation is the fix.
 
   // Weekly drift sweep: only probes domains due (>7d since last check)
   // so running it daily is fine -- the query self-throttles.

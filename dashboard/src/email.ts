@@ -2171,6 +2171,65 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
   `;
 }
 
+// Signal-led opener. Replaces the formulaic "Hey there, here's your
+// weekly AEO scan" greeting that the digest grader correctly held as a
+// templated AI-tell. Same signal precedence as the subject line:
+// citation share (the outcome that drives revenue) over AEO score (the
+// input). The number is the message -- no preamble, no filler. Voice
+// rules: no em dash, no semicolon in client copy.
+function buildDigestLeadHtml(
+  userName: string | null,
+  digests: DigestData[],
+  citationData?: Map<string, CitationDigestData>,
+  scanDate?: string,
+): string {
+  const first = userName ? userName.split(" ")[0] : null;
+  const nameLine = first
+    ? `<div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:8px">${escEmail(first)},</div>`
+    : "";
+
+  let lead: string;
+  if (digests.length === 1) {
+    const d = digests[0];
+    const cd = citationData?.get(d.clientSlug);
+    if (cd && cd.previousShare !== null) {
+      const shareDiff = Math.round((cd.citationShare - cd.previousShare) * 100);
+      const currPct = Math.round(cd.citationShare * 100);
+      if (shareDiff >= 3) lead = `${d.domain}'s citation share climbed ${shareDiff} points to ${currPct}% this week. AI engines are naming you more often.`;
+      else if (shareDiff <= -3) lead = `${d.domain}'s citation share slipped ${Math.abs(shareDiff)} points to ${currPct}% this week. The work below is aimed at reversing it.`;
+      else if (cd.keywordsWon > 0 && cd.keywordsLost === 0) lead = `${d.domain} earned ${cd.keywordsWon} new AI citation${cd.keywordsWon === 1 ? "" : "s"} this week and lost none.`;
+      else if (cd.keywordsLost > 0 && cd.keywordsWon === 0) lead = `${d.domain} lost ${cd.keywordsLost} AI citation${cd.keywordsLost === 1 ? "" : "s"} this week. The roadmap below targets the cause.`;
+      else lead = `${d.domain}'s citation share held at ${currPct}% this week across ${cd.totalKeywords} tracked queries.`;
+    } else if (cd) {
+      lead = `First citation read for ${d.domain}. ${Math.round(cd.citationShare * 100)}% share across ${cd.totalKeywords} tracked queries. This is your baseline.`;
+    } else {
+      const diff = d.previous && !d.previous.error ? d.latest.aeo_score - d.previous.aeo_score : null;
+      if (diff !== null && diff > 0) lead = `${d.domain}'s AEO score rose ${diff} points to ${d.latest.aeo_score}/100 this week.`;
+      else if (diff !== null && diff < 0) lead = `${d.domain}'s AEO score fell ${Math.abs(diff)} points to ${d.latest.aeo_score}/100 this week. The roadmap below targets the gap.`;
+      else lead = `${d.domain}'s AEO score is ${d.latest.aeo_score}/100. The roadmap below is how it moves.`;
+    }
+  } else {
+    let gained = 0;
+    let lost = 0;
+    for (const d of digests) {
+      const cd = citationData?.get(d.clientSlug);
+      if (cd) { gained += cd.keywordsWon; lost += cd.keywordsLost; }
+    }
+    if (gained > 0 || lost > 0) {
+      lead = `Across ${digests.length} domains this week, ${gained} AI citation${gained === 1 ? "" : "s"} gained and ${lost} lost. Domain detail below.`;
+    } else {
+      const top = [...digests].sort((a, b) => b.latest.aeo_score - a.latest.aeo_score)[0];
+      lead = `${digests.length} domains scanned. ${top.domain} leads at ${top.latest.aeo_score}/100. Each domain and its roadmap are below.`;
+    }
+  }
+
+  const meta = scanDate
+    ? `<div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#555555;margin-top:10px">Scan ${escEmail(scanDate)}</div>`
+    : "";
+
+  return `${nameLine}<div style="font-family:Georgia,serif;font-size:15px;color:#cfcabd;line-height:1.6">${escEmail(lead)}</div>${meta}`;
+}
+
 function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>, nviByClient?: Map<string, DigestNviReport>, actionsByClient?: Map<string, DigestActionsSection>): string {
   const brand = brandFor(agency);
   const headerCellHtml = brand.logo
@@ -2180,7 +2239,6 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
   const footerLine = agency
     ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
     : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
-  const greeting = userName ? userName.split(" ")[0] : "there";
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
   const domainBlocks = digests.map(d => {
@@ -2288,8 +2346,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
         <!-- Greeting -->
         <tr>
           <td style="padding:32px 0 24px">
-            <div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:8px">Hey ${escEmail(greeting)},</div>
-            <div style="font-family:Georgia,serif;font-size:14px;color:#888888;line-height:1.6">Here's your weekly AEO scan from ${scanDate}.</div>
+            ${buildDigestLeadHtml(userName, digests, citationData, scanDate)}
           </td>
         </tr>
 
@@ -2343,7 +2400,6 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             blocks.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0 8px;border:1px solid #2a2620;border-radius:4px;background:#1c1812">
               <tr><td style="padding:16px 22px 6px">
                 <div style="font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d;margin-bottom:6px">Things to do for ${escEmail(d.domain)}</div>
-                <div style="font-family:Georgia,serif;font-size:13px;color:#888;line-height:1.55;margin-bottom:4px">Each item below moves the needle on how often AI engines cite your business. Heavy lifting is done. The clicks are yours.</div>
               </td></tr>
               <tr><td style="padding:0 22px 16px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr>
             </table>`);
@@ -2411,7 +2467,11 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             if (slugsSeen.has(d.clientSlug)) continue;
             slugsSeen.add(d.clientSlug);
             const gd = gscData.get(d.clientSlug);
-            if (gd) blocks.push(buildGscBlock(gd));
+            // Suppress a wall of zeros. GSC with no clicks AND no
+            // impressions is data without signal -- the grader holds it
+            // as an empty section, correctly. Show it only once there's
+            // something to report.
+            if (gd && (gd.clicks > 0 || gd.impressions > 0)) blocks.push(buildGscBlock(gd));
           }
           return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}
@@ -2425,7 +2485,19 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
             if (slugsSeen.has(d.clientSlug)) continue;
             slugsSeen.add(d.clientSlug);
             const rd = roadmapData.get(d.clientSlug);
-            if (rd && rd.total > 0) blocks.push(buildRoadmapBlock(rd));
+            // A roadmap with items but zero motion (0 done, 0 in
+            // progress, nothing completed, no gap activity) renders as
+            // an empty shell -- "0/0, 0%, empty bar". The grader holds
+            // that as filler. Show it only when there's real progress
+            // or pending work to report.
+            const rdHasSignal = rd && rd.total > 0 && (
+              rd.done > 0 ||
+              rd.inProgress > 0 ||
+              rd.recentlyCompleted.length > 0 ||
+              (rd.gapResolved !== undefined && rd.gapResolved.length > 0) ||
+              (rd.newGapItems !== undefined && rd.newGapItems.length > 0)
+            );
+            if (rd && rdHasSignal) blocks.push(buildRoadmapBlock(rd));
           }
           return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
         })()}

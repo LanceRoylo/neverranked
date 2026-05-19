@@ -191,19 +191,36 @@ const INVARIANTS = [
     },
   },
   {
-    name: 'digest-delivery-per-user',
-    description: 'Every email_digest=1 user should have received a digest in the last 8 days',
+    // Reads the authoritative cron_runs row written by
+    // dispatchWeeklyDeliveries(), NOT an 8-day email_log window. The old
+    // window-based check could be masked for a full week by a single
+    // manual /admin/digest/test fire -- which is why a dead cron read
+    // "63% OK" for ~12 days. A manual test-fire does not write a
+    // digest_dispatch cron_run, so it can no longer hide a failure.
+    name: 'digest-dispatch-result',
+    description: 'Latest digest_dispatch cron run must be a recent success (weekly Monday job)',
     run: () => {
       const opted = runD1(`SELECT COUNT(*) as n FROM users WHERE email_digest = 1`)[0]?.n || 0;
       if (opted === 0) return { pass: true, detail: 'no opted-in users' };
-      const recent = runD1(`
-        SELECT COUNT(DISTINCT email) as n
-        FROM email_log
-        WHERE type = 'digest' AND created_at > unixepoch() - 8*86400
-      `)[0]?.n || 0;
-      const pct = Math.round((recent / opted) * 100);
-      if (pct >= 80) return { pass: true, detail: `${recent}/${opted} users (${pct}%) received` };
-      return { pass: false, detail: `${recent}/${opted} users (${pct}%) received in last 8 days` };
+      const row = runD1(`
+        SELECT status, detail, ran_at,
+               CAST((unixepoch() - ran_at) / 86400 AS INT) AS age_days
+        FROM cron_runs
+        WHERE task_name = 'digest_dispatch'
+        ORDER BY ran_at DESC
+        LIMIT 1
+      `)[0];
+      if (!row) {
+        return { pass: false, detail: 'digest_dispatch has never run (opted-in users exist)' };
+      }
+      // Weekly Monday job: a healthy latest run is <= 8 days old.
+      if (row.age_days > 8) {
+        return { pass: false, detail: `last digest_dispatch ${row.age_days}d ago (status=${row.status}) -- weekly job missed` };
+      }
+      if (row.status !== 'success') {
+        return { pass: false, detail: `last digest_dispatch status=${row.status} (${row.detail || 'no detail'})` };
+      }
+      return { pass: true, detail: `last run ${row.age_days}d ago, success (${row.detail || ''})` };
     },
   },
   {

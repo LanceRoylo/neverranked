@@ -76,7 +76,7 @@ import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads, handleLeadsJson } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal, handlePulseWaitlist } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
-import { runWeeklyScans, runDailyTasks } from "./cron";
+import { runWeeklyScans, runDailyTasks, dispatchWeeklyDeliveries } from "./cron";
 import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
 import { handleInjectScript, handleInjectJson } from "./routes/inject";
@@ -3500,13 +3500,44 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
   },
 
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
-    // Two cron triggers in wrangler.jsonc -- route by hour:
-    //   06:00 UTC = daily tasks (drips, sweeps, backfills, weekly scans on Mon)
-    //   17:00 UTC = 7am Pacific/Honolulu = founder inbox morning summary
-    const hour = new Date(event.scheduledTime ?? Date.now()).getUTCHours();
+    // Three cron triggers in wrangler.jsonc. Each fires its OWN Worker
+    // invocation with its own subrequest budget -- route by event.cron
+    // (the exact cron string), per Cloudflare's documented pattern:
+    //   "0 6 * * *"  -> heavy daily: citation sweep, QA sweeps, scans
+    //   "15 6 * * *" -> delivery ONLY: digests + founder weekly summary
+    //                   (separate invocation so the sweep can't starve it)
+    //   "0 17 * * *" -> 7am Pacific/Honolulu = founder inbox morning summary
+    // event.cron is undefined on manual/test triggers; fall back to hour.
+    const scheduledAt = new Date(event.scheduledTime ?? Date.now());
+    const hour = scheduledAt.getUTCHours();
+    const cron = event.cron;
     const { withCronLogging } = await import("./lib/cron-log");
 
-    if (hour === 17) {
+    // --- Dedicated delivery-dispatch invocation (06:15, Mondays only) ---
+    // Isolated on purpose: this is the only place revenue-critical email
+    // delivery is dispatched, and it never shares a budget with the sweep.
+    if (cron === "15 6 * * *") {
+      if (scheduledAt.getUTCDay() === 1) {
+        ctx.waitUntil(
+          withCronLogging(env, "delivery_dispatch", async () => {
+            const r = await dispatchWeeklyDeliveries(env);
+            console.log(`[cron 06:15] delivery_dispatch: ${JSON.stringify(r)}`);
+            // Surface a hard failure on the wrapper task too, so a zero
+            // delivery can never be reported as an overall success.
+            if (r.digestTotal > 0 && r.digestDispatched === 0) {
+              throw new Error(
+                `digest dispatch delivered 0/${r.digestTotal} (errors=${r.digestErrors})`
+              );
+            }
+          }).catch((e) => {
+            console.log(`[cron 06:15] delivery_dispatch failed: ${e instanceof Error ? e.message : e}`);
+          })
+        );
+      }
+      return;
+    }
+
+    if (cron === "0 17 * * *" || (cron === undefined && hour === 17)) {
       ctx.waitUntil(withCronLogging(env, "inbox_morning_summary", async () => {
         const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
         // Backfill is idempotent (UNIQUE constraint) -- safe to call every morning.
@@ -3534,6 +3565,16 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
       return;
     }
 
+    // --- Heavy daily invocation (06:00) ---
+    // Everything below shares ONE subrequest budget. The citation sweep
+    // in runDailyTasks is the heavy consumer; email delivery deliberately
+    // does NOT run here -- it has its own 06:15 invocation above. Guard so
+    // an unknown cron string can't accidentally double-run the heavy path.
+    if (cron !== undefined && cron !== "0 6 * * *") {
+      console.log(`[cron] unrecognized schedule "${cron}" -- no handler, skipping`);
+      return;
+    }
+
     // Daily tasks: auth cleanup, onboarding drip emails
     ctx.waitUntil(withCronLogging(env, "auth_cleanup", () => cleanupAuth(env)).catch((e) => {
       console.log(`[cron] auth_cleanup failed: ${e instanceof Error ? e.message : e}`);
@@ -3554,8 +3595,11 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
       console.log(`[cron] phase2_autopreview failed: ${e instanceof Error ? e.message : e}`);
     }));
 
-    // Weekly tasks: full domain scans + digest emails (Mondays only)
-    const day = new Date().getUTCDay(); // 0=Sun, 1=Mon
+    // Weekly tasks: full domain scans (Mondays only). Digest delivery is
+    // NOT here -- it runs in the dedicated 06:15 invocation. Use the
+    // event's scheduled time, not wall-clock new Date(), so a late-firing
+    // or replayed cron is still attributed to the correct UTC day.
+    const day = scheduledAt.getUTCDay(); // 0=Sun, 1=Mon
     if (day === 1) {
       ctx.waitUntil(withCronLogging(env, "weekly_scans", () => runWeeklyScans(env)).catch((e) => {
         console.log(`[cron] weekly_scans failed: ${e instanceof Error ? e.message : e}`);

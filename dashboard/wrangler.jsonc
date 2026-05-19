@@ -39,10 +39,24 @@
   "routes": [
     { "pattern": "app.neverranked.com", "custom_domain": true }
   ],
+  // Each cron expression fires its own independent Worker invocation
+  // with its own subrequest budget. Routed by event.cron in scheduled().
+  // 06:00 UTC = heavy daily tasks (citation sweep, QA sweeps, weekly scans)
+  // 06:15 UTC = delivery dispatch ONLY (digests + founder summary) -- kept
+  //             in a SEPARATE invocation so the heavy 06:00 path cannot
+  //             starve revenue-critical email delivery of its budget.
+  // 17:00 UTC = 7am Pacific/Honolulu (no DST) = founder inbox morning summary
+  //
+  // NOTE: this account is on the Workers FREE plan -> a hard 50
+  // subrequests / invocation, NOT configurable (the `limits` block is
+  // paid-only and the API rejects it on Free). That is exactly why
+  // delivery MUST have its own invocation: it can't be given more
+  // budget, so it must not share the 06:00 sweep's. The dispatch path
+  // itself is cheap (~1 D1 query + 1 workflow .create() per user, well
+  // under 50); each SEND_DIGEST_WORKFLOW instance then runs in its own
+  // invocation with its own fresh 50-subrequest budget.
   "triggers": {
-    // 06:00 UTC = daily tasks (drips, sweeps, backfills, etc.)
-    // 17:00 UTC = 7am Pacific/Honolulu (no DST) = founder inbox morning summary
-    "crons": ["0 6 * * *", "0 17 * * *"]
+    "crons": ["0 6 * * *", "15 6 * * *", "0 17 * * *"]
   },
   "workflows": [
     {

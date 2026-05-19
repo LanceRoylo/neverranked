@@ -89,7 +89,7 @@ function buildSummary(
       );
     } else {
       parts.push(
-        `${domain} held steady at ${latest.aeo_score}/100 (${latest.grade}) with no score change since the last scan.`
+        `${domain} held at ${latest.aeo_score}/100 (${latest.grade}), unchanged from last scan.`
       );
     }
   } else {
