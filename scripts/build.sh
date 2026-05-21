@@ -45,6 +45,7 @@ DIRS=(
   agencies
   blog
   case-studies
+  example-engagement
   for-agencies
   kit
   pitch
