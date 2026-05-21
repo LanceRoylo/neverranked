@@ -23,7 +23,15 @@ interface NurtureUser {
   created_at: number;
 }
 
+// RETRACTED 2026-05-20. The nurture drip culminates in a soft-sell
+// for the $750 audit, which is a retired SKU built on the retracted
+// schema-causation thesis. Sending it would push prospects toward a
+// product we no longer offer. Disabled until the drip is rewritten
+// against the research-engagement pricing.
 export async function sendNurtureDripEmails(env: Env): Promise<void> {
+  console.log("sendNurtureDripEmails skipped: nurture content pitches retired $750 audit. Rewrite required before re-enabling.");
+  return;
+  // eslint-disable-next-line no-unreachable
   if (!env.RESEND_API_KEY) return;
 
   const now = Math.floor(Date.now() / 1000);
