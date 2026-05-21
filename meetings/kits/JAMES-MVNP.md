@@ -22,16 +22,25 @@ Five beats, ~2 minutes. Retraction first. Force-multiplier framing in beat 4. Cl
 
 ---
 
-## The live demo (three formats, in this folder)
+## The live demo — pick named vs anonymized in the room
 
-- **HTML (primary):** `meetings/kits/demo-medspa.html` — open in any browser, dark mode, screen-share ready
-- **PDF (fallback):** `meetings/kits/demo-medspa.pdf` — same content, print-ready, works without a browser
-- **Text (last resort):** `meetings/kits/demo-medspa.txt` — plain text, readable on anything
-- **JSON (data only):** `meetings/kits/demo-medspa.json` — raw structured data if James wants to verify
+**Default for James: anonymized.** James is an agency. He could in theory contact the named Honolulu med spas if you show him real hostnames. The anonymized version proves methodology without handing him the dataset.
 
-Open the HTML before the meeting starts. PDF and TXT are local copies on your laptop if anything fails.
+Switch to named only if the conversation moves toward "we want to engage" — at that point showing real data demonstrates depth.
 
-To regenerate: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html` then copy back to `meetings/kits/`.
+### Anonymized (recommended for the cold-coffee read)
+- `meetings/kits/demo-medspa-anon.html` — same content, hostnames hashed
+- `meetings/kits/demo-medspa-anon.pdf` — 130KB, print-ready
+- `meetings/kits/demo-medspa-anon.txt` — plain text
+- `meetings/kits/demo-medspa-anon.json` — raw structured data
+
+### Named (full reveal, hold unless he's leaning in)
+- `meetings/kits/demo-medspa.html` — real hostnames, including `honolulumedspa.com`, `finamedspa.com`, etc.
+- `meetings/kits/demo-medspa.pdf`, `.txt`, `.json`
+
+Open whichever you plan to show before the meeting starts. Both are local copies on your laptop — no internet needed.
+
+To regenerate either: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" [--anonymize] --out OUTPUT.html` then copy back to `meetings/kits/`.
 
 This is your "shape of the deliverable" demo. Walk James through what a research memo looks like using med-spa data. Then describe what a Hilton Waikiki or HVCB or First Hawaiian Bank version would show, conceptually. Do not run it.
 

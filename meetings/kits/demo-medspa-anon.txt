@@ -1,0 +1,30 @@
+AGGREGATE READOUT (anonymized)
+  cohort: 3 run(s), 2104 cites, 40 distinct queries
+  engines: perplexity, openai
+
+SOURCE TYPE DISTRIBUTION (aggregate)
+   98%  independent_web     2062
+    2%  review_directory    36
+    0%  youtube             6
+
+PER-ENGINE DISTRIBUTION
+  openai (1188 cites)
+     99%  independent_web     1181
+      1%  review_directory    7
+  perplexity (916 cites)
+     96%  independent_web     881
+      3%  review_directory    29
+      1%  youtube             6
+
+TOP RECURRING HOSTS BY TYPE (anonymized, >=2 runs only)
+  review_directory
+    host_0be65f         11 cites · 2 runs
+    host_6e74cb         3 cites · 2 runs
+  independent_web
+    host_891825         88 cites · 2 runs
+    host_edbd5f         88 cites · 2 runs
+    host_072be6         58 cites · 2 runs
+    host_854c27         54 cites · 2 runs
+    host_9e2bba         53 cites · 2 runs
+
+Honest framing: aggregate observation, not prescription. Hostnames hashed for sharing with parties outside the engagement.

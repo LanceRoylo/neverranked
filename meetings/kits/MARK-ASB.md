@@ -21,16 +21,25 @@ Six beats, ~2 minutes. Five-plus-two engine split locked. Retraction first.
 
 ---
 
-## The live demo (three formats, in this folder)
+## The live demo — pick named vs anonymized in the room
 
-- **HTML (primary):** `meetings/kits/demo-medspa.html` — open in any browser, dark mode, screen-share ready
-- **PDF (fallback):** `meetings/kits/demo-medspa.pdf` — same content, print-ready, works without a browser
-- **Text (last resort):** `meetings/kits/demo-medspa.txt` — plain text, readable on anything, no formatting needed
-- **JSON (data only):** `meetings/kits/demo-medspa.json` — raw structured data if Mark wants to verify the numbers
+**Default for Mark: named.** Mark is a direct buyer, not a competitor's agency. Showing him real hostnames demonstrates depth and proves the data is real, not a sample. He has no commercial interest in the Honolulu med spas you reveal.
 
-Open the HTML before the meeting starts. If wifi or anything fails, the PDF and TXT are local copies on your laptop.
+Switch to anonymized only if you sense he wants methodology without the specifics.
 
-To regenerate: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html` then copy back to `meetings/kits/`.
+### Named (default for Mark)
+- `meetings/kits/demo-medspa.html` — open in browser, dark mode, screen-share ready
+- `meetings/kits/demo-medspa.pdf` — 131KB, print-ready
+- `meetings/kits/demo-medspa.txt` — plain text fallback
+- `meetings/kits/demo-medspa.json` — raw structured data if he wants to verify the numbers
+
+### Anonymized (backup)
+- `meetings/kits/demo-medspa-anon.html` — same content with hostnames hashed
+- `.pdf`, `.txt`, `.json` variants
+
+Open whichever you plan to show before the meeting starts. All are local copies on your laptop — no internet needed.
+
+To regenerate either: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" [--anonymize] --out OUTPUT.html` then copy back to `meetings/kits/`.
 
 This is your "shape of the deliverable" demo. You walk Mark through what a research memo looks like, using med-spa data, then explain what a banking-vertical version would show.
 

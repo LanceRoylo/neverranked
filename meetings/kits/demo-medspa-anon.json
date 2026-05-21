@@ -1,0 +1,190 @@
+{
+  "filter": {
+    "category": "med_spa",
+    "geo": null,
+    "intent": null,
+    "engine": null
+  },
+  "cohort": {
+    "runs": 3,
+    "honest_pattern": true,
+    "distinct_categories": [
+      "med_spa"
+    ],
+    "distinct_geos": [
+      "honolulu",
+      "multi"
+    ],
+    "distinct_engines": [
+      "perplexity",
+      "openai"
+    ],
+    "total_cites": 2104,
+    "distinct_queries": 40
+  },
+  "source_type_distribution": {
+    "youtube": {
+      "count": 6,
+      "pct": 0
+    },
+    "reddit": {
+      "count": 0,
+      "pct": 0
+    },
+    "wikipedia": {
+      "count": 0,
+      "pct": 0
+    },
+    "forum": {
+      "count": 0,
+      "pct": 0
+    },
+    "social": {
+      "count": 0,
+      "pct": 0
+    },
+    "review_directory": {
+      "count": 36,
+      "pct": 2
+    },
+    "independent_web": {
+      "count": 2062,
+      "pct": 98
+    },
+    "owned": {
+      "count": 0,
+      "pct": 0
+    },
+    "competitor": {
+      "count": 0,
+      "pct": 0
+    }
+  },
+  "per_engine_distribution": {
+    "openai": {
+      "youtube": {
+        "count": 0,
+        "pct": 0
+      },
+      "reddit": {
+        "count": 0,
+        "pct": 0
+      },
+      "wikipedia": {
+        "count": 0,
+        "pct": 0
+      },
+      "forum": {
+        "count": 0,
+        "pct": 0
+      },
+      "social": {
+        "count": 0,
+        "pct": 0
+      },
+      "review_directory": {
+        "count": 7,
+        "pct": 1
+      },
+      "independent_web": {
+        "count": 1181,
+        "pct": 99
+      },
+      "owned": {
+        "count": 0,
+        "pct": 0
+      },
+      "competitor": {
+        "count": 0,
+        "pct": 0
+      }
+    },
+    "perplexity": {
+      "youtube": {
+        "count": 6,
+        "pct": 1
+      },
+      "reddit": {
+        "count": 0,
+        "pct": 0
+      },
+      "wikipedia": {
+        "count": 0,
+        "pct": 0
+      },
+      "forum": {
+        "count": 0,
+        "pct": 0
+      },
+      "social": {
+        "count": 0,
+        "pct": 0
+      },
+      "review_directory": {
+        "count": 29,
+        "pct": 3
+      },
+      "independent_web": {
+        "count": 881,
+        "pct": 96
+      },
+      "owned": {
+        "count": 0,
+        "pct": 0
+      },
+      "competitor": {
+        "count": 0,
+        "pct": 0
+      }
+    }
+  },
+  "top_hosts_by_type_recurring": {
+    "youtube": [],
+    "reddit": [],
+    "wikipedia": [],
+    "forum": [],
+    "social": [],
+    "review_directory": [
+      {
+        "host": "host_0be65f",
+        "cites": 11,
+        "runs": 2
+      },
+      {
+        "host": "host_6e74cb",
+        "cites": 3,
+        "runs": 2
+      }
+    ],
+    "independent_web": [
+      {
+        "host": "host_891825",
+        "cites": 88,
+        "runs": 2
+      },
+      {
+        "host": "host_edbd5f",
+        "cites": 88,
+        "runs": 2
+      },
+      {
+        "host": "host_072be6",
+        "cites": 58,
+        "runs": 2
+      },
+      {
+        "host": "host_854c27",
+        "cites": 54,
+        "runs": 2
+      },
+      {
+        "host": "host_9e2bba",
+        "cites": 53,
+        "runs": 2
+      }
+    ],
+    "owned": [],
+    "competitor": []
+  },
+  "min_runs_threshold": 2
+}
