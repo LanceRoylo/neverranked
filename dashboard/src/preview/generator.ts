@@ -49,7 +49,14 @@ export interface PreviewOutput {
   meta_description: string;
 }
 
-const SYSTEM_PROMPT = `You write personalized brief pages for NeverRanked (an AI-citation tracking and content-shipping service).
+const SYSTEM_PROMPT = `You write personalized brief pages for NeverRanked.
+
+NEVERRANKED'S CURRENT STATE (this is the company you are writing for):
+NeverRanked is a research engagement that measures what AI answer engines cite for a category. Until May 2026 we sold a JavaScript snippet that was claimed to drive AI citations. A pre-registered kill test against our own domain returned zero citations. We retracted the product and rebuilt the company around the measurement layer. The retraction is part of every brief: leading with it earns trust.
+
+The current product: $4,500 kickoff per category + $1,500/month per category ongoing. The deliverable is a forensic memo plus a prepped punch list. We do not execute. The customer's team or agency ships the work.
+
+The current measurement stack: seven AI surfaces every day. Five citation-grade engines that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews). Two model-knowledge engines that answer from training data (Claude, Gemma). The 5+2 split must be referenced whenever the seven-engine claim appears.
 
 Each brief is a short web page sent to a prospect Lance has been corresponding with. The brief replaces a sales call: instead of meeting, Lance points the prospect at this URL. They read it, decide, and reply.
 
@@ -64,9 +71,10 @@ VOICE RULES (violation = unusable output):
 8. NEVER reference how many times the recipient opened any prior email. Don't reference engagement, behavior, or tracking signals of any kind.
 
 HONESTY RULES (violation = the grader will hold the page, and rightly):
-9. Every capability you state must be one NeverRanked already ships, present in the inputs Lance gave you. If a deliverable, schema type, or service is not in the inputs, do not claim it. Do not invent specifics to sound thorough.
-10. Never promise THIS recipient a specific score, citation count, ranking, or timeline as a guaranteed result. The Hawaii Theatre numbers describe Hawaii Theatre only. Never imply or state the same outcome will happen for this company or this vertical.
-11. If you cannot ground a statement in the provided inputs or the exact Hawaii Theatre facts, omit it. A shorter honest brief beats an impressive invented one. Richness comes from craft and specificity about what is real, never from added promises.
+9. Every capability you state must be one NeverRanked already ships under the research-engagement product. Measurement, forensic memo, punch list, daily tracking, source-type analysis. NEVER claim we deploy code, write content, edit websites, or do any execution. The customer's team executes.
+10. Never promise THIS recipient a specific citation lift, score change, ranking change, or timeline as a guaranteed result. We measure. We do not predict.
+11. Hawaii Theatre Center is the only customer name allowed, and the only permitted descriptions of that work are diagnostic surfaces: we surfaced an expired Charity Navigator profile (2023), a BBB profile last updated 1999, missing Bing Business Profile, misconfigured authority backlinks, meta description rewrites. The retracted "AEO score went from 45 to 95 in ten days" and "Perplexity cited them on 14 of 19 queries" claims are FORBIDDEN — those framed snippet-driven causation that we tested and could not substantiate.
+12. If you cannot ground a statement in the provided inputs or the permitted HTC capability surfaces above, omit it. A shorter honest brief beats an impressive invented one.
 
 HM QUALITY GATE (Hello Momentum is the taste authority; the brief must clear these before it is good enough to send. Self-check every section against all of them and rewrite until they pass):
 - Swap Test: if you could swap in a different company name and the sentence still works, it is too generic. Every paragraph must be unmistakably about THIS company, THIS domain, THIS finding. Delete any line that would survive the swap.
@@ -110,17 +118,16 @@ D. <section class="legal-section">
 
 E. <section class="legal-section">
      <div class="section-label"><span class="num">03</span><span>What this looks like in practice</span><span class="rule"></span></div>
-   - The Hawaii Theatre proof point. State it EXACTLY as these facts, do not rephrase the numbers or invent a different framing:
-     * The client is "Hawaii Theatre Center" (use that exact name, never "Hawaii Theatre Company" or any variant).
-     * Their NeverRanked AEO score went from 45 to 95 (out of 100) in ten days.
-     * In the same week, on the first weekly citation log run, Perplexity named them in 14 of 19 tracked queries.
-   - Do NOT say "zero citations," do NOT say "zero to forty-five," do NOT change "45 to 95" into any other pair of numbers. The score moved 45 -> 95. That is the only correct framing.
-   - One sentence may connect the case study to the recipient's category. It must NOT imply they will get the same result (see honesty rule 10).
+   - Reference Hawaii Theatre Center (use that exact name, never "Hawaii Theatre Company") as a CAPABILITY example. Permitted framing: the kind of gaps a standard SEO scan misses, surfaced by a forensic readout. Specifics allowed: an expired Charity Navigator profile last updated 2023, a BBB profile last updated 1999, misconfigured authority backlinks to trusted institutions, the absence of a Bing Business Profile, meta description rewrites.
+   - FORBIDDEN claims about HTC (RETRACTED, do not state in any form): "AEO score went from 45 to 95", "ten days", "Perplexity cited them on 14 of 19 queries", or any equivalent framing that implies our snippet drove citation behavior. Those are the retracted causation claims.
+   - One sentence may connect the capability surface to the recipient's category. It must NOT imply they will get the same result (see honesty rule 10).
 
 F. <section class="legal-section">
      <div class="section-label"><span class="num">04</span><span>What we would do</span><span class="rule"></span></div>
-   - Use what_we_would_do as the substance, as a verb-led <ul> (2 to 4 items). Each item specific about schema type, cadence, deliverable shape — but only items grounded in the inputs.
-   - You MAY add ONE closing sentence after the list (not a list item) noting the SEO byproduct, in this exact spirit: the structured-data and content work we deploy to make them citable also strengthens their classic search rich results and organic discovery, included because the AEO work produces it. HARD GUARDRAIL: frame it ONLY as an included side effect. NEVER as a measured outcome, a ranking or traffic promise, a separate service line, or with any number or percentage. If it cannot be said as pure byproduct, omit the sentence entirely.
+   - Use what_we_would_do as the substance, as a verb-led <ul> (2 to 4 items). Each item describes a MEASUREMENT or DIAGNOSTIC action only — never execution. Examples of permitted items: "Measure citation share across the seven AI surfaces, every day, for the queries that route to your category." "Identify which competitors are being cited where you are absent." "Build the prepped punch list your team uses to close the specific gaps."
+   - HARD GUARDRAIL: every item is something WE do (measure, diagnose, surface, prep). The execution that closes the gap is named explicitly as the customer's team's work, not ours.
+   - You MAY add ONE closing sentence after the list noting the SEO byproduct in this spirit: "Cleaner authority signals and structured-data hygiene also strengthen classic search rich results and organic discovery as a side effect." HARD GUARDRAIL: only as an included side effect, never a measured outcome, never with a number, never as a separate service line.
+   - Pricing line (you may include or skip depending on signal_tier; if included, exact phrasing): "$4,500 kickoff per category, $1,500 a month after for ongoing measurement, per category."
 
 G. <section class="legal-section">
      <div class="section-label"><span class="num">05</span><span>What to do next</span><span class="rule"></span></div>
@@ -191,19 +198,17 @@ function buildSlug(input: PreviewInput): string {
   return `${prefix}-${token}`;
 }
 
-// RETRACTED 2026-05-20. The preview generator's prompt hardcodes
-// "NeverRanked AEO score went from 45 to 95 in ten days" as a fact
-// the model is REQUIRED to write into every preview. That is the
-// retracted causation claim. Every preview page generated would
-// publish it. Disabled until the prompt is rewritten against the
-// research-engagement positioning ($4,500 kickoff + $1,500/mo
-// per category, no execution, no fix). See memory/engine_split_5_plus_2.md.
+// Re-enabled 2026-05-21 against the rewritten SYSTEM_PROMPT above.
+// The prompt now teaches the model the retraction-first framing,
+// forbids the Hawaii Theatre 45-to-95 causation claim, requires
+// the 5+2 engine split for "seven engines" claims, and locks the
+// new pricing ($4,500 kickoff + $1,500/mo per category). Every
+// output is graded by the rewritten output-grader.ts before it
+// reaches a prospect.
 export async function generatePreview(
   env: Env,
   input: PreviewInput,
 ): Promise<PreviewOutput | null> {
-  throw new Error("generatePreview disabled: prompts encode retracted Hawaii Theatre 45-to-95 causation claim. Rewrite required before re-enabling. See ~/.claude/projects/-Users-lanceroylo-Desktop-neverranked/memory/engine_split_5_plus_2.md.");
-  // eslint-disable-next-line no-unreachable
   if (!env.ANTHROPIC_API_KEY) return null;
 
   // Depth scaling by tier. Hot prospects get the deepest version
