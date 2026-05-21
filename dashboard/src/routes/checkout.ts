@@ -130,11 +130,22 @@ async function verifyWebhookSignature(
  * GET /checkout/:plan — Create Stripe Checkout Session and redirect
  * Can be accessed without auth (for pricing page links)
  */
+// RETRACTED 2026-05-20. The PLANS table wires real Stripe Price IDs
+// to the killed Pulse/Signal/Amplify/$750-audit tiers. Any visitor
+// who reaches /checkout/<plan> would be charged for a product we no
+// longer sell. Disabled until the PLANS table is rewritten against
+// the new pricing ($4,500 kickoff + $1,500/mo per category) AND new
+// Stripe Price IDs are minted for the new SKUs.
 export async function handleCheckout(
   plan: string,
   request: Request,
   env: Env
 ): Promise<Response> {
+  return new Response("Checkout disabled. NeverRanked has retracted the Pulse, Signal, Amplify, and $750 audit tiers and rebuilt around a research engagement ($4,500 kickoff + $1,500/mo per category). Email lance@neverranked.com to scope an engagement.", {
+    status: 410,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+  // eslint-disable-next-line no-unreachable
   if (!env.STRIPE_SECRET_KEY) {
     return html(layout("Error", `
       <div class="empty">
@@ -1226,10 +1237,17 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
  *      (urgency=low -- nothing is blocking on him)
  *   8. Show "check your email" page
  */
+// RETRACTED 2026-05-20. Pulse is a killed product. The waitlist
+// accepted new signups for a tier we no longer sell. Disabled.
 export async function handlePulseWaitlist(
   request: Request,
   env: Env
 ): Promise<Response> {
+  return new Response("Pulse waitlist closed. The Pulse tier has been retracted. Current research engagement is $4,500 kickoff + $1,500/mo per category. Email lance@neverranked.com.", {
+    status: 410,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+  // eslint-disable-next-line no-unreachable
   if (request.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
   }
