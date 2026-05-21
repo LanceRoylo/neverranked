@@ -141,10 +141,10 @@ const HTML_PAGE = `<!doctype html>
         },
         {
           "@type": "Question",
-          "name": "What is the difference between this and the full audit?",
+          "name": "What is the difference between this and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is a surface scan of one page. The full $750 audit covers AI citations across ChatGPT, Claude, Gemini, Perplexity, Google AI Overviews, and Microsoft Copilot, plus competitor teardown, keyword gap analysis, and a 90-day roadmap with six deliverables."
+            "text": "This is a surface scan of one page. A full research engagement measures what AI answer engines cite across seven surfaces (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews, plus Claude and Gemma for model knowledge) every day, with a competitive cohort and a prepped punch list for your team to execute. $4,500 kickoff per category, $1,500/month ongoing."
           }
         }
       ]
@@ -1253,25 +1253,18 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
 
       <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
-        <div id="cta-tier-audit" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
-          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">One-time audit</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$750</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Full AEO teardown<br>90-day roadmap</div>
-          <a href="https://app.neverranked.com/checkout/audit" id="cta-audit" class="btn btn-ghost-link" style="margin-top:8px;font-size:10px;display:inline-block">Get audit</a>
+        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:180px;max-width:280px">
+          <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Kickoff</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, one time<br>Forensic memo + punch list</div>
         </div>
-        <div id="cta-tier-signal" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:140px;max-width:200px;position:relative">
-          <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Signal</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$2,000<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Weekly scans + alerts<br>Competitor benchmarks</div>
-          <a href="https://app.neverranked.com/checkout/signal" id="cta-signal" class="btn btn-primary" style="margin-top:8px;font-size:10px;display:inline-block">Start monitoring</a>
-        </div>
-        <div id="cta-tier-amplify" style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:140px;max-width:200px">
-          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Amplify</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Full-service AEO<br>We do the work</div>
-          <a href="https://app.neverranked.com/checkout/amplify" id="cta-amplify" class="btn btn-ghost-link" style="margin-top:8px;font-size:10px;display:inline-block">Go full service</a>
+        <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:180px;max-width:280px">
+          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Retainer</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$1,500<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category ongoing<br>Daily measurement + delta memo</div>
         </div>
       </div>
+      <div style="text-align:center;margin-top:12px"><a href="mailto:lance@neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
 
       <div class="cta-features">
         <span>Weekly scans</span>
@@ -1283,7 +1276,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
       <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
         <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See what the full dashboard looks like first</a>
-        <a href="https://neverranked.com/#pricing" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want monthly tracking without full citation infrastructure? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Pulse, $497/mo &rarr;</span></a>
+        <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full research engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
         <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
       </div>
     </div>
@@ -2112,7 +2105,7 @@ function buildReportEmail(report: any): string {
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">This is a snapshot. Want ongoing monitoring?</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks your AEO score weekly, benchmarks you against competitors, and gives you a clear action plan.</div>
-    <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
     <div style="margin-top:12px">
       <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
       <span style="color:#555555;margin:0 8px">|</span>
@@ -2340,7 +2333,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores. Not averages.</div>
-    <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
     <div style="margin-top:12px">
       <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $750</a>
     </div>
@@ -2423,7 +2416,7 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
     </table>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="https://app.neverranked.com/checkout/signal?domain=${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring — $2,000/mo</a>
+      <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
     </div>
     <div style="text-align:center;margin-top:12px">
       <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>

@@ -1,150 +1,110 @@
 # Never Ranked
 
-**AI-native SEO & AEO agency.** Search changed. Your visibility didn't. We fix that.
+NeverRanked is a research engagement that measures what AI answer
+engines cite for a category. The output is a forensic memo plus a
+prepped punch list for the customer's team to execute against.
 
-This repository contains the Never Ranked marketing site, the audit methodology used to deliver client work, and the first proof-of-practice case study (an audit of our own in-house SaaS, [Montaic](https://montaic.com)).
+This repository holds the marketing site, the dashboard worker
+source (under `dashboard/`), and the historical artifacts from
+the company's prior product.
 
 ---
 
-## What's in this repo
+## What this company was, and what it is now
+
+Until May 2026, NeverRanked sold a JavaScript snippet that was
+claimed to drive AI citations. We ran a pre-registered kill test
+against our own domain. The result was zero citations. The LLM
+crawlers do not execute JavaScript, so the snippet was structurally
+invisible to them.
+
+We stopped selling that product, retracted the public content that
+promoted it, and rebuilt the company around the measurement layer
+that does work.
+
+This repository contains both states: the current honest surfaces
+(homepage, About, ASB pitch, terms, privacy, llms.txt) and the
+historical artifacts (retired blog posts, retired case studies,
+retired audits, retired explainers). Anything that contradicts the
+retraction is either replaced with an honest holder or marked as
+retired in place.
+
+For the current state of every code path, see
+`~/.claude/projects/-Users-lanceroylo-Desktop-neverranked/memory/code_rewrite_status_2026-05-21.md`
+in Lance's local Claude memory.
+
+---
+
+## What we measure now
+
+Seven AI surfaces, every day.
+
+- **Five citation-grade engines** that search the live web and
+  cite their sources: Perplexity, ChatGPT search, Gemini grounded,
+  Microsoft Copilot via Bing, Google AI Overviews.
+- **Two model-knowledge engines** that answer purely from training
+  data: Claude, Gemma.
+
+Both layers measure different failure modes. A brand invisible in
+citation is invisible when AI fact-checks itself. A brand invisible
+in model knowledge is invisible at the baseline, before any search
+happens.
+
+---
+
+## What we deliver
+
+A forensic memo plus a prepped punch list. Per query, per engine,
+per competitor, per source type. Daily measurement. Monthly delta
+memo on ongoing engagements.
+
+We do not execute. No content writing, no website edits, no schema
+deploys, no profile updates. The labor stays with the customer's
+team or their agency. That separation is structural.
+
+---
+
+## Pricing
+
+- $4,500 kickoff per category. One time.
+- $1,500 per month per category, ongoing.
+- Per category, not per client.
+
+This is a research engagement, not a SaaS subscription. There is
+no self-serve dashboard.
+
+---
+
+## Repository layout (current)
 
 ```
 neverranked/
-├── index.html                  # the marketing site (single-file, no framework)
-├── _headers                    # Cloudflare Pages security + caching headers
-├── robots.txt                  # robots directives
-├── sitemap.xml                 # sitemap for crawlers
-│
-├── audit-template/             # reusable blank template for client audits
-│   ├── README.md               # how to run a new audit
-│   ├── intake-questionnaire.md # 12-question client intake
-│   ├── 00-executive-summary.md
-│   ├── 01-intake.md
-│   ├── 02-technical-audit.md
-│   ├── 03-schema-review.md
-│   ├── 04-keyword-gap.md
-│   ├── 05-ai-citations.md
-│   ├── 06-competitor-teardown.md
-│   └── 07-roadmap.md
-│
-├── audits/                     # completed client audits
-│   └── montaic/                # the first case study
-│       ├── 00-executive-summary.md
-│       ├── 02-technical-audit.md
-│       ├── 03-schema-review.md
-│       ├── 04-keyword-gap.md
-│       ├── 05-ai-citations.md
-│       ├── 06-competitor-teardown.md
-│       ├── 07-roadmap.md
-│       ├── implementation/     # Month 1 pasteable implementation kit
-│       │   ├── README.md
-│       │   ├── A1-root-schema.md
-│       │   ├── A2-breadcrumbs.md
-│       │   ├── A3-howto-schema.md
-│       │   ├── A4-blogposting-schema.md
-│       │   ├── A5-software-application.md
-│       │   ├── A6-free-grader-full-stack.md
-│       │   ├── A7-canonicals-robots.md
-│       │   ├── A8-og-images.md
-│       │   ├── A9-title-meta-rewrites.md
-│       │   ├── A10-entity-registration.md
-│       │   └── A11-fair-housing-pillar-article.md
-│       └── raw/                # fetched HTML + evidence trail
-│
-└── scripts/
-    └── run-audit.py            # automated audit runner (no dependencies)
+├── index.html              honest homepage holder
+├── about/, terms/,         current honest pages
+│   privacy/, thanks/
+├── pitch/asb-hawaii/       current direct-buyer pitch shape
+├── pitch/*/                retired pitch pages (holder)
+├── blog/, case-studies/,   retired catalogs (holders + noindex)
+│   profile/, state-of-aeo/
+├── standards/, schemas/,   retired surfaces (holders)
+│   agencies/, security/,
+│   for-agencies/,
+│   principles/, kit/
+├── meetings/kits/          current meeting prep, demo bundle
+├── dashboard/              app.neverranked.com Worker source
+├── llms.txt                rewritten for current state
+└── sitemap.xml             homepage only
 ```
 
----
-
-## The site
-
-`index.html` is the entire Never Ranked marketing site. Single file. No framework. No build step. Editorial dark-luxury design inspired by [MouthWash Studio](https://mouthwash.studio).
-
-**Fonts:** Playfair Display (headlines), DM Mono (body), Barlow Condensed (labels).
-**Palette:** `#080808` background, `#c9a84c` gold accents, `#f0ece3` off-white text.
-**Features:** Film grain overlay, scroll reveal animations, mobile-first responsive, async-first positioning.
-
-**Deploy:** drop this folder into Cloudflare Pages, or point a GitHub connection at it. No build command. Output directory: `/`.
-
----
-
-## The methodology
-
-Never Ranked delivers audits in six parts:
-
-1. **Technical Audit** — meta tags, canonicals, OG tags, schema inventory, crawlability
-2. **Schema Review** — JSON-LD coverage, entity signals, ready-to-paste fixes
-3. **Keyword Gap Analysis** — SERP reality check, intent clusters, positioning opportunities
-4. **AI Citation Audit** — citation share across target queries in ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma
-5. **Competitor Teardown** — side-by-side technical comparison with direct competitors
-6. **90-Day Roadmap** — prioritized, dated, effort-estimated action plan
-
-The audit runs in ~90 minutes of automated work plus ~3 hours of human synthesis. Delivered within 48 hours of booking.
-
-## Running a new audit
-
-```bash
-# 1. Clone this repo, cd into it
-git clone https://github.com/yourorg/neverranked.git
-cd neverranked
-
-# 2. Run the audit runner against the target domain
-python3 scripts/run-audit.py https://client-domain.com --out audits/client-name/raw/
-
-# 3. Copy the template
-cp -r audit-template audits/client-name
-
-# 4. Fill in each deliverable using the raw data + live SERP testing
-# (see audit-template/README.md for the full workflow)
-```
-
----
-
-## The Montaic audit
-
-The `audits/montaic/` directory contains the first Never Ranked audit, run against our own in-house SaaS. It's the proof of practice — we don't pitch what we haven't tried.
-
-**Headline finding:** Montaic has 0% AI citation share across 8 primary category queries, vs 100% for ListingAI (the category leader).
-
-**Root cause:** Missing entity signals. No Organization schema anywhere on the site, despite 222 indexed pages. Google fuzzy-matches "Montaic" as "Monti" / "Monte" / "Montana."
-
-**Fix path:** The `implementation/` subdirectory contains pasteable code and copy for all 11 Month 1 tasks. Total implementation time: ~10 focused hours spread across 3-5 days.
-
-**Expected outcome:** 15%+ AI citation share within 90 days, paired with Wikidata / Crunchbase / G2 / LinkedIn entity registration.
-
----
-
-## The operating model
-
-Never Ranked is deliberately small. One founder, async-first, no standing meetings.
-
-- **Audit:** $500 one-time, delivered within 48 hours. The starting diagnostic.
-- **Signal retainer:** $2,000/mo, three-month minimum. Web-grounded citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. Reddit thread monitoring. Schema fixes auto-pushed to your live site (graded for completeness first). Authority audits. Industry-percentile benchmarks. Quarterly drift detection. Forward-ready Monday digest.
-- **Amplify retainer:** $4,500/mo, three-month minimum. Capped at 6 active clients globally. Everything in Signal plus brand-voice fingerprint, citation-shaped content drafted in your voice, auto-publish to WordPress / Webflow / Shopify, and Reddit-aware FAQ deployment (we extract the questions being asked on the Reddit threads AI engines are citing for your category, generate voice-matched answers from your business profile, and deploy a FAQPage schema on your own domain so the same engines cite you directly).
-
-The dashboard is the meeting. Loom recaps replace calls. Email SLAs replace Slack channels.
+The historical artifacts (retired pages, audit documents under
+`/audits/`, prior explainers like `EXPLAINER.md` and
+`AGENCY-EXPLAINER.md`, the original audit template under
+`/audit-template/`) reflect the prior product premise and are
+preserved for diff context but should not be acted on as current
+guidance.
 
 ---
 
 ## Contact
 
-**Email:** hello@neverranked.com
-**Web:** https://neverranked.com
-**Proof of practice:** [Montaic](https://montaic.com) — our in-house AI-native SaaS, audited by the same team that runs Never Ranked.
-
----
-
-## License
-
-This repository is **source-available**, not open-source. See [`LICENSE`](./LICENSE) for the full text. In plain language:
-
-- **You can:** read every line, audit it, run it locally, fork it, learn from it, cite it, file issues, send PRs, copy ideas into your own work.
-- **You cannot:** use this code to operate a commercial AEO service (citation tracking, schema grading, drift detection, authority audits, etc.) that competes with NeverRanked.
-- **In four years (April 2030):** the code automatically converts to MIT and the restriction lifts.
-
-The license is modeled on the Business Source License pattern used by MariaDB, Sentry, and CockroachDB. The intent: keep the code open enough that customers can audit our work and security claims, while preventing a clone-and-launch competitor in the early years.
-
-If you want to operate a commercial service using this code before the change date, email **licensing@neverranked.com**.
-
-The "NeverRanked" name and wordmark are trademarks. Forks must be renamed.
+[Lance@hi.neverranked.com](mailto:Lance@hi.neverranked.com)

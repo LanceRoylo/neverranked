@@ -56,13 +56,23 @@ export const STAGE_LABELS: Record<Stage, string> = {
   churned: "Churned",
 };
 
-export const PLANS = ["audit", "signal", "amplify"] as const;
+// RETRACTED 2026-05-21. The audit / signal / amplify plan
+// taxonomy belongs to the retired product. The current product is
+// per-category research engagement: $4,500 kickoff + $1,500/mo
+// ongoing per category. The new SKU labels below replace the dead
+// ones. The "audit" / "signal" / "amplify" keys are kept so existing
+// DB rows with those plan values render without crashing the admin
+// UI; the label values are corrected so nothing in the admin
+// surface reads as a current pricing claim.
+export const PLANS = ["audit", "signal", "amplify", "kickoff", "retainer"] as const;
 export type Plan = (typeof PLANS)[number];
 
 export const PLAN_LABELS: Record<Plan, string> = {
-  audit: "$500 Audit (one-time)",
-  signal: "Signal — $2,000/mo",
-  amplify: "Amplify — $4,500/mo",
+  audit: "(retired) prior $750 audit SKU",
+  signal: "(retired) prior Signal $2,000/mo SKU",
+  amplify: "(retired) prior Amplify $4,500/mo SKU",
+  kickoff: "Kickoff — $4,500 per category (one-time)",
+  retainer: "Retainer — $1,500/mo per category",
 };
 
 export const INTAKE_STATUSES = ["new", "contacted", "converted", "rejected"] as const;
