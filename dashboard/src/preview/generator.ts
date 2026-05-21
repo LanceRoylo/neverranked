@@ -191,10 +191,19 @@ function buildSlug(input: PreviewInput): string {
   return `${prefix}-${token}`;
 }
 
+// RETRACTED 2026-05-20. The preview generator's prompt hardcodes
+// "NeverRanked AEO score went from 45 to 95 in ten days" as a fact
+// the model is REQUIRED to write into every preview. That is the
+// retracted causation claim. Every preview page generated would
+// publish it. Disabled until the prompt is rewritten against the
+// research-engagement positioning ($4,500 kickoff + $1,500/mo
+// per category, no execution, no fix). See memory/engine_split_5_plus_2.md.
 export async function generatePreview(
   env: Env,
   input: PreviewInput,
 ): Promise<PreviewOutput | null> {
+  throw new Error("generatePreview disabled: prompts encode retracted Hawaii Theatre 45-to-95 causation claim. Rewrite required before re-enabling. See ~/.claude/projects/-Users-lanceroylo-Desktop-neverranked/memory/engine_split_5_plus_2.md.");
+  // eslint-disable-next-line no-unreachable
   if (!env.ANTHROPIC_API_KEY) return null;
 
   // Depth scaling by tier. Hot prospects get the deepest version

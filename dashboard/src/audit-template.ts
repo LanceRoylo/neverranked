@@ -727,7 +727,12 @@ Length: 100-170 words. No bullet points.`;
 
 /** Backwards-compatible: returns just the HTML. New callers can use
  *  buildAuditTemplateWithCache to get the scan cache back for reuse. */
+// RETRACTED 2026-05-20. The audit template embeds dead Pulse/Signal
+// pricing in the deliverable body and is built on the retracted
+// schema-causation methodology. Disabled until rewritten.
 export async function buildAuditTemplate(env: Env, opts: TemplateOpts): Promise<string> {
+  throw new Error("buildAuditTemplate disabled: template body contains retracted Pulse/Signal pricing and AEO-score methodology. Rewrite required before re-enabling.");
+  // eslint-disable-next-line no-unreachable
   const result = await buildAuditTemplateWithCache(env, opts);
   return result.html;
 }
@@ -737,7 +742,10 @@ export async function buildAuditTemplate(env: Env, opts: TemplateOpts): Promise<
  *  running them. Saves ~25 subrequests per retry attempt -- the
  *  difference between regen succeeding and blowing the Workers
  *  subrequest budget. */
+// RETRACTED 2026-05-20. Same retraction as buildAuditTemplate.
 export async function buildAuditTemplateWithCache(env: Env, opts: TemplateOpts): Promise<AuditTemplateResult> {
+  throw new Error("buildAuditTemplateWithCache disabled: template body contains retracted Pulse/Signal pricing and AEO-score methodology. Rewrite required before re-enabling.");
+  // eslint-disable-next-line no-unreachable
   const { brand, domain } = opts;
   const customerName = opts.customer_name || "there";
   const today = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });

@@ -131,16 +131,17 @@ function dashboardPage(user: FreeUser, latest: ScanRow | null, history: ScanRow[
       </div>
 
       <div style="background:var(--bg-lift,#fafafa);padding:24px;border-radius:6px;margin:32px 0;text-align:center">
-        <h2 style="font-family:Georgia,serif;font-style:italic;font-size:22px;margin:0 0 8px">Want to fix the score?</h2>
+        <h2 style="font-family:Georgia,serif;font-style:italic;font-size:22px;margin:0 0 8px">Want the forensic version?</h2>
         <p style="font-size:13px;color:var(--text-soft);margin:0 0 16px">
-          Free shows the score. Paid shows <em>what to fix and the citation tracking across all seven engines</em>. Pulse is $497/mo, Signal $2,000/mo. Audit credits toward the first month.
+          What you just saw is a single off-site authority signal, not a citation predictor. The paid research engagement measures what AI answer engines actually cite for your category across all seven surfaces, every day, with the prepped punch list your team executes against. $4,500 kickoff, $1,500 / month ongoing.
         </p>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-          <form method="POST" action="/free/upgrade?plan=pulse" style="margin:0">
-            <button type="submit" class="btn" style="font-size:13px">Upgrade to Pulse &rarr;</button>
+          <a href="mailto:lance@neverranked.com?subject=Forensic%20readout%20inquiry" class="btn" style="font-size:13px;text-decoration:none;display:inline-block;padding:10px 18px">Email Lance &rarr;</a>
+          <form method="POST" action="/free/upgrade?plan=pulse" style="margin:0;display:none">
+            <button type="submit" class="btn">Upgrade (disabled)</button>
           </form>
-          <form method="POST" action="/free/upgrade?plan=signal" style="margin:0">
-            <button type="submit" class="btn btn-ghost" style="font-size:13px">Upgrade to Signal &rarr;</button>
+          <form method="POST" action="/free/upgrade?plan=signal" style="margin:0;display:none">
+            <button type="submit" class="btn btn-ghost">Upgrade (disabled)</button>
           </form>
         </div>
       </div>

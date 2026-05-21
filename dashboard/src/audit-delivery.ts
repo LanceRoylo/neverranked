@@ -83,7 +83,15 @@ export interface GenerateAndStoreResult {
  * a tuned prompt, escalation should be rare -- the QA agent is the
  * safety net, not the primary author.
  */
+// RETRACTED 2026-05-20. Audit delivery emails contain Pulse/Signal
+// pricing ($497/mo, $2,000/mo) for products we no longer sell, and
+// reference the $750 audit credit flow that maps to retired tiers.
+// Audit deliverable structure is built on the retracted schema-causation
+// thesis. Disabled until rewritten against the research-engagement
+// positioning (the kickoff is now the deliverable, $4,500, no credit flow).
 export async function generateAndStoreAudit(env: Env, opts: AuditDeliveryOpts): Promise<GenerateAndStoreResult> {
+  throw new Error("generateAndStoreAudit disabled: emails contain dead Pulse/Signal pricing and the audit deliverable is built on the retracted schema-causation methodology. Rewrite required before re-enabling.");
+  // eslint-disable-next-line no-unreachable
   const token = await deriveAuditToken(env, opts.email, opts.clientSlug);
   const dashboardOrigin = (env as any).DASHBOARD_ORIGIN || "https://app.neverranked.com";
   const url = `${dashboardOrigin}/audit/view/${token}`;
@@ -201,10 +209,14 @@ The audit was generated ${QA_MAX_ATTEMPTS} times and the QA agent blocked every 
  * handling in routes/checkout.ts (Resend, branded HTML, magic-link
  * fallback if email delivery fails).
  */
+// RETRACTED 2026-05-20. Same retraction as generateAndStoreAudit —
+// email body contains dead pricing. Disabled until rewritten.
 export async function sendAuditDeliveryEmail(
   env: Env,
   opts: AuditDeliveryOpts & { auditUrl: string },
 ): Promise<{ ok: boolean; error?: string }> {
+  return { ok: false, error: "sendAuditDeliveryEmail disabled 2026-05-20: email body contains retracted Pulse/Signal pricing. Rewrite required before re-enabling." };
+  // eslint-disable-next-line no-unreachable
   if (!env.RESEND_API_KEY) {
     return { ok: false, error: "RESEND_API_KEY not configured" };
   }
@@ -292,7 +304,10 @@ neverranked.com`;
  * mid-pipeline is identifiable in wrangler tail without admin_inbox
  * dependencies.
  */
+// RETRACTED 2026-05-20. Same retraction. Disabled until rewritten.
 export async function deliverAuditOnCheckout(env: Env, opts: AuditDeliveryOpts): Promise<void> {
+  throw new Error("deliverAuditOnCheckout disabled: end-to-end audit delivery uses retracted methodology and pricing. Rewrite required before re-enabling.");
+  // eslint-disable-next-line no-unreachable
   const start = Date.now();
   console.log(`[audit-delivery] starting for ${opts.email} (${opts.brand} / ${opts.domain})`);
   let auditUrl: string;

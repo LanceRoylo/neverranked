@@ -117,12 +117,20 @@ function failClosed(reason: string): OutputGradeResult {
  *
  * Always resolves. Never throws. Fail-closed on every error path.
  */
+// RETRACTED 2026-05-20. CANONICAL_FACTS treats the Hawaii Theatre
+// 45-to-95 score jump as a fact the grader REQUIRES every generated
+// artifact to honor. That fact is the retracted causation claim. The
+// grader is structurally tied to the dead thesis. Disabled until
+// rewritten with a corrected fact set drawn only from substantiated
+// diagnostic work (the surfaces named in /pitch/asb-hawaii/ section 09).
 export async function gradeProspectOutput(
   env: Env,
   artifactText: string,
   surfaceLabel: string,
   groundTruth?: string,
 ): Promise<OutputGradeResult> {
+  throw new Error("gradeProspectOutput disabled: CANONICAL_FACTS enforce retracted Hawaii Theatre 45-to-95 causation claim. Rewrite required before re-enabling.");
+  // eslint-disable-next-line no-unreachable
   if (!env.ANTHROPIC_API_KEY) {
     return failClosed("ANTHROPIC_API_KEY not set (fail-closed)");
   }
