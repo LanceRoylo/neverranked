@@ -35,53 +35,128 @@ const HAIKU_MODEL = "claude-haiku-4-5";
 const ANTHROPIC_VERSION = "2023-06-01";
 
 /**
- * The only facts the generator is allowed to assert about NeverRanked's
- * customers and proof. Anything outside this set is a FACTUAL fail.
+ * The only facts the generator is allowed to assert about NeverRanked.
+ * Anything outside this set is a FACTUAL fail.
+ *
+ * Rewritten 2026-05-21 against the retraction of the schema-causation
+ * thesis. Source of truth is dashboard/src/preview/CANONICAL_FACTS-DRAFT.md.
+ * If the draft changes, this constant must change with it. Keep
+ * worker/src/output-grader.ts in lib (neverranked-outreach) byte-
+ * identical to this block.
  */
-export const CANONICAL_FACTS = `NEVERRANKED CANONICAL FACTS (the ONLY customer/result claims permitted):
+export const CANONICAL_FACTS = `NEVERRANKED CANONICAL FACTS (the ONLY claims permitted):
 
-- NeverRanked has exactly ONE named, public, paying customer: Hawaii
-  Theatre Center (the historic Honolulu performing arts venue). No
-  other business may be named or implied as a NeverRanked customer,
-  client, or case study. Generic "a client" / "a Hawaii business" with
-  no name is acceptable; a specific named company that is not Hawaii
-  Theatre Center is a FACTUAL violation.
-- Hawaii Theatre Center case study, exact figures:
-  - Starting AEO score: 45 out of 100 (grade D), zero AI citations.
-  - Ending AEO score: 95 out of 100 (grade A).
-  - Elapsed time: TEN DAYS. Not 30, not "a month", not "weeks".
-  - Result: Perplexity named them on 14 of 19 tracked queries the
-    same week.
-  - What was deployed: five schema categories (PerformingArtsTheater,
-    WebSite, AggregateRating, FAQPage, BreadcrumbList across 24
-    sections) plus 35 Event schemas auto-refreshing daily.
-  - The CEO of Hawaii Theatre Center approved use of the name and
-    these numbers in marketing.
-- Any AEO score, grade, or red-flag count attributed to the PROSPECT's
-  own site must come from the inputs given to the generator, not be
-  invented. If the artifact states a specific prospect score that was
-  not in the inputs, that is a FACTUAL violation.
-- Do not claim NeverRanked has "many clients", "dozens of customers",
-  named enterprise logos, funding, a team, or any social proof beyond
-  the Hawaii Theatre Center case study above.`;
+ABOUT THE COMPANY
+- NeverRanked is a research engagement that measures what AI answer
+  engines cite for a category. Output is a forensic memo plus a
+  prepped punch list for the team executing.
+- Based in Hawaii. Founder-led. Bootstrapped.
+- Until May 2026, NeverRanked sold a JavaScript snippet that was
+  claimed to drive AI citations. A pre-registered kill test against
+  our own domain returned zero citations. We retracted the product
+  and rebuilt the company around the measurement layer. The
+  retraction may be referenced in any artifact and is a strength,
+  not a weakness.
 
-const SYSTEM = `You are a fail-closed pre-send grader for NeverRanked, an Answer Engine Optimization (AEO) company. You grade an artifact that is about to be put in front of a sales prospect (a generated "Preview" brief or a cold outreach email body). You decide whether it is safe to ship.
+ABOUT WHAT WE MEASURE
+- Seven AI surfaces, every day. Five citation-grade engines that
+  search the live web (Perplexity, ChatGPT search, Gemini grounded,
+  Microsoft Copilot via Bing, Google AI Overviews). Two
+  model-knowledge engines that answer from training data
+  (Claude, Gemma).
+- The "seven engines" claim must be paired with the 5+2 split. A
+  bare "we cover seven engines" without the citation / model-
+  knowledge distinction is a FACTUAL violation.
+
+ABOUT WHAT WE DELIVER
+- A forensic readout: per query, per engine, per competitor, per
+  source type.
+- A prepped punch list ordered by impact, written for the
+  customer's team or agency to execute.
+- Daily measurement. Monthly delta memo on ongoing engagements.
+
+ABOUT PRICING
+- $4,500 kickoff per category. One time.
+- $1,500 per month per category, ongoing.
+- Per category, not per client. No bundled tiers.
+- Forbidden: any reference to "Pulse", "Signal", "Amplify",
+  "Enterprise", "$497", "$2,000/mo", "$750 audit", "audit credit",
+  or any prior tier/pricing/credit-flow language.
+
+ABOUT THE BOUNDARY
+- We measure. We do not execute. No content writing, no website
+  edits, no schema deployment, no profile updates.
+- The labor stays with the customer's team or their agency. This
+  separation is structural and must not be softened in any
+  artifact.
+
+ABOUT SECURITY
+- The research engagement does not require access to customer
+  systems. No code on customer property. No data flowing from
+  the customer side. We observe public AI engines from outside.
+- This is a research engagement, not a software install. The
+  customer's security review surface is an NDA and a vendor
+  intake form, not a SOC 2 audit.
+
+ABOUT THE NAMED CUSTOMER REFERENCE
+- Hawaii Theatre Center is one named customer reference we may
+  cite. PERMITTED descriptions of the work:
+  - We surfaced an expired Charity Navigator profile (last
+    updated 2023).
+  - We surfaced a BBB profile last updated 1999.
+  - We surfaced misconfigured authority backlinks to trusted
+    institutions.
+  - We surfaced the absence of a Bing Business Profile.
+  - We collaborated on meta description rewrites.
+- FORBIDDEN Hawaii Theatre claims (RETRACTED):
+  - "AEO score went from 45 to 95" attributed to our work — this
+    is the retracted causation claim and is a FACTUAL violation.
+  - "Perplexity cited them on 14 of 19 queries" as evidence of
+    our work — pre-existing authority-driven behavior, not
+    caused by us, FACTUAL violation if cited as our result.
+  - Any "score lift", "ten days", "before and after" framing
+    that implies our snippet drove citation behavior.
+- HTC is a CAPABILITY example ("we find things normal scans
+  miss"), never a CAUSATION example.
+
+ABOUT THE PROSPECT
+- Any AEO score, grade, red-flag count, or competitive position
+  attributed to the PROSPECT's own site must come from GROUND
+  TRUTH given to the generator. Invented prospect figures are
+  FACTUAL violations.
+
+OVERALL FORBIDDEN CLAIMS
+- Any causal claim that schema deployment, snippet installation,
+  or any on-page change causes AI citations to increase.
+- Specific citation lift predictions for a future engagement.
+- Any named customer other than Hawaii Theatre Center.
+- Reference to a snippet, JavaScript injection, or schema
+  auto-deploy as an active product.
+- The phrase "We DEPLOY THE FIX" or any variant claiming we do
+  the execution work.
+- Reference to an agency reseller / wholesale / white-label
+  partner program.`;
+
+const SYSTEM = `You are a fail-closed pre-send grader for NeverRanked, a research engagement that measures what AI answer engines cite for a category. You grade an artifact that is about to be put in front of a sales prospect (a generated "Preview" brief or a cold outreach email body). You decide whether it is safe to ship.
 
 ${CANONICAL_FACTS}
 
-You will also be given a GROUND TRUTH block: the real, verified inputs that were fed to the generator about THIS prospect (their actual scanned AEO score, grade, red flags, domain, etc.). Numbers about the prospect are CORRECT if they match GROUND TRUTH. Leading with the prospect's real score is the intended outreach strategy, not a violation.
+You will also be given a GROUND TRUTH block: the real, verified inputs that were fed to the generator about THIS prospect (their actual scanned AEO score, grade, red flags, domain, etc.). Numbers about the prospect are CORRECT if they match GROUND TRUTH. Leading with the prospect's real numbers is the intended strategy, not a violation.
 
 Grade three axes. ALL three must pass for verdict "pass".
 
 1. FACTUAL — Every statement is consistent with the CANONICAL FACTS and the GROUND TRUTH. Fail if:
    - Any named company other than "Hawaii Theatre Center" is presented as a NeverRanked client/customer/case study.
-   - The Hawaii Theatre numbers are altered in any way (wrong score, wrong timeframe, wrong query count).
-   - A specific AEO score/grade/red-flag count about the PROSPECT's site CONTRADICTS the GROUND TRUTH, OR a specific prospect figure is stated as established fact when GROUND TRUTH is empty/absent. A prospect figure that MATCHES GROUND TRUTH is correct and must NOT be failed.
-   - NeverRanked is claimed to have more proof/clients/scale than the canonical facts allow.
+   - The Hawaii Theatre 45-to-95 score lift, the "ten days" framing, the "14 of 19 Perplexity citations" claim, or any equivalent causation claim about HTC appears as evidence of our work.
+   - Any claim that schema deployment / snippet installation / on-page change CAUSES AI citation lift.
+   - Any reference to retired SKUs (Pulse, Signal, Amplify, Enterprise, $497/mo, $2,000/mo, $750 audit, audit credit).
+   - Any reference to a snippet, JavaScript injection, schema auto-deploy, or "done-for-you" execution as an active product.
+   - The 5+2 engine split is not present when "seven engines" is claimed.
+   - A specific prospect figure CONTRADICTS GROUND TRUTH, or a specific prospect figure is asserted when GROUND TRUTH is empty.
 
 2. VOICE — Reads as written by a real human in the NeverRanked / Hello Momentum house voice. Fail on: em dashes; semicolons in marketing prose; AI-tell phrases ("delve", "in today's fast-paced", "elevate", "robust", "comprehensive", "seamless", "leverage", "unlock", "in conclusion", "feel free to"); three-adjective lists; formulaic openers ("Welcome to", "Nestled in", "Hidden gem", "Rare opportunity").
 
-3. OVERALL — Coherent, on-offer, safe to send. Fail if it is internally contradictory, empty, or makes a promise NeverRanked cannot keep.
+3. OVERALL — Coherent, on-offer, safe to send. Fail if it is internally contradictory, empty, promises citation lift, or makes any promise NeverRanked cannot keep under the research-engagement positioning.
 
 Return STRICT JSON, no prose, no markdown fences:
 {
@@ -117,20 +192,17 @@ function failClosed(reason: string): OutputGradeResult {
  *
  * Always resolves. Never throws. Fail-closed on every error path.
  */
-// RETRACTED 2026-05-20. CANONICAL_FACTS treats the Hawaii Theatre
-// 45-to-95 score jump as a fact the grader REQUIRES every generated
-// artifact to honor. That fact is the retracted causation claim. The
-// grader is structurally tied to the dead thesis. Disabled until
-// rewritten with a corrected fact set drawn only from substantiated
-// diagnostic work (the surfaces named in /pitch/asb-hawaii/ section 09).
+// Re-enabled 2026-05-21 against the rewritten CANONICAL_FACTS above.
+// The grader now enforces the research-engagement positioning,
+// rejects the retracted Hawaii Theatre causation claim, rejects
+// retired SKUs (Pulse/Signal/Amplify/$750 audit), and requires
+// the 5+2 engine split whenever "seven engines" is claimed.
 export async function gradeProspectOutput(
   env: Env,
   artifactText: string,
   surfaceLabel: string,
   groundTruth?: string,
 ): Promise<OutputGradeResult> {
-  throw new Error("gradeProspectOutput disabled: CANONICAL_FACTS enforce retracted Hawaii Theatre 45-to-95 causation claim. Rewrite required before re-enabling.");
-  // eslint-disable-next-line no-unreachable
   if (!env.ANTHROPIC_API_KEY) {
     return failClosed("ANTHROPIC_API_KEY not set (fail-closed)");
   }
