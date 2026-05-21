@@ -4,26 +4,127 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Page retired -- NeverRanked</title>
+<title>Security posture -- NeverRanked</title>
+<meta name="description" content="The research engagement does not touch your systems. No code on your property, no integrations, no data flowing from your side. Procurement surface is an NDA and a vendor intake form, not a SOC 2 audit.">
+<link rel="canonical" href="https://neverranked.com/security/">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
-  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; }
-  main { max-width: 560px; padding: 40px 28px; line-height: 1.7; }
-  h1 { font-size: 28px; font-weight: 400; margin: 0 0 22px; text-align: center; }
-  p { font-size: 16px; color: #b9b9bd; margin: 0 0 18px; }
-  .rule { width: 40px; height: 1px; background: #3a3a3e; margin: 26px auto; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 64px 0 120px; }
+  main { max-width: 720px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 36px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.2; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 36px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 44px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 8px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 10px 12px 10px 0; border-bottom: 1px solid #3a3a3e; }
+  td { padding: 8px 12px 8px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
-  .center { text-align: center; margin-top: 32px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
 </style>
 </head>
 <body>
   <main>
-    <h1>This page has been retired.</h1>
+    <div class="meta-top">NeverRanked &middot; Security posture</div>
+    <h1>This is a research engagement, not a software install.</h1>
+    <p class="sub">No code on your property, no integrations, no data flowing from your side. The procurement surface is an NDA and a vendor intake form, not a SOC 2 audit.</p>
+
+    <div class="notice">
+      <strong>If your compliance team has 30 seconds:</strong> NeverRanked observes public AI answer engines from outside, the same way a journalist or an analyst would. We do not install code on your site, we do not integrate with your CRM, we do not read your SSO, we do not handle your customer data. The deliverable is a research memo. There is no software for your team to review.
+    </div>
+
+    <h2>What we do not access</h2>
+    <table>
+      <thead>
+        <tr><th>Category</th><th>Our access</th><th>Why none is needed</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Customer website / DOM</td><td>None</td><td>The prior product injected JavaScript; that product has been retracted. The new product does not need or use anything on your site.</td></tr>
+        <tr><td>CRM (Salesforce, HubSpot, etc.)</td><td>None</td><td>Measurement is performed against public AI engines, not against your CRM data.</td></tr>
+        <tr><td>Analytics (GA, Mixpanel, Amplitude, etc.)</td><td>None</td><td>We do not need to know what your customers did on your site. We measure what AI engines say about your brand to a buyer asking a question.</td></tr>
+        <tr><td>SSO / OAuth / authentication</td><td>None</td><td>We have no surface that requires user authentication. The deliverable is a research memo, not a logged-in dashboard.</td></tr>
+        <tr><td>Customer data (PII, transactions, behavior)</td><td>None</td><td>We do not handle PII. We measure brand-level signals.</td></tr>
+        <tr><td>Email systems / inboxes</td><td>None</td><td>We do not need to read your email. Our communications happen over normal external email.</td></tr>
+        <tr><td>Cloud accounts / infrastructure</td><td>None</td><td>Our infrastructure is entirely separate. No shared cloud accounts, no cross-account roles.</td></tr>
+        <tr><td>Source code</td><td>None</td><td>We do not need your code. Your engineering team is not affected by this engagement.</td></tr>
+        <tr><td>Search Console / domain verification</td><td>None</td><td>The kill test on our own snippet demonstrated GSC integration is not the mechanism. We do not request it for new engagements.</td></tr>
+      </tbody>
+    </table>
+
+    <h2>What we do collect</h2>
+    <ul>
+      <li><strong>The query set you and our team locked at scoping.</strong> 15-30 queries, in our system, not on yours.</li>
+      <li><strong>The competitor cohort you named at scoping.</strong> Domain names of 3-7 publicly-known competitors.</li>
+      <li><strong>Daily API responses from the seven AI surfaces.</strong> The raw text of what each engine said in response to each query, plus the cited URLs. These are responses to public queries on public APIs; they contain no information about your customers or your systems.</li>
+      <li><strong>Your invoice and payment records.</strong> Standard Stripe billing data, processed by Stripe.</li>
+      <li><strong>Engagement metadata.</strong> When kickoff started, when memos shipped, who they were sent to (your designated team).</li>
+    </ul>
+
+    <h2>What we do not collect or store</h2>
+    <ul>
+      <li>Anything from your website's visitor traffic.</li>
+      <li>Anything that identifies your customers.</li>
+      <li>Any data that would require GDPR or CCPA processor-agreement coverage.</li>
+      <li>Any data that would require HIPAA Business Associate Agreement coverage.</li>
+      <li>Any payment instruments (Stripe handles payment data end-to-end; we never see card data).</li>
+    </ul>
+
+    <h2>Procurement and review</h2>
+    <p>The honest reframe for procurement teams: NeverRanked maps to research/analyst-firm processes, not to SaaS-vendor processes. Specifically:</p>
+    <ul>
+      <li><strong>SOC 2:</strong> not applicable. SOC 2 covers controls around customer-data handling. We do not handle customer data.</li>
+      <li><strong>Penetration test:</strong> not applicable. There is no NeverRanked endpoint your traffic flows through, no API your systems call, no infrastructure of ours that touches yours.</li>
+      <li><strong>Vendor security questionnaire (SIG, SIG-Lite, CAIQ):</strong> we will fill these out. Most fields will read "N/A — vendor does not access customer systems or data." We can supply a pre-filled SIG-Lite for review on request.</li>
+      <li><strong>NDA:</strong> we sign mutual NDAs. Our preferred template is short; we will also sign yours within reason.</li>
+      <li><strong>MSA:</strong> we will sign a standard MSA, redlined to cap indemnification at engagement value (uncapped indemnity creates existential risk for a small company).</li>
+      <li><strong>DPA:</strong> not typically applicable because we do not process customer personal data. If your legal team requires one anyway, we will sign a minimal DPA confirming the "we do not process personal data" position.</li>
+      <li><strong>Insurance:</strong> Tech E&amp;O and Cyber coverage in place. Certificates of insurance available on request.</li>
+    </ul>
+
+    <h2>Confidentiality of the deliverable itself</h2>
+    <p>Once we produce a research memo and a punch list that name your brand and your competitors, those documents have handling expectations even though they contain no PII. Our stance:</p>
+    <ul>
+      <li>Memos delivered to your designated recipients only. We do not publish or share them.</li>
+      <li>Your data export stays exportable for the life of the engagement.</li>
+      <li>After cancellation, customer-specific data is retained 30 days then deleted.</li>
+      <li>Aggregate-level category patterns we observe across our broader dataset stay with us, never tied to your name and never reverse-engineerable to your engagement. The host-surfacing gate in <code>aggregate.mjs</code> requires <code>min-runs &gt;= 2</code> before any host appears in cross-customer aggregate output, enforced in code.</li>
+    </ul>
+
+    <h2>Reproducibility and audit</h2>
+    <p>The measurement infrastructure is auditable by your team without our cooperation:</p>
+    <ul>
+      <li><strong>Public source code.</strong> <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a> for the measurement and aggregator tools.</li>
+      <li><strong>Gemma is open-weight.</strong> Your auditor can re-run the same prompts against Gemma independently and verify our numbers without our involvement.</li>
+      <li><strong>Pre-registration discipline.</strong> Any methodology claim (kill tests, pattern-readiness) is anchored in a hash-locked pre-registration file in the repo before the test runs.</li>
+      <li><strong>Raw data export.</strong> All raw measurement data from your engagement is exportable in standard formats any time.</li>
+    </ul>
+
+    <h2>The retraction-relevant disclosure</h2>
+    <p>NeverRanked previously sold a JavaScript snippet product that required customer-site code installation. That product has been retracted. Documentation of the retraction lives at <a href="/retraction/">/retraction/</a>. Any prior version of this security page that described snippet integration security posture is superseded by this page.</p>
+
     <div class="rule"></div>
-    <p>The earlier content at this URL was published under a product premise we have since tested against our own domain and could not substantiate. We have stopped selling the product that premise was built on, and the content built around it does not belong on a public site we ask anyone to trust.</p>
-    <p>The measurement work continues, sharpened, across the AI answer engines that drive AI search today. The rest is being reworked, honestly, before we say more.</p>
-    <p class="center"><a href="/">Return to NeverRanked</a></p>
+
+    <h2>Compliance questions</h2>
+    <p>Anything not covered here, email <a href="mailto:lance@neverranked.com?subject=Security%20question">lance@neverranked.com</a>. Compliance and procurement questions get a same-day response on weekdays.</p>
+
+    <p style="margin-top:32px">
+      <a href="/">Return to NeverRanked</a> &middot;
+      <a href="/methodology/">How we measure</a> &middot;
+      <a href="/retraction/">Why we are rebuilding</a> &middot;
+      <a href="/terms/">Terms</a> &middot;
+      <a href="/privacy/">Privacy</a>
+    </p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a></div>
   </main>
 </body>
 </html>
