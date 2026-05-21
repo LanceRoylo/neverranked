@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Methodology -- NeverRanked</title>
+<meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
+<link rel="canonical" href="https://neverranked.com/methodology/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 64px 0 120px; }
+  main { max-width: 760px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 36px; font-style: italic; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 16px; font-weight: 400; color: #e8e8ea; margin: 26px 0 8px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; overflow-x: auto; margin: 16px 0; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 10px 12px 10px 0; border-bottom: 1px solid #3a3a3e; }
+  td { padding: 8px 12px 8px 0; border-bottom: 1px solid #1c1c1e; font-variant-numeric: tabular-nums; vertical-align: top; }
+  .layer { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 14px 0; }
+  .layer h3 { margin-top: 0; color: #d4c596; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 64px; letter-spacing: 0.04em; text-align: center; }
+  blockquote { border-left: 2px solid #d4c596; padding: 0 0 0 22px; margin: 22px 0; font-style: italic; font-size: 16px; color: #e8e8ea; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Measurement methodology</div>
+    <h1>How we measure what AI engines cite.</h1>
+    <p class="sub">The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from data we actually captured.</p>
+
+    <h2>The two-layer measurement model</h2>
+    <p>AI answer engines fall into two structurally different groups, and both groups can fail a brand independently. We measure both, every day, for every category we run.</p>
+
+    <div class="layer">
+      <h3>Layer 1: Citation-grade engines (5)</h3>
+      <p>Engines that search the live web at query time and surface the sources they cite. Five of them dominate the surface area today:</p>
+      <ul>
+        <li><strong>Perplexity</strong> — accessed via the sonar API.</li>
+        <li><strong>ChatGPT search</strong> — accessed via the OpenAI gpt-4o-search-preview model.</li>
+        <li><strong>Gemini grounded</strong> — accessed via Gemini 2.5-flash with the google_search tool enabled.</li>
+        <li><strong>Microsoft Copilot</strong> — accessed via Bing organic search through the DataForSEO API.</li>
+        <li><strong>Google AI Overviews</strong> — accessed via the DataForSEO ai_overview endpoint.</li>
+      </ul>
+      <p>For each query, on each engine, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer.</p>
+    </div>
+
+    <div class="layer">
+      <h3>Layer 2: Model-knowledge engines (2)</h3>
+      <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up — which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
+      <ul>
+        <li><strong>Claude</strong> — accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
+        <li><strong>Gemma</strong> — accessed via Together AI. Open-weight, which means a compliance team or auditor can re-run the exact same prompts independently and verify our numbers.</li>
+      </ul>
+      <p>For each query, on each engine, the response is captured and scanned for mentions of the brand name. A brand is "mentioned in model knowledge" on a query if its name appears in the response.</p>
+    </div>
+
+    <p><strong>Why both layers matter.</strong> A brand invisible in citation is invisible when AI fact-checks itself before answering. A brand invisible in model knowledge is invisible at the baseline, before any search happens. These are different failure modes. Measuring only one half of the picture misses what the other half could tell you.</p>
+
+    <h2>Query-set discipline</h2>
+    <p>Each engagement opens with a query-set design conversation. The goal: a frozen list of 15-30 queries that represent how the customer's buyers actually search in their category. Three rules govern the list:</p>
+    <ul>
+      <li><strong>Hash-locked.</strong> The query list is hashed on first run. Every subsequent run prints the same hash. If the hash changes, the runs are no longer comparable and the discipline has been broken. Hash printing is in <code>dryrun/run-dental-honolulu.mjs</code> and similar runners.</li>
+      <li><strong>Intent-shaped.</strong> Queries cover head-intent ("best X in Y"), neighborhood scoping ("X in [specific area]"), service-combined ("X that also does Y"), trust-signal ("X for first-time customers"), value-conscious ("affordable X that takes [insurance]"). The shape mirrors how a real buyer searches, not how an SEO keyword tool ranks.</li>
+      <li><strong>No naming the customer.</strong> Queries do not contain the customer's brand name. Branded queries are a different measurement (does the AI know who you are when asked directly), which we also report but separate from demand queries (does the AI surface you when a buyer searches for the category).</li>
+    </ul>
+    <p>The 18-query set used in the current second-category seed (Honolulu dental) is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/run-dental-honolulu.mjs">the public repo</a> for reference.</p>
+
+    <h2>Noise control</h2>
+    <p>AI engines produce different answers to the same query on different runs. Sometimes meaningfully different, sometimes not. To separate signal from noise, every query runs three times per engine per day. Across a three-week kickoff, that produces roughly 18 × 3 × 5 × 21 = 5,670 citation captures per engagement on the citation-grade engines alone, plus the model-knowledge captures.</p>
+    <p>A citation that appears in only one of three reps is a single-shot. A citation that appears in two of three reps is a moderate signal. A citation that appears in all three reps is the strongest single-day signal we report. Aggregate frequencies over the three-week kickoff are what the punch list is built against.</p>
+
+    <h2>Source-type classifier</h2>
+    <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier source code is public at <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/classify.mjs">github.com/LanceRoylo/neverranked-outreach</a>. The buckets:</p>
+    <table>
+      <thead>
+        <tr><th>Bucket</th><th>What's in it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>youtube</code></td><td>youtube.com, youtu.be</td></tr>
+        <tr><td><code>reddit</code></td><td>reddit.com (any subreddit)</td></tr>
+        <tr><td><code>wikipedia</code></td><td>wikipedia.org, wikimedia.org, wikidata.org</td></tr>
+        <tr><td><code>forum</code></td><td>Stack Exchange family, Quora, Hacker News, Discourse-hosted forums</td></tr>
+        <tr><td><code>social</code></td><td>LinkedIn, X, Facebook, Instagram, TikTok, Threads, Medium, Substack</td></tr>
+        <tr><td><code>review_directory</code></td><td>Yelp, G2, Capterra, Trustpilot, Clutch, Healthgrades, RealSelf, TripAdvisor, BBB, Gartner, Glassdoor, ProductHunt, Birdeye, plus category-specific directories like medspascout, threebestrated, expertise</td></tr>
+        <tr><td><code>owned</code></td><td>The customer's own domain (passed in at engagement start)</td></tr>
+        <tr><td><code>competitor</code></td><td>Named competitors (passed in at engagement start)</td></tr>
+        <tr><td><code>independent_web</code></td><td>Everything else — publications, blogs, vendor pages. Honestly lumped because hostnames alone cannot reliably distinguish "major publication" from "random blog" without false confidence.</td></tr>
+      </tbody>
+    </table>
+    <p><strong>Why <code>independent_web</code> is honestly lumped.</strong> The temptation in this category is to over-claim — to say "the AI cited eight major publications" when really it cited eight independent web pages of unknown editorial weight. Hostname-only classification cannot tell you which of those eight is a real publication and which is a content marketing site. So we put them all in one bucket and label it honestly. Anyone who wants to do the slow, expensive editorial-weight work on a per-host basis is welcome to do it on their own — the raw URLs are in the customer's data store.</p>
+
+    <h2>Cohort and competitive analysis</h2>
+    <p>Each engagement names a competitive cohort at scoping (typically 3-7 competitors). For every query on every engine, we record whether each cohort member was cited, and how frequently across the three-week window. That produces the competitive gap table at the heart of every research memo (see the <a href="/example-engagement/">example engagement page</a> for what this looks like in practice).</p>
+    <p>Two structural observations are worth naming up front:</p>
+    <ul>
+      <li><strong>Market-leader effects are real but slow.</strong> The two competitors who appear on 40%+ of queries in a category are almost never displaceable in one engagement. The honest framing is to close the gap to the mid-tier first.</li>
+      <li><strong>Long-tail wins compound.</strong> The competitors who appear on 3-9 specific queries each are where focused punch-list work produces fast, measurable movement. The first noticeable citation share gains in any engagement are usually here.</li>
+    </ul>
+
+    <h2>The pattern-readiness rule</h2>
+    <p>We do not claim a pattern in a category from a single run. The rule is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md</a> rule 5:</p>
+    <blockquote>
+      Every new category needs at least 3 USABLE runs before we claim a pattern. A usable run is one that produced at least one ok row. A run that returned all ok:false is a failed attempt, not a measurement, and does not count toward the pattern-readiness bar.
+    </blockquote>
+    <p>The catalog tool (<code>dryrun/forensic/catalog.mjs</code>) enforces this in the read-out, flagging failed runs and surfacing per-category usable-run counts. A "ready" label appears only when a category has three or more runs with at least one successful API capture each. Anything below that is reported as "data point, not pattern" with the warning surfaced inside the deliverable itself.</p>
+
+    <h2>The aggregate layer</h2>
+    <p>Beyond the per-customer measurement, every engagement's raw data feeds a cross-category aggregate. The aggregate answers questions no single engagement can answer alone:</p>
+    <ul>
+      <li>What source types do AI engines cite for category X across the universe of customers we have measured in X?</li>
+      <li>How does engine behavior differ between category X and category Y?</li>
+      <li>What recurring hosts (cited across two or more engagements) are the structural authorities in category X right now?</li>
+    </ul>
+    <p>Privacy and handling stance for the aggregate: aggregate-level patterns observed across the dataset stay with us, never tied to a named customer, never reverse-engineerable to a specific engagement. The aggregator (<code>dryrun/forensic/aggregate.mjs</code>) has a host-surfacing gate set to <code>min-runs >= 2</code>: a host appears in aggregate output only when it appears in two or more distinct runs. Privacy is enforced in the code, not in the policy.</p>
+
+    <h2>A working example from real data</h2>
+    <p>The first pattern-ready category in the aggregate is Honolulu med spas, measured in May 2026. The findings:</p>
+    <table>
+      <thead>
+        <tr><th>Source type</th><th>% of citations</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Independent web</td><td>98%</td></tr>
+        <tr><td>Review directory</td><td>2%</td></tr>
+        <tr><td>YouTube</td><td>&lt;1%</td></tr>
+        <tr><td>Reddit, Wikipedia, forum, social</td><td>0%</td></tr>
+      </tbody>
+    </table>
+    <p>Per-engine behavior within the same category:</p>
+    <table>
+      <thead>
+        <tr><th>Engine</th><th>Independent web</th><th>Review dir</th><th>YouTube</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>OpenAI</td><td>99%</td><td>1%</td><td>0%</td></tr>
+        <tr><td>Perplexity</td><td>96%</td><td>3%</td><td>1%</td></tr>
+      </tbody>
+    </table>
+    <p>Recurring hosts (cited across two or more measurement runs):</p>
+    <table>
+      <thead>
+        <tr><th>Host</th><th>Citations</th><th>Source type</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>finamedspa.com</td><td>88</td><td>independent_web</td></tr>
+        <tr><td>honolulumedspa.com</td><td>88</td><td>independent_web</td></tr>
+        <tr><td>reneuxmeddayspa.com</td><td>58</td><td>independent_web</td></tr>
+        <tr><td>artistrymedspa.co</td><td>53</td><td>independent_web</td></tr>
+        <tr><td>medspascout.com</td><td>11</td><td>review_directory</td></tr>
+        <tr><td>cylex.us.com</td><td>3</td><td>review_directory</td></tr>
+      </tbody>
+    </table>
+    <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms.</p>
+    <p>For comparison, the kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, on Perplexity) showed a meaningfully different source mix: 85% independent_web, 14% YouTube, 1% forum. The same engine, a different category, produces different source-type distributions. That difference is the moat in microcosm — only an outside observer measuring across categories can name it.</p>
+
+    <h2>What this engagement deliberately does NOT measure</h2>
+    <ul>
+      <li><strong>Voice AI surfaces.</strong> Siri, Alexa, Google Assistant. Out of scope until they expose stable APIs.</li>
+      <li><strong>AI ad placements.</strong> Out of scope until those formats are reliably measurable.</li>
+      <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved; whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file. (Ours, for the snippet kill test, is at <code>dryrun/schema-causal/PRE-REGISTRATION.md</code>.)</li>
+      <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
+    </ul>
+
+    <h2>Reproducibility</h2>
+    <p>The classifier source code is public. Gemma (one of the seven engines) is open-weight; any auditor can re-run the same prompts against Gemma and verify our numbers independently. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. The aggregator and catalog tools are public. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
+
+    <div class="rule"></div>
+
+    <h2>If you want to scope an engagement</h2>
+    <p>Email <a href="mailto:lance@neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">lance@neverranked.com</a> with the category you want to measure and three to five competitors you want on the cohort. The first conversation locks the query set together. Then the measurement starts.</p>
+    <p style="margin-top:20px">
+      <a href="/">Return to NeverRanked</a> &middot;
+      <a href="/example-engagement/">Example deliverable</a> &middot;
+      <a href="/retraction/">Why we are rebuilding</a> &middot;
+      <a href="/about/">About</a>
+    </p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a></div>
+  </main>
+</body>
+</html>

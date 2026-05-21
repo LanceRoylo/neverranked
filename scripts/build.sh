@@ -48,6 +48,7 @@ DIRS=(
   example-engagement
   for-agencies
   kit
+  methodology
   pitch
   principles
   privacy
