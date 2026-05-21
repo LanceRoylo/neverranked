@@ -1,23 +1,27 @@
-# Pre-read email — send 24h before meeting
+# RETIRED — do not use for the meeting
 
-**To:** Mark Cunningham <mark@asbhawaii.com>
-**Cc:** James Malins <james@mvnp.com>
-**Subject:** ASB AEO audit: pre-read for tomorrow
+This file is from the May 18 meeting prep written BEFORE the
+schema-causation thesis was retracted on 2026-05-20. It encodes
+the killed product (snippet, Pulse/Signal/Amplify tiers, $750
+audit, "We DEPLOY THE FIX" framing, the Hawaii Theatre 45-to-95
+causation claim as social proof).
 
-Mark, James,
+**Reading this file before the meeting will cause you to walk
+into the room with the wrong positioning and the wrong pricing.**
 
-Ahead of tomorrow, here is the AEO audit we ran on asbhawaii.com. The executive summary is the first section. If you only have five minutes, that is the part to read.
+## Use these instead
 
-One thing worth setting up before you open it. If you run asbhawaii.com through our public scanner at check.neverranked.com, you will see a composite score around 55 out of 100. That is middling, not failing. You have shipped basic schema, the site is technically clean, and you get some citation surface. The point of the audit is not that ASB is broken. The point is that the gap is specific. On the agent-readiness layer, the Schema.org Action types AI agents use to complete tasks, you are at zero. So is every other Hawaii bank. The work we are proposing closes that specific gap before the rest of the category catches up.
+The current meeting prep lives at `meetings/kits/`:
 
-A few more things worth flagging before you read:
+- **`meetings/kits/MARK-ASB.md`** — Mark Cunningham (ASB) kit
+- **`meetings/kits/JAMES-MVNP.md`** — James Malin (MVNP) kit
+- **`meetings/kits/DEMO-WALKTHROUGH.md`** — the actual words to
+  say while the demo file is on screen
+- **`meetings/kits/demo-medspa.{html,pdf,txt,json}`** — named demo
+- **`meetings/kits/demo-medspa-anon.{html,pdf,txt,json}`** —
+  anonymized demo
+- **`meetings/kits/DASHBOARD-DEPLOY-RUNBOOK.md`** — pre-meeting
+  deploy decision
 
-1. The Phase 1 fix list belongs to ASB regardless of what we decide tomorrow. If MVNP wants to ship those fixes and stop there, the audit pays for itself.
-
-2. The recurring value we are pitching is the measurement layer underneath. Seven-engine citation tracking (six commercial APIs plus Gemma, the open-weight model your compliance team can independently audit), statistical attribution per deployment, and benchmark data against First Hawaiian and Bank of Hawaii. That is what the monthly subscription buys, not the deployment.
-
-3. The schema review section is the part James will probably want to spend the most time on. It includes paste-ready JSON-LD for every gap we found.
-
-Looking forward to walking through it with you both.
-
-Lance
+The historical file content is preserved in git history if you
+ever need to see what the prior framing was. Do not act on it.

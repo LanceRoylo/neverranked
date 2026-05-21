@@ -64,22 +64,35 @@ not earn its place.
 
 ## The recurring data points (all true, always available)
 
-- Seven engines tracked: ChatGPT, Perplexity, Claude, Gemini,
-  Microsoft Copilot, Google AI Overviews, and Gemma (open-weight)
-- 1.2% click-through rate when an AI Overview appears above the
-  blue links
-- Hawaii Theatre Center: AEO score 45 → 95 in less than 24 hours,
-  36 schemas deployed in one session
-- The 730-citation study: schemas under 60/100 cost an estimated
-  18 percentage points of citation share
-- Three-month minimum on recurring tiers because AI models retrain
-  on a cycle. Schemas deployed month 1 surface as citations
-  month 3.
-- Audit lists at $750. Pulse $497, Signal $2,000, Amplify $4,500
-  (capped at 6 globally).
+Rewritten 2026-05-21 after the schema-causation retraction. The
+prior data points (Hawaii Theatre 45-to-95, 730-citation study,
+three-month minimum, Pulse/Signal/Amplify pricing, $750 audit)
+are retracted and may not be used. The current honest list:
+
+- Seven AI surfaces tracked daily: **five citation-grade engines**
+  that search the live web (Perplexity, ChatGPT search, Gemini
+  grounded, Microsoft Copilot via Bing, Google AI Overviews) plus
+  **two model-knowledge engines** (Claude, Gemma). The 5+2 split
+  must be paired with any "seven engines" claim.
+- Pricing: **$4,500 kickoff per category** (one time) plus
+  **$1,500/month per category** ongoing. Per category, not per
+  client. No bundled tiers.
+- The boundary: **we measure, the customer's team executes.** No
+  content writing, no website edits, no schema deploys, no
+  profile updates by us.
+- The retraction is a permitted (and strength-coded) claim:
+  NeverRanked sold a snippet that was supposed to drive AI
+  citations, ran a pre-registered kill test against our own
+  domain, the result was zero, stopped selling it, rebuilt around
+  the measurement layer that does work.
+- Hawaii Theatre Center is the one named-customer reference,
+  permitted ONLY as a CAPABILITY example (we surfaced expired
+  Charity Navigator profile 2023, BBB profile last updated 1999,
+  missing Bing Business Profile, misconfigured authority backlinks,
+  meta description rewrites). The score-lift / ten-days /
+  14-of-19 framings are RETRACTED and forbidden.
 - Public codebase at github.com/LanceRoylo/neverranked
 - Public schema scorer at check.neverranked.com
-- Public security model at neverranked.com/security
 
 ## Hashtag strategy (IG only)
 
