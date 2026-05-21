@@ -20,6 +20,12 @@
 
 Five beats, ~2 minutes. Retraction first. Force-multiplier framing in beat 4. Close as exploration, not pitch.
 
+## The agency-channel page to send him after the meeting
+
+[neverranked.com/for-agencies/](https://neverranked.com/for-agencies/)
+
+If James wants something to share internally with MVNP partners, this is the link. It names the killed reseller program in the opening notice, then explains the new shape: force multiplier for senior strategists, deliverable built for the agency team's eyes, no white-label dashboard, no client-direct contact, same pricing as direct buyers ($4,500 + $1,500/mo per category). The math-for-an-agency section walks through the economics on a 5-client book.
+
 ## The demo walkthrough — the actual words
 
 [meetings/kits/DEMO-WALKTHROUGH.md](DEMO-WALKTHROUGH.md)
