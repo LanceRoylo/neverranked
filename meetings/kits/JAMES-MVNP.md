@@ -22,11 +22,18 @@ Five beats, ~2 minutes. Retraction first. Force-multiplier framing in beat 4. Cl
 
 ---
 
-## The live demo
+## The live demo (three formats, in this folder)
 
-- File: `/Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic/demo-medspa.html`
-- Regenerate if needed: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html`
-- This is your "shape of the deliverable" demo. Walk James through what a research memo looks like using med-spa data. Then describe what a Hilton Waikiki or HVCB or First Hawaiian Bank version would show, conceptually. Do not run it.
+- **HTML (primary):** `meetings/kits/demo-medspa.html` — open in any browser, dark mode, screen-share ready
+- **PDF (fallback):** `meetings/kits/demo-medspa.pdf` — same content, print-ready, works without a browser
+- **Text (last resort):** `meetings/kits/demo-medspa.txt` — plain text, readable on anything
+- **JSON (data only):** `meetings/kits/demo-medspa.json` — raw structured data if James wants to verify
+
+Open the HTML before the meeting starts. PDF and TXT are local copies on your laptop if anything fails.
+
+To regenerate: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html` then copy back to `meetings/kits/`.
+
+This is your "shape of the deliverable" demo. Walk James through what a research memo looks like using med-spa data. Then describe what a Hilton Waikiki or HVCB or First Hawaiian Bank version would show, conceptually. Do not run it.
 
 **Do NOT bring a finished Hawaii tourism aggregate or a Hawaii banking aggregate. We deliberately did not seed those verticals before this meeting because showing them would be giving away the farm.**
 

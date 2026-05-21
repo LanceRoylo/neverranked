@@ -21,12 +21,18 @@ Six beats, ~2 minutes. Five-plus-two engine split locked. Retraction first.
 
 ---
 
-## The live demo
+## The live demo (three formats, in this folder)
 
-- File: `/Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic/demo-medspa.html`
-- Regenerate if needed: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html`
-- Open it before the meeting starts. Have it in a browser tab.
-- This is your "shape of the deliverable" demo. You walk Mark through what a research memo looks like, using med-spa data, then explain what a banking-vertical version would show.
+- **HTML (primary):** `meetings/kits/demo-medspa.html` — open in any browser, dark mode, screen-share ready
+- **PDF (fallback):** `meetings/kits/demo-medspa.pdf` — same content, print-ready, works without a browser
+- **Text (last resort):** `meetings/kits/demo-medspa.txt` — plain text, readable on anything, no formatting needed
+- **JSON (data only):** `meetings/kits/demo-medspa.json` — raw structured data if Mark wants to verify the numbers
+
+Open the HTML before the meeting starts. If wifi or anything fails, the PDF and TXT are local copies on your laptop.
+
+To regenerate: `cd /Users/lanceroylo/Desktop/neverranked-outreach/dryrun/forensic && node render.mjs --category med_spa --label "Honolulu Med Spa" --out demo-medspa.html` then copy back to `meetings/kits/`.
+
+This is your "shape of the deliverable" demo. You walk Mark through what a research memo looks like, using med-spa data, then explain what a banking-vertical version would show.
 
 **Do NOT bring a finished Hawaii banking aggregate. We deliberately did not seed that vertical. Showing it would be giving away the farm.**
 

@@ -1,0 +1,35 @@
+
+AGGREGATE READOUT
+  filter: {"category":"med_spa","geo":null,"intent":null,"engine":null}
+  cohort: 3 run(s), 2104 cites, 40 distinct queries
+  categories: med_spa
+  geos: honolulu, multi
+  engines: perplexity, openai
+
+SOURCE TYPE DISTRIBUTION (aggregate)
+   98%  independent_web    2062
+    2%  review_directory   36
+    0%  youtube            6
+
+PER-ENGINE DISTRIBUTION
+  openai  (1188 cites)
+     99%  independent_web    1181
+      1%  review_directory   7
+  perplexity  (916 cites)
+     96%  independent_web    881
+      3%  review_directory   29
+      1%  youtube            6
+
+TOP RECURRING HOSTS BY TYPE (>=2 runs only)
+  review_directory
+    medspascout.com                          11 cites · 2 runs
+    cylex.us.com                             3 cites · 2 runs
+  independent_web
+    finamedspa.com                           88 cites · 2 runs
+    honolulumedspa.com                       88 cites · 2 runs
+    reneuxmeddayspa.com                      58 cites · 2 runs
+    skinsationla.com                         54 cites · 2 runs
+    artistrymedspa.co                        53 cites · 2 runs
+
+Honest framing: this is what AI engines DID cite across the matched cohort. It is not a prescription. Aggregate only; no customer-specific data is exposed.
+
