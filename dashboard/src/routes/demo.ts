@@ -844,23 +844,24 @@ function renderRoadmapPage(): string {
 // Route handlers
 // ---------------------------------------------------------------------------
 
-export function handleDemoRedirect(): Response {
-  return demoRedirect("/demo/domain");
+// RETRACTED 2026-05-20. The demo dashboard pitches the killed product
+// (schema deployment narrative, $750 audit, Pulse/Signal/Amplify tiers,
+// "AEO improvements take 2-4 weeks to reflect" causation claim). All
+// handlers return 410 with redirect-to-email until the demo is rebuilt
+// around the research-engagement positioning.
+function demoRetiredResponse(): Response {
+  return new Response("Demo retired. NeverRanked has retracted the prior product and rebuilt around a research engagement at $4,500 kickoff + $1,500/mo per category. Email lance@neverranked.com to scope.", {
+    status: 410,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
 }
-
-export function handleDemoDomain(): Response {
-  return demoHtml(demoLayout("Dashboard", renderDomainPage(), "domain"));
-}
-
-export function handleDemoCitations(): Response {
-  return demoHtml(demoLayout("Citations", renderCitationsPage(), "citations"));
-}
-
-export function handleDemoRoadmap(): Response {
-  return demoHtml(demoLayout("Roadmap", renderRoadmapPage(), "roadmap"));
-}
-
-export function handleDemoPost(): Response {
+export function handleDemoRedirect(): Response { return demoRetiredResponse(); }
+export function handleDemoDomain(): Response { return demoRetiredResponse(); }
+export function handleDemoCitations(): Response { return demoRetiredResponse(); }
+export function handleDemoRoadmap(): Response { return demoRetiredResponse(); }
+export function handleDemoPost(): Response { return demoRetiredResponse(); }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _retired_handleDemoPost_legacy_body_below(): Response {
   return demoHtml(demoLayout("Demo Mode", `
     <div style="text-align:center;padding:80px 20px">
       <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold);margin-bottom:16px">Editing is disabled in demo mode</div>

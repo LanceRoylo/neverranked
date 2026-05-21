@@ -260,7 +260,7 @@ async function buildContentRecommendations(
            matrix is just a diagnosis with no action behind it. -->
       <div style="margin-bottom:18px;padding:14px 16px;background:var(--bg-lift);border-left:2px solid var(--gold-dim);border-radius:0 3px 3px 0;font-size:12px;color:var(--text-soft);line-height:1.65;max-width:780px">
         <strong style="color:var(--text);font-weight:500">How these gaps get closed.</strong>
-        Each gap is translated into a roadmap item. On the Signal retainer we fix the schema and draft the content brief; you ship the content. On Amplify we also draft the content for you to approve and publish. Next Monday's citation run re-verifies. The badge under each card below shows whether a matching roadmap item already exists.
+        Each gap is translated into a punch list item your team executes. We measure. Your team or your agency ships the content, edits the page, updates the directory profile. The next weekly citation run re-verifies whether the gap closed. The badge under each card below shows whether a matching punch list item already exists.
       </div>
 
       <div style="display:flex;flex-direction:column;gap:10px">
@@ -932,7 +932,7 @@ export async function handleCitations(
         <div style="padding-top:14px;margin-top:14px;border-top:1px dashed var(--line);font-size:12px;color:var(--text-soft);line-height:1.65">
           <span style="color:var(--gold);font-family:var(--mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;margin-right:8px">Reddit content roadmap</span>${
             reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 0
-              ? `${reddit.subreddits.filter(s => s.client_named_ratio === 0).length} subreddit${reddit.subreddits.filter(s => s.client_named_ratio === 0).length === 1 ? "" : "s"} cite your category but never mention you. ${reddit.subreddits.filter(s => s.client_named_ratio === 0).slice(0,3).map(s => "r/" + s.subreddit).join(", ")}${reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 3 ? "..." : ""} carry the questions AI engines are answering without you. NeverRanked extracts those questions, generates voice-matched answers from your business profile, and deploys a FAQPage schema to your own domain. <a href="/reddit-faq/${esc(slug)}" style="color:var(--gold)">Build the FAQ deployment →</a>`
+              ? `${reddit.subreddits.filter(s => s.client_named_ratio === 0).length} subreddit${reddit.subreddits.filter(s => s.client_named_ratio === 0).length === 1 ? "" : "s"} cite your category but never mention you. ${reddit.subreddits.filter(s => s.client_named_ratio === 0).slice(0,3).map(s => "r/" + s.subreddit).join(", ")}${reddit.subreddits.filter(s => s.client_named_ratio === 0).length > 3 ? "..." : ""} carry the questions AI engines are answering without you. The next research memo will surface the specific question patterns for your team to answer on your own properties.`
               : "You're named in every subreddit that cites your category. Defense mode."
           }
         </div>

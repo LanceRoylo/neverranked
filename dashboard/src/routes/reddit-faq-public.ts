@@ -83,8 +83,18 @@ function notFoundPage(slug: string): Response {
   });
 }
 
+// RETRACTED 2026-05-20. The Reddit FAQ feature was part of the killed
+// auto-deploy product flow (extract questions from r/<category>,
+// generate voice-matched answers, deploy FAQPage schema to client
+// domain). The customer-facing public FAQ page advertised this flow.
+// Disabled until the feature is reworked under the research engagement
+// or formally removed.
 export async function handleRedditFaqPublic(slug: string, env: Env): Promise<Response> {
-  // Slug validation: lowercase, alphanumeric + hyphens. Bounce anything else.
+  return new Response("Reddit FAQ deployment retired. NeverRanked has retracted the auto-deploy product and rebuilt around a research engagement. Email lance@neverranked.com.", {
+    status: 410,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+  // eslint-disable-next-line no-unreachable
   if (!/^[a-z0-9][a-z0-9-]{0,63}$/.test(slug)) {
     return notFoundPage(slug);
   }
