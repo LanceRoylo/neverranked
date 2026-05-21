@@ -51,6 +51,7 @@ DIRS=(
   principles
   privacy
   profile
+  retraction
   schemas
   security
   standards

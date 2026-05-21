@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>We killed our own thesis -- NeverRanked</title>
+<meta name="description" content="NeverRanked sold a product that didn't work. We ran a pre-registered kill test against our own domain, got zero, and stopped selling it. This is the full story.">
+<link rel="canonical" href="https://neverranked.com/retraction/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 720px; padding: 0 32px; line-height: 1.7; }
+  .meta { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 40px; font-style: italic; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 16px; font-weight: 400; color: #e8e8ea; margin: 28px 0 10px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 18px; }
+  ul { font-size: 16px; color: #b9b9bd; margin: 0 0 18px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  .pullquote { border-left: 2px solid #d4c596; padding: 4px 0 4px 22px; margin: 28px 0; color: #e8e8ea; font-style: italic; font-size: 17px; }
+  pre { background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; overflow-x: auto; margin: 22px 0; line-height: 1.5; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 64px; letter-spacing: 0.04em; }
+  strong { color: #e8e8ea; font-weight: 600; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta">Published 2026-05-21 &middot; Honolulu</div>
+    <h1>We killed our own thesis.</h1>
+    <p class="sub">NeverRanked sold a product that did not work. This is the full story, written by the person who sold it.</p>
+
+    <h2>The thesis</h2>
+    <p>Until May 2026, NeverRanked sold a small JavaScript snippet. You pasted it once on your website. We claimed it made the structured-data signals on your pages legible to AI answer engines (ChatGPT, Perplexity, Google AI Overviews, Claude) and that being legible was the thing that earned citations in their answers.</p>
+    <p>It was a clean pitch. It had a clear mechanism. It had a customer who could be referenced by name. It had paying agencies considering reseller tiers. The framing was: SEO is the wrong dial to turn for AI search, AEO is the right one, and we ship the AEO infrastructure faster than any agency can build it in-house.</p>
+    <p>The thesis was wrong. We can prove it, because we tested it.</p>
+
+    <h2>The kill test</h2>
+    <p>Before testing, we wrote down what would count as a pass and what would count as a fail. This matters. The single most common way founders fool themselves is moving the goalposts after the data lands. So the criterion was locked, in writing, in a file we hash-stamped:</p>
+    <pre>Hypothesis: shipping our snippet on neverranked.com drives
+            AI citation share for AEO-category queries on
+            Perplexity within seven days.
+
+Test: 18 hash-locked queries, three repetitions each, on
+      Perplexity sonar API. Domain: neverranked.com.
+      Snippet deployed and verified rendering.
+
+Pass:   >= 30% of slots cite neverranked.com.
+Fail:   < 10% of slots cite neverranked.com.
+Gray:   10-30% triggers a follow-up before any decision.</pre>
+    <p>The pre-registration file lives in the research repo at <code>dryrun/schema-causal/PRE-REGISTRATION.md</code>. Hash: <code>87bd4abefb331bc9</code>. That hash is in the file. The same hash printed by the runner on the day the test ran. You can read the inputs without trusting the outputs.</p>
+    <p>We ran the test on 2026-05-19. The result was zero.</p>
+    <p>Not "below the pass bar." Not "in the gray zone." Not "weak signal that needs more data." <strong>Zero of 409 citation slots cited neverranked.com.</strong> The snippet was on the page. The crawlers had been to the page. The structured data was rendered in the DOM. None of it produced a single citation.</p>
+
+    <h2>Why it failed</h2>
+    <p>The failure had a single technical cause we should have tested first. The LLM crawlers that AI engines use to gather pages for answer-grounding (GPTBot, ClaudeBot, PerplexityBot) do not execute JavaScript. They fetch the raw HTML. Our snippet ran in the browser, after the page loaded, to inject JSON-LD structured data into the DOM. That injection was invisible to every crawler that mattered. The structured data we shipped, the central mechanism the entire product was built on, was present only for human visitors and search engines that already had it indexed via Google.</p>
+    <p>If we had tested this single assumption six months earlier, the product would never have been built. The discipline failure was not technical. It was that we let conviction outrun the test.</p>
+
+    <h2>What the product was actually doing</h2>
+    <p>The named customer reference we had been using publicly was Hawaii Theatre Center. The story we told about HTC was that their NeverRanked AEO score moved from 45 to 95 in ten days after we deployed the snippet, and that Perplexity cited them on 14 of 19 tracked queries the same week. Both numbers were real measurements. The causal link between them and our work was not.</p>
+    <p>The 45-to-95 score was a measurement of structured-data presence in the DOM, which the snippet did move. The 14-of-19 Perplexity citations was authority-driven, pre-existing behavior we observed but did not cause. Both are useful diagnostics. Neither one was evidence of the product working the way we claimed.</p>
+    <p>The diagnostic work for HTC was real, valuable, and the customer kept it. We surfaced an expired Charity Navigator profile that had not been updated since 2023, a BBB profile last touched in 1999, missing presence on Bing Business Profile, misconfigured authority backlinks, and we collaborated with their team on meta description rewrites. None of that required the snippet. All of it is the kind of gap a standard SEO scan misses and a forensic measurement engagement surfaces.</p>
+
+    <h2>What we did when the test came back zero</h2>
+    <ul>
+      <li>Stopped selling the product within 24 hours.</li>
+      <li>Retired the public surfaces that promoted it. Pitch pages, blog posts, case studies, entity profiles, state-of-AEO reports, schema standards, agency reseller program. All replaced with honest holders. The site no longer contradicts the retraction.</li>
+      <li>Updated <code>llms.txt</code> so AI engines crawling NeverRanked get the current state, not the prior framing.</li>
+      <li>Locked the production code paths that would have generated content built on the dead thesis (the cold outreach generator, the preview generator, the audit deliverable) until each one could be rewritten against substantiated claims.</li>
+      <li>Rebuilt the company around the measurement layer that does work. Measurement is what the snippet was supposed to inform. The snippet was the wrong instrument. Measurement, done honestly, is the right instrument.</li>
+    </ul>
+
+    <h2>What NeverRanked is now</h2>
+    <p>A research engagement that measures what AI answer engines actually cite for a category. The deliverable is a forensic memo plus a prepped punch list. The customer's team or their agency executes the work. We do not. That separation is structural.</p>
+    <p>We watch seven AI surfaces every day. Five citation-grade engines that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews). Two model-knowledge engines that answer from training data alone (Claude, Gemma). Both layers measure different failure modes a brand can have.</p>
+    <p>Pricing is $4,500 kickoff per category, one time. $1,500 per month per category, ongoing. Per category, not per client. There is no SaaS dashboard.</p>
+
+    <div class="rule"></div>
+
+    <h2>Why publish this</h2>
+    <p>The honest reason is that our buyers can read. Anyone evaluating NeverRanked seriously can dig into the GitHub repo, find the pre-registration file, see the test results, and notice the retracted content in the git history. We can either own the retraction in our own voice, or wait for someone else to surface it. Owning it is better business and more honest.</p>
+    <p>The harder reason is that the category is full of vendors making the same claim we just retracted. Every AEO tool on the market promises some version of "ship our structured data and AI cites you." Some of them may eventually prove it. Most of them have not run the test. We do not believe a vendor in this space should be trusted on the citation-causation claim without a pre-registered, hash-locked, reproducible kill test against their own domain. We ran ours. We failed. We stopped selling. The honest move now is to say so.</p>
+
+    <h2>What we changed about how we work</h2>
+    <p>The discipline failure that produced the snippet product was: build first, validate the bet never. The reverse pattern is now structurally enforced. Three things in particular:</p>
+    <h3>1. Pre-registration before measurement</h3>
+    <p>Any claim that could become a product gets a pre-registration document first. Hypothesis, criterion, pass/fail thresholds, threats to validity. The file is written and hash-stamped before the test runs. Moving the goalposts is impossible because the goalposts are in the file.</p>
+    <h3>2. The grader is fail-closed</h3>
+    <p>Any prospect-facing artifact (cold email, preview page, research memo, dashboard report) is graded by a separate model against a canonical fact list before it ships. Mention something we cannot substantiate, the grader rejects the artifact and the send is held. The canonical fact list lives in the codebase. Anyone can read it.</p>
+    <h3>3. Pattern-readiness has a numeric bar</h3>
+    <p>The cross-category dataset our engagements feed is governed by a rule: claim a pattern in a category only when three or more usable runs in that category agree. A run with zero successful API captures does not count, even if its log is the right length. This is in <code>dryrun/forensic/MOAT.md</code> in the research repo. The discipline is enforced by the catalog tool, not by us remembering.</p>
+
+    <div class="rule"></div>
+
+    <h2>The honest current state</h2>
+    <ul>
+      <li>Zero current paying customers under the new product. The demand for honest research-only measurement is being tested, not assumed. Validation requires actual paid commitments, not warm replies.</li>
+      <li>One named customer reference (Hawaii Theatre Center) and only as a capability example: the kinds of gaps a forensic measurement engagement surfaces that a standard SEO scan misses. The 45-to-95 score lift and 14-of-19 Perplexity citation claims are retracted.</li>
+      <li>The measurement infrastructure is real and live. The aggregate runs against med-spa Honolulu produced 2,104 citations across 40 queries on two engines, with the cross-category source-type and competitive-host patterns we describe to prospects.</li>
+      <li>The cold outreach pipeline is paused until the rewritten generator and grader are deployed and verified against the new positioning.</li>
+      <li>Pricing is locked, not provisional. $4,500 kickoff, $1,500 a month, per category.</li>
+    </ul>
+
+    <h2>If you want to dig in</h2>
+    <ul>
+      <li>The pre-registration file: <code>dryrun/schema-causal/PRE-REGISTRATION.md</code> in the research repo.</li>
+      <li>The moat discipline document: <code>dryrun/forensic/MOAT.md</code>.</li>
+      <li>The fail-closed grader's canonical fact list:
+        <code>dashboard/src/preview/CANONICAL_FACTS-DRAFT.md</code>.</li>
+      <li>The public source code: <a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>.</li>
+      <li>To talk: <a href="mailto:lance@neverranked.com">lance@neverranked.com</a>.</li>
+    </ul>
+
+    <p style="margin-top:48px"><a href="/">Return to NeverRanked</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; founder-led, bootstrapped, rebuilt May 2026 after a public retraction</div>
+  </main>
+</body>
+</html>
