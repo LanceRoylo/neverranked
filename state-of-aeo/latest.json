@@ -1,11 +1,5 @@
 {
-  "slug": "2026-05-11",
-  "title": "State of AEO: NeverRanked tracked-universe report",
-  "generated": "2026-05-11",
-  "windowStart": "2026-04-14",
-  "windowEnd": "2026-05-11",
-  "sampleRuns": "754",
-  "url": "https://neverranked.com/state-of-aeo/2026-05-11/",
-  "pdfUrl": "https://neverranked.com/state-of-aeo/2026-05-11.pdf",
-  "headline": "Across 754 captured AI engine responses, the single most-cited third-party source is youtube.com (YouTube), appearing in 190 citation runs across 5 engines and 22 tracked keywords."
+  "status": "retired",
+  "retracted_at": "2026-05-20",
+  "note": "Prior reports at this URL were retired during a product retraction. See https://neverranked.com/ for the current state of the company."
 }
