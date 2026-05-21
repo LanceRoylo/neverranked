@@ -1,10 +1,11 @@
 
 AGGREGATE READOUT
   filter: {"category":"med_spa","geo":null,"intent":null,"engine":null}
-  cohort: 3 run(s), 2104 cites, 40 distinct queries
+  cohort: 3 attempt(s) (2 usable), 2104 cites, 40 distinct queries
   categories: med_spa
   geos: honolulu, multi
   engines: perplexity, openai
+  WARN: only 2 usable run(s) match. MOAT.md rule #5: claim a pattern at >=3 usable runs.
 
 SOURCE TYPE DISTRIBUTION (aggregate)
    98%  independent_web    2062

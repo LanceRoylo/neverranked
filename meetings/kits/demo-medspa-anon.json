@@ -7,7 +7,8 @@
   },
   "cohort": {
     "runs": 3,
-    "honest_pattern": true,
+    "usable_runs": 2,
+    "honest_pattern": false,
     "distinct_categories": [
       "med_spa"
     ],

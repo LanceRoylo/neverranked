@@ -22,16 +22,19 @@ Pause. Let them look at the page for a beat.
 
 ## Beat 1 — the cohort block (the four metric cards at top)
 
-> "First thing to notice. This is three readouts, two thousand one
-> hundred citations captured, forty distinct queries, across two
-> engines on this particular run. The methodology runs across all
-> seven we track. This was a smaller pilot."
+> "First thing to notice. Three readout attempts, two of them
+> produced usable captures. That's why the document shows two
+> usable runs at the top, with the warning that this is a data
+> point and not yet a pattern at our internal bar. Twenty one
+> hundred citations across forty distinct queries from those
+> two captures, on two engines. The methodology runs across
+> all seven we track in a real engagement."
 
-> "The cohort line at the top is the honesty layer. If we'd only
-> measured one readout, the document would say that, and a warning
-> would tell you it's a data point not a pattern. Three was the
-> minimum we set for ourselves before we'd claim a pattern in a
-> category. That's the discipline."
+> "I'm pointing the warning out on purpose. If we'd hidden that,
+> the document would look more impressive and tell you less. The
+> bar we set for ourselves is three usable runs before we claim
+> a pattern in a category. We're not there with med spas yet, and
+> the cohort block says so out loud."
 
 Pause. Scroll down to the source type distribution.
 
