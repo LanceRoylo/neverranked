@@ -19,6 +19,12 @@
 
 Six beats, ~2 minutes. Five-plus-two engine split locked. Retraction first.
 
+## The demo walkthrough — the actual words
+
+[meetings/kits/DEMO-WALKTHROUGH.md](DEMO-WALKTHROUGH.md)
+
+Read once aloud before the meeting. Mark version of the bridge at the end. Recovery lines if files fail.
+
 ---
 
 ## The live demo — pick named vs anonymized in the room

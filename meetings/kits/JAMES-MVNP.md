@@ -20,6 +20,12 @@
 
 Five beats, ~2 minutes. Retraction first. Force-multiplier framing in beat 4. Close as exploration, not pitch.
 
+## The demo walkthrough — the actual words
+
+[meetings/kits/DEMO-WALKTHROUGH.md](DEMO-WALKTHROUGH.md)
+
+Read once aloud before the meeting. James version of the bridge at the end emphasizes "shape is useful or wrong" not commitment. Recovery lines if files fail.
+
 ---
 
 ## The live demo — pick named vs anonymized in the room
