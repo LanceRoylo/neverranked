@@ -46,6 +46,7 @@ DIRS=(
   blog
   case-studies
   example-engagement
+  first-30-days
   for-agencies
   kit
   methodology
