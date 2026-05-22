@@ -109,6 +109,19 @@
       <li><strong>Long-tail wins compound.</strong> The competitors who appear on 3-9 specific queries each are where focused punch-list work produces fast, measurable movement. The first noticeable citation share gains in any engagement are usually here.</li>
     </ul>
 
+    <h2>Within-citation depth (added 2026-05-21)</h2>
+    <p>Beyond "your brand was cited on this query," we now capture two finer-grained signals for every recurring brand in the cohort:</p>
+    <ul>
+      <li><strong>Position in the answer.</strong> Where in the AI's response does the brand name appear? Bucketed by text-quartile: Q1 (lead) means the AI is opening with you; Q4 (tail) means you're a footnote. The signal is real: in the Honolulu med-spa cohort, <code>finamedspa.com</code> appears in Q1 55% of the time (the AI leads with them on most queries) while <code>reneuxmeddayspa.com</code> appears in Q3 59% of the time (almost never lead, almost never tail). Same total mention count, very different competitive signal.</li>
+      <li><strong>Sentiment context.</strong> Strong-positive ("top", "best", "trusted", "premier") and strong-negative ("avoid", "outdated", "limited") vocabulary detected within ±80 characters of each mention. Honest scope: this is heuristic pattern detection, not nuanced NLP. Strong positive and strong negative are real signals. The default "neutral" bucket may include mild positive/negative the heuristic misses. The honest framing is in the deliverable.</li>
+    </ul>
+    <p>Tool: <code>dryrun/forensic/within-citation.mjs</code>. Public source code, runnable on any cohort that has raw measurement data.</p>
+
+    <h2>Drift detection (added 2026-05-21)</h2>
+    <p>Day-over-day citation share movement, flagged when a host moves more than a configurable threshold (default 5 percentage points) between measurement windows. Same query-set hash required in both windows; the tool refuses to compare across different query sets because the universe of possible citations is different.</p>
+    <p>The current monthly delta memo will surface drift findings as observation. Automated daily alerting (an email to the customer when a host gains or loses >5% in a single day) is the obvious next layer; the measurement infrastructure is the prerequisite and it ships now.</p>
+    <p>Tool: <code>dryrun/forensic/drift.mjs</code>. Hash-locked, engine-restrictable, JSON-output for piping into downstream alerting.</p>
+
     <h2>The pattern-readiness rule</h2>
     <p>We do not claim a pattern in a category from a single run. The rule is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md</a> rule 5:</p>
     <blockquote>
@@ -166,10 +179,15 @@
     <p>For comparison, the kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, on Perplexity) showed a meaningfully different source mix: 85% independent_web, 14% YouTube, 1% forum. The same engine, a different category, produces different source-type distributions. That difference is the moat in microcosm — only an outside observer measuring across categories can name it.</p>
 
     <h2>What this engagement deliberately does NOT measure</h2>
+    <p>The honest scope on what "forensic" means here and what it does not. The structural axes (cross-engine, cross-competitor, source-type classification, cohort discipline, pre-registration) are evidence-grade. The depth-of-content axes below are gaps. We name them so a prospect evaluating us does not assume we cover something we don't.</p>
     <ul>
       <li><strong>Voice AI surfaces.</strong> Siri, Alexa, Google Assistant. Out of scope until they expose stable APIs.</li>
       <li><strong>AI ad placements.</strong> Out of scope until those formats are reliably measurable.</li>
       <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved; whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file. (Ours, for the snippet kill test, is at <code>dryrun/schema-causal/PRE-REGISTRATION.md</code>.)</li>
+      <li><strong>Within-citation depth.</strong> We capture that your brand was cited on a query. We do not yet capture where in the answer your brand appears (first sentence vs fifth bullet), the sentiment of the mention (positive vs neutral vs negative), or the exact quote the AI uses to describe you. Those are real depth layers that "forensic" might reasonably imply. We are building toward them; they are not in the current deliverable.</li>
+      <li><strong>Time-series drift detection.</strong> Daily measurement is the prerequisite and it ships now. Automated alerting when a host's citation share moves more than a threshold between days is on the roadmap, not in the current deliverable. Drift surfaces in the monthly delta memo as observation, not as an alert.</li>
+      <li><strong>Cross-language coverage.</strong> English only. AI engines do answer in other languages but our query sets and classifier are English-shaped today.</li>
+      <li><strong>Direct competitive teardowns.</strong> We claim our methodology surfaces things competitor tools do not. We have not yet published a side-by-side teardown taking the same brand through our process and through Profound or Peec to demonstrate the gap empirically. That artifact is the cleanest way to prove the depth claim and is on the publish list once a paid customer's data anchors it.</li>
       <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
     </ul>
 
