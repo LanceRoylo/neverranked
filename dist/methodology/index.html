@@ -93,7 +93,7 @@
         <tr><td><code>wikipedia</code></td><td>wikipedia.org, wikimedia.org, wikidata.org</td></tr>
         <tr><td><code>forum</code></td><td>Stack Exchange family, Quora, Hacker News, Discourse-hosted forums</td></tr>
         <tr><td><code>social</code></td><td>LinkedIn, X, Facebook, Instagram, TikTok, Threads, Medium, Substack</td></tr>
-        <tr><td><code>review_directory</code></td><td>Yelp, G2, Capterra, Trustpilot, Clutch, Healthgrades, RealSelf, TripAdvisor, BBB, Gartner, Glassdoor, ProductHunt, Birdeye, plus category-specific directories like medspascout, threebestrated, expertise</td></tr>
+        <tr><td><code>review_directory</code></td><td>Yelp, G2, Capterra, Trustpilot, Clutch, Healthgrades, RealSelf, TripAdvisor, BBB, Gartner, Glassdoor, ProductHunt, Birdeye, plus category-specific directories</td></tr>
         <tr><td><code>owned</code></td><td>The customer's own domain (passed in at engagement start)</td></tr>
         <tr><td><code>competitor</code></td><td>Named competitors (passed in at engagement start)</td></tr>
         <tr><td><code>independent_web</code></td><td>Everything else — publications, blogs, vendor pages. Honestly lumped because hostnames alone cannot reliably distinguish "major publication" from "random blog" without false confidence.</td></tr>
@@ -112,7 +112,7 @@
     <h2>Within-citation depth (added 2026-05-21)</h2>
     <p>Beyond "your brand was cited on this query," we now capture two finer-grained signals for every recurring brand in the cohort:</p>
     <ul>
-      <li><strong>Position in the answer.</strong> Where in the AI's response does the brand name appear? Bucketed by text-quartile: Q1 (lead) means the AI is opening with you; Q4 (tail) means you're a footnote. The signal is real: in the Honolulu med-spa cohort, <code>finamedspa.com</code> appears in Q1 55% of the time (the AI leads with them on most queries) while <code>reneuxmeddayspa.com</code> appears in Q3 59% of the time (almost never lead, almost never tail). Same total mention count, very different competitive signal.</li>
+      <li><strong>Position in the answer.</strong> Where in the AI's response does the brand name appear? Bucketed by text-quartile: Q1 (lead) means the AI is opening with you; Q4 (tail) means you're a footnote. The signal is real: in the Honolulu med-spa cohort, one med spa appears in Q1 55% of the time (the AI leads with them on most queries) while another appears in Q3 59% of the time (almost never lead, almost never tail). Same total mention count, very different competitive signal.</li>
       <li><strong>Sentiment context.</strong> Strong-positive ("top", "best", "trusted", "premier") and strong-negative ("avoid", "outdated", "limited") vocabulary detected within ±80 characters of each mention. Honest scope: this is heuristic pattern detection, not nuanced NLP. Strong positive and strong negative are real signals. The default "neutral" bucket may include mild positive/negative the heuristic misses. The honest framing is in the deliverable.</li>
     </ul>
     <p>Tool: <code>dryrun/forensic/within-citation.mjs</code>. Public source code, runnable on any cohort that has raw measurement data.</p>
@@ -161,18 +161,18 @@
         <tr><td>Perplexity</td><td>96%</td><td>3%</td><td>1%</td></tr>
       </tbody>
     </table>
-    <p>Recurring hosts (cited across two or more measurement runs):</p>
+    <p>Recurring hosts (cited across two or more measurement runs). The businesses are anonymized here because they are not NeverRanked customers and did not consent to appear in our public materials. A paying customer's deliverable names every host in their cohort in full, because the named competitive map is the product. On a public page, the pattern is what matters, not the names.</p>
     <table>
       <thead>
         <tr><th>Host</th><th>Citations</th><th>Source type</th></tr>
       </thead>
       <tbody>
-        <tr><td>finamedspa.com</td><td>88</td><td>independent_web</td></tr>
-        <tr><td>honolulumedspa.com</td><td>88</td><td>independent_web</td></tr>
-        <tr><td>reneuxmeddayspa.com</td><td>58</td><td>independent_web</td></tr>
-        <tr><td>artistrymedspa.co</td><td>53</td><td>independent_web</td></tr>
-        <tr><td>medspascout.com</td><td>11</td><td>review_directory</td></tr>
-        <tr><td>cylex.us.com</td><td>3</td><td>review_directory</td></tr>
+        <tr><td>Honolulu med spa A</td><td>88</td><td>independent_web</td></tr>
+        <tr><td>Honolulu med spa B</td><td>88</td><td>independent_web</td></tr>
+        <tr><td>Honolulu med spa C</td><td>58</td><td>independent_web</td></tr>
+        <tr><td>Honolulu med spa D</td><td>53</td><td>independent_web</td></tr>
+        <tr><td>category-specific directory A</td><td>11</td><td>review_directory</td></tr>
+        <tr><td>category-specific directory B</td><td>3</td><td>review_directory</td></tr>
       </tbody>
     </table>
     <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms.</p>
