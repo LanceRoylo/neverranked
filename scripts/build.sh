@@ -62,6 +62,10 @@ DIRS=(
   terms
   thanks
   vs
+  # teardowns/ intentionally excluded — template ships with
+  # {{PLACEHOLDERS}}. Add back to this list after the
+  # bank-honolulu teardown is populated from the measurement
+  # run. See dryrun/teardowns/bank-honolulu/PLAN.md.
 )
 
 echo "Building dist/ from repo root…"
