@@ -61,6 +61,7 @@ DIRS=(
   state-of-aeo
   terms
   thanks
+  vs
 )
 
 echo "Building dist/ from repo root…"
