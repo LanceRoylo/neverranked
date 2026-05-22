@@ -737,6 +737,59 @@ export async function handleStripeWebhook(
         }
       }
 
+      // Kickoff or retainer purchase (new SKUs, 2026-05-21+). No auto-
+      // generated deliverable here -- the kickoff is a 3-week
+      // measurement engagement that Lance personally drives for the
+      // first customers. The webhook's job is to ensure Lance knows
+      // about the signup within minutes so the kickoff conversation
+      // starts the same day.
+      if (plan === "kickoff" || plan === "retainer") {
+        const fullName = session.customer_details?.name || "(name not provided)";
+        const amountCents = session.amount_total || 0;
+        const amountDollars = (amountCents / 100).toFixed(2);
+        const checklistBody = [
+          `Customer: ${fullName}`,
+          `Email: ${email}`,
+          `Domain: ${rawDomain || "(not provided)"}`,
+          `Slug: ${slug}`,
+          `Plan: ${plan}`,
+          `Amount: $${amountDollars} ${plan === "retainer" ? "/month" : "(one-time kickoff)"}`,
+          `Stripe customer: ${customerId || "(missing)"}`,
+          `Stripe session: ${session.id || "(missing)"}`,
+          `Submitted: ${new Date(now * 1000).toISOString()}`,
+          ``,
+          `KICKOFF NEXT STEPS (Lance, within 24 hours):`,
+          `1. Email the customer to schedule the 30-minute query-set scoping call.`,
+          `2. Bring a starting 15-query list to the call based on the customer's category.`,
+          `3. Lock the query set, hash it, and confirm the competitor cohort.`,
+          `4. Tag the customer in the engagement queue.`,
+          `5. Daily measurement begins the day after the call.`,
+          `6. Memo lands 3 weeks after the query set is locked.`,
+          ``,
+          `Reference docs:`,
+          `- /first-30-days/ for the customer-facing day-by-day.`,
+          `- meetings/kits/EMAIL-TEMPLATES.md section 8 (kickoff agreement intro).`,
+          `- meetings/kits/SAMPLE-DELIVERABLE.md for the memo target shape.`,
+        ].join("\n");
+        try {
+          await env.DB.prepare(
+            `INSERT INTO admin_inbox (kind, urgency, title, body, action_url, target_slug, created_at, status)
+               VALUES (?, ?, ?, ?, ?, ?, ?, 'open')`,
+          ).bind(
+            `${plan}_signup`,
+            "high",
+            `${plan === "kickoff" ? "KICKOFF" : "RETAINER"} signed: ${fullName} (${email}) -- $${amountDollars}`,
+            checklistBody,
+            `/admin/clients/${encodeURIComponent(slug)}`,
+            slug,
+            now,
+          ).run();
+          console.log(`[checkout] ${plan} admin_inbox row created for ${email}`);
+        } catch (e) {
+          console.log(`[checkout] ${plan} admin_inbox insert failed: ${e instanceof Error ? e.message : e}`);
+        }
+      }
+
       // $750 audit credit. When an audit is purchased, create a -$750
       // (i.e. credit) entry on the Stripe customer's balance. Stripe
       // automatically applies customer balance to the next invoice,

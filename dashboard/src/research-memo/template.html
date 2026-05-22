@@ -1,0 +1,258 @@
+<!doctype html>
+<!--
+  RESEARCH MEMO TEMPLATE - kickoff deliverable
+
+  Hand-fill this template per customer for the first several
+  engagements. Once the methodology is tested against real
+  customers and the prose patterns stabilize, this template
+  becomes the source of truth for an auto-generator that
+  populates it from the raw measurement data.
+
+  Until then, every {{PLACEHOLDER}} is filled by Lance. The HTML
+  structure stays the same so every customer's memo reads the
+  same shape.
+
+  Print to PDF via Chrome headless when delivering. Print
+  styles tuned for letter-size, ink-friendly output.
+
+  Source of truth for the structure: meetings/kits/SAMPLE-DELIVERABLE.md
+  Public-facing example with the same structure: neverranked.com/example-engagement/
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Research memo — {{CUSTOMER_NAME}} — {{CATEGORY_LABEL}}</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; line-height: 1.65; padding: 64px 0 96px; }
+  main { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  .header { border-bottom: 1px solid #2a2a2e; padding-bottom: 24px; margin-bottom: 36px; }
+  .header .kicker { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; color: #d4c596; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+  .header h1 { font-size: 32px; font-weight: 400; margin: 0 0 6px; letter-spacing: -0.005em; line-height: 1.2; }
+  .header .meta { color: #6a6a70; font-size: 13px; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 44px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 8px; }
+  h4 { font-size: 13px; font-weight: 400; color: #d4c596; letter-spacing: 0.06em; text-transform: uppercase; margin: 18px 0 8px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 10px 12px 10px 0; border-bottom: 1px solid #3a3a3e; }
+  td { padding: 8px 12px 8px 0; border-bottom: 1px solid #1c1c1e; font-variant-numeric: tabular-nums; vertical-align: top; }
+  .priority { border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 14px 0; background: #0e0e10; }
+  .priority h4 { margin-top: 0; color: #d4c596; }
+  .priority .row { font-size: 13px; color: #8a8a90; margin-top: 8px; }
+  .priority .row strong { color: #b9b9bd; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; border-top: 1px solid #2a2a2e; padding-top: 18px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+
+  /* Print styles -- ink-friendly, letter-sized */
+  @page { size: letter; margin: 0.6in; }
+  @media print {
+    html, body { background: white !important; color: #111 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    main { max-width: none; padding: 0; }
+    .header { border-bottom: 1px solid #999; }
+    h2 { color: #8a6e1f !important; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
+    h3, h4 { color: #111 !important; }
+    h4 { color: #8a6e1f !important; }
+    p, li, td { color: #1a1a1a !important; }
+    th { color: #444 !important; border-bottom: 1px solid #999 !important; }
+    td { border-bottom: 1px solid #ddd !important; }
+    .priority { background: #fafaf6 !important; border-color: #ccc !important; page-break-inside: avoid; }
+    .priority h4 { color: #8a6e1f !important; }
+    .priority .row { color: #555 !important; }
+    .priority .row strong { color: #1a1a1a !important; }
+    code { background: #f4f0e0 !important; color: #2a2200 !important; }
+    .footer { color: #666 !important; border-top: 1px solid #999 !important; }
+    .header .kicker, .header .meta { color: #666 !important; }
+    h1 { color: #111 !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+
+<div class="header">
+  <div class="kicker">NeverRanked &middot; Kickoff research memo</div>
+  <h1>{{HEADLINE_FINDING_AS_NAMED_CLAIM}}</h1>
+  <div class="meta">
+    Prepared for <strong>{{CUSTOMER_NAME}}</strong> &middot;
+    Category: {{CATEGORY_LABEL}} &middot;
+    Cohort window: {{COHORT_START_DATE}} through {{COHORT_END_DATE}}
+  </div>
+</div>
+
+<h2>1. Executive summary</h2>
+<p>{{EXEC_SUMMARY_PARA_1 — one paragraph stating the headline finding in customer-facing terms. Specific, named, numerically grounded. Example: "For the queries a {customer's buyer} actually types into ChatGPT and Perplexity, your business does not appear in the AI answer for {N} of {M} measured queries. The competitors that DO appear are {names}. The gap is closeable in {timeframe} via the punch list at the end of this memo."}}</p>
+<p>{{EXEC_SUMMARY_PARA_2 — one paragraph naming the cohort shape (X runs, Y citations, Z queries, engines measured) and the most non-obvious finding (a source-type pattern, an engine difference, a recurring host nobody expected).}}</p>
+<p>{{EXEC_SUMMARY_PARA_3 — one sentence on what Item 1 in the punch list alone would produce.}}</p>
+
+<h2>2. Methodology and scope</h2>
+<p>{{N_QUERIES}} hash-locked queries, three repetitions per query per day, for {{DAYS}} days across {{ENGINES_RUN_COUNT}} AI surfaces. Query set hash: <code>{{QUERY_SET_HASH}}</code>.</p>
+<h4>Engines measured this kickoff</h4>
+<p>{{ENGINE_LIST_FOR_THIS_KICKOFF — e.g. "Perplexity sonar, OpenAI gpt-4o-search-preview, Gemini 2.5-flash grounded, Microsoft Copilot via Bing, Google AI Overviews via DataForSEO, Claude API, Gemma via Together AI." If fewer than seven, name which.}}</p>
+<h4>Competitive cohort</h4>
+<p>{{COMPETITOR_LIST — e.g. "competitor1.com, competitor2.com, competitor3.com, competitor4.com, competitor5.com"}}</p>
+<h4>What this engagement did NOT measure</h4>
+<ul>
+  <li>Voice AI surfaces (Siri, Alexa, Google Assistant). Out of scope until measurable via public APIs.</li>
+  <li>AI ad placements. Out of scope until those formats are reliably measurable.</li>
+  <li>{{ANY_ADDITIONAL_SCOPE_LIMITS_SPECIFIC_TO_THIS_CUSTOMER}}</li>
+  <li>Long-term causation. We measured what AI cites. We did not test whether shipping the punch list causes citation movement. Monthly delta memo will report observed movement honestly.</li>
+</ul>
+
+<h2>3. The headline finding</h2>
+<p>{{HEADLINE_PROSE — three or four sentences explaining the headline. Specific to the customer's data, not generic. Example: "You do not appear in the AI answer for X of Y measured queries. The two queries where you do appear are exact-name matches — queries a customer only types if they already know your name. For every demand-shape query (a buyer asking AI to find a provider in your category without naming you), you are absent."}}</p>
+<ul>
+  <li><strong>{{TOP_COMPETITOR_1}}</strong> — {{CITATIONS_COUNT_1}} citations across {{QUERY_COUNT_1}} of {{TOTAL_QUERIES}} queries</li>
+  <li><strong>{{TOP_COMPETITOR_2}}</strong> — {{CITATIONS_COUNT_2}} citations across {{QUERY_COUNT_2}} of {{TOTAL_QUERIES}} queries</li>
+  <li><strong>{{TOP_COMPETITOR_3}}</strong> — {{CITATIONS_COUNT_3}} citations across {{QUERY_COUNT_3}} of {{TOTAL_QUERIES}} queries</li>
+  <li><strong>{{TOP_COMPETITOR_4}}</strong> — {{CITATIONS_COUNT_4}} citations across {{QUERY_COUNT_4}} of {{TOTAL_QUERIES}} queries</li>
+</ul>
+<p>{{HEADLINE_INTERPRETATION — what makes these competitors win. Authority signals, recurring presence on specific source types, something else specific to this category. One paragraph.}}</p>
+
+<h2>4. Source-type distribution</h2>
+<p>{{SOURCE_TYPE_INTRO — one sentence setting up the table. Example: "Across X,XXX citations on the cohort, here is where AI engines pulled from."}}</p>
+<table>
+  <thead>
+    <tr><th>Source type</th><th>% of citations</th><th>Hosts driving it</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Independent web</td><td>{{INDEPENDENT_WEB_PCT}}%</td><td>{{INDEPENDENT_WEB_HOSTS}}</td></tr>
+    <tr><td>Review directories</td><td>{{REVIEW_DIRECTORY_PCT}}%</td><td>{{REVIEW_DIRECTORY_HOSTS}}</td></tr>
+    <tr><td>YouTube</td><td>{{YOUTUBE_PCT}}%</td><td>{{YOUTUBE_HOSTS}}</td></tr>
+    <tr><td>Reddit</td><td>{{REDDIT_PCT}}%</td><td>{{REDDIT_HOSTS_OR_NONE}}</td></tr>
+    <tr><td>Wikipedia</td><td>{{WIKIPEDIA_PCT}}%</td><td>{{WIKIPEDIA_HOSTS_OR_NONE}}</td></tr>
+    <tr><td>Forum / Q&amp;A</td><td>{{FORUM_PCT}}%</td><td>{{FORUM_HOSTS_OR_NONE}}</td></tr>
+  </tbody>
+</table>
+<p><strong>The non-obvious finding.</strong> {{NON_OBVIOUS_FINDING_PARA — what surprised you in the source-type mix. Did Yelp not appear where it usually does? Did Reddit dominate unexpectedly? Did a category-specific directory you'd never heard of show up? This is the paragraph that earns the kickoff fee.}}</p>
+
+<h2>5. Per-engine breakdown</h2>
+{{PER_ENGINE_SECTION_REPEAT_FOR_EACH_ENGINE_MEASURED}}
+<h4>Perplexity ({{PERPLEXITY_CITATION_COUNT}} citations measured)</h4>
+<ul>
+  <li>{{PERPLEXITY_PCT_INDEP}}% independent_web, {{PERPLEXITY_PCT_DIR}}% review_directory, {{PERPLEXITY_PCT_YT}}% YouTube{{PERPLEXITY_OTHER_TYPES}}.</li>
+  <li>{{PERPLEXITY_OBSERVATION — one notable per-engine behavior. Example: "More likely to surface neighborhood-specific results than OpenAI on this category."}}</li>
+</ul>
+<h4>{{NEXT_ENGINE_NAME}} ({{NEXT_ENGINE_CITATION_COUNT}} citations measured)</h4>
+<ul>
+  <li>{{PER_ENGINE_DISTRIBUTION}}</li>
+  <li>{{PER_ENGINE_OBSERVATION}}</li>
+</ul>
+
+<h2>6. Competitive gap analysis</h2>
+<p>For the {{ABSENT_QUERY_COUNT}} queries where you do not appear, the table below shows which competitors did. Frequency = number of distinct queries that competitor was cited on, out of {{TOTAL_QUERIES}} total.</p>
+<table>
+  <thead>
+    <tr><th>Competitor</th><th>Frequency</th><th>Engines</th></tr>
+  </thead>
+  <tbody>
+    {{COMPETITIVE_GAP_TABLE_ROWS — one row per cohort member, sorted by frequency descending}}
+    <tr><td>{{COMPETITOR_DOMAIN}}</td><td>{{FREQ}}/{{TOTAL_QUERIES}}</td><td>{{ENGINES_SEEN_ON}}</td></tr>
+  </tbody>
+</table>
+<p>{{COMPETITIVE_OBSERVATIONS — 2-3 sentences naming structural observations. Tier patterns. Which competitors are leaders, which are mid-tier, where the closable gap is.}}</p>
+
+<h2>7. Recurring host analysis (cited across two or more runs)</h2>
+<p>To filter out one-off coincidences, the table below lists only hosts cited across two or more of the measurement runs in this cohort. These are the entities AI engines have learned to trust consistently for this category.</p>
+<table>
+  <thead>
+    <tr><th>Host</th><th>Citations</th><th>Source type</th></tr>
+  </thead>
+  <tbody>
+    {{RECURRING_HOST_TABLE_ROWS — top 10 hosts by citation count, with source-type classification}}
+    <tr><td>{{HOST}}</td><td>{{COUNT}}</td><td>{{SOURCE_TYPE}}</td></tr>
+  </tbody>
+</table>
+<p>{{RECURRING_HOST_INTERPRETATION — one paragraph explaining what these recurring hosts have in common. Authority signals? Sustained presence? Domain authority? Specific structural reason AI engines trust them.}}</p>
+
+<h2>8. Prepped punch list (ordered by impact)</h2>
+<p>Sequenced by ratio of likely citation-share movement to implementation cost. Item 1 is the highest-leverage single piece of work on the list. Your team executes against this; we re-measure weekly and report the delta in the monthly memo.</p>
+
+<div class="priority">
+  <h4>Priority 1 &middot; {{P1_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P1_WHY}}</p>
+  <p><strong>What:</strong> {{P1_WHAT}}</p>
+  <div class="row"><strong>Effort:</strong> {{P1_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P1_WINDOW}}.</div>
+</div>
+
+<div class="priority">
+  <h4>Priority 2 &middot; {{P2_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P2_WHY}}</p>
+  <p><strong>What:</strong> {{P2_WHAT}}</p>
+  <div class="row"><strong>Effort:</strong> {{P2_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P2_WINDOW}}.</div>
+</div>
+
+<div class="priority">
+  <h4>Priority 3 &middot; {{P3_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P3_WHY}}</p>
+  <p><strong>What:</strong> {{P3_WHAT}}</p>
+  <div class="row"><strong>Effort:</strong> {{P3_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P3_WINDOW}}.</div>
+</div>
+
+<div class="priority">
+  <h4>Priority 4 &middot; {{P4_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P4_WHY}}</p>
+  <p><strong>What:</strong> {{P4_WHAT}}</p>
+  <div class="row"><strong>Effort:</strong> {{P4_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P4_WINDOW}}.</div>
+</div>
+
+<div class="priority">
+  <h4>Priority 5 &middot; {{P5_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P5_WHY}}</p>
+  <div class="row"><strong>Effort:</strong> {{P5_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P5_WINDOW}}.</div>
+</div>
+
+<div class="priority">
+  <h4>Priority 6 &middot; {{P6_TITLE}}</h4>
+  <p><strong>Why:</strong> {{P6_WHY}}</p>
+  <div class="row"><strong>Effort:</strong> {{P6_EFFORT}}.</div>
+  <div class="row"><strong>Expected window for movement:</strong> {{P6_WINDOW}}.</div>
+</div>
+
+<p style="font-size:14px;color:#8a8a90;margin-top:16px">{{LOWER_PRIORITY_NOTE — e.g. "Items 7 through 12 are listed in the appendix below. Five additional moves with the same effort and window estimates."}}</p>
+
+<h2>9. What we did not measure (honest scope)</h2>
+<ul>
+  <li>Voice AI surfaces (Siri, Alexa, Google Assistant). Out of scope until measurable through public APIs.</li>
+  <li>AI ad placements. Out of scope until those formats become measurable.</li>
+  <li>{{ANY_GEO_OR_TEMPORAL_LIMITS — e.g. "Geo variation outside [metro]. Citation patterns in other metros may differ."}}</li>
+  <li>Long-term causation. The monthly delta memo will report observed movement; whether the punch list caused the movement is inference, not proof.</li>
+</ul>
+
+<h2>10. What happens next</h2>
+<ul>
+  <li><strong>Tomorrow:</strong> the ongoing engagement starts. Daily measurement across the {{ENGINES_RUN_COUNT}} AI surfaces continues. You receive a brief daily status email confirming the runs completed.</li>
+  <li><strong>End of month 1 of ongoing:</strong> first monthly delta memo. Shows what moved, what did not, why we think it moved, and any updates to the punch list based on what the data shows about your category.</li>
+  <li><strong>Ongoing:</strong> punch list refreshes as your team ships items and as AI engines shift. Drift detection flags any cohort-wide pattern changes that are likely to affect your numbers.</li>
+</ul>
+
+<h2>Appendix A. Raw measurement data</h2>
+<p>The full raw.jsonl file ({{TOTAL_CITATIONS_NUMBER}} cited URLs with engine, query, and capture-timestamp metadata) is available in your customer data store. Format documented in <code>dryrun/forensic/MOAT.md</code> in the public research repo.</p>
+
+<h2>Appendix B. {{ANY_CUSTOMER_SPECIFIC_APPENDIX_TITLE}}</h2>
+<p>{{ANY_CUSTOMER_SPECIFIC_APPENDIX_BODY — e.g. authority backlink audit details, meta description rewrite drafts, lower-priority punch list items, specific schema recommendations, etc.}}</p>
+
+<h2>Appendix C. Methodology and classifier details</h2>
+<p>The source-type classifier source code is public at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>, file <code>dryrun/forensic/classify.mjs</code>. The exact bucket definitions and URL pattern matches are documented inline. Your compliance team can audit how every URL in the raw data above was bucketed.</p>
+
+<div class="footer">
+  Prepared for {{CUSTOMER_NAME}}. Confidential. Engagement covered by the
+  standard NeverRanked research engagement terms at <a href="https://neverranked.com/terms/">neverranked.com/terms</a>.
+  Contact: <a href="mailto:lance@neverranked.com">lance@neverranked.com</a>.
+  Delivered {{DELIVERY_DATE}}.
+</div>
+
+</main>
+</body>
+</html>
