@@ -1,12 +1,11 @@
-# Cloudflare Workers Static Assets _redirects (same format as Pages).
+# Cloudflare Workers Static Assets _redirects.
 #
-# /check -> the AEO scanner. Cold outreach emails link to the
-# 2-label apex (neverranked.com/check?url=...&utm_*) instead of the
-# 3-label check.neverranked.com, because SpamAssassin's URI_TRY_3LD
-# penalizes a 3-label "try this" hostname by ~2 points (measured:
-# the single biggest content deduction, mail-tester 7/10). The
-# original query string (?url= + every utm_*) is preserved on the
-# redirect, so the recipient lands on the real scanner with UTM
-# attribution intact and the spam filter only sees the clean 2LD.
-/check      https://check.neverranked.com/          302
-/check/*    https://check.neverranked.com/:splat    302
+# SITE IN REBUILD (2026-05-19): full-site holder. No redirect rules.
+# The holder is served for every non-matching path via the Worker's
+# not_found_handling = "single-page-application" (wrangler.jsonc),
+# plus the deploy step prunes pitch/blog/etc out of dist so there are
+# no old assets to match. A `/* /index.html 200` rule here is INVALID
+# (Cloudflare rejects it as an infinite loop, code 10021) — do not
+# re-add it. /check and all marketing routes are intentionally down.
+# Instrument (app.neverranked.com) is a separate Worker, unaffected.
+# Restore: revert this + index.html + wrangler.jsonc, normal build.
