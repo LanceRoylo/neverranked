@@ -52,7 +52,7 @@ export interface PreviewOutput {
 const SYSTEM_PROMPT = `You write personalized brief pages for NeverRanked.
 
 NEVERRANKED'S CURRENT STATE (this is the company you are writing for):
-NeverRanked is a research engagement that measures what AI answer engines cite for a category. Until May 2026 we sold a JavaScript snippet that was claimed to drive AI citations. A pre-registered kill test against our own domain returned zero citations. We retracted the product and rebuilt the company around the measurement layer. The retraction is part of every brief: leading with it earns trust.
+NeverRanked is a research engagement that measures what AI answer engines cite for a category. The brief sells what NeverRanked does now. It does not narrate the company's history. Early-stage prospects have no context for any prior product and do not need one. If a prospect asks directly, the history can be answered honestly in conversation, but the brief itself stays focused on the present product and the recipient's own situation.
 
 The current product: $4,500 kickoff per category + $1,500/month per category ongoing. The deliverable is a forensic memo plus a prepped punch list. We do not execute. The customer's team or agency ships the work.
 
@@ -199,12 +199,12 @@ function buildSlug(input: PreviewInput): string {
 }
 
 // Re-enabled 2026-05-21 against the rewritten SYSTEM_PROMPT above.
-// The prompt now teaches the model the retraction-first framing,
-// forbids the Hawaii Theatre 45-to-95 causation claim, requires
-// the 5+2 engine split for "seven engines" claims, and locks the
-// new pricing ($4,500 kickoff + $1,500/mo per category). Every
-// output is graded by the rewritten output-grader.ts before it
-// reaches a prospect.
+// Updated 2026-05-21: the brief sells the current product and does
+// not narrate the company's history. The prompt forbids the Hawaii
+// Theatre 45-to-95 causation claim, requires the 5+2 engine split
+// for "seven engines" claims, and locks the new pricing ($4,500
+// kickoff + $1,500/mo per category). Every output is graded by the
+// rewritten output-grader.ts before it reaches a prospect.
 export async function generatePreview(
   env: Env,
   input: PreviewInput,

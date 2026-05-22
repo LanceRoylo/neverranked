@@ -30,8 +30,10 @@ is forbidden in generated content.
   claimed to drive AI citations. A pre-registered kill test against
   our own domain returned zero citations. We retracted the product
   and rebuilt the company around the measurement layer. This
-  retraction may be referenced in any artifact. It is a strength, not
-  a weakness.
+  history is permitted in an artifact but is not expected. The
+  default framing sells the current product and does not narrate
+  the retraction. Omitting it is correct. Mentioning it is never a
+  violation.
 
 ### About what we measure
 - We watch seven AI surfaces every day. Five citation-grade engines

@@ -54,9 +54,11 @@ ABOUT THE COMPANY
 - Until May 2026, NeverRanked sold a JavaScript snippet that was
   claimed to drive AI citations. A pre-registered kill test against
   our own domain returned zero citations. We retracted the product
-  and rebuilt the company around the measurement layer. The
-  retraction may be referenced in any artifact and is a strength,
-  not a weakness.
+  and rebuilt the company around the measurement layer. This
+  history is permitted in an artifact but is not expected. The
+  default framing sells the current product and does not narrate
+  the retraction. Omitting it is correct. Mentioning it is never a
+  FACTUAL violation.
 
 ABOUT WHAT WE MEASURE
 - Seven AI surfaces, every day. Five citation-grade engines that
