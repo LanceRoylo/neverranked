@@ -37,32 +37,77 @@ interface PlanConfig {
    *  copy but don't yet have a Stripe Price configured. Once the Price is
    *  created in Stripe, set comingSoon=false and fill in priceId. */
   comingSoon?: boolean;
+  /** When true, /checkout/<plan> returns 410 with a retraction message.
+   *  Used for SKUs that have been pulled from sale (Pulse/Signal/Amplify/
+   *  audit). The key stays in PLANS so existing DB rows resolve, but the
+   *  handler refuses to create a Stripe session. */
+  retired?: boolean;
 }
 
+/**
+ * PLANS table for /checkout/<plan>.
+ *
+ * Retired SKUs (audit / pulse / signal / amplify) are kept as keys
+ * for historical reference and to keep any existing DB rows from
+ * blowing up if they reference one. Their Stripe Price IDs are
+ * left in place but the /checkout/ handler returns 410 for any
+ * retired key. Do not remove these keys; do not reuse the Price
+ * IDs for new SKUs.
+ *
+ * New SKUs (kickoff / retainer) under the research-engagement
+ * product. Both ship with `comingSoon: true` until Lance mints
+ * the new Stripe Price IDs. When the IDs exist:
+ *   1. Create the Price in Stripe (one for $4,500 one-time
+ *      kickoff, one for $1,500/month subscription).
+ *   2. Paste the Price IDs into kickoff.priceId and retainer.priceId.
+ *   3. Flip comingSoon to false on each.
+ * The handleCheckout flow handles both states (waitlist capture
+ * when comingSoon, real Stripe session when not).
+ */
 export const PLANS: Record<string, PlanConfig> = {
+  // === RETIRED 2026-05-20 — handler returns 410 ===
   audit: {
-    name: "NeverRanked Audit",
+    name: "(RETIRED) NeverRanked Audit",
     priceLabel: "$750",
     mode: "payment",
     priceId: "price_1TTU3AChs9v2cUMPn3HSrUoC",
+    retired: true,
   },
   pulse: {
-    name: "NeverRanked Pulse",
+    name: "(RETIRED) NeverRanked Pulse",
     priceLabel: "$497/mo",
     mode: "subscription",
     priceId: "price_1TTTkvChs9v2cUMPSi4Eupiu",
+    retired: true,
   },
   signal: {
-    name: "NeverRanked Signal",
+    name: "(RETIRED) NeverRanked Signal",
     priceLabel: "$2,000/mo",
     mode: "subscription",
     priceId: "price_1TLgcZChs9v2cUMPgum7Ujgt",
+    retired: true,
   },
   amplify: {
-    name: "NeverRanked Amplify",
+    name: "(RETIRED) NeverRanked Amplify",
     priceLabel: "$4,500/mo",
     mode: "subscription",
     priceId: "price_1TLgctChs9v2cUMPFGY47fcC",
+    retired: true,
+  },
+  // === CURRENT — research engagement, awaiting Stripe Price IDs ===
+  kickoff: {
+    name: "NeverRanked Kickoff",
+    priceLabel: "$4,500",
+    mode: "payment",
+    priceId: "",
+    comingSoon: true,
+  },
+  retainer: {
+    name: "NeverRanked Retainer",
+    priceLabel: "$1,500/mo per category",
+    mode: "subscription",
+    priceId: "",
+    comingSoon: true,
   },
 };
 
@@ -130,21 +175,40 @@ async function verifyWebhookSignature(
  * GET /checkout/:plan — Create Stripe Checkout Session and redirect
  * Can be accessed without auth (for pricing page links)
  */
-// RETRACTED 2026-05-20. The PLANS table wires real Stripe Price IDs
-// to the killed Pulse/Signal/Amplify/$750-audit tiers. Any visitor
-// who reaches /checkout/<plan> would be charged for a product we no
-// longer sell. Disabled until the PLANS table is rewritten against
-// the new pricing ($4,500 kickoff + $1,500/mo per category) AND new
-// Stripe Price IDs are minted for the new SKUs.
+// Rewritten 2026-05-21. The PLANS table now distinguishes retired
+// SKUs (audit/pulse/signal/amplify -- handler returns 410) from
+// current SKUs (kickoff/retainer -- handler renders waitlist or
+// real Stripe session depending on comingSoon flag). When the new
+// Stripe Price IDs are minted, set comingSoon=false on kickoff
+// and retainer and the existing Stripe-session flow takes over
+// with no further code changes.
 export async function handleCheckout(
   plan: string,
   request: Request,
   env: Env
 ): Promise<Response> {
-  return new Response("Checkout disabled. NeverRanked has retracted the Pulse, Signal, Amplify, and $750 audit tiers and rebuilt around a research engagement ($4,500 kickoff + $1,500/mo per category). Email lance@neverranked.com to scope an engagement.", {
-    status: 410,
-    headers: { "content-type": "text/plain; charset=utf-8" },
-  });
+  const config = PLANS[plan];
+
+  // Unknown plan -> 404 (with a pointer at the live current SKUs).
+  if (!config) {
+    return new Response(
+      `Plan "${plan}" not recognized. Current SKUs: kickoff ($4,500 per category), retainer ($1,500/month per category). See https://neverranked.com for the research engagement details.`,
+      { status: 404, headers: { "content-type": "text/plain; charset=utf-8" } },
+    );
+  }
+
+  // Retired SKU -> 410 with the retraction message.
+  if (config.retired) {
+    return new Response(
+      `Checkout for "${plan}" is closed. NeverRanked has retracted the Pulse, Signal, Amplify, and $750 audit tiers and rebuilt around a research engagement ($4,500 kickoff + $1,500/month per category). See https://neverranked.com/retraction/ for the full story or email lance@neverranked.com to scope an engagement under the current product.`,
+      { status: 410, headers: { "content-type": "text/plain; charset=utf-8" } },
+    );
+  }
+
+  // Coming-soon (current SKU but no Stripe Price ID yet) -> waitlist
+  // capture page. Existing waitlist handler below renders it via the
+  // existing PLANS[plan].comingSoon branch.
+
   // eslint-disable-next-line no-unreachable
   if (!env.STRIPE_SECRET_KEY) {
     return html(layout("Error", `
@@ -155,46 +219,31 @@ export async function handleCheckout(
     `), 500);
   }
 
-  const config = PLANS[plan];
-  if (!config) {
-    return html(layout("Not Found", `
-      <div class="empty">
-        <h3>Plan not found</h3>
-        <p>Valid plans: audit, pulse, signal, amplify. <a href="https://neverranked.com/#pricing" style="color:var(--gold)">View pricing</a></p>
-      </div>
-    `), 404);
-  }
-
-  // Coming-soon tiers: marketing copy is live but Stripe isn't wired
-  // yet. Capture interest into admin_inbox so Lance can reach out
-  // manually, instead of dropping the lead with a 404 or a Stripe error.
+  // Plan config was already validated above (404 + 410 dispatch).
+  // Coming-soon tiers (current SKUs without Stripe Price ID yet):
+  // capture interest, point at scoping email. The kickoff and
+  // retainer flow through here until Lance mints the Price IDs.
   if (config.comingSoon) {
-    return html(layout(`${config.name} — coming soon`, `
+    return html(layout(`${config.name} — scoping`, `
       <div style="max-width:560px;margin:80px auto;padding:0 24px">
         <div style="font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:16px">
           ${config.name} &middot; ${config.priceLabel}
         </div>
         <h1 style="font-family:var(--serif);font-weight:400;font-size:38px;line-height:1.15;margin:0 0 20px 0;letter-spacing:-.01em">
-          Reserve your <em>Pulse seat.</em>
+          Scope your <em>research engagement.</em>
         </h1>
         <p style="font-size:15px;line-height:1.7;color:var(--text-mute);margin:0 0 32px 0">
-          Drop your email and the domain you want monitored. We will email you a login link within seconds. Two minutes later you are tracking 10 prompts across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma. No payment yet -- you are in the founding cohort and we will email a Stripe link once your seat is confirmed.
+          The research engagement is scoped, not self-serve. Email Lance directly with the category you want to measure and 3-5 competitors you want on the cohort. A five-query pilot for that category runs at no cost so you see the shape of the deliverable on your data. The full ${config.name.toLowerCase().includes('kickoff') ? 'kickoff lands three weeks after the query set is locked' : 'engagement starts month two of the kickoff window'}.
         </p>
-        <form method="POST" action="/checkout/pulse/waitlist" style="display:flex;flex-direction:column;gap:14px">
-          <input type="email" name="email" required placeholder="you@yourdomain.com"
-            style="font-family:var(--mono);font-size:14px;padding:14px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none">
-          <input type="text" name="domain" required placeholder="yourdomain.com"
-            style="font-family:var(--mono);font-size:14px;padding:14px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none">
-          <textarea name="note" placeholder="Optional: anything you want us to know (current marketing setup, audit reference, etc.)"
-            rows="3"
-            style="font-family:var(--mono);font-size:13px;padding:12px 16px;background:var(--bg-edge);border:1px solid var(--line);color:var(--text);border-radius:4px;outline:none;resize:vertical"></textarea>
-          <button type="submit"
-            style="font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 24px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);cursor:pointer;margin-top:6px">
-            Reserve my Pulse seat &rarr;
-          </button>
-        </form>
+        <a href="mailto:lance@neverranked.com?subject=Scope%20${encodeURIComponent(config.name)}%20engagement&body=Category%20I%20want%20to%20measure%3A%20%0A%0ACompetitors%20I%20want%20on%20the%20cohort%20(3-5)%3A%20%0A%0AAnything%20else%20useful%20to%20know%3A%20"
+          style="display:inline-block;font-family:var(--label);text-transform:uppercase;letter-spacing:.2em;font-size:11px;padding:14px 28px;background:var(--gold);color:var(--bg);border:1px solid var(--gold);text-decoration:none;border-radius:2px">
+          Email Lance to scope &rarr;
+        </a>
         <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:24px 0 0 0;line-height:1.6">
-          No payment yet. We'll email you a Stripe link once your seat is confirmed.
+          The mailto pre-fills the subject and a short body template. Edit it before sending if you have specifics in mind.
+        </p>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0 0;line-height:1.6">
+          Or see <a href="https://neverranked.com/example-engagement/" style="color:var(--gold)">/example-engagement/</a> for what the kickoff actually produces, <a href="https://neverranked.com/first-30-days/" style="color:var(--gold)">/first-30-days/</a> for day-by-day from signing.
         </p>
       </div>
     `), 200);
