@@ -642,6 +642,72 @@ export default {
       });
     }
 
+    // Public cron + measurement health. No auth. Surfaces the freshness
+    // of the daily measurement pipeline so a human (or a separate
+    // monitor) can verify "is the system still running?" without an
+    // admin session or D1 token. Returns:
+    //   - latest cron_runs row per task_name (status, ran_at, age_hours)
+    //   - latest citation_runs ran timestamp + age_hours
+    //   - global "ok" boolean: true iff every cron has fired within 36h
+    //     AND citation_runs has a row within 36h (allows a missed day
+    //     window without false-alarming on a 25-hour gap).
+    if (path === "/health/crons" && method === "GET") {
+      const now = Math.floor(Date.now() / 1000);
+      const STALE_SECS = 36 * 60 * 60; // 36h
+
+      // Latest run per cron task_name.
+      const cronRowsResult = await env.DB.prepare(
+        `SELECT task_name, status, ran_at, duration_ms, detail
+           FROM cron_runs cr
+          WHERE ran_at = (SELECT MAX(ran_at) FROM cron_runs WHERE task_name = cr.task_name)
+          ORDER BY ran_at DESC`
+      ).all<{ task_name: string; status: string; ran_at: number; duration_ms: number | null; detail: string | null }>();
+      const crons = (cronRowsResult.results ?? []).map((r) => ({
+        task_name: r.task_name,
+        status: r.status,
+        last_ran_at: r.ran_at,
+        last_age_hours: Math.round(((now - r.ran_at) / 3600) * 10) / 10,
+        duration_ms: r.duration_ms,
+        stale: now - r.ran_at > STALE_SECS,
+        last_detail: r.detail,
+      }));
+
+      // Latest citation_runs timestamp (the actual measurement heartbeat).
+      const citationRow = await env.DB.prepare(
+        `SELECT MAX(run_at) AS last_at, COUNT(*) AS last_24h_count
+           FROM citation_runs
+          WHERE run_at > ?`
+      ).bind(now - 86400).first<{ last_at: number | null; last_24h_count: number }>();
+      const citationLastAt = citationRow?.last_at ?? null;
+      const citationAgeHours = citationLastAt
+        ? Math.round(((now - citationLastAt) / 3600) * 10) / 10
+        : null;
+      const citationStale = citationLastAt ? now - citationLastAt > STALE_SECS : true;
+
+      const allCronsFresh = crons.length > 0 && crons.every((c) => !c.stale);
+      const ok = allCronsFresh && !citationStale;
+
+      const body = {
+        ok,
+        checked_at: now,
+        stale_threshold_hours: 36,
+        crons,
+        citation_runs: {
+          last_run_at: citationLastAt,
+          last_run_age_hours: citationAgeHours,
+          stale: citationStale,
+          count_last_24h: citationRow?.last_24h_count ?? 0,
+        },
+      };
+      return new Response(JSON.stringify(body, null, 2), {
+        status: ok ? 200 : 503,
+        headers: {
+          "content-type": "application/json",
+          "cache-control": "no-store",
+        },
+      });
+    }
+
     // Public shared report (no auth)
     const reportMatch = path.match(/^\/report\/([a-f0-9]{32})$/);
     if (reportMatch) {
