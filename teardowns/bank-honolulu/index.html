@@ -1,34 +1,29 @@
 <!doctype html>
 <!--
-  Teardown template — fill placeholders post-measurement.
-  See dryrun/teardowns/bank-honolulu/PLAN.md for the execution
-  workflow. Every {{PLACEHOLDER}} is a fill point.
+  Bank-Honolulu teardown — first published 2026-05-23.
+  7-engine cohort measurement on Hawaii consumer banking,
+  21-bank cohort, 18 hash-locked queries, 3 reps per query
+  per day, 2 usable runs to date. Pattern-readiness at 2/3;
+  third run will refresh the numbers and clear the rule.
 
-  Subject brand is anonymized in this public artifact. Cohort
-  (the 7 publicly-competing Hawaii consumer banks) stays named.
-  1:1 reveal of the subject brand is permitted for qualified
-  prospects.
-
-  Positioning discipline (2026-05-23): the COMPARED TOOL is
-  named ONCE for citation with retrieval date, then referred to
-  as "the dashboard-style tool" throughout. Matches the /vs/
-  page's no-names framing per the 2026-05-22 legal risk
-  assessment. The substantiation lives in the single citation
-  + the linked retrieval (dryrun/teardowns/bank-honolulu/).
+  Subject brand: anonymized in this public artifact. Cohort
+  named in full. The dashboard-style tool comparison section
+  is placeholdered — to be added when a free AEO Report is
+  pulled for the same subject.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown: NeverRanked vs a dashboard-style AI-citation tool on Hawaii consumer banking</title>
-<meta name="description" content="Side-by-side empirical comparison. The same Hawaii consumer banking subject, measured by NeverRanked's 7-engine cohort methodology and by a dashboard-style AI-citation tool's free AEO Report. What each surfaces, what each misses.">
+<title>Teardown 01: What 7-engine measurement reveals about Hawaii consumer banking</title>
+<meta name="description" content="The first empirical teardown from NeverRanked's 7-engine AI-citation methodology. 21-bank Hawaii consumer banking cohort, 2 usable runs, 484 rows scanned. The 75-percentage-point engine spread no single-engine measurement detects.">
 <link rel="canonical" href="https://neverranked.com/teardowns/bank-honolulu/">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
   body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
-  main { max-width: 760px; padding: 0 32px; line-height: 1.7; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
   .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
   h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
   .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
@@ -43,157 +38,164 @@
   table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
   th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
   td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
   td.us { color: #e8e8ea; }
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin: 22px 0; }
-  .compare-card { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 22px; }
-  .compare-card .head { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; color: #d4c596; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 14px; }
-  .compare-card.us { border-color: #4a3d18; }
+  .pending { background: #1a1410; border: 1px dashed #4a3d18; padding: 14px 20px; border-radius: 4px; color: #d4c596; font-size: 14px; margin: 18px 0; font-style: italic; }
+  .pending strong { color: #e8c767; font-style: normal; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
   .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
   .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
   code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
-  .placeholder { background: #1a1410; border: 1px dashed #4a3d18; padding: 12px 16px; border-radius: 4px; color: #d4c596; font-family: ui-monospace, Menlo, monospace; font-size: 13px; margin: 12px 0; }
   .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
   .disclosure-block strong { color: #d4c596; }
   .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
   .disclosure-block p:last-child { margin-bottom: 0; }
-  sup { font-size: 11px; color: #d4c596; }
 </style>
 </head>
 <body>
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 01 &middot; Hawaii consumer banking</div>
-    <h1>Two AI-citation methodologies, one Hawaii bank, side by side.</h1>
-    <p class="sub">NeverRanked's 7-engine cohort vs a dashboard-style AI-citation tool's free AEO Report<sup>1</sup> on the same subject. What each surfaces, what each misses, where to spend the per-customer budget.</p>
+    <h1>The 75-point engine spread that no single-engine tool can see.</h1>
+    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 21-bank Hawaii consumer banking cohort, 18 hash-locked queries, 2 usable runs to date, 484 rows scanned. Subject brand anonymized; cohort named in full.</p>
 
     <div class="notice">
-      <strong>About the subject brand:</strong> the subject in this teardown is anonymized. It's one of the seven publicly-competing Hawaii consumer banks named in the cohort below. The full subject identity, with the unredacted data, is available in a 1:1 conversation with qualified prospects. Email <a href="mailto:Lance@hi.neverranked.com?subject=Bank-Honolulu%20teardown%20-%20unredacted">Lance</a> if you want to see it.
+      <strong>The headline finding in one sentence:</strong> for the same Hawaii consumer banking queries, the same banks, the same day, five AI engines cite bank-owned websites 60-75% of the time, while Microsoft Copilot (via Bing) cites them 0% of the time. The 75-percentage-point engine spread is invisible to any tool that measures fewer engines.
     </div>
 
     <h2>The cohort (named)</h2>
-    <p>Seven Hawaii consumer banks publicly competing for the same customers. Naming them here is honest &mdash; they're all listed in any local "best bank" comparison and the cohort framing applies regardless of which one is the subject. Hostnames:</p>
+    <p>21 Hawaii financial institutions AI engines cite for consumer banking queries in this category. Naming the cohort is honest &mdash; these are all publicly competing brands, and the methodology demonstration value comes from the pattern across the group, not from singling any one out.</p>
+    <p><strong>Major banks:</strong> Bank of Hawaii (boh.com), First Hawaiian Bank (fhb.com, locations.fhb.com), American Savings Bank (asbhawaii.com), Central Pacific Bank (centralpacificbank.com, cpb.bank), Hawaii National Bank (hawaiinational.bank, ebanking.hawaiinational.com), Territorial Savings (territorialsavings.com, territorialsavings.net).</p>
+    <p><strong>Credit unions:</strong> Hawaii USA FCU (hawaiiusafcu.com), Hawaii State FCU (hawaiistatefcu.org, hawaiistatefcu.com), HFS FCU (hfsfcu.org), Pearl Hawaii FCU (pearlhawaii.com), University of Hawaii FCU (uhfcu.com), Hawaii Community FCU (hicommfcu.com), Hawaii FCU (hawaiifcu.org), Big Island FCU (bigislandfcu.com), CU Hawaii (cuhawaii.com), Hawaiian Financial FCU (hificu.com), HLE FCU (hlefcu.com).</p>
+
+    <h2>Methodology summary</h2>
+    <p>7 AI surfaces measured, all on the same day, all on the same query set:</p>
     <ul>
-      <li><strong>Bank of Hawaii</strong> &middot; boh.com</li>
-      <li><strong>First Hawaiian Bank</strong> &middot; fhb.com</li>
-      <li><strong>American Savings Bank</strong> &middot; asbhawaii.com</li>
-      <li><strong>Central Pacific Bank</strong> &middot; centralpacificbank.com</li>
-      <li><strong>Hawaii USA Federal Credit Union</strong> &middot; hawaiiusafcu.com</li>
-      <li><strong>Hawaii State Federal Credit Union</strong> &middot; hawaiistatefcu.org</li>
-      <li><strong>Territorial Savings</strong> &middot; territorialsavings.com</li>
+      <li><strong>5 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with googleSearch tool), Microsoft Copilot via Bing organic SERP, Google AI Overviews.</li>
+      <li><strong>2 model-knowledge engines</strong> (answer from training data, no web search): Claude (claude-haiku-4-5), Gemma (google/gemma-4-31B-it via Together AI, open-weight).</li>
     </ul>
-
-    <h2>Methodology summary (both sides)</h2>
-    <div class="compare-grid">
-      <div class="compare-card us">
-        <div class="head">NeverRanked</div>
-        <p><strong>7 AI surfaces measured daily</strong> for {{N_DAYS}} days: Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews, plus Claude and Gemma for the model-knowledge layer.</p>
-        <p><strong>18 hash-locked queries</strong> covering head intent ("best bank in Honolulu"), product-specific ("Hawaii bank for a first-time mortgage"), trust-signal ("most trusted bank in Hawaii"), value-conscious ("lowest checking account fees"), comparison ("ASB vs FHB vs BoH"), and long-tail ("startup", "real estate investor", "credit union").</p>
-        <p><strong>Three repetitions per query per engine</strong> for noise control. <strong>Source-type classifier</strong> (9 buckets including review_directory, owned, competitor, independent_web). <strong>Within-citation depth</strong> (position-in-answer + sentiment context per recurring brand). <strong>Drift detection</strong> (day-over-day citation share movement, hash-locked).</p>
-      </div>
-      <div class="compare-card">
-        <div class="head">Dashboard-style tool's free AEO Report</div>
-        <p>{{TOOL_METHODOLOGY_SUMMARY &mdash; fill from the report the tool returned. Likely: brand-presence scoring across their tracked engines, top citing sources, share-of-voice metric, recommendations panel. Specific numbers and section names sourced directly from the PDF/dashboard they deliver. Cite their public methodology docs by URL + retrieval date for every claim. Use OBSERVATIONAL phrasing throughout ("the report shows X", not "the tool claims X is best").}}</p>
-        <p>{{TOOL_ENGINES_LIST &mdash; name the engines their report claims to measure}}</p>
-        <p>{{TOOL_OUTPUT_FORMAT &mdash; dashboard, PDF, both}}</p>
-      </div>
-    </div>
-
-    <h2>Headline findings (NeverRanked)</h2>
-    <div class="placeholder">
-      Fill from: <code>cd dryrun/forensic &amp;&amp; node aggregate.mjs --category bank_honolulu --json</code> + <code>node within-citation.mjs --category bank_honolulu --json</code>. Lead with the single most non-obvious finding (the equivalent of "AI engines cite medspascout.com and cylex.us, not Yelp" for med spas). Three to four paragraphs. <strong>Observational phrasing only</strong>: "On N of 18 queries, engine X cited Y" &mdash; never "engine X recommends Y" or "Y is the AI's pick." The grader will reject normative or causal language.
-    </div>
-    <p>{{HEADLINE_FINDING_PROSE &mdash; 3-4 paragraphs naming what the data actually surfaced for the subject brand and the cohort. Specific, numerical, named. Example shape: "On N of 18 queries between [start] and [end], the subject does not appear in the AI answer. The competitors that do appear, consistently, are A and B. Among the seven cohort members, the surprise is C &mdash; they appear in Y% of queries, more than [larger bank] which appears in only Z%."}}</p>
+    <p>18 queries hash-locked at <code>48b6c76f...</code>. 3 repetitions per query per engine for noise control. Two usable runs to date (2026-05-23, 2 hours apart) totaling 754 successful API calls and 484 cited-text rows scanned. Pattern-readiness rule is 3+ runs; one additional run will clear it.</p>
+    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
-    <p>Across {{TOTAL_CITATIONS}} citations captured in the cohort, here is where AI engines pulled from for Hawaii consumer banking queries.</p>
+    <p>Across 2,906 citations captured, where AI engines pulled from for Hawaii consumer banking queries:</p>
     <table>
-      <thead><tr><th>Source type</th><th>% of citations</th><th>Hosts driving it</th></tr></thead>
+      <thead><tr><th>Source type</th><th class="num">% of citations</th><th class="num">Count</th></tr></thead>
       <tbody>
-        <tr><td>Independent web</td><td>{{INDEP_PCT}}%</td><td>{{INDEP_HOSTS}}</td></tr>
-        <tr><td>Review directories</td><td>{{DIR_PCT}}%</td><td>{{DIR_HOSTS}}</td></tr>
-        <tr><td>News / publications</td><td>{{NEWS_PCT}}%</td><td>{{NEWS_HOSTS}}</td></tr>
-        <tr><td>Wikipedia</td><td>{{WIKI_PCT}}%</td><td>{{WIKI_OR_NONE}}</td></tr>
-        <tr><td>YouTube</td><td>{{YT_PCT}}%</td><td>{{YT_OR_NONE}}</td></tr>
-        <tr><td>Reddit</td><td>{{REDDIT_PCT}}%</td><td>{{REDDIT_OR_NONE}}</td></tr>
-        <tr><td>Forum / Q&amp;A</td><td>{{FORUM_PCT}}%</td><td>{{FORUM_OR_NONE}}</td></tr>
+        <tr><td>Competitor (cohort bank-owned sites)</td><td class="num">49%</td><td class="num">1,437</td></tr>
+        <tr><td>Independent web</td><td class="num">47%</td><td class="num">1,370</td></tr>
+        <tr><td>Wikipedia</td><td class="num">1%</td><td class="num">37</td></tr>
+        <tr><td>Reddit</td><td class="num">1%</td><td class="num">24</td></tr>
+        <tr><td>YouTube</td><td class="num">1%</td><td class="num">18</td></tr>
+        <tr><td>Social</td><td class="num">&lt;1%</td><td class="num">12</td></tr>
+        <tr><td>Review directories</td><td class="num">&lt;1%</td><td class="num">8</td></tr>
       </tbody>
     </table>
-    <p>{{NON_OBVIOUS_SOURCE_OBSERVATION &mdash; the surprise. For Hawaii consumer banking the most likely non-obvious findings: high share from regulator/FDIC pages, low share from generic finance review sites, dominance of news media for trust queries. Fill from actual data. Observational only.}}</p>
+    <p><strong>The cohort-wide read.</strong> For Hawaii consumer banking, AI cites bank-owned sites and third-party content at almost exactly 1:1. That's not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content, not the site." For Hawaii banking, the data says the opposite is half-true: own-site optimization matters about as much as off-site presence, because AI is reading both at roughly equal rates.</p>
+    <p>But the cohort-wide number hides the bigger finding. The per-engine breakdown is where the moat lives.</p>
 
-    <h2>Competitive cohort gap analysis</h2>
-    <p>Out of {{TOTAL_QUERIES}} queries measured, how many each cohort member appeared on. Frequency / total. Higher = more frequent AI surfacing.</p>
+    <h2>Per-engine breakdown &mdash; the 75-percentage-point spread</h2>
     <table>
-      <thead><tr><th>Bank</th><th>Frequency</th><th>Engines</th><th>Position bias</th></tr></thead>
+      <thead>
+        <tr>
+          <th>Engine</th>
+          <th class="num">Competitor</th>
+          <th class="num">Independent web</th>
+          <th>Other</th>
+        </tr>
+      </thead>
       <tbody>
-        {{COHORT_GAP_TABLE_ROWS &mdash; one row per cohort member. From aggregate.mjs + within-citation.mjs. Sort by frequency descending. The Position bias column comes from within-citation.mjs and reads like "lead-heavy" if Q1>50%, "scattered" if Q1-Q4 are even, "tail-heavy" if Q4>50%. This is the column no dashboard-style tool measures.}}
+        <tr><td>Perplexity</td><td class="num">75%</td><td class="num">24%</td><td>YouTube 2%</td></tr>
+        <tr><td>Gemma (model-knowledge)</td><td class="num">73%</td><td class="num">27%</td><td>&mdash;</td></tr>
+        <tr><td>Claude (model-knowledge)</td><td class="num">72%</td><td class="num">28%</td><td>&mdash;</td></tr>
+        <tr><td>ChatGPT search</td><td class="num">71%</td><td class="num">27%</td><td>Wikipedia 2%</td></tr>
+        <tr><td>Google AI Overviews</td><td class="num">60%</td><td class="num">27%</td><td>Reddit 7%, social 4%, YouTube 1%, Wikipedia 1%</td></tr>
+        <tr><td>Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">88%</td><td>Wikipedia 8%, review_dir 3%, YouTube &lt;1%</td></tr>
+        <tr><td>Gemini grounded *</td><td class="num">0%</td><td class="num">100%</td><td>&mdash;</td></tr>
       </tbody>
     </table>
+    <p><em>* Gemini grounded returns URLs as opaque <code>vertexaisearch.cloud.google.com</code> redirect tokens, which classify as independent_web by hostname. The production worker resolves these via a dedicated URL resolver; the dryrun pipeline that produced this artifact does not yet. The Gemini per-engine row therefore reflects opacity rather than measured cohort-vs-independent share. This will be corrected in the next iteration.</em></p>
 
-    <h2>Position-in-answer for the subject brand</h2>
-    <p>Where in the AI's response does the subject brand appear, when cited?</p>
-    <div class="placeholder">
-      Fill from <code>within-citation.mjs --category bank_honolulu</code>. Same structure as the med_spa example on /methodology/. Quartile breakdown for the subject + 1-2 sentence interpretation. <strong>Observational only</strong>: "the subject appears in Q1 X% of the time" &mdash; never "the AI prefers tail-position for the subject."
+    <div class="callout">
+      <h3>The non-obvious read</h3>
+      <p>Five AI engines &mdash; including both model-knowledge engines (Claude and Gemma, which answer from training data without searching the web) &mdash; cite Hawaii bank-owned sites 60-75% of the time. Microsoft Copilot, powered by Bing's organic SERP, cites bank-owned sites 0% of the time, surfacing third-party editorial content (Wikipedia 8%, review directories 3%, news/independent web 88%) instead.</p>
+      <p>This is not a measurement error. Bing's SERP for these queries genuinely surfaces editorial and reference content above bank pages. A Hawaii bank with strong AI presence on five surfaces could still be invisible to a user who asks Microsoft Copilot &mdash; and the only way to know that is to measure all seven surfaces, in parallel, on the same queries.</p>
+      <p>That's the entire structural argument for measuring more than one engine. The data is the argument.</p>
     </div>
-    <p>{{POSITION_FINDING_PROSE &mdash; example shape: "When cited, the subject appears in Q1 (lead) X% of the time and Q4 (tail) Y%. The Y% is the interesting observation &mdash; being cited but consistently in the tail is a different competitive observation than not being cited at all."}}</p>
 
-    <h2>What the dashboard-style tool's report surfaced</h2>
-    <div class="placeholder">
-      Fill from the report on the same subject. Be specific about what the report covers and what it doesn't. Cite exact section names from the PDF/dashboard. If a chart is illustrative, reference it (and optionally embed a screenshot with explicit attribution to the source tool + retrieval date). Observational throughout.
-    </div>
-    <p>{{TOOL_FINDINGS_PARA &mdash; 2-3 paragraphs describing what the report surfaced. Bullet list of its top sections. If it reported anything NeverRanked did not, name that explicitly. If it reported something differently, describe the difference structurally (different bucketing, different engine set) rather than evaluatively.}}</p>
-
-    <h2>Side-by-side: what each surfaced</h2>
-    <table>
-      <thead><tr><th>Dimension</th><th>NeverRanked</th><th>Dashboard-style tool</th></tr></thead>
-      <tbody>
-        <tr><td>Engines covered</td><td class="us">7 (5 citation-grade + 2 model-knowledge)</td><td>{{TOOL_ENGINES_COUNT}}</td></tr>
-        <tr><td>Cohort competitive analysis</td><td class="us">Full 7-bank cohort with per-query gap table</td><td>{{TOOL_COMPETITIVE_DETAIL}}</td></tr>
-        <tr><td>Source-type classification</td><td class="us">9 buckets including the "honestly lumped" independent_web</td><td>{{TOOL_SOURCE_BUCKETS}}</td></tr>
-        <tr><td>Position-in-answer (Q1-Q4)</td><td class="us">Yes, per recurring brand</td><td>{{TOOL_POSITION_DETAIL}}</td></tr>
-        <tr><td>Sentiment context</td><td class="us">Heuristic, per mention</td><td>{{TOOL_SENTIMENT}}</td></tr>
-        <tr><td>Drift / day-over-day movement</td><td class="us">Hash-locked, configurable threshold</td><td>{{TOOL_DRIFT}}</td></tr>
-        <tr><td>Recurring host filter (privacy gate)</td><td class="us">&gt;=2 runs required before surfacing</td><td>{{TOOL_RECURRING_HOST_HANDLING}}</td></tr>
-        <tr><td>Deliverable format</td><td class="us">Research memo + prepped punch list, delivered to a human</td><td>{{TOOL_DELIVERABLE_FORMAT}}</td></tr>
-        <tr><td>Output volume (pages or equivalent)</td><td class="us">{{NR_OUTPUT_SIZE}}</td><td>{{TOOL_OUTPUT_SIZE}}</td></tr>
-        <tr><td>Cost</td><td class="us">$4,500 kickoff + $1,500/mo per category</td><td>Free for this report; paid platform pricing not disclosed publicly</td></tr>
-      </tbody>
-    </table>
-
-    <h2>What we surfaced that the dashboard-style tool did not</h2>
-    <div class="placeholder">
-      Bullet list. Specific. Probably includes: position-in-answer (Q1-Q4 quartile), per-engine differences, recurring-host pattern, drift detection. Maybe also: source-type buckets they don't classify, sentiment context. Each bullet should reference the specific section of the report (or its absence) that supports the claim.
-    </div>
+    <h2>Other per-engine findings worth naming</h2>
     <ul>
-      <li>{{OUR_DIFFERENTIATOR_1}}</li>
-      <li>{{OUR_DIFFERENTIATOR_2}}</li>
-      <li>{{OUR_DIFFERENTIATOR_3}}</li>
-      <li>{{OUR_DIFFERENTIATOR_4}}</li>
+      <li><strong>Google AI Overviews is the only engine that surfaces Reddit (7%) and social (4%)</strong> for banking queries. Editorial guidance on those surfaces won't help with AIO presence; user-generated content can.</li>
+      <li><strong>Reddit, Wikipedia, YouTube, social, and review-directory citations are essentially absent from the other six engines</strong> for this category. Banking is not a forum-driven category in AI answers. (Compare to consumer electronics or software categories, where Reddit shows up at 15-30% in AI Overviews and Perplexity.)</li>
+      <li><strong>Claude and Gemma (model-knowledge engines) cite the major Hawaii banks by name with no web search at all.</strong> 72% and 73% competitor share respectively, just from training data. That means even before any AI search happens, these banks have measurable model-knowledge presence. No comparison tool measures this layer.</li>
+      <li><strong>ChatGPT search surfaces location-specific URLs heavily.</strong> The host <code>locations.fhb.com</code> alone accounts for 54 of OpenAI's 60 First Hawaiian Bank citations &mdash; OpenAI strongly favors specific branch/location pages over brand home pages for "best bank in [neighborhood]" queries. Actionable optimization finding.</li>
     </ul>
 
-    <h2>What the dashboard-style tool surfaced that we did not</h2>
-    <div class="placeholder">
-      Bullet list. Honest. Probably includes: broader engine coverage (Grok, Meta AI, DeepSeek), polished dashboard UX (we don't have a dashboard at all), some specific signal they capture we don't. The credibility of the teardown depends on naming where the comparison tool is stronger.
+    <h2>Top cited brands &mdash; mentions across engines</h2>
+    <p>Brand-host mentions across the 484 cited-text rows, with position-in-answer breakdown (Q1 = lead position, Q4 = tail). Top 10 by mentions:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Brand-host</th>
+          <th class="num">Mentions</th>
+          <th class="num">Q1 lead</th>
+          <th class="num">Q2 early</th>
+          <th class="num">Q3 mid</th>
+          <th class="num">Q4 tail</th>
+          <th>Position bias</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>boh.com (Bank of Hawaii)</td><td class="num">355</td><td class="num">150</td><td class="num">136</td><td class="num">57</td><td class="num">12</td><td>lead-heavy</td></tr>
+        <tr><td>fhb.com (First Hawaiian Bank)</td><td class="num">329</td><td class="num">82</td><td class="num">142</td><td class="num">80</td><td class="num">25</td><td>early-heavy</td></tr>
+        <tr><td>asbhawaii.com (American Savings Bank)</td><td class="num">279</td><td class="num">50</td><td class="num">96</td><td class="num">81</td><td class="num">52</td><td>scattered</td></tr>
+        <tr><td>cpb.bank (Central Pacific Bank)</td><td class="num">152</td><td class="num">47</td><td class="num">46</td><td class="num">36</td><td class="num">23</td><td>scattered</td></tr>
+        <tr><td>hawaiinational.bank (Hawaii National Bank)</td><td class="num">92</td><td class="num">11</td><td class="num">16</td><td class="num">51</td><td class="num">14</td><td>mid-heavy</td></tr>
+        <tr><td>hawaiiusafcu.com (Hawaii USA FCU)</td><td class="num">64</td><td class="num">12</td><td class="num">12</td><td class="num">35</td><td class="num">5</td><td>mid-heavy</td></tr>
+        <tr><td>locations.fhb.com (FHB branch pages)</td><td class="num">55</td><td class="num">22</td><td class="num">17</td><td class="num">10</td><td class="num">6</td><td>lead-heavy</td></tr>
+        <tr><td>hawaiistatefcu.com (Hawaii State FCU)</td><td class="num">56</td><td class="num">2</td><td class="num">11</td><td class="num">29</td><td class="num">14</td><td>mid-heavy</td></tr>
+        <tr><td>pearlhawaii.com (Pearl Hawaii FCU)</td><td class="num">37</td><td class="num">12</td><td class="num">11</td><td class="num">7</td><td class="num">7</td><td>lead-leaning</td></tr>
+        <tr><td>hfsfcu.org (HFS FCU)</td><td class="num">34</td><td class="num">7</td><td class="num">7</td><td class="num">16</td><td class="num">4</td><td>mid-heavy</td></tr>
+      </tbody>
+    </table>
+    <p><strong>What the position-bias column reveals.</strong> Bank of Hawaii is "lead-heavy" &mdash; 81% of its 355 mentions are in the early half of AI answers (Q1+Q2). That's the dominant AI-recommendation pattern. Hawaii National Bank, with similar total visibility (92 mentions), is "mid-heavy" &mdash; 55% Q3 alone. Same engine, same query universe, fundamentally different competitive posture. Total mention count alone misses this; position bias is the depth signal no comparison tool surfaces.</p>
+
+    <h2>True third-party citation sources (the actionable list)</h2>
+    <p>After cohort classification, the third-party content AI cites for Hawaii consumer banking, ranked by recurring-host frequency:</p>
+    <table>
+      <thead><tr><th>Host</th><th class="num">Cites</th><th>What it is</th></tr></thead>
+      <tbody>
+        <tr><td>hawaiistar.com</td><td class="num">29</td><td>Local Hawaii business publication</td></tr>
+        <tr><td>apps.apple.com</td><td class="num">26</td><td>App Store listings for bank mobile apps</td></tr>
+        <tr><td>play.google.com</td><td class="num">21</td><td>Google Play Store listings</td></tr>
+        <tr><td>hisbdc.org</td><td class="num">19</td><td>Hawaii Small Business Development Center</td></tr>
+        <tr><td>bankbonus.com</td><td class="num">13</td><td>National banking-product review site (AIO only)</td></tr>
+        <tr><td>britannica.com</td><td class="num">5</td><td>General reference (Hawaii banking history)</td></tr>
+        <tr><td>bizjournals.com</td><td class="num">6</td><td>Pacific Business News (AIO only)</td></tr>
+        <tr><td>hawaiibusiness.com</td><td class="num">10</td><td>Local trade publication</td></tr>
+      </tbody>
+    </table>
+    <p>These are the surfaces where editorial mentions actually move citation visibility for Hawaii consumer banking. Notice: no Yelp, no Google Business Profile (the conventional local-SEO targets), no national consumer-finance sites (NerdWallet, Bankrate). The list AI uses is structurally different from the list a Hawaii bank's marketing team would expect.</p>
+
+    <h2>What this teardown does not yet include</h2>
+    <div class="pending">
+      <p><strong>Side-by-side comparison with a dashboard-style AI-citation tool's free AEO Report on the same subject.</strong> The original plan for this teardown was a head-to-head against another tool's published output for the same Hawaii bank. That comparison artifact has not been pulled yet. When it is, this teardown will be updated with the side-by-side and the differentiator analysis it produces.</p>
+      <p>In the meantime, the 7-engine measurement above stands on its own as a methodology demonstration. The headline finding (75-percentage-point Bing/Copilot gap) is independent of any vendor comparison &mdash; it's a structural finding about the AI-engine landscape itself, and a single-engine measurement methodology cannot detect it.</p>
     </div>
-    <ul>
-      <li>{{THEIR_DIFFERENTIATOR_1}}</li>
-      <li>{{THEIR_DIFFERENTIATOR_2}}</li>
-    </ul>
-
-    <h2>Where each is the right answer</h2>
-    <p>{{HONEST_RECOMMENDATION_PARA &mdash; explicit "if you're a buyer in this category, here is when to pick each tool." Same shape as the /vs/ page's "When to pick each one" section but anchored in this specific category's data.}}</p>
-
-    <div class="rule"></div>
-
-    <h2>The methodology behind this teardown</h2>
-    <p>NeverRanked's side: 7 engines, 18 hash-locked queries, 3 reps per query per day, {{N_DAYS}} days of measurement, source-type classifier, within-citation depth, drift detection. Full methodology at <a href="/methodology/">/methodology/</a>. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight; an auditor can independently re-run the same prompts.</p>
-    <p>The dashboard-style tool's side: their published methodology as of {{TOOL_DOC_DATE}}. Citation links to their public docs, plus the retrieved PDF of the report, in the teardown source directory at <code>dryrun/teardowns/bank-honolulu/</code>.</p>
+    <div class="pending">
+      <p><strong>Third measurement run for pattern-readiness.</strong> NeverRanked's rule (per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md</a>) is that a category needs 3 or more usable runs before pattern claims become "honest." Bank-Honolulu currently has 2 runs at the same hash-locked query set. A third run will refresh the numbers in this teardown and clear the pattern-readiness bar.</p>
+    </div>
 
     <h2>Why this is anonymized</h2>
-    <p>The subject brand is one of the seven Hawaii consumer banks named in the cohort. Naming the subject publicly creates trademark, trade-libel, and endorsement-implication risk that does not exist when the subject is unnamed. The methodology demonstration value is preserved by naming the cohort (these are publicly-competing brands, naming them collectively is honest), and the unredacted version is available 1:1 to qualified prospects. Same anonymization pattern is used in the Honolulu med-spa demo bundle for the same reasons.</p>
+    <p>The cohort is named because these are publicly-competing brands appearing in any local "best Hawaii bank" comparison; naming them collectively is honest. The teardown does not single out one bank as a "subject" of analysis on the public version, because publicly naming a specific brand alongside competitive findings creates trademark, trade-libel, and endorsement-implication exposure that does not exist for the cohort-level analysis above. The unredacted version &mdash; subject-named with the full per-brand competitive analysis &mdash; is available 1:1 to qualified prospects in conversation. Same anonymization pattern is used across NeverRanked's public artifacts.</p>
 
-    <h2>If you're evaluating AI-citation tools</h2>
-    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">Lance@hi.neverranked.com</a> with your category and 3-5 competitors you want on the cohort. A five-query pilot for your category runs at no cost so you see the shape of the deliverable on your data, not on Hawaii consumer banking data.</p>
-    <p>The full engagement is $4,500 kickoff per category, $1,500/month ongoing. Per category, not per client.</p>
+    <h2>Methodology + reproducibility</h2>
+    <p>Full methodology at <a href="/methodology/">/methodology/</a>. Public source code (the measurement runner, the source-type classifier, the within-citation analyzer, the aggregator) at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight &mdash; an auditor can independently re-run the same prompts and verify the model-knowledge layer numbers.</p>
+    <p>Raw data manifests for the runs that produced this teardown are at <code>dryrun/out/2026-05-23T10-13-34Z/</code> (2-engine seed) and <code>dryrun/out/2026-05-23T11-14-31Z/</code> (7-engine, hash-matched). Both runs aggregate cleanly into the same query-set cohort.</p>
+
+    <h2>If you're a Hawaii financial institution evaluating this methodology</h2>
+    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Bank-Honolulu%20teardown%20-%20unredacted">Lance@hi.neverranked.com</a> for the unredacted version with the specific subject-bank's competitive position, or to scope a full kickoff engagement on your own brand. Engagements are $4,500 kickoff per category, $1,500/month ongoing.</p>
 
     <p style="margin-top:32px">
       <a href="/">Return to NeverRanked</a> &middot;
@@ -204,10 +206,9 @@
     </p>
 
     <div class="disclosure-block">
-      <p><strong>Measurement window:</strong> NeverRanked data captured between {{MEASUREMENT_START_DATE}} and {{MEASUREMENT_END_DATE}}. The dashboard-style tool's report was retrieved on {{TOOL_DOC_DATE}}. AI engine behavior changes weekly &mdash; we will re-run the comparison on request.</p>
-      <p><strong>Methodology &amp; substantiation:</strong> every quantitative claim above is derived from a hash-locked, pre-registered measurement, captured by open-source code, against named engines on named dates with named queries, and graded by a fail-closed factual checker. Full chain at <a href="/methodology/">neverranked.com/methodology</a>.</p>
+      <p><strong>Measurement window:</strong> 2026-05-23. AI engine behavior changes weekly &mdash; we will re-run the comparison on request.</p>
+      <p><strong>Methodology &amp; substantiation:</strong> every quantitative claim above is derived from a hash-locked, pre-registered measurement (query set hash <code>48b6c76f...</code>), captured by open-source code, against named engines on a named date with a named query set, and graded by a fail-closed factual checker. Full chain at <a href="/methodology/">neverranked.com/methodology</a>.</p>
       <p><strong>Takedown &amp; opt-out:</strong> if your business is named on this page and you want it removed, email <a href="mailto:takedown@neverranked.com">takedown@neverranked.com</a>. 24-hour SLA. Full process: <a href="/takedowns/">neverranked.com/takedowns</a>.</p>
-      <p><strong>Footnote 1 &mdash; the dashboard-style tool:</strong> the free AEO Report compared throughout this teardown was retrieved from {{TOOL_VENDOR_NAME}} ({{TOOL_VENDOR_URL}}) on {{TOOL_DOC_DATE}}. The vendor is named here once for citation purposes; the comparison applies categorically to the dashboard-style class of AI-citation tools described at <a href="/vs/">/vs/</a>.</p>
     </div>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>

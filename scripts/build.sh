@@ -60,13 +60,13 @@ DIRS=(
   standards
   state-of-aeo
   takedowns
+  teardowns
   terms
   thanks
   vs
-  # teardowns/ intentionally excluded — template ships with
-  # {{PLACEHOLDERS}}. Add back to this list after the
-  # bank-honolulu teardown is populated from the measurement
-  # run. See dryrun/teardowns/bank-honolulu/PLAN.md.
+  # teardowns/ added 2026-05-23 — bank-honolulu populated from the
+  # first 7-engine measurement runs. Future teardowns ship under
+  # /teardowns/<slug>/ following the same template pattern.
 )
 
 echo "Building dist/ from repo root…"

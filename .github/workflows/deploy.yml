@@ -37,6 +37,7 @@ on:
       - 'standards/**'
       - 'state-of-aeo/**'
       - 'takedowns/**'
+      - 'teardowns/**'
       - 'terms/**'
       - 'thanks/**'
       - 'vs/**'
