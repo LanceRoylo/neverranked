@@ -145,38 +145,43 @@
         <tr><th>Source type</th><th>% of citations</th></tr>
       </thead>
       <tbody>
-        <tr><td>Independent web</td><td>98%</td></tr>
+        <tr><td>Competitor (cohort med-spa businesses themselves)</td><td>57%</td></tr>
+        <tr><td>Independent web</td><td>41%</td></tr>
         <tr><td>Review directory</td><td>2%</td></tr>
         <tr><td>YouTube</td><td>&lt;1%</td></tr>
         <tr><td>Reddit, Wikipedia, forum, social</td><td>0%</td></tr>
       </tbody>
     </table>
+    <p><strong>The non-obvious read.</strong> For this category AI cites the businesses' own websites and third-party content at roughly 1:1 (57% competitor / 41% independent web). That is not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content not the site." For Honolulu med spas, the data says the opposite is half-true: own-site optimization matters about as much as off-site presence, because AI is reading both at roughly equal rates. The actionable shape of the punch list changes accordingly &mdash; both surfaces matter, neither dominates.</p>
     <p>Per-engine behavior within the same category:</p>
     <table>
       <thead>
-        <tr><th>Engine</th><th>Independent web</th><th>Review dir</th><th>YouTube</th></tr>
+        <tr><th>Engine</th><th>Competitor</th><th>Independent web</th><th>Review dir</th><th>YouTube</th></tr>
       </thead>
       <tbody>
-        <tr><td>OpenAI</td><td>99%</td><td>1%</td><td>0%</td></tr>
-        <tr><td>Perplexity</td><td>96%</td><td>3%</td><td>1%</td></tr>
+        <tr><td>OpenAI</td><td>62%</td><td>37%</td><td>1%</td><td>0%</td></tr>
+        <tr><td>Perplexity</td><td>51%</td><td>46%</td><td>3%</td><td>1%</td></tr>
       </tbody>
     </table>
+    <p>OpenAI weights own-site citations more heavily than Perplexity (62% vs 51%). That difference is exactly the kind of per-engine asymmetry a single-engine measurement misses.</p>
     <p>Recurring hosts (cited across two or more measurement runs). The businesses are anonymized here because they are not NeverRanked customers and did not consent to appear in our public materials. A paying customer's deliverable names every host in their cohort in full, because the named competitive map is the product. On a public page, the pattern is what matters, not the names.</p>
     <table>
       <thead>
         <tr><th>Host</th><th>Citations</th><th>Source type</th></tr>
       </thead>
       <tbody>
-        <tr><td>Honolulu med spa A</td><td>88</td><td>independent_web</td></tr>
-        <tr><td>Honolulu med spa B</td><td>88</td><td>independent_web</td></tr>
-        <tr><td>Honolulu med spa C</td><td>58</td><td>independent_web</td></tr>
-        <tr><td>Honolulu med spa D</td><td>53</td><td>independent_web</td></tr>
+        <tr><td>Honolulu med spa A</td><td>88</td><td>competitor</td></tr>
+        <tr><td>Honolulu med spa B</td><td>88</td><td>competitor</td></tr>
+        <tr><td>Honolulu med spa C</td><td>58</td><td>competitor</td></tr>
+        <tr><td>Honolulu med spa D</td><td>54</td><td>competitor</td></tr>
+        <tr><td>Honolulu med spa E</td><td>53</td><td>competitor</td></tr>
         <tr><td>category-specific directory A</td><td>11</td><td>review_directory</td></tr>
         <tr><td>category-specific directory B</td><td>3</td><td>review_directory</td></tr>
       </tbody>
     </table>
-    <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms.</p>
-    <p>For comparison, the kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, on Perplexity) showed a meaningfully different source mix: 85% independent_web, 14% YouTube, 1% forum. The same engine, a different category, produces different source-type distributions. That difference is the moat in microcosm — only an outside observer measuring across categories can name it.</p>
+    <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms. Cohort coverage improves with each engagement &mdash; more runs surface more cohort members, so the competitor share trends toward its true ceiling rather than away from it.</p>
+    <p>For category contrast, a kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, Perplexity) showed a meaningfully different source mix: 85% independent web, 14% YouTube, 1% forum. The same engine, a different category, produces a fundamentally different source-type distribution. That difference is the moat in microcosm &mdash; only an outside observer measuring across categories can name it.</p>
+    <p><strong>Note on accuracy &mdash; updated 2026-05-23.</strong> Earlier versions of this page reported "98% independent web, 0% competitor" for this category. That was wrong by a wide margin: the aggregator was passing empty context to the source-type classifier, so the cohort's own domains were silently bucketed as independent web. The bug was fixed and the cohort registered; corrected numbers above. The methodology is unchanged. This is the kind of finding the fail-closed grader catches in prose but the underlying data pipeline has to catch separately &mdash; we caught it before any customer-facing claim shipped from these numbers.</p>
 
     <h2>What this engagement deliberately does NOT measure</h2>
     <p>The honest scope on what "forensic" means here and what it does not. The structural axes (cross-engine, cross-competitor, source-type classification, cohort discipline, pre-registration) are evidence-grade. The depth-of-content axes below are gaps. We name them so a prospect evaluating us does not assume we cover something we don't.</p>
