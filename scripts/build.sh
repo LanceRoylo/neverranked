@@ -59,6 +59,7 @@ DIRS=(
   security
   standards
   state-of-aeo
+  takedowns
   terms
   thanks
   vs

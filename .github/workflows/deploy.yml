@@ -24,6 +24,7 @@ on:
       - 'security/**'
       - 'standards/**'
       - 'state-of-aeo/**'
+      - 'takedowns/**'
       - 'terms/**'
       - 'thanks/**'
       - 'wrangler.jsonc'
