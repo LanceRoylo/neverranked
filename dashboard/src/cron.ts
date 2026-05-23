@@ -130,23 +130,13 @@ export async function dispatchWeeklyDeliveries(
     console.log(`[delivery] free weekly digest sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // --- Founder weekly summary email (relocated from runDailyTasks) ---
-  try {
-    const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
-    const sStarted = Date.now();
-    const r = await sendWeeklySummaryEmail(env);
-    await logCronRun(
-      env,
-      "weekly_summary_email",
-      r.sent ? "success" : "failure",
-      Date.now() - sStarted,
-      r.sent ? `subject="${r.subject}"` : (r.error ?? "unknown")
-    );
-    console.log(`[delivery] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
-  } catch (e) {
-    await logCronRun(env, "weekly_summary_email", "failure", 0, e instanceof Error ? e.message : String(e));
-    console.log(`[delivery] weekly_summary_email failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
+  // The founder weekly_summary_email used to run here too, but it
+  // consistently failed with "Too many subrequests by single Worker
+  // invocation" because digest_dispatch + free weekly digests had
+  // already burned the per-invocation budget. Moved 2026-05-23 to its
+  // own dedicated cron trigger ("30 6 * * *", Mondays only) routed
+  // from index.ts scheduled(). Fresh invocation, fresh subrequest
+  // budget. See the cron === "30 6 * * *" branch in scheduled().
 
   return { digestTotal, digestDispatched, digestErrors, freeOk };
 }

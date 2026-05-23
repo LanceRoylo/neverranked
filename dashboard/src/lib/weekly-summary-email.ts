@@ -18,7 +18,7 @@
 import type { Env } from "../types";
 
 const SECONDS_PER_DAY = 86400;
-const RECIPIENT = "lance@neverranked.com";
+const RECIPIENT = "Lance@hi.neverranked.com";
 
 function formatTimestamp(unix: number): string {
   const date = new Date(unix * 1000);

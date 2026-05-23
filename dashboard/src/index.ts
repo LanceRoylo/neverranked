@@ -3638,6 +3638,31 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
       return;
     }
 
+    // --- Dedicated founder weekly-summary invocation (06:30, Mondays only) ---
+    // Split out of dispatchWeeklyDeliveries 2026-05-23 because it was
+    // failing every Monday with "Too many subrequests by single Worker
+    // invocation" — digest_dispatch + free weekly digests fanned out
+    // enough per-user queries to exhaust the budget BEFORE the founder
+    // summary's ~12 gather queries got their turn. Its own cron trigger
+    // gives it its own fresh subrequest budget.
+    if (cron === "30 6 * * *") {
+      if (scheduledAt.getUTCDay() === 1) {
+        ctx.waitUntil(
+          withCronLogging(env, "weekly_summary_email", async () => {
+            const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
+            const r = await sendWeeklySummaryEmail(env);
+            console.log(`[cron 06:30] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
+            if (!r.sent) {
+              throw new Error(r.error ?? "weekly_summary_email returned sent=false");
+            }
+          }).catch((e) => {
+            console.log(`[cron 06:30] weekly_summary_email failed: ${e instanceof Error ? e.message : e}`);
+          })
+        );
+      }
+      return;
+    }
+
     if (cron === "0 17 * * *" || (cron === undefined && hour === 17)) {
       ctx.waitUntil(withCronLogging(env, "inbox_morning_summary", async () => {
         const { sendInboxMorningSummary, backfillContentDraftsToInbox } = await import("./admin-inbox");
