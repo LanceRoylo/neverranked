@@ -653,7 +653,19 @@ export default {
     //     window without false-alarming on a 25-hour gap).
     if (path === "/health/crons" && method === "GET") {
       const now = Math.floor(Date.now() / 1000);
-      const STALE_SECS = 36 * 60 * 60; // 36h
+      const DAILY_STALE_SECS = 36 * 60 * 60; // 36h — allows one missed day
+      const WEEKLY_STALE_SECS = 8 * 24 * 60 * 60; // 8 days — allows one missed week
+
+      // Weekly cron task_names. These fire once per week; a 36h staleness
+      // threshold would flag them as stale six days out of seven, which
+      // is meaningless noise. Listed explicitly because the cron schedule
+      // is in wrangler.jsonc, not in the DB.
+      const WEEKLY_CRONS = new Set([
+        "weekly_summary_email",
+        "weekly_scans",
+        "weekly_backup",
+        "delivery_dispatch",
+      ]);
 
       // Latest run per cron task_name.
       const cronRowsResult = await env.DB.prepare(
@@ -662,15 +674,23 @@ export default {
           WHERE ran_at = (SELECT MAX(ran_at) FROM cron_runs WHERE task_name = cr.task_name)
           ORDER BY ran_at DESC`
       ).all<{ task_name: string; status: string; ran_at: number; duration_ms: number | null; detail: string | null }>();
-      const crons = (cronRowsResult.results ?? []).map((r) => ({
-        task_name: r.task_name,
-        status: r.status,
-        last_ran_at: r.ran_at,
-        last_age_hours: Math.round(((now - r.ran_at) / 3600) * 10) / 10,
-        duration_ms: r.duration_ms,
-        stale: now - r.ran_at > STALE_SECS,
-        last_detail: r.detail,
-      }));
+      const crons = (cronRowsResult.results ?? []).map((r) => {
+        const isWeekly = WEEKLY_CRONS.has(r.task_name);
+        const threshold = isWeekly ? WEEKLY_STALE_SECS : DAILY_STALE_SECS;
+        return {
+          task_name: r.task_name,
+          cadence: isWeekly ? "weekly" : "daily",
+          status: r.status,
+          last_ran_at: r.ran_at,
+          last_age_hours: Math.round(((now - r.ran_at) / 3600) * 10) / 10,
+          duration_ms: r.duration_ms,
+          // A failed run is reported as both stale=false (it DID run
+          // recently) AND status='failure' — callers should treat the
+          // status field as authoritative for health, not just stale.
+          stale: now - r.ran_at > threshold,
+          last_detail: r.detail,
+        };
+      });
 
       // Latest citation_runs timestamp (the actual measurement heartbeat).
       const citationRow = await env.DB.prepare(
@@ -684,13 +704,27 @@ export default {
         : null;
       const citationStale = citationLastAt ? now - citationLastAt > STALE_SECS : true;
 
-      const allCronsFresh = crons.length > 0 && crons.every((c) => !c.stale);
-      const ok = allCronsFresh && !citationStale;
+      // A cron is unhealthy if either stale (didn't fire on time for its
+      // cadence) OR its last run was a failure. Both conditions break the
+      // global ok signal — a cron that fires reliably but always errors
+      // is just as broken as one that doesn't fire at all.
+      const allCronsHealthy =
+        crons.length > 0 && crons.every((c) => !c.stale && c.status !== "failure");
+      const failedCrons = crons.filter((c) => c.status === "failure");
+      const ok = allCronsHealthy && !citationStale;
 
       const body = {
         ok,
         checked_at: now,
-        stale_threshold_hours: 36,
+        thresholds: {
+          daily_stale_hours: 36,
+          weekly_stale_hours: 24 * 8,
+        },
+        failed_crons: failedCrons.map((c) => ({
+          task_name: c.task_name,
+          last_ran_at: c.last_ran_at,
+          last_detail: c.last_detail,
+        })),
         crons,
         citation_runs: {
           last_run_at: citationLastAt,
