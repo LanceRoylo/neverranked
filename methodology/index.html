@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>Methodology -- NeverRanked</title>
 <meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
 <link rel="canonical" href="https://neverranked.com/methodology/">
@@ -194,17 +194,27 @@
     <h2>Reproducibility</h2>
     <p>The classifier source code is public. Gemma (one of the seven engines) is open-weight; any auditor can re-run the same prompts against Gemma and verify our numbers independently. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. The aggregator and catalog tools are public. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
 
+    <h2>How public artifacts cite this methodology</h2>
+    <p>Some of what we measure becomes a public artifact: a per-business "AI-visibility receipt" linked from outreach to a named subject. Every public receipt links back to this page for substantiation, and every quantitative claim it carries is anchored in a hash-locked measurement run on the methodology above.</p>
+    <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a NeverRanked artifact is derived from a hash-locked, pre-registered measurement, captured by open-source code, against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
+    <p><strong>Phrasing discipline.</strong> Receipts speak observationally only. "On N of M observed queries between [dates], engine X cited business Y" is the canonical form. We do not say an engine "recommends," "prefers," "endorses," or "ranks" a business — engines cite, full stop. We do not assert that being cited causes a business outcome, or that not being cited causes its absence. The grader rejects artifacts that drift into normative or causal language.</p>
+    <p><strong>Anonymization commitment.</strong> Non-customer businesses are anonymized on every publicly-indexed page. The named subject of a receipt is named (they have notice through the outreach we sent them); other businesses in the same cohort appear as "Competitor A", "Competitor B", and so on. A named subject who is also a paying customer can consent to additional naming in their own deliverable; otherwise the public version stays anonymized.</p>
+    <p><strong>Measurement window staleness.</strong> AI engine behavior changes weekly. Every public artifact carries the measurement window dates so a reader can see exactly when the underlying capture happened. If a finding is stale, we will re-run on request, at no charge, against the same hash-locked methodology so the new run is directly comparable.</p>
+    <p><strong>Takedown and opt-out.</strong> If your business is named anywhere on our property and you want it removed, the process is documented at <a href="/takedowns/">/takedowns/</a>. The bar is one email; the SLA is 24 hours; no reason or justification required. Opt-out from future measurement is permanent.</p>
+
     <div class="rule"></div>
 
     <h2>If you want to scope an engagement</h2>
-    <p>Email <a href="mailto:lance@neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">lance@neverranked.com</a> with the category you want to measure and three to five competitors you want on the cohort. The first conversation locks the query set together. Then the measurement starts.</p>
+    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">Lance@hi.neverranked.com</a> with the category you want to measure and three to five competitors you want on the cohort. The first conversation locks the query set together. Then the measurement starts.</p>
     <p style="margin-top:20px">
       <a href="/">Return to NeverRanked</a> &middot;
       <a href="/example-engagement/">Example deliverable</a> &middot;
+      <a href="/vs/">How we differ from the dashboards</a> &middot;
+      <a href="/takedowns/">Takedowns &amp; opt-out</a> &middot;
       <a href="/about/">About</a>
     </p>
 
-    <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:lance@neverranked.com">lance@neverranked.com</a></div>
+    <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
   </main>
 </body>
 </html>
