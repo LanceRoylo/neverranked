@@ -3,8 +3,8 @@
   Bank-Honolulu teardown — first published 2026-05-23.
   7-engine cohort measurement on Hawaii consumer banking,
   21-bank cohort, 18 hash-locked queries, 3 reps per query
-  per day, 2 usable runs to date. Pattern-readiness at 2/3;
-  third run will refresh the numbers and clear the rule.
+  per day, 3 usable runs (pattern-readiness cleared). Refresh
+  cadence is monthly or on customer request.
 
   Subject brand: anonymized in this public artifact. Cohort
   named in full. The dashboard-style tool comparison section
@@ -17,7 +17,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 01: What 7-engine measurement reveals about Hawaii consumer banking</title>
-<meta name="description" content="The first empirical teardown from NeverRanked's 7-engine AI-citation methodology. 21-bank Hawaii consumer banking cohort, 2 usable runs, 484 rows scanned. The 75-percentage-point engine spread no single-engine measurement detects.">
+<meta name="description" content="The first empirical teardown from NeverRanked's 7-engine AI-citation methodology. 21-bank Hawaii consumer banking cohort, 3 hash-locked runs, 5,153 citations. The 75-percentage-point engine spread no single-engine measurement detects.">
 <link rel="canonical" href="https://neverranked.com/teardowns/bank-honolulu/">
 <style>
   :root { color-scheme: dark; }
@@ -58,7 +58,7 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 01 &middot; Hawaii consumer banking</div>
     <h1>The 75-point engine spread that no single-engine tool can see.</h1>
-    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 21-bank Hawaii consumer banking cohort, 18 hash-locked queries, 2 usable runs to date, 484 rows scanned. Subject brand anonymized; cohort named in full.</p>
+    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 21-bank Hawaii consumer banking cohort, 18 hash-locked queries, 3 usable runs, 5,153 citations captured. Pattern-readiness cleared. Subject brand anonymized; cohort named in full.</p>
 
     <div class="notice">
       <strong>The headline finding in one sentence:</strong> for the same Hawaii consumer banking queries, the same banks, the same day, five AI engines cite bank-owned websites 60-75% of the time, while Microsoft Copilot (via Bing) cites them 0% of the time. The 75-percentage-point engine spread is invisible to any tool that measures fewer engines.
@@ -75,24 +75,24 @@
       <li><strong>5 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with googleSearch tool), Microsoft Copilot via Bing organic SERP, Google AI Overviews.</li>
       <li><strong>2 model-knowledge engines</strong> (answer from training data, no web search): Claude (claude-haiku-4-5), Gemma (google/gemma-4-31B-it via Together AI, open-weight).</li>
     </ul>
-    <p>18 queries hash-locked at <code>48b6c76f...</code>. 3 repetitions per query per engine for noise control. Two usable runs to date (2026-05-23, 2 hours apart) totaling 754 successful API calls and 484 cited-text rows scanned. Pattern-readiness rule is 3+ runs; one additional run will clear it.</p>
+    <p>18 queries hash-locked at <code>48b6c76f...</code>. 3 repetitions per query per engine for noise control. 3 usable runs all on 2026-05-23, totaling 1,134 successful API calls and 862 cited-text rows scanned. Pattern-readiness rule of 3+ usable runs is cleared.</p>
     <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
-    <p>Across 2,906 citations captured, where AI engines pulled from for Hawaii consumer banking queries:</p>
+    <p>Across 5,153 citations captured over 3 hash-locked runs, where AI engines pulled from for Hawaii consumer banking queries:</p>
     <table>
       <thead><tr><th>Source type</th><th class="num">% of citations</th><th class="num">Count</th></tr></thead>
       <tbody>
-        <tr><td>Competitor (cohort bank-owned sites)</td><td class="num">49%</td><td class="num">1,437</td></tr>
-        <tr><td>Independent web</td><td class="num">47%</td><td class="num">1,370</td></tr>
-        <tr><td>Wikipedia</td><td class="num">1%</td><td class="num">37</td></tr>
-        <tr><td>Reddit</td><td class="num">1%</td><td class="num">24</td></tr>
-        <tr><td>YouTube</td><td class="num">1%</td><td class="num">18</td></tr>
-        <tr><td>Social</td><td class="num">&lt;1%</td><td class="num">12</td></tr>
-        <tr><td>Review directories</td><td class="num">&lt;1%</td><td class="num">8</td></tr>
+        <tr><td>Competitor (cohort bank-owned sites)</td><td class="num">53%</td><td class="num">2,745</td></tr>
+        <tr><td>Independent web</td><td class="num">42%</td><td class="num">2,184</td></tr>
+        <tr><td>Wikipedia</td><td class="num">2%</td><td class="num">83</td></tr>
+        <tr><td>Reddit</td><td class="num">1%</td><td class="num">60</td></tr>
+        <tr><td>Social (Facebook, Instagram, TikTok)</td><td class="num">1%</td><td class="num">32</td></tr>
+        <tr><td>YouTube</td><td class="num">1%</td><td class="num">30</td></tr>
+        <tr><td>Review directories (Yelp, TripAdvisor)</td><td class="num">&lt;1%</td><td class="num">19</td></tr>
       </tbody>
     </table>
-    <p><strong>The cohort-wide read.</strong> For Hawaii consumer banking, AI cites bank-owned sites and third-party content at almost exactly 1:1. That's not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content, not the site." For Hawaii banking, the data says the opposite is half-true: own-site optimization matters about as much as off-site presence, because AI is reading both at roughly equal rates.</p>
+    <p><strong>The cohort-wide read.</strong> For Hawaii consumer banking, AI cites bank-owned sites slightly more than third-party content (53% vs 42%). That's not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content, not the site." For Hawaii banking, the data says the opposite is closer to true: own-site optimization is the majority of where AI is looking, third-party content is the minority. The actionable shape of the punch list changes accordingly.</p>
     <p>But the cohort-wide number hides the bigger finding. The per-engine breakdown is where the moat lives.</p>
 
     <h2>Per-engine breakdown &mdash; the 75-percentage-point spread</h2>
@@ -106,16 +106,15 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>Perplexity</td><td class="num">75%</td><td class="num">24%</td><td>YouTube 2%</td></tr>
-        <tr><td>Gemma (model-knowledge)</td><td class="num">73%</td><td class="num">27%</td><td>&mdash;</td></tr>
+        <tr><td>Perplexity</td><td class="num">75%</td><td class="num">23%</td><td>YouTube 1%</td></tr>
         <tr><td>Claude (model-knowledge)</td><td class="num">72%</td><td class="num">28%</td><td>&mdash;</td></tr>
         <tr><td>ChatGPT search</td><td class="num">71%</td><td class="num">27%</td><td>Wikipedia 2%</td></tr>
-        <tr><td>Google AI Overviews</td><td class="num">60%</td><td class="num">27%</td><td>Reddit 7%, social 4%, YouTube 1%, Wikipedia 1%</td></tr>
-        <tr><td>Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">88%</td><td>Wikipedia 8%, review_dir 3%, YouTube &lt;1%</td></tr>
-        <tr><td>Gemini grounded *</td><td class="num">0%</td><td class="num">100%</td><td>&mdash;</td></tr>
+        <tr><td>Gemma (model-knowledge)</td><td class="num">70%</td><td class="num">30%</td><td>&mdash;</td></tr>
+        <tr><td>Google AI Overviews</td><td class="num">59%</td><td class="num">27%</td><td>Reddit 7%, social 4%, YouTube 2%, Wikipedia 1%, review_dir 1%</td></tr>
+        <tr><td>Gemini grounded</td><td class="num">30%</td><td class="num">67%</td><td>Reddit 1%, Wikipedia 1%</td></tr>
+        <tr><td>Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">87%</td><td>Wikipedia 9%, review_dir 2%, social 1%, YouTube &lt;1%</td></tr>
       </tbody>
     </table>
-    <p><em>* Gemini grounded returns URLs as opaque <code>vertexaisearch.cloud.google.com</code> redirect tokens, which classify as independent_web by hostname. The production worker resolves these via a dedicated URL resolver; the dryrun pipeline that produced this artifact does not yet. The Gemini per-engine row therefore reflects opacity rather than measured cohort-vs-independent share. This will be corrected in the next iteration.</em></p>
 
     <div class="callout">
       <h3>The non-obvious read</h3>
@@ -133,7 +132,7 @@
     </ul>
 
     <h2>Top cited brands &mdash; mentions across engines</h2>
-    <p>Brand-host mentions across the 484 cited-text rows, with position-in-answer breakdown (Q1 = lead position, Q4 = tail). Top 10 by mentions:</p>
+    <p>Brand-host mentions across the 862 cited-text rows, with position-in-answer breakdown (Q1 = lead position, Q4 = tail). Top 10 by mentions:</p>
     <table>
       <thead>
         <tr>
@@ -147,44 +146,42 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>boh.com (Bank of Hawaii)</td><td class="num">355</td><td class="num">150</td><td class="num">136</td><td class="num">57</td><td class="num">12</td><td>lead-heavy</td></tr>
-        <tr><td>fhb.com (First Hawaiian Bank)</td><td class="num">329</td><td class="num">82</td><td class="num">142</td><td class="num">80</td><td class="num">25</td><td>early-heavy</td></tr>
-        <tr><td>asbhawaii.com (American Savings Bank)</td><td class="num">279</td><td class="num">50</td><td class="num">96</td><td class="num">81</td><td class="num">52</td><td>scattered</td></tr>
-        <tr><td>cpb.bank (Central Pacific Bank)</td><td class="num">152</td><td class="num">47</td><td class="num">46</td><td class="num">36</td><td class="num">23</td><td>scattered</td></tr>
-        <tr><td>hawaiinational.bank (Hawaii National Bank)</td><td class="num">92</td><td class="num">11</td><td class="num">16</td><td class="num">51</td><td class="num">14</td><td>mid-heavy</td></tr>
-        <tr><td>hawaiiusafcu.com (Hawaii USA FCU)</td><td class="num">64</td><td class="num">12</td><td class="num">12</td><td class="num">35</td><td class="num">5</td><td>mid-heavy</td></tr>
-        <tr><td>locations.fhb.com (FHB branch pages)</td><td class="num">55</td><td class="num">22</td><td class="num">17</td><td class="num">10</td><td class="num">6</td><td>lead-heavy</td></tr>
-        <tr><td>hawaiistatefcu.com (Hawaii State FCU)</td><td class="num">56</td><td class="num">2</td><td class="num">11</td><td class="num">29</td><td class="num">14</td><td>mid-heavy</td></tr>
-        <tr><td>pearlhawaii.com (Pearl Hawaii FCU)</td><td class="num">37</td><td class="num">12</td><td class="num">11</td><td class="num">7</td><td class="num">7</td><td>lead-leaning</td></tr>
-        <tr><td>hfsfcu.org (HFS FCU)</td><td class="num">34</td><td class="num">7</td><td class="num">7</td><td class="num">16</td><td class="num">4</td><td>mid-heavy</td></tr>
+        <tr><td>boh.com (Bank of Hawaii)</td><td class="num">612</td><td class="num">265</td><td class="num">219</td><td class="num">95</td><td class="num">33</td><td>lead-heavy</td></tr>
+        <tr><td>fhb.com (First Hawaiian Bank)</td><td class="num">584</td><td class="num">144</td><td class="num">259</td><td class="num">135</td><td class="num">46</td><td>lead-heavy</td></tr>
+        <tr><td>asbhawaii.com (American Savings Bank)</td><td class="num">463</td><td class="num">83</td><td class="num">149</td><td class="num">146</td><td class="num">85</td><td>early-heavy</td></tr>
+        <tr><td>cpb.bank (Central Pacific Bank)</td><td class="num">257</td><td class="num">71</td><td class="num">72</td><td class="num">62</td><td class="num">52</td><td>early-heavy</td></tr>
+        <tr><td>hawaiinational.bank (Hawaii National Bank)</td><td class="num">148</td><td class="num">17</td><td class="num">27</td><td class="num">79</td><td class="num">25</td><td>mid-heavy</td></tr>
+        <tr><td>hawaiiusafcu.com (Hawaii USA FCU)</td><td class="num">115</td><td class="num">20</td><td class="num">21</td><td class="num">60</td><td class="num">14</td><td>mid-heavy</td></tr>
+        <tr><td>hawaiistatefcu.com (Hawaii State FCU)</td><td class="num">96</td><td class="num">4</td><td class="num">18</td><td class="num">49</td><td class="num">25</td><td>mid-heavy</td></tr>
+        <tr><td>locations.fhb.com (FHB branch pages)</td><td class="num">76</td><td class="num">35</td><td class="num">22</td><td class="num">11</td><td class="num">8</td><td>lead-heavy</td></tr>
+        <tr><td>hfsfcu.org (HFS FCU)</td><td class="num">66</td><td class="num">18</td><td class="num">13</td><td class="num">26</td><td class="num">9</td><td>mid-heavy</td></tr>
+        <tr><td>pearlhawaii.com (Pearl Hawaii FCU)</td><td class="num">58</td><td class="num">19</td><td class="num">17</td><td class="num">12</td><td class="num">10</td><td>lead-leaning</td></tr>
       </tbody>
     </table>
-    <p><strong>What the position-bias column reveals.</strong> Bank of Hawaii is "lead-heavy" &mdash; 81% of its 355 mentions are in the early half of AI answers (Q1+Q2). That's the dominant AI-recommendation pattern. Hawaii National Bank, with similar total visibility (92 mentions), is "mid-heavy" &mdash; 55% Q3 alone. Same engine, same query universe, fundamentally different competitive posture. Total mention count alone misses this; position bias is the depth signal no comparison tool surfaces.</p>
+    <p><strong>What the position-bias column reveals.</strong> Bank of Hawaii is "lead-heavy" &mdash; 79% of its 612 mentions are in the early half of AI answers (Q1+Q2). That's the dominant AI-recommendation pattern. Hawaii National Bank, with notably less total visibility (148 mentions), is "mid-heavy" &mdash; 53% Q3 alone. Same engine, same query universe, fundamentally different competitive posture. Total mention count alone misses this; position bias is the depth signal no comparison tool surfaces.</p>
 
     <h2>True third-party citation sources (the actionable list)</h2>
-    <p>After cohort classification, the third-party content AI cites for Hawaii consumer banking, ranked by recurring-host frequency:</p>
+    <p>After cohort classification, the third-party content AI cites for Hawaii consumer banking, ranked by recurring-host frequency across the 3-run dataset:</p>
     <table>
       <thead><tr><th>Host</th><th class="num">Cites</th><th>What it is</th></tr></thead>
       <tbody>
-        <tr><td>hawaiistar.com</td><td class="num">29</td><td>Local Hawaii business publication</td></tr>
-        <tr><td>apps.apple.com</td><td class="num">26</td><td>App Store listings for bank mobile apps</td></tr>
-        <tr><td>play.google.com</td><td class="num">21</td><td>Google Play Store listings</td></tr>
-        <tr><td>hisbdc.org</td><td class="num">19</td><td>Hawaii Small Business Development Center</td></tr>
-        <tr><td>bankbonus.com</td><td class="num">13</td><td>National banking-product review site (AIO only)</td></tr>
-        <tr><td>britannica.com</td><td class="num">5</td><td>General reference (Hawaii banking history)</td></tr>
-        <tr><td>bizjournals.com</td><td class="num">6</td><td>Pacific Business News (AIO only)</td></tr>
-        <tr><td>hawaiibusiness.com</td><td class="num">10</td><td>Local trade publication</td></tr>
+        <tr><td>reddit.com</td><td class="num">60</td><td>Hawaii-banking discussion threads (Google AIO + Gemini)</td></tr>
+        <tr><td>apps.apple.com</td><td class="num">58</td><td>App Store listings for bank mobile apps</td></tr>
+        <tr><td>hmsa.com</td><td class="num">48</td><td>Hawaii Medical Service Association (HMSA-direct-deposit query artifact)</td></tr>
+        <tr><td>bankbonus.com</td><td class="num">47</td><td>National banking-product review site (mostly AIO)</td></tr>
+        <tr><td>play.google.com</td><td class="num">42</td><td>Google Play Store listings for bank apps</td></tr>
+        <tr><td>hawaiistar.com</td><td class="num">41</td><td>Local Hawaii business publication</td></tr>
+        <tr><td>en.wikipedia.org</td><td class="num">64</td><td>Hawaii banking history pages (mostly Bing)</td></tr>
+        <tr><td>facebook.com</td><td class="num">21</td><td>Social posts about Hawaii banks (Google AIO only)</td></tr>
+        <tr><td>yelp.com</td><td class="num">7</td><td>Review listings (Bing only)</td></tr>
       </tbody>
     </table>
-    <p>These are the surfaces where editorial mentions actually move citation visibility for Hawaii consumer banking. Notice: no Yelp, no Google Business Profile (the conventional local-SEO targets), no national consumer-finance sites (NerdWallet, Bankrate). The list AI uses is structurally different from the list a Hawaii bank's marketing team would expect.</p>
+    <p>These are the surfaces where editorial mentions actually move citation visibility for Hawaii consumer banking. Notice the engine-specific patterns: Reddit threads matter for Google AIO and Gemini specifically (invisible to the other 5 engines). Wikipedia and Yelp matter for Bing/Copilot specifically. Social platforms (Facebook, Instagram, TikTok) only show up in Google AI Overviews. The path to AI presence in each engine is structurally different, and the strategy for moving citation share has to be specific to which engines matter to the bank's actual buyers.</p>
 
     <h2>What this teardown does not yet include</h2>
     <div class="pending">
       <p><strong>Side-by-side comparison with a dashboard-style AI-citation tool's free AEO Report on the same subject.</strong> The original plan for this teardown was a head-to-head against another tool's published output for the same Hawaii bank. That comparison artifact has not been pulled yet. When it is, this teardown will be updated with the side-by-side and the differentiator analysis it produces.</p>
       <p>In the meantime, the 7-engine measurement above stands on its own as a methodology demonstration. The headline finding (75-percentage-point Bing/Copilot gap) is independent of any vendor comparison &mdash; it's a structural finding about the AI-engine landscape itself, and a single-engine measurement methodology cannot detect it.</p>
-    </div>
-    <div class="pending">
-      <p><strong>Third measurement run for pattern-readiness.</strong> NeverRanked's rule (per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md</a>) is that a category needs 3 or more usable runs before pattern claims become "honest." Bank-Honolulu currently has 2 runs at the same hash-locked query set. A third run will refresh the numbers in this teardown and clear the pattern-readiness bar.</p>
     </div>
 
     <h2>Why this is anonymized</h2>
@@ -192,7 +189,7 @@
 
     <h2>Methodology + reproducibility</h2>
     <p>Full methodology at <a href="/methodology/">/methodology/</a>. Public source code (the measurement runner, the source-type classifier, the within-citation analyzer, the aggregator) at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight &mdash; an auditor can independently re-run the same prompts and verify the model-knowledge layer numbers.</p>
-    <p>Raw data manifests for the runs that produced this teardown are at <code>dryrun/out/2026-05-23T10-13-34Z/</code> (2-engine seed) and <code>dryrun/out/2026-05-23T11-14-31Z/</code> (7-engine, hash-matched). Both runs aggregate cleanly into the same query-set cohort.</p>
+    <p>Raw data manifests for the 3 runs that produced this teardown are at <code>dryrun/out/2026-05-23T10-13-34Z/</code> (2-engine seed), <code>dryrun/out/2026-05-23T11-14-31Z/</code> (7-engine pass), and <code>dryrun/out/2026-05-23T21-42-59Z/</code> (third 7-engine pass clearing pattern-readiness). All three runs aggregate cleanly into the same query-set cohort.</p>
 
     <h2>If you're a Hawaii financial institution evaluating this methodology</h2>
     <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Bank-Honolulu%20teardown%20-%20unredacted">Lance@hi.neverranked.com</a> for the unredacted version with the specific subject-bank's competitive position, or to scope a full kickoff engagement on your own brand. Engagements are $4,500 kickoff per category, $1,500/month ongoing.</p>
