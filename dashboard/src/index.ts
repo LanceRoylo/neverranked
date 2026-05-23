@@ -702,7 +702,7 @@ export default {
       const citationAgeHours = citationLastAt
         ? Math.round(((now - citationLastAt) / 3600) * 10) / 10
         : null;
-      const citationStale = citationLastAt ? now - citationLastAt > STALE_SECS : true;
+      const citationStale = citationLastAt ? now - citationLastAt > DAILY_STALE_SECS : true;
 
       // A cron is unhealthy if either stale (didn't fire on time for its
       // cadence) OR its last run was a failure. Both conditions break the
