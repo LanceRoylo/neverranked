@@ -137,7 +137,32 @@ OVERALL FORBIDDEN CLAIMS
 - The phrase "We DEPLOY THE FIX" or any variant claiming we do
   the execution work.
 - Reference to an agency reseller / wholesale / white-label
-  partner program.`;
+  partner program.
+
+RECEIPT PHRASING DISCIPLINE (observational only)
+Locked 2026-05-22 per the AI-visibility receipts legal risk
+assessment. Every comparative claim about an AI engine's citation
+behavior must be observational, never normative or causal. The
+distinction is what keeps Lanham §43(a) and FTC substantiation
+exposure inside the pilot containment.
+- Observational (REQUIRED form): "On N of M observed queries
+  between [dates], [engine] cited [business]."
+- Normative (FORBIDDEN): any phrasing that asserts an engine
+  endorses, prefers, recommends, picks, chooses, ranks, or rates a
+  business. Forbidden words/phrases include: "recommends",
+  "prefers", "endorses", "is preferred", "is the top result",
+  "is the AI-preferred", "chooses", "selects", "picks", "ranks
+  first", "the AI pick", "the AI's choice".
+- Causal (FORBIDDEN): any phrasing that asserts AI citation
+  behavior CAUSED a business outcome, or vice versa. Forbidden
+  patterns include "citations drive revenue", "being cited leads
+  to", "citation lift causes", "X is invisible BECAUSE", "drove
+  citations to", "boosted citations" — anything that implies a
+  causal link between presence in AI answers and a business
+  outcome we did not run a controlled measurement to establish.
+- Future-tense engine behavior (FORBIDDEN): "will continue to
+  cite", "is going to cite", "will start citing" — engine behavior
+  is observed historically, never predicted forward.`;
 
 const SYSTEM = `You are a fail-closed pre-send grader for NeverRanked, a research engagement that measures what AI answer engines cite for a category. You grade an artifact that is about to be put in front of a sales prospect (a generated "Preview" brief or a cold outreach email body). You decide whether it is safe to ship.
 
@@ -199,6 +224,53 @@ function failClosed(reason: string): OutputGradeResult {
 // rejects the retracted Hawaii Theatre causation claim, rejects
 // retired SKUs (Pulse/Signal/Amplify/$750 audit), and requires
 // the 5+2 engine split whenever "seven engines" is claimed.
+// Deterministic pre-filter for the most legally-loaded phrasing in
+// the AI-visibility receipts mechanism. Fires BEFORE the LLM call so
+// even if the API is unreachable, the unambiguous cases get caught.
+// Locked 2026-05-22 per the receipts legal risk assessment. Matches
+// only on word boundaries to avoid false positives.
+// Returns null if clean, or { issue } if a forbidden pattern matches.
+// KEEP IN SYNC with the twin in
+// neverranked-outreach/worker/src/output-grader.ts.
+function detectForbiddenReceiptPhrasing(text: string): { issue: string } | null {
+  const lower = String(text || "").toLowerCase();
+  const engineWords = "(ai|chatgpt|perplexity|gemini|claude|copilot|google|engines?)";
+  const normativeVerbs =
+    "(recommend(s|ed)?|prefer(s|red)?|endorse(s|d)?|pick(s|ed)?|select(s|ed)?|choose[sn]?|rank(s|ed)?\\s+(?:first|top)|is\\s+the\\s+(?:ai-?preferred|top\\s+result|ai\\s+pick|ai(?:'s)?\\s+choice))";
+  const normRe = new RegExp(
+    `\\b${engineWords}\\b[^.\\n]{0,40}\\b${normativeVerbs}\\b`,
+    "i",
+  );
+  const m1 = lower.match(normRe);
+  if (m1) {
+    return {
+      issue: `forbidden normative phrasing matched: "${m1[0]}" — receipts must be observational only ("cited", not "recommends")`,
+    };
+  }
+  const causalPatterns = [
+    /\bcitations?\s+(?:drive|drove|driving|cause[ds]?|lead\s+to|led\s+to|boost(?:ed|s)?)\b/i,
+    /\b(?:drive|drove|driving|boost(?:ed|s)?|increase[ds]?)\s+(?:ai\s+)?citations?\b/i,
+    /\binvisible\s+because\b/i,
+    /\bbeing\s+cited\s+(?:leads?|led)\s+to\b/i,
+  ];
+  for (const re of causalPatterns) {
+    const m = lower.match(re);
+    if (m) {
+      return {
+        issue: `forbidden causal phrasing matched: "${m[0]}" — receipts may not assert citation behavior caused or was caused by a business outcome`,
+      };
+    }
+  }
+  const futureRe = /\b(?:will|going\s+to)\s+(?:continue\s+to\s+)?(?:cite|start\s+citing)\b/i;
+  const m3 = lower.match(futureRe);
+  if (m3) {
+    return {
+      issue: `forbidden future-tense engine prediction matched: "${m3[0]}" — engine behavior is observed, never predicted forward`,
+    };
+  }
+  return null;
+}
+
 export async function gradeProspectOutput(
   env: Env,
   artifactText: string,
@@ -210,6 +282,16 @@ export async function gradeProspectOutput(
   }
   if (!artifactText || artifactText.trim().length < 20) {
     return failClosed("artifact empty or too short to grade (fail-closed)");
+  }
+
+  // Deterministic receipts-phrasing pre-filter. Independent of the
+  // LLM grader so we catch the strict-liability cases (normative
+  // engine claims, causal claims, future-tense predictions) even on
+  // an API outage. Locked 2026-05-22 per the receipts legal risk
+  // assessment.
+  const phrasingHit = detectForbiddenReceiptPhrasing(artifactText);
+  if (phrasingHit) {
+    return failClosed(phrasingHit.issue);
   }
 
   const groundTruthBlock = groundTruth && groundTruth.trim()
