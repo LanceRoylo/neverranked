@@ -72,19 +72,19 @@ const HTML_PAGE = `<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#121212">
-<title>Schema & AEO Health Check — Never Ranked</title>
-<meta name="description" content="Free instant graded report on your website's schema coverage, technical SEO signals, and AEO readiness. No signup required.">
+<title>AI Search Check: see how AI tools read your site | Never Ranked</title>
+<meta name="description" content="Free check. See how ChatGPT, Google AI, and Perplexity read your website, and what's missing. No signup.">
 <link rel="canonical" href="https://check.neverranked.com/">
 <meta name="robots" content="index, follow">
-<meta property="og:title" content="Schema & AEO Health Check — Never Ranked">
-<meta property="og:description" content="Enter your URL. Get an instant grade on schema coverage, technical signals, and AEO readiness. Free. No signup.">
+<meta property="og:title" content="AI Search Check: see how AI tools read your site">
+<meta property="og:description" content="Enter your URL. See what AI tools like ChatGPT and Google AI can read from your site, and what they can't. Free. No signup.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://check.neverranked.com/">
 <meta property="og:site_name" content="Never Ranked">
 <meta property="og:image" content="https://neverranked.com/images/check-og.png">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Schema & AEO Health Check — Never Ranked">
-<meta name="twitter:description" content="Free instant AEO readiness report for any URL.">
+<meta name="twitter:title" content="AI Search Check: see how AI tools read your site">
+<meta name="twitter:description" content="Free check. See how AI tools read your website, and what's missing.">
 <meta name="twitter:image" content="https://neverranked.com/images/check-og.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,11 +96,11 @@ const HTML_PAGE = `<!doctype html>
   "@graph": [
     {
       "@type": "SoftwareApplication",
-      "name": "Schema & AEO Health Check",
+      "name": "AI Search Check",
       "applicationCategory": "WebApplication",
       "operatingSystem": "Any",
       "url": "https://check.neverranked.com",
-      "description": "Free instant graded report on your website's schema coverage, technical SEO signals, and AEO readiness.",
+      "description": "Free check. See how ChatGPT, Google AI, and Perplexity read your website, and what's missing.",
       "offers": {
         "@type": "Offer",
         "price": "0",
@@ -120,15 +120,15 @@ const HTML_PAGE = `<!doctype html>
           "name": "What does this tool check?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Schema coverage (JSON-LD structured data), technical SEO signals (title, meta description, canonical, OG tags, heading structure), and AEO (Answer Engine Optimization) readiness for AI search engines."
+            "text": "The labels AI tools use to read your site, how your site appears to AI search tools like ChatGPT and Google AI, and what’s making you harder for AI to find."
           }
         },
         {
           "@type": "Question",
-          "name": "What is AEO?",
+          "name": "Why does this matter?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Answer Engine Optimization — making your site citable by AI engines like ChatGPT, Perplexity, and Google AI Overviews. It goes beyond traditional SEO to optimize for how AI models select and cite sources."
+            "text": "More people are asking ChatGPT, Google’s AI, and Perplexity for recommendations instead of scrolling search results. If those AI tools can’t read your site clearly, they recommend someone else."
           }
         },
         {
@@ -136,15 +136,15 @@ const HTML_PAGE = `<!doctype html>
           "name": "Is this tool free?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes, completely free with no signup required. Enter any URL and get an instant graded report."
+            "text": "Yes, completely free with no signup required. Enter any URL and get an instant report."
           }
         },
         {
           "@type": "Question",
-          "name": "What is the difference between this and a full engagement?",
+          "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This is a surface scan of one page. A full research engagement measures what AI answer engines cite across seven surfaces (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews, plus Claude and Gemma for model knowledge) every day, with a competitive cohort and a prepped punch list for your team to execute. $4,500 kickoff per category, $1,500/month ongoing."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions every week across 7 AI tools (ChatGPT, Google AI, Perplexity, Microsoft Copilot, and three others), track who gets recommended instead of you, and hand your team a clear list of what to fix. $4,500 to set up, $1,500/month ongoing."
           }
         }
       ]
@@ -1077,7 +1077,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
 <nav class="nav">
   <a href="https://neverranked.com" class="mark">N</a>
-  <span class="tool-name">Schema & AEO (Answer Engine Optimization) Health Check</span>
+  <span class="tool-name">AI Search Check</span>
 </nav>
 
 <main class="wrap">
@@ -1089,16 +1089,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div style="font-family:var(--label);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);margin-bottom:6px">§ Prepared for you</div>
     <div style="display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap">
       <div style="font-family:var(--mono);font-size:13px;color:var(--text);line-height:1.5">
-        This AEO audit was prepared by <strong id="agency-banner-name" style="color:var(--gold);font-weight:500"></strong>.
-        <span style="color:var(--text-faint);display:block;font-size:11px;margin-top:4px">They work with Never Ranked to run and interpret this scan for their clients.</span>
+        This AI search check was prepared by <strong id="agency-banner-name" style="color:var(--gold);font-weight:500"></strong>.
+        <span style="color:var(--text-faint);display:block;font-size:11px;margin-top:4px">They work with Never Ranked to run and interpret this report for their clients.</span>
       </div>
       <a id="agency-banner-cta" href="#" style="white-space:nowrap;padding:10px 18px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.12em;font-size:11px;font-weight:500;text-decoration:none;border-radius:2px">Book a call &rarr;</a>
     </div>
   </div>
 
   <section class="hero">
-    <h1>How ready is your site<br>for <em>AI search</em>?</h1>
-    <p class="sub">Enter your URL. Get an instant grade on schema coverage, technical signals, and AEO readiness. Free. No signup.</p>
+    <h1>When AI answers,<br>does it mention <em>your business</em>?</h1>
+    <p class="sub">Enter your URL. See what AI tools like ChatGPT and Google AI can read from your site, and what they can't. Free. No signup.</p>
     <div class="input-area">
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
       <button id="run-btn" type="button">Run check</button>
@@ -1106,9 +1106,9 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <!-- Trust + price-discovery in the hero. Was buried below the fold; now visible
          the moment users decide whether to engage. -->
     <div class="hero-trust" style="margin-top:18px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
-      <span><strong style="color:var(--text)">2,400+</strong> sites scanned</span>
+      <span><strong style="color:var(--text)">2,400+</strong> sites checked</span>
       <span style="opacity:.4">&middot;</span>
-      <span><strong style="color:var(--text)">4</strong> AI engines tracked</span>
+      <span><strong style="color:var(--text)">7</strong> AI tools we measure</span>
       <span style="opacity:.4">&middot;</span>
       <a href="https://neverranked.com/#pricing" id="hero-pricing-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See pricing &rarr;</a>
     </div>
@@ -1138,7 +1138,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p id="email-gate-body-text">The full report shows every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap. Email below.</p>
+        <p id="email-gate-body-text">The full report shows every label AI is missing on your site, every fix in plain language, and why each one matters. Email below.</p>
         <div class="email-gate-form">
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
           <button type="button" id="gate-email-btn">Show me every fix</button>
@@ -1150,18 +1150,18 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <!-- Gated details: hidden until email captured -->
     <div id="gated-details" style="display:none">
 
-    <div class="section-label"><span class="num">01</span> Schema Coverage <span class="rule"></span></div>
+    <div class="section-label"><span class="num">01</span> What AI can tell about your site <span class="rule"></span></div>
     <div class="schema-grid" id="schema-grid"></div>
 
-    <div class="section-label"><span class="num">02</span> Technical Signals <span class="rule"></span></div>
+    <div class="section-label"><span class="num">02</span> How AI tools find you <span class="rule"></span></div>
     <div class="tech-list" id="tech-list"></div>
 
-    <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Red Flags <span class="rule"></span></div>
+    <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Problems we noticed <span class="rule"></span></div>
     <div class="flags-list" id="flags-list"></div>
 
     <!-- Competitor teaser with grade distribution -->
     <div class="comp-teaser" id="comp-teaser">
-      <div class="section-label"><span class="num">04</span> Where you fall <span class="rule"></span></div>
+      <div class="section-label"><span class="num">04</span> How you compare <span class="rule"></span></div>
       <div class="comp-teaser-inner">
         <div class="comp-teaser-bars">
           <div class="comp-bar">
@@ -1185,7 +1185,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       <div class="section-label"><span class="num">05</span> What to fix first <span class="rule"></span></div>
       <div class="quick-wins-grid" id="quick-wins-grid"></div>
       <div style="margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.7">
-        These are the highest-impact fixes based on your scan. A full audit covers content gaps, citation analysis across ChatGPT, Perplexity, and Gemini, and produces a 90-day action plan.
+        This check looks at your website. The full engagement measures what AI tools actually say about your business: who they recommend, who they mention instead of you, and what to do about it.
       </div>
     </div>
 
@@ -1193,10 +1193,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
     <!-- Dashboard preview -->
     <div class="dash-preview">
-      <div class="dash-preview-label">What a NeverRanked research engagement produces <span class="rule"></span></div>
+      <div class="dash-preview-label">What a NeverRanked engagement produces <span class="rule"></span></div>
       <div class="dash-preview-frame" style="padding:24px 28px">
-        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">The check above tells you the structural signals AI engines look at on your site. The full engagement tells you what AI engines actually cite for your category &mdash; named competitors, per-engine breakdown, position-in-answer, the source-type ecosystem AI pulls from, the specific work that closes the gap.</p>
-        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published Hawaii consumer banking teardown for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use &mdash; ChatGPT, Google's AI answers, Perplexity, and four others &mdash; what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
           <a href="https://neverranked.com/methodology/" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or read the full methodology</a>
@@ -1206,13 +1206,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
     <!-- CTA -->
     <div class="cta-section">
-      <h3 id="cta-headline">This is a structural snapshot.<br>The research engagement is the <em>full picture.</em></h3>
-      <p id="cta-subtext">The check above measures the signals AI engines look at on YOUR site. A NeverRanked research engagement measures what AI engines actually cite for your category &mdash; named competitors, per-engine breakdown, position-in-answer, the source-type ecosystem AI pulls from, and the specific editorial moves the data points at. The check is a starting point. The engagement is the diagnosis.</p>
+      <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
+      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category &mdash; which competitors get named, which AI tool recommends who, and the specific work that moves the needle. The check is a starting point. The engagement tells you what's actually happening.</p>
 
       <div class="social-proof">
-        <span><span class="sp-num">7</span> AI engines measured</span>
-        <span><span class="sp-num">18</span> queries per category</span>
-        <span><span class="sp-num">3-week</span> kickoff measurement</span>
+        <span><span class="sp-num">7</span> AI tools</span>
+        <span><span class="sp-num">18</span> real questions per category</span>
+        <span><span class="sp-num">3-week</span> setup</span>
       </div>
 
       <!-- Agency-mode CTA: single "Book a call with [agency]" card that
@@ -1249,7 +1249,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       </div>
       <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
         <a href="https://neverranked.com/teardowns/bank-honolulu/" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See the published Hawaii consumer banking teardown</a>
-        <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full research engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
+        <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
       </div>
     </div>
 
@@ -1326,13 +1326,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     // Grade-specific insight (computed now, stored on data for revealGatedDetails)
     var insightText = '';
     if(score >= 80){
-      insightText = 'Your site is in strong shape for AI search. The technical foundation is there. The question is whether you are <em>maintaining this lead</em> as competitors catch up -- and whether AI engines are actually <strong>citing you</strong> when it counts.';
+      insightText = 'Your site is in strong shape for AI search. The foundation is there. The real question is whether AI tools are actually <strong>recommending you</strong> when someone asks, and whether you’re <em>keeping that lead</em> as competitors catch up.';
     } else if(score >= 65){
-      insightText = 'You are close to the threshold where AI engines start picking favorites. A few targeted fixes could push you into the <em>citation zone</em>. Right now, competitors with slightly better structure are getting chosen over you.';
+      insightText = 'You’re close to the line where AI tools start picking favorites. A few targeted fixes could move you across it. Right now, competitors with slightly cleaner sites are getting picked over you.';
     } else if(score >= 45){
-      insightText = 'Your site has gaps that AI engines notice. When ChatGPT, Perplexity, or Gemini need to cite a source in your space, they are <em>skipping you</em> for competitors with cleaner structure. The fixes below are where to start.';
+      insightText = 'Your site has gaps AI tools notice. When ChatGPT, Google AI, or Perplexity need to recommend someone in your space, they’re <em>skipping you</em> for competitors that are easier to read. The fixes below are where to start.';
     } else {
-      insightText = 'AI engines cannot reliably parse your site. You are <em>invisible</em> to the fastest-growing search channel. The gap between you and AI-optimized competitors is widening every week.';
+      insightText = 'AI tools can’t reliably read your site. You’re <em>invisible</em> to the fastest-growing way people search. The gap between you and AI-friendly competitors widens every week.';
     }
     // Build the full grade markup once; how it's rendered depends on
     // gateLevel below.
@@ -1340,7 +1340,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       '<div class="grade-circle '+gradeClass+'">'+
         '<span class="letter">'+data.grade+'</span>'+
       '</div>'+
-      '<div class="aeo-score">AEO Readiness: <span>'+data.aeo_score+'</span>/100</div>'+
+      '<div class="aeo-score">AI-ready score: <span>'+data.aeo_score+'</span>/100</div>'+
       '<div class="grade-domain">'+escHtml(scannedDisplay)+'</div>';
 
     var insight = document.getElementById('grade-insight');
@@ -1472,16 +1472,16 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
     // Missing schema = easy wins
     var schemaWins = {
-      'Organization': {desc:'Tells AI engines who you are. Foundational for brand citations.',diff:'easy'},
-      'BreadcrumbList': {desc:'Helps AI understand your site hierarchy. Copy-paste implementation.',diff:'easy'},
-      'FAQPage': {desc:'Directly feeds AI answer boxes. High citation impact.',diff:'easy'},
-      'Article': {desc:'Marks your content as authoritative source material for AI.',diff:'easy'},
-      'LocalBusiness': {desc:'Critical for local AI queries. Address, hours, service area.',diff:'easy'},
-      'Product': {desc:'Makes product details machine-readable for shopping queries.',diff:'medium'},
-      'HowTo': {desc:'Structures step-by-step content that AI engines love to cite.',diff:'easy'},
-      'Review': {desc:'Adds social proof that AI engines weigh for trustworthiness.',diff:'medium'},
-      'WebSite': {desc:'Enables sitelinks search box and site-level signals.',diff:'easy'},
-      'Event': {desc:'Surfaces events in AI responses and knowledge panels.',diff:'easy'}
+      'Organization': {desc:'Tells AI tools who your company is. The foundation for getting mentioned by name.',diff:'easy'},
+      'BreadcrumbList': {desc:'Helps AI understand how your site is organized. Copy-paste setup.',diff:'easy'},
+      'FAQPage': {desc:'Feeds directly into the answer boxes AI tools show. High impact.',diff:'easy'},
+      'Article': {desc:'Marks your content as a trustworthy source AI can pull from.',diff:'easy'},
+      'LocalBusiness': {desc:'Critical when people ask AI for nearby businesses. Address, hours, service area.',diff:'easy'},
+      'Product': {desc:'Makes product details readable to AI for shopping questions.',diff:'medium'},
+      'HowTo': {desc:'Structures step-by-step content that AI tools love to pull from.',diff:'easy'},
+      'Review': {desc:'Adds social proof that AI tools weigh for trust.',diff:'medium'},
+      'WebSite': {desc:'Enables sitewide search signals AI uses to understand your brand.',diff:'easy'},
+      'Event': {desc:'Surfaces events when people ask AI what’s happening.',diff:'easy'}
     };
     data.schema_coverage.forEach(function(s){
       if(!s.present && schemaWins[s.type] && wins.length < 5){
@@ -1494,11 +1494,11 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       if(wins.length >= 5) return;
       if(t.status === 'bad'){
         var desc = 'Currently failing. ';
-        if(t.label.toLowerCase().indexOf('meta')>=0) desc += 'AI engines use this to understand page relevance.';
-        else if(t.label.toLowerCase().indexOf('heading')>=0) desc += 'Heading structure helps AI parse your content hierarchy.';
-        else if(t.label.toLowerCase().indexOf('canonical')>=0) desc += 'Without this, AI engines may index the wrong version of your page.';
-        else if(t.label.toLowerCase().indexOf('og')>=0 || t.label.toLowerCase().indexOf('open graph')>=0) desc += 'Social and AI preview cards depend on this.';
-        else desc += 'This signal affects how AI engines evaluate your page.';
+        if(t.label.toLowerCase().indexOf('meta')>=0) desc += 'AI tools use this to figure out what your page is about.';
+        else if(t.label.toLowerCase().indexOf('heading')>=0) desc += 'Clear headings help AI understand how your content is organized.';
+        else if(t.label.toLowerCase().indexOf('canonical')>=0) desc += 'Without this, AI tools may read the wrong version of your page.';
+        else if(t.label.toLowerCase().indexOf('og')>=0 || t.label.toLowerCase().indexOf('open graph')>=0) desc += 'Social previews and AI link previews both depend on this.';
+        else desc += 'This affects how AI tools read your page.';
         wins.push({title:'Fix: '+t.label, desc:desc, diff:'medium'});
       }
     });
@@ -1506,7 +1506,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     // Red flags as harder wins
     data.red_flags.forEach(function(f){
       if(wins.length >= 5) return;
-      wins.push({title:f, desc:'Flagged as a structural issue. Fixing this removes a penalty signal AI engines may factor in.', diff:'hard'});
+      wins.push({title:f, desc:'Flagged as a problem on your site. Fixing it removes a signal that may be making AI tools skip you.', diff:'hard'});
     });
 
     if(wins.length > 0){
@@ -1741,14 +1741,14 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   //      personally reaches out to discuss what the data points at)
   var GATE_COPY = {
     A: {
-      title: 'structural gaps in your site that affect AI engine citation',
-      body: 'Enter your email to see the full breakdown: every missing schema with paste-ready JSON-LD, every technical signal flagged, your llms.txt status, your robots.txt AI-bot posture. Observational only — no scoring claims, no causation promises.',
+      title: 'things on your site AI tools can’t read',
+      body: 'Drop your email. We’ll send the full breakdown: every label AI is missing on your site, every signal that’s making you harder to find, and a plain-language explanation of why each one matters.',
       button: 'Send me the full breakdown',
       buttonInProgress: 'Sending...'
     },
     B: {
-      title: 'structural signals worth discussing for your category',
-      body: 'Drop your email. You will get the full breakdown of every schema gap and technical signal we detected, plus a follow-up conversation with Lance about whether a research engagement makes sense for your category. No pressure, no upsell, just an honest read on whether what we measure matters for your buyers.',
+      title: 'things worth talking through for your category',
+      body: 'Drop your email. You’ll get the full breakdown of what we found, plus a short conversation with Lance about whether what we measure matters for your buyers. No pressure, no pitch.',
       button: 'Send me the breakdown',
       buttonInProgress: 'Sending...'
     }
@@ -1919,7 +1919,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       }
       if (bannerCta) {
         if (_agency.email) {
-          bannerCta.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+          bannerCta.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AI search audit follow-up');
         } else if (_agency.website) {
           bannerCta.href = _agency.website;
           bannerCta.setAttribute('target','_blank');
@@ -1936,7 +1936,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       if (ctaName) ctaName.textContent = _agency.name;
       if (ctaBtn) {
         if (_agency.email) {
-          ctaBtn.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AEO audit follow-up');
+          ctaBtn.href = 'mailto:' + _agency.email + '?subject=' + encodeURIComponent('AI search audit follow-up');
         } else if (_agency.website) {
           ctaBtn.href = _agency.website;
           ctaBtn.setAttribute('target','_blank');
@@ -2040,7 +2040,7 @@ function buildReportEmail(report: any): string {
   return `
 <!doctype html>
 <html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AEO Report</title></head>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>AI Search Report</title></head>
 <body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
 <tr><td align="center" style="padding:32px 16px">
@@ -2050,7 +2050,7 @@ function buildReportEmail(report: any): string {
   <tr><td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
     <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
       <td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#e8c767">Never Ranked</td>
-      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AEO (Answer Engine Optimization) Report</td>
+      <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">AI Search Report</td>
     </tr></table>
   </td></tr>
 
@@ -2063,7 +2063,7 @@ function buildReportEmail(report: any): string {
 
   <!-- Schema coverage -->
   <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Schema Coverage</div>
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">What AI can tell about your site</div>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
       ${schemaRows}
     </table>
@@ -2072,7 +2072,7 @@ function buildReportEmail(report: any): string {
   ${flagRows ? `
   <!-- Red flags -->
   <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Red Flags (${report.red_flags.length})</div>
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Problems we noticed (${report.red_flags.length})</div>
     ${flagRows}
   </td></tr>
   ` : ""}
@@ -2080,20 +2080,15 @@ function buildReportEmail(report: any): string {
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">This is a snapshot. Want ongoing monitoring?</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks your AEO score weekly, benchmarks you against competitors, and gives you a clear action plan.</div>
-    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
-    <div style="margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
-      <span style="color:#555555;margin:0 8px">|</span>
-      <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(report.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
-    </div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks what AI says about your business every week, shows you who’s getting recommended instead, and tells you what to fix.</div>
+    <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20inquiry%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 setup + $1,500/mo</a>
   </td></tr>
 
   <!-- Footer -->
   <tr><td style="padding:24px 0;border-top:1px solid #2a2a2a;margin-top:24px">
     <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
       Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a><br>
-      You received this because you requested an AEO report at check.neverranked.com
+      You received this because you requested an AI search report at check.neverranked.com
     </div>
   </td></tr>
 
@@ -2249,14 +2244,14 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   const diffColor = diff > 0 ? "#27ae60" : diff < 0 ? "#c0392b" : "#e8c767";
 
   const narrative = diff >= 15
-    ? "You are well ahead of the pack. But competitors are catching up fast as AEO (Answer Engine Optimization) becomes mainstream. Maintaining this lead takes active work."
+    ? "You’re well ahead of the pack. But competitors are catching up fast as more people search through AI tools. Holding this lead takes active work."
     : diff >= 5
-    ? "You are ahead of most, but the gap is smaller than you think. A few schema changes from a competitor could close it in weeks."
+    ? "You’re ahead of most, but the gap is smaller than you think. A few small changes from a competitor could close it in weeks."
     : diff >= 0
-    ? "You are right around the industry average. That means you are invisible to AI engines -- they will pick whoever optimizes first."
+    ? "You’re right around the industry average. That means you’re invisible to AI tools. They pick whoever shows up cleaner first."
     : diff >= -10
-    ? "You are behind the curve. AI engines are already choosing your competitors over you for the queries that matter."
-    : "You are significantly behind. Every day without action is a day your competitors pull further ahead in AI search results.";
+    ? "You’re behind the curve. AI tools are already recommending your competitors over you for the questions that matter."
+    : "You’re significantly behind. Every day without action is a day your competitors pull further ahead when people ask AI for recommendations.";
 
   return `<!doctype html>
 <html>
@@ -2309,7 +2304,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores. Not averages.</div>
-    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
+    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
     <div style="margin-top:12px">
       <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $750</a>
     </div>
@@ -2354,13 +2349,13 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">Has anything changed for ${escHtml(scan.domain)}?</div>
 
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.8;margin-bottom:24px">
-      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on AEO (Answer Engine Optimization) readiness.<br><br>
+      Seven days ago, ${escHtml(scan.domain)} scored <strong style="color:#fbf8ef">${scan.score}/100</strong> on how AI-ready your site is.<br><br>
       In those seven days:<br>
-      &bull; Google may have updated AI Overviews<br>
-      &bull; ChatGPT refreshed its source index<br>
-      &bull; Your competitors may have added schema<br>
-      &bull; Perplexity re-crawled millions of pages<br><br>
-      One scan tells you where you were. Monitoring tells you where you are heading.
+      &bull; Google may have updated its AI Overviews<br>
+      &bull; ChatGPT refreshed which sources it pulls from<br>
+      &bull; Your competitors may have cleaned up their sites<br>
+      &bull; Perplexity re-read millions of pages<br><br>
+      One check tells you where you were. Ongoing tracking tells you where you’re heading.
     </div>
 
     <!-- Re-scan CTA -->
@@ -2373,26 +2368,26 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">Stop checking manually.</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">
-      NeverRanked clients get automatic weekly scans, trend tracking, regression alerts, competitor benchmarks, and a phased action plan. All in one dashboard.
+      NeverRanked tracks what AI says about your business every week. You see who’s being recommended instead of you, what changed, and exactly what to do next.
     </div>
 
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Weekly AEO scans</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9670; Phased roadmap</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Weekly AI checks</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9670; Clear list of what to fix</td>
       </tr>
       <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9888; Regression alerts</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Competitor tracking</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9888; Alerts when something changes</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Who AI recommends instead</td>
       </tr>
       <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Weekly digest</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Weekly email summary</td>
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8599; Shareable reports</td>
       </tr>
     </table>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance — $4,500 kickoff + $1,500/mo</a>
+      <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
     </div>
     <div style="text-align:center;margin-top:12px">
       <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
@@ -2454,9 +2449,9 @@ function describeFetchFailure(status: number): string {
     case 524:
       return "The origin took too long to generate a response (HTTP 524). Cloudflare connected, but the origin never finished. Anything this slow gets dropped by AI crawlers.";
     case 525:
-      return "SSL handshake failed between Cloudflare and the origin (HTTP 525). The origin's certificate setup is broken. Fix this before worrying about AEO, because nothing can fetch the site cleanly.";
+      return "SSL handshake failed between Cloudflare and the origin (HTTP 525). The origin’s certificate setup is broken. Fix this first. Nothing (AI tools included) can read the site cleanly until it’s sorted.";
     case 526:
-      return "The origin's SSL certificate is invalid (HTTP 526). Cloudflare refused to trust the cert on the underlying server. This is a site-owner configuration error. AI crawlers, Google, and our scanner all hit the same wall. Fixing the origin cert is the first step before any AEO work can matter.";
+      return "The origin’s SSL certificate is invalid (HTTP 526). Cloudflare refused to trust the cert on the underlying server. This is a site-owner configuration error. AI tools, Google, and our scanner all hit the same wall. Fixing the cert is the first step before anything else can read the site.";
     case 527:
       return "Cloudflare lost its connection to the origin mid-request (HTTP 527). Usually an origin network or firewall issue.";
     default:
@@ -2914,7 +2909,7 @@ export default {
         const result = await sendResend(env, {
           from: "NeverRanked <reports@neverranked.com>",
           to: [email],
-          subject: `Your AEO Report: ${report.domain} scored ${report.aeo_score}/100`,
+          subject: `Your AI search report: ${report.domain} scored ${report.aeo_score}/100`,
           html: emailHtml,
         });
         await recordDelivery(env, "report", email, result);
