@@ -119,9 +119,9 @@ these two.
 Why this and not the others:
 - #1 (laptop → Workers migration) is BLOCKED on Lance's SMTP-fork
   decision + needs a coordinated shared-D1 window. Cannot start yet.
-- #3 (auto-promote warm → Preview) and #4 (self-learning / Benjamin
-  loop) both depend on #2. Do not automate promotion or learning on
-  unverified content.
+- #3 (auto-promote warm → Preview) and #4 (self-learning / Atlas
+  loop, formerly "Benjamin loop" pre-2026-05-24) both depend on #2.
+  Do not automate promotion or learning on unverified content.
 - Evidence #2 is needed, from the 2026-05-14 session: a Preview shipped
   a fabricated client name ("Hawaii Theatre Company") and a wrong
   case-study stat ("zero citations to forty-five out of one hundred").

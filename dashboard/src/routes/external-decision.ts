@@ -4,7 +4,10 @@
  * Decision-capture endpoint for tools that live outside the dashboard
  * (cold-outreach CLI, scripts, anything that observes Lance making a
  * yes/no choice and wants to land that choice in lance_decisions for
- * Benjamin training data).
+ * Atlas training data). Atlas is the internal codename for the
+ * Lance-judge-layer agent trained on lance_decisions; renamed
+ * 2026-05-24 from Benjamin to disambiguate from Montaic Benjamin
+ * (customer-facing dashboard agent in listing-pipeline-ai).
  *
  * Auth: ADMIN_SECRET in the X-Admin-Secret header (same convention as
  * /api/admin/sync-prospects and friends).

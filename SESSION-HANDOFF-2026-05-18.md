@@ -42,9 +42,9 @@ this session.
 
 ## Date-bound, cron-tracked (no action unless date reached)
 
-- **2026-05-20** — Benjamin decision-indexer re-run with smarter
+- **2026-05-20** — Atlas decision-indexer re-run with smarter
   `--skip-done` (recover rate-limit-truncated sessions). See memory
-  `benjamin_indexer_followup`.
+  `atlas_indexer_followup` (renamed 2026-05-24 from `benjamin_indexer_followup`).
 - **2026-05-20** — Free-check gate-LEVEL A/B test ends; needs a
   mild-vs-aggressive decision + keep/revert call. See memory
   `freecheck_gate_ab`.

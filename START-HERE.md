@@ -36,7 +36,7 @@ pointers. Get up to speed before doing anything.
    open as Dependabot reminders unless Lance decides otherwise.
 
 6. **Date-bound, cron-tracked (act only when the date arrives):**
-   2026-05-20 — Benjamin decision-indexer re-run with smarter
+   2026-05-20 — Atlas decision-indexer re-run with smarter
    `--skip-done`; 2026-05-20 — free-check gate-LEVEL A/B test ends,
    needs a mild-vs-aggressive keep/revert decision. Details in
    memory.
