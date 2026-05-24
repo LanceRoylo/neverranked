@@ -44,18 +44,22 @@
     <p class="sub">A redacted example of the research memo and prepped punch list a paying customer receives at the end of the three-week kickoff engagement.</p>
 
     <div class="notice">
-      <strong>About this page.</strong> The data on this page is real, captured from the Honolulu med-spa cohort we measured in May 2026. The customer is a hypothetical Honolulu med-spa operator used here to show the shape of the deliverable. No real customer is named. What you would receive if you scoped a kickoff for your own category would be this same shape, built around your competitors, your queries, and your category's source mix.
+      <strong>About this page.</strong> The data on this page is real, captured from the Honolulu med-spa cohort we measured in May 2026. The customer is a hypothetical Honolulu med-spa operator used here to show the shape of the deliverable. No real customer is named.
+    </div>
+
+    <div class="notice">
+      <strong>Note on this example's data vintage.</strong> The numbers below were captured from May-17-2026 seed runs measured on 2 of the 7 engines NeverRanked now uses (Perplexity and ChatGPT search). The current kickoff engagement ships all 7 surfaces from day one (5 citation-grade + 2 model-knowledge). The shape of the deliverable is the same; a current kickoff would add the Gemini, Microsoft Copilot (Bing), Google AI Overviews, Claude, and Gemma rows to every per-engine breakdown below. See the <a href="/teardowns/bank-honolulu/">bank-honolulu teardown</a> for what 7-engine data looks like in the published format. Updated source-type numbers are also corrected for the cohort-classifier fix shipped 2026-05-23 — earlier numbers on this page over-attributed cohort med-spa sites to "independent_web."
     </div>
 
     <h2>1. Executive summary</h2>
     <p>For the queries a Honolulu med-spa shopper actually types into ChatGPT and Perplexity, your business does not appear in the AI answer. Three of your competitors do, consistently, across both engines and across both head-intent ("best med spa in Honolulu") and long-tail intent ("med spa Kakaako that does morpheus8") queries.</p>
-    <p>The cohort spans 40 distinct queries, 2,104 total citation slots captured, two engines (Perplexity sonar and OpenAI gpt-4o-search-preview). The headline pattern: <strong>98% of all citations in this category come from independent web</strong> (med-spa sites, vendor pages, publications). Only 2% from review directories. Zero from Reddit. Zero from YouTube on OpenAI; 1% from YouTube on Perplexity.</p>
+    <p>The cohort spans 40 distinct queries, 2,104 total citation slots captured, 2 of the 7 measurement engines (Perplexity sonar and ChatGPT search). The headline pattern: <strong>AI cites Honolulu med-spa firm-owned sites and third-party content at roughly 1:1 (57% competitor / 41% independent web)</strong>, with the remaining 2% in review directories. Zero from Reddit. Zero from YouTube on ChatGPT search; 1% from YouTube on Perplexity. These shares are recomputed against the corrected source-type classifier shipped 2026-05-23.</p>
     <p>The punch list at the end of this memo orders the actionable work by impact. Item 1 alone would put you on roughly one third of the queries currently being answered without you.</p>
 
     <h2>2. Methodology and scope</h2>
     <p>Forty hash-locked queries split into 16 head-intent ("best med spa in Honolulu", "top rated medical spa Honolulu", neighborhood scoping, service scoping) and 24 long-tail intent (open-late, weekend-open, service-combined, insurance-fit, neighborhood-plus-service, value-conscious, trust-signal queries). Each query ran three times per engine per day for noise control.</p>
-    <h4>Engines measured (this kickoff)</h4>
-    <p>Perplexity sonar, OpenAI gpt-4o-search-preview. The full ongoing engagement adds Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews (the three other citation-grade engines), plus Claude and Gemma (the two model-knowledge engines).</p>
+    <h4>Engines measured</h4>
+    <p>In a current kickoff: all 7 surfaces from day one. Five citation-grade engines (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews) and two model-knowledge engines (Claude, Gemma). The data shown in this example was captured from May-17-2026 seed runs on 2 engines (Perplexity sonar + ChatGPT search). The 7-engine version of this same shape would add five more per-engine rows below; see the <a href="/teardowns/bank-honolulu/">bank-honolulu teardown</a> for the published format.</p>
     <h4>What this engagement did not measure</h4>
     <ul>
       <li>Voice AI surfaces (Siri, Alexa, Google Assistant). Out of scope until measurable through public APIs.</li>
@@ -83,34 +87,35 @@
         <tr><th>Source type</th><th>% of citations</th><th>Hosts driving it</th></tr>
       </thead>
       <tbody>
-        <tr><td>Independent web</td><td>98%</td><td>Spa sites, vendor pages</td></tr>
+        <tr><td>Competitor (cohort med-spa sites)</td><td>57%</td><td>Med Spa A through J and the longer cohort tail</td></tr>
+        <tr><td>Independent web</td><td>41%</td><td>Vendor pages, blog posts, third-party content about med spas</td></tr>
         <tr><td>Review directories</td><td>2%</td><td>two category-specific directories</td></tr>
-        <tr><td>YouTube</td><td>&lt;1%</td><td>Single tutorial channel</td></tr>
-        <tr><td>Reddit</td><td>0%</td><td>Not cited for this category</td></tr>
-        <tr><td>Wikipedia</td><td>0%</td><td>Not cited</td></tr>
+        <tr><td>YouTube</td><td>&lt;1%</td><td>Single tutorial channel (Perplexity only)</td></tr>
+        <tr><td>Reddit</td><td>0%</td><td>Not cited for this category in the 2-engine seed</td></tr>
+        <tr><td>Wikipedia</td><td>0%</td><td>Not cited (Bing typically surfaces Wikipedia for this category — would appear in a 7-engine kickoff)</td></tr>
         <tr><td>Forum / Q&amp;A</td><td>0%</td><td>Not cited</td></tr>
       </tbody>
     </table>
     <p><strong>The non-obvious finding.</strong> The two review directories AI engines cite for Honolulu med spas are not Yelp, not Google, not Healthgrades, not RealSelf. They are two niche, category-specific directories most med-spa operators have never heard of. Claiming a profile on each costs nothing and would put you in a source class AI engines demonstrably trust for your category. The two directories are named explicitly in the real deliverable. They are withheld from this public example on purpose, because which specific directories AI trusts in a category is the proprietary finding the engagement is paid to produce.</p>
     <p>The Reddit zero is also a real finding. Many med spas spend on Reddit-adjacent reputation management. For your category, on Perplexity, that spend produces no citation share. For comparison, cross-category aggregate data shows Reddit drives 20-35% of citations on Perplexity for B2C SaaS and consumer electronics categories.</p>
 
-    <h2>5. Per-engine breakdown</h2>
+    <h2>5. Per-engine breakdown (2 of 7 engines from the seed data)</h2>
     <h4>Perplexity (916 citations measured)</h4>
     <ul>
-      <li>96% independent_web, 3% review_directory, 1% YouTube.</li>
-      <li>The only engine that cited YouTube at all in this category.</li>
+      <li>51% competitor (cohort med-spa sites), 46% independent_web, 3% review_directory, 1% YouTube.</li>
+      <li>The only engine that cited YouTube at all in this category seed.</li>
       <li>More likely to surface neighborhood-specific results.</li>
     </ul>
-    <h4>OpenAI gpt-4o-search-preview (1,188 citations measured)</h4>
+    <h4>ChatGPT search (gpt-4o-search-preview, 1,188 citations measured)</h4>
     <ul>
-      <li>99% independent_web, 1% review_directory.</li>
+      <li>62% competitor (cohort med-spa sites), 37% independent_web, 1% review_directory.</li>
       <li>Zero YouTube, zero Reddit.</li>
-      <li>Heavier weighting toward the spa's own site over third-party coverage.</li>
+      <li>Notably heavier weighting toward the spa's own site (62%) than Perplexity (51%) — the per-engine asymmetry that single-engine measurement misses.</li>
     </ul>
-    <h4>Gemini, Bing, Google AI Overviews</h4>
-    <p>Measured in the ongoing engagement. The full delta memo surfaces engine-level differences across all five citation engines once the next 30 days of data are in.</p>
+    <h4>Gemini grounded, Microsoft Copilot (Bing), Google AI Overviews</h4>
+    <p>The current kickoff measures these from day one. The bank-honolulu teardown (<a href="/teardowns/bank-honolulu/">/teardowns/bank-honolulu/</a>) shows what the 7-engine version of this breakdown looks like in the published format. In banking, the per-engine spread between the strongest competitor-share engine (Perplexity, 75%) and the weakest (Microsoft Copilot via Bing, 0%) was 75 percentage points — a finding invisible to any single-engine measurement. Expect a similar shape for med-spa once the 7-engine kickoff version of this example ships.</p>
     <h4>Claude and Gemma (model-knowledge)</h4>
-    <p>Measured in the ongoing engagement. These tell you what AI says about you when it cannot search, which is the baseline-mention layer behind every ungrounded AI conversation.</p>
+    <p>The current kickoff measures these from day one. They tell you what AI says about you when it cannot search, which is the baseline-mention layer behind every ungrounded AI conversation. In the bank-honolulu cohort, Claude and Gemma cited bank-owned sites 72% and 70% of the time respectively — meaningful brand-recognition presence even before web search.</p>
 
     <h2>6. Competitive gap analysis</h2>
     <p>For the 38 queries where you do not appear, the table below shows which competitors did. Frequency = number of distinct queries that competitor was cited on, out of 40.</p>
