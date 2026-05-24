@@ -1193,53 +1193,26 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
     <!-- Dashboard preview -->
     <div class="dash-preview">
-      <div class="dash-preview-label">What NeverRanked clients see <span class="rule"></span></div>
-      <div class="dash-preview-frame">
-        <div class="dash-preview-blur">
-          <div class="dash-mock-row">
-            <div class="dash-mock-kpi">
-              <div class="kpi-label">AEO Score</div>
-              <div class="kpi-val" id="mock-score">--</div>
-              <div class="kpi-delta" style="color:#27ae60">+12 this month</div>
-            </div>
-            <div class="dash-mock-kpi">
-              <div class="kpi-label">Citation Rate</div>
-              <div class="kpi-val">34%</div>
-              <div class="kpi-delta" style="color:var(--gold)">2 of 4 engines</div>
-            </div>
-            <div class="dash-mock-kpi">
-              <div class="kpi-label">vs. Top Competitor</div>
-              <div class="kpi-val">+8</div>
-              <div class="kpi-delta" style="color:#27ae60">Ahead</div>
-            </div>
-            <div class="dash-mock-kpi">
-              <div class="kpi-label">Roadmap</div>
-              <div class="kpi-val">67%</div>
-              <div class="kpi-delta" style="color:var(--text-faint)">Phase 1 of 3</div>
-            </div>
-          </div>
-          <div class="dash-mock-chart" id="mock-chart"></div>
-        </div>
-        <div class="dash-preview-overlay">
-          <h4>Your dashboard is one step away</h4>
-          <p>Weekly scans. Competitor tracking. A roadmap built from your data.</p>
-          <div style="display:flex;align-items:center;gap:16px;justify-content:center;flex-wrap:wrap">
-            <a href="https://app.neverranked.com/checkout/signal" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Start monitoring</a>
-            <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or explore the live demo</a>
-          </div>
+      <div class="dash-preview-label">What a NeverRanked research engagement produces <span class="rule"></span></div>
+      <div class="dash-preview-frame" style="padding:24px 28px">
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">The check above tells you the structural signals AI engines look at on your site. The full engagement tells you what AI engines actually cite for your category &mdash; named competitors, per-engine breakdown, position-in-answer, the source-type ecosystem AI pulls from, the specific work that closes the gap.</p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published Hawaii consumer banking teardown for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
+        <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+          <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
+          <a href="https://neverranked.com/methodology/" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or read the full methodology</a>
         </div>
       </div>
     </div>
 
     <!-- CTA -->
     <div class="cta-section">
-      <h3 id="cta-headline">This is a snapshot.<br>Your competitors are <em>moving now.</em></h3>
-      <p id="cta-subtext">AI search indexes refresh weekly. Competitors add schema, publish content, climb rankings. A one-time scan tells you where you were. NeverRanked tells you where you are heading.</p>
+      <h3 id="cta-headline">This is a structural snapshot.<br>The research engagement is the <em>full picture.</em></h3>
+      <p id="cta-subtext">The check above measures the signals AI engines look at on YOUR site. A NeverRanked research engagement measures what AI engines actually cite for your category &mdash; named competitors, per-engine breakdown, position-in-answer, the source-type ecosystem AI pulls from, and the specific editorial moves the data points at. The check is a starting point. The engagement is the diagnosis.</p>
 
       <div class="social-proof">
-        <span><span class="sp-num">2,400+</span> sites scanned</span>
-        <span><span class="sp-num">4</span> AI engines tracked</span>
-        <span><span class="sp-num">Weekly</span> automated scans</span>
+        <span><span class="sp-num">7</span> AI engines measured</span>
+        <span><span class="sp-num">18</span> queries per category</span>
+        <span><span class="sp-num">3-week</span> kickoff measurement</span>
       </div>
 
       <!-- Agency-mode CTA: single "Book a call with [agency]" card that
@@ -1264,20 +1237,19 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
           <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category ongoing<br>Daily measurement + delta memo</div>
         </div>
       </div>
-      <div style="text-align:center;margin-top:12px"><a href="mailto:lance@neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
+      <div style="text-align:center;margin-top:12px"><a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
 
       <div class="cta-features">
-        <span>Weekly scans</span>
-        <span>Score tracking</span>
-        <span>Competitor benchmarks</span>
-        <span>Action roadmap</span>
-        <span>Regression alerts</span>
-        <span>Citation tracking</span>
+        <span>7-engine measurement</span>
+        <span>Cohort competitor analysis</span>
+        <span>Source-type classifier</span>
+        <span>Position-in-answer depth</span>
+        <span>Drift detection</span>
+        <span>Research memo deliverable</span>
       </div>
       <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
-        <a href="https://app.neverranked.com/demo" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See what the full dashboard looks like first</a>
-        <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full research engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
-        <a href="mailto:hello@neverranked.com" class="btn btn-ghost-link" style="font-size:10px">Not sure which plan? Talk to us</a>
+        <a href="https://neverranked.com/teardowns/bank-honolulu/" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See the published Hawaii consumer banking teardown</a>
+        <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full research engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
       </div>
     </div>
 
@@ -1758,22 +1730,26 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     }
   })();
 
-  // Variant copy table. Two distinct angles being tested:
-  //   A: "show me every fix" — emphasizes COMPLETENESS (every gap, every fix)
-  //   B: "send me the 90-day fix list" — emphasizes OUTCOME (going from
-  //      grade X to A in 90 days)
-  // Each variant has title (with {count} placeholder), body, and button.
+  // Variant copy table. Rewritten 2026-05-24 to remove retracted-
+  // product framing ("AEO score", "90-day roadmap", "we will fix
+  // them" — all tied to the retired snippet product). New framing
+  // is observational only and points at the current research
+  // practice. No promises of citation lift or specific outcomes.
+  //   A: "send me the breakdown" — emphasizes COMPLETENESS (every
+  //      schema gap, every signal, all in one report)
+  //   B: "follow-up conversation" — emphasizes CONVERSATION (Lance
+  //      personally reaches out to discuss what the data points at)
   var GATE_COPY = {
     A: {
-      title: 'gaps holding back your AI search visibility',
-      body: 'Enter your email to see your exact AEO score, your letter grade, every missing schema with paste-ready JSON-LD, every technical fix prioritized by impact, and your 90-day roadmap.',
-      button: 'Show me my score and the fixes',
+      title: 'structural gaps in your site that affect AI engine citation',
+      body: 'Enter your email to see the full breakdown: every missing schema with paste-ready JSON-LD, every technical signal flagged, your llms.txt status, your robots.txt AI-bot posture. Observational only — no scoring claims, no causation promises.',
+      button: 'Send me the full breakdown',
       buttonInProgress: 'Sending...'
     },
     B: {
-      title: 'gaps. We will fix them.',
-      body: 'Drop your email. We will show you your exact score, your grade, and the full breakdown: every schema, every fix, priority order, and a 90-day roadmap to move your score toward A.',
-      button: 'Send me my score and the 90-day fix list',
+      title: 'structural signals worth discussing for your category',
+      body: 'Drop your email. You will get the full breakdown of every schema gap and technical signal we detected, plus a follow-up conversation with Lance about whether a research engagement makes sense for your category. No pressure, no upsell, just an honest read on whether what we measure matters for your buyers.',
+      button: 'Send me the breakdown',
       buttonInProgress: 'Sending...'
     }
   };
