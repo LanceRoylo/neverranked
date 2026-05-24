@@ -38,7 +38,19 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Measurement methodology</div>
     <h1>How we measure what AI engines cite.</h1>
-    <p class="sub">The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from data we actually captured.</p>
+    <p class="sub">The seven AI tools, the question-set discipline, the source classifier, the pattern-readiness rule, and a working example from data we actually captured.</p>
+
+    <h2>What this page is, in plain English</h2>
+    <p>This is the &ldquo;show your work&rdquo; page. Everything below explains exactly how we run the measurement, where the numbers come from, and what they mean. It is written for the person on your team (or your compliance reviewer, or your agency&rsquo;s data lead) who needs to verify what we&rsquo;re doing before signing on.</p>
+    <p>The plain-English version, in five sentences:</p>
+    <ul>
+      <li>We figure out what your customers are actually asking AI tools in your category, then lock those questions so every run compares apples to apples.</li>
+      <li>We ask all 7 AI tools (ChatGPT, Google AI, Perplexity, Microsoft Copilot, Gemini, Claude, Gemma) the same questions every day for three weeks to build the baseline.</li>
+      <li>We record who AI mentions for each question, who it doesn&rsquo;t, and where in the answer each name shows up.</li>
+      <li>We hand you a clear list of what to fix, prioritized by what your competitors are observably doing differently.</li>
+      <li>Then we keep measuring every week, because AI answers shift constantly and a one-time audit ages out in 60 to 90 days.</li>
+    </ul>
+    <p>If that is enough for you, you can stop reading here and <a href="/">go back to the homepage</a>. Everything below is the proof.</p>
 
     <h2>The two-layer measurement model</h2>
     <p>AI answer engines fall into two structurally different groups, and both groups can fail a brand independently. We measure both, every day, for every category we run.</p>
@@ -47,21 +59,21 @@
       <h3>Layer 1: Citation-grade engines (5)</h3>
       <p>Engines that search the live web at query time and surface the sources they cite. Five of them dominate the surface area today:</p>
       <ul>
-        <li><strong>Perplexity</strong> — accessed via the sonar API.</li>
-        <li><strong>ChatGPT search</strong> — accessed via the OpenAI gpt-4o-search-preview model.</li>
-        <li><strong>Gemini grounded</strong> — accessed via Gemini 2.5-flash with the google_search tool enabled.</li>
-        <li><strong>Microsoft Copilot</strong> — accessed via Bing organic search through the DataForSEO API.</li>
-        <li><strong>Google AI Overviews</strong> — accessed via the DataForSEO ai_overview endpoint.</li>
+        <li><strong>Perplexity</strong>, accessed via the sonar API.</li>
+        <li><strong>ChatGPT search</strong>, accessed via the OpenAI gpt-4o-search-preview model.</li>
+        <li><strong>Gemini grounded</strong>, accessed via Gemini 2.5-flash with the google_search tool enabled.</li>
+        <li><strong>Microsoft Copilot</strong>, accessed via Bing organic search through the DataForSEO API.</li>
+        <li><strong>Google AI Overviews</strong>, accessed via the DataForSEO ai_overview endpoint.</li>
       </ul>
       <p>For each query, on each engine, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer.</p>
     </div>
 
     <div class="layer">
       <h3>Layer 2: Model-knowledge engines (2)</h3>
-      <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up — which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
+      <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up, which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
       <ul>
-        <li><strong>Claude</strong> — accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
-        <li><strong>Gemma</strong> — accessed via Together AI. Open-weight, which means a compliance team or auditor can re-run the exact same prompts independently and verify our numbers.</li>
+        <li><strong>Claude</strong>, accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
+        <li><strong>Gemma</strong>, accessed via Together AI. Open-weight, which means a compliance team or auditor can re-run the exact same prompts independently and verify our numbers.</li>
       </ul>
       <p>For each query, on each engine, the response is captured and scanned for mentions of the brand name. A brand is "mentioned in model knowledge" on a query if its name appears in the response.</p>
     </div>
@@ -96,10 +108,10 @@
         <tr><td><code>review_directory</code></td><td>Yelp, G2, Capterra, Trustpilot, Clutch, Healthgrades, RealSelf, TripAdvisor, BBB, Gartner, Glassdoor, ProductHunt, Birdeye, plus category-specific directories</td></tr>
         <tr><td><code>owned</code></td><td>The customer's own domain (passed in at engagement start)</td></tr>
         <tr><td><code>competitor</code></td><td>Named competitors (passed in at engagement start)</td></tr>
-        <tr><td><code>independent_web</code></td><td>Everything else — publications, blogs, vendor pages. Honestly lumped because hostnames alone cannot reliably distinguish "major publication" from "random blog" without false confidence.</td></tr>
+        <tr><td><code>independent_web</code></td><td>Everything else: publications, blogs, vendor pages. Honestly lumped because hostnames alone cannot reliably distinguish "major publication" from "random blog" without false confidence.</td></tr>
       </tbody>
     </table>
-    <p><strong>Why <code>independent_web</code> is honestly lumped.</strong> The temptation in this category is to over-claim — to say "the AI cited eight major publications" when really it cited eight independent web pages of unknown editorial weight. Hostname-only classification cannot tell you which of those eight is a real publication and which is a content marketing site. So we put them all in one bucket and label it honestly. Anyone who wants to do the slow, expensive editorial-weight work on a per-host basis is welcome to do it on their own — the raw URLs are in the customer's data store.</p>
+    <p><strong>Why <code>independent_web</code> is honestly lumped.</strong> The temptation in this category is to over-claim, to say "the AI cited eight major publications" when really it cited eight independent web pages of unknown editorial weight. Hostname-only classification cannot tell you which of those eight is a real publication and which is a content marketing site. So we put them all in one bucket and label it honestly. Anyone who wants to do the slow, expensive editorial-weight work on a per-host basis is welcome to do it on their own. The raw URLs are in the customer's data store.</p>
 
     <h2>Cohort and competitive analysis</h2>
     <p>Each engagement names a competitive cohort at scoping (typically 3-7 competitors). For every query on every engine, we record whether each cohort member was cited, and how frequently across the three-week window. That produces the competitive gap table at the heart of every research memo (see the <a href="/example-engagement/">example engagement page</a> for what this looks like in practice).</p>
@@ -152,7 +164,7 @@
         <tr><td>Reddit, Wikipedia, forum, social</td><td>0%</td></tr>
       </tbody>
     </table>
-    <p><strong>The non-obvious read.</strong> For this category AI cites the businesses' own websites and third-party content at roughly 1:1 (57% competitor / 41% independent web). That is not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content not the site." For Honolulu med spas, the data says the opposite is half-true: own-site optimization matters about as much as off-site presence, because AI is reading both at roughly equal rates. The actionable shape of the punch list changes accordingly &mdash; both surfaces matter, neither dominates.</p>
+    <p><strong>The non-obvious read.</strong> For this category AI cites the businesses' own websites and third-party content at roughly 1:1 (57% competitor / 41% independent web). That is not the result a buyer expects. Conventional SEO instinct says "AI cites third-party content about you, so optimize the content not the site." For Honolulu med spas, the data says the opposite is half-true: own-site optimization matters about as much as off-site presence, because AI is reading both at roughly equal rates. The actionable shape of the list of fixes changes accordingly: both surfaces matter, neither dominates.</p>
     <p>Per-engine behavior within the same category:</p>
     <table>
       <thead>
@@ -179,9 +191,9 @@
         <tr><td>category-specific directory B</td><td>3</td><td>review_directory</td></tr>
       </tbody>
     </table>
-    <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms. Cohort coverage improves with each engagement &mdash; more runs surface more cohort members, so the competitor share trends toward its true ceiling rather than away from it.</p>
-    <p>For category contrast, a kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, Perplexity) showed a meaningfully different source mix: 85% independent web, 14% YouTube, 1% forum. The same engine, a different category, produces a fundamentally different source-type distribution. That difference is the moat in microcosm &mdash; only an outside observer measuring across categories can name it.</p>
-    <p><strong>Note on accuracy &mdash; updated 2026-05-23.</strong> Earlier versions of this page reported "98% independent web, 0% competitor" for this category. That was wrong by a wide margin: the aggregator was passing empty context to the source-type classifier, so the cohort's own domains were silently bucketed as independent web. The bug was fixed and the cohort registered; corrected numbers above. The methodology is unchanged. This is the kind of finding the fail-closed grader catches in prose but the underlying data pipeline has to catch separately &mdash; we caught it before any customer-facing claim shipped from these numbers.</p>
+    <p>The pattern-ready threshold (3+ usable runs) is met by this category; the aggregator confirms. Cohort coverage improves with each engagement. More runs surface more cohort members, so the competitor share trends toward its true ceiling rather than away from it.</p>
+    <p>For category contrast, a kill-test cohort against neverranked.com (category <code>aeo_tools</code>, single run, Perplexity) showed a meaningfully different source mix: 85% independent web, 14% YouTube, 1% forum. The same engine, a different category, produces a fundamentally different source-type distribution. That difference is the moat in microcosm. Only an outside observer measuring across categories can name it.</p>
+    <p><strong>Note on accuracy, updated 2026-05-23.</strong> Earlier versions of this page reported "98% independent web, 0% competitor" for this category. That was wrong by a wide margin: the aggregator was passing empty context to the source-type classifier, so the cohort's own domains were silently bucketed as independent web. The bug was fixed and the cohort registered; corrected numbers above. The methodology is unchanged. This is the kind of finding the fail-closed grader catches in prose but the underlying data pipeline has to catch separately. We caught it before any customer-facing claim shipped from these numbers.</p>
 
     <h2>What this engagement deliberately does NOT measure</h2>
     <p>The honest scope on what "forensic" means here and what it does not. The structural axes (cross-engine, cross-competitor, source-type classification, cohort discipline, pre-registration) are evidence-grade. The depth-of-content axes below are gaps. We name them so a prospect evaluating us does not assume we cover something we don't.</p>
@@ -191,7 +203,7 @@
       <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved; whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file.</li>
       <li><strong>Automated daily drift alerts.</strong> Daily measurement ships now; drift detection surfaces in the monthly delta memo as observation (see "Drift detection" section above). Automated daily alerts when a host's citation share moves more than a threshold are the obvious next layer and are not yet in the deliverable.</li>
       <li><strong>Cross-language coverage.</strong> English only. AI engines do answer in other languages but our query sets and classifier are English-shaped today.</li>
-      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> A standalone empirical teardown is shipped at <a href="/teardowns/bank-honolulu/">/teardowns/bank-honolulu/</a> demonstrating the 7-engine methodology on a real category. The head-to-head comparison version &mdash; the same Hawaii bank measured both by NeverRanked and by a dashboard-style tool's free AEO Report &mdash; has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
+      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> A standalone empirical teardown is shipped at <a href="/teardowns/bank-honolulu/">/teardowns/bank-honolulu/</a> demonstrating the 7-AI-tool methodology on a real category. The head-to-head comparison version, where the same Hawaii bank is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
       <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
     </ul>
 
@@ -201,7 +213,7 @@
     <h2>How public artifacts cite this methodology</h2>
     <p>Some of what we measure becomes a public artifact: a per-business "AI-visibility receipt" linked from outreach to a named subject. Every public receipt links back to this page for substantiation, and every quantitative claim it carries is anchored in a hash-locked measurement run on the methodology above.</p>
     <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a NeverRanked artifact is derived from a hash-locked, pre-registered measurement, captured by open-source code, against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
-    <p><strong>Phrasing discipline.</strong> Receipts speak observationally only. "On N of M observed queries between [dates], engine X cited business Y" is the canonical form. We do not say an engine "recommends," "prefers," "endorses," or "ranks" a business — engines cite, full stop. We do not assert that being cited causes a business outcome, or that not being cited causes its absence. The grader rejects artifacts that drift into normative or causal language.</p>
+    <p><strong>Phrasing discipline.</strong> Receipts speak observationally only. "On N of M observed queries between [dates], engine X cited business Y" is the canonical form. We do not say an engine "recommends," "prefers," "endorses," or "ranks" a business. Engines cite, full stop. We do not assert that being cited causes a business outcome, or that not being cited causes its absence. The grader rejects artifacts that drift into normative or causal language.</p>
     <p><strong>Anonymization commitment.</strong> Non-customer businesses are anonymized on every publicly-indexed page. The named subject of a receipt is named (they have notice through the outreach we sent them); other businesses in the same cohort appear as "Competitor A", "Competitor B", and so on. A named subject who is also a paying customer can consent to additional naming in their own deliverable; otherwise the public version stays anonymized.</p>
     <p><strong>Measurement window staleness.</strong> AI engine behavior changes weekly. Every public artifact carries the measurement window dates so a reader can see exactly when the underlying capture happened. If a finding is stale, we will re-run on request, at no charge, against the same hash-locked methodology so the new run is directly comparable.</p>
     <p><strong>Takedown and opt-out.</strong> If your business is named anywhere on our property and you want it removed, the process is documented at <a href="/takedowns/">/takedowns/</a>. The bar is one email; the SLA is 24 hours; no reason or justification required. Opt-out from future measurement is permanent.</p>
