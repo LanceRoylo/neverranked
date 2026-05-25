@@ -80,7 +80,7 @@
 
     <p><strong>Why both layers matter.</strong> A brand invisible in citation is invisible when AI fact-checks itself before answering. A brand invisible in model knowledge is invisible at the baseline, before any search happens. These are different failure modes. Measuring only one half of the picture misses what the other half could tell you.</p>
 
-    <h2>Query-set discipline</h2>
+    <h2 id="query-set">Query-set discipline</h2>
     <p>Each engagement opens with a query-set design conversation. The goal: a frozen list of 15-30 queries that represent how the customer's buyers actually search in their category. Three rules govern the list:</p>
     <ul>
       <li><strong>Hash-locked.</strong> The query list is hashed on first run. Every subsequent run prints the same hash. If the hash changes, the runs are no longer comparable and the discipline has been broken. Hash printing is in <code>dryrun/run-dental-honolulu.mjs</code> and similar runners.</li>
@@ -88,6 +88,34 @@
       <li><strong>No naming the customer.</strong> Queries do not contain the customer's brand name. Branded queries are a different measurement (does the AI know who you are when asked directly), which we also report but separate from demand queries (does the AI surface you when a buyer searches for the category).</li>
     </ul>
     <p>The 18-query set used in the current second-category seed (Honolulu dental) is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/run-dental-honolulu.mjs">the public repo</a> for reference.</p>
+
+    <h3 style="margin-top:32px">An example 18-question set</h3>
+    <p>The actual locked set we used for Hawaii wealth management (the source data for the cross-category teardown). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
+    <p style="font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 22px; margin-bottom: 12px;">Head queries (8) &middot; broad buyer intent</p>
+    <ol style="font-size: 14px; line-height: 1.7; color: var(--soft); padding-left: 22px;">
+      <li>best wealth manager in Hawaii</li>
+      <li>best financial advisor in Honolulu</li>
+      <li>top financial advisor Hawaii high net worth</li>
+      <li>fee-only financial advisor Honolulu</li>
+      <li>most trusted financial advisor in Hawaii</li>
+      <li>best Hawaii financial advisor for retirement planning</li>
+      <li>Hawaii wealth manager for business owner</li>
+      <li>fiduciary financial advisor Honolulu</li>
+    </ol>
+    <p style="font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 22px; margin-bottom: 12px;">Long-tail queries (10) &middot; specific buyer scenarios + comparison</p>
+    <ol start="9" style="font-size: 14px; line-height: 1.7; color: var(--soft); padding-left: 22px;">
+      <li>Hawaii financial advisor for inherited wealth</li>
+      <li>Hawaii financial advisor that handles Roth conversions</li>
+      <li>best Hawaii financial advisor for tax planning</li>
+      <li>Hawaii wealth manager for real estate investor</li>
+      <li>Hawaii financial advisor for early retirement</li>
+      <li>Hawaii financial advisor first time investing</li>
+      <li>Hawaii financial advisor that handles business sale proceeds</li>
+      <li>Hawaii wealth manager for physician or attorney</li>
+      <li>Hamada Financial vs Cadinha vs CKW</li>
+      <li>Honolulu financial advisor Bishop Street</li>
+    </ol>
+    <p style="margin-top:18px">The shape repeats across categories: 8 head queries capturing the "name a few" demand surface plus 10 long-tail queries capturing specific buyer scenarios (and one named-comparison curiosity query that captures what AI says when someone is already evaluating known firms head-to-head). Per-category wording is tailored at the scoping call. Each set is locked by hash and never edited.</p>
 
     <h2>Noise control</h2>
     <p>AI engines produce different answers to the same query on different runs. Sometimes meaningfully different, sometimes not. To separate signal from noise, every query runs three times per engine per day. Across a three-week kickoff, that produces roughly 18 × 3 × 5 × 21 = 5,670 citation captures per engagement on the citation-grade engines alone, plus the model-knowledge captures.</p>
