@@ -302,6 +302,69 @@
     .price-primary .amt { font-size: 32px; }
     .price-secondary .amt { font-size: 26px; }
   }
+
+  /* ── Engagement flow steps ──────────────────────────────────── */
+  .flow {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    margin: 28px 0 16px;
+  }
+  .flow-step {
+    padding: 22px 20px; border: 1px solid #2a2a2e; border-radius: 6px;
+    background: #131316; position: relative;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
+  }
+  @media (hover: hover) {
+    .flow-step:hover { transform: translateY(-2px); border-color: rgba(212,197,150,0.32); }
+  }
+  .flow-num {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+  .flow-step h3 {
+    font-family: Georgia, serif; font-size: 16px; font-weight: 400;
+    color: var(--text); margin: 0 0 8px; line-height: 1.3;
+  }
+  .flow-step p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
+  .flow-note {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    text-align: center; margin: 22px 0 0; letter-spacing: 0.04em;
+  }
+  @media (max-width: 880px) { .flow { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .flow { grid-template-columns: 1fr; } }
+
+  /* ── Teardown proof cards ───────────────────────────────────── */
+  .proof-label {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--dim); margin: 42px 0 16px;
+  }
+  .teardowns {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 0 0 4px;
+  }
+  .td-card {
+    display: block; padding: 22px 22px 24px; border: 1px solid #2a2a2e;
+    border-top: 2px solid var(--gold); border-radius: 6px;
+    background: #131316; color: var(--text); text-decoration: none;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
+  }
+  @media (hover: hover) {
+    .td-card:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(212,197,150,0.07), rgba(212,197,150,0.02));
+      border-color: rgba(212,197,150,0.42);
+      border-top-color: var(--gold);
+    }
+  }
+  .td-card .td-cat {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .td-card h3 {
+    font-family: Georgia, serif; font-size: 17px; font-weight: 400;
+    color: var(--text); margin: 0 0 8px; line-height: 1.3;
+  }
+  .td-card p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
+  @media (max-width: 880px) { .teardowns { grid-template-columns: 1fr; } }
 </style>
 </head>
 <body>
@@ -430,10 +493,66 @@
     </div>
   </section>
 
-  <!-- 04 What a readout reveals -->
+  <!-- 04 What you actually receive -->
   <section class="section">
     <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">04</span>What a readout reveals</div>
+      <div class="sec-label"><span class="n">04</span>What you actually receive</div>
+      <h2>The engagement, end to end.</h2>
+      <p>Five stages. Plain words. No SaaS dashboard between you and the work.</p>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">Step 01</div>
+          <h3>Scoping call (30 min)</h3>
+          <p>Lock the category, the cohort, and the 18 buyer questions we will measure. One call, no homework.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 02</div>
+          <h3>Three-week kickoff</h3>
+          <p>We measure daily across 7 AI tools. Same questions, same hash, every run apples to apples.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 03</div>
+          <h3>Research memo + punch list</h3>
+          <p>PDF or markdown to your team. Named competitors, observed gaps, the clear list of what to fix first.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 04</div>
+          <h3>Your team executes</h3>
+          <p>You ship the work. We measure whether it lands. That separation is the whole position.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 05</div>
+          <h3>Monthly delta memo</h3>
+          <p>What moved, what did not. Updated punch list. Drift alerts when a competitor moves in your category.</p>
+        </div>
+      </div>
+      <p class="flow-note">The first research memo arrives three weeks after the scoping call.</p>
+
+      <p class="proof-label">Three published examples of what an engagement produces</p>
+      <div class="teardowns">
+        <a class="td-card" href="/teardowns/cross-category/">
+          <div class="td-cat">Cross-category</div>
+          <h3>Four categories, one gradient.</h3>
+          <p>The commodity-to-relationship pattern in AI citations across four Hawaii business verticals.</p>
+        </a>
+        <a class="td-card" href="/teardowns/bank-honolulu/">
+          <div class="td-cat">Hawaii consumer banking</div>
+          <h3>The 75-point engine spread.</h3>
+          <p>21-bank cohort. The Microsoft Copilot gap no single-engine measurement catches.</p>
+        </a>
+        <a class="td-card" href="/teardowns/dental-honolulu/">
+          <div class="td-cat">Honolulu dental</div>
+          <h3>The Copilot first-mover opening.</h3>
+          <p>46-practice cohort. Zero practice-owned websites cited by Microsoft Copilot.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 What a readout reveals -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">05</span>What a readout reveals</div>
       <h2>Per query, per engine, per competitor, per source type.</h2>
       <p>Which questions in your category get answered, who gets cited when you do not, and which kinds of sources the engines actually pull from when they decide.</p>
       <div class="readout">
@@ -461,10 +580,10 @@
     </div>
   </section>
 
-  <!-- 05 Pricing -->
+  <!-- 06 Pricing -->
   <section class="section panel">
     <div class="inner reveal">
-      <div class="sec-label"><span class="n">05</span>Pricing</div>
+      <div class="sec-label"><span class="n">06</span>Pricing</div>
       <h2>Per category, not per client.</h2>
       <p>No bundled tiers, no per-seat math.</p>
       <div class="prices">
@@ -483,10 +602,10 @@
     </div>
   </section>
 
-  <!-- 06 Who runs it -->
+  <!-- 07 Who runs it -->
   <section class="section">
     <div class="inner reveal">
-      <div class="sec-label"><span class="n">06</span>Who runs it</div>
+      <div class="sec-label"><span class="n">07</span>Who runs it</div>
       <h2>You work with the principal.</h2>
       <div class="principal">
         <p>NeverRanked is a research practice, not a software company. The measurement, the memos, and the punch lists are produced by Lance Roylo, in Honolulu. There is no account layer between you and the person doing the research.</p>
