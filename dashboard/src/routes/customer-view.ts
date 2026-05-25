@@ -400,6 +400,29 @@ function renderCustomerView(d: CustomerViewData): string {
     border-color: rgba(212,138,138,0.28);
   }
 
+  /* Memo pointer banner (preempts "where's the fix-this part?") */
+  .memo-pointer {
+    background: linear-gradient(180deg, rgba(212,197,150,0.08), rgba(212,197,150,0.02));
+    border: 1px solid rgba(212,197,150,0.30);
+    border-radius: 6px;
+    padding: 18px 22px;
+    margin: 32px 0 0;
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .memo-pointer-icon {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold-bright);
+    background: rgba(232,199,103,0.12);
+    border: 1px solid rgba(232,199,103,0.32);
+    padding: 4px 10px; border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .memo-pointer-text {
+    font-family: var(--serif); font-size: 14px; color: var(--soft);
+    line-height: 1.55; flex: 1;
+  }
+  .memo-pointer-text strong { color: var(--text); }
+
   /* Cohort table */
   table.cohort {
     width: 100%; border-collapse: collapse; font-size: 14px; color: var(--soft);
@@ -521,6 +544,18 @@ function renderCustomerView(d: CustomerViewData): string {
             <div class="changed-text">${g.text}</div>
           </div>
         `).join('')}
+      </div>
+    </div>
+
+    <!-- Memo pointer: explains the two-layer model in-product. The
+         dashboard surfaces signals daily; the monthly memo turns
+         signals into prioritized action. This banner preempts the
+         "where's the fix-this part?" question by pointing at when
+         and where the action layer arrives. -->
+    <div class="memo-pointer">
+      <div class="memo-pointer-icon">Next memo</div>
+      <div class="memo-pointer-text">
+        This dashboard shows you what changed and where the gaps are. Your next monthly delta memo arrives <strong>${esc(d.nextMemoDate)}</strong> and turns these signals into your prioritized punch list: what to ship first, what to skip this month, what the cohort movement actually means for your firm.
       </div>
     </div>
 
