@@ -1039,6 +1039,19 @@ export default {
 
     // --- Authenticated routes ---
 
+    // /c/<slug>/ — read-only customer dashboard (post-pivot, per
+    // DASHBOARD-SPEC.md). Minimal chrome, magic-link auth via the
+    // existing /login route. Handles its own auth + 404; the route
+    // handler returns null/403 when needed. Match BEFORE the more
+    // permissive routes below.
+    {
+      const cMatch = path.match(/^\/c\/([a-z0-9-]+)\/?$/i);
+      if (cMatch && method === "GET") {
+        const { handleCustomerView } = await import("./routes/customer-view");
+        return handleCustomerView(request, env, cMatch[1]);
+      }
+    }
+
     // Onboarding
     if (path === "/onboarding" && method === "GET") {
       return handleOnboarding(user, env);
