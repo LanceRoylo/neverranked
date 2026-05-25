@@ -303,6 +303,53 @@
     .price-secondary .amt { font-size: 26px; }
   }
 
+  /* ── Hero URL form (primary lead magnet above the fold) ─────── */
+  .hero-form {
+    display: flex; margin: 22px 0 12px; max-width: 540px;
+    border: 1px solid var(--gold); border-radius: 6px;
+    background: #0e0e11; overflow: hidden;
+    transition: box-shadow 260ms var(--ease-out), border-color 200ms ease;
+  }
+  .hero-form:focus-within {
+    box-shadow: 0 0 28px 0 rgba(212,197,150,0.22);
+    border-color: rgba(212,197,150,0.95);
+  }
+  .hero-form input {
+    flex: 1; min-width: 0; padding: 15px 18px;
+    background: transparent; border: 0; outline: none;
+    font-family: var(--mono); font-size: 14px;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .hero-form input::placeholder { color: var(--dim); }
+  .hero-form button {
+    padding: 15px 24px; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #0b0b0c; font-weight: 600;
+    background: var(--gold);
+    transition: transform 160ms var(--ease-out), background 200ms ease;
+  }
+  .hero-form button:hover { background: #e8d9a8; }
+  .hero-form button:active { transform: scale(0.97); }
+  .hero-form-note {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+    color: var(--dim); margin: 0 0 32px; max-width: 540px; line-height: 1.65;
+  }
+  .hero-secondary {
+    display: inline-block; margin-top: 16px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+    color: var(--gold); text-decoration: none;
+    border-bottom: 1px solid rgba(212,197,150,0.32); padding-bottom: 2px;
+    transition: border-color 200ms ease;
+  }
+  @media (hover: hover) {
+    .hero-secondary:hover { border-bottom-color: var(--gold); }
+  }
+  @media (max-width: 560px) {
+    .hero-form { flex-direction: column; }
+    .hero-form input { padding: 13px 16px; }
+    .hero-form button { padding: 13px 16px; }
+  }
+
   /* ── Engagement flow steps ──────────────────────────────────── */
   .flow {
     display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
@@ -396,9 +443,16 @@
   <section class="hero">
     <div class="inner">
       <div class="kicker reveal">A research practice &middot; Honolulu</div>
-      <h1 class="reveal" style="transition-delay:.09s">Have you ever asked ChatGPT, Claude, or Google Gemini to find a business? A restaurant, a doctor, a coffee shop, a plumber. Across four Hawaii business categories we measured, AI tools now name three to five businesses per buyer question.</h1>
-      <p class="turn reveal" style="transition-delay:.18s">Then you have already watched an AI answer engine pick winners. Your customers are doing the same thing to find a business like yours. The only question is whether the AI names you.</p>
-      <div class="hero-preview reveal" style="transition-delay:.27s">
+      <h1 class="reveal" style="transition-delay:.09s">When AI answers, does it name your business?</h1>
+      <p class="turn reveal" style="transition-delay:.16s">Your customers are asking the same question to find a business like yours.</p>
+
+      <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
+        <input type="url" id="hero-url" placeholder="https://yourbusiness.com" autocomplete="url" spellcheck="false" required />
+        <button type="submit">Check now &rarr;</button>
+      </form>
+      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. Across 4 Hawaii business categories we measured, AI tools name 3 to 5 businesses per buyer question. We check whether yours is one of them.</div>
+
+      <div class="hero-preview reveal" style="transition-delay:.38s">
         <div class="hero-preview-head">An AI answer right now might look like</div>
         <div class="hero-preview-query" id="hero-query">&ldquo;best wealth manager in Hawaii&rdquo;</div>
         <div class="hero-preview-response">
@@ -409,8 +463,9 @@
           <span class="hero-preview-row hpr-you">&#9633; You</span>
         </div>
       </div>
-      <div class="reveal" style="transition-delay:.36s">
-        <a class="cta" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+
+      <div class="reveal" style="transition-delay:.46s">
+        <a class="hero-secondary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Or get a custom 1-page diagnostic for your category &rarr;</a>
       </div>
     </div>
   </section>
@@ -672,6 +727,22 @@
         });
       }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
       els.forEach(function (el) { io.observe(el); });
+    })();
+
+    /* Hero form: capture URL and hand off to the grader with ?url= so
+       it auto-scans. Zero friction: paste, hit enter, see result. */
+    (function () {
+      var form = document.getElementById('hero-form');
+      if (!form) return;
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('hero-url');
+        var url = (input.value || '').trim();
+        if (!url) { input.focus(); return; }
+        if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
+        var target = 'https://check.neverranked.com/?url=' + encodeURIComponent(url);
+        window.location.href = target;
+      });
     })();
 
     /* Hero query cycler: rotates through real buyer-shaped questions
