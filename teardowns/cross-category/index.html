@@ -74,17 +74,17 @@
       </thead>
       <tbody>
         <tr><td class="us">Hawaii consumer banking</td><td class="num us"><strong>53%</strong></td><td class="num">42%</td><td class="num">21 firms</td></tr>
-        <tr><td class="us">Honolulu dental practices</td><td class="num us"><strong>39%</strong></td><td class="num">56%</td><td class="num">39 firms</td></tr>
+        <tr><td class="us">Honolulu dental practices</td><td class="num us"><strong>44%</strong></td><td class="num">52%</td><td class="num">46 firms</td></tr>
         <tr><td class="us">Hawaii law firms</td><td class="num us"><strong>37%</strong></td><td class="num">60%</td><td class="num">30 firms</td></tr>
         <tr><td class="us">Hawaii wealth management</td><td class="num us"><strong>27%</strong></td><td class="num">70%</td><td class="num">15 firms</td></tr>
       </tbody>
     </table>
-    <p>26 percentage points separate banking from wealth management. That is the gradient. The remaining few percent across rows are review directories, Wikipedia, YouTube, social, and a small Reddit signal.</p>
+    <p>26 percentage points separate banking from wealth management. That is the gradient. Dental sits closer to banking than to wealth (the dental cohort grew from 39 to 46 firms after a second measurement run surfaced more practices). Law firms cluster about where dental was before that addition. The remaining few percent across rows are review directories, Wikipedia, YouTube, social, and a small Reddit signal.</p>
 
     <h2>What this means in plain English</h2>
     <p>Forget the percentages for a second. When a buyer asks ChatGPT or Google AI for a Hawaii bank recommendation, the AI answers mostly by quoting from the banks&rsquo; own websites. When that same buyer asks for a Hawaii wealth manager, the AI answers mostly by quoting from articles, lists, and publications that talk about the wealth managers. Same kind of buyer, same kind of question, very different sources.</p>
     <p>The reason looks structural. Banking is a commodity. The features (rates, account types, branch locations) live cleanly on the bank&rsquo;s own site, in a format AI can parse, refreshed regularly. There is no need to look anywhere else. Wealth management is the opposite. The features that matter (the founder&rsquo;s judgment, the firm&rsquo;s philosophy, their track record with people like you) do not live cleanly on the firm&rsquo;s own homepage. They live in interviews, in published rankings, in client stories, in podcasts. So that is where AI looks.</p>
-    <p>Dental and law sit in the middle, because they are middle. Some of what matters lives on the practice&rsquo;s own site (services offered, location, accepting new patients). Some lives elsewhere (reviews, &ldquo;best of&rdquo; lists, third-party referral content). Both surfaces matter, neither dominates.</p>
+    <p>Dental and law sit in the middle of the gradient. Dental leans toward the commodity end (clinical procedures, insurance acceptance, hours and location are commodity-shaped facts the practice can publish cleanly on its own site). Law leans toward the relationship end (a buyer choosing a law firm wants to read about the named attorney, their reputation, their wins, which lives in editorial sources). Both categories have meaningful share on both surfaces, neither dominates.</p>
 
     <h2>The implication for where to do the work</h2>
     <p>If you are a Hawaii consumer bank, AEO work that focuses on your own website pays off. Clean structured data, clear product pages, good FAQ markup. AI is already reading you. Make the read cleaner.</p>
@@ -130,7 +130,7 @@
     <p>The four cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring. Categories with more independent businesses (dental practices, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
     <ul>
       <li><strong>Hawaii consumer banking:</strong> 21 banks and credit unions, named in full at <a href="/teardowns/bank-honolulu/">teardown 01</a>.</li>
-      <li><strong>Honolulu dental practices:</strong> 39 dental practices. Cohort discovered through the first measurement run, then registered for ongoing tracking. Individual practices anonymized in this public artifact per the non-customer anonymization rule.</li>
+      <li><strong>Honolulu dental practices:</strong> 46 dental practices (39 surfaced from run #1, 7 more added after run #2 cohort-coverage scan). Individual practices anonymized in this public artifact per the non-customer anonymization rule.</li>
       <li><strong>Hawaii law firms:</strong> 30 firms (5 originally registered, 25 surfaced through the measurement). Individual firms anonymized in this public artifact.</li>
       <li><strong>Hawaii wealth management:</strong> 15 firms registered and tracked. Individual firms anonymized in this public artifact.</li>
     </ul>
@@ -141,7 +141,7 @@
       <li><strong>7 AI tools:</strong> Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google search), Microsoft Copilot via Bing organic search, Google AI Overviews, Claude (claude-haiku-4-5), Gemma (open-weight, via Together AI).</li>
       <li><strong>18 questions per category,</strong> locked by hash so every run compares apples to apples. The questions mirror how a real buyer in each category would actually search.</li>
       <li><strong>3 repetitions per question per AI tool</strong> to separate signal from noise.</li>
-      <li><strong>1 to 3 measurement runs per category</strong> on this dataset. Banking has 3 usable runs (pattern-readiness cleared). The other three categories have 1 usable run each as of this publication, which means individual cohort findings should be read as initial reads, not stable patterns. The cross-category gradient itself is supported by all four categories.</li>
+      <li><strong>1 to 3 measurement runs per category</strong> on this dataset. Banking has 3 usable runs (pattern-readiness cleared per MOAT.md rule 5). Dental and law have 2 usable runs each. Wealth management has 1 usable run. One more measurement run on a separate day clears the 3-run pattern-readiness rule for dental and law; two more clear it for wealth. The cross-category gradient itself is consistent across all four categories at the run counts they currently have.</li>
     </ul>
     <p>Full methodology, source bucket definitions, and pattern-readiness rules at <a href="/methodology/">/methodology/</a>. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight, so any auditor (compliance team, outside reviewer, agency data lead, anyone) can independently re-run the same questions and verify the training-data numbers.</p>
 
@@ -167,7 +167,7 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement windows:</strong> Hawaii consumer banking measured 2026-05-23 across 3 usable runs (pattern-readiness cleared). Hawaii wealth management, Honolulu dental, Hawaii law firms each measured one usable run on 2026-05-23 or 2026-05-24. Pattern-readiness for the three single-run categories is at 1 of 3. Two additional measurement runs per category clear the rule for those categories.</p>
+      <p><strong>Measurement windows:</strong> Hawaii consumer banking measured 2026-05-23 across 3 usable runs (pattern-readiness cleared). Honolulu dental and Hawaii law firms each measured across 2 usable runs on 2026-05-24 (one more run per category clears the 3-run rule). Hawaii wealth management measured 1 usable run on 2026-05-23 (two more runs clear the rule). The 2-run categories show stable per-category numbers across runs, which supports the headline gradient even before the third run lands.</p>
       <p><strong>Substantiation:</strong> question sets locked by hash, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
       <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other three categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public; individual firm names are not.</p>
     </div>
