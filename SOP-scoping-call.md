@@ -49,7 +49,7 @@ This doc covers the workflow from "scoping call booked" to "hash-locked set runn
 
 Five questions, asked in this order. Take dense notes. Don't summarize, transcribe.
 
-1. **"When a stranger to your business googles or asks AI for someone like you, what would they type? Not what should they type — what do they actually type?"**
+1. **"When a stranger to your business googles or asks AI for someone like you, what would they type? Not what should they type. What do they actually type?"**
    - Surfaces head queries.
    - Push back if they offer SEO-keyword-tool phrases ("best [service] in [city]"). Ask: "Who actually types it that way?"
 2. **"What's the most specific buyer type you serve, and what would that specific buyer type type into AI?"**
@@ -99,22 +99,22 @@ Subject: Your locked question set for [category]
 
 Below is the 18-question set we'll run across all 7 AI tools.
 Once you confirm, we hash-lock it and measurement starts the
-following week. After lock the set never changes — that's
+following week. After lock the set never changes. That's
 how every run compares apples to apples.
 
-HEAD QUERIES (8) — broad buyer intent:
+HEAD QUERIES (8), broad buyer intent:
 1. [query]
 2. [query]
 ... etc
 
-LONG-TAIL QUERIES (10) — specific scenarios + named comparison:
+LONG-TAIL QUERIES (10), specific scenarios + named comparison:
 9. [query]
 ...
 17. [named-comparison query with your top competitors]
 18. [query]
 
 Two things to look for:
-1. Anything missing — a buyer type or service we should be
+1. Anything missing: a buyer type or service we should be
    measuring that we're not?
 2. Anything that doesn't sound like how your buyers actually
    talk? Swap it.
