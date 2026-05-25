@@ -46,6 +46,7 @@ on:
       - 'hawaii-wealth-aeo/**'
       - 'honolulu-dental-aeo/**'
       - 'hawaii-law-aeo/**'
+      - 'dashboard-preview/**'
       - 'wrangler.jsonc'
       - 'scripts/build.sh'
       - '.github/workflows/deploy.yml'
