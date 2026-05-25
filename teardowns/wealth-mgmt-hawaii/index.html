@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Wealth-mgmt-Hawaii teardown 05. 7-AI-tool measurement on
-  Hawaii wealth-management firms. 23-firm cohort, 18 hash-locked
+  Hawaii wealth-management firms. 42-firm cohort, 18 hash-locked
   questions, 3 reps per question per run, 3 usable runs spanning
   2026-05-23 to 2026-05-25 (pattern-readiness cleared per
   MOAT.md rule 5).
@@ -22,10 +22,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 05: What 7-AI-tool measurement reveals about Hawaii wealth management</title>
-<meta name="description" content="23 Hawaii wealth-management firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. AI routes wealth-management buyers through lead-gen middlemen before sending them to the firms themselves. Microsoft Copilot cites zero firm websites cohort-wide.">
+<meta name="description" content="42 Hawaii wealth-management firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. AI routes wealth-management buyers through lead-gen middlemen before sending them to the firms themselves. Microsoft Copilot cites zero firm websites cohort-wide.">
 <link rel="canonical" href="https://neverranked.com/teardowns/wealth-mgmt-hawaii/">
 <meta property="og:title" content="Teardown 05: Hawaii wealth management in the AI-citation data">
-<meta property="og:description" content="23-firm cohort. AI routes buyers through lead-gen middlemen (SmartAsset, getwarmer) more than the firms themselves. The structural finding for the category.">
+<meta property="og:description" content="42-firm cohort. AI routes buyers through lead-gen middlemen (SmartAsset, getwarmer) more than the firms themselves. The structural finding for the category.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -66,10 +66,10 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 05 &middot; Hawaii wealth management</div>
     <h1>The lead-gen middlemen sitting between buyers and Hawaii wealth firms.</h1>
-    <p class="sub">23-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-23 to 2026-05-25. Pattern-readiness cleared. Individual firms anonymized; counts, distributions, and named third-party platforms named.</p>
+    <p class="sub">42-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-23 to 2026-05-25. Pattern-readiness cleared. Individual firms anonymized; counts, distributions, and named third-party platforms named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 23 Hawaii wealth-management firms and 7 AI tools, the top two non-firm sources AI cites are lead-gen platforms (SmartAsset and getwarmer.com, 432 mentions combined) rather than any individual firm. AI is structurally routing wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. For any Hawaii wealth firm, that platform layer is a measurable AEO surface most firms likely do not actively manage.
+      <strong>The headline finding in one sentence:</strong> across 42 Hawaii wealth-management firms and 7 AI tools, the top two non-firm sources AI cites are lead-gen platforms (SmartAsset and getwarmer.com, 432 mentions combined) rather than any individual firm. AI is structurally routing wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. For any Hawaii wealth firm, that platform layer is a measurable AEO surface most firms likely do not actively manage.
     </div>
 
     <h2>Why this category matters as a measurement subject</h2>
@@ -82,7 +82,7 @@
       <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
     </ul>
     <p>18 questions a Hawaii wealth-management buyer would actually ask AI, locked at hash <code>ae13579a...</code> so every run compares apples to apples. The actual locked set is published at <a href="/methodology/#query-set">/methodology/#query-set</a> for review. 3 repetitions per question per AI tool. 3 usable runs spanning 2026-05-23 to 2026-05-25. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
-    <p>The 23-firm cohort grew through two passes. 15 anchor firms registered before run 1. 8 additional firms surfaced through run 1 cohort-coverage scan and registered after. The cohort expansion lifted the firm-owned share from 27% on run 1 to 38% on run 3, illustrating the cohort-coverage discipline named on the methodology page. National lead-gen platforms and financial-planner directories were deliberately excluded from the cohort; they appear in the data as third-party content sources.</p>
+    <p>The 42-firm cohort grew through two passes. 15 anchor firms registered before run 1. 8 additional firms surfaced through run 1 cohort-coverage scan and registered after. The cohort expansion lifted the firm-owned share from 27% on run 1 to 38% on run 3, illustrating the cohort-coverage discipline named on the methodology page. National lead-gen platforms and financial-planner directories were deliberately excluded from the cohort; they appear in the data as third-party content sources.</p>
     <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
@@ -92,18 +92,18 @@
         <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
       </thead>
       <tbody>
-        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>59%</strong></td><td class="num">3,642</td></tr>
-        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>38%</strong></td><td class="num">2,331</td></tr>
+        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>49%</strong></td><td class="num">3,029</td></tr>
+        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>47%</strong></td><td class="num">2,944</td></tr>
         <tr><td>Wikipedia</td><td class="num">2%</td><td class="num">103</td></tr>
         <tr><td>Review directories (Expertise, TripAdvisor, Yelp, BBB)</td><td class="num">1%</td><td class="num">60</td></tr>
         <tr><td>YouTube</td><td class="num">1%</td><td class="num">42</td></tr>
         <tr><td>Social (LinkedIn, Facebook, Instagram)</td><td class="num">0%</td><td class="num">29</td></tr>
       </tbody>
     </table>
-    <p>Hawaii wealth management lands at the relationship-end of the cross-category gradient, tied with Hawaii law firms (also 38% firm-owned in the cross-category teardown). For comparison: Hawaii consumer banking is 53% firm-owned and Honolulu dental is 44%. The structural pattern matches: commodity attributes (rates, account types, hours, services) publish cleanly on a firm's own site; relationship attributes (philosophy, named-principal judgment, buyer-specific fit) live in editorial sources more than on the firm's homepage.</p>
+    <p>Hawaii wealth management sits in the middle of the cross-category cluster. For comparison: Hawaii consumer banking is 53% firm-owned (uniquely high), Honolulu dental is 44%, and Hawaii law firms is 39%. The earlier reading on this measurement (1 run, 15 firms) showed 27% firm-owned and put wealth in the "relationship-end" tier with law. Three rounds of cohort expansion (15 firms grew to 42) showed that reading was an artifact of incomplete cohort coverage. The real number sits in the cluster with dental and law. Banking is the outlier. Why banking is different is the more interesting question, and we have a hypothesis on the cross-category teardown.</p>
 
     <h2>The lead-gen middleman pattern</h2>
-    <p>The 3,642 third-party-content mentions are not all the same shape. The top recurring non-firm sources across runs:</p>
+    <p>The 3,029 third-party-content mentions are not all the same shape. The top recurring non-firm sources across runs:</p>
     <table>
       <thead>
         <tr><th>Source</th><th class="num">Mentions</th><th>What it is</th></tr>
@@ -116,7 +116,7 @@
         <tr><td>Unbiased</td><td class="num">74</td><td>UK-origin financial-advisor directory</td></tr>
       </tbody>
     </table>
-    <p>The structural finding is in the top two rows. SmartAsset (211 mentions) and getwarmer.com (221 mentions) are both lead-gen platforms whose business model is collecting buyer information and routing it to wealth advisors who pay for placement. Combined, they account for 432 of the 3,642 third-party mentions (12% of all non-firm citations). AI is using these platforms as primary sources when answering wealth-management questions for Hawaii.</p>
+    <p>The structural finding is in the top two rows. SmartAsset (211 mentions) and getwarmer.com (221 mentions) are both lead-gen platforms whose business model is collecting buyer information and routing it to wealth advisors who pay for placement. Combined, they account for 432 of the 3,029 third-party mentions (14% of all non-firm citations). AI is using these platforms as primary sources when answering wealth-management questions for Hawaii.</p>
     <p>For a wealth-management firm, this is a real structural fact about the category. If your firm is not represented on SmartAsset and getwarmer.com, you are missing a meaningful share of the AI-citation surface, even before considering Microsoft Copilot or any of the per-firm dynamics. This is also a different shape of surface than the categories below: dental does not have a SmartAsset equivalent; banking does not have a getwarmer.com. Wealth has both because the lead-gen advisor-matchmaker model is a real economic layer in this vertical.</p>
 
     <h2>Per-AI-tool breakdown, the cohort-wide Copilot gap</h2>
@@ -156,12 +156,12 @@
         <tr><td>Firm E</td><td class="num">161</td><td class="num">7%</td><td class="num">3/3</td></tr>
       </tbody>
     </table>
-    <p>The top 5 firms account for 46% of all firm-owned mentions (1,062 of 2,331). This is a notably less concentrated category than Hawaii law firms, where the top 5 owned 66% of competitor mentions. Wealth management has a flatter distribution: the long tail of firms has more meaningful share, and the relative gap between the top firm and the fifth firm is smaller. For a firm outside the top 5, the gap to closing is shorter in wealth than in law.</p>
+    <p>The top 5 firms account for 36% of all firm-owned mentions (1,062 of 2,944). This is a notably less concentrated category than Hawaii law firms, where the top 5 owned 66% of competitor mentions. Wealth management has a flatter distribution: the long tail of firms has more meaningful share, and the relative gap between the top firm and the fifth firm is smaller. For a firm outside the top 5, the gap to closing is shorter in wealth than in law.</p>
 
     <h2>What this teardown does and does not prove</h2>
     <p>What it does support:</p>
     <ul>
-      <li>The 23-firm cohort is a representative slice of Hawaii wealth-management firms AI tools actually cite for buyer-shaped questions.</li>
+      <li>The 42-firm cohort is a representative slice of Hawaii wealth-management firms AI tools actually cite for buyer-shaped questions.</li>
       <li>The 38%/59% firm-owned / third-party split is stable: 37% on run 2, 38% on run 3 (same cohort). Run-to-run noise is not driving the headline.</li>
       <li>The Microsoft Copilot 0% firm-owned share is cohort-wide and consistent across all 3 measurement runs.</li>
       <li>SmartAsset and getwarmer.com are measurable AEO surfaces specific to this category that most Hawaii wealth firms likely do not actively manage.</li>
@@ -188,7 +188,7 @@
     <div class="disclosure-block">
       <p><strong>Measurement window:</strong> 3 usable runs spanning 2026-05-23 to 2026-05-25. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
       <p><strong>Substantiation:</strong> question set locked by hash <code>ae13579a...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown. The locked 18-question set is published at <a href="/methodology/#query-set">/methodology/#query-set</a>.</p>
-      <p><strong>Anonymization:</strong> the 23-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party platform sources (SmartAsset, getwarmer.com, Unbiased, gohawaii.com) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses for this category.</p>
+      <p><strong>Anonymization:</strong> the 42-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party platform sources (SmartAsset, getwarmer.com, Unbiased, gohawaii.com) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses for this category.</p>
     </div>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
