@@ -1,0 +1,178 @@
+<!doctype html>
+<!--
+  Cross-category teardown 02 — first published 2026-05-24.
+  4-category comparison: Hawaii consumer banking, Hawaii wealth
+  management, Honolulu dental, Hawaii law firms. Same 7-AI-tool
+  methodology, same 18-question discipline, same hash-locked runs,
+  4 separate cohorts measured 2026-05-23 and 2026-05-24.
+
+  Banking cohort named in full (already public via teardown 01).
+  Wealth, dental, law cohorts kept anonymized at category level
+  per the non-customers anonymization rule. Cohort sizes named.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 02: Why your category's AI-citation pattern depends on whether you're a commodity or a relationship business</title>
+<meta name="description" content="4 categories, 4 cohorts, same 7-AI-tool methodology. The own-site citation share moves from 53% (banking) to 27% (wealth management) as categories shift from commodity to relationship business. What that means for where to do the work.">
+<link rel="canonical" href="https://neverranked.com/teardowns/cross-category/">
+<meta property="og:title" content="Teardown 02: The commodity-to-relationship gradient in AI citations">
+<meta property="og:description" content="4 categories measured with the same 7-AI-tool methodology. The own-site citation share drops from 53% to 27% as you move from banking to wealth management.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardown 02 &middot; Cross-category</div>
+    <h1>Why your category&rsquo;s AI-citation pattern depends on whether you&rsquo;re a commodity or a relationship business.</h1>
+    <p class="sub">4 Hawaii business categories, 4 cohorts, same 7-AI-tool methodology, same 18-question discipline. The own-site citation share moves from 53% in banking to 27% in wealth management. The reason is structural, and the implication for where to do the work is the point.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> the more your category looks like a commodity (a checking account, the kind of thing buyers compare on rates and convenience), the more AI tools cite your own website when someone asks for a recommendation. The more your category looks like a relationship business (a wealth manager, the kind of thing buyers pick on trust and personality), the more AI cites third-party content about you instead.
+    </div>
+
+    <h2>The four-category table</h2>
+    <p>Same measurement methodology on each. Same week. Same hash-locked discipline so every number compares apples to apples. The thing that changes between rows is the category, not the method.</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Own-site share</th><th class="num">3rd-party share</th><th class="num">Cohort size</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Hawaii consumer banking</td><td class="num us"><strong>53%</strong></td><td class="num">42%</td><td class="num">21 firms</td></tr>
+        <tr><td class="us">Honolulu dental practices</td><td class="num us"><strong>39%</strong></td><td class="num">56%</td><td class="num">39 firms</td></tr>
+        <tr><td class="us">Hawaii law firms</td><td class="num us"><strong>37%</strong></td><td class="num">60%</td><td class="num">30 firms</td></tr>
+        <tr><td class="us">Hawaii wealth management</td><td class="num us"><strong>27%</strong></td><td class="num">70%</td><td class="num">15 firms</td></tr>
+      </tbody>
+    </table>
+    <p>26 percentage points separate banking from wealth management. That is the gradient. The remaining few percent across rows are review directories, Wikipedia, YouTube, social, and a small Reddit signal.</p>
+
+    <h2>What this means in plain English</h2>
+    <p>Forget the percentages for a second. When a buyer asks ChatGPT or Google AI for a Hawaii bank recommendation, the AI answers mostly by quoting from the banks&rsquo; own websites. When that same buyer asks for a Hawaii wealth manager, the AI answers mostly by quoting from articles, lists, and publications that talk about the wealth managers. Same kind of buyer, same kind of question, very different sources.</p>
+    <p>The reason looks structural. Banking is a commodity. The features (rates, account types, branch locations) live cleanly on the bank&rsquo;s own site, in a format AI can parse, refreshed regularly. There is no need to look anywhere else. Wealth management is the opposite. The features that matter (the founder&rsquo;s judgment, the firm&rsquo;s philosophy, their track record with people like you) do not live cleanly on the firm&rsquo;s own homepage. They live in interviews, in published rankings, in client stories, in podcasts. So that is where AI looks.</p>
+    <p>Dental and law sit in the middle, because they are middle. Some of what matters lives on the practice&rsquo;s own site (services offered, location, accepting new patients). Some lives elsewhere (reviews, &ldquo;best of&rdquo; lists, third-party referral content). Both surfaces matter, neither dominates.</p>
+
+    <h2>The implication for where to do the work</h2>
+    <p>If you are a Hawaii consumer bank, AEO work that focuses on your own website pays off. Clean structured data, clear product pages, good FAQ markup. AI is already reading you. Make the read cleaner.</p>
+    <p>If you are a Hawaii wealth manager, that same work largely will not move the needle. AI is barely citing your website to begin with. The leverage is off-site: get into the lists AI reads, get into the publications AI cites, get into the named-author content AI surfaces. The own-site work is hygiene, not the lever.</p>
+    <p>Dental and law: both surfaces matter. Own-site optimization is necessary but not sufficient. The list of fixes for these categories is twice as long because two distinct workstreams are open at the same time.</p>
+    <p>The non-obvious read: the conventional SEO instinct (&ldquo;clean up your website first, everything else is secondary&rdquo;) is approximately correct for commodity categories and approximately wrong for relationship categories. Which is which depends on the structural shape of the category, not on industry conventional wisdom.</p>
+
+    <h2>The Microsoft Copilot pattern</h2>
+    <p>One pattern is consistent across all four categories. Microsoft Copilot (which answers using Bing&rsquo;s search results) cites the firms&rsquo; own websites less than 1% of the time in every category we measured.</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Bing/Copilot own-site share</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hawaii consumer banking</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Hawaii law firms</td><td class="num"><strong>1%</strong></td></tr>
+        <tr><td>Hawaii wealth management</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Honolulu dental practices</td><td class="num"><strong>0%</strong></td></tr>
+      </tbody>
+    </table>
+    <p>This means: a buyer who asks Microsoft Copilot for a Hawaii business recommendation in any of these four categories gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap.</p>
+    <p>The first-mover read: whichever firm shows up first in Bing&rsquo;s organic search results for these queries gets the Copilot answer mostly to itself, because every competitor is also invisible there. The gap is open, and it does not appear to be a category-specific problem. It is a Microsoft Copilot pattern across local-service queries.</p>
+
+    <h2>Where AI knows you by name (Claude and Gemma)</h2>
+    <p>Two of the seven AI tools we measure (Claude and Gemma) answer from training data instead of searching the live web. So when they mention a business by name, it means that business has formed a presence in the AI&rsquo;s training data: through Wikipedia, news coverage, named-founder content, sustained editorial presence over years.</p>
+    <p>This is the slowest signal in the measurement, but the most defensible once it forms. A new competitor cannot show up in Claude&rsquo;s training data overnight. That presence is earned through years of editorial work that an AI model later learned from.</p>
+    <p>Across the four categories:</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Claude own-site share</th><th class="num">Gemma own-site share</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hawaii consumer banking</td><td class="num"><strong>88%</strong></td><td class="num"><strong>70%</strong></td></tr>
+        <tr><td>Honolulu dental practices</td><td class="num"><strong>38%</strong></td><td class="num"><strong>59%</strong></td></tr>
+        <tr><td>Hawaii law firms</td><td class="num"><strong>51%</strong></td><td class="num"><strong>78%</strong></td></tr>
+        <tr><td>Hawaii wealth management</td><td class="num"><strong>16%</strong></td><td class="num"><strong>38%</strong></td></tr>
+      </tbody>
+    </table>
+    <p>The same gradient holds inside Claude and Gemma. Banking firms have the strongest training-data presence. Wealth firms have the weakest. Dental and law cluster in the middle.</p>
+    <p>The asymmetry within rows is worth noting too. Claude and Gemma do not always agree on who is in their training data. Claude may know a firm Gemma does not, and vice versa. The measurement captures both because the buyer might use either.</p>
+
+    <h2>The cohort sizes (transparency note)</h2>
+    <p>The four cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring. Categories with more independent businesses (dental practices, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
+    <ul>
+      <li><strong>Hawaii consumer banking:</strong> 21 banks and credit unions, named in full at <a href="/teardowns/bank-honolulu/">teardown 01</a>.</li>
+      <li><strong>Honolulu dental practices:</strong> 39 dental practices. Cohort discovered through the first measurement run, then registered for ongoing tracking. Individual practices anonymized in this public artifact per the non-customer anonymization rule.</li>
+      <li><strong>Hawaii law firms:</strong> 30 firms (5 originally registered, 25 surfaced through the measurement). Individual firms anonymized in this public artifact.</li>
+      <li><strong>Hawaii wealth management:</strong> 15 firms registered and tracked. Individual firms anonymized in this public artifact.</li>
+    </ul>
+
+    <h2>Methodology summary</h2>
+    <p>Each category was measured the same way:</p>
+    <ul>
+      <li><strong>7 AI tools:</strong> Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google search), Microsoft Copilot via Bing organic search, Google AI Overviews, Claude (claude-haiku-4-5), Gemma (open-weight, via Together AI).</li>
+      <li><strong>18 questions per category,</strong> locked by hash so every run compares apples to apples. The questions mirror how a real buyer in each category would actually search.</li>
+      <li><strong>3 repetitions per question per AI tool</strong> to separate signal from noise.</li>
+      <li><strong>1 to 3 measurement runs per category</strong> on this dataset. Banking has 3 usable runs (pattern-readiness cleared). The other three categories have 1 usable run each as of this publication, which means individual cohort findings should be read as initial reads, not stable patterns. The cross-category gradient itself is supported by all four categories.</li>
+    </ul>
+    <p>Full methodology, source bucket definitions, and pattern-readiness rules at <a href="/methodology/">/methodology/</a>. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight, so any auditor (compliance team, outside reviewer, agency data lead, anyone) can independently re-run the same questions and verify the training-data numbers.</p>
+
+    <h2>Honest scope and what this does not prove</h2>
+    <p>Four categories is enough to surface a gradient. It is not enough to declare a universal law. The pattern is consistent in direction (commodity-to-relationship is the axis) and in magnitude (the spread is wide enough to matter) but it lives inside a small sample of categories, all in Hawaii, all measured in a single week.</p>
+    <p>What is not in this teardown:</p>
+    <ul>
+      <li>National categories. Everything here is Hawaii-specific. Categories in larger markets may show different patterns because the cohort dynamics differ.</li>
+      <li>Categories outside professional services and consumer financial services. The four measured here cluster narrowly. B2B SaaS, restaurants, real estate brokerages, healthcare specialties beyond dental, all unmeasured here.</li>
+      <li>Whether the pattern holds over time. AI tools refresh their training data and search indices on schedules we do not control. The same categories measured six months from now may produce different numbers.</li>
+      <li>Causation. We measured what AI cites. We did not test whether changing what is on a firm&rsquo;s site or in third-party publications would cause AI to cite differently. That requires pre-registered experiments against named businesses with control for confounds. Different scope, different methodology.</li>
+    </ul>
+
+    <div class="callout">
+      <h3>What an engagement does with this</h3>
+      <p>NeverRanked engagements measure your specific category every week for as long as the engagement runs. For an engagement in a commodity-end category, the punch list weights toward own-site work. For an engagement in a relationship-end category, the punch list weights toward off-site editorial presence. The gradient above is one input to the recommendation; the per-buyer-question detail is the other. The work the data points at is named specifically. Whether the work moves the needle is a measurement question we keep answering month over month.</p>
+    </div>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <a href="/methodology/">How we measure</a>
+      <a href="/">NeverRanked home</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement windows:</strong> Hawaii consumer banking measured 2026-05-23 across 3 usable runs (pattern-readiness cleared). Hawaii wealth management, Honolulu dental, Hawaii law firms each measured one usable run on 2026-05-23 or 2026-05-24. Pattern-readiness for the three single-run categories is at 1 of 3. Two additional measurement runs per category clear the rule for those categories.</p>
+      <p><strong>Substantiation:</strong> question sets locked by hash, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
+      <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other three categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public; individual firm names are not.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
