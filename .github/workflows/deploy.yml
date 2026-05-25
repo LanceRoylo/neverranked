@@ -41,6 +41,7 @@ on:
       - 'terms/**'
       - 'thanks/**'
       - 'vs/**'
+      - 'your-clicks-are-down/**'
       - 'wrangler.jsonc'
       - 'scripts/build.sh'
       - '.github/workflows/deploy.yml'
