@@ -1,0 +1,166 @@
+<!doctype html>
+<!--
+  /results/ — state-of-the-practice page. Cumulative scoreboard
+  of the measurement work shipped to date. Updated whenever a
+  new category clears pattern-readiness or a new teardown
+  publishes. Published 2026-05-25.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Results so far | NeverRanked</title>
+<meta name="description" content="The cumulative measurement output of NeverRanked to date. 4 Hawaii business categories measured at 3/3 pattern-readiness. 142 firms tracked across cohorts. 5 public teardowns. All hash-locked, all open-source code, all observable from outside.">
+<link rel="canonical" href="https://neverranked.com/results/">
+<meta property="og:title" content="NeverRanked: results so far">
+<meta property="og:description" content="4 categories measured, 142 firms tracked, 5 published teardowns, 16,000+ AI mentions captured. The cumulative state of the practice.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0c;
+    --panel: #131316;
+    --gold: #d4c596;
+    --gold-bright: #e8c767;
+    --text: #e8e8ea;
+    --soft: #b9b9bd;
+    --dim: #6a6a70;
+    --line: #2a2a2e;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: Georgia, "Times New Roman", serif; color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  main { max-width: 820px; margin: 0 auto; padding: 60px 32px 120px; }
+  .meta-top { color: var(--dim); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 42px; font-weight: 400; margin: 0 0 12px; letter-spacing: -0.005em; line-height: 1.1; }
+  .sub { font-size: 18px; color: var(--soft); margin: 0 0 36px; font-style: italic; line-height: 1.55; }
+  h2 { font-size: 22px; font-weight: 400; color: var(--gold); margin: 56px 0 18px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: var(--soft); margin: 0 0 16px; }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+  ul { font-size: 16px; color: var(--soft); margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* Stat grid */
+  .stat-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin: 30px 0;
+  }
+  .stat {
+    padding: 24px 22px; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 6px; text-align: center;
+  }
+  .stat .num {
+    font-family: Georgia, serif; font-size: 38px; color: var(--gold);
+    line-height: 1; font-weight: 400; display: block; margin-bottom: 8px;
+  }
+  .stat .lbl {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--dim); line-height: 1.4;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: var(--soft); background: var(--panel); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  th { color: var(--gold); text-align: left; font-weight: 400; letter-spacing: 0.06em; text-transform: uppercase; font-size: 11px; padding: 14px 18px; border-bottom: 1px solid var(--line); font-family: var(--mono); }
+  td { padding: 12px 18px; border-bottom: 1px solid #1c1c1e; font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: none; }
+  td.num { text-align: right; }
+  td.us { color: var(--text); }
+
+  .cta-block { background: #0e0e10; border: 1px solid #4a3d18; padding: 28px 30px; margin: 36px 0; border-radius: 4px; text-align: center; }
+  .cta-block h3 { color: var(--gold-bright); margin-top: 0; font-size: 20px; }
+  .cta-block .primary { display: inline-block; padding: 14px 28px; background: var(--gold); color: #0b0b0c; text-decoration: none; font-size: 15px; letter-spacing: 0.02em; border-radius: 2px; margin: 10px 4px; font-weight: 600; }
+  .cta-block .secondary { display: inline-block; padding: 14px 28px; border: 1px solid #4a3d18; color: var(--gold); text-decoration: none; font-size: 15px; letter-spacing: 0.02em; border-radius: 2px; margin: 10px 4px; }
+
+  .rule { width: 60px; height: 1px; background: var(--line); margin: 56px 0; }
+  .footer { color: var(--dim); font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+
+  @media (max-width: 700px) {
+    .stat-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat .num { font-size: 32px; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Results so far</div>
+    <h1>Where the practice stands today.</h1>
+    <p class="sub">Cumulative measurement output. Updated whenever a new category clears pattern-readiness or a new teardown publishes. Last refreshed 2026-05-25.</p>
+
+    <h2>The scoreboard</h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <span class="num">4</span>
+        <span class="lbl">Hawaii business<br>categories measured</span>
+      </div>
+      <div class="stat">
+        <span class="num">142</span>
+        <span class="lbl">Firms tracked<br>across cohorts</span>
+      </div>
+      <div class="stat">
+        <span class="num">5</span>
+        <span class="lbl">Public teardowns<br>shipped</span>
+      </div>
+      <div class="stat">
+        <span class="num">16k+</span>
+        <span class="lbl">AI mentions<br>captured</span>
+      </div>
+    </div>
+
+    <h2>Categories measured</h2>
+    <p>Each category was measured the same way: 18 buyer questions locked by hash, 3 repetitions per question per AI tool, 7 AI tools per run (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews, Claude, Gemma), 3+ usable runs per category to clear the MOAT.md rule 5 pattern-readiness threshold.</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Cohort</th><th class="num">Own-site share</th><th class="num">Runs</th><th>Teardown</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Hawaii consumer banking</td><td class="num">21 firms</td><td class="num"><strong>53%</strong></td><td class="num">3/3 ✓</td><td><a href="/teardowns/bank-honolulu/">teardown</a></td></tr>
+        <tr><td class="us">Hawaii wealth management</td><td class="num">42 firms</td><td class="num"><strong>47%</strong></td><td class="num">3/3 ✓</td><td><a href="/teardowns/wealth-mgmt-hawaii/">teardown</a></td></tr>
+        <tr><td class="us">Honolulu dental practices</td><td class="num">46 firms</td><td class="num"><strong>44%</strong></td><td class="num">3/3 ✓</td><td><a href="/teardowns/dental-honolulu/">teardown</a></td></tr>
+        <tr><td class="us">Hawaii law firms</td><td class="num">33 firms</td><td class="num"><strong>39%</strong></td><td class="num">3/3 ✓</td><td><a href="/teardowns/law-firm-hawaii/">teardown</a></td></tr>
+      </tbody>
+    </table>
+    <p>The cross-category gradient (banking high at 53%, wealth/dental/law clustering 39-47%) is the subject of the <a href="/teardowns/cross-category/">cross-category teardown</a>. The honest finding: banking is uniquely high in own-site AI citation share, plausibly because banks have done two decades of work making their websites the canonical source for their products. Other local-service-business categories distribute citations more evenly between own-site and third-party.</p>
+
+    <h2>What we publish vs what we keep private</h2>
+    <p>Two-tier transparency:</p>
+    <ul>
+      <li><strong>Public (anonymized at the firm level):</strong> the 5 teardowns at <a href="/teardowns/">/teardowns/</a>. Cohort sizes, source-type distributions, per-AI-tool breakdowns, named third-party platforms (Chambers, BestLawyers, SmartAsset, getwarmer, HMSA, Delta Dental, etc.), and the cross-category gradient. The banking cohort is named in full because all 21 firms are publicly competing brands.</li>
+      <li><strong>Private (named in full):</strong> the 1:1 deliverables inside paying engagements. Each customer&rsquo;s engagement names every firm in their cohort, names the questions they&rsquo;re missing on, and ranks the closable conditions. That deliverable is private to the customer.</li>
+    </ul>
+    <p>Non-customer firms appearing in our cohorts can request removal at any time by emailing <a href="mailto:takedown@neverranked.com">takedown@neverranked.com</a>. 24-hour SLA.</p>
+
+    <h2>The discipline behind the numbers</h2>
+    <ul>
+      <li><strong>Pre-registration.</strong> Every question set is locked by hash before measurement starts. The lock never breaks. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>.</li>
+      <li><strong>Reproducibility.</strong> Gemma is open-weight. Any auditor can independently re-run the same prompts and verify our training-data numbers without us in the room.</li>
+      <li><strong>Pattern-readiness.</strong> No category claims a pattern until 3 usable runs land per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>. The catalog tool enforces this and labels any premature pattern claim "data point, not pattern" in the deliverable itself.</li>
+      <li><strong>Cohort-coverage discipline.</strong> Each run surfaces additional cohort members through automated coverage scans. The wealth cohort grew from 15 to 42 firms over three rounds; the headline number rose from 27% to 47% as coverage improved. The teardowns document this kind of cohort-driven shift transparently.</li>
+      <li><strong>Fail-closed factual grader.</strong> Every prospect-facing artifact is graded against a canonical fact list before ship. The grader (public source code) rejects unsubstantiated claims. Today across all 5 published teardowns and the Hamada brief, the grader rejected zero claims (everything substantiated cleanly).</li>
+    </ul>
+
+    <h2>What is NOT in this scoreboard</h2>
+    <ul>
+      <li>Customer engagement count. We are at <strong>zero current paying customers under the rebuilt positioning.</strong> The measurement work and the discipline are real; the demand for honest research-only measurement is being validated, not assumed.</li>
+      <li>Categories outside Hawaii. The methodology works for any geography; today the seeded categories are all Hawaii because Hawaii is where the first measurement effort landed.</li>
+      <li>National or international cohorts. Same reason.</li>
+      <li>Categories beyond the four measured (banking, wealth, dental, law). Future categories publish here as they clear pattern-readiness.</li>
+    </ul>
+
+    <div class="cta-block">
+      <h3>See how 7 AI tools read your site right now</h3>
+      <p style="font-size:15px;color:var(--soft);margin:8px 0 16px;line-height:1.6">Free check. Enter your URL and we will show you what AI tools can read, what they cannot, and what is making you harder to find. No signup.</p>
+      <a class="primary" href="https://check.neverranked.com">Run the AI search check</a>
+      <a class="secondary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the 1-page diagnostic</a>
+    </div>
+
+    <div class="rule"></div>
+
+    <p style="text-align:center;color:var(--dim);font-size:14px"><a href="/">NeverRanked home</a> &middot; <a href="/teardowns/">All teardowns</a> &middot; <a href="/methodology/">How we measure</a> &middot; <a href="/faq/">FAQ</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>

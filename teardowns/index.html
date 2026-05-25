@@ -1,0 +1,156 @@
+<!doctype html>
+<!--
+  /teardowns/ — index page for the published-teardown library.
+  Catalog of all 5 teardowns with the headline finding + cohort
+  size + run count. Entry point for cold traffic hitting
+  /teardowns/ directly. Published 2026-05-25.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardowns | NeverRanked</title>
+<meta name="description" content="Public teardowns of what 7 AI tools (ChatGPT, Google AI, Perplexity, Microsoft Copilot, Gemini, Claude, Gemma) cite for Hawaii business categories. 4 categories measured, 5 teardowns published.">
+<link rel="canonical" href="https://neverranked.com/teardowns/">
+<meta property="og:title" content="NeverRanked teardowns">
+<meta property="og:description" content="5 published teardowns. 4 Hawaii business categories. The same hash-locked 7-AI-tool methodology applied to each.">
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0c;
+    --panel: #131316;
+    --gold: #d4c596;
+    --gold-bright: #e8c767;
+    --text: #e8e8ea;
+    --soft: #b9b9bd;
+    --dim: #6a6a70;
+    --line: #2a2a2e;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: Georgia, "Times New Roman", serif; color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  main { max-width: 800px; margin: 0 auto; padding: 60px 32px 120px; }
+  .meta-top { color: var(--dim); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 42px; font-weight: 400; margin: 0 0 12px; letter-spacing: -0.005em; line-height: 1.1; }
+  .sub { font-size: 18px; color: var(--soft); margin: 0 0 36px; font-style: italic; line-height: 1.55; }
+  h2 { font-size: 22px; font-weight: 400; color: var(--gold); margin: 56px 0 18px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: var(--soft); margin: 0 0 16px; }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+  .featured {
+    background: linear-gradient(180deg, rgba(212,197,150,0.10), rgba(212,197,150,0.02));
+    border: 1px solid rgba(212,197,150,0.42);
+    border-radius: 6px; padding: 28px 32px; margin: 30px 0 36px;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease;
+    display: block; text-decoration: none; color: inherit;
+  }
+  @media (hover: hover) {
+    .featured:hover { transform: translateY(-2px); border-color: rgba(212,197,150,0.62); }
+  }
+  .featured-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold-bright); margin-bottom: 14px;
+  }
+  .featured h3 {
+    font-family: Georgia, serif; font-size: 26px; font-weight: 400;
+    color: var(--text); margin: 0 0 12px; line-height: 1.2;
+  }
+  .featured p {
+    font-size: 16px; color: var(--soft); margin: 0 0 14px; line-height: 1.6;
+  }
+  .featured-meta {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--dim);
+  }
+  .td-list { display: grid; gap: 14px; margin-top: 16px; }
+  .td-card {
+    display: block; padding: 22px 26px; border: 1px solid var(--line);
+    border-top: 2px solid var(--gold); border-radius: 6px;
+    background: var(--panel); color: var(--text); text-decoration: none;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
+  }
+  @media (hover: hover) {
+    .td-card:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(212,197,150,0.06), rgba(212,197,150,0.02));
+      border-color: rgba(212,197,150,0.42);
+    }
+  }
+  .td-cat {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .td-card h3 {
+    font-family: Georgia, serif; font-size: 19px; font-weight: 400;
+    color: var(--text); margin: 0 0 8px; line-height: 1.3;
+  }
+  .td-card p { font-size: 14px; color: var(--soft); line-height: 1.55; margin: 0 0 12px; }
+  .td-meta {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--dim);
+  }
+  .rule { width: 60px; height: 1px; background: var(--line); margin: 56px 0; }
+  .footer { color: var(--dim); font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardowns</div>
+    <h1>What 7 AI tools cite for real business categories.</h1>
+    <p class="sub">Public teardowns of the same hash-locked 7-AI-tool methodology applied to 4 Hawaii business verticals. Cohort sizes, source-type distributions, and per-AI-tool breakdowns named. Individual non-customer firms anonymized at the firm level per the non-customer rule. The banking cohort is named in full because all 21 firms are publicly competing brands.</p>
+
+    <h2>Start here</h2>
+    <a class="featured" href="/teardowns/cross-category/">
+      <div class="featured-label">Featured &middot; 4 verticals at once</div>
+      <h3>The commodity-to-relationship gradient in AI citations</h3>
+      <p>The headline cross-category finding from all 4 measured verticals. Banking lands uniquely high (53% own-site share) while wealth, dental, and law cluster tightly between 39% and 47%. The reason banking is different is structural, and the implication for where to do the work depends on which side of the gradient your category sits.</p>
+      <div class="featured-meta">4 categories &middot; 142 firms tracked &middot; 12 usable runs total &middot; updated 2026-05-25</div>
+    </a>
+
+    <h2>Per-category teardowns</h2>
+    <div class="td-list">
+
+      <a class="td-card" href="/teardowns/bank-honolulu/">
+        <div class="td-cat">Hawaii consumer banking</div>
+        <h3>The 75-point engine spread no single-engine tool can see.</h3>
+        <p>21-bank cohort named in full. For the same Hawaii consumer banking questions, the same day, five AI tools cite bank-owned websites 60-75% of the time while Microsoft Copilot cites them 0% of the time. The 75-percentage-point spread is invisible to any tool that measures fewer engines.</p>
+        <div class="td-meta">21 banks &middot; 3 usable runs &middot; pattern-ready &middot; 2026-05-23</div>
+      </a>
+
+      <a class="td-card" href="/teardowns/dental-honolulu/">
+        <div class="td-cat">Honolulu dental practices</div>
+        <h3>The Microsoft Copilot first-mover opening.</h3>
+        <p>46-practice cohort. Microsoft Copilot cites zero practice websites across 801 mentions; every practice in the cohort shares this gap. Three of the top five recurring non-practice sources are insurance carriers (HMSA, Delta Dental, HMSA Dental), a measurable AEO surface most practices likely treat as administrative paperwork.</p>
+        <div class="td-meta">46 practices &middot; 3 usable runs &middot; pattern-ready &middot; 2026-05-25</div>
+      </a>
+
+      <a class="td-card" href="/teardowns/law-firm-hawaii/">
+        <div class="td-cat">Hawaii law firms</div>
+        <h3>The top 5 own two-thirds. The opening sits outside.</h3>
+        <p>33-firm cohort. Top 5 firms account for 66% of all firm-owned mentions; the dominant firm alone gets 538 mentions, roughly three times the next firm. For firms outside the top 5, the closable competitive ground sits in two specific places: Microsoft Copilot (cohort-wide 0% firm-owned) and the long tail of buyer-specific questions where AI defaults to legal directories.</p>
+        <div class="td-meta">33 firms &middot; 3 usable runs &middot; pattern-ready &middot; 2026-05-25</div>
+      </a>
+
+      <a class="td-card" href="/teardowns/wealth-mgmt-hawaii/">
+        <div class="td-cat">Hawaii wealth management</div>
+        <h3>The lead-gen middlemen sitting between buyers and the firms.</h3>
+        <p>42-firm cohort. SmartAsset and getwarmer.com (the two lead-gen platforms whose business model is routing buyers to advisors) combined account for 14% of all third-party citations. AI structurally routes wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. Claude&rsquo;s training-data presence for Hawaii wealth firms is structurally thinner than for adjacent relationship categories.</p>
+        <div class="td-meta">42 firms &middot; 3 usable runs &middot; pattern-ready &middot; 2026-05-25</div>
+      </a>
+
+    </div>
+
+    <h2>How these get produced</h2>
+    <p>Each teardown is the public anonymized version of the same forensic measurement we run for a paying customer&rsquo;s engagement. The structural axes (cross-engine, cross-competitor, source-type, position-in-answer) are evidence-grade. The pattern-readiness rule (<a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>: 3+ usable runs per category before claiming a pattern) is cleared for every teardown above. Full methodology: <a href="/methodology/">/methodology/</a>.</p>
+    <p>Future teardowns will publish here as new categories are measured. Customers in measured categories see their named, unredacted version of the same data inside the paid engagement deliverable. The public version stays anonymized at the firm level per the non-customer rule.</p>
+
+    <div class="rule"></div>
+
+    <p style="text-align:center;color:var(--dim);font-size:14px"><a href="/">NeverRanked home</a> &middot; <a href="/methodology/">How we measure</a> &middot; <a href="https://check.neverranked.com">Free AI search check</a> &middot; <a href="/faq/">FAQ</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>

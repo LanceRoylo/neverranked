@@ -48,6 +48,7 @@ on:
       - 'hawaii-law-aeo/**'
       - 'dashboard-preview/**'
       - 'faq/**'
+      - 'results/**'
       - 'wrangler.jsonc'
       - 'scripts/build.sh'
       - '.github/workflows/deploy.yml'
