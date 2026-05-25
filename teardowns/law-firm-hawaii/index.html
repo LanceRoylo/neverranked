@@ -1,0 +1,193 @@
+<!doctype html>
+<!--
+  Law-firm-Hawaii teardown 04 (renumbered from 05 since we shipped
+  this one before the wealth one). 7-AI-tool measurement on Hawaii
+  law firms. 30-firm cohort, 18 hash-locked questions, 3 reps per
+  question per run, 3 usable runs spanning 2026-05-24 and
+  2026-05-25 (pattern-readiness cleared per MOAT.md rule 5).
+
+  Cohort kept anonymized at the firm level. None of the 30 firms
+  are paying NeverRanked customers and the non-customer
+  anonymization rule applies. Categories, counts, source-type
+  distributions, and named third-party directories are public;
+  individual firm names are not.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 04: What 7-AI-tool measurement reveals about Hawaii law firms</title>
+<meta name="description" content="30 Hawaii law firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. The top 5 firms own 66% of competitor mentions. Microsoft Copilot cites zero firm websites. The closable competitive ground sits outside the dominant tier.">
+<link rel="canonical" href="https://neverranked.com/teardowns/law-firm-hawaii/">
+<meta property="og:title" content="Teardown 04: Hawaii law firms in the AI-citation data">
+<meta property="og:description" content="30-firm cohort. The top 5 own 66% of competitor mentions. Microsoft Copilot is the cohort-wide gap.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardown 04 &middot; Hawaii law firms</div>
+    <h1>The top 5 own two-thirds of the mentions. The opening sits outside the tier.</h1>
+    <p class="sub">30-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-24 and 2026-05-25. Pattern-readiness cleared. Individual firms anonymized; counts and distributions named.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> across 30 Hawaii law firms and 7 AI tools, the top 5 firms account for 66% of all firm-owned mentions (1,549 of 2,330). The dominant firm alone gets 538 mentions, roughly three times the second-tier firms. For any firm outside that top 5, the closable competitive ground sits in two specific places: Microsoft Copilot (which cites zero firm websites for any firm in the cohort) and the long tail of buyer-specific questions where AI defaults to legal directories instead of firm websites.
+    </div>
+
+    <h2>Why this category matters as a measurement subject</h2>
+    <p>Hawaii law firms are a category where buyer trust signals matter more than commodity attributes. A buyer choosing a law firm is choosing a named attorney's judgment for a high-stakes decision, not a fungible service. The AI-citation surface reflects that. Firms compete for inclusion in editorial sources, named-attorney bylines, and category-specific directories like Chambers and BestLawyers in ways that medical or dental practices do not need to. With 30 firms in the cohort, the data shows where that competition actually lands.</p>
+
+    <h2>Methodology summary</h2>
+    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <ul>
+      <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
+    </ul>
+    <p>18 questions a Hawaii law-firm buyer would actually ask AI, locked at hash <code>b7016e68...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs spanning 2026-05-24 and 2026-05-25. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
+    <p>The 30-firm cohort was built in two passes. 5 anchor firms registered before run 1 (the obvious incumbents). 25 additional firms surfaced through the measurement and registered after run 1 cohort-coverage scan. National BigLaw firms with Hawaii presence were excluded from the cohort to keep the comparison Hawaii-specific. Legal directories (Chambers, BestLawyers, Justia, BestLawFirms, SuperLawyers, BCG Search) were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
+    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+
+    <h2>Source-type distribution (cohort-wide)</h2>
+    <p>Across all 30 firms and all 7 AI tools, AI pulled answers from these source types:</p>
+    <table>
+      <thead>
+        <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>59%</strong></td><td class="num">3,624</td></tr>
+        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>38%</strong></td><td class="num">2,330</td></tr>
+        <tr><td>Wikipedia</td><td class="num">2%</td><td class="num">93</td></tr>
+        <tr><td>Review directories (Yelp, Healthgrades, TripAdvisor, Clutch)</td><td class="num">1%</td><td class="num">56</td></tr>
+        <tr><td>Social (LinkedIn, Facebook)</td><td class="num">0%</td><td class="num">22</td></tr>
+        <tr><td>Reddit</td><td class="num">0%</td><td class="num">8</td></tr>
+      </tbody>
+    </table>
+    <p>This puts Hawaii law firms in the same relationship-business tier as Hawaii wealth management (also 38% firm-owned in the cross-category teardown). For comparison: Hawaii consumer banking is 53% own-site and Honolulu dental is 44%. The pattern matches what one would expect structurally. Banking and dental compete on commodity attributes that publish cleanly on a firm's own site. Law and wealth compete on trust and reputation that live more in editorial sources than on a firm's homepage.</p>
+
+    <h2>Per-AI-tool breakdown, the cohort-wide Copilot gap</h2>
+    <table>
+      <thead>
+        <tr><th>AI tool</th><th class="num">Firm-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>78%</strong></td><td class="num">22%</td><td class="num">400</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>51%</strong></td><td class="num">49%</td><td class="num">638</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>44%</strong></td><td class="num">53%</td><td class="num">684</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>43%</strong></td><td class="num">56%</td><td class="num">1,651</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>40%</strong></td><td class="num">60%</td><td class="num">492</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>33%</strong></td><td class="num">67%</td><td class="num">1,469</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">81%</td><td class="num">802</td></tr>
+      </tbody>
+    </table>
+    <p>The Copilot row is the same finding the dental and wealth teardowns surfaced. Across 802 mentions on Microsoft Copilot for Hawaii law-firm questions, zero went to any of the 30 firms' own websites. Copilot cited independent third-party content 81% of the time (legal directories, Wikipedia, Hawaii Bar Association content) and Wikipedia entries 12%.</p>
+    <p>The reason is structural. Microsoft Copilot answers using Bing's organic search results. For Hawaii law-firm questions, the current Bing top results are dominated by legal directory sites (Chambers, BestLawyers, Justia) rather than by individual firms' websites. So Copilot has nothing else to cite. The gap is open for every firm in the cohort simultaneously.</p>
+    <p>The Gemma reading is also worth flagging. Gemma is open-weight, answers from training data, and cites Hawaii law firms 78% of the time when it mentions any source. That is the highest firm-owned share across all 7 AI tools. For a Hawaii firm asking "do AI models know my brand," the Gemma signal is the cleanest single-tool answer: it knows the top tier deeply and the long tail thinly.</p>
+
+    <div class="callout">
+      <h3>The first-mover opening on Microsoft Copilot</h3>
+      <p>This kind of cohort-wide gap closes the moment one firm changes the underlying condition. Whichever Hawaii law firm ranks first in Bing organic results for the most common buyer-shaped questions effectively owns the Microsoft Copilot answer while every competitor is still invisible there. The closable condition is Bing organic SERP visibility for the named questions. We do not promise that closing the condition closes the AI citation, because that is a measurement question we keep answering month over month. What we do is name the specific condition and track whether the move lands.</p>
+    </div>
+
+    <h2>Top recurring firms (anonymized)</h2>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 tools. The dominance pattern is significant.</p>
+    <table>
+      <thead>
+        <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">% of cohort competitor share</th><th class="num">Runs cited in</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firm A</td><td class="num">538</td><td class="num">23%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm B</td><td class="num">377</td><td class="num">16%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm C</td><td class="num">240</td><td class="num">10%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm D</td><td class="num">210</td><td class="num">9%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm E</td><td class="num">184</td><td class="num">8%</td><td class="num">3/3</td></tr>
+      </tbody>
+    </table>
+    <p>The top 5 firms account for <strong>66% of all firm-owned mentions</strong> (1,549 of 2,330). Firm A alone gets <strong>roughly three times the mentions</strong> of Firm B. For a firm outside that top 5, the structural reading is direct: the dominant tier owns the broad head queries, the closable ground sits in the long tail of buyer-specific questions and on Microsoft Copilot where the entire cohort is currently invisible.</p>
+    <p>All 5 top firms appeared in all 3 measurement runs (consistency signal, not run-to-run noise). The remaining 25 firms in the cohort have meaningful mention counts but at a noticeably lower frequency, with most landing in the single-digit to low-double-digit range per measurement.</p>
+
+    <h2>Where AI pulls from when it cites non-firm content</h2>
+    <p>The 3,624 third-party-content mentions are not all the same shape. Top recurring sources across runs:</p>
+    <table>
+      <thead>
+        <tr><th>Source</th><th class="num">Mentions</th><th>Why AI cites it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Chambers (legal directory)</td><td class="num">170</td><td>Editorial peer-rated firm rankings</td></tr>
+        <tr><td>BestLawFirms (US News rankings)</td><td class="num">169</td><td>Editorial firm rankings</td></tr>
+        <tr><td>A generic "Hawaii lawyer" directory</td><td class="num">115</td><td>Provider directory for the state</td></tr>
+        <tr><td>Justia</td><td class="num">111</td><td>Legal-information aggregator with firm listings</td></tr>
+        <tr><td>BestLawyers</td><td class="num">109</td><td>Editorial peer-rated individual-attorney rankings</td></tr>
+      </tbody>
+    </table>
+    <p>Four of the top five recurring non-firm sources are legal directories with editorial selection processes (Chambers, BestLawFirms, BestLawyers, Justia). For a buyer asking AI "who are the best Hawaii law firms for X," AI cites these directories more often than any individual firm's own site. This is structural for the category: editorial rankings exist as a third-party trust layer that wealth or dental does not have an equivalent for. A firm not represented in those directories is invisible across roughly 25% of all third-party mentions in the data.</p>
+
+    <h2>What this teardown does and does not prove</h2>
+    <p>What it does support:</p>
+    <ul>
+      <li>The 30-firm cohort is a representative slice of Hawaii law firms AI tools actually cite for buyer-shaped questions.</li>
+      <li>The 38%/59% firm-own / third-party split is stable: 37% on run 2, 38% on run 3 (same cohort). Run-to-run noise is not driving the headline.</li>
+      <li>The Microsoft Copilot 0% firm-own share is cohort-wide and consistent across all 3 measurement runs.</li>
+      <li>The top 5 concentration (66% of mentions) is observable across all 3 runs and across all 7 AI tools.</li>
+      <li>Editorial legal directories (Chambers, BestLawFirms, Justia, BestLawyers) are a measurable AEO surface for this category that most firms below the top 5 likely treat as a separate practice-development effort, not an AEO one.</li>
+    </ul>
+    <p>What it does not yet support:</p>
+    <ul>
+      <li>That the top-5 dominance is permanent. AI tools refresh their training data and search indices on schedules outside our control. The cohort below the top 5 may shift positions month to month; we measure that.</li>
+      <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
+      <li>That the Microsoft Copilot first-mover opportunity is actually closable for any specific firm. The Bing organic ranking competition is its own beast and outside what this measurement captures.</li>
+    </ul>
+
+    <h2>Why this is anonymized</h2>
+    <p>None of the 30 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <a href="/teardowns/cross-category/">Cross-category teardown (4 verticals)</a>
+      <a href="/methodology/">How we measure</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement window:</strong> 3 usable runs spanning 2026-05-24 and 2026-05-25. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>b7016e68...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
+      <p><strong>Anonymization:</strong> the 30-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party directory sources (Chambers, BestLawFirms, Justia, BestLawyers) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
