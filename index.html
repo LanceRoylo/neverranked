@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>NeverRanked — what AI answer engines cite for your category</title>
+<title>NeverRanked: what AI answer engines cite for your category</title>
 <meta name="description" content="A founder-led research practice that measures what AI answer engines cite for a business category. Seven AI surfaces, every day. A forensic memo and a prepped punch list your team executes.">
 <link rel="canonical" href="https://neverranked.com/">
 <style>
@@ -152,7 +152,155 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
-    .void-graphic, .vg-rows-ai .vg-hollow { animation: none; }
+    .void-graphic, .vg-rows-ai .vg-hollow, .vg-rows-google .vg-row, .vg-cap { animation: none; }
+    .readout-fill { transition: none; width: var(--target-width, 0) !important; }
+    .hpr-you { animation: none; }
+    .hero-preview-query::after { animation: none; }
+    .cta:hover { box-shadow: none; }
+  }
+
+  /* ── Hero live-preview card ─────────────────────────────────── */
+  .hero-preview {
+    margin: 18px 0 30px;
+    padding: 22px 26px;
+    border: 1px solid #2a2a2e;
+    background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+    border-radius: 6px;
+    max-width: 480px;
+  }
+  .hero-preview-head {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 14px;
+  }
+  .hero-preview-query {
+    font-family: var(--mono); font-size: 14px; color: var(--text);
+    margin-bottom: 18px; min-height: 22px;
+    transition: opacity 220ms var(--ease-out);
+  }
+  .hero-preview-query.fading { opacity: 0; }
+  .hero-preview-query::after {
+    content: '▮'; color: var(--gold); margin-left: 6px;
+    animation: cursorBlink 1.1s steps(2) infinite;
+  }
+  @keyframes cursorBlink { 50% { opacity: 0; } }
+  .hero-preview-response {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  }
+  .hero-preview-cite {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim); margin-right: 4px;
+  }
+  .hero-preview-row {
+    font-family: var(--mono); font-size: 12px; padding: 6px 11px;
+    border-radius: 4px; letter-spacing: 0.03em;
+  }
+  .hpr-named {
+    background: rgba(212,197,150,0.12);
+    border: 1px solid rgba(212,197,150,0.30);
+    color: var(--text);
+  }
+  .hpr-you {
+    background: transparent; border: 1.5px dashed var(--gold);
+    color: var(--gold);
+    animation: youPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes youPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.62; }
+  }
+
+  /* ── Void graphic motion polish ─────────────────────────────── */
+  .vg-rows-google .vg-row {
+    opacity: 0; transform: translateX(-10px);
+    animation: vgRowSlide 440ms var(--ease-out) both;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-rows-google .vg-row { animation-play-state: running; }
+  .vg-rows-google .vg-row:nth-child(1) { animation-delay: 80ms; }
+  .vg-rows-google .vg-row:nth-child(2) { animation-delay: 145ms; }
+  .vg-rows-google .vg-row:nth-child(3) { animation-delay: 210ms; }
+  .vg-rows-google .vg-row:nth-child(4) { animation-delay: 275ms; }
+  .vg-rows-google .vg-row:nth-child(5) { animation-delay: 340ms; }
+  .vg-rows-google .vg-row:nth-child(6) { animation-delay: 405ms; }
+  .vg-rows-google .vg-row:nth-child(7) { animation-delay: 470ms; }
+  .vg-rows-google .vg-row:nth-child(8) { animation-delay: 535ms; }
+  .vg-rows-google .vg-row:nth-child(9) { animation-delay: 600ms; }
+  .vg-rows-google .vg-row:nth-child(10) { animation-delay: 665ms; }
+  @keyframes vgRowSlide { to { opacity: 1; transform: translateX(0); } }
+
+  /* Chain pulse after the existing vgDrop on the hollow "You" */
+  .vg-rows-ai .vg-hollow {
+    animation: vgDrop 1.5s var(--ease-out) both, vgHollowPulse 2.6s ease-in-out 1.6s infinite;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-rows-ai .vg-hollow { animation-play-state: running; }
+  @keyframes vgHollowPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,197,150,0); }
+    50% { opacity: 0.78; box-shadow: 0 0 14px 1px rgba(212,197,150,0.18); }
+  }
+
+  /* Captions fade in after the bars build */
+  .vg-cap, .vg-trend {
+    opacity: 0;
+    animation: vgCapFade 540ms var(--ease-out) 900ms both;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-cap, .void-graphic.in .vg-trend { animation-play-state: running; }
+  @keyframes vgCapFade { to { opacity: 1; } }
+
+  /* ── Cohort readout bars animate on viewport entry ──────────── */
+  .readout-fill {
+    width: 0;
+    transition: width 1100ms var(--ease-out);
+  }
+  .readout.in .readout-fill { width: var(--target-width, 0); }
+  .readout.in .readout-row:nth-child(2) .readout-fill { transition-delay: 60ms; }
+  .readout.in .readout-row:nth-child(3) .readout-fill { transition-delay: 180ms; }
+  .readout.in .readout-row:nth-child(4) .readout-fill { transition-delay: 300ms; }
+  .readout.in .readout-row:nth-child(5) .readout-fill { transition-delay: 420ms; }
+
+  /* ── Pricing visual hierarchy ───────────────────────────────── */
+  .price { position: relative; transition: transform 220ms var(--ease-out), border-color 220ms ease; }
+  .price-primary {
+    background: linear-gradient(180deg, rgba(212,197,150,0.10), rgba(212,197,150,0.03));
+    border-color: rgba(212,197,150,0.42);
+  }
+  .price-primary .amt { color: var(--gold); font-size: 38px; }
+  .price-secondary .amt { font-size: 30px; color: var(--text); }
+  .price .role {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid rgba(212,197,150,0.18);
+  }
+  .price-secondary .role { color: var(--dim); border-top-color: #1c1c1e; }
+  @media (hover: hover) {
+    .price:hover { transform: translateY(-2px); }
+    .price-primary:hover { border-color: rgba(212,197,150,0.62); }
+  }
+
+  /* ── CTA polish pass ────────────────────────────────────────── */
+  .cta {
+    box-shadow: 0 0 0 0 rgba(212,197,150,0);
+    transition: transform 160ms var(--ease-out), background 220ms ease, box-shadow 280ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .cta:hover { box-shadow: 0 0 24px 0 rgba(212,197,150,0.18); }
+  }
+  .nav-cta {
+    box-shadow: 0 0 0 0 rgba(212,197,150,0);
+    transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out), background 160ms ease, box-shadow 240ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .nav-cta:hover { box-shadow: 0 0 14px 0 rgba(212,197,150,0.15); }
+  }
+  .nav-cta:active { transform: scale(0.97); }
+
+  @media (max-width: 680px) {
+    .hero-preview { max-width: 100%; padding: 18px 20px; }
+    .hero-preview-row { font-size: 11px; padding: 5px 9px; }
+    .price-primary .amt { font-size: 32px; }
+    .price-secondary .amt { font-size: 26px; }
   }
 </style>
 </head>
@@ -176,7 +324,18 @@
       <div class="kicker reveal">A research practice &middot; Honolulu</div>
       <h1 class="reveal" style="transition-delay:.09s">Have you ever asked ChatGPT to find a business? A restaurant, a tire shop, a coffee shop in a city you were visiting.</h1>
       <p class="turn reveal" style="transition-delay:.18s">Then you have already watched an AI answer engine pick winners. Your customers are doing the same thing to find a business like yours. The only question is whether the AI names you.</p>
-      <div class="reveal" style="transition-delay:.27s">
+      <div class="hero-preview reveal" style="transition-delay:.27s">
+        <div class="hero-preview-head">An AI answer right now might look like</div>
+        <div class="hero-preview-query" id="hero-query">&ldquo;best wealth manager in Hawaii&rdquo;</div>
+        <div class="hero-preview-response">
+          <span class="hero-preview-cite">AI cites</span>
+          <span class="hero-preview-row hpr-named">Firm A</span>
+          <span class="hero-preview-row hpr-named">Firm B</span>
+          <span class="hero-preview-row hpr-named">Firm C</span>
+          <span class="hero-preview-row hpr-you">&#9633; You</span>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay:.36s">
         <a class="cta" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
       </div>
     </div>
@@ -281,19 +440,19 @@
         <div class="readout-label">One category we measured &middot; an early read</div>
         <div class="readout-row">
           <div class="readout-name">Independent web</div>
-          <div class="readout-track"><div class="readout-fill" style="width:96%"></div></div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:96%"></div></div>
         </div>
         <div class="readout-row">
           <div class="readout-name">Review directories</div>
-          <div class="readout-track"><div class="readout-fill" style="width:7%"></div></div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:7%"></div></div>
         </div>
         <div class="readout-row">
           <div class="readout-name">YouTube</div>
-          <div class="readout-track"><div class="readout-fill" style="width:4%"></div></div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:4%"></div></div>
         </div>
         <div class="readout-row">
           <div class="readout-name">Reddit, forums</div>
-          <div class="readout-track"><div class="readout-fill faint" style="width:1.5%"></div></div>
+          <div class="readout-track"><div class="readout-fill faint" style="--target-width:1.5%"></div></div>
         </div>
         <div class="readout-note">A single category, an early read. A data point, not a generalized pattern. And the two directories the engines did trust were niche ones most operators have never heard of.</div>
       </div>
@@ -309,13 +468,15 @@
       <h2>Per category, not per client.</h2>
       <p>No bundled tiers, no per-seat math.</p>
       <div class="prices">
-        <div class="price">
+        <div class="price price-secondary">
           <div class="amt">$4,500</div>
           <div class="unit">Kickoff per category &middot; one time</div>
+          <div class="role">Get started</div>
         </div>
-        <div class="price">
+        <div class="price price-primary">
           <div class="amt">$1,500</div>
           <div class="unit">Per month per category &middot; ongoing</div>
+          <div class="role">The engagement</div>
         </div>
       </div>
       <p>Free 1-page diagnostic before you commit. We run 5 real customer questions for your category across all 7 AI tools, then send a 1-page snapshot showing which competitors AI is naming and whether you&rsquo;re one of them. One per business. The full engagement adds the rest of the question set (18 per category), weekly tracking, a cohort baseline that makes the numbers mean something, and a clear list of what to fix.</p>
@@ -366,7 +527,7 @@
     /* Scroll-reveal: elements fade and rise as they enter the viewport.
        Above-the-fold elements fire immediately on load. No dependencies. */
     (function () {
-      var els = document.querySelectorAll('.reveal, .void-graphic');
+      var els = document.querySelectorAll('.reveal, .void-graphic, .readout');
       if (!('IntersectionObserver' in window)) {
         els.forEach(function (el) { el.classList.add('in'); });
         return;
@@ -380,6 +541,33 @@
         });
       }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
       els.forEach(function (el) { io.observe(el); });
+    })();
+
+    /* Hero query cycler: rotates through real buyer-shaped questions
+       drawn from the categories we have measured. Pauses on reduced-
+       motion. Updates only the query text, not the AI response card,
+       so the "You" hollow row stays the persistent visual anchor. */
+    (function () {
+      var queryEl = document.getElementById('hero-query');
+      if (!queryEl) return;
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+      var queries = [
+        '“best wealth manager in Hawaii”',
+        '“best dentist in Honolulu”',
+        '“Hawaii law firm for business owners”',
+        '“best bank for small business in Hawaii”',
+        '“med spa Honolulu top rated”'
+      ];
+      var i = 0;
+      setInterval(function () {
+        queryEl.classList.add('fading');
+        setTimeout(function () {
+          i = (i + 1) % queries.length;
+          queryEl.textContent = queries[i];
+          queryEl.classList.remove('fading');
+        }, 240);
+      }, 4200);
     })();
   </script>
 
