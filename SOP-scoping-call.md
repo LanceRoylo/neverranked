@@ -32,10 +32,28 @@ This doc covers the workflow from "scoping call booked" to "hash-locked set runn
 2. **Pull two competitors** the customer likely knows. Don't list them on the call. They become pressure-test references after the call ("the customer named X, but did they mention Y, the obvious competitor in their space?").
 3. **Read the customer's homepage** for 5 minutes. Note their stated buyer ("we work with growth-stage B2B SaaS founders"), their stated services, their stated geographic scope.
 4. **Skim the methodology page** (`/methodology/`) so the query-set discipline is fresh in your head.
+5. **Check the Plaud Note Pro is charged and recording-app is set up.** The Plaud transcribes the call automatically. It is what makes "dense notes, don't summarize, transcribe" achievable in real time without splitting your attention between listening and writing. The recorder is on for the buyer-shape interview (the 20 minutes that actually matter); the transcript becomes the verbatim raw material for section 4 of the customer's brand-brain file (per SOP-customer-onboarding.md Day 5).
 
 ---
 
 ## The call itself (30 min, customer + Lance)
+
+### Recording and consent (first 60 seconds of the call)
+
+Hawaii is a one-party consent state, so legally you can record any conversation you're part of without notifying the other party. But for a first-meeting professional context the customary move is to ask. Use this line in the first 60 seconds, before the agenda:
+
+> *"I record meetings on a small device so I can give you accurate notes after. Want me to keep it off?"*
+
+Three things this line does:
+
+- Asks permission rather than informs (professional courtesy)
+- Frames the recording as for their benefit (accurate notes after, which it is)
+- Gives them an easy "actually yes, let's skip it" out if they want
+- Signals you take notes seriously, which aligns with the observational-discipline brand
+
+Most professional buyers say yes. The few who say no are signaling something worth knowing about the engagement; honor the no and take handwritten notes that call, then proceed.
+
+If yes, hit record before the agenda begins. The recorder stays on through the buyer-shape interview. Stop after the 30 minutes wrap or earlier if the conversation drifts into pricing-objection or contract-detail territory (record only what is buyer-shape signal, not negotiation talk).
 
 ### Agenda
 
@@ -76,7 +94,7 @@ Five questions, asked in this order. Take dense notes. Don't summarize, transcri
 
 ## Post-call synthesis (Lance + Atlas/Claude, 1-2 hours)
 
-1. **Dump the call notes** into a working file (`drafts/scoping-<customer-slug>.md`).
+1. **Pull the Plaud transcript** for the call. Light-edit pass to fix obvious transcription errors (proper names, jargon, numbers), but keep all the customer's actual phrasing intact. Save to `drafts/scoping-<customer-slug>.md` as the working file. This transcript also becomes the verbatim section 4 of the customer's brand-brain file when Day 5 of onboarding runs.
 2. **Feed the notes to Atlas/Claude** with this exact prompt shape:
    > "Here are scoping call notes for [customer name], a [category description] business. Draft 18 buyer questions in the 8 head + 10 long-tail shape we use across categories. Match the voice of how their actual buyers would type the questions, not how SEO keyword tools rank phrases. Include exactly one named-comparison query using these competitors: [list]. Pressure-test the set against the 5 demand-surface coverage areas: [head intent / geographic / service-combined / trust-signal / value-conscious]."
 3. **Atlas/Claude returns the draft.** Read it through twice. The 8 head should be variations on broad intent. The 10 long-tail should each capture a distinct buyer scenario or named comparison. No two queries should be near-duplicates.
