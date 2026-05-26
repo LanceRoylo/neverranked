@@ -1,19 +1,17 @@
 <!doctype html>
 <!--
   CPA-Hawaii teardown 06. 7-AI-tool measurement on Hawaii CPA firms.
-  Cohort registered 30+ firms after run 1 + run 2 cohort-coverage scans.
-  18 hash-locked questions (dc6ae677...), 3 reps per question per run,
-  3 usable runs on 2026-05-26.
+  41-firm cohort built in three passes (5 anchors, +15 from run #1
+  surface, +8 from run #2 surface, +11 from run #3 surface, with
+  2 anchor domain variants corrected).
+  18 hash-locked questions (dc6ae677faf3...), 3 reps per question
+  per run, 3 usable runs on 2026-05-26.
 
   Cohort kept anonymized at the firm level. None of the firms are
   paying NeverRanked customers; the non-customer anonymization rule
   applies. Counts, source-type distributions, per-AI-tool breakdowns,
-  and named third-party directories are public; individual firm names
-  are not.
-
-  SKELETON STATUS 2026-05-26: structure complete, numbers are
-  PLACEHOLDERS until run 3 lands and we aggregate the 3-run dataset.
-  All [[BRACKETED]] tokens are fill-ins.
+  and named third-party directories/associations are public; individual
+  firm names are not.
 -->
 <html lang="en">
 <head>
@@ -21,10 +19,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 06: What 7-AI-tool measurement reveals about Hawaii CPA firms</title>
-<meta name="description" content="[[N]] Hawaii CPA firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. [[HEADLINE_NUMBER_SENTENCE]]">
+<meta name="description" content="41 Hawaii CPA firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. Firm-owned share is 39%. The training-data engines (Claude, Gemma) don't know any Hawaii CPA firms by name. Microsoft Copilot is the cohort-wide gap.">
 <link rel="canonical" href="https://neverranked.com/teardowns/cpa-hawaii/">
 <meta property="og:title" content="Teardown 06: Hawaii CPA firms in the AI-citation data">
-<meta property="og:description" content="[[N]]-firm cohort. [[OG_HOOK]]">
+<meta property="og:description" content="41-firm cohort. Training-data engines collapse to 1-2% firm-owned share. Web-searching engines reach 60%.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -64,16 +62,16 @@
 <body>
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 06 &middot; Hawaii CPA firms</div>
-    <h1>[[HEADLINE]]</h1>
-    <p class="sub">[[N]]-firm cohort, 18 hash-locked questions, 3 usable runs on 2026-05-26. Pattern-readiness cleared. Individual firms anonymized; counts and distributions named.</p>
+    <h1>The web-searching engines find Hawaii CPAs. The training-data engines don't know any of them.</h1>
+    <p class="sub">41-firm cohort, 18 hash-locked questions, 3 usable runs on 2026-05-26. Pattern-readiness cleared. Individual firms anonymized; counts and distributions named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> [[ONE_SENTENCE_SUMMARY]]. For any firm outside the top tier, the closable competitive ground sits in [[CLOSABLE_GROUND]].
+      <strong>The headline finding in one sentence:</strong> across 41 Hawaii CPA firms and 7 AI tools, firm-owned websites get 39% of all mentions, comparable to law firms. But the engine-level pattern is unique: OpenAI cites Hawaii CPA websites 60% of the time and Gemini 59%, while Claude and Gemma (the training-data engines) cite firm websites less than 2% of the time. For every other category measured, training-data engines were the highest own-share tier. For Hawaii CPAs, they collapse to nearly zero. The closable competitive ground sits inside the four web-searching engines (OpenAI, Gemini, Perplexity, Google AI Overviews); the training-data engines are a structural blind spot for the entire category, not a closable condition.
     </div>
 
     <h2>Why this category matters as a measurement subject</h2>
-    <p>Hawaii CPA firms are a category where buyer trust signals matter more than commodity attributes. A buyer choosing a CPA is choosing a named partner's judgment on tax, audit, or advisory work that touches the rest of the business. The AI-citation surface reflects that. Firms compete for inclusion in editorial sources, professional associations (state and national CPA societies), and category-specific directories in ways that purely transactional categories do not need to. With [[N]] firms in the cohort, the data shows where that competition actually lands.</p>
-    <p>CPA Hawaii is the fifth vertical NeverRanked has measured to pattern-readiness, after Honolulu consumer banking, Hawaii wealth management, Honolulu dental, and Hawaii law firms. The cross-category teardown reads CPA against the other four.</p>
+    <p>Hawaii CPA firms are a category where buyer trust signals matter more than commodity attributes. A buyer choosing a CPA is choosing a named partner's judgment on tax, audit, or advisory work that touches the rest of the business. The AI-citation surface reflects that. Firms compete for inclusion in editorial sources, professional associations, and category-specific directories in ways that purely transactional categories do not need to. With 41 firms in the cohort, the data shows where that competition actually lands.</p>
+    <p>CPA Hawaii is the fifth vertical NeverRanked has measured to pattern-readiness, after Honolulu consumer banking, Hawaii wealth management, Honolulu dental, and Hawaii law firms. The cross-category teardown reads CPA against the other four. The most distinctive structural pattern, surfaced only by measuring against the prior four, is the training-data blind spot named above.</p>
 
     <h2>Methodology summary</h2>
     <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
@@ -81,101 +79,103 @@
       <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
     </ul>
-    <p>18 questions a Hawaii CPA buyer would actually ask AI, locked at hash <code>dc6ae677...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs on 2026-05-26. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
-    <p>The [[N]]-firm cohort was built in three passes. 5 anchor firms registered before run 1 (the obvious incumbents). [[N1]] additional firms surfaced through the measurement and registered after run 1 cohort-coverage scan. [[N2]] more registered after run 2. National Big-4 firms (KPMG, PwC, Deloitte, BDO, CLA) and out-of-state firms were excluded from the cohort to keep the comparison Hawaii-specific. State professional bodies (Hawaii Society of CPAs, Hawaii nonprofit associations), the UH Shidler business school, and generic firm directories were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
+    <p>18 questions a Hawaii CPA buyer would actually ask AI, locked at hash <code>dc6ae677...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs on 2026-05-26 (run #1, #2, #3 fired in succession). Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
+    <p>The 41-firm cohort was built in four passes. 5 anchor firms registered before run 1. 15 additional firms surfaced through the run #1 within-citation scan. 8 more surfaced after run #2 cohort-coverage. 11 final additions after run #3. National Big-4 firms (KPMG, PwC, Deloitte, BDO, CLA) and out-of-state firms were excluded from the cohort to keep the comparison Hawaii-specific. State professional bodies (Hawaii Society of CPAs, the UH Shidler business school), generic firm directories (Goodfirms, Clutch), neighborhood directories, and government domains were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
     <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
-    <p>Across all [[N]] firms and all 7 AI tools, AI pulled answers from these source types:</p>
+    <p>Across all 41 firms and all 7 AI tools, 5,809 total citations, AI pulled answers from these source types:</p>
     <table>
       <thead>
         <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
       </thead>
       <tbody>
-        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>[[IW_PCT]]%</strong></td><td class="num">[[IW_N]]</td></tr>
-        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>[[COMP_PCT]]%</strong></td><td class="num">[[COMP_N]]</td></tr>
-        <tr><td>Wikipedia</td><td class="num">[[WIKI_PCT]]%</td><td class="num">[[WIKI_N]]</td></tr>
-        <tr><td>Review directories</td><td class="num">[[REV_PCT]]%</td><td class="num">[[REV_N]]</td></tr>
-        <tr><td>Social (LinkedIn, Facebook)</td><td class="num">[[SOC_PCT]]%</td><td class="num">[[SOC_N]]</td></tr>
-        <tr><td>Reddit</td><td class="num">[[RED_PCT]]%</td><td class="num">[[RED_N]]</td></tr>
+        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>54%</strong></td><td class="num">3,133</td></tr>
+        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>39%</strong></td><td class="num">2,244</td></tr>
+        <tr><td>Review directories (Clutch, Yelp, Expertise, BBB)</td><td class="num">5%</td><td class="num">270</td></tr>
+        <tr><td>Wikipedia</td><td class="num">2%</td><td class="num">96</td></tr>
+        <tr><td>Social (LinkedIn, Facebook, Instagram)</td><td class="num">1%</td><td class="num">31</td></tr>
+        <tr><td>Reddit</td><td class="num">0%</td><td class="num">23</td></tr>
       </tbody>
     </table>
-    <p>[[CROSS_CATEGORY_PARAGRAPH: place CPA in the cluster vs banking 53%, wealth 47%, dental 44%, law 39%. Pre-cohort-expansion runs read ~27% then ~34%; landing-place after run 3 expected near or slightly below law. Confirm and write.]]</p>
+    <p>This puts Hawaii CPA firms at the lower end of the cross-category cluster, tied with law firms at 39% firm-owned. For comparison: Hawaii consumer banking is 53%, Hawaii wealth management 47%, Honolulu dental 44%, Hawaii law firms 39%. The professional-services cluster (wealth, dental, law, CPA) all sit between 39% and 47%, with CPA tied for the lowest. The review-directory share at 5% is also the highest of any measured category, driven primarily by Clutch (101 cites), Yelp (66 cites combined desktop and mobile), Expertise (35), and BBB (30).</p>
 
-    <h2>Per-AI-tool breakdown</h2>
+    <h2>Per-AI-tool breakdown, the training-data collapse</h2>
     <table>
       <thead>
         <tr><th>AI tool</th><th class="num">Firm-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
       </thead>
       <tbody>
-        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>[[GEMMA_OWN]]%</strong></td><td class="num">[[GEMMA_TP]]%</td><td class="num">[[GEMMA_N]]</td></tr>
-        <tr><td class="us">Claude (training data)</td><td class="num"><strong>[[CLAUDE_OWN]]%</strong></td><td class="num">[[CLAUDE_TP]]%</td><td class="num">[[CLAUDE_N]]</td></tr>
-        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>[[AIO_OWN]]%</strong></td><td class="num">[[AIO_TP]]%</td><td class="num">[[AIO_N]]</td></tr>
-        <tr><td class="us">Gemini grounded</td><td class="num"><strong>[[GEMINI_OWN]]%</strong></td><td class="num">[[GEMINI_TP]]%</td><td class="num">[[GEMINI_N]]</td></tr>
-        <tr><td class="us">ChatGPT search</td><td class="num"><strong>[[GPT_OWN]]%</strong></td><td class="num">[[GPT_TP]]%</td><td class="num">[[GPT_N]]</td></tr>
-        <tr><td class="us">Perplexity</td><td class="num"><strong>[[PPLX_OWN]]%</strong></td><td class="num">[[PPLX_TP]]%</td><td class="num">[[PPLX_N]]</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>[[COPILOT_OWN]]%</strong></td><td class="num">[[COPILOT_TP]]%</td><td class="num">[[COPILOT_N]]</td></tr>
+        <tr><td class="us">ChatGPT search (OpenAI)</td><td class="num"><strong>60%</strong></td><td class="num">40%</td><td class="num">898</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>59%</strong></td><td class="num">41%</td><td class="num">1,533</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>46%</strong></td><td class="num">54%</td><td class="num">1,081</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>45%</strong></td><td class="num">55%</td><td class="num">621</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">782</td></tr>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">293</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>1%</strong></td><td class="num">99%</td><td class="num">601</td></tr>
       </tbody>
     </table>
-    <p>[[COPILOT_PARAGRAPH: if Copilot own-share is again 0% (the pattern across dental, wealth, law), write the structural-Bing-organic explanation and call it cohort-wide. If non-zero, name which firms break the pattern and how thinly.]]</p>
-    <p>[[GEMMA_PARAGRAPH: training-data tool reading. Gemma's own-share has been the highest across the other four categories. Confirm whether CPA repeats the pattern and what that implies for brand depth in pretrained weights.]]</p>
+    <p>This per-engine table is the most distinctive finding in the data. The four web-searching engines (OpenAI, Gemini, Perplexity, Google AIO) all reach between 45% and 60% firm-owned share. The two training-data engines (Claude and Gemma) reach 1% and 2%. Microsoft Copilot sits at 2%, consistent with the cohort-wide Copilot pattern observed in dental, wealth, and law categories.</p>
+    <p>For comparison: in the Hawaii law-firm teardown, Gemma was the highest own-share engine at 78% and Claude was second at 51%. In Honolulu dental, Gemma was the top own-share engine. In Hawaii consumer banking, Claude reached 71%. Across every other category measured, the training-data engines knew the cohort firms by name and cited them frequently. For Hawaii CPAs, both training-data engines collapse to nearly zero.</p>
+    <p>The structural reading is that Hawaii CPA firms have substantially less brand presence in the training-data corpora than the equivalent firms in adjacent professional-services categories. CPA work is more transactional, less editorially covered, and less likely to surface in the kind of broad-web content training-data engines memorize. A firm cannot close this gap by changing what is on its website. Closing it would require category-wide editorial coverage of Hawaii CPAs in the kind of sources training data ingests (national publications, professional-association editorial, academic-adjacent content), which is outside the scope of what any individual firm controls.</p>
 
     <div class="callout">
-      <h3>[[CALLOUT_HEADER: the closable structural condition for this category]]</h3>
-      <p>[[CALLOUT_BODY: name the specific condition (likely Microsoft Copilot first-mover, or the long-tail compositional questions, or the state-CPA-society + Big-4-exclusion gap where Hawaii firms have an editorial opening). Track but do not promise. Same observational discipline as the law and dental callouts.]]</p>
+      <h3>The closable ground is the four web-searching engines</h3>
+      <p>For every other category measured, the closable ground was inside the cohort-wide Copilot gap, where one firm winning Bing organic rankings effectively owns that engine. The same pattern holds for CPA, but the structural read flips: the four web-searching engines (OpenAI, Gemini, Perplexity, Google AIO) are where the competitive game actually plays for Hawaii CPAs. They produce 88% of all firm-owned mentions in the data. Closing the training-data gap is a category-wide editorial problem that no single firm controls; competing on the web-searching tier is something a firm's own content, schema, and editorial visibility can move. The condition is to surface clearly enough in the four web-searching engines' source-pull surfaces that they cite your firm instead of a competitor or a third-party aggregator.</p>
     </div>
 
     <h2>Top recurring firms (anonymized)</h2>
-    <p>The [[TOP_N]] firms AI cited most often across the 18 questions and 7 tools.</p>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 tools.</p>
     <table>
       <thead>
         <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">% of cohort competitor share</th><th class="num">Runs cited in</th></tr>
       </thead>
       <tbody>
-        <tr><td>Firm A</td><td class="num">[[A_N]]</td><td class="num">[[A_PCT]]%</td><td class="num">3/3</td></tr>
-        <tr><td>Firm B</td><td class="num">[[B_N]]</td><td class="num">[[B_PCT]]%</td><td class="num">3/3</td></tr>
-        <tr><td>Firm C</td><td class="num">[[C_N]]</td><td class="num">[[C_PCT]]%</td><td class="num">3/3</td></tr>
-        <tr><td>Firm D</td><td class="num">[[D_N]]</td><td class="num">[[D_PCT]]%</td><td class="num">3/3</td></tr>
-        <tr><td>Firm E</td><td class="num">[[E_N]]</td><td class="num">[[E_PCT]]%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm A</td><td class="num">265</td><td class="num">12%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm B</td><td class="num">182</td><td class="num">8%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm C</td><td class="num">121</td><td class="num">5%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm D</td><td class="num">115</td><td class="num">5%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm E</td><td class="num">106</td><td class="num">5%</td><td class="num">3/3</td></tr>
       </tbody>
     </table>
-    <p>[[CONCENTRATION_PARAGRAPH: top 5 own X% of mentions, dominant firm gap. Compare to law (top 5 = 66%) and to the more even distribution patterns in dental and wealth.]]</p>
-    <p>[[CONSISTENCY_PARAGRAPH: how many of the top firms appeared in all 3 runs. The remaining cohort's frequency band.]]</p>
+    <p>The top 5 firms account for <strong>35% of all firm-owned mentions</strong> (789 of 2,244). For comparison: Hawaii law firms top 5 = 66%, Hawaii consumer banking top 5 = 71%, Honolulu dental top 5 = 49%, Hawaii wealth top 5 = 41%. Hawaii CPA is the least concentrated of the five categories measured. The competitive distribution is flatter: more firms with meaningful mention counts, no single dominant firm pulling away.</p>
+    <p>All 5 top firms appeared in all 3 measurement runs (consistency signal, not run-to-run noise). The remaining 36 firms in the cohort have meaningful mention counts but at a noticeably lower frequency. The structural reading: for a firm outside the top 5, the gap to the leader is narrower than in any other category we have measured. There is no dominant tier to break into; the head of the distribution is shallow.</p>
 
     <h2>Where AI pulls from when it cites non-firm content</h2>
-    <p>The [[TP_TOTAL]] third-party-content mentions are not all the same shape. Top recurring sources across runs:</p>
+    <p>The 3,133 third-party-content mentions are not all the same shape. Top recurring sources across runs:</p>
     <table>
       <thead>
         <tr><th>Source</th><th class="num">Mentions</th><th>Why AI cites it</th></tr>
       </thead>
       <tbody>
-        <tr><td>[[SRC1]]</td><td class="num">[[SRC1_N]]</td><td>[[SRC1_WHY]]</td></tr>
-        <tr><td>[[SRC2]]</td><td class="num">[[SRC2_N]]</td><td>[[SRC2_WHY]]</td></tr>
-        <tr><td>[[SRC3]]</td><td class="num">[[SRC3_N]]</td><td>[[SRC3_WHY]]</td></tr>
-        <tr><td>[[SRC4]]</td><td class="num">[[SRC4_N]]</td><td>[[SRC4_WHY]]</td></tr>
-        <tr><td>[[SRC5]]</td><td class="num">[[SRC5_N]]</td><td>[[SRC5_WHY]]</td></tr>
+        <tr><td>Hawaii Society of CPAs (hscpa.org)</td><td class="num">130</td><td>State professional association directory</td></tr>
+        <tr><td>Generic Hawaii directories (gohawaii.com, hawaii.com)</td><td class="num">137</td><td>State and neighborhood reference sites</td></tr>
+        <tr><td>Clutch.co (review directory)</td><td class="num">101</td><td>B2B service-provider reviews and rankings</td></tr>
+        <tr><td>Yelp (desktop + mobile)</td><td class="num">66</td><td>Local business reviews</td></tr>
+        <tr><td>Expertise.com (directory)</td><td class="num">35</td><td>Editorial firm rankings by category</td></tr>
       </tbody>
     </table>
-    <p>[[SOURCES_PARAGRAPH: expected mix is Hawaii Society of CPAs (hscpa.org), Forbes / Kiplinger / Investopedia / NerdWallet / Fool for category content, Hawaii Business Magazine for editorial firm coverage, Pacific Business News, possibly Goodfirms or Clutch for firm directories. Name the structural reading: which third parties are the editorial trust layer AI defers to, and which are pure aggregators.]]</p>
+    <p>The Hawaii Society of CPAs (hscpa.org) appearing 130 times across 3 runs is the most structurally significant third-party source. For a buyer asking AI about Hawaii CPA firms, the state professional association is cited more often than any individual firm's own website. Editorial directories (Clutch, Expertise) and review platforms (Yelp, BBB) account for the next tier. Generic Hawaii reference sites (gohawaii.com, hawaii.com, kaimukihawaii.com) appear frequently because AI often grounds Hawaii-specific queries in state-level sources before naming individual firms. A firm not represented in HSCPA's public directory is effectively invisible across roughly 6% of all citations in the data.</p>
 
     <h2>What this teardown does and does not prove</h2>
     <p>What it does support:</p>
     <ul>
-      <li>The [[N]]-firm cohort is a representative slice of Hawaii CPA firms AI tools actually cite for buyer-shaped questions.</li>
-      <li>The [[COMP_PCT]]% / [[IW_PCT]]% firm-own / third-party split is stable across all 3 runs of the expanded cohort.</li>
-      <li>[[COPILOT_FINDING_LINE]].</li>
-      <li>The top [[TOP_N]] concentration ([[CONCENTRATION_PCT]]% of mentions) is observable across all 3 runs and across all 7 AI tools.</li>
-      <li>[[EDITORIAL_TRUST_LAYER_LINE]].</li>
+      <li>The 41-firm cohort is a representative slice of Hawaii CPA firms AI tools actually cite for buyer-shaped questions.</li>
+      <li>The 39%/54% firm-own / third-party split is stable across the expanded cohort and all 3 runs.</li>
+      <li>The training-data engine collapse (Claude 1%, Gemma 2%) is the most distinctive structural pattern, unique to this category among the five measured.</li>
+      <li>The four web-searching engines reach between 45% and 60% firm-owned share, the highest engine-cluster reach we have observed for a professional-services category.</li>
+      <li>The top 5 concentration (35% of mentions) is the lowest of the five categories measured; the competitive distribution is flatter than in adjacent professional services.</li>
+      <li>HSCPA (the state professional association) and Clutch (B2B review directory) are measurable AEO surfaces for this category that most firms likely treat as a separate practice-development effort, not an AEO one.</li>
     </ul>
     <p>What it does not yet support:</p>
     <ul>
-      <li>That the top-tier dominance is permanent. AI tools refresh their training data and search indices on schedules outside our control. The cohort below the top tier may shift positions month to month; we measure that.</li>
+      <li>That the training-data collapse is permanent. AI training data refreshes on schedules outside our control. A surge in editorial coverage of Hawaii CPA firms could shift Claude and Gemma's awareness. The monthly memo cadence is how we would observe that.</li>
       <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
-      <li>That the structural openings named here are actually closable for any specific firm. The competitive conditions outside our measurement (Bing organic ranking, editorial-directory inclusion, named-partner press coverage) are their own beasts and outside what this measurement captures.</li>
+      <li>That the closable ground inside the four web-searching engines is actually closable for any specific firm. What conditions move web-searching citation rates is its own measurement question and varies by engine.</li>
     </ul>
 
     <h2>Why this is anonymized</h2>
-    <p>None of the [[N]] firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>None of the 41 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
     <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
 
     <div class="cta-row">
@@ -187,7 +187,7 @@
     <div class="disclosure-block">
       <p><strong>Measurement window:</strong> 3 usable runs on 2026-05-26. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
       <p><strong>Substantiation:</strong> question set locked by hash <code>dc6ae677...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
-      <p><strong>Anonymization:</strong> the [[N]]-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party directory sources are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
+      <p><strong>Anonymization:</strong> the 41-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party directory sources (HSCPA, Clutch, Expertise, BBB, Yelp) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
     </div>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>

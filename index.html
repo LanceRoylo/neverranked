@@ -659,7 +659,17 @@
   .td-card-arrow {
     color: var(--dim); transition: transform 200ms var(--ease-out), color 200ms ease;
   }
-  @media (max-width: 680px) { .td-grid { grid-template-columns: 1fr; } }
+  .td-card-wide { grid-column: 1 / -1; }
+  .td-card-wide .td-card-stat { font-size: 23px; }
+  .td-card-latest {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 6px;
+  }
+  @media (max-width: 680px) {
+    .td-grid { grid-template-columns: 1fr; }
+    .td-card-wide .td-card-stat { font-size: 21px; }
+  }
 
   /* ── Inline objection FAQ ─────────────────────────────────────── */
   .obj-list { margin: 22px 0 8px; }
@@ -947,8 +957,8 @@
   <section class="section panel">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
-      <h2>Four categories published. A fifth measuring this week.</h2>
-      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. CPA Honolulu is firing the third run today.</p>
+      <h2>Five categories published. Each one a pattern-readiness teardown.</h2>
+      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements.</p>
       <div class="td-grid">
         <a class="td-card" href="/teardowns/bank-honolulu/">
           <div class="td-card-cat">Hawaii consumer banking</div>
@@ -974,8 +984,15 @@
           <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Microsoft Copilot.</p>
           <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
+        <a class="td-card td-card-wide" href="/teardowns/cpa-hawaii/">
+          <div class="td-card-latest">Latest &middot; published today</div>
+          <div class="td-card-cat">Hawaii CPA firms</div>
+          <div class="td-card-stat">Web-searching engines reach 60% firm-owned share. Training-data engines collapse to 1-2%.</div>
+          <p class="td-card-hook">41-firm cohort, 5,809 measured citations. Claude and Gemma cite Hawaii CPA firms less than 2% of the time, the opposite of every other category we have measured. The competitive game plays inside OpenAI, Gemini, Perplexity, and Google AI Overviews.</p>
+          <div class="td-card-foot"><span>41 firms &middot; 3 runs &middot; published 2026-05-26</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
       </div>
-      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads all four against each other &rarr;</a></p>
+      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads all five against each other &rarr;</a></p>
     </div>
   </section>
 
@@ -1096,12 +1113,13 @@
       <div class="sec-label"><span class="n">&rarr;</span>Where to dig in</div>
       <div class="links">
         <a href="/results/">Results so far <span class="sub">&middot; the cumulative scoreboard</span></a>
-        <a href="/teardowns/">All teardowns <span class="sub">&middot; 5 published, 4 categories measured</span></a>
-        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 4 verticals, the commodity-to-relationship gradient</span></a>
+        <a href="/teardowns/">All teardowns <span class="sub">&middot; 6 published, 5 categories measured</span></a>
+        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 5 verticals, the commodity-to-relationship gradient</span></a>
         <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 21-bank cohort, the 75-point engine spread</span></a>
         <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Copilot first-mover opening</span></a>
         <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 30 firms, top 5 own 66% of mentions</span></a>
         <a href="/teardowns/wealth-mgmt-hawaii/">Hawaii wealth management teardown <span class="sub">&middot; 42 firms, the lead-gen middleman pattern</span></a>
+        <a href="/teardowns/cpa-hawaii/">Hawaii CPA firms teardown <span class="sub">&middot; 41 firms, the training-data engine collapse</span></a>
         <a href="/hawaii-bank-aeo/">If you are a Hawaii bank <span class="sub">&middot; what 7 AI tools cite for consumer banking</span></a>
         <a href="/hawaii-wealth-aeo/">If you are a Hawaii wealth firm <span class="sub">&middot; what 7 AI tools cite + the lead-gen pattern</span></a>
         <a href="/honolulu-dental-aeo/">If you are a Honolulu dental practice <span class="sub">&middot; what 7 AI tools cite + the Copilot opening</span></a>
