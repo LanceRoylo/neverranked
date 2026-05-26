@@ -52,6 +52,29 @@
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity 660ms var(--ease-out), transform 660ms var(--ease-out); }
   .reveal.in { opacity: 1; transform: translateY(0); }
 
+  /* WordsPullUp — per-word staggered slide-up on the H1 + select
+     headlines. Each word starts at y:20 opacity:0, transitions to
+     y:0 opacity:1, with --wpu-delay set per word via inline style.
+     Punchier ease curve than the generic reveal (Emil Kowalski:
+     custom ease curves > default browser ease). */
+  .wpu-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 540ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms),
+                transform 540ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms);
+  }
+  .wpu.in .wpu-word { opacity: 1; transform: translateY(0); }
+  .wpu-word + .wpu-word::before { content: " "; white-space: pre; }
+
+  /* Scroll-linked character opacity — each char ramps from 0.2 to 1
+     as the user scrolls past. JS sets --char-progress per element. */
+  .schar {
+    display: inline-block;
+    opacity: var(--char-opacity, 0.2);
+    transition: opacity 60ms linear;
+  }
+
   /* Hero */
   .hero { padding: 92px 0 96px; }
   .hero .inner { max-width: 760px; }
@@ -443,8 +466,8 @@
   <section class="hero">
     <div class="inner">
       <div class="kicker reveal">A research practice &middot; Honolulu</div>
-      <h1 class="reveal" style="transition-delay:.09s">When AI answers, does it name your business?</h1>
-      <p class="turn reveal" style="transition-delay:.16s">Your customers are asking the same question to find a business like yours.</p>
+      <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">When</span><span class="wpu-word" style="--wpu-delay:80ms">AI</span><span class="wpu-word" style="--wpu-delay:160ms">answers,</span><span class="wpu-word" style="--wpu-delay:240ms">does</span><span class="wpu-word" style="--wpu-delay:320ms">it</span><span class="wpu-word" style="--wpu-delay:400ms">name</span><span class="wpu-word" style="--wpu-delay:480ms">your</span><span class="wpu-word" style="--wpu-delay:560ms">business?</span></h1>
+      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Your customers are asking the same question to find a business like yours.</p>
 
       <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
         <input type="url" id="hero-url" placeholder="https://yourbusiness.com" autocomplete="url" spellcheck="false" required />
@@ -725,7 +748,7 @@
     /* Scroll-reveal: elements fade and rise as they enter the viewport.
        Above-the-fold elements fire immediately on load. No dependencies. */
     (function () {
-      var els = document.querySelectorAll('.reveal, .void-graphic, .readout');
+      var els = document.querySelectorAll('.reveal, .void-graphic, .readout, .wpu');
       if (!('IntersectionObserver' in window)) {
         els.forEach(function (el) { el.classList.add('in'); });
         return;
@@ -755,6 +778,71 @@
         var target = 'https://check.neverranked.com/?url=' + encodeURIComponent(url);
         window.location.href = target;
       });
+    })();
+
+    /* Scroll-linked character opacity on the hero turn paragraph.
+       Each character starts at 0.2 opacity and ramps to 1 as it
+       scrolls into the reading zone (between 70% and 30% of viewport
+       height). Reading becomes a deliberate act, not a fade-in event.
+       Channels the Prisma scroll-reveal pattern but lighter (one
+       paragraph, not whole page sections). */
+    (function () {
+      var turn = document.getElementById('hero-turn');
+      if (!turn) return;
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      // Wrap each non-space character in a span. Spaces stay as text
+      // so word wrapping behaves naturally.
+      var text = turn.textContent || '';
+      turn.innerHTML = '';
+      var chars = [];
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (ch === ' ') {
+          turn.appendChild(document.createTextNode(' '));
+        } else {
+          var span = document.createElement('span');
+          span.className = 'schar';
+          span.textContent = ch;
+          turn.appendChild(span);
+          chars.push(span);
+        }
+      }
+
+      // Throttled scroll handler: compute viewport position of the
+      // turn element, set per-char opacity based on relative progress.
+      // Throttle via requestAnimationFrame for smoothness.
+      var ticking = false;
+      function update() {
+        var rect = turn.getBoundingClientRect();
+        var vh = window.innerHeight;
+        // 0 when element bottom is at viewport bottom; 1 when element
+        // top has scrolled to 30% of viewport. Linear ramp.
+        var start = vh * 0.85;
+        var end = vh * 0.30;
+        var elementCenter = rect.top + rect.height / 2;
+        var overallProgress = (start - elementCenter) / (start - end);
+        overallProgress = Math.max(0, Math.min(1, overallProgress));
+        // Apply per-char with a small lag so chars reveal in order
+        var n = chars.length;
+        for (var j = 0; j < n; j++) {
+          var charProgress = j / n;
+          // Each char's local progress window: [charProgress - 0.1, charProgress + 0.05]
+          var local = (overallProgress - (charProgress - 0.1)) / 0.15;
+          local = Math.max(0, Math.min(1, local));
+          var opacity = 0.2 + (1 - 0.2) * local;
+          chars[j].style.setProperty('--char-opacity', opacity.toFixed(3));
+        }
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+      update();
     })();
 
     /* Hero query cycler: rotates through real buyer-shaped questions
