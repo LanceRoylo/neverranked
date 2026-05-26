@@ -1,0 +1,196 @@
+<!doctype html>
+<!--
+  CPA-Hawaii teardown 06. 7-AI-tool measurement on Hawaii CPA firms.
+  Cohort registered 30+ firms after run 1 + run 2 cohort-coverage scans.
+  18 hash-locked questions (dc6ae677...), 3 reps per question per run,
+  3 usable runs on 2026-05-26.
+
+  Cohort kept anonymized at the firm level. None of the firms are
+  paying NeverRanked customers; the non-customer anonymization rule
+  applies. Counts, source-type distributions, per-AI-tool breakdowns,
+  and named third-party directories are public; individual firm names
+  are not.
+
+  SKELETON STATUS 2026-05-26: structure complete, numbers are
+  PLACEHOLDERS until run 3 lands and we aggregate the 3-run dataset.
+  All [[BRACKETED]] tokens are fill-ins.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 06: What 7-AI-tool measurement reveals about Hawaii CPA firms</title>
+<meta name="description" content="[[N]] Hawaii CPA firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. [[HEADLINE_NUMBER_SENTENCE]]">
+<link rel="canonical" href="https://neverranked.com/teardowns/cpa-hawaii/">
+<meta property="og:title" content="Teardown 06: Hawaii CPA firms in the AI-citation data">
+<meta property="og:description" content="[[N]]-firm cohort. [[OG_HOOK]]">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardown 06 &middot; Hawaii CPA firms</div>
+    <h1>[[HEADLINE]]</h1>
+    <p class="sub">[[N]]-firm cohort, 18 hash-locked questions, 3 usable runs on 2026-05-26. Pattern-readiness cleared. Individual firms anonymized; counts and distributions named.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> [[ONE_SENTENCE_SUMMARY]]. For any firm outside the top tier, the closable competitive ground sits in [[CLOSABLE_GROUND]].
+    </div>
+
+    <h2>Why this category matters as a measurement subject</h2>
+    <p>Hawaii CPA firms are a category where buyer trust signals matter more than commodity attributes. A buyer choosing a CPA is choosing a named partner's judgment on tax, audit, or advisory work that touches the rest of the business. The AI-citation surface reflects that. Firms compete for inclusion in editorial sources, professional associations (state and national CPA societies), and category-specific directories in ways that purely transactional categories do not need to. With [[N]] firms in the cohort, the data shows where that competition actually lands.</p>
+    <p>CPA Hawaii is the fifth vertical NeverRanked has measured to pattern-readiness, after Honolulu consumer banking, Hawaii wealth management, Honolulu dental, and Hawaii law firms. The cross-category teardown reads CPA against the other four.</p>
+
+    <h2>Methodology summary</h2>
+    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <ul>
+      <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
+    </ul>
+    <p>18 questions a Hawaii CPA buyer would actually ask AI, locked at hash <code>dc6ae677...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs on 2026-05-26. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
+    <p>The [[N]]-firm cohort was built in three passes. 5 anchor firms registered before run 1 (the obvious incumbents). [[N1]] additional firms surfaced through the measurement and registered after run 1 cohort-coverage scan. [[N2]] more registered after run 2. National Big-4 firms (KPMG, PwC, Deloitte, BDO, CLA) and out-of-state firms were excluded from the cohort to keep the comparison Hawaii-specific. State professional bodies (Hawaii Society of CPAs, Hawaii nonprofit associations), the UH Shidler business school, and generic firm directories were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
+    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+
+    <h2>Source-type distribution (cohort-wide)</h2>
+    <p>Across all [[N]] firms and all 7 AI tools, AI pulled answers from these source types:</p>
+    <table>
+      <thead>
+        <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>[[IW_PCT]]%</strong></td><td class="num">[[IW_N]]</td></tr>
+        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>[[COMP_PCT]]%</strong></td><td class="num">[[COMP_N]]</td></tr>
+        <tr><td>Wikipedia</td><td class="num">[[WIKI_PCT]]%</td><td class="num">[[WIKI_N]]</td></tr>
+        <tr><td>Review directories</td><td class="num">[[REV_PCT]]%</td><td class="num">[[REV_N]]</td></tr>
+        <tr><td>Social (LinkedIn, Facebook)</td><td class="num">[[SOC_PCT]]%</td><td class="num">[[SOC_N]]</td></tr>
+        <tr><td>Reddit</td><td class="num">[[RED_PCT]]%</td><td class="num">[[RED_N]]</td></tr>
+      </tbody>
+    </table>
+    <p>[[CROSS_CATEGORY_PARAGRAPH: place CPA in the cluster vs banking 53%, wealth 47%, dental 44%, law 39%. Pre-cohort-expansion runs read ~27% then ~34%; landing-place after run 3 expected near or slightly below law. Confirm and write.]]</p>
+
+    <h2>Per-AI-tool breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>AI tool</th><th class="num">Firm-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>[[GEMMA_OWN]]%</strong></td><td class="num">[[GEMMA_TP]]%</td><td class="num">[[GEMMA_N]]</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>[[CLAUDE_OWN]]%</strong></td><td class="num">[[CLAUDE_TP]]%</td><td class="num">[[CLAUDE_N]]</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>[[AIO_OWN]]%</strong></td><td class="num">[[AIO_TP]]%</td><td class="num">[[AIO_N]]</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>[[GEMINI_OWN]]%</strong></td><td class="num">[[GEMINI_TP]]%</td><td class="num">[[GEMINI_N]]</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>[[GPT_OWN]]%</strong></td><td class="num">[[GPT_TP]]%</td><td class="num">[[GPT_N]]</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>[[PPLX_OWN]]%</strong></td><td class="num">[[PPLX_TP]]%</td><td class="num">[[PPLX_N]]</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>[[COPILOT_OWN]]%</strong></td><td class="num">[[COPILOT_TP]]%</td><td class="num">[[COPILOT_N]]</td></tr>
+      </tbody>
+    </table>
+    <p>[[COPILOT_PARAGRAPH: if Copilot own-share is again 0% (the pattern across dental, wealth, law), write the structural-Bing-organic explanation and call it cohort-wide. If non-zero, name which firms break the pattern and how thinly.]]</p>
+    <p>[[GEMMA_PARAGRAPH: training-data tool reading. Gemma's own-share has been the highest across the other four categories. Confirm whether CPA repeats the pattern and what that implies for brand depth in pretrained weights.]]</p>
+
+    <div class="callout">
+      <h3>[[CALLOUT_HEADER: the closable structural condition for this category]]</h3>
+      <p>[[CALLOUT_BODY: name the specific condition (likely Microsoft Copilot first-mover, or the long-tail compositional questions, or the state-CPA-society + Big-4-exclusion gap where Hawaii firms have an editorial opening). Track but do not promise. Same observational discipline as the law and dental callouts.]]</p>
+    </div>
+
+    <h2>Top recurring firms (anonymized)</h2>
+    <p>The [[TOP_N]] firms AI cited most often across the 18 questions and 7 tools.</p>
+    <table>
+      <thead>
+        <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">% of cohort competitor share</th><th class="num">Runs cited in</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firm A</td><td class="num">[[A_N]]</td><td class="num">[[A_PCT]]%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm B</td><td class="num">[[B_N]]</td><td class="num">[[B_PCT]]%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm C</td><td class="num">[[C_N]]</td><td class="num">[[C_PCT]]%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm D</td><td class="num">[[D_N]]</td><td class="num">[[D_PCT]]%</td><td class="num">3/3</td></tr>
+        <tr><td>Firm E</td><td class="num">[[E_N]]</td><td class="num">[[E_PCT]]%</td><td class="num">3/3</td></tr>
+      </tbody>
+    </table>
+    <p>[[CONCENTRATION_PARAGRAPH: top 5 own X% of mentions, dominant firm gap. Compare to law (top 5 = 66%) and to the more even distribution patterns in dental and wealth.]]</p>
+    <p>[[CONSISTENCY_PARAGRAPH: how many of the top firms appeared in all 3 runs. The remaining cohort's frequency band.]]</p>
+
+    <h2>Where AI pulls from when it cites non-firm content</h2>
+    <p>The [[TP_TOTAL]] third-party-content mentions are not all the same shape. Top recurring sources across runs:</p>
+    <table>
+      <thead>
+        <tr><th>Source</th><th class="num">Mentions</th><th>Why AI cites it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>[[SRC1]]</td><td class="num">[[SRC1_N]]</td><td>[[SRC1_WHY]]</td></tr>
+        <tr><td>[[SRC2]]</td><td class="num">[[SRC2_N]]</td><td>[[SRC2_WHY]]</td></tr>
+        <tr><td>[[SRC3]]</td><td class="num">[[SRC3_N]]</td><td>[[SRC3_WHY]]</td></tr>
+        <tr><td>[[SRC4]]</td><td class="num">[[SRC4_N]]</td><td>[[SRC4_WHY]]</td></tr>
+        <tr><td>[[SRC5]]</td><td class="num">[[SRC5_N]]</td><td>[[SRC5_WHY]]</td></tr>
+      </tbody>
+    </table>
+    <p>[[SOURCES_PARAGRAPH: expected mix is Hawaii Society of CPAs (hscpa.org), Forbes / Kiplinger / Investopedia / NerdWallet / Fool for category content, Hawaii Business Magazine for editorial firm coverage, Pacific Business News, possibly Goodfirms or Clutch for firm directories. Name the structural reading: which third parties are the editorial trust layer AI defers to, and which are pure aggregators.]]</p>
+
+    <h2>What this teardown does and does not prove</h2>
+    <p>What it does support:</p>
+    <ul>
+      <li>The [[N]]-firm cohort is a representative slice of Hawaii CPA firms AI tools actually cite for buyer-shaped questions.</li>
+      <li>The [[COMP_PCT]]% / [[IW_PCT]]% firm-own / third-party split is stable across all 3 runs of the expanded cohort.</li>
+      <li>[[COPILOT_FINDING_LINE]].</li>
+      <li>The top [[TOP_N]] concentration ([[CONCENTRATION_PCT]]% of mentions) is observable across all 3 runs and across all 7 AI tools.</li>
+      <li>[[EDITORIAL_TRUST_LAYER_LINE]].</li>
+    </ul>
+    <p>What it does not yet support:</p>
+    <ul>
+      <li>That the top-tier dominance is permanent. AI tools refresh their training data and search indices on schedules outside our control. The cohort below the top tier may shift positions month to month; we measure that.</li>
+      <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
+      <li>That the structural openings named here are actually closable for any specific firm. The competitive conditions outside our measurement (Bing organic ranking, editorial-directory inclusion, named-partner press coverage) are their own beasts and outside what this measurement captures.</li>
+    </ul>
+
+    <h2>Why this is anonymized</h2>
+    <p>None of the [[N]] firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <a href="/teardowns/cross-category/">Cross-category teardown (5 verticals)</a>
+      <a href="/methodology/">How we measure</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement window:</strong> 3 usable runs on 2026-05-26. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>dc6ae677...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
+      <p><strong>Anonymization:</strong> the [[N]]-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party directory sources are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>

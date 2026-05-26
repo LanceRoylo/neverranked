@@ -446,6 +446,123 @@
   }
   .td-card p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
   @media (max-width: 880px) { .teardowns { grid-template-columns: 1fr; } }
+
+  /* ── Atlas demo block ───────────────────────────────────────────
+     The page's one interactive moment. Atlas answering a data
+     question crisply, then refusing an action question with a
+     punt pattern, on a loop. The refusal is the marketing. */
+  .atlas-section { padding: 88px 0; }
+  .atlas-card {
+    margin: 28px 0 18px;
+    background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .atlas-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #1c1c1e;
+    background: #0e0e11;
+  }
+  .atlas-card-tag {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .atlas-card-dot {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .atlas-card-dot::before {
+    content: ""; display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--gold);
+    animation: atlasPulse 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(212,197,150,0.6);
+  }
+  @keyframes atlasPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,197,150,0.55); }
+    50% { box-shadow: 0 0 0 6px rgba(212,197,150,0); }
+  }
+  .atlas-chat {
+    padding: 22px 22px 8px;
+    min-height: 240px;
+  }
+  .atlas-msg { margin-bottom: 18px; max-width: 88%; }
+  .atlas-msg.user {
+    margin-left: auto; text-align: right;
+  }
+  .atlas-msg-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .atlas-msg.user .atlas-msg-label { color: #8a8a90; }
+  .atlas-msg.atlas .atlas-msg-label { color: var(--gold); }
+  .atlas-msg-body {
+    display: inline-block;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .atlas-msg.user .atlas-msg-body {
+    font-family: var(--mono); font-size: 13px;
+    background: #1c1c1e; color: var(--text);
+    border: 1px solid #2a2a2e;
+  }
+  .atlas-msg.atlas .atlas-msg-body {
+    background: transparent;
+    color: var(--text);
+    padding-left: 0; padding-right: 0;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .atlas-cursor::after {
+    content: "";
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--gold);
+    vertical-align: -2px;
+    margin-left: 2px;
+    animation: atlasBlink 1s steps(2) infinite;
+  }
+  @keyframes atlasBlink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+  }
+  .atlas-caption {
+    font-size: 14px; font-style: italic; color: var(--dim);
+    margin-top: 16px;
+  }
+  .atlas-boundary {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 30px 0 4px;
+  }
+  .atlas-boundary .col {
+    padding: 18px 20px;
+    background: #0e0e11;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+  }
+  .atlas-boundary .col h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; margin: 0 0 10px; font-weight: 400;
+  }
+  .atlas-boundary .col.does h3 { color: var(--gold); }
+  .atlas-boundary .col.doesnt h3 { color: #8a8a90; }
+  .atlas-boundary .col ul {
+    margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.6;
+  }
+  .atlas-boundary .col li { margin-bottom: 4px; }
+  @media (max-width: 680px) {
+    .atlas-boundary { grid-template-columns: 1fr; }
+    .atlas-chat { min-height: 280px; padding: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-card-dot::before { animation: none; }
+    .atlas-cursor::after { animation: none; opacity: 0; }
+  }
 </style>
 </head>
 <body>
@@ -552,6 +669,49 @@
         </div>
       </div>
       <p style="margin-top:24px">The deliverable is a forensic research memo and a prepped punch list, ordered by impact. Your team executes it. We do not. That separation is structural.</p>
+    </div>
+  </section>
+
+  <!-- Atlas · between memos · the interactive demo block -->
+  <section class="section atlas-section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">Atlas</span>Between memos</div>
+      <h2>Ask the data. Get the answer. Never the prescription.</h2>
+      <p>Atlas is the data-interpretation layer of your dashboard. It answers what the measurement shows. It refuses to tell you what to do. That separation is the engagement.</p>
+
+      <div class="atlas-card" id="atlas-card" aria-label="Atlas demo">
+        <div class="atlas-card-head">
+          <span class="atlas-card-tag">Atlas</span>
+          <span class="atlas-card-dot">Live</span>
+        </div>
+        <div class="atlas-chat" id="atlas-chat" aria-live="polite">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="atlas-boundary">
+        <div class="col does">
+          <h3>What Atlas answers</h3>
+          <ul>
+            <li>Mention counts, week over week deltas</li>
+            <li>Per-engine and per-question breakdowns</li>
+            <li>Cohort positions and competitor share</li>
+            <li>Source-type distribution shifts</li>
+            <li>Observable correlations to dated events</li>
+          </ul>
+        </div>
+        <div class="col doesnt">
+          <h3>What Atlas refuses</h3>
+          <ul>
+            <li>What you should do about it</li>
+            <li>Which fix to prioritize first</li>
+            <li>Whether a tactic is a good idea</li>
+            <li>Causation claims of any kind</li>
+            <li>Strategic positioning advice</li>
+          </ul>
+        </div>
+      </div>
+      <p class="atlas-caption">The boundary is structural. Prioritization lives in your monthly memo, written by the principal. Atlas holds the data. Crossing that line would damage the engagement.</p>
     </div>
   </section>
 
@@ -870,6 +1030,98 @@
           queryEl.classList.remove('fading');
         }, 240);
       }, 4200);
+    })();
+
+    // ── Atlas demo: cycling typed exchanges ─────────────────────
+    // Two scripted exchanges. One Atlas answers (data). One Atlas
+    // refuses (action, punt pattern verbatim from system prompt).
+    // Triggers on scroll-into-view. Skipped under reduced-motion.
+    (function () {
+      var chat = document.getElementById('atlas-chat');
+      if (!chat) return;
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var script = [
+        {
+          user: "How many mentions did I have last week vs the week before?",
+          atlas: "37 mentions across 7 AI tools last week. 41 the week before. Perplexity dropped from 14 to 11. Google AI Overviews held at 8. The other 5 tools were stable within noise."
+        },
+        {
+          user: "What should I do about the Perplexity drop?",
+          atlas: "That's prioritization, which lives in your monthly memo. Your next memo arrives June 25. If you want this addressed before then, reply 'flag it' and I'll send Lance a note."
+        }
+      ];
+
+      function makeMsg(role) {
+        var wrap = document.createElement('div');
+        wrap.className = 'atlas-msg ' + role;
+        var label = document.createElement('div');
+        label.className = 'atlas-msg-label';
+        label.textContent = role === 'user' ? 'You' : 'Atlas';
+        var body = document.createElement('div');
+        body.className = 'atlas-msg-body atlas-cursor';
+        wrap.appendChild(label);
+        wrap.appendChild(body);
+        return { wrap: wrap, body: body };
+      }
+
+      function typeInto(node, text, speed) {
+        return new Promise(function (resolve) {
+          if (reduced) { node.textContent = text; node.classList.remove('atlas-cursor'); return resolve(); }
+          var i = 0;
+          (function step() {
+            node.textContent = text.slice(0, i);
+            if (i >= text.length) { node.classList.remove('atlas-cursor'); return resolve(); }
+            i++;
+            setTimeout(step, speed + (Math.random() * 18 - 9));
+          })();
+        });
+      }
+
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduced ? 0 : ms); }); }
+
+      var idx = 0;
+      var running = false;
+
+      function runOnce() {
+        if (running) return;
+        running = true;
+        var ex = script[idx];
+        chat.innerHTML = '';
+
+        var u = makeMsg('user');
+        chat.appendChild(u.wrap);
+        typeInto(u.body, ex.user, 28).then(function () {
+          return sleep(700);
+        }).then(function () {
+          var a = makeMsg('atlas');
+          chat.appendChild(a.wrap);
+          return typeInto(a.body, ex.atlas, 16);
+        }).then(function () {
+          return sleep(reduced ? 0 : 4200);
+        }).then(function () {
+          idx = (idx + 1) % script.length;
+          running = false;
+          runOnce();
+        });
+      }
+
+      // Trigger on scroll-into-view, once.
+      var started = false;
+      if (!('IntersectionObserver' in window) || reduced) {
+        runOnce();
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting && !started) {
+              started = true;
+              runOnce();
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.35 });
+        io.observe(chat);
+      }
     })();
   </script>
 
