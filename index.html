@@ -563,6 +563,136 @@
     .atlas-card-dot::before { animation: none; }
     .atlas-cursor::after { animation: none; opacity: 0; }
   }
+
+  /* ── Live operating proof strip ─────────────────────────────────
+     Thin mono strip under nav. Pulls page out of "static brochure"
+     by surfacing the measurement is operating right now. */
+  .proof-strip {
+    background: #0e0e11;
+    border-bottom: 1px solid #1c1c1e;
+    padding: 11px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    overflow: hidden;
+  }
+  .proof-strip-inner {
+    max-width: 1040px; margin: 0 auto; padding: 0 32px;
+    display: flex; align-items: center; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .proof-strip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+    animation: proofDot 2.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes proofDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,197,150,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,197,150,0); }
+  }
+  .proof-strip span.sep { color: #2a2a2e; }
+  .proof-strip b { color: var(--text); font-weight: 400; }
+  @media (max-width: 680px) {
+    .proof-strip-inner { gap: 14px; font-size: 10px; }
+    .proof-strip-inner > .hide-sm { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .proof-strip-dot { animation: none; }
+  }
+
+  /* ── Scarcity callout in pricing ─────────────────────────────── */
+  .scarcity {
+    margin: 22px 0 8px;
+    padding: 18px 22px;
+    border: 1px solid rgba(212,197,150,0.30);
+    border-left: 2px solid var(--gold);
+    background: rgba(212,197,150,0.05);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .scarcity b { color: var(--gold); font-weight: 400; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+
+  /* ── Teardown blocks inline ─────────────────────────────────── */
+  .td-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 24px 0 8px;
+  }
+  .td-card {
+    display: block;
+    padding: 22px 22px 20px;
+    background: #131316;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out), background 200ms ease;
+  }
+  .td-card:active { transform: scale(0.99); }
+  @media (hover: hover) {
+    .td-card:hover {
+      border-color: rgba(212,197,150,0.45);
+      background: #15151a;
+    }
+    .td-card:hover .td-card-arrow { transform: translateX(3px); color: var(--gold); }
+  }
+  .td-card-cat {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .td-card-stat {
+    font-size: 21px; font-weight: 400; color: var(--text);
+    margin: 0 0 6px; line-height: 1.3; letter-spacing: -0.003em;
+  }
+  .td-card-hook {
+    font-size: 14px; color: var(--soft); margin: 0 0 14px; line-height: 1.5;
+  }
+  .td-card-foot {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--dim); display: flex; justify-content: space-between; align-items: center;
+  }
+  .td-card-arrow {
+    color: var(--dim); transition: transform 200ms var(--ease-out), color 200ms ease;
+  }
+  @media (max-width: 680px) { .td-grid { grid-template-columns: 1fr; } }
+
+  /* ── Inline objection FAQ ─────────────────────────────────────── */
+  .obj-list { margin: 22px 0 8px; }
+  .obj {
+    border-top: 1px solid #1c1c1e;
+    padding: 20px 0;
+  }
+  .obj:last-of-type { border-bottom: 1px solid #1c1c1e; }
+  .obj-q {
+    font-family: Georgia, serif; font-size: 17px; color: var(--text);
+    cursor: pointer; list-style: none; padding-right: 32px;
+    position: relative; line-height: 1.4;
+    transition: color 200ms var(--ease-out);
+  }
+  .obj-q::-webkit-details-marker { display: none; }
+  .obj-q::after {
+    content: '+'; position: absolute; right: 0; top: -2px;
+    font-family: var(--mono); font-size: 22px; color: var(--gold);
+    line-height: 1; font-weight: 300;
+    transition: transform 220ms var(--ease-out);
+  }
+  details.obj[open] .obj-q::after { content: '−'; }
+  details.obj[open] .obj-q { color: var(--gold); }
+  .obj-q:hover { color: var(--gold); }
+  .obj-a {
+    font-size: 15px; color: var(--soft); margin: 14px 0 0;
+    line-height: 1.65;
+  }
+  .obj-foot {
+    margin-top: 22px;
+    font-size: 14px;
+    color: var(--dim);
+  }
 </style>
 </head>
 <body>
@@ -578,6 +708,20 @@
       <a class="nav-cta" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
     </div>
   </header>
+
+  <!-- Live operating proof strip -->
+  <div class="proof-strip" role="status" aria-label="Operating status">
+    <div class="proof-strip-inner">
+      <span class="proof-strip-dot" aria-hidden="true"></span>
+      <span><b>5</b> categories tracked</span>
+      <span class="sep">/</span>
+      <span><b>378</b> prompts per run</span>
+      <span class="sep hide-sm">/</span>
+      <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools</span>
+      <span class="sep">/</span>
+      <span>last run <b>2026-05-26</b></span>
+    </div>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
@@ -799,6 +943,42 @@
     </div>
   </section>
 
+  <!-- Teardown blocks — surface the work, do not bury it in a links list -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
+      <h2>Four categories published. A fifth measuring this week.</h2>
+      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. CPA Honolulu is firing the third run today.</p>
+      <div class="td-grid">
+        <a class="td-card" href="/teardowns/bank-honolulu/">
+          <div class="td-card-cat">Hawaii consumer banking</div>
+          <div class="td-card-stat">53% own-site, 75-point engine spread</div>
+          <p class="td-card-hook">21-bank cohort. The widest cross-engine gap of any category measured. One bank owns the head queries on training-data tools; the long tail sits open on Copilot.</p>
+          <div class="td-card-foot"><span>21 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/wealth-mgmt-hawaii/">
+          <div class="td-card-cat">Hawaii wealth management</div>
+          <div class="td-card-stat">47% own-site, the lead-gen middleman pattern</div>
+          <p class="td-card-hook">42-firm cohort. AI defers to lead-gen aggregators (SmartAsset, Unbiased, Plannersearch) more than to any individual firm. The structural ground for firms sits outside that middleman tier.</p>
+          <div class="td-card-foot"><span>42 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/dental-honolulu/">
+          <div class="td-card-cat">Honolulu dental</div>
+          <div class="td-card-stat">44% own-site, the Copilot first-mover opening</div>
+          <p class="td-card-hook">46-practice cohort. Microsoft Copilot cites zero practice websites for the entire cohort. The first Honolulu practice that ranks first on Bing organic effectively owns the Copilot answer.</p>
+          <div class="td-card-foot"><span>46 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/law-firm-hawaii/">
+          <div class="td-card-cat">Hawaii law firms</div>
+          <div class="td-card-stat">Top 5 own 66% of all firm-owned mentions</div>
+          <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Microsoft Copilot.</p>
+          <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+      </div>
+      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads all four against each other &rarr;</a></p>
+    </div>
+  </section>
+
   <!-- 05 What a readout reveals -->
   <section class="section">
     <div class="inner wide reveal">
@@ -848,6 +1028,10 @@
           <div class="role">The engagement</div>
         </div>
       </div>
+      <div class="scarcity">
+        <b>4 customers maximum per category</b>
+        Cohort comparisons mean something only when the cohort stays stable. Each category caps at 4 paying customers so the cross-customer benchmark is real, not diluted. When your category fills, it closes to new customers until a slot opens. The five tracked categories (Hawaii consumer banking, wealth management, dental Honolulu, law firms, CPA Honolulu) are open at this writing.
+      </div>
       <p>Free 1-page diagnostic before you commit. We run 5 real customer questions for your category across all 7 AI tools, then send a 1-page snapshot showing which competitors AI is naming and whether you&rsquo;re one of them. One per business. The full engagement adds the rest of the question set (18 per category), weekly tracking, a cohort baseline that makes the numbers mean something, and a clear list of what to fix.</p>
     </div>
   </section>
@@ -862,6 +1046,38 @@
         <p>How the practice operates: we measure, we do not execute. We report what the AI engines actually cite, never what we claim our work caused. We do not promise a citation lift in advance. A finding that cannot be substantiated does not ship. That discipline is the product.</p>
         <div class="sign">Lance Roylo &middot; NeverRanked &middot; Honolulu</div>
       </div>
+    </div>
+  </section>
+
+  <!-- Inline objection FAQ — the five conversion-killers, answered short -->
+  <section class="section panel">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">FAQ</span>The questions that stop people</div>
+      <h2>The five hard ones.</h2>
+      <p>Lifted from the inbound emails Lance answers most often.</p>
+      <div class="obj-list">
+        <details class="obj">
+          <summary class="obj-q">How is this different from SEO?</summary>
+          <p class="obj-a">SEO measures search engine ranking factors on your own site. We measure what AI tools actually cite when buyers ask category-shaped questions, across 7 surfaces. The deliverable is also different: SEO tools give you a dashboard to interpret yourself; we hand off an interpreted research memo plus a prepped punch list your team executes. See <a href="/vs/">/vs/</a> for the structural comparison.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">What if my buyers do not use AI tools yet?</summary>
+          <p class="obj-a">Two reads on this. First, AI search usage in B2B and high-consideration consumer decisions is already non-trivial and growing on the curve we have public visibility into. Second, even if your buyer is not asking ChatGPT today, your competitor showing up there first when they do is the move you can not undo. We measure that surface so you know whether the move has already started.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Will my mentions actually go up?</summary>
+          <p class="obj-a">We do not promise a lift in advance. The only promise we make is the measurement itself: you will know what AI cites for your category, what gaps exist, and what conditions a buyer of your category typically closes to move the needle. Whether your team executes the punch list well is what determines lift, and we measure that monthly so the answer is observable, not asserted.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Do you do the work or just measure?</summary>
+          <p class="obj-a">We measure. We do not execute. We do not write content, edit pages, deploy schema, update profiles, or change your site. Your in-house team or your agency executes against the punch list we deliver. That separation is structural and is the whole position. It also means we never compete with your agency for execution hours.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Can I try before I commit?</summary>
+          <p class="obj-a">Two ways. The instant self-serve check at <a href="https://check.neverranked.com">check.neverranked.com</a> tells you what the 7 AI tools can read from your site. The hand-built 1-page diagnostic runs 5 real customer questions for your category across all 7 AI tools and sends a snapshot showing which competitors AI names and whether you are one of them. One free diagnostic per business.</p>
+        </details>
+      </div>
+      <p class="obj-foot">More: <a href="/faq/">the full FAQ</a> covers cancellation, NDAs, agency channel, data handling, and what happens if a finding turns out to be wrong.</p>
     </div>
   </section>
 
