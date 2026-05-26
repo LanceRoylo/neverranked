@@ -594,7 +594,7 @@
 
       <div class="hero-preview reveal" style="transition-delay:.38s">
         <div class="hero-preview-head">An AI answer right now might look like</div>
-        <div class="hero-preview-query" id="hero-query">&ldquo;best wealth manager in Hawaii&rdquo;</div>
+        <div class="hero-preview-query" id="hero-query"></div>
         <div class="hero-preview-response">
           <span class="hero-preview-cite">AI cites</span>
           <span class="hero-preview-row hpr-named">Firm A</span>
@@ -1013,23 +1013,69 @@
       var queryEl = document.getElementById('hero-query');
       if (!queryEl) return;
       var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      if (prefersReduced) return;
       var queries = [
-        '“best wealth manager in Hawaii”',
-        '“best dentist in Honolulu”',
-        '“Hawaii law firm for business owners”',
-        '“best bank for small business in Hawaii”',
-        '“med spa Honolulu top rated”'
+        'best wealth manager in Hawaii',
+        'best dentist in Honolulu',
+        'Hawaii law firm for business owners',
+        'best bank for small business in Hawaii',
+        'top CPA firms in Honolulu'
       ];
-      var i = 0;
-      setInterval(function () {
-        queryEl.classList.add('fading');
-        setTimeout(function () {
-          i = (i + 1) % queries.length;
-          queryEl.textContent = queries[i];
-          queryEl.classList.remove('fading');
-        }, 240);
-      }, 4200);
+      if (prefersReduced) {
+        queryEl.textContent = queries[0];
+        return;
+      }
+
+      // Type-then-delete loop. Feels like someone keying a prompt
+      // into a real LLM, holding while it answers, then clearing
+      // and typing the next one. Jitter on per-char timing so it
+      // doesn't feel mechanical.
+      var qi = 0;
+      var typeMin = 38, typeMax = 92;   // ms per char while typing
+      var delMin = 18, delMax = 32;     // ms per char while deleting
+      var holdAfterType = 2400;          // beat to read the result
+      var holdAfterDelete = 320;         // brief pause before next
+
+      function rnd(a, b) { return a + Math.random() * (b - a); }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+      function typeOut(text) {
+        return new Promise(function (resolve) {
+          var i = 0;
+          (function step() {
+            queryEl.textContent = text.slice(0, i);
+            if (i >= text.length) return resolve();
+            // Slight extra pause after spaces/punctuation, like real typing.
+            var ch = text.charAt(i);
+            var extra = (ch === ' ') ? 30 : 0;
+            i++;
+            setTimeout(step, rnd(typeMin, typeMax) + extra);
+          })();
+        });
+      }
+
+      function deleteOut() {
+        return new Promise(function (resolve) {
+          var text = queryEl.textContent;
+          (function step() {
+            if (text.length === 0) return resolve();
+            text = text.slice(0, -1);
+            queryEl.textContent = text;
+            setTimeout(step, rnd(delMin, delMax));
+          })();
+        });
+      }
+
+      (function loop() {
+        var q = queries[qi];
+        typeOut(q)
+          .then(function () { return sleep(holdAfterType); })
+          .then(deleteOut)
+          .then(function () { return sleep(holdAfterDelete); })
+          .then(function () {
+            qi = (qi + 1) % queries.length;
+            loop();
+          });
+      })();
     })();
 
     // ── Atlas demo: cycling typed exchanges ─────────────────────
