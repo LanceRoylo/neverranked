@@ -36,6 +36,7 @@ This timing is deliberate. The 25th gives 5-7 days before the next 1st-of-month 
    - Drift alerts that fired during the month
 3. **Pull the cohort delta.** Which cohort competitors gained mentions, which dropped, which had no change. The customer cares about cohort-relative movement more than absolute movement.
 4. **Note any cohort additions or category structural changes** that happened during the month (cohort expansion, new AI tool added, methodology change). The customer needs to know if a number moved because their work moved it or because the measurement surface shifted.
+5. **Read the customer's brand-brain file** (`templates/customer-brand-brain-template.md` cloned per customer; see SOP-customer-onboarding.md Day 5). Specifically: section 5 (recommendation trajectory, what's been recommended vs what they shipped vs what moved), section 7 (open threads), and section 8 (personalities and preferences). The brand-brain is the institutional knowledge that makes a high-quality memo possible without re-deriving context every month. After writing the memo, **update the brand-brain** with this month's observed events: add the month's row to section 6 (citation trajectory), close completed open threads from section 7 and move them to section 5, surface any new threads.
 
 ---
 

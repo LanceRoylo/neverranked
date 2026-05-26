@@ -66,6 +66,26 @@ Once the customer confirms the lock:
    >
    > Lance
 
+### Day 5 (continued): Initialize the brand-brain file
+
+After the customer email goes out and the runner is firing, immediately initialize the customer's private brand-brain file. This is the institutional-knowledge document that captures everything Lance (and Atlas eventually) needs to know about this engagement to write a high-quality memo without having to re-derive context every month.
+
+1. **Clone the template:** copy `templates/customer-brand-brain-template.md` to the customer's private location. Two recommended paths:
+   - Local memory directory: `~/.claude/projects/-Users-lanceroylo-Desktop-neverranked/memory/customer-<slug>.md`
+   - Dedicated private repo: `neverranked-customers/<slug>/brand-brain.md` (preferred once we have 3+ customers; the private repo gives backup and survives laptop loss)
+2. **Fill in sections 1, 2, 3 immediately** from the scoping call notes and the kickoff email:
+   - **Section 1 (Identity):** customer name, slug, category, signed date, MRR, engagement shape
+   - **Section 2 (People):** every named human from the scoping call, what they care about most, communication preferences
+   - **Section 3 (Engagement context):** hash, cohort, anything the customer asked us to track or NOT to do
+3. **Paste scoping-call notes into section 4 verbatim** so the buyer-shape interview answers survive in raw form for future Atlas reference. Lance's paraphrased reading goes into section 8 (personalities).
+4. **Sections 5, 6, 7 (recommendation trajectory, citation trajectory, open threads) stay empty until the kickoff memo lands.** They populate at memo time (Day 21).
+5. **Section 8 (personalities and preferences) gets the texture notes from the scoping call.** This is the unwritten context that makes memos feel personal at scale. Lance's read on tone, formality, urgency, decision-making style. Atlas reads this before drafting any memo for this customer.
+6. **Section 9 (cross-references) gets the file paths** for the scoping call notes, the runner manifest, and the customer's website pages we are measuring against.
+
+The brand-brain file is private. Never shared with other customers, never excerpted in public artifacts, never committed to the public repo. If the customer is named in a public teardown's cohort, the public version stays anonymized per the non-customer rule; the brand-brain lives in the private surface only.
+
+Timing: Day 5 initialization takes 30-45 minutes if the scoping call notes are dense. It is the part of onboarding most easily skipped under deadline pressure and most expensive to skip; Lance writes a worse memo on Day 21 if the brand-brain was not initialized cleanly.
+
 ---
 
 ## Day 6-19: The measurement window
