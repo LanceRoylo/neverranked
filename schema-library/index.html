@@ -94,6 +94,10 @@
       <strong>Why this exists:</strong> NeverRanked customers' per-query playbooks (the prepped punch list inside the kickoff appendix) name specific schema types to deploy per page type. This library is the deployable form of those recommendations. The schema is generic; the proprietary work is the per-customer measurement and the per-query playbook telling you which schema to deploy where and why.
     </div>
 
+    <div class="notice" style="border-left-color: #8a8a90;">
+      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across 5 categories and 7 AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
+    </div>
+
     <div class="toc">
       <h4>Schema types in this library</h4>
       <ul>
