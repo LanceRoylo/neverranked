@@ -98,6 +98,10 @@
       <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across 5 categories and 7 AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
     </div>
 
+    <div class="notice" style="border-left-color: #8a8a90;">
+      <strong style="color: #8a8a90;">Where the line is.</strong> NeverRanked publishes this library as a spec. The customer's developer (or the customer's agency) deploys the schema, validates it, and ships the page. NeverRanked does not touch the customer's site, CMS, deploy pipeline, or schema-validator setup. The boundary is structural: we measure, we hand off a spec, the customer or agency executes. That separation is the engagement. Crossing it (NeverRanked deploying schema directly) would compromise the integrity of the measurement, since we cannot honestly measure what we are also responsible for shipping.
+    </div>
+
     <div class="toc">
       <h4>Schema types in this library</h4>
       <ul>
