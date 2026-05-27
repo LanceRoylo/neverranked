@@ -1,0 +1,596 @@
+<!doctype html>
+<!--
+  /directories/ — Phase 7 of the world-class punch list build.
+
+  Source-type playbooks for the third-party surfaces AI engines
+  actually cite for local-service categories. Per-directory: what
+  fields matter, what extracts into AI citations, what is decoration,
+  what cadence to maintain.
+
+  Lives at neverranked.com/directories/. Referenced from per-query
+  playbooks when a weak query is dominated by third-party content
+  rather than firm-owned sites.
+
+  Coverage limited to sources that surface as recurring third-party
+  hits across the 5 measured categories (banking, wealth, dental,
+  law, CPA). Sources that appear once or twice are not playbook-
+  worthy yet.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Directory playbooks. What AI engines extract from each third-party source.</title>
+<meta name="description" content="Per-directory playbooks for the 12 third-party surfaces AI engines cite for local-service categories. What fields matter, what extracts into AI citations, what is decoration, what cadence to maintain.">
+<link rel="canonical" href="https://neverranked.com/directories/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; line-height: 1.7; padding: 60px 0 120px; -webkit-font-smoothing: antialiased; }
+  main { max-width: 860px; margin: 0 auto; padding: 0 32px; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 24px; font-weight: 400; color: #d4c596; margin: 56px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 18px; font-weight: 400; color: #e8e8ea; margin: 24px 0 10px; }
+  h4 { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #d4c596; margin: 22px 0 8px; font-weight: 400; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .toc { background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px; padding: 18px 22px; margin: 28px 0; }
+  .toc h4 { margin: 0 0 10px; }
+  .toc ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: #b9b9bd; text-decoration: none; }
+  .toc a:hover { color: #d4c596; }
+  .dir-card {
+    background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px;
+    padding: 22px 26px; margin: 18px 0 28px;
+  }
+  .dir-card .who {
+    font-size: 14px; color: #6a6a70; font-style: italic; margin-bottom: 14px;
+  }
+  .dir-card .spec {
+    display: grid; grid-template-columns: 160px 1fr; gap: 8px 18px;
+    font-size: 14px; color: #b9b9bd; margin: 12px 0 18px;
+  }
+  .dir-card .spec dt { color: #6a6a70; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding-top: 2px; }
+  .dir-card .fields {
+    background: #131316; border: 1px solid #2a2a2e; border-radius: 4px;
+    padding: 14px 18px; margin: 10px 0;
+  }
+  .dir-card .fields .group { margin-bottom: 12px; }
+  .dir-card .fields .group:last-child { margin-bottom: 0; }
+  .dir-card .fields .label {
+    font-family: ui-monospace, monospace; font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .dir-card .fields .matters .label { color: #d4c596; }
+  .dir-card .fields .decoration .label { color: #6a6a70; }
+  .dir-card .fields ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .dir-card .cadence {
+    background: #0b0b0c; border-left: 2px solid #d4c596;
+    padding: 12px 16px; margin: 12px 0;
+    font-size: 14px; color: #b9b9bd;
+  }
+  .dir-card .cadence strong { color: #d4c596; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; display: block; margin-bottom: 4px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Directory playbooks</div>
+    <h1>What AI engines extract from each third-party source.</h1>
+    <p class="sub">Per-directory playbooks for the 12 surfaces that surface as recurring third-party hits across the 5 measured categories. For each: which fields matter, what extracts into AI citations, what is decoration, what cadence to maintain. Useful when your per-query playbook says "third-party content dominates this query."</p>
+
+    <div class="notice">
+      <strong>Use this when:</strong> the AI-citation data for one of your queries shows third-party sources dominate (e.g., 60% of the cites for a query go to a directory or association, not to firm websites). Your firm cannot win that query by improving the firm's own site alone; you also need to be properly represented on the third-party surfaces AI cites. This page is the field-by-field optimization guide for each one.
+    </div>
+
+    <div class="toc">
+      <h4>Sources covered</h4>
+      <ul>
+        <li><a href="#google-business">Google Business Profile</a>. Universal. The single highest-leverage third-party surface.</li>
+        <li><a href="#bing-business">Bing Business Profile</a>. The Microsoft Copilot first-mover lever.</li>
+        <li><a href="#linkedin-company">LinkedIn Company Pages</a>. Cross-category, B2B-heavy.</li>
+        <li><a href="#yelp">Yelp</a>. Consumer-facing categories (med spa, dental, restaurants).</li>
+        <li><a href="#bbb">Better Business Bureau (BBB)</a>. Trust-shaped queries.</li>
+        <li><a href="#clutch">Clutch.co</a>. B2B services (CPA, agencies, consultants).</li>
+        <li><a href="#expertise">Expertise.com</a>. Multi-category "best of" directories.</li>
+        <li><a href="#wikipedia">Wikipedia</a>. The compounding asset for established firms.</li>
+        <li><a href="#healthgrades">Healthgrades</a>. Medical and dental specialties.</li>
+        <li><a href="#chambers">Chambers / BestLawyers / Justia</a>. Legal-specific editorial.</li>
+        <li><a href="#cpa-societies">State CPA societies (HSCPA, etc.)</a>. CPA-specific.</li>
+        <li><a href="#wealth-aggregators">SmartAsset / Plannersearch / Unbiased</a>. Wealth-management lead-gen.</li>
+      </ul>
+    </div>
+
+    <div class="rule"></div>
+
+    <h2 id="google-business">Google Business Profile (GBP)</h2>
+    <div class="dir-card">
+      <div class="who">For: every category. Universal. The single highest-leverage third-party surface for AI citation.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Google AI Overviews (primary), Perplexity (secondary), Gemini grounded (secondary)</dd>
+        <dt>Why it matters</dt><dd>Google AI Overviews grounds local queries in Google's own data stack; GBP is the canonical input. Strong GBP raises citation share across multiple engines, not just Google's own.</dd>
+        <dt>Effort to set up</dt><dd>2-4 hours initial. 30 min/month to maintain.</dd>
+        <dt>Cost</dt><dd>Free.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters (AI extracts these)</div>
+          <ul>
+            <li><strong>Business name.</strong> Must match the firm's primary brand name exactly. Mismatches with the website penalize both.</li>
+            <li><strong>Primary and secondary categories.</strong> Pick the most specific category available. AI engines use this for category-shaped queries.</li>
+            <li><strong>Service list.</strong> Add every distinct service. AI cross-references with website Service schema.</li>
+            <li><strong>Hours.</strong> Specific open/close times per day, special hours for holidays. AI surfaces "open now" facts directly from this.</li>
+            <li><strong>Reviews and responses.</strong> Volume and recency matter. Responding to reviews (every one, within 7 days) signals active maintenance.</li>
+            <li><strong>Photos.</strong> Refresh quarterly. AI engines weight active profiles higher than dormant ones.</li>
+            <li><strong>Q&amp;A.</strong> Seed 5-8 buyer-shaped questions with answers. Public Q&amp;A from buyers, answer within 48 hours.</li>
+            <li><strong>Posts.</strong> Weekly cadence. Short, specific. AI uses these as freshness signal.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration (do not over-invest)</div>
+          <ul>
+            <li>Cover photo aesthetics beyond "clear and professional"</li>
+            <li>Holiday-special posts and seasonal banners</li>
+            <li>The "products" tab unless you sell discrete inventory</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Weekly: post one short update. Monthly: respond to any unanswered reviews and new Q&amp;A. Quarterly: refresh photos and service list. Annually: full audit against the AI-citation playbook.
+      </div>
+    </div>
+
+    <h2 id="bing-business">Bing Business Profile (Microsoft Copilot lever)</h2>
+    <div class="dir-card">
+      <div class="who">For: every category. The single highest-leverage move for Microsoft Copilot citation, which sits at 0-2% own-site share cohort-wide across all 5 measured categories.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Microsoft Copilot (almost exclusively; Copilot answers using Bing organic + Bing Business data)</dd>
+        <dt>Why it matters</dt><dd>Across every category NeverRanked has measured, Microsoft Copilot cites firm-owned websites at 0-2% rate. The first-mover advantage on Bing organic + Bing Business is intact because most competitors are not present.</dd>
+        <dt>Effort to set up</dt><dd>1-2 hours. The platform is less polished than GBP and most firms skip it; that is the opportunity.</dd>
+        <dt>Cost</dt><dd>Free.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Business name + address + phone.</strong> The NAP triplet. Must match GBP and website exactly.</li>
+            <li><strong>Category.</strong> Same as GBP, mapped to Bing's category taxonomy.</li>
+            <li><strong>Hours.</strong> Microsoft Copilot surfaces "open now" facts.</li>
+            <li><strong>Verified status.</strong> Verify the profile (postcard or phone). Unverified profiles are deprioritized.</li>
+            <li><strong>Website URL.</strong> Use the canonical domain, not a tracking parameter.</li>
+            <li><strong>Description.</strong> 200-300 words. Plain language. Mirror the firm's website meta description.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Photos beyond a clear primary image</li>
+            <li>Bing-specific posts (these get cited rarely)</li>
+            <li>The "menu" or "appointment" extensions for non-applicable categories</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Set up once, audit annually. Bing Business changes less than GBP; over-tending is wasted effort.
+      </div>
+    </div>
+
+    <h2 id="linkedin-company">LinkedIn Company Page</h2>
+    <div class="dir-card">
+      <div class="who">For: B2B-heavy categories (CPA, law, wealth, agencies). Less critical for B2C local service.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>ChatGPT search, Gemini grounded, Google AI Overviews; secondary for Perplexity</dd>
+        <dt>Why it matters</dt><dd>LinkedIn shows up as a recurring third-party citation across B2B-heavy categories. AI engines use it to confirm entity identity, named professionals, and B2B credibility signals.</dd>
+        <dt>Effort to set up</dt><dd>3-5 hours. Ongoing 1-2 hours/month for posts.</dd>
+        <dt>Cost</dt><dd>Free company page; LinkedIn Premium not required.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Company name.</strong> Exact match to brand. Mismatches with website confuse AI's entity resolution.</li>
+            <li><strong>About section.</strong> 300-500 words. Plain language. Lead with what the firm does, then named services, then named buyer types.</li>
+            <li><strong>Specialties.</strong> List 5-10 specific service or subject areas. AI cross-references with Service and Person schema on the firm's website.</li>
+            <li><strong>Employees.</strong> Connected named partners with completed profiles. Especially important for Person-driven categories (law, wealth, CPA).</li>
+            <li><strong>Posts.</strong> Weekly cadence. Even short text-only posts maintain freshness signal.</li>
+            <li><strong>Headquarters address.</strong> Match LocalBusiness schema on the firm's website.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Logo aesthetics beyond clarity</li>
+            <li>LinkedIn-native video unless the firm already produces video</li>
+            <li>The "products" section for service businesses</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Weekly: one substantive post. Monthly: review employee profile linkage. Quarterly: refresh About section if positioning has shifted.
+      </div>
+    </div>
+
+    <h2 id="yelp">Yelp</h2>
+    <div class="dir-card">
+      <div class="who">For: consumer-facing categories (med spa, dental, restaurants, retail). Less critical for B2B professional services.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Perplexity, ChatGPT search, Google AI Overviews</dd>
+        <dt>Why it matters</dt><dd>For consumer-facing categories, Yelp is a recurring third-party citation source. AI engines use it for review-driven queries ("best", "top rated", "reviews of").</dd>
+        <dt>Effort to set up</dt><dd>1-2 hours. Ongoing minimal except review response.</dd>
+        <dt>Cost</dt><dd>Free profile; paid advertising not required for AEO purposes.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Claimed business status.</strong> Unclaimed profiles get deprioritized by AI engines.</li>
+            <li><strong>Categories.</strong> Specific. Match what GBP uses.</li>
+            <li><strong>Service list.</strong> Specific service variants where applicable.</li>
+            <li><strong>Review responses.</strong> Respond to every review within 7 days. AI engines treat response rate as a freshness signal.</li>
+            <li><strong>Photos.</strong> 10+ high-quality photos minimum.</li>
+            <li><strong>Hours.</strong> Match GBP and Bing.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Yelp ads (do not improve AI citation share)</li>
+            <li>Yelp Deals unless they fit the business model</li>
+            <li>Custom Yelp page banners</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Weekly: review response. Quarterly: photo refresh. Annual: full profile audit.
+      </div>
+    </div>
+
+    <h2 id="bbb">Better Business Bureau (BBB)</h2>
+    <div class="dir-card">
+      <div class="who">For: trust-sensitive categories (CPA, law, wealth, home services). Showed up at 30 cites across 3 runs in CPA Hawaii data.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Google AI Overviews, Perplexity, ChatGPT search</dd>
+        <dt>Why it matters</dt><dd>AI engines cite BBB profiles for trust-shaped queries (especially for high-consideration purchases). The accredited badge signal carries weight in AI's source ranking.</dd>
+        <dt>Effort to set up</dt><dd>2-3 hours for free profile; accreditation involves a fee and a review process.</dd>
+        <dt>Cost</dt><dd>Free unaccredited profile. Accreditation fees scale by firm size (typically $500-$5,000/year).</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Accredited status.</strong> The badge appears in AI citations and lifts the source's apparent authority.</li>
+            <li><strong>Complaint resolution rate.</strong> Respond to and resolve every complaint within 30 days.</li>
+            <li><strong>Business description.</strong> 100-200 words. Plain language match to website.</li>
+            <li><strong>Contact info NAP.</strong> Must match GBP, Bing, website.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>BBB-branded marketing materials beyond the badge on your own website</li>
+            <li>Posts and updates on the BBB profile itself</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Monthly: complaint and inquiry review. Annual: accreditation renewal and profile audit.
+      </div>
+    </div>
+
+    <h2 id="clutch">Clutch.co</h2>
+    <div class="dir-card">
+      <div class="who">For: B2B services (CPA, agencies, IT services, consulting). Surfaced at 101 cites across 3 runs in CPA Hawaii data, making it the top review-directory source for that category.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>ChatGPT search, Perplexity, Gemini grounded</dd>
+        <dt>Why it matters</dt><dd>Clutch is one of the most cited B2B review directories for professional-services queries. AI engines treat the editorial-leaderboard structure as a trust signal.</dd>
+        <dt>Effort to set up</dt><dd>3-5 hours for profile + at least 3 verified client reviews to be eligible for category leaderboards.</dd>
+        <dt>Cost</dt><dd>Free profile; paid sponsored placement available but not necessary for AEO.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Verified client reviews.</strong> Minimum 3 to unlock the leaderboard. AI engines cite Clutch leaderboard pages more than firm profile pages.</li>
+            <li><strong>Service offerings.</strong> Specific services tagged correctly.</li>
+            <li><strong>Industry focus.</strong> Pick 2-4 specific industries; "all industries" reads as weak signal.</li>
+            <li><strong>Client list.</strong> Named clients (with their permission) carry weight.</li>
+            <li><strong>Case studies.</strong> 2-5 written case studies with measurable outcomes.</li>
+            <li><strong>Geographic location.</strong> Match website LocalBusiness schema.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Banner and visual styling of the profile</li>
+            <li>Clutch-paid badges beyond the legitimate "Top X" recognition</li>
+            <li>The community-engagement features</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Quarterly: solicit 1-2 new client reviews to keep the review velocity active. Annual: refresh case studies and service list.
+      </div>
+    </div>
+
+    <h2 id="expertise">Expertise.com</h2>
+    <div class="dir-card">
+      <div class="who">For: multi-category service businesses. Showed up at 35 cites across 3 runs in CPA Hawaii data.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Perplexity, ChatGPT search, Google AI Overviews</dd>
+        <dt>Why it matters</dt><dd>Expertise publishes editorial "best of" lists per category per city. AI engines cite these list pages frequently for "best in [city]" queries.</dd>
+        <dt>Effort to get listed</dt><dd>Editorial selection, not self-service. Expertise contacts firms; firms can also pitch with strong portfolio + reviews.</dd>
+        <dt>Cost</dt><dd>Free to be listed if selected. Paid placement also available but not required.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Being on the list at all.</strong> Inclusion is the primary lift; placement order is secondary.</li>
+            <li><strong>Reviews and reputation across other surfaces.</strong> Expertise's editorial team uses GBP, Yelp, and BBB reviews as selection inputs.</li>
+            <li><strong>Years in business.</strong> Established firms are favored in Expertise's editorial logic.</li>
+            <li><strong>Specialty clarity.</strong> Firms with one clear specialty get listed more often than generalists.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Pitching aggressively for inclusion (this is editorial, not paid)</li>
+            <li>Paid placement (the editorial selection is what drives AI citation weight)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        No active maintenance. Annual: check whether you have been added to any new Expertise lists for your category and city.
+      </div>
+    </div>
+
+    <h2 id="wikipedia">Wikipedia</h2>
+    <div class="dir-card">
+      <div class="who">For: established firms with documented public history. The most defensible AEO asset but hardest to earn.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Claude and Gemma (heavy weight in training data), Perplexity, Microsoft Copilot, Google AI Overviews</dd>
+        <dt>Why it matters</dt><dd>Wikipedia presence compounds in training-data engines over years. Hawaii consumer banks (which have decades of Wikipedia presence) see 88% Claude own-share; categories without Wikipedia presence (like Hawaii CPAs) see 1-2%.</dd>
+        <dt>Effort to earn</dt><dd>Variable. Notability requirements must be met. Independent editors typically write the article; firms cannot self-publish.</dd>
+        <dt>Cost</dt><dd>Free to be the subject of an article. Paying editors to write or maintain articles violates Wikipedia's terms.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Notability evidence.</strong> Independent press coverage, industry awards, milestone events. Wikipedia editors evaluate this before creating articles.</li>
+            <li><strong>Reliable sources.</strong> Articles need multiple independent secondary sources to support claims.</li>
+            <li><strong>Sustained accuracy.</strong> Once an article exists, the firm cannot directly edit; it can submit edit requests via the article's Talk page.</li>
+            <li><strong>Wikidata entry.</strong> Adjacent to the article; some AI engines read Wikidata directly. Ensure key facts match the article.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration (and dangerous)</div>
+          <ul>
+            <li>Self-editing or paying editors to write or modify the article (violates Wikipedia terms; gets articles deleted)</li>
+            <li>Adding promotional language (editors revert quickly)</li>
+            <li>Trying to remove unflattering but sourced content</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Quarterly: review article for factual accuracy. If incorrect, post a polite edit request to the Talk page citing reliable sources. Do not edit directly if you are affiliated with the firm.
+      </div>
+    </div>
+
+    <h2 id="healthgrades">Healthgrades</h2>
+    <div class="dir-card">
+      <div class="who">For: medical and dental categories specifically. Surfaces in dental data alongside Yelp and Google.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Perplexity, ChatGPT search, Google AI Overviews</dd>
+        <dt>Why it matters</dt><dd>For medical and dental queries, Healthgrades is a recurring third-party citation. Practitioner profiles with strong review velocity get cited for "best [specialty] in [city]" queries.</dd>
+        <dt>Effort to set up</dt><dd>2-3 hours for profile claim and population. Practitioner-by-practitioner if the practice has multiple providers.</dd>
+        <dt>Cost</dt><dd>Free basic profile; sponsored placement available but not required.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Practitioner profile completeness.</strong> Photo, education, board certifications, specialties, insurance accepted.</li>
+            <li><strong>Patient reviews.</strong> Actively solicit; respond to every one.</li>
+            <li><strong>Office address and hours.</strong> Match GBP exactly.</li>
+            <li><strong>Languages spoken.</strong> Healthgrades surfaces this for specific queries.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Sponsored placement (does not lift AI citation share)</li>
+            <li>The "ask a question" feature unless you commit to answering</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Monthly: review response. Quarterly: profile refresh.
+      </div>
+    </div>
+
+    <h2 id="chambers">Chambers / BestLawyers / Justia (legal-specific)</h2>
+    <div class="dir-card">
+      <div class="who">For: law firms only. Chambers and BestLawyers are editorial rankings; Justia is a self-service legal directory.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>All web-searching engines for legal queries. Chambers + BestLawFirms together accounted for 339 cites across 3 runs in Hawaii law-firm data.</dd>
+        <dt>Why it matters</dt><dd>Editorial legal directories are the highest-cited third-party sources for legal queries. AI engines treat the editorial peer-rating process as a strong trust signal.</dd>
+        <dt>Effort to engage</dt><dd>Chambers and BestLawyers involve peer-rating surveys that take 10-20 hours of partner time per cycle. Justia is self-service.</dd>
+        <dt>Cost</dt><dd>Chambers + BestLawyers free to be ranked (the survey is the cost). Marketing materials and badges cost extra. Justia free basic, paid premium.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Chambers / BestLawyers nomination cycle participation.</strong> Submit nominations every annual cycle.</li>
+            <li><strong>Attorney bio completeness on each platform.</strong> Education, bar admissions, practice areas, notable cases, publications.</li>
+            <li><strong>Practice area specificity.</strong> Specialists get cited more than generalists.</li>
+            <li><strong>Justia profile with practice area content.</strong> The free profile is sufficient; paid premium adds marginal value for AEO.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Buying Chambers / BestLawyers branded marketing materials (the ranking is the asset)</li>
+            <li>Justia paid premium tiers for AEO purposes specifically</li>
+            <li>Aggressive nomination campaigns (peer rating is editorial, not gameable)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Annual: Chambers and BestLawyers nomination cycles. Quarterly: Justia profile review and case-result updates.
+      </div>
+    </div>
+
+    <h2 id="cpa-societies">State CPA societies (HSCPA and equivalents)</h2>
+    <div class="dir-card">
+      <div class="who">For: CPA firms specifically. HSCPA (Hawaii Society of CPAs) surfaced at 130 cites across 3 runs in Hawaii CPA data, the single most-cited third-party source for that category.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>All web-searching engines for CPA queries. Particularly strong in Perplexity and Google AI Overviews.</dd>
+        <dt>Why it matters</dt><dd>State CPA society directories are the editorial trust layer AI engines defer to for CPA queries. A firm not represented in the state society's public directory is invisible across 6%+ of all category citations.</dd>
+        <dt>Effort to engage</dt><dd>Active society membership required. Profile completion takes 1-2 hours.</dd>
+        <dt>Cost</dt><dd>Membership dues scale with firm size; typically $300-$800/year per CPA member.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Active member status.</strong> Lapsed members disappear from the public directory.</li>
+            <li><strong>Firm profile completeness.</strong> Services, specialties, named partners, location.</li>
+            <li><strong>Continuing education credit reporting.</strong> Society directories sometimes display CE compliance status; visible compliance is a trust signal.</li>
+            <li><strong>Participation in society events.</strong> Speaking, writing for the newsletter, committee work compounds into editorial mentions over time.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Society-branded marketing materials beyond confirming membership</li>
+            <li>Society-paid advertising tiers</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Annual: membership renewal and profile audit. Quarterly: consider one society event participation (speaking or writing).
+      </div>
+    </div>
+
+    <h2 id="wealth-aggregators">SmartAsset / Plannersearch / Unbiased (wealth lead-gen)</h2>
+    <div class="dir-card">
+      <div class="who">For: wealth management firms specifically. These surfaced as the lead-gen middleman pattern in Hawaii wealth-management data: AI cites them MORE than individual firms for "best advisor" queries.</div>
+
+      <dl class="spec">
+        <dt>Primary AI engine pull</dt><dd>Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews</dd>
+        <dt>Why it matters</dt><dd>AI engines preferentially cite these aggregators for wealth-management queries because they aggregate cross-firm information AI can compare. A firm not represented here loses a significant share of AI citation visibility.</dd>
+        <dt>Effort to engage</dt><dd>1-2 hours per platform for free listing. SmartAsset and Plannersearch sell paid lead-gen subscriptions ($500-$3,000/month) which include enhanced visibility.</dd>
+        <dt>Cost</dt><dd>Free basic listings. Paid lead-gen is its own ROI calculation independent of AEO.</dd>
+      </dl>
+
+      <div class="fields">
+        <div class="group matters">
+          <div class="label">What matters</div>
+          <ul>
+            <li><strong>Listed status at all.</strong> Inclusion is the primary AEO lift.</li>
+            <li><strong>Specialty fields.</strong> Match the firm's actual specialties; aggregators surface niche matches.</li>
+            <li><strong>Geographic service area.</strong> Specific cities/regions.</li>
+            <li><strong>AUM range.</strong> Honest representation; AI uses this for "for high-net-worth" queries.</li>
+            <li><strong>Credentials.</strong> CFP, CFA, CPA cross-credentials listed.</li>
+            <li><strong>Fee structure transparency.</strong> Fee-only vs commission-based vs fee-based clearly stated.</li>
+          </ul>
+        </div>
+        <div class="group decoration">
+          <div class="label">What is decoration</div>
+          <ul>
+            <li>Aggressive paid lead-gen tier purchase for AEO purposes alone</li>
+            <li>Aggregator-branded marketing materials</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="cadence">
+        <strong>Cadence</strong>
+        Quarterly: profile review across all three. Annual: full audit and updates.
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <h2>The pattern that holds across all sources</h2>
+    <ol>
+      <li><strong>NAP consistency.</strong> Name, Address, Phone must match exactly across every directory + your website. AI engines cross-reference; mismatches downweight both signals.</li>
+      <li><strong>Active maintenance signals trust.</strong> AI engines deprioritize stale profiles. Even minimal recurring updates lift citation share.</li>
+      <li><strong>Review velocity matters more than absolute count.</strong> A profile with 20 reviews and 2 new ones this month outperforms a profile with 200 reviews and none this year.</li>
+      <li><strong>Editorial inclusion beats paid placement for AEO.</strong> AI engines weight earned visibility over paid; spend your time on the editorial path even when paid options exist.</li>
+      <li><strong>Match what your per-query playbook flags.</strong> A directory that does not surface in your category's AI-citation data is not worth optimizing for AEO. Spend time on the directories AI actually cites for your queries.</li>
+    </ol>
+
+    <h2>What happens next</h2>
+    <ol>
+      <li><strong>Identify which directories matter</strong> for your category from your NeverRanked per-query playbook (the "third-party content dominates" notes).</li>
+      <li><strong>Audit each one</strong> against the playbook above. Fix what is broken or missing.</li>
+      <li><strong>Establish the cadence</strong> for ongoing maintenance.</li>
+      <li><strong>Wait 4 to 8 weeks</strong> for AI engines to re-index after material updates.</li>
+      <li><strong>Verify in your monthly NeverRanked measurement</strong> that the directory-driven queries now cite your firm more often.</li>
+    </ol>
+
+    <p style="margin-top: 32px;"><a href="/schema-library/">Schema library</a> &middot; <a href="/templates/">Page templates</a> &middot; <a href="/methodology/">How NeverRanked measures</a> &middot; <a href="/">Return to NeverRanked</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
