@@ -1,0 +1,387 @@
+<!doctype html>
+<!--
+  /templates/ — Phase 4 of the world-class punch list build.
+
+  Page templates for the 5 page types that win in the AI-citation
+  data. Each template includes: full H1/H2/H3 outline, body anchor
+  blocks (the key paragraphs that need to be present), embedded
+  schema callouts, word count target, FAQ structure, and internal
+  linking guidance.
+
+  Lives at neverranked.com/templates/. Referenced from per-query
+  playbooks alongside the schema library. The pair (schema-library
+  + templates) is what converts a NeverRanked punch list from
+  "diagnostic" into "ship-ready spec."
+
+  Each template is generic; the proprietary work is the per-customer
+  measurement telling you which template applies to which query.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Page templates. The 5 page types AI engines cite for local service.</title>
+<meta name="description" content="Page templates for the 5 types AI engines actually cite: service-specific landing pages, neighborhood pages, audience-fit pages, comparison pages, named-partner pages. Each with outline, body anchors, schema, and word count targets.">
+<link rel="canonical" href="https://neverranked.com/templates/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; line-height: 1.7; padding: 60px 0 120px; -webkit-font-smoothing: antialiased; }
+  main { max-width: 860px; margin: 0 auto; padding: 0 32px; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 24px; font-weight: 400; color: #d4c596; margin: 56px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 18px; font-weight: 400; color: #e8e8ea; margin: 24px 0 10px; }
+  h4 { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #d4c596; margin: 22px 0 8px; font-weight: 400; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .toc {
+    background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px;
+    padding: 18px 22px; margin: 28px 0;
+  }
+  .toc h4 { margin: 0 0 10px; }
+  .toc ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: #b9b9bd; text-decoration: none; }
+  .toc a:hover { color: #d4c596; }
+  .template {
+    background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px;
+    padding: 22px 26px; margin: 18px 0 28px;
+  }
+  .template h4 { color: #d4c596; margin-top: 0; }
+  .template .spec {
+    display: grid; grid-template-columns: 140px 1fr; gap: 8px 18px;
+    font-size: 14px; color: #b9b9bd; margin: 12px 0 18px;
+  }
+  .template .spec dt { color: #6a6a70; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; padding-top: 2px; }
+  .template .outline {
+    background: #0b0b0c; border-left: 2px solid #d4c596;
+    padding: 14px 18px; margin: 12px 0;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px; color: #e8e8ea; line-height: 1.7;
+  }
+  .template .outline .h1 { color: #d4c596; font-weight: 600; }
+  .template .outline .h2 { color: #d4c596; margin-left: 16px; }
+  .template .outline .h3 { color: #b9b9bd; margin-left: 32px; }
+  .template .outline .note { color: #6a6a70; font-style: italic; padding-left: 16px; }
+  .template .anchor-block {
+    background: #131316; border: 1px solid #2a2a2e; border-radius: 4px;
+    padding: 14px 18px; margin: 10px 0;
+    font-size: 14px; color: #e8e8ea;
+  }
+  .template .anchor-block strong { color: #d4c596; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; display: block; margin-bottom: 6px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Page templates</div>
+    <h1>Templates for the 5 page types AI engines cite.</h1>
+    <p class="sub">Each template is the page outline + body anchors + schema callouts + word count target the cited competitor pages share in the AI-citation data. Build to this shape, deploy the named schema from the <a href="/schema-library/">schema library</a>, internally link from existing high-traffic pages, wait 4 to 8 weeks for AI to re-index.</p>
+
+    <div class="notice">
+      <strong>How to use these:</strong> your NeverRanked per-query playbook names the intent shape for each weak query (head-demand, long-tail by service, long-tail by geography, long-tail by buyer fit, named-comparison). Match the intent to the template below. The template tells you what to build; the schema library tells you what to deploy on the page; the per-query playbook tells you what specific words to use for your firm. The three layers compose.
+    </div>
+
+    <div class="toc">
+      <h4>Templates in this library</h4>
+      <ul>
+        <li><a href="#service-page">Service-specific landing page</a>. For long-tail-by-service queries.</li>
+        <li><a href="#geo-page">Neighborhood / location landing page</a>. For long-tail-by-geography queries.</li>
+        <li><a href="#audience-page">Audience-fit landing page</a>. For long-tail-by-buyer-type queries.</li>
+        <li><a href="#category-leader">Category-leader / comparison hub page</a>. For head-demand queries.</li>
+        <li><a href="#named-partner">Named-partner / named-attorney page</a>. For named-expertise queries.</li>
+      </ul>
+    </div>
+
+    <h2 id="service-page">Service-specific landing page</h2>
+    <p>For long-tail-by-service queries like "fee-only tax advisor Honolulu" or "estate planning attorney Hawaii." These queries are where buyers have a specific service need and AI rewards pages that name the exact service variant, the deliverables, and the buyer fit.</p>
+
+    <div class="template">
+      <h4>Service page template</h4>
+      <dl class="spec">
+        <dt>Target words</dt><dd>1,200 to 1,800 (median 1,500)</dd>
+        <dt>H2 count</dt><dd>6 to 8</dd>
+        <dt>Schema</dt><dd>Service, FAQPage, Offer (if pricing visible), LocalBusiness (provider reference), BreadcrumbList</dd>
+        <dt>FAQ block</dt><dd>Required. 5 to 8 questions specific to this service.</dd>
+        <dt>Internal links</dt><dd>From homepage services menu, from related service pages, from the firm's about/team page</dd>
+      </dl>
+
+      <div class="outline">
+        <div class="h1">H1: [The specific service named exactly as a buyer would search it]</div>
+        <div class="note">Example: "Fee-only tax planning for Hawaii small business owners"</div>
+        <div class="h2">H2: What this service covers</div>
+        <div class="note">Lead with deliverables, not the firm's history. 100-150 words.</div>
+        <div class="h2">H2: Who this service is for</div>
+        <div class="note">Named buyer audience. Use their language, not yours.</div>
+        <div class="h2">H2: Our process</div>
+        <div class="note">Numbered steps. AI extracts list-shaped content well.</div>
+        <div class="h3">H3: Step 1: Discovery</div>
+        <div class="h3">H3: Step 2: Analysis</div>
+        <div class="h3">H3: Step 3: Implementation</div>
+        <div class="h3">H3: Step 4: Ongoing</div>
+        <div class="h2">H2: Pricing</div>
+        <div class="note">Even a range. "Starts at $X for [scope]." AI rewards transparency.</div>
+        <div class="h2">H2: What you get (deliverables)</div>
+        <div class="note">Bulleted list. Concrete artifacts the buyer receives.</div>
+        <div class="h2">H2: Frequently asked questions</div>
+        <div class="note">5-8 questions buyers actually ask. Match the FAQPage schema verbatim.</div>
+        <div class="h2">H2: How to get started</div>
+        <div class="note">One specific next step (book a call, fill a form). No multi-option CTA.</div>
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: the first 100 words</strong>
+        Open the page with a direct, plain-language answer to the query. "[Firm] offers [exact service name] for [audience] in [geographic area]. The engagement covers [3-5 deliverables in plain language]. Pricing starts at [range]. Most engagements take [duration]."
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: deliverables as a structured list</strong>
+        Not prose. A bulleted or numbered list of what the buyer receives. AI engines extract this directly into answers.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: a named provider</strong>
+        At least one paragraph naming the principal or lead person who delivers this service. Cross-references with Person schema and your About page. AI engines preferentially cite pages with named professionals over anonymous service pages.
+      </div>
+    </div>
+
+    <h2 id="geo-page">Neighborhood / location landing page</h2>
+    <p>For long-tail-by-geography queries like "CPA in Bishop Street" or "wealth advisor Kakaako." These are won by giving AI engines an unambiguous location signal (schema + visible address + neighborhood naming) and explaining why the neighborhood matters to the buyer.</p>
+
+    <div class="template">
+      <h4>Geography page template</h4>
+      <dl class="spec">
+        <dt>Target words</dt><dd>800 to 1,200 (median 1,000)</dd>
+        <dt>H2 count</dt><dd>5 to 7</dd>
+        <dt>Schema</dt><dd>LocalBusiness with full PostalAddress + GeoCoordinates, Place (neighborhood), OpeningHoursSpecification per day, BreadcrumbList</dd>
+        <dt>FAQ block</dt><dd>Optional. 3-5 geo-specific questions if relevant.</dd>
+        <dt>Internal links</dt><dd>From homepage location menu, from contact page, from any service page that mentions the area</dd>
+      </dl>
+
+      <div class="outline">
+        <div class="h1">H1: [Firm name] in [Neighborhood / area / landmark]</div>
+        <div class="note">Example: "Hawaii CPA office in downtown Honolulu"</div>
+        <div class="h2">H2: Our [Neighborhood] location</div>
+        <div class="note">Full street address. Parking, transit access, accessibility notes.</div>
+        <div class="h2">H2: Why we serve [Neighborhood]</div>
+        <div class="note">Brief context on the buyer base or business density in this area.</div>
+        <div class="h2">H2: Services we offer at this location</div>
+        <div class="note">List with internal links to service pages.</div>
+        <div class="h2">H2: How to reach us</div>
+        <div class="note">Address (again), phone, email, map embed if applicable.</div>
+        <div class="h2">H2: Hours and availability</div>
+        <div class="note">Match OpeningHoursSpecification schema verbatim.</div>
+        <div class="h2">H2: Other locations we serve</div>
+        <div class="note">Internal links to other geography pages.</div>
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: the address in plain text</strong>
+        Full street address must appear in body text, not just schema. AI engines cross-check the two. Example: "Our [Neighborhood] office is located at 1234 Bishop Street, Suite 500, Honolulu, HI 96813."
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: at least one named neighborhood landmark</strong>
+        Naming a landmark (a specific building, intersection, or public space) lets AI confirm geographic specificity. Example: "Two blocks from the Pacific Guardian Center" or "Across from the Bishop Square fountain."
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: opening hours in visible text</strong>
+        Match the OpeningHoursSpecification schema. "We are open Monday through Friday, 8 AM to 5 PM. Closed weekends and federal holidays."
+      </div>
+    </div>
+
+    <h2 id="audience-page">Audience-fit landing page</h2>
+    <p>For long-tail-by-buyer-type queries like "Hawaii CPA for real estate investors" or "wealth advisor for retiring physicians." These pages win by demonstrating you understand the audience's specific needs, using their own language, and naming the pain points generic pages miss.</p>
+
+    <div class="template">
+      <h4>Audience-fit page template</h4>
+      <dl class="spec">
+        <dt>Target words</dt><dd>1,000 to 1,500 (median 1,250)</dd>
+        <dt>H2 count</dt><dd>5 to 7</dd>
+        <dt>Schema</dt><dd>Service with audience block, FAQPage, Article if case study included, LocalBusiness reference</dd>
+        <dt>FAQ block</dt><dd>Required. Audience-specific questions, not generic service questions.</dd>
+        <dt>Internal links</dt><dd>From homepage audience menu, from related audience pages, from service pages</dd>
+      </dl>
+
+      <div class="outline">
+        <div class="h1">H1: [Firm] for [Specific buyer type]</div>
+        <div class="note">Example: "Hawaii tax planning for real estate investors"</div>
+        <div class="h2">H2: Why [buyer type] need specialized [service]</div>
+        <div class="note">Name 2-3 specific pain points generic service doesn't address.</div>
+        <div class="h2">H2: How our service is structured for [buyer type]</div>
+        <div class="note">What's different from the generic engagement. Use audience-specific terminology.</div>
+        <div class="h2">H2: Common situations we handle</div>
+        <div class="note">3-5 named scenarios. Concrete, not abstract.</div>
+        <div class="h2">H2: Representative engagement</div>
+        <div class="note">Anonymized case study. 200-400 words. The situation, what we did, the outcome.</div>
+        <div class="h2">H2: Questions [buyer type] commonly ask</div>
+        <div class="note">FAQ block in the audience's voice. Real questions, not marketing-shaped questions.</div>
+        <div class="h2">H2: How to get started</div>
+        <div class="note">One specific next step.</div>
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: the audience named in the first 100 words</strong>
+        AI engines cite pages that visibly target a named audience over generic pages. The buyer-type name must appear in the opening paragraph, not just the H1.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: at least one audience-specific term</strong>
+        Use language only this audience uses. For real estate investors: "1031 exchange," "depreciation recapture," "passive activity loss." For physicians: "PSLF," "income-driven repayment," "professional corporation." AI engines weight trade-language matches heavily for audience-fit queries.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Optional but powerful: a representative case study</strong>
+        Anonymized engagement story. The situation, the work, the outcome. Wrap in Article schema with named author. Even anonymized, these compound in training-data engines over time.
+      </div>
+    </div>
+
+    <h2 id="category-leader">Category-leader / comparison hub page</h2>
+    <p>For head-demand queries like "best CPA in Honolulu" or "top wealth advisor Hawaii." These are the hardest to win because they reward broad authority signals. The page itself is necessary but not sufficient; it works best paired with editorial mentions on third-party surfaces (publications, directories).</p>
+
+    <div class="template">
+      <h4>Category-leader page template</h4>
+      <dl class="spec">
+        <dt>Target words</dt><dd>1,500 to 2,200 (median 1,800)</dd>
+        <dt>H2 count</dt><dd>7 to 10</dd>
+        <dt>Schema</dt><dd>LocalBusiness, multiple Service blocks, FAQPage, AggregateRating (if verifiable), BreadcrumbList</dd>
+        <dt>FAQ block</dt><dd>Required. 6 to 10 questions covering the full category buyer journey.</dd>
+        <dt>Internal links</dt><dd>From homepage hero, from every service page, from every audience page</dd>
+      </dl>
+
+      <div class="outline">
+        <div class="h1">H1: [Direct, query-shaped title]</div>
+        <div class="note">Example: "Honolulu tax accounting for businesses and individuals"</div>
+        <div class="h2">H2: What this category covers</div>
+        <div class="note">Plain-language overview. What buyers should know before choosing.</div>
+        <div class="h2">H2: The criteria that separate strong providers from weak ones</div>
+        <div class="note">3-5 named criteria. Concrete, evaluable.</div>
+        <div class="h2">H2: How we meet each criterion</div>
+        <div class="note">Match the criteria above, with proof points.</div>
+        <div class="h2">H2: Services we provide</div>
+        <div class="note">Bulleted list with internal links to each service-specific page.</div>
+        <div class="h2">H2: Who we work with</div>
+        <div class="note">Bulleted list with internal links to each audience-fit page.</div>
+        <div class="h2">H2: Our team</div>
+        <div class="note">Brief mention of named principals with links to their Person pages.</div>
+        <div class="h2">H2: Frequently asked questions</div>
+        <div class="note">6-10 questions. The category buyer journey from awareness to commitment.</div>
+        <div class="h2">H2: How to get started</div>
+        <div class="note">One specific next step.</div>
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: the buyer's selection criteria</strong>
+        Name 3-5 specific things buyers should evaluate when choosing in this category. AI engines preferentially cite pages that help the buyer decide, not pages that just promote the firm.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: comparison-friendly framing</strong>
+        Where you stand on each criterion, not just claims. "We specialize in X but do not handle Y. For Y, we refer to [type of firm]." Honest scope is more cited than puffery.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required: deep internal linking</strong>
+        Link to at least 3 service-specific pages, 2 audience-fit pages, and the team page. Category-leader pages function as hubs; AI engines reward strong internal link structure.
+      </div>
+    </div>
+
+    <h2 id="named-partner">Named-partner / named-attorney page</h2>
+    <p>For named-expertise queries like "[name] Honolulu attorney" or "Hawaii CPA who specializes in [subject]." Critical for high-trust professional services categories (law, wealth, CPA) where AI engines preferentially cite specific named professionals. Slower to compound but most defensible in training-data engines (Claude, Gemma) over years.</p>
+
+    <div class="template">
+      <h4>Named-partner page template</h4>
+      <dl class="spec">
+        <dt>Target words</dt><dd>800 to 1,400 (median 1,100)</dd>
+        <dt>H2 count</dt><dd>5 to 7</dd>
+        <dt>Schema</dt><dd>Person with knowsAbout + hasCredential + sameAs, worksFor reference to LocalBusiness, optionally Article references for published work</dd>
+        <dt>FAQ block</dt><dd>Optional. Person-specific questions if there are recurring buyer asks.</dd>
+        <dt>Internal links</dt><dd>From homepage team menu, from every service page this person delivers, from any Article they authored</dd>
+      </dl>
+
+      <div class="outline">
+        <div class="h1">H1: [Full name], [Credential] | [Role]</div>
+        <div class="note">Example: "Jane Smith, CPA | Partner, Tax Practice"</div>
+        <div class="h2">H2: What [name] specializes in</div>
+        <div class="note">Match the knowsAbout schema. Specific subject areas, not generic categories.</div>
+        <div class="h2">H2: Background and credentials</div>
+        <div class="note">Education, certifications, professional memberships. Cross-references hasCredential schema.</div>
+        <div class="h2">H2: How [name] works with clients</div>
+        <div class="note">Process, philosophy, communication style. Audience-specific if relevant.</div>
+        <div class="h2">H2: Recent work</div>
+        <div class="note">Published articles, speaking engagements, case studies, named press mentions. Link to Article schema entries.</div>
+        <div class="h2">H2: Professional profiles</div>
+        <div class="note">LinkedIn, Bar association, professional directory links. Match sameAs schema.</div>
+        <div class="h2">H2: Contact [name]</div>
+        <div class="note">Direct email, scheduling link, or assistant contact. Specific, not "contact our firm."</div>
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: specialty areas in plain text</strong>
+        The knowsAbout schema list also appears in body text, verbatim. AI engines cross-check schema against body content; mismatched signals get downweighted.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required body anchor: named credentials with issuing body</strong>
+        Not just "CPA" but "Certified Public Accountant (Hawaii Society of CPAs, 2014)." AI engines weight credentials with issuing bodies higher than bare letters.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Required: external profile links</strong>
+        LinkedIn at minimum. For attorneys: state bar, Chambers, BestLawyers, Justia. For CPAs: AICPA, state society. For wealth advisors: SEC IAPD, CFP Board. These compound in training-data engines.
+      </div>
+
+      <div class="anchor-block">
+        <strong>Compounding asset: published work</strong>
+        Even one named-byline article per year, wrapped in Article schema and authored to this Person, builds training-data presence over multiple model refresh cycles. This is the slowest AEO surface and the most defensible once it forms.
+      </div>
+    </div>
+
+    <div class="rule"></div>
+
+    <h2>How the templates compose</h2>
+    <p>A firm's site does not need just one template. A complete AEO foundation typically deploys:</p>
+    <ul>
+      <li>One <strong>category-leader page</strong> at the root (e.g., <code>/services/</code> or the homepage itself)</li>
+      <li>One <strong>service page</strong> per distinct service variant the firm offers (typically 4 to 12)</li>
+      <li>One <strong>geography page</strong> per office location (1 to N)</li>
+      <li>One <strong>audience-fit page</strong> per major buyer type the firm specializes in (typically 2 to 6)</li>
+      <li>One <strong>named-partner page</strong> per principal (typically 1 to N)</li>
+    </ul>
+    <p>For a mid-sized firm with 5 services, 2 offices, 3 audience types, and 4 partners, that's 1 + 5 + 2 + 3 + 4 = 15 pages built to template. A 3-6 month buildout for an in-house team or agency executing against the NeverRanked punch list. The pages compound: AI engines reward sites where multiple templates interlink correctly.</p>
+
+    <h2>The relationship to the schema library</h2>
+    <p>Templates tell you what to build. The <a href="/schema-library/">schema library</a> tells you what to deploy on the page. The per-query playbook in your NeverRanked appendix tells you which template applies to which weak query and what specific words to use. The three layers compose:</p>
+    <ol>
+      <li><strong>NeverRanked playbook:</strong> "This weak query is long-tail-by-service. Build a service page for [service variant]."</li>
+      <li><strong>Templates (this page):</strong> "Here is the service-page outline, word count, body anchors, and structural rules."</li>
+      <li><strong>Schema library:</strong> "Here is the deployable JSON-LD for Service + FAQPage + Offer + LocalBusiness, ready to copy."</li>
+    </ol>
+
+    <h2>What happens next</h2>
+    <ol>
+      <li><strong>Build the page</strong> to the template (outline + body anchors).</li>
+      <li><strong>Deploy the schema</strong> from the schema library.</li>
+      <li><strong>Internally link</strong> from existing high-traffic pages so crawlers find the new page within the first re-index cycle.</li>
+      <li><strong>Validate</strong> the schema at <a href="https://validator.schema.org/">validator.schema.org</a>.</li>
+      <li><strong>Wait 4 to 8 weeks</strong> for AI engines to re-index. Training-data engines (Claude, Gemma) take longer.</li>
+      <li><strong>Verify in your monthly NeverRanked measurement</strong> that the page is now being cited on the target queries.</li>
+    </ol>
+
+    <p style="margin-top: 32px;"><a href="/schema-library/">Schema library</a> &middot; <a href="/methodology/">How NeverRanked measures</a> &middot; <a href="/teardowns/">Public teardowns</a> &middot; <a href="/">Return to NeverRanked</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
