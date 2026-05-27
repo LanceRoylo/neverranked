@@ -1,25 +1,34 @@
 <!doctype html>
 <!--
-  Cross-category teardown 02 — first published 2026-05-24.
-  4-category comparison: Hawaii consumer banking, Hawaii wealth
-  management, Honolulu dental, Hawaii law firms. Same 7-AI-tool
-  methodology, same 18-question discipline, same hash-locked runs,
-  4 separate cohorts measured 2026-05-23 and 2026-05-24.
+  Cross-category teardown 02 — first published 2026-05-24,
+  refreshed 2026-05-26 with CPA Hawaii as the 5th category.
+
+  5-category comparison: Hawaii consumer banking, Hawaii wealth
+  management, Honolulu dental, Hawaii law firms, Hawaii CPA firms.
+  Same 7-AI-tool methodology, same 18-question discipline, same
+  hash-locked runs, 5 separate cohorts measured 2026-05-23 to
+  2026-05-26.
+
+  The refresh added a structural finding the 4-category version
+  could not surface: own-site share and training-data presence are
+  two separate axes, not one. CPA Hawaii's Claude/Gemma collapse
+  (1% / 2% own-share) breaks the commodity-to-relationship gradient
+  the prior version told.
 
   Banking cohort named in full (already public via teardown 01).
-  Wealth, dental, law cohorts kept anonymized at category level
-  per the non-customers anonymization rule. Cohort sizes named.
+  Wealth, dental, law, CPA cohorts kept anonymized at category
+  level per the non-customer anonymization rule. Cohort sizes named.
 -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 02: Why your category's AI-citation pattern depends on whether you're a commodity or a relationship business</title>
-<meta name="description" content="4 categories, 4 cohorts, same 7-AI-tool methodology. The own-site citation share moves from 53% (banking) to 27% (wealth management) as categories shift from commodity to relationship business. What that means for where to do the work.">
+<title>Teardown 02: Two axes decide what AI cites for your category. Not one.</title>
+<meta name="description" content="5 categories, 5 cohorts, same 7-AI-tool methodology. Own-site share moves on one axis (commodity-to-relationship). Training-data presence moves on a different axis (category editorial depth). Hawaii CPAs are tied with law on own-site share but collapse to 1-2% on training-data engines. The two axes do not move together.">
 <link rel="canonical" href="https://neverranked.com/teardowns/cross-category/">
-<meta property="og:title" content="Teardown 02: The commodity-to-relationship gradient in AI citations">
-<meta property="og:description" content="4 categories measured with the same 7-AI-tool methodology. The own-site citation share drops from 53% to 27% as you move from banking to wealth management.">
+<meta property="og:title" content="Teardown 02: The two-axis pattern in cross-category AI citations">
+<meta property="og:description" content="5 categories measured with the same 7-AI-tool methodology. Own-site share and training-data presence are two separate axes. CPA Hawaii proves it.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -59,15 +68,15 @@
 <body>
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 02 &middot; Cross-category</div>
-    <h1>Why your category&rsquo;s AI-citation pattern depends on whether you&rsquo;re a commodity or a relationship business.</h1>
-    <p class="sub">4 Hawaii business categories, 4 cohorts, same 7-AI-tool methodology, same 18-question discipline. The own-site citation share moves from 53% in banking to 27% in wealth management. The reason is structural, and the implication for where to do the work is the point.</p>
+    <h1>Two axes decide what AI cites for your category. Not one.</h1>
+    <p class="sub">5 Hawaii business categories, 5 cohorts, same 7-AI-tool methodology, same 18-question discipline. Own-site share lives on one axis. Training-data presence lives on a different axis. Hawaii CPAs prove they do not move together.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> the more your category looks like a commodity (a checking account, the kind of thing buyers compare on rates and convenience), the more AI tools cite your own website when someone asks for a recommendation. The more your category looks like a relationship business (a wealth manager, the kind of thing buyers pick on trust and personality), the more AI cites third-party content about you instead.
+      <strong>The headline finding in one sentence:</strong> when an AI tool searches the live web, the own-site citation share across five Hawaii categories sits between 39% (CPA and law, tied) and 53% (consumer banking), a 14-point spread that tracks commodity-to-relationship-business intuition. When an AI tool answers from training data (Claude and Gemma), the firm-owned share collapses for one category and stays high for others. Hawaii consumer banks are cited by Claude 88% of the time. Hawaii CPA firms are cited by Claude 1% of the time. These are the same kind of buyer query, measured the same week, with the same methodology. The two surfaces (web-searching and training-data) are decided by different mechanisms, and operators who treat them as one number will miss where the real competitive ground sits.
     </div>
 
-    <h2>The four-category table</h2>
-    <p>Same measurement methodology on each. Same week. Same hash-locked discipline so every number compares apples to apples. The thing that changes between rows is the category, not the method.</p>
+    <h2>The five-category table (web-searching engines)</h2>
+    <p>Own-site share aggregated across the five web-searching AI tools (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews). Same week, same hash-locked discipline so every number compares apples to apples.</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Own-site share</th><th class="num">3rd-party share</th><th class="num">Cohort size</th></tr>
@@ -77,87 +86,104 @@
         <tr><td class="us">Hawaii wealth management</td><td class="num us"><strong>47%</strong></td><td class="num">49%</td><td class="num">42 firms</td></tr>
         <tr><td class="us">Honolulu dental practices</td><td class="num us"><strong>44%</strong></td><td class="num">52%</td><td class="num">46 firms</td></tr>
         <tr><td class="us">Hawaii law firms</td><td class="num us"><strong>39%</strong></td><td class="num">58%</td><td class="num">33 firms</td></tr>
+        <tr><td class="us">Hawaii CPA firms</td><td class="num us"><strong>39%</strong></td><td class="num">54%</td><td class="num">41 firms</td></tr>
       </tbody>
     </table>
-    <p>14 percentage points separate banking from the bottom of the table. Banking sits alone at the top. The other three categories cluster tightly between 39% and 47%. Wealth management, dental, and law all land in the same 39-47% own-site band. The remaining few percent across rows are review directories, Wikipedia, YouTube, social, and a small Reddit signal.</p>
-    <p>This is a refinement of an earlier reading. Initial cohort sizes were smaller (15 firms for wealth, 30 for law) and wealth's first measurement showed 27% own-site share, which suggested wealth was uniquely "relationship-shaped." Three rounds of cohort expansion (wealth grew to 42 firms; law to 33) compressed the gradient and revealed that wealth sits closer to dental than to the relationship-end of any spectrum. The honest finding is structural: banking is uniquely high; everything else in local-service business clusters together. Why banking is different is the more interesting question. The hypothesis below.</p>
+    <p>14 percentage points separate banking from the bottom of the table. Banking sits alone at the top. The other four categories cluster between 39% and 47%. CPA and law tie at 39%. The remaining few percent across rows are review directories, Wikipedia, YouTube, social, and a small Reddit signal.</p>
 
-    <h2>What this means in plain English</h2>
-    <p>Forget the percentages for a second. When a buyer asks ChatGPT or Google AI for a Hawaii bank recommendation, the AI answers mostly by quoting from the banks&rsquo; own websites. When that same buyer asks for a Hawaii wealth manager, dentist, or lawyer, AI splits roughly evenly between the firms&rsquo; own websites and third-party content (publications, lists, directories). Same kind of buyer, same kind of question, structurally different source distributions.</p>
-    <p>The hypothesis on why banking is different. Banks have done two decades of work making their websites the official source of truth for their own products. A bank&rsquo;s rates, account types, branch locations, and product comparisons live cleanly on the bank&rsquo;s own site, in structured product pages, refreshed daily. AI tools have nothing equivalent to cite for a wealth firm or law firm or dental practice. The "best wealth manager in Hawaii" question has no canonical source the way "best bank for small business in Hawaii" does, so AI reaches for a wider mix of editorial third-party content.</p>
-    <p>The honest finding for an operator. If you are a Hawaii bank, your own website is doing roughly half the work of getting AI to mention you. Clean it up; the leverage is on-site. If you are a Hawaii wealth firm, dentist, or law firm, your own site is doing roughly 40-50% of the work and the rest is happening on third-party surfaces (publications, directories, named-attorney bylines, lead-gen platforms, etc.). The 40-50% on-site number means own-site work matters more than the original (smaller-cohort) reading of this teardown suggested. Both surfaces matter.</p>
+    <h2>The hypothesis on why banking is different</h2>
+    <p>Banks have done two decades of work making their websites the official source of truth for their own products. A bank&rsquo;s rates, account types, branch locations, and product comparisons live cleanly on the bank&rsquo;s own site, in structured product pages, refreshed daily. AI tools have nothing equivalent to cite for a wealth firm or law firm or dental practice or CPA firm. The "best wealth manager in Hawaii" question has no canonical source the way "best bank for small business in Hawaii" does, so AI reaches for a wider mix of editorial third-party content.</p>
+    <p>The honest finding for an operator on the web-searching surface. If you are a Hawaii bank, your own website is doing roughly half the work of getting AI to mention you. Clean it up; the leverage is on-site. If you are a Hawaii wealth firm, dentist, law firm, or CPA, your own site is doing 39-47% of the work and the rest is happening on third-party surfaces (publications, directories, named-attorney bylines, lead-gen platforms, professional association directories, etc.). The 39-47% on-site number means own-site work matters, and the 50%+ off-site number means it is not enough by itself.</p>
 
-    <h2>The implication for where to do the work</h2>
-    <p>If you are a Hawaii consumer bank, AEO work that focuses on your own website pays off the most directly. Clean structured data, clear product pages, good FAQ markup. AI is reading you 53% of the time. Make the read cleaner.</p>
-    <p>If you are a Hawaii wealth manager, dentist, or law firm: the on-site work matters (40-50% of citations), and the off-site work matters (about the same). The list of fixes covers two workstreams running in parallel. Own-site cleanup is the necessary baseline; getting into the third-party surfaces AI uses for your category is what closes the rest of the gap.</p>
-    <p>The non-obvious read: across local-service business categories, AI distributes citations more evenly between own-site and third-party than the conventional SEO instinct suggests. Banking is the exception where one surface dominates. For the other categories, anyone telling you "just clean up your website" is leaving half the AI-citation surface unattended.</p>
-
-    <h2>The Microsoft Copilot pattern</h2>
-    <p>One pattern is consistent across all four categories. Microsoft Copilot (which answers using Bing&rsquo;s search results) cites the firms&rsquo; own websites less than 1% of the time in every category we measured.</p>
-    <table>
-      <thead>
-        <tr><th>Category</th><th class="num">Bing/Copilot own-site share</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>Hawaii consumer banking</td><td class="num"><strong>0%</strong></td></tr>
-        <tr><td>Hawaii law firms</td><td class="num"><strong>1%</strong></td></tr>
-        <tr><td>Hawaii wealth management</td><td class="num"><strong>0%</strong></td></tr>
-        <tr><td>Honolulu dental practices</td><td class="num"><strong>0%</strong></td></tr>
-      </tbody>
-    </table>
-    <p>This means: a buyer who asks Microsoft Copilot for a Hawaii business recommendation in any of these four categories gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap.</p>
-    <p>The first-mover read: whichever firm shows up first in Bing&rsquo;s organic search results for these queries gets the Copilot answer mostly to itself, because every competitor is also invisible there. The gap is open, and it does not appear to be a category-specific problem. It is a Microsoft Copilot pattern across local-service queries.</p>
-
-    <h2>Where AI knows you by name (Claude and Gemma)</h2>
-    <p>Two of the seven AI tools we measure (Claude and Gemma) answer from training data instead of searching the live web. So when they mention a business by name, it means that business has formed a presence in the AI&rsquo;s training data: through Wikipedia, news coverage, named-founder content, sustained editorial presence over years.</p>
-    <p>This is the slowest signal in the measurement, but the most defensible once it forms. A new competitor cannot show up in Claude&rsquo;s training data overnight. That presence is earned through years of editorial work that an AI model later learned from.</p>
-    <p>Across the four categories:</p>
+    <h2>The second axis: training-data engines</h2>
+    <p>Two of the seven AI tools we measure (Claude and Gemma) answer from training data instead of searching the live web. So when they mention a business by name, it means that business has formed a presence in the AI&rsquo;s training data: through Wikipedia, news coverage, named-founder content, sustained editorial presence over years. This is the slowest signal in the measurement and the most defensible once it forms. A new competitor cannot show up in Claude&rsquo;s training data overnight. That presence is earned through years of editorial work that an AI model later learned from.</p>
+    <p>Across the five categories:</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Claude own-site share</th><th class="num">Gemma own-site share</th></tr>
       </thead>
       <tbody>
         <tr><td>Hawaii consumer banking</td><td class="num"><strong>88%</strong></td><td class="num"><strong>70%</strong></td></tr>
-        <tr><td>Honolulu dental practices</td><td class="num"><strong>38%</strong></td><td class="num"><strong>59%</strong></td></tr>
         <tr><td>Hawaii law firms</td><td class="num"><strong>51%</strong></td><td class="num"><strong>78%</strong></td></tr>
+        <tr><td>Honolulu dental practices</td><td class="num"><strong>38%</strong></td><td class="num"><strong>59%</strong></td></tr>
         <tr><td>Hawaii wealth management</td><td class="num"><strong>16%</strong></td><td class="num"><strong>38%</strong></td></tr>
+        <tr><td>Hawaii CPA firms</td><td class="num"><strong>1%</strong></td><td class="num"><strong>2%</strong></td></tr>
       </tbody>
     </table>
-    <p>The same gradient holds inside Claude and Gemma. Banking firms have the strongest training-data presence. Wealth firms have the weakest. Dental and law cluster in the middle.</p>
-    <p>The asymmetry within rows is worth noting too. Claude and Gemma do not always agree on who is in their training data. Claude may know a firm Gemma does not, and vice versa. The measurement captures both because the buyer might use either.</p>
+    <p>The training-data picture is not the same picture as the web-searching one. Hawaii banks sit at the top of both. Hawaii CPA firms are tied with law on the web-searching surface (both 39%) but collapse to 1% / 2% on the training-data surface, the lowest of any category measured by a wide margin. Law firms are in the middle of the web-searching table but near the top of the training-data table. Wealth management sits in the middle of one and the bottom of the other (above CPA). The order of categories rearranges depending on which axis you look at.</p>
+
+    <div class="callout">
+      <h3>What this means in plain language</h3>
+      <p>Own-site share is decided by current web infrastructure quality. Training-data presence is decided by decades of category-level editorial accumulation. A firm can move the first axis by improving its own website. The second axis moves on a different timescale and through different mechanisms (named editorial coverage, association bylines, sustained public presence). The implication for operators: treating "AI citation share" as one number averages two different surfaces that respond to different work. The cohort-level pattern is the diagnostic that tells you which axis your category sits on and which work pays off there.</p>
+    </div>
+
+    <h2>The CPA collapse, and why it is structurally interesting</h2>
+    <p>The most distinctive single-category finding across the five measured is the Hawaii CPA training-data collapse. Claude cites Hawaii CPA firms 1% of the time. Gemma cites them 2% of the time. The web-searching engines (OpenAI, Gemini, Perplexity, Google AIO) reach between 45% and 60% own-site share on the same questions on the same week. The contrast is sharp inside one category.</p>
+    <p>The hypothesis on why. Hawaii CPA firms appear to have substantially less category-level editorial coverage than Hawaii lawyers, bankers, wealth managers, or dentists. CPA work is more transactional, less likely to surface in profile pieces, less likely to generate named-partner press coverage, less likely to be the subject of long-form editorial features. The training-data corpora reflect what the broader web has written about. Hawaii CPA firms have written less, been written about less, and consequently are not memorized by training-data engines the way the equivalent firms in adjacent professional services are.</p>
+    <p>This is observable in the data. It is not closable through individual firm action. A single Hawaii CPA firm cannot generate enough editorial coverage of itself to surface in Claude or Gemma; that takes either category-wide editorial momentum (years), or the kind of personal-brand-of-the-named-partner work that produces decades of Wikipedia entries, named-author bylines in national publications, and so on. For an operator in this category, the honest read is to compete inside the four web-searching engines where the surface is reachable and treat training-data engines as a structural feature of the category, not a target.</p>
+
+    <h2>The Microsoft Copilot pattern (holds across all five)</h2>
+    <p>One pattern is consistent across all five categories. Microsoft Copilot (which answers using Bing&rsquo;s organic search results) cites the firms&rsquo; own websites 0% to 2% of the time in every category we measured.</p>
+    <table>
+      <thead>
+        <tr><th>Category</th><th class="num">Bing/Copilot own-site share</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Hawaii consumer banking</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Hawaii wealth management</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Honolulu dental practices</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Hawaii law firms</td><td class="num"><strong>1%</strong></td></tr>
+        <tr><td>Hawaii CPA firms</td><td class="num"><strong>2%</strong></td></tr>
+      </tbody>
+    </table>
+    <p>This means: a buyer who asks Microsoft Copilot for a Hawaii business recommendation in any of these five categories gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap.</p>
+    <p>The first-mover read: whichever firm shows up first in Bing&rsquo;s organic search results for these queries gets the Copilot answer mostly to itself, because every competitor is also invisible there. The gap is open, and it does not appear to be a category-specific problem. It is a Microsoft Copilot pattern across local-service queries.</p>
+
+    <h2>The implication for where to do the work, by category</h2>
+    <p>The two-axis pattern produces five different recommendations:</p>
+    <ul>
+      <li><strong>Hawaii consumer bank.</strong> Own-site work pays off the most directly on both axes. AI is reading the bank&rsquo;s website 53% on web-search and 70-88% on training-data. Cleaner structured data, sharper product pages, better FAQ markup. Both axes respond.</li>
+      <li><strong>Hawaii wealth firm.</strong> Own-site work matters (47%), off-site editorial matters (49%), and training-data presence is in the bottom tier (16-38%). The on-site cleanup is the necessary baseline; the harder work is getting into the third-party surfaces AI uses for the category (lead-gen platforms, named-planner editorial, professional bylines).</li>
+      <li><strong>Honolulu dental practice.</strong> Similar shape to wealth on the web-searching surface (44%), middle of the cluster on training-data (38-59%). Own-site work and review-directory presence both matter. The Microsoft Copilot first-mover opening is open here as in every category.</li>
+      <li><strong>Hawaii law firm.</strong> 39% on the web-searching surface, but training-data presence is high (51-78%) because attorneys generate long-form editorial content (Chambers profiles, BestLawyers entries, named-attorney bylines). The implication: own-site cleanup plus continued investment in the editorial surfaces that feed into training data over time.</li>
+      <li><strong>Hawaii CPA firm.</strong> 39% on the web-searching surface, near-zero on training-data (1-2%). Web-searching engines are where the competitive game plays. Training-data engines are a category-wide blind spot that no individual firm can close. Editorial work would help over years; in the meantime, the four web-searching engines are the addressable surface.</li>
+    </ul>
+    <p>The non-obvious read across categories: the conventional SEO instinct (clean up your website and AI will cite you) is correct in proportion to where your category sits on the web-searching axis, but it has nothing to say about the training-data axis. A firm in a category like CPA could perfect its on-site infrastructure and not move the Claude or Gemma needle. A firm in a category like law could ignore on-site infrastructure and still surface in training-data engines because the category&rsquo;s editorial layer carries it. Both surfaces respond to different work.</p>
 
     <h2>The cohort sizes (transparency note)</h2>
-    <p>The four cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring. Categories with more independent businesses (dental practices, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
+    <p>The five cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring, then expanded through cohort-coverage scans across multiple runs. Categories with more independent businesses (dental practices, CPAs, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
     <ul>
       <li><strong>Hawaii consumer banking:</strong> 21 banks and credit unions, named in full at <a href="/teardowns/bank-honolulu/">teardown 01</a>.</li>
-      <li><strong>Honolulu dental practices:</strong> 46 dental practices (39 surfaced from run #1, 7 more added after run #2 cohort-coverage scan). Individual practices anonymized in this public artifact per the non-customer anonymization rule.</li>
-      <li><strong>Hawaii law firms:</strong> 33 firms (5 originally registered, 25 surfaced through run #1 cohort-coverage, 3 more after the cohort-coverage filter was tightened on run #3). Individual firms anonymized in this public artifact.</li>
-      <li><strong>Hawaii wealth management:</strong> 42 firms (15 originally registered, 27 surfaced through three rounds of cohort-coverage scans across runs 1, 2, and 3). The cohort expansion lifted the own-site share from 27% on run 1 to 47% after the third expansion, illustrating the cohort-coverage discipline described on the methodology page. The earlier "wealth is at the relationship end" reading was an artifact of incomplete cohort coverage. Individual firms anonymized in this public artifact.</li>
+      <li><strong>Honolulu dental practices:</strong> 46 dental practices (39 surfaced from run #1, 7 more added after run #2 cohort-coverage scan).</li>
+      <li><strong>Hawaii law firms:</strong> 33 firms (5 originally registered, 25 surfaced through run #1 cohort-coverage, 3 more after run #3).</li>
+      <li><strong>Hawaii wealth management:</strong> 42 firms (15 originally registered, 27 surfaced through three rounds of cohort-coverage scans). The expansion lifted the own-site share from 27% on run 1 to 47% after the third expansion, illustrating the cohort-coverage discipline.</li>
+      <li><strong>Hawaii CPA firms:</strong> 41 firms (5 anchors, 15 surfaced from run #1, 8 from run #2, 11 from run #3, with 2 anchor domain variants corrected). The expansion lifted the own-site share from 27% on run 1 to 39% after the third expansion. See <a href="/teardowns/cpa-hawaii/">teardown 06</a> for the per-category breakdown.</li>
     </ul>
+    <p>All individual firms outside the banking cohort are kept anonymized in this public artifact per the non-customer anonymization rule.</p>
 
     <h2>Methodology summary</h2>
     <p>Each category was measured the same way:</p>
     <ul>
-      <li><strong>7 AI tools:</strong> Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google search), Microsoft Copilot via Bing organic search, Google AI Overviews, Claude (claude-haiku-4-5), Gemma (open-weight, via Together AI).</li>
+      <li><strong>7 AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google search), Microsoft Copilot via Bing organic results, Google AI Overviews, Claude (claude-haiku-4-5), Gemma (open-weight, via Together AI).</li>
       <li><strong>18 questions per category,</strong> locked by hash so every run compares apples to apples. The questions mirror how a real buyer in each category would actually search.</li>
       <li><strong>3 repetitions per question per AI tool</strong> to separate signal from noise.</li>
-      <li><strong>3 usable runs per category</strong> across the dataset. All four categories cleared the MOAT.md rule 5 pattern-readiness threshold. Banking, dental, and law numbers each held within one to two percentage points across their runs (stability signal at clean cohort coverage). Wealth's number rose from 27% on run 1 to 47% after three rounds of cohort expansion as 27 additional firms surfaced and got registered. That is the cohort-coverage discipline working as designed: more runs surface more cohort members, the share trends toward true ceiling rather than away from it. The fact that wealth needed three expansion rounds to stabilize is itself diagnostic, and is documented honestly here rather than hidden behind a single static number.</li>
+      <li><strong>3 usable runs per category</strong> across the dataset. All five categories cleared the MOAT.md rule 5 pattern-readiness threshold. Banking, dental, and law numbers each held within one to two percentage points across their runs (stability signal at clean cohort coverage). Wealth's number rose from 27% on run 1 to 47% after three rounds of cohort expansion. CPA's number rose from 27% on run 1 to 39% after three rounds of cohort expansion. Both are the cohort-coverage discipline working as designed: more runs surface more cohort members, the headline number trends toward true ceiling rather than away from it.</li>
     </ul>
     <p>Full methodology, source bucket definitions, and pattern-readiness rules at <a href="/methodology/">/methodology/</a>. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight, so any auditor (compliance team, outside reviewer, agency data lead, anyone) can independently re-run the same questions and verify the training-data numbers.</p>
 
     <h2>Honest scope and what this does not prove</h2>
-    <p>Four categories is enough to surface a gradient. It is not enough to declare a universal law. The pattern is consistent in direction (commodity-to-relationship is the axis) and in magnitude (the spread is wide enough to matter) but it lives inside a small sample of categories, all in Hawaii, all measured in a single week.</p>
+    <p>Five categories is enough to establish a two-axis pattern but not enough to declare a universal law. The pattern is consistent in direction (web-searching and training-data engines respond to different mechanisms) and in magnitude (the spread is wide enough to matter) but it lives inside a small sample of categories, all in Hawaii, all measured in a roughly two-week window.</p>
     <p>What is not in this teardown:</p>
     <ul>
-      <li>National categories. Everything here is Hawaii-specific. Categories in larger markets may show different patterns because the cohort dynamics differ.</li>
-      <li>Categories outside professional services and consumer financial services. The four measured here cluster narrowly. B2B SaaS, restaurants, real estate brokerages, healthcare specialties beyond dental, all unmeasured here.</li>
+      <li>National categories. Everything here is Hawaii-specific. Categories in larger markets may show different patterns because cohort dynamics differ.</li>
+      <li>Categories outside professional services and consumer financial services. The five measured here cluster narrowly. B2B SaaS, restaurants, real estate brokerages, healthcare specialties beyond dental, all unmeasured here.</li>
       <li>Whether the pattern holds over time. AI tools refresh their training data and search indices on schedules we do not control. The same categories measured six months from now may produce different numbers.</li>
       <li>Causation. We measured what AI cites. We did not test whether changing what is on a firm&rsquo;s site or in third-party publications would cause AI to cite differently. That requires pre-registered experiments against named businesses with control for confounds. Different scope, different methodology.</li>
     </ul>
 
     <div class="callout">
       <h3>What an engagement does with this</h3>
-      <p>NeverRanked engagements measure your specific category every week for as long as the engagement runs. For an engagement in a commodity-end category, the punch list weights toward own-site work. For an engagement in a relationship-end category, the punch list weights toward off-site editorial presence. The gradient above is one input to the recommendation; the per-buyer-question detail is the other. The work the data points at is named specifically. Whether the work moves the needle is a measurement question we keep answering month over month.</p>
+      <p>NeverRanked engagements measure your specific category every week for as long as the engagement runs. For an engagement in a category that sits high on both axes (banking), the punch list weights toward on-site work. For an engagement in a category that splits between axes (law, where on-site is mid and training-data is high), the punch list covers both surfaces. For an engagement in a category that collapses on the training-data axis (CPA), the punch list focuses on the four web-searching engines because that is where the work pays off. The two-axis pattern above is one input to the recommendation; the per-buyer-question detail and the per-engine breakdown are the other. The work the data points at is named specifically. Whether the work moves the needle is a measurement question we keep answering month over month.</p>
     </div>
 
     <div class="cta-row">
@@ -167,9 +193,9 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement windows:</strong> all four categories measured across 3 usable runs each, spanning 2026-05-23 to 2026-05-25. Pattern-readiness cleared per MOAT.md rule 5 for every category in this teardown. Wealth management's own-site share rose from 27% on run 1 to 38% on run 3 after 8 additional firms surfaced in cohort coverage. That kind of cohort-coverage shift is the methodology working as designed: more runs surface more cohort members, the headline number trends toward true ceiling rather than away from it. Banking, dental, and law numbers held within one to two percentage points across their three runs.</p>
+      <p><strong>Measurement windows:</strong> all five categories measured across 3 usable runs each, spanning 2026-05-23 to 2026-05-26. Pattern-readiness cleared per MOAT.md rule 5 for every category in this teardown. Wealth's own-site share rose from 27% on run 1 to 47% on run 3 after three rounds of cohort expansion. CPA's own-site share rose from 27% on run 1 to 39% on run 3 after three rounds of cohort expansion. Both are the cohort-coverage methodology working as designed: more runs surface more cohort members, the headline number trends toward true ceiling rather than away from it. Banking, dental, and law numbers held within one to two percentage points across their three runs.</p>
       <p><strong>Substantiation:</strong> question sets locked by hash, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
-      <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other three categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public; individual firm names are not.</p>
+      <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other four categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public; individual firm names are not.</p>
     </div>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
