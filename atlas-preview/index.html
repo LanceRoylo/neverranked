@@ -1,0 +1,439 @@
+<!doctype html>
+<!--
+  /atlas-preview/ — interactive preview of the Atlas Chat experience.
+  Self-contained: no backend, no live AI. Scripted exchanges drawn
+  from atlas-system-prompt.md demonstrate the data-vs-refusal
+  discipline that defines the surface.
+
+  Built 2026-05-27 standalone of the dashboard so it ships before
+  the backend does. Linked from outbound (Greg HTC catch-up email,
+  future agency-channel intros, prospect demos) as the visible
+  artifact of "what Atlas will look like when it ships."
+
+  Six scripted exchanges, auto-cycling, with manual controls.
+  Reduced-motion mode shows the exchanges static.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Atlas preview. What asking the data feels like.</title>
+<meta name="description" content="A preview of the Atlas chat surface that ships with the NeverRanked customer dashboard. Atlas answers what the measurement shows. It refuses to tell you what to do. The boundary is the engagement.">
+<link rel="canonical" href="https://neverranked.com/atlas-preview/">
+<style>
+  :root {
+    color-scheme: dark;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --bg: #0b0b0c;
+    --panel: #0e0e11;
+    --gold: #d4c596;
+    --text: #e8e8ea;
+    --soft: #b9b9bd;
+    --dim: #6a6a70;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: Georgia, "Times New Roman", serif; color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; padding: 60px 0 120px; }
+  main { max-width: 760px; margin: 0 auto; padding: 0 32px; }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  .meta-top { color: var(--dim); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 18px; color: var(--soft); margin: 0 0 30px; font-style: italic; line-height: 1.55; }
+  h2 { font-size: 22px; font-weight: 400; color: var(--gold); margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: var(--text); margin: 26px 0 10px; }
+  p { font-size: 16px; color: var(--soft); margin: 0 0 16px; }
+  ul { font-size: 15px; color: var(--soft); margin: 0 0 16px; padding-left: 20px; }
+  li { margin-bottom: 6px; }
+  strong { color: var(--text); font-weight: 600; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  .footer { color: var(--dim); font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+
+  /* Atlas chat card */
+  .atlas-card {
+    margin: 32px 0 18px;
+    background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .atlas-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #1c1c1e;
+    background: #0e0e11;
+  }
+  .atlas-card-tag {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .atlas-card-dot {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .atlas-card-dot::before {
+    content: ""; display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--gold);
+    animation: atlasPulse 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(212,197,150,0.6);
+  }
+  @keyframes atlasPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,197,150,0.55); }
+    50% { box-shadow: 0 0 0 6px rgba(212,197,150,0); }
+  }
+  .atlas-chat {
+    padding: 26px 22px 14px;
+    min-height: 340px;
+  }
+  .atlas-msg { margin-bottom: 18px; max-width: 88%; }
+  .atlas-msg.user {
+    margin-left: auto; text-align: right;
+  }
+  .atlas-msg-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .atlas-msg.user .atlas-msg-label { color: #8a8a90; }
+  .atlas-msg.atlas .atlas-msg-label { color: var(--gold); }
+  .atlas-msg-body {
+    display: inline-block;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .atlas-msg.user .atlas-msg-body {
+    font-family: var(--mono); font-size: 13px;
+    background: #1c1c1e; color: var(--text);
+    border: 1px solid #2a2a2e;
+  }
+  .atlas-msg.atlas .atlas-msg-body {
+    background: transparent;
+    color: var(--text);
+    padding-left: 0; padding-right: 0;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .atlas-cursor::after {
+    content: "";
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--gold);
+    vertical-align: -2px;
+    margin-left: 2px;
+    animation: atlasBlink 1s steps(2) infinite;
+  }
+  @keyframes atlasBlink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+  }
+
+  /* Controls strip */
+  .controls {
+    display: flex; align-items: center; gap: 14px;
+    padding: 12px 20px;
+    border-top: 1px solid #1c1c1e;
+    background: #0e0e11;
+    font-family: var(--mono); font-size: 11px;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--dim);
+  }
+  .controls button {
+    appearance: none; background: transparent;
+    border: 1px solid #2a2a2e;
+    color: var(--soft);
+    font-family: var(--mono); font-size: 10px;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 7px 12px; border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 160ms var(--ease-out), color 160ms ease, transform 100ms var(--ease-out);
+  }
+  .controls button:hover { border-color: var(--gold); color: var(--gold); }
+  .controls button:active { transform: scale(0.97); }
+  .controls .progress {
+    margin-left: auto; color: var(--dim); font-size: 10px;
+  }
+  .controls .progress b { color: var(--gold); font-weight: 400; }
+
+  /* Boundary panels (matches homepage Atlas demo aesthetic) */
+  .atlas-boundary {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 30px 0 4px;
+  }
+  .atlas-boundary .col {
+    padding: 18px 20px;
+    background: #0e0e11;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+  }
+  .atlas-boundary .col h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; margin: 0 0 10px; font-weight: 400;
+  }
+  .atlas-boundary .col.does h3 { color: var(--gold); }
+  .atlas-boundary .col.doesnt h3 { color: #8a8a90; }
+  .atlas-boundary .col ul {
+    margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.6;
+  }
+  .atlas-boundary .col li { margin-bottom: 4px; }
+
+  /* Notice block (where the line is, what is measured) */
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid var(--gold); padding: 18px 22px; margin: 28px 0; font-size: 14px; color: var(--soft); }
+  .notice strong { color: var(--gold); }
+
+  .caption { font-size: 14px; font-style: italic; color: var(--dim); margin-top: 16px; }
+
+  /* CTA */
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 32px 0 12px; }
+  .cta-row a {
+    display: inline-block; padding: 12px 22px;
+    border: 1px solid #4a3d18; color: var(--gold);
+    text-decoration: none; font-size: 14px;
+    letter-spacing: 0.02em; border-radius: 2px;
+    font-family: var(--mono); text-transform: uppercase;
+    transition: background 160ms ease, transform 160ms var(--ease-out);
+  }
+  .cta-row a:active { transform: scale(0.98); }
+  .cta-row a.primary { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+  .cta-row a.primary:hover { background: #c4b585; }
+  .cta-row a:hover { background: rgba(212,197,150,0.08); }
+
+  @media (max-width: 680px) {
+    .atlas-boundary { grid-template-columns: 1fr; }
+    .atlas-chat { min-height: 380px; padding: 18px; }
+    .controls { padding: 10px 16px; gap: 10px; flex-wrap: wrap; }
+    .controls .progress { width: 100%; margin-left: 0; margin-top: 4px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-card-dot::before { animation: none; }
+    .atlas-cursor::after { animation: none; opacity: 0; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Atlas preview</div>
+    <h1>Ask the data. Get the answer. Never the prescription.</h1>
+    <p class="sub">A preview of the Atlas chat surface that ships inside the NeverRanked customer dashboard. Six scripted exchanges drawn from the production system prompt. Atlas answers what the measurement shows. It refuses to tell you what to do.</p>
+
+    <div class="notice">
+      <strong>What this is, what this is not.</strong> The exchanges below are scripted previews of how Atlas behaves in production. The data values are illustrative, not from a real customer's measurement. The voice, the refusal patterns, the flag-it offer, the named cadence: all match what a paying customer sees when they ask Atlas a question. The full system prompt is at <a href="https://github.com/LanceRoylo/neverranked/blob/main/atlas-system-prompt.md">/atlas-system-prompt.md</a> for anyone who wants to audit the discipline directly.
+    </div>
+
+    <div class="atlas-card" id="atlas-card" aria-label="Atlas chat preview">
+      <div class="atlas-card-head">
+        <span class="atlas-card-tag">Atlas</span>
+        <span class="atlas-card-dot">Preview</span>
+      </div>
+      <div class="atlas-chat" id="atlas-chat" aria-live="polite"></div>
+      <div class="controls">
+        <button id="btn-prev" aria-label="Previous exchange">&larr; Prev</button>
+        <button id="btn-pause" aria-label="Pause auto-cycle">Pause</button>
+        <button id="btn-next" aria-label="Next exchange">Next &rarr;</button>
+        <button id="btn-restart" aria-label="Restart from beginning">Restart</button>
+        <div class="progress">Exchange <b id="progress-now">1</b> of <b id="progress-total">6</b></div>
+      </div>
+    </div>
+
+    <div class="atlas-boundary">
+      <div class="col does">
+        <h3>What Atlas answers</h3>
+        <ul>
+          <li>Citation counts, week-over-week deltas</li>
+          <li>Per-engine and per-question breakdowns</li>
+          <li>Cohort positions and competitor share</li>
+          <li>Source-type distribution shifts</li>
+          <li>Observable correlations to dated events</li>
+        </ul>
+      </div>
+      <div class="col doesnt">
+        <h3>What Atlas refuses</h3>
+        <ul>
+          <li>What you should do about it</li>
+          <li>Which fix to prioritize first</li>
+          <li>Whether a tactic is a good idea</li>
+          <li>Causation claims of any kind</li>
+          <li>Strategic positioning advice</li>
+        </ul>
+      </div>
+    </div>
+    <p class="caption">The boundary is structural. Prioritization lives in your monthly memo, written by the principal. Atlas holds the data. Crossing that line would damage the engagement.</p>
+
+    <h2>Why the refusal is the marketing</h2>
+    <p>Every other AI tool in this category is racing to be the one that tells you what to do. Atlas is the one that won't. The discipline is what makes the underlying measurement trustworthy: when Atlas tells you a number, that number is what the data shows, full stop. When you ask Atlas a strategic question, Atlas hands it off to the monthly memo and the principal. The two layers stay separate. The customer reads a research artifact, not a marketing artifact dressed up as one.</p>
+    <p>This boundary is the engagement. If Atlas crossed it (started giving recommendations, ranking options, claiming causation), NeverRanked would be a different company selling a different product. The discipline visible in the chat above is the same discipline visible in every measurement run, every cohort decision, every monthly memo, and every public teardown.</p>
+
+    <h2>How Atlas reads the data context</h2>
+    <p>Atlas does not have a general model of the customer's business. It does not browse the web. It does not retrieve from outside the engagement. At each customer request, Atlas receives a structured data context appended to the system prompt: the customer's identity, the last 90 days of measurement runs for their category, their locked 18-question set, their registered cohort with mention counts, the last 3 monthly memos delivered to them, and the relevant sections of their brand-brain file (recommendation trajectory, citation trajectory, open threads).</p>
+    <p>Atlas does not have access to other customers' data. It does not have access to internal NeverRanked SOPs, methodology source code, or the principal's decisions log. If a customer asks for something outside their data context, Atlas says "I don't have data on that" and offers the flag-it option to surface the question to Lance.</p>
+
+    <h2>The flag-it mechanic</h2>
+    <p>When Atlas declines to answer (because the question crosses into prioritization, recommendation, execution, or out-of-scope territory), it offers to flag the question for Lance. If the customer replies "flag it" or "send to Lance," the backend captures the question + Atlas's response and emails it to Lance. Lance handles asynchronously. The customer gets a confirmation: "Flagged. Lance typically responds within 24 hours."</p>
+    <p>This is what holds the two-layer system together. Atlas is fast and always-available; the monthly memo is rigorous and time-bounded; the flag-it queue is the bridge for the questions that come up between memos and need the principal's judgment.</p>
+
+    <h2>What ships, when</h2>
+    <p>Atlas is the data-interpretation layer of the customer dashboard, which is the next major build in the NeverRanked product pipeline. The system prompt is locked. The fail-closed factual grader is built. The dashboard route is scaffolded. The chat backend integration is the remaining work, scheduled for the 3-5 day dashboard build session ahead.</p>
+    <p>The first organization outside NeverRanked to test Atlas will be Hawaii Theatre Center, the proof-point customer behind the methodology. Greg at HTC has first-test-user designation. After Greg has tested the surface and any rough edges are smoothed, Atlas is part of every customer's engagement from day one.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <a href="/">NeverRanked home</a>
+      <a href="/methodology/">How we measure</a>
+      <a href="/teardowns/">Public teardowns</a>
+    </div>
+
+    <div class="rule"></div>
+
+    <p style="color: var(--dim); font-size: 14px;">If you are a NeverRanked customer reading this preview ahead of Atlas shipping: the live surface will look identical, with your real data filling in where the example values appear above. The voice is the same. The discipline is the same. What changes is that the answers reference your specific 18 questions, your specific cohort, your specific weekly numbers.</p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+
+  <script>
+    // ─── Scripted exchanges ─────────────────────────────────────
+    // Drawn from atlas-system-prompt.md punt patterns. Each
+    // exchange is one user turn + one Atlas turn. Values are
+    // illustrative; the voice + refusal patterns match production.
+    const EXCHANGES = [
+      {
+        user: "What's my AI citation share this week?",
+        atlas: "37% across the 7 measured AI tools, down 2 points from last week. Perplexity stable at 48%. ChatGPT search dropped from 42% to 36%, the biggest single-engine shift. Claude held at 31%.",
+        kind: "data"
+      },
+      {
+        user: "What should I do about the ChatGPT drop?",
+        atlas: "That's prioritization, which lives in your monthly memo. Your next memo arrives June 25. If you want this addressed before then, want me to flag it for Lance? Reply 'flag it' and I'll send him a note.",
+        kind: "punt-action"
+      },
+      {
+        user: "Where am I cited in Perplexity answers?",
+        atlas: "On 9 of your 18 measured questions. Position breakdown: 3 lead, 4 mid-answer, 2 tail. The lead-position citations are on the three named-comparison queries; you appear earliest when buyers ask for you by name.",
+        kind: "data"
+      },
+      {
+        user: "Would publishing a case study work for us?",
+        atlas: "That's a recommendation question, which requires judgment about your team's bandwidth and what's strategically important this month. The monthly memo handles that. Want me to flag this for Lance specifically?",
+        kind: "punt-recommendation"
+      },
+      {
+        user: "Who are the top 5 firms in my cohort?",
+        atlas: "Firm A (538 mentions), Firm B (377), Firm C (240), Firm D (210), Firm E (184). Firm A appears on 3x as many queries as the next firm. The named list is in your full appendix; I can pull a specific firm's per-engine breakdown if you point me at one.",
+        kind: "data"
+      },
+      {
+        user: "Can you help me write a service page for tax planning?",
+        atlas: "NeverRanked measures; we don't execute. Your team or your agency handles the work the memo points at. I can answer 'is the data showing X' but not 'should I do Y'. Want me to flag this for Lance to discuss approaches?",
+        kind: "punt-execution"
+      }
+    ];
+
+    const chat = document.getElementById('atlas-chat');
+    const progressNow = document.getElementById('progress-now');
+    const progressTotal = document.getElementById('progress-total');
+    const btnPrev = document.getElementById('btn-prev');
+    const btnPause = document.getElementById('btn-pause');
+    const btnNext = document.getElementById('btn-next');
+    const btnRestart = document.getElementById('btn-restart');
+
+    progressTotal.textContent = EXCHANGES.length;
+
+    const reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let idx = 0;
+    let paused = false;
+    let inFlight = null;       // Promise of the currently-running render
+    let cancelRender = null;   // Function to cancel mid-render
+
+    function makeMsg(role, label) {
+      const wrap = document.createElement('div');
+      wrap.className = 'atlas-msg ' + role;
+      const lbl = document.createElement('div');
+      lbl.className = 'atlas-msg-label';
+      lbl.textContent = label;
+      const body = document.createElement('div');
+      body.className = 'atlas-msg-body atlas-cursor';
+      wrap.appendChild(lbl);
+      wrap.appendChild(body);
+      return { wrap, body };
+    }
+
+    function typeInto(node, text, speed) {
+      return new Promise((resolve, reject) => {
+        if (reduced) { node.textContent = text; node.classList.remove('atlas-cursor'); return resolve(); }
+        let i = 0;
+        let timer = null;
+        cancelRender = () => { if (timer) clearTimeout(timer); reject('cancelled'); };
+        (function step() {
+          node.textContent = text.slice(0, i);
+          if (i >= text.length) {
+            node.classList.remove('atlas-cursor');
+            return resolve();
+          }
+          i++;
+          timer = setTimeout(step, speed + (Math.random() * 18 - 9));
+        })();
+      });
+    }
+
+    function sleep(ms) {
+      return new Promise((resolve, reject) => {
+        if (reduced) return resolve();
+        const t = setTimeout(resolve, ms);
+        cancelRender = () => { clearTimeout(t); reject('cancelled'); };
+      });
+    }
+
+    async function renderExchange(i) {
+      idx = i;
+      progressNow.textContent = i + 1;
+      chat.innerHTML = '';
+      const ex = EXCHANGES[i];
+      try {
+        const u = makeMsg('user', 'You');
+        chat.appendChild(u.wrap);
+        await typeInto(u.body, ex.user, 28);
+        await sleep(650);
+        const a = makeMsg('atlas', 'Atlas');
+        chat.appendChild(a.wrap);
+        await typeInto(a.body, ex.atlas, 16);
+        await sleep(reduced ? 0 : 4800);
+        if (!paused) advance();
+      } catch (e) {
+        // cancelled mid-render, do not advance
+      }
+    }
+
+    function advance() {
+      const next = (idx + 1) % EXCHANGES.length;
+      runExchange(next);
+    }
+
+    function runExchange(i) {
+      // If a render is in flight, cancel it before starting a new one.
+      if (cancelRender) cancelRender();
+      inFlight = renderExchange(i);
+    }
+
+    btnPrev.addEventListener('click', () => {
+      const prev = (idx - 1 + EXCHANGES.length) % EXCHANGES.length;
+      runExchange(prev);
+    });
+    btnNext.addEventListener('click', () => {
+      const next = (idx + 1) % EXCHANGES.length;
+      runExchange(next);
+    });
+    btnRestart.addEventListener('click', () => runExchange(0));
+    btnPause.addEventListener('click', () => {
+      paused = !paused;
+      btnPause.textContent = paused ? 'Play' : 'Pause';
+    });
+
+    // Start
+    runExchange(0);
+  </script>
+</body>
+</html>
