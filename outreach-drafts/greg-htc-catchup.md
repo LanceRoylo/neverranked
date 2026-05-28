@@ -1,7 +1,7 @@
 # Greg @ HTC — catch-up + Atlas invite
 
 **Status:** ready to send. Permission already granted (HTC OK as proof point).
-**Last edited:** 2026-05-26 (committed in Tier 1 housekeeping batch)
+**Last edited:** 2026-05-27 (audit + Atlas preview link added)
 
 ---
 
@@ -12,7 +12,7 @@ Greg,
 
 Owe you a catch-up. The snippet on HTC's site is still doing its work. I checked your measurements again last week: Perplexity now cites HTC on 14 of the 19 buyer questions in your category set, and the AEO score that started at 45 sits at 95.
 
-A lot has happened on my end since then. NeverRanked turned from the one-off pilot you saw into a research practice. Four published category teardowns, a fifth measuring this week. The HTC outcome is the one I lead with.
+A lot has happened on my end since then. NeverRanked turned from the one-off pilot you saw into a research practice. Six published measurements now. Five Hawaii categories plus the first cross-geo, Austin CPA firms. The HTC outcome is the one I lead with.
 
 One thing changed structurally and I want to name it, because it's the real difference between then and now. I no longer implement the changes for customers. With HTC I wrote and deployed the snippet myself because we were figuring it out together. The new practice is measurement only. I deliver a research memo and a prepped punch list; your in-house team or your agency executes against it. The reason is honest: you cannot measure a thing rigorously while also being the one doing the work to move the number. Separating the two is what lets the monthly numbers mean something instead of being a marketing claim about my own labor.
 
@@ -22,7 +22,9 @@ The snippet on HTC stays live and maintained free, no charge, as long as you wan
 
 The reason I'm writing: I'm building something called Atlas, a chat layer that sits on top of the customer dashboard and answers questions about their measurement data. Things like "how many mentions did I have last week" or "which AI tool cited me most this month." It refuses to tell you what to do (prioritization lives in the monthly memo, written by me). I want HTC to be the first organization outside the company to test it. Free, no commitment, no setup on your end.
 
-If you're up for it, reply with a yes and I'll send you the link the moment it's ready (a few weeks out). If now's not the time, that's fine.
+I just built a preview of what it'll look like at neverranked.com/atlas-preview/. Six scripted exchanges showing how Atlas handles data questions and how it refuses prescriptive ones. If you want to see the shape before you commit, click through. The live surface ships a few weeks out.
+
+If you're up for it, reply with a yes and I'll send the customer-data link the moment it's ready. If now's not the time, that's fine.
 
 Lance
 
