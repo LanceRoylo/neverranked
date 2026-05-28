@@ -1,7 +1,7 @@
 # Greg @ HTC — catch-up + Atlas invite
 
 **Status:** ready to send. Permission already granted (HTC OK as proof point).
-**Last edited:** 2026-05-27 (audit + Atlas preview link added)
+**Last edited:** 2026-05-28 (snippet-status paragraph expanded)
 
 ---
 
@@ -18,7 +18,7 @@ One thing changed structurally and I want to name it, because it's the real diff
 
 The HTC engagement is what proved the punch list works. The 45-to-95 move came from deploying the right intervention for what AI was actually citing. The intervention shape does not change in the new model. What changes is who deploys it: the customer or their agency, not me. Same rigor, no conflict of interest, a research artifact you can actually trust because the person measuring is not the person being measured.
 
-The snippet on HTC stays live and maintained free, no charge, as long as you want it there. You were the n=1; that goes both ways.
+The snippet on HTC stays live and maintained free, no charge, as long as you want it there. It is not at odds with the new measurement-only model; HTC was the engagement that proved the methodology before the practice formalized, and the snippet is part of that history. You do not need to do anything. If it ever breaks or you want it removed, just email and it's handled. You were the n=1; that goes both ways.
 
 The reason I'm writing: I'm building something called Atlas, a chat layer that sits on top of the customer dashboard and answers questions about their measurement data. Things like "how many mentions did I have last week" or "which AI tool cited me most this month." It refuses to tell you what to do (prioritization lives in the monthly memo, written by me). I want HTC to be the first organization outside the company to test it. Free, no commitment, no setup on your end.
 
