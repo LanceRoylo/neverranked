@@ -555,6 +555,167 @@ body.agency-mode #agency-cta-card{display:block !important}
   animation:fadeUp .5s var(--ease) both;
 }
 
+/* anonymized lead-magnet summary cards (replaces the named
+   schema cards / tech rows / specific flag descriptions; rolled
+   out 2026-05-28 to stop the grader from giving away the
+   proprietary fix list to non-paying visitors) */
+.schema-summary{
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:28px 32px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.schema-summary-headline{
+  display:flex;align-items:baseline;gap:10px;
+  flex-wrap:wrap;
+  margin-bottom:16px;
+}
+.schema-summary-count{
+  font-family:var(--serif);
+  font-size:42px;
+  font-weight:400;
+  color:var(--gold);
+  line-height:1;
+}
+.schema-summary-of{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-faint);
+  letter-spacing:.06em;
+}
+.schema-summary-label{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-mute);
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  line-height:1.5;
+  flex:1;
+  min-width:200px;
+}
+.schema-summary-bar{
+  height:6px;background:var(--line);
+  border-radius:3px;overflow:hidden;
+  margin-bottom:16px;
+}
+.schema-summary-fill{
+  height:100%;background:var(--gold);
+  border-radius:3px;
+  transition:width 600ms cubic-bezier(0.23,1,0.32,1);
+}
+.schema-summary-sub{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.65;
+}
+.tech-summary{
+  display:flex;flex-direction:column;gap:6px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:18px 22px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.tech-summary-row{
+  display:flex;align-items:center;gap:14px;
+  padding:8px 0;
+  font-family:var(--mono);
+  font-size:12px;
+}
+.tech-summary-dot{
+  width:10px;height:10px;border-radius:50%;flex-shrink:0;
+}
+.tech-summary-dot-bad{background:#c85050}
+.tech-summary-dot-warn{background:var(--gold-dim)}
+.tech-summary-dot-good{background:#5cb85c}
+.tech-summary-label{
+  text-transform:uppercase;
+  letter-spacing:.12em;
+  color:var(--text-mute);
+  flex:1;
+}
+.tech-summary-count{
+  font-family:var(--serif);
+  font-size:20px;
+  color:var(--text);
+  min-width:30px;text-align:right;
+}
+.flag-summary{
+  display:flex;align-items:center;gap:20px;
+  padding:18px 22px;
+  background:var(--bg-lift);
+  border:1px solid var(--line);
+  border-left:3px solid var(--gold-dim);
+  border-radius:4px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.flag-summary-count{
+  font-family:var(--serif);
+  font-size:36px;
+  font-weight:400;
+  color:var(--gold);
+  line-height:1;
+  flex-shrink:0;
+}
+.flag-summary-text{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-mute);
+  line-height:1.65;
+}
+/* CTA-card replaces the old quick-wins-grid items */
+.qw-cta-card{
+  background:var(--bg-lift);
+  border:1px solid rgba(232,199,103,.3);
+  border-radius:6px;
+  padding:32px 36px;
+  animation:fadeUp .5s var(--ease) both;
+}
+.qw-cta-headline{
+  font-family:var(--serif);
+  font-size:22px;
+  font-weight:400;
+  color:var(--text);
+  line-height:1.3;
+  margin-bottom:14px;
+}
+.qw-cta-body{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-mute);
+  line-height:1.7;
+  margin-bottom:24px;
+}
+.qw-cta-body strong{
+  color:var(--gold);
+}
+.qw-cta-actions{
+  display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+}
+.qw-cta-button{
+  display:inline-block;
+  padding:14px 26px;
+  background:var(--gold);
+  color:var(--bg);
+  font-family:var(--mono);
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  text-decoration:none;
+  border-radius:3px;
+  font-weight:600;
+  transition:background 160ms ease;
+}
+.qw-cta-button:hover{background:#e8d9a8}
+.qw-cta-note{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+  letter-spacing:.06em;
+}
+
 /* cta section */
 .cta-section{
   margin-top:64px;
@@ -1150,13 +1311,13 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <!-- Gated details: hidden until email captured -->
     <div id="gated-details" style="display:none">
 
-    <div class="section-label"><span class="num">01</span> What AI can tell about your site <span class="rule"></span></div>
+    <div class="section-label"><span class="num">01</span> AI-readability signal coverage <span class="rule"></span></div>
     <div class="schema-grid" id="schema-grid"></div>
 
-    <div class="section-label"><span class="num">02</span> How AI tools find you <span class="rule"></span></div>
+    <div class="section-label"><span class="num">02</span> Technical signal summary <span class="rule"></span></div>
     <div class="tech-list" id="tech-list"></div>
 
-    <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Problems we noticed <span class="rule"></span></div>
+    <div class="section-label" id="flags-label" style="display:none"><span class="num">03</span> Trust-and-clarity flags <span class="rule"></span></div>
     <div class="flags-list" id="flags-list"></div>
 
     <!-- Competitor teaser with grade distribution -->
@@ -1367,42 +1528,79 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       if (insight) insight.innerHTML = insightText;
     }
 
-    // Schema coverage
+    // Schema coverage — aggregated to a coverage summary, no named
+    // schemas. Naming the specific schemas the visitor is missing
+    // (LocalBusiness, FAQPage, Organization, etc.) gives away the
+    // proprietary fix list. We show the SIZE of the gap, not the gap.
+    // The full named breakdown lives in the paid 1-page diagnostic.
     schemaGrid.innerHTML='';
-    data.schema_coverage.forEach(function(s,i){
-      var card=document.createElement('div');
-      card.className='schema-card'+(s.present?' is-present':'');
-      card.style.animationDelay=(i*0.06)+'s';
-      card.innerHTML=
-        '<span class="icon '+(s.present?'present':'missing')+'">'+(s.present?'+':'-')+'</span>'+
-        '<span class="name">'+escHtml(s.type)+'</span>';
-      schemaGrid.appendChild(card);
-    });
+    var schemaTotal = data.schema_coverage.length;
+    var schemaPresent = data.schema_coverage.filter(function(s){return s.present;}).length;
+    var schemaMissing = schemaTotal - schemaPresent;
+    var schemaPct = schemaTotal ? Math.round((schemaPresent/schemaTotal)*100) : 0;
+    var schemaSummary = document.createElement('div');
+    schemaSummary.className = 'schema-summary';
+    schemaSummary.innerHTML =
+      '<div class="schema-summary-headline">'+
+        '<span class="schema-summary-count">'+schemaPresent+'</span>'+
+        '<span class="schema-summary-of">of '+schemaTotal+'</span>'+
+        '<span class="schema-summary-label">critical AI-readability signals present on your site</span>'+
+      '</div>'+
+      '<div class="schema-summary-bar"><div class="schema-summary-fill" style="width:'+schemaPct+'%"></div></div>'+
+      '<div class="schema-summary-sub">'+
+        (schemaMissing > 0
+          ? schemaMissing+' signals are missing or incomplete. The free 1-page diagnostic names which ones and the order to fix them.'
+          : 'Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.')+
+      '</div>';
+    schemaGrid.appendChild(schemaSummary);
 
-    // Technical signals
+    // Technical signals — aggregated to severity counts, no named
+    // labels. Same logic: naming the specific failing signals (meta
+    // description, canonical tag, etc.) gives away the fix list.
     techList.innerHTML='';
-    data.technical_signals.forEach(function(t,i){
-      var row=document.createElement('div');
-      row.className='tech-row';
-      row.style.animationDelay=(i*0.06)+'s';
-      row.innerHTML=
-        '<span class="status '+t.status+'"></span>'+
-        '<span class="label">'+escHtml(t.label)+'</span>'+
-        '<span class="value">'+escHtml(t.value)+'</span>';
-      techList.appendChild(row);
-    });
+    var techBad = data.technical_signals.filter(function(t){return t.status==='bad';}).length;
+    var techWarn = data.technical_signals.filter(function(t){return t.status==='warn';}).length;
+    var techGood = data.technical_signals.filter(function(t){return t.status==='good' || t.status==='pass';}).length;
+    var techTotal = data.technical_signals.length;
+    var techSummary = document.createElement('div');
+    techSummary.className = 'tech-summary';
+    techSummary.innerHTML =
+      '<div class="tech-summary-row tech-summary-row-bad">'+
+        '<span class="tech-summary-dot tech-summary-dot-bad"></span>'+
+        '<span class="tech-summary-label">Blocking issues</span>'+
+        '<span class="tech-summary-count">'+techBad+'</span>'+
+      '</div>'+
+      '<div class="tech-summary-row tech-summary-row-warn">'+
+        '<span class="tech-summary-dot tech-summary-dot-warn"></span>'+
+        '<span class="tech-summary-label">Warnings</span>'+
+        '<span class="tech-summary-count">'+techWarn+'</span>'+
+      '</div>'+
+      '<div class="tech-summary-row tech-summary-row-good">'+
+        '<span class="tech-summary-dot tech-summary-dot-good"></span>'+
+        '<span class="tech-summary-label">Passing</span>'+
+        '<span class="tech-summary-count">'+techGood+'</span>'+
+      '</div>';
+    techList.appendChild(techSummary);
 
-    // Red flags
+    // Red flags — count only, no specific labels. The aggressive-gate
+    // teaser (above the gate) already shows 2 named flags as the carrot;
+    // post-gate we tighten back to count-only because the visitor is now
+    // a captured lead, not a conversion target. The full list lives in
+    // the paid 1-page diagnostic.
     flagsList.innerHTML='';
     if(data.red_flags.length>0){
       flagsLabel.style.display='flex';
-      data.red_flags.forEach(function(f,i){
-        var card=document.createElement('div');
-        card.className='flag-card';
-        card.style.animationDelay=(i*0.06)+'s';
-        card.textContent=f;
-        flagsList.appendChild(card);
-      });
+      var flagSummary = document.createElement('div');
+      flagSummary.className = 'flag-summary';
+      flagSummary.innerHTML =
+        '<div class="flag-summary-count">'+data.red_flags.length+'</div>'+
+        '<div class="flag-summary-text">'+
+          (data.red_flags.length === 1
+            ? 'specific issue flagged on your site as a signal AI engines treat as a trust-and-clarity problem.'
+            : 'specific issues flagged on your site as signals AI engines treat as trust-and-clarity problems.')+
+          ' The named breakdown is part of the free 1-page diagnostic.'+
+        '</div>';
+      flagsList.appendChild(flagSummary);
     }else{
       flagsLabel.style.display='none';
     }
@@ -1465,70 +1663,40 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
       compText.textContent = 'The sites getting cited by AI engines score 78 or higher. At '+score+', you are not in the conversation. NeverRanked shows you exactly what to fix and tracks your climb week over week.';
     }
 
-    // Quick wins
+    // What used to live here: a "Quick wins" block listing 5 specific
+    // named fixes (e.g., "Add Organization schema") with descriptions,
+    // difficulty ratings, and rationale. That was structurally a free
+    // consulting deliverable — a sophisticated visitor could read the
+    // 5 named fixes, walk through neverranked.com/schema-library/ and
+    // /templates/, and ship the work themselves without ever paying.
+    // The lead-magnet logic now: show the SHAPE of the problem (counts
+    // above), drive to the paid 1-page diagnostic for the NAMED fixes.
     var qwSection = document.getElementById('quick-wins');
     var qwGrid = document.getElementById('quick-wins-grid');
-    var wins = [];
+    // Compute the gap shape so the CTA copy is grade-aware.
+    var schemaMissingCount = data.schema_coverage.filter(function(s){return !s.present;}).length;
+    var techBadCount = data.technical_signals.filter(function(t){return t.status==='bad';}).length;
+    var flagsCount = (data.red_flags || []).length;
+    var totalGaps = schemaMissingCount + techBadCount + flagsCount;
 
-    // Missing schema = easy wins
-    var schemaWins = {
-      'Organization': {desc:'Tells AI tools who your company is. The foundation for getting mentioned by name.',diff:'easy'},
-      'BreadcrumbList': {desc:'Helps AI understand how your site is organized. Copy-paste setup.',diff:'easy'},
-      'FAQPage': {desc:'Feeds directly into the answer boxes AI tools show. High impact.',diff:'easy'},
-      'Article': {desc:'Marks your content as a trustworthy source AI can pull from.',diff:'easy'},
-      'LocalBusiness': {desc:'Critical when people ask AI for nearby businesses. Address, hours, service area.',diff:'easy'},
-      'Product': {desc:'Makes product details readable to AI for shopping questions.',diff:'medium'},
-      'HowTo': {desc:'Structures step-by-step content that AI tools love to pull from.',diff:'easy'},
-      'Review': {desc:'Adds social proof that AI tools weigh for trust.',diff:'medium'},
-      'WebSite': {desc:'Enables sitewide search signals AI uses to understand your brand.',diff:'easy'},
-      'Event': {desc:'Surfaces events when people ask AI what’s happening.',diff:'easy'}
-    };
-    data.schema_coverage.forEach(function(s){
-      if(!s.present && schemaWins[s.type] && wins.length < 5){
-        wins.push({title:'Add '+s.type+' schema', desc:schemaWins[s.type].desc, diff:schemaWins[s.type].diff});
-      }
-    });
-
-    // Technical signal issues
-    data.technical_signals.forEach(function(t){
-      if(wins.length >= 5) return;
-      if(t.status === 'bad'){
-        var desc = 'Currently failing. ';
-        if(t.label.toLowerCase().indexOf('meta')>=0) desc += 'AI tools use this to figure out what your page is about.';
-        else if(t.label.toLowerCase().indexOf('heading')>=0) desc += 'Clear headings help AI understand how your content is organized.';
-        else if(t.label.toLowerCase().indexOf('canonical')>=0) desc += 'Without this, AI tools may read the wrong version of your page.';
-        else if(t.label.toLowerCase().indexOf('og')>=0 || t.label.toLowerCase().indexOf('open graph')>=0) desc += 'Social previews and AI link previews both depend on this.';
-        else desc += 'This affects how AI tools read your page.';
-        wins.push({title:'Fix: '+t.label, desc:desc, diff:'medium'});
-      }
-    });
-
-    // Red flags as harder wins
-    data.red_flags.forEach(function(f){
-      if(wins.length >= 5) return;
-      wins.push({title:f, desc:'Flagged as a problem on your site. Fixing it removes a signal that may be making AI tools skip you.', diff:'hard'});
-    });
-
-    if(wins.length > 0){
-      qwSection.style.display = 'block';
-      qwGrid.innerHTML = '';
-      wins.forEach(function(w,i){
-        var item = document.createElement('div');
-        item.className = 'qw-item';
-        item.style.animationDelay = (i*0.06)+'s';
-        var icon = w.diff === 'easy' ? '+' : w.diff === 'medium' ? '~' : '!';
-        item.innerHTML =
-          '<div class="qw-icon '+w.diff+'">'+icon+'</div>'+
-          '<div class="qw-body">'+
-            '<div class="qw-title">'+escHtml(w.title)+'</div>'+
-            '<div class="qw-desc">'+escHtml(w.desc)+'</div>'+
-          '</div>'+
-          '<div class="qw-diff '+w.diff+'">'+w.diff+'</div>';
-        qwGrid.appendChild(item);
-      });
-    } else {
-      qwSection.style.display = 'none';
-    }
+    qwSection.style.display = 'block';
+    qwGrid.innerHTML = '';
+    var ctaCard = document.createElement('div');
+    ctaCard.className = 'qw-cta-card';
+    ctaCard.innerHTML =
+      '<div class="qw-cta-headline">The full diagnostic names the specific fixes for your site.</div>'+
+      '<div class="qw-cta-body">'+
+        'This automated check shows the SIZE of the gap. The free 1-page diagnostic, hand-built by Lance for your site, names '+
+        '<strong>which</strong> '+(totalGaps === 1 ? 'specific gap' : 'specific gaps')+
+        ' to fix and the order to fix them. Lance has measured 7 AI tools across 6 buyer-shape categories; the diagnostic puts your specific URL in that context.'+
+      '</div>'+
+      '<div class="qw-cta-actions">'+
+        '<a class="qw-cta-button" href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic&body=URL%20I%20scanned%3A%20'+
+        encodeURIComponent(data.url || data.domain || '')+
+        '%0A%0AMy%20business%20category%3A%20%5Bplease%20describe%5D">Get the free 1-page diagnostic &rarr;</a>'+
+        '<div class="qw-cta-note">One per business. Replies within 24 hours.</div>'+
+      '</div>';
+    qwGrid.appendChild(ctaCard);
 
     // Dashboard mock: populate score and chart bars
     var mockScore = document.getElementById('mock-score');
@@ -2026,16 +2194,39 @@ function buildReportEmail(report: any): string {
     : report.grade === "C" ? "#e67e22"
     : "#c0392b";
 
-  const schemaRows = (report.schema_coverage || []).map((s: any) => `
+  // Anonymized lead-magnet rendering (2026-05-28). The earlier version
+  // of this email enumerated every named schema (LocalBusiness, FAQPage,
+  // Organization, etc.) and every specific red-flag description, which
+  // gave away the proprietary fix list for free. Now we surface the
+  // SHAPE of the gap (counts) and drive to the paid 1-page diagnostic
+  // for the named breakdown.
+  const schemaCoverage = report.schema_coverage || [];
+  const schemaTotal = schemaCoverage.length;
+  const schemaPresent = schemaCoverage.filter((s: any) => s.present).length;
+  const schemaMissing = schemaTotal - schemaPresent;
+  const schemaPct = schemaTotal ? Math.round((schemaPresent / schemaTotal) * 100) : 0;
+  const schemaRows = `
     <tr>
-      <td style="padding:8px 16px;font-family:'Courier New',monospace;font-size:13px;color:#b0b0a8;border-bottom:1px solid #2a2a2a">${escHtml(s.type)}</td>
-      <td style="padding:8px 16px;text-align:center;border-bottom:1px solid #2a2a2a"><span style="color:${s.present ? '#27ae60' : '#c0392b'}">${s.present ? 'Found' : 'Missing'}</span></td>
+      <td style="padding:20px 22px;font-family:Georgia,serif;font-size:16px;color:#fbf8ef;border-bottom:1px solid #2a2a2a">
+        <div style="font-size:32px;color:#e8c767;line-height:1;margin-bottom:6px">${schemaPresent} <span style="font-size:13px;color:#888888;font-family:'Courier New',monospace">of ${schemaTotal}</span></div>
+        <div style="font-family:'Courier New',monospace;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:#888888;margin-bottom:14px">critical AI-readability signals present</div>
+        <div style="height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${schemaPct}%;background:#e8c767;border-radius:3px"></div></div>
+        <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.6">
+          ${schemaMissing > 0
+            ? `${schemaMissing} signals are missing or incomplete. The free 1-page diagnostic names which ones and the order to fix them.`
+            : `Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.`}
+        </div>
+      </td>
     </tr>
-  `).join("");
+  `;
 
-  const flagRows = (report.red_flags || []).map((f: string) => `
-    <div style="padding:10px 16px;margin-bottom:6px;background:#1c1c1c;border-left:3px solid #c0392b;font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8">${escHtml(f)}</div>
-  `).join("");
+  const flagsCount = (report.red_flags || []).length;
+  const flagRows = flagsCount > 0 ? `
+    <div style="padding:18px 22px;background:#1c1c1c;border-left:3px solid #c0392b;border-radius:4px;font-family:'Courier New',monospace;color:#b0b0a8;line-height:1.6">
+      <span style="font-family:Georgia,serif;font-size:28px;color:#e8c767;display:inline-block;vertical-align:middle;margin-right:14px">${flagsCount}</span>
+      <span style="font-size:12px;vertical-align:middle">${flagsCount === 1 ? 'specific issue flagged' : 'specific issues flagged'} on your site as ${flagsCount === 1 ? 'a signal AI engines treat' : 'signals AI engines treat'} as ${flagsCount === 1 ? 'a trust-and-clarity problem' : 'trust-and-clarity problems'}. The named breakdown is part of the free 1-page diagnostic.</span>
+    </div>
+  ` : "";
 
   return `
 <!doctype html>
@@ -2061,27 +2252,28 @@ function buildReportEmail(report: any): string {
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-top:8px">${escHtml(report.domain)}</div>
   </td></tr>
 
-  <!-- Schema coverage -->
+  <!-- Schema coverage (summary) -->
   <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">What AI can tell about your site</div>
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">AI-readability signal coverage</div>
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
       ${schemaRows}
     </table>
   </td></tr>
 
   ${flagRows ? `
-  <!-- Red flags -->
+  <!-- Red flags (count summary) -->
   <tr><td style="padding-bottom:24px">
-    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Problems we noticed (${report.red_flags.length})</div>
+    <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:12px">Trust-and-clarity flags</div>
     ${flagRows}
   </td></tr>
   ` : ""}
 
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
-    <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">This is a snapshot. Want ongoing monitoring?</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked tracks what AI says about your business every week, shows you who’s getting recommended instead, and tells you what to fix.</div>
-    <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20inquiry%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 setup + $1,500/mo</a>
+    <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">The named fixes for your site live in the free 1-page diagnostic.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check shows the size of the gap. The free 1-page diagnostic, hand-built for your site, names which specific signals to fix and the order to fix them. We have measured 7 AI tools across 6 buyer-shape categories; the diagnostic puts your specific URL in that context.</div>
+    <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">Get the free 1-page diagnostic</a>
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">One per business. Replies within 24 hours.</div>
   </td></tr>
 
   <!-- Footer -->
