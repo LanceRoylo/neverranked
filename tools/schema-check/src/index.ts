@@ -1343,7 +1343,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
     <!-- Quick wins -->
     <div class="quick-wins" id="quick-wins" style="display:none">
-      <div class="section-label"><span class="num">05</span> What to fix first <span class="rule"></span></div>
+      <div class="section-label"><span class="num">05</span> See what AI says in your category <span class="rule"></span></div>
       <div class="quick-wins-grid" id="quick-wins-grid"></div>
       <div style="margin-top:16px;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.7">
         This check looks at your website. The full engagement measures what AI tools actually say about your business: who they recommend, who they mention instead of you, and what to do about it.
@@ -1491,7 +1491,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     } else if(score >= 65){
       insightText = 'You’re close to the line where AI tools start picking favorites. A few targeted fixes could move you across it. Right now, competitors with slightly cleaner sites are getting picked over you.';
     } else if(score >= 45){
-      insightText = 'Your site has gaps AI tools notice. When ChatGPT, Google AI, or Perplexity need to recommend someone in your space, they’re <em>skipping you</em> for competitors that are easier to read. The fixes below are where to start.';
+      insightText = 'Your site has gaps AI tools notice. When ChatGPT, Google AI, or Perplexity need to recommend someone in your space, they’re <em>skipping you</em> for competitors that are easier to read. The first question worth answering is which specific competitors they are recommending instead.';
     } else {
       insightText = 'AI tools can’t reliably read your site. You’re <em>invisible</em> to the fastest-growing way people search. The gap between you and AI-friendly competitors widens every week.';
     }
@@ -1669,8 +1669,15 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     // consulting deliverable — a sophisticated visitor could read the
     // 5 named fixes, walk through neverranked.com/schema-library/ and
     // /templates/, and ship the work themselves without ever paying.
-    // The lead-magnet logic now: show the SHAPE of the problem (counts
-    // above), drive to the paid 1-page diagnostic for the NAMED fixes.
+    // The funnel discipline now (locked 2026-05-28):
+    //   1. This automated check shows the SHAPE of the gap (counts).
+    //   2. The free 1-page diagnostic shows CITATION REALITY (which
+    //      competitor firms AI names in their category, whether they
+    //      appear). NOT a fix list.
+    //   3. The paid engagement names the fixes (per-query playbook +
+    //      research memo + punch list).
+    // The CTA below routes to step 2, with copy that honestly
+    // describes what step 2 produces.
     var qwSection = document.getElementById('quick-wins');
     var qwGrid = document.getElementById('quick-wins-grid');
     // Compute the gap shape so the CTA copy is grade-aware.
@@ -1683,12 +1690,23 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     qwGrid.innerHTML = '';
     var ctaCard = document.createElement('div');
     ctaCard.className = 'qw-cta-card';
+    // Honest framing of the three-step funnel (locked 2026-05-28):
+    //   1. This automated check shows the SHAPE of the gap on the
+    //      visitor's own site (signal coverage, technical issues).
+    //   2. The free 1-page diagnostic shows the CITATION REALITY
+    //      (which competitor firms AI names in their category,
+    //      whether they appear, where in the answer). It does NOT
+    //      name fixes; that would collapse the funnel and damage
+    //      the paid engagement's positioning.
+    //   3. The paid engagement names the specific fixes via the
+    //      per-query playbook + research memo + punch list.
+    // The earlier version of this copy promised fix-naming in the
+    // free diagnostic, which over-claimed what the diagnostic does.
     ctaCard.innerHTML =
-      '<div class="qw-cta-headline">The full diagnostic names the specific fixes for your site.</div>'+
+      '<div class="qw-cta-headline">See whether AI is naming you in your category right now.</div>'+
       '<div class="qw-cta-body">'+
-        'This automated check shows the SIZE of the gap. The free 1-page diagnostic, hand-built by Lance for your site, names '+
-        '<strong>which</strong> '+(totalGaps === 1 ? 'specific gap' : 'specific gaps')+
-        ' to fix and the order to fix them. Lance has measured 7 AI tools across 6 buyer-shape categories; the diagnostic puts your specific URL in that context.'+
+        'This automated check shows the size of the gap on your own site. The free 1-page diagnostic, hand-built by Lance for your site, runs 5 real buyer questions for your category across all 7 AI tools and shows you '+
+        '<strong>which competitor firms AI is currently naming</strong>, whether your firm appears in those answers, and where. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.'+
       '</div>'+
       '<div class="qw-cta-actions">'+
         '<a class="qw-cta-button" href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic&body=URL%20I%20scanned%3A%20'+
@@ -2270,8 +2288,8 @@ function buildReportEmail(report: any): string {
 
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
-    <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">The named fixes for your site live in the free 1-page diagnostic.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check shows the size of the gap. The free 1-page diagnostic, hand-built for your site, names which specific signals to fix and the order to fix them. We have measured 7 AI tools across 6 buyer-shape categories; the diagnostic puts your specific URL in that context.</div>
+    <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">See whether AI is naming you in your category right now.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check shows the size of the gap on your own site. The free 1-page diagnostic, hand-built for your site, runs 5 real buyer questions for your category across all 7 AI tools and shows you which competitor firms AI is currently naming, whether your firm appears in those answers, and where. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
     <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">Get the free 1-page diagnostic</a>
     <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">One per business. Replies within 24 hours.</div>
   </td></tr>
