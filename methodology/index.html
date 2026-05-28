@@ -87,10 +87,10 @@
       <li><strong>Intent-shaped.</strong> Queries cover head-intent ("best X in Y"), neighborhood scoping ("X in [specific area]"), service-combined ("X that also does Y"), trust-signal ("X for first-time customers"), value-conscious ("affordable X that takes [insurance]"). The shape mirrors how a real buyer searches, not how an SEO keyword tool ranks.</li>
       <li><strong>No naming the customer.</strong> Queries do not contain the customer's brand name. Branded queries are a different measurement (does the AI know who you are when asked directly), which we also report but separate from demand queries (does the AI surface you when a buyer searches for the category).</li>
     </ul>
-    <p>The 18-query set used in the current second-category seed (Honolulu dental) is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/run-dental-honolulu.mjs">the public repo</a> for reference.</p>
+    <p>Every measured category gets its own runner with its own 18-question set, locked by hash. The runners are in the <a href="https://github.com/LanceRoylo/neverranked-outreach/tree/main/dryrun">public repo</a>. We have published runners and pattern-ready measurements for Hawaii consumer banking, Hawaii wealth management, Honolulu dental, Hawaii law firms, Hawaii CPAs, and Austin TX CPAs (our first cross-geo measurement). Each runner&rsquo;s hash is printed at the start of every run; any change to the question set produces a new hash and the runs are no longer comparable across the change.</p>
 
     <h3 style="margin-top:32px">An example 18-question set</h3>
-    <p>The actual locked set we used for Hawaii wealth management (the source data for the cross-category teardown). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
+    <p>The actual locked set we used for Hawaii wealth management (one of the six published measurements). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
     <p style="font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 22px; margin-bottom: 12px;">Head queries (8) &middot; broad buyer intent</p>
     <ol style="font-size: 14px; line-height: 1.7; color: var(--soft); padding-left: 22px;">
       <li>best wealth manager in Hawaii</li>
@@ -159,7 +159,7 @@
 
     <h2>Drift detection (added 2026-05-21)</h2>
     <p>Day-over-day citation share movement, flagged when a host moves more than a configurable threshold (default 5 percentage points) between measurement windows. Same query-set hash required in both windows; the tool refuses to compare across different query sets because the universe of possible citations is different.</p>
-    <p>The current monthly delta memo will surface drift findings as observation. Automated daily alerting (an email to the customer when a host gains or loses >5% in a single day) is the obvious next layer; the measurement infrastructure is the prerequisite and it ships now.</p>
+    <p>The current monthly delta memo surfaces drift findings as observation. Two drift tools ship in the public repo: <code>drift.mjs</code> for per-category point-in-time host-level deltas, and <code>drift-summary.mjs</code> for a one-line-per-category scan across all measured categories that the monthly memo workflow uses as a first-pass pre-write. Automated daily alerting (an email to the customer when a host gains or loses more than a threshold in a single day) is the obvious next layer and ships with the dashboard build.</p>
     <p>Tool: <code>dryrun/forensic/drift.mjs</code>. Hash-locked, engine-restrictable, JSON-output for piping into downstream alerting.</p>
 
     <h2>The pattern-readiness rule</h2>
@@ -175,11 +175,14 @@
       <li>What source types do AI engines cite for category X across the universe of customers we have measured in X?</li>
       <li>How does engine behavior differ between category X and category Y?</li>
       <li>What recurring hosts (cited across two or more engagements) are the structural authorities in category X right now?</li>
+      <li>When the same category is measured in two different geographies, do the same patterns hold? Or does the category-level pattern actually split by engine and by geography in ways that single-geo measurement cannot surface?</li>
     </ul>
+    <p>The fourth question is what we call the cross-geo discipline. The Austin TX CPA measurement (our first non-Hawaii category) tested whether the Hawaii CPA training-data engine findings generalize. The result split the original pattern: one training-data engine&rsquo;s collapse generalized cross-geo, the other did not. A vendor measuring one geography per category would have published the Hawaii result and called it the category-level pattern. The cross-geo measurement was the only way to discover that the framing needed to be more precise. See <a href="/teardowns/cross-category/">the cross-category teardown</a> and <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/patterns/01-training-data-collapse.md">pattern 01 in the patterns library</a> for the full detail.</p>
     <p>Privacy and handling stance for the aggregate: aggregate-level patterns observed across the dataset stay with us, never tied to a named customer, never reverse-engineerable to a specific engagement. The aggregator (<code>dryrun/forensic/aggregate.mjs</code>) has a host-surfacing gate set to <code>min-runs >= 2</code>: a host appears in aggregate output only when it appears in two or more distinct runs. Privacy is enforced in the code, not in the policy.</p>
 
     <h2>A working example from real data</h2>
-    <p>The first pattern-ready category in the aggregate is Honolulu med spas, measured in May 2026. The findings:</p>
+    <p>The first pattern-ready category in the aggregate was Honolulu med spas, measured in May 2026 against a 2-engine seed (OpenAI + Perplexity). The 7-engine methodology shipped shortly after; six full measurements have published since (5 Hawaii categories plus the first cross-geo, Austin TX CPAs). The med-spa example below is preserved because it documents the source-type classifier&rsquo;s post-bug-fix accuracy verification (see 2026-05-23 note further down). For the current state of measured categories with 7 engines, see <a href="/teardowns/">the published teardowns</a> and <a href="/teardowns/cross-category/">the cross-category teardown</a>. The methodology demonstrated here is the same one that produced those teardowns; the data shape repeats with more engines and tighter cohort coverage.</p>
+    <p>The historical med-spa findings:</p>
     <table>
       <thead>
         <tr><th>Source type</th><th>% of citations</th></tr>
@@ -231,7 +234,7 @@
       <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved; whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file.</li>
       <li><strong>Automated daily drift alerts.</strong> Daily measurement ships now; drift detection surfaces in the monthly delta memo as observation (see "Drift detection" section above). Automated daily alerts when a host's citation share moves more than a threshold are the obvious next layer and are not yet in the deliverable.</li>
       <li><strong>Cross-language coverage.</strong> English only. AI engines do answer in other languages but our query sets and classifier are English-shaped today.</li>
-      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> A standalone empirical teardown is shipped at <a href="/teardowns/bank-honolulu/">/teardowns/bank-honolulu/</a> demonstrating the 7-AI-tool methodology on a real category. The head-to-head comparison version, where the same Hawaii bank is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
+      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> Standalone empirical teardowns are published at <a href="/teardowns/">/teardowns/</a> demonstrating the 7-AI-tool methodology on six measurements (Hawaii consumer banking, wealth management, dental, law firms, CPAs, plus the first cross-geo measurement on Austin TX CPAs). The cross-category teardown reads them against each other. The head-to-head comparison version, where the same subject is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
       <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
     </ul>
 
