@@ -43,6 +43,7 @@ DIRS=(
   .well-known
   about
   agencies
+  atlas-preview
   blog
   case-studies
   example-engagement

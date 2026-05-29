@@ -23,14 +23,31 @@ export function emailGloballyPaused(env: Env): boolean {
   return (env as { EMAIL_GLOBAL_PAUSE?: string }).EMAIL_GLOBAL_PAUSE === "1";
 }
 
-/** Single Resend chokepoint. Every non-auth send goes through here. */
-export async function sendViaResend(env: Env, init: RequestInit): Promise<Response> {
-  if (emailGloballyPaused(env)) {
+/**
+ * Single Resend chokepoint. Every non-auth send goes through here.
+ *
+ * `opts.internal` opts a send OUT of the global pause. Reserve it for
+ * admin-only notifications addressed to the operator (Lance), never for
+ * anything a customer receives. The pause exists to protect customers
+ * during a rebuild; an internal "someone flagged a question for you"
+ * note to the operator's own inbox is categorically not customer email,
+ * so it should not be gated by the customer-email kill switch. Default
+ * stays fail-safe: omit the flag and the pause applies as before.
+ */
+export async function sendViaResend(
+  env: Env,
+  init: RequestInit,
+  opts: { internal?: boolean } = {}
+): Promise<Response> {
+  if (emailGloballyPaused(env) && !opts.internal) {
     console.log("[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed a Resend send (no email dispatched)");
     return new Response(JSON.stringify({ id: "paused-suppressed", paused: true }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
+  }
+  if (opts.internal && emailGloballyPaused(env)) {
+    console.log("[email-pause] internal send allowed through pause (admin notification)");
   }
   return fetch("https://api.resend.com/emails", init);
 }

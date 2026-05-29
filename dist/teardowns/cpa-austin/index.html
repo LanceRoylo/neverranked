@@ -1,0 +1,201 @@
+<!doctype html>
+<!--
+  CPA-Austin teardown 07. First non-Hawaii measured category.
+  37-firm cohort built in three passes (5 anchors with 1 correction,
+  + 16 from run #1 surface, + 9 from run #2 surface, + 8 from run #3
+  surface). 18 hash-locked questions (17fec069...), 3 reps per
+  question per run, 3+ usable runs on 2026-05-27.
+
+  Built specifically to test whether the Hawaii CPA training-data
+  engine collapse pattern generalizes outside Hawaii. The cross-geo
+  finding splits the original pattern: Claude generalizes, Gemma
+  doesn't.
+
+  Cohort kept anonymized at the firm level. None are paying
+  NeverRanked customers; the non-customer anonymization rule applies.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 07: What 7-AI-tool measurement reveals about Austin TX CPA firms (and what it means for the Hawaii CPA pattern)</title>
+<meta name="description" content="37 Austin CPA firms measured across 7 AI tools, 18 hash-locked questions, 3+ usable runs. Cross-geo test of the Hawaii CPA training-data engine collapse: Claude generalizes (0% Austin, 1% Hawaii), Gemma doesn't (23% Austin, 2% Hawaii).">
+<link rel="canonical" href="https://neverranked.com/teardowns/cpa-austin/">
+<meta property="og:title" content="Teardown 07: Austin CPA firms in the AI-citation data (cross-geo)">
+<meta property="og:description" content="37-firm Austin cohort. First non-Hawaii measured category. The Claude training-data collapse generalizes across geos; the Gemma collapse does not.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardown 07 &middot; Austin TX CPA firms</div>
+    <h1>The Claude collapse generalizes. The Gemma collapse does not.</h1>
+    <p class="sub">37-firm Austin cohort, 18 hash-locked questions, 3+ usable runs on 2026-05-27. First non-Hawaii measured category, built to test whether the Hawaii CPA training-data engine collapse generalizes. It splits.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> across 37 Austin TX CPA firms and 7 AI tools, the same query shape that measured Hawaii CPA firms last week produces a split-result on the training-data engines. Claude cites Austin CPA firms 0% of the time (3 of 885 cites) and Hawaii CPA firms 1% of the time. The collapse generalizes across geographies. Gemma cites Austin CPA firms 23% of the time but Hawaii CPA firms only 2%. Gemma's coverage of CPA firms is geo-specific, not category-specific. Microsoft Copilot's 0% own-share holds in both geographies as the universal cohort-wide gap.
+    </div>
+
+    <h2>Why this measurement existed</h2>
+    <p>The Hawaii CPA teardown (published 2026-05-26) surfaced what looked like a category-level pattern: training-data AI engines (Claude and Gemma) cite Hawaii CPA firms at near-zero rates (1% and 2% respectively), in contrast to 4 other measured categories where training-data engines were the highest own-share tier. The pattern was documented at low confidence (n=1) because we had only measured Hawaii CPAs in that category.</p>
+    <p>The cross-geo question is direct: does the collapse generalize, or is it Hawaii-specific? Austin TX was chosen as the test bed because it is a comparable market (mid-size professional-services hub) with a direct structural analog (Texas Society of CPAs vs Hawaii Society of CPAs). Same question shape, geo-swapped from Hawaii/Honolulu to Austin. Same 7 AI engines, same 3 reps, same hash-locked discipline.</p>
+    <p>The result split the pattern into two findings, neither of which we could have surfaced from one geo alone.</p>
+
+    <h2>Methodology summary</h2>
+    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <ul>
+      <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
+    </ul>
+    <p>18 questions an Austin CPA buyer would actually ask AI, locked at hash <code>17fec069...</code>. The question set is structurally identical to the Hawaii CPA set (8 head + 10 long-tail) with geographic terms swapped (Hawaii/Honolulu/Bishop Street replaced with Austin/downtown Austin/Texas equivalents). 3 repetitions per question per AI tool. 3+ usable runs on 2026-05-27. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
+    <p>The 37-firm cohort was built in four passes. 5 anchor firms registered before run 1 (one with a corrected domain after run #1 surfaced the actual primary domain, same pattern as Hawaii where kmhcpas.com surfaced as kmhllp.com). 16 additional firms surfaced through the run #1 within-citation scan. 9 more surfaced after run #2 cohort-coverage. 8 final additions after run #3. National Big-X firms (KPMG, PwC, Deloitte, EY, BDO, RSM, CLA, Cherry Bekaert, Weaver, Withum, CohnReznick) and out-of-state firms were excluded from the cohort to keep the comparison Austin-specific. Texas Society of CPAs (state association), city/state surfaces, gig platforms, and review aggregators were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
+    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+
+    <h2>Source-type distribution (cohort-wide)</h2>
+    <p>Across all 37 firms and all 7 AI tools, 7,738 total citations, AI pulled answers from these source types:</p>
+    <table>
+      <thead>
+        <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Independent web (third-party content)</td><td class="num"><strong>54%</strong></td><td class="num">4,174</td></tr>
+        <tr><td class="us">Competitor (firm-owned websites)</td><td class="num"><strong>40%</strong></td><td class="num">3,127</td></tr>
+        <tr><td>Review directories</td><td class="num">3%</td><td class="num">195</td></tr>
+        <tr><td>Wikipedia</td><td class="num">2%</td><td class="num">132</td></tr>
+        <tr><td>Social (LinkedIn, Facebook, Instagram)</td><td class="num">1%</td><td class="num">54</td></tr>
+        <tr><td>Reddit</td><td class="num">1%</td><td class="num">42</td></tr>
+      </tbody>
+    </table>
+    <p>The 40% firm-owned share is comparable to the Hawaii CPA 39% number. Both Austin and Hawaii CPA categories sit at the bottom of the professional-services cluster on the web-searching surface; they're roughly equivalent on that axis. The divergence between the two geographies is concentrated entirely in the training-data engines (next section).</p>
+
+    <h2>Per-AI-tool breakdown, the cross-geo split</h2>
+    <table>
+      <thead>
+        <tr><th>AI tool</th><th class="num">Austin own-share</th><th class="num">Hawaii own-share</th><th class="num">Cross-geo finding</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>61%</strong></td><td class="num">46%</td><td>Both geos high; Austin higher</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>61%</strong></td><td class="num">59%</td><td>Both geos high; similar</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>50%</strong></td><td class="num">45%</td><td>Both geos mid-high; similar</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>45%</strong></td><td class="num">60%</td><td>Both geos mid-high; Hawaii higher</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">2%</td><td>Universal cohort-wide gap holds</td></tr>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>23%</strong></td><td class="num">2%</td><td><strong>SPLIT: Austin 11x higher</strong></td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>0%</strong></td><td class="num">1%</td><td><strong>Collapse generalizes</strong></td></tr>
+      </tbody>
+    </table>
+    <p>Two things to read from this table at once.</p>
+    <p><strong>The web-searching engines are roughly comparable across the two geographies.</strong> Perplexity, Gemini, Google AIO, and OpenAI all reach between 45% and 61% own-share in both Hawaii and Austin. There are small differences (Austin Perplexity is 61% vs Hawaii 46%; Hawaii OpenAI is 60% vs Austin 45%) but the cluster is the same shape. Web-searching engines find CPA firms in both geographies through similar mechanisms.</p>
+    <p><strong>The training-data engines diverge dramatically.</strong> Claude cites Austin CPAs 0% of the time and Hawaii CPAs 1% of the time. The collapse holds. Gemma cites Austin CPAs 23% of the time and Hawaii CPAs 2% of the time. The collapse breaks. Same query shape, same week, same methodology. The difference is geographic, not categorical.</p>
+    <p>The Claude finding is the more important of the two, because it generalizes. The category-level claim (Claude under-cites CPA firms regardless of geo) is now supported by two distinct geographies. The original Hawaii-only observation was at low confidence (n=1); the cross-geo data promotes it to medium confidence.</p>
+    <p>The Gemma finding is the more surprising. The same model, the same questions, the same week. The only difference is the geography embedded in the queries. Gemma's training corpus appears to know Texas CPA firms substantially better than Hawaii CPA firms. This is a geo-density finding about the training corpus, not a category finding about CPAs. Hawaii's smaller business-news footprint relative to Texas is a plausible explanation; we observe the difference without claiming the cause.</p>
+
+    <div class="callout">
+      <h3>What the split means for an Austin CPA firm</h3>
+      <p>For an Austin CPA firm specifically, the recommendation is materially different from the Hawaii CPA recommendation. Claude is the same kind of category-wide blind spot for Austin firms as it is for Hawaii firms; do not invest in trying to move Claude's needle on a short timeline. Gemma is reachable for Austin firms in a way it is not for Hawaii firms; Gemma's 23% own-share means sustained editorial presence on the web ingestible by Gemma's training cycle does move the needle for Austin CPA firms specifically. The web-searching engines (Perplexity 61%, Gemini 61%, Google AIO 50%, OpenAI 45%) are the primary closable surface; Microsoft Copilot is the universal first-mover opening as in every measured category.</p>
+    </div>
+
+    <h2>Top recurring firms (anonymized)</h2>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 tools.</p>
+    <table>
+      <thead>
+        <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">% of cohort competitor share</th><th class="num">Runs cited in</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firm A</td><td class="num">479</td><td class="num">15%</td><td class="num">4/4</td></tr>
+        <tr><td>Firm B</td><td class="num">269</td><td class="num">9%</td><td class="num">4/4</td></tr>
+        <tr><td>Firm C</td><td class="num">261</td><td class="num">8%</td><td class="num">4/4</td></tr>
+        <tr><td>Firm D</td><td class="num">205</td><td class="num">7%</td><td class="num">4/4</td></tr>
+        <tr><td>Firm E</td><td class="num">192</td><td class="num">6%</td><td class="num">4/4</td></tr>
+      </tbody>
+    </table>
+    <p>The top 5 firms account for <strong>45% of all firm-owned mentions</strong> (1,406 of 3,127). Slightly more concentrated than Hawaii CPA (35% top-5 share). Firm A leads the cohort by roughly 2x the second-place firm. The remaining 32 firms have meaningful mention counts but lower-frequency presence, with most landing in the single-digit to low-hundred range across the 4 measurement windows.</p>
+
+    <h2>Where AI pulls from when it cites non-firm content</h2>
+    <p>The 4,174 third-party-content mentions are not all the same shape. Top recurring sources across runs:</p>
+    <table>
+      <thead>
+        <tr><th>Source</th><th class="num">Mentions</th><th>Why AI cites it</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Cherry Bekaert (cbh.com, national top-25)</td><td class="num">166</td><td>National firm with Austin office (excluded from local cohort)</td></tr>
+        <tr><td>Google (google.com)</td><td class="num">161</td><td>AI engine grounding artifact (links back to Google)</td></tr>
+        <tr><td>CliftonLarsonAllen (claconnect.com, national)</td><td class="num">138</td><td>National firm with Austin office (excluded from local cohort)</td></tr>
+        <tr><td>CX Research Institute (cxresearchinstitute.org)</td><td class="num">120</td><td>Research organization producing CPA-firm rankings content</td></tr>
+        <tr><td>City of Austin (austintexas.org)</td><td class="num">104</td><td>State/city tourism and reference content</td></tr>
+      </tbody>
+    </table>
+    <p>The top recurring third-party sources are dominated by national firms with Austin offices (Cherry Bekaert, CLA) and generic Austin-area reference content. There is no single dominant editorial trust layer the way HSCPA dominates the Hawaii CPA third-party tier (HSCPA appeared 130 times in Hawaii CPA data). The Texas Society of CPAs (tscpa.org) is registered as excluded from the cohort but did not surface as a top-cited source for these queries; the Austin third-party landscape is more fragmented than the Hawaii third-party landscape for the same category.</p>
+
+    <h2>What this teardown does and does not prove</h2>
+    <p>What it does support:</p>
+    <ul>
+      <li>The 37-firm cohort is a representative slice of Austin TX CPA firms AI tools actually cite for buyer-shaped queries.</li>
+      <li>The 40%/54% firm-own / third-party split is stable across the expanded cohort and 4 measurement windows.</li>
+      <li>The Claude training-data collapse on CPA firms generalizes across two distinct geographies (Hawaii 1%, Austin 0%). Two-geo confidence is medium; a third geo measurement would strengthen or break the pattern.</li>
+      <li>Gemma's CPA-firm coverage is geo-specific rather than category-specific (Hawaii 2%, Austin 23%). The original "training-data engine collapse" pattern from the Hawaii CPA teardown overstated the symmetry between Claude and Gemma; the cross-geo measurement corrected the overstatement.</li>
+      <li>Microsoft Copilot's 0% own-share holds in Austin as it does in every other measured category. Universal pattern (n=6 categories now).</li>
+      <li>The web-searching engines are the primary closable AEO surface for Austin CPA firms (40-61% own-share band depending on engine).</li>
+    </ul>
+    <p>What it does not yet support:</p>
+    <ul>
+      <li>That the Claude collapse holds outside the two measured geographies. A third (and fourth, etc.) measured CPA geo would strengthen the cross-geo claim. As of this teardown, the pattern is observable in Hawaii and Texas; it has not been measured elsewhere.</li>
+      <li>That Gemma's 23% Austin own-share is the ceiling. Cohort expansion could move it slightly up or down on additional runs.</li>
+      <li>That the geo-density hypothesis (Gemma knows larger-market business content better) is the cause of the Gemma split. We observe the split; we infer the cause. A measurement of a CPA category in a third geography of different population density would test the hypothesis directly.</li>
+      <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
+    </ul>
+
+    <h2>Why this is anonymized</h2>
+    <p>None of the 37 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic%20-%20Austin%20CPA">Get the free diagnostic</a>
+      <a href="/teardowns/cpa-hawaii/">Hawaii CPA teardown (for comparison)</a>
+      <a href="/teardowns/cross-category/">Cross-category teardown</a>
+      <a href="/methodology/">How we measure</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement window:</strong> 4 manifest-recorded runs on 2026-05-27 (3 deliberate runs + 1 partial-recovery run that completed cleanly). Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>17fec069...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
+      <p><strong>Anonymization:</strong> the 37-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party sources (Cherry Bekaert, CLA, CX Research Institute) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>

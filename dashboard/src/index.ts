@@ -612,6 +612,43 @@ export default {
     // verifier so it doesn't need an admin session or D1 token.
     if (path === "/health/htc-events" && method === "GET") {
       const slug = "hawaii-theatre";
+
+      // Dryrun mode: actually exercises the cron path against the live
+      // page + D1, returns step-by-step trace + any error encountered.
+      // No D1 writes happen, no customer-feed alerts fire. Public so
+      // diagnostics work without an admin session.
+      // Usage: GET /health/htc-events?dryrun=1
+      const dryrun = url.searchParams.get("dryrun") === "1";
+      if (dryrun) {
+        try {
+          const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
+          const result = await refreshHawaiiTheatreEvents(env, { dryRun: true });
+          return new Response(JSON.stringify({
+            mode: "dryrun",
+            client_slug: slug,
+            ...result,
+            checked_at: Math.floor(Date.now() / 1000),
+            note: "Dry-run executed the full refresh path without writing to D1 or firing customer-feed alerts. The 'trace' field shows step-by-step progress. The 'error' field (if present) names where execution stopped.",
+          }, null, 2), {
+            headers: {
+              "content-type": "application/json",
+              "cache-control": "no-store",
+            },
+          });
+        } catch (e) {
+          return new Response(JSON.stringify({
+            mode: "dryrun",
+            client_slug: slug,
+            error: `dryrun threw uncaught: ${e instanceof Error ? e.message : String(e)}`,
+            stack: e instanceof Error ? e.stack?.slice(0, 2000) : null,
+            checked_at: Math.floor(Date.now() / 1000),
+          }, null, 2), {
+            status: 500,
+            headers: { "content-type": "application/json", "cache-control": "no-store" },
+          });
+        }
+      }
+
       const eventRow = await env.DB.prepare(
         "SELECT COUNT(*) AS n, MAX(approved_at) AS last_refresh_at " +
         "FROM schema_injections WHERE client_slug = ? AND schema_type = 'Event' AND status = 'approved'"
@@ -619,13 +656,26 @@ export default {
       const since = Math.floor(Date.now() / 1000) - 7 * 86400;
       const alertRow = await env.DB.prepare(
         "SELECT COUNT(*) AS n FROM admin_alerts WHERE client_slug = ? " +
-        "AND type IN ('htc_events_fetch_failed', 'htc_events_parser_drift') AND created_at > ?"
+        "AND type IN ('htc_events_fetch_failed', 'htc_events_parser_drift', 'htc_events_db_failed', 'htc_events_stale') AND created_at > ?"
       ).bind(slug, since).first<{ n: number }>();
       const now = Math.floor(Date.now() / 1000);
       const lastAt = eventRow?.last_refresh_at ?? null;
       const ageHours = lastAt ? Math.round((now - lastAt) / 3600 * 10) / 10 : null;
+      // Verdict: 'ok' if data refreshed within 36h, 'stale' otherwise.
+      // Surfaces in /health/htc-events so the cross-system QA audit
+      // (runs daily as part of runDailyTasks) can pick it up and the
+      // anomaly detector / inbox-summary surface the staleness even
+      // when the inner cron has been failing silently.
+      const STALE_HOURS = 36;
+      const verdict = ageHours === null
+        ? "no_data"
+        : ageHours > STALE_HOURS
+          ? "stale"
+          : "ok";
       const body = {
         client_slug: slug,
+        verdict,
+        stale_threshold_hours: STALE_HOURS,
         served_event_count: eventRow?.n ?? 0,
         last_refresh_at: lastAt,
         last_refresh_age_hours: ageHours,
@@ -633,6 +683,7 @@ export default {
         snippet_url: "https://app.neverranked.com/inject/hawaii-theatre.js",
         source_page: "https://www.hawaiitheatre.com/upcoming-events/",
         checked_at: now,
+        diagnostic_dryrun_url: "/health/htc-events?dryrun=1",
       };
       return new Response(JSON.stringify(body, null, 2), {
         headers: {
@@ -1045,6 +1096,18 @@ export default {
     // handler returns null/403 when needed. Match BEFORE the more
     // permissive routes below.
     {
+      // Atlas chat surface. Match BEFORE the bare /c/<slug>/ view so the
+      // /atlas suffix routes to the chat handler, not the dashboard.
+      const atlasMsgMatch = path.match(/^\/c\/([a-z0-9-]+)\/atlas\/message\/?$/i);
+      if (atlasMsgMatch && method === "POST") {
+        const { handleAtlasMessage } = await import("./routes/atlas-chat");
+        return handleAtlasMessage(request, env, atlasMsgMatch[1]);
+      }
+      const atlasMatch = path.match(/^\/c\/([a-z0-9-]+)\/atlas\/?$/i);
+      if (atlasMatch && method === "GET") {
+        const { handleAtlasChat } = await import("./routes/atlas-chat");
+        return handleAtlasChat(request, env, atlasMatch[1]);
+      }
       const cMatch = path.match(/^\/c\/([a-z0-9-]+)\/?$/i);
       if (cMatch && method === "GET") {
         const { handleCustomerView } = await import("./routes/customer-view");
@@ -2237,6 +2300,22 @@ export default {
       const r = await refreshHawaiiTheatreEvents(env);
       return new Response(JSON.stringify(r, null, 2), { headers: { "content-type": "application/json" } });
     }
+    // Health/QA: dump the Atlas data context for ?slug=... to verify
+    // the loader returns the shape the system prompt expects. Read-only,
+    // admin-gated, safe to leave mounted long-term.
+    if (path === "/admin/atlas-context" && method === "GET" && user.role === "admin") {
+      const slug = url.searchParams.get("slug") || "hawaii-theatre";
+      const { buildAtlasContext } = await import("./lib/atlas-context");
+      const t0 = Date.now();
+      const ctx = await buildAtlasContext(env, slug);
+      const ms = Date.now() - t0;
+      return new Response(JSON.stringify({ load_ms: ms, ctx }, null, 2), {
+        headers: {
+          "content-type": "application/json",
+          "cache-control": "no-store, no-cache, must-revalidate, max-age=0",
+        },
+      });
+    }
     // Manual trigger for the roadmap reconciler. Runs against one
     // client when ?slug=... is supplied, otherwise across all clients
     // with approved schema_injections.
@@ -2301,6 +2380,26 @@ export default {
       return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
     }
     // NVI inbox + actions
+    // Monthly memo review + approval surface.
+    if (path === "/admin/memos" && method === "GET" && user.role === "admin") {
+      const { handleMemoInbox } = await import("./routes/admin-memos");
+      return handleMemoInbox(user, env);
+    }
+    if (path === "/admin/memos/generate" && method === "POST" && user.role === "admin") {
+      const { handleMemoGenerate } = await import("./routes/admin-memos");
+      return handleMemoGenerate(user, env);
+    }
+    {
+      const memoDetail = path.match(/^\/admin\/memos\/(\d+)$/);
+      if (memoDetail && method === "GET" && user.role === "admin") {
+        const { handleMemoDetail } = await import("./routes/admin-memos");
+        return handleMemoDetail(parseInt(memoDetail[1], 10), user, env);
+      }
+      if (memoDetail && method === "POST" && user.role === "admin") {
+        const { handleMemoSave } = await import("./routes/admin-memos");
+        return handleMemoSave(parseInt(memoDetail[1], 10), request, user, env);
+      }
+    }
     if (path === "/admin/nvi" && method === "GET" && user.role === "admin") {
       const { handleNviInbox } = await import("./routes/admin-nvi");
       return handleNviInbox(user, env, url);

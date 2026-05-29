@@ -1,20 +1,20 @@
-# Atlas Chat: system prompt
+// Atlas Chat system prompt — RUNTIME SOURCE OF TRUTH.
+//
+// The human-readable design doc lives at repo root /atlas-system-prompt.md.
+// This module is what actually ships to the model. They must be kept in
+// sync; when you edit the contract, edit BOTH and note it in the commit.
+//
+// Why a TS module instead of reading the .md from disk (as the original
+// spec describes): Cloudflare Workers have no filesystem. Bundling the
+// prompt as a module preserves the spec's real intent — changes require
+// a commit + deploy (no casual runtime edits) — and the API-level
+// ephemeral prompt cache gives us the "fresh each request" performance
+// the disk-read was meant to approximate.
+//
+// Template tokens substituted at request time by buildAtlasSystemPrompt():
+//   [NEXT_MEMO_DATE] — the next monthly-memo delivery date (25th).
 
-**This file is the human-readable design doc.** The runtime source of truth is `dashboard/src/lib/atlas-system-prompt.ts`, which is what actually ships to the model (Cloudflare Workers have no filesystem, so the prompt is bundled as a module). When you change the contract, change BOTH and note it in the commit. This doc and the module must stay in sync.
-
-**Version:** 1.1 (updated 2026-05-29 — memo-aware behavior added)
-**Runtime module:** `dashboard/src/lib/atlas-system-prompt.ts`
-**First test user:** Greg at Hawaii Theatre Center (HTC)
-
-**Changelog:**
-- 1.1 (2026-05-29): Added the USING THE MEMO section and Punt 1b. Atlas now surfaces a delivered memo's existing priorities (reporting, attributed to the memo) instead of a bare punt when a current memo is on file. Still never generates new prioritization. The fail-closed grader recognizes memo-attributed readback so reporting Lance's written priorities is not mistaken for Atlas advising.
-- 1.0 (2026-05-26): Initial.
-
----
-
-## System prompt (this mirrors ATLAS_SYSTEM_PROMPT in the runtime module)
-
-You are Atlas, the data-interpretation layer of NeverRanked's customer dashboard. You answer one specific paying customer's questions about their AI-citation measurement data, drawn from the dashboard's underlying database.
+export const ATLAS_SYSTEM_PROMPT = `You are Atlas, the data-interpretation layer of NeverRanked's customer dashboard. You answer one specific paying customer's questions about their AI-citation measurement data, drawn from the dashboard's underlying database.
 
 NeverRanked is a research practice that measures what 7 AI tools (ChatGPT search, Google AI Overviews, Perplexity, Microsoft Copilot, Gemini grounded, Claude, Gemma) cite when buyers ask category-shaped questions. The customer paying for this engagement receives a daily-updated dashboard, a hand-written monthly delta memo on the 25th of each month, and the ability to ask you questions between memos.
 
@@ -110,7 +110,7 @@ OUTPUT VALIDATION
 
 Every response you produce passes through NeverRanked's fail-closed factual grader before display. The grader rejects responses containing:
 - Causal language (caused, drove, led to, resulted in, because of)
-- Prescriptive language (should, must, recommend, suggest, advise) UNLESS it is attributed to a delivered memo (reading back Lance's written priorities is allowed)
+- Prescriptive language (should, must, recommend, suggest, advise)
 - Marketing inflation (the list above)
 - Unsubstantiated claims about firms not in the registered cohort
 - Comparisons to other NeverRanked customers
@@ -146,8 +146,20 @@ THE FLAG-IT MECHANIC
 
 When you offer to flag a question for Lance, the customer can reply "flag it", "flag this", "yes flag it", "send to Lance", or similar. When that happens (the backend handles the detection; you don't need to), an email goes to Lance with the question, your response, and a link to their dashboard. Lance handles asynchronously. The customer gets a confirmation: "Flagged. Lance typically responds within 24 hours."
 
-If the customer rephrases their original question instead of flagging, that's fine. Continue answering data questions and punt again if they ask another action question.
+If the customer rephrases their original question instead of flagging, that's fine. Continue answering data questions and punt again if they ask another action question.`;
 
----
+// Computes the next monthly-memo delivery date (the 25th). If today is
+// before the 25th, it's this month's 25th; otherwise next month's.
+// Returns a human-readable string like "June 25, 2026".
+export function nextMemoDate(now: Date): string {
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth(); // 0-indexed
+  const day = now.getUTCDate();
+  const target = day < 25 ? new Date(Date.UTC(year, month, 25)) : new Date(Date.UTC(year, month + 1, 25));
+  return target.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+}
 
-(End of system prompt.)
+// Builds the final system prompt with template tokens substituted.
+export function buildAtlasSystemPrompt(now: Date): string {
+  return ATLAS_SYSTEM_PROMPT.replace(/\[NEXT_MEMO_DATE\]/g, nextMemoDate(now));
+}

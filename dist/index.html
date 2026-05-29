@@ -4,73 +4,1425 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>NeverRanked</title>
-<meta name="description" content="A research engagement that measures what AI answer engines cite for a category. Five citation-grade engines plus two model-knowledge engines, every day, with a forensic memo and a prepped punch list your team executes.">
+<title>NeverRanked: what AI answer engines cite for your category</title>
+<meta name="description" content="A founder-led research practice that measures what AI answer engines cite for a business category. Seven AI surfaces, every day. A forensic memo and a prepped punch list your team executes.">
+<link rel="canonical" href="https://neverranked.com/">
 <style>
-  :root { color-scheme: dark; }
-  html, body { margin: 0; padding: 0; background: #0b0b0c; }
-  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 64px 0 96px; }
-  main { max-width: 640px; padding: 0 28px; line-height: 1.7; }
-  .top { text-align: center; margin-bottom: 36px; }
-  h1 { font-size: 34px; font-weight: 400; letter-spacing: 0.005em; margin: 0 0 6px; line-height: 1.2; }
-  .tag { font-size: 14px; color: #6a6a70; letter-spacing: 0.06em; text-transform: uppercase; }
-  h2 { font-size: 17px; font-weight: 400; color: #d4c596; margin: 36px 0 8px; letter-spacing: 0.005em; }
-  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
-  ul { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
-  li { margin-bottom: 6px; }
-  strong { color: #e8e8ea; font-weight: 600; }
-  .rule { width: 40px; height: 1px; background: #3a3a3e; margin: 36px auto; }
-  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
-  .links { background: #131316; border: 1px solid #2a2a2e; border-radius: 6px; padding: 22px 26px; margin: 28px 0; }
-  .links a { display: block; padding: 5px 0; font-size: 15px; }
+  :root {
+    color-scheme: dark;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --bg: #0b0b0c;
+    --panel: #0e0e11;
+    --gold: #d4c596;
+    --text: #e8e8ea;
+    --soft: #b9b9bd;
+    --dim: #6a6a70;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: Georgia, "Times New Roman", serif; color: var(--text); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* Sticky nav */
+  .nav { position: sticky; top: 0; z-index: 20; background: var(--bg); border-bottom: 1px solid #1c1c1e; }
+  .nav-inner { max-width: 1040px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; }
+  .wordmark { font-size: 17px; letter-spacing: 0.01em; color: var(--text); text-decoration: none; }
+  .nav-links { display: flex; gap: 26px; }
+  .nav-links a { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--soft); text-decoration: none; transition: color 160ms var(--ease-out); }
+  @media (hover: hover) { .nav-links a:hover { color: var(--gold); } }
+  .nav-cta { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gold); text-decoration: none; border: 1px solid #3a3a3e; padding: 9px 15px; border-radius: 4px; transition: border-color 160ms var(--ease-out), background 160ms ease, transform 160ms var(--ease-out); }
+  .nav-cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .nav-cta:hover { border-color: var(--gold); background: rgba(212,197,150,0.06); } }
+
+  /* Section system */
+  .section { padding: 88px 0; }
+  .section.panel { background: var(--panel); }
+  .inner { max-width: 624px; margin: 0 auto; padding: 0 32px; }
+  .inner.wide { max-width: 860px; }
+  .sec-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); margin: 0 0 26px; }
+  .sec-label .n { color: var(--gold); margin-right: 10px; }
+  h2 { font-size: 25px; font-weight: 400; color: var(--text); margin: 0 0 14px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: var(--soft); margin: 0 0 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  .lead { font-size: 19px; color: var(--text); line-height: 1.55; }
+
+  /* Scroll-reveal motion */
+  .reveal { opacity: 0; transform: translateY(18px); transition: opacity 660ms var(--ease-out), transform 660ms var(--ease-out); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* WordsPullUp — per-word staggered slide-up on the H1 + select
+     headlines. Each word starts at y:20 opacity:0, transitions to
+     y:0 opacity:1, with --wpu-delay set per word via inline style.
+     Punchier ease curve than the generic reveal (Emil Kowalski:
+     custom ease curves > default browser ease). */
+  .wpu-word {
+    display: inline-block;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 540ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms),
+                transform 540ms cubic-bezier(0.22, 1, 0.36, 1) var(--wpu-delay, 0ms);
+  }
+  .wpu.in .wpu-word { opacity: 1; transform: translateY(0); }
+  .wpu-word + .wpu-word::before { content: " "; white-space: pre; }
+
+  /* Scroll-linked character opacity — each char ramps from 0.2 to 1
+     as the user scrolls past. JS sets --char-progress per element. */
+  .schar {
+    display: inline-block;
+    opacity: var(--char-opacity, 0.2);
+    transition: opacity 60ms linear;
+  }
+
+  /* Hero */
+  .hero { padding: 92px 0 96px; }
+  .hero .inner { max-width: 760px; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin: 0 0 22px; }
+  .hero h1 { font-size: 46px; font-weight: 400; line-height: 1.2; letter-spacing: -0.008em; margin: 0 0 26px; }
+  .hero .turn { font-size: 21px; font-style: italic; color: var(--gold); line-height: 1.5; margin: 0 0 36px; }
+
+  /* CTA */
+  .cta { display: inline-block; font-family: var(--mono); font-size: 13px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); text-decoration: none; border: 1px solid var(--gold); padding: 15px 30px; border-radius: 4px; transition: transform 160ms var(--ease-out), background 160ms ease; }
+  .cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .cta:hover { background: rgba(212,197,150,0.10); } }
+  .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 16px; }
+
+  /* Void graphic */
+  .void-graphic { margin: 30px 0 8px; animation: vgIn .7s var(--ease-out) both; animation-play-state: paused; }
+  .void-graphic.in { animation-play-state: running; }
+  .vg-panels { display: flex; gap: 38px; }
+  .vg-panel { flex: 1; min-width: 0; }
+  .vg-head { font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 16px; }
+  .vg-rows { height: 252px; }
+  .vg-rows-google { display: flex; flex-direction: column; gap: 8px; }
+  .vg-rows-ai { position: relative; }
+  .vg-row { height: 18px; border-radius: 4px; background: #2c2c32; display: flex; align-items: center; }
+  .vg-rows-ai .vg-row { position: absolute; left: 0; right: 0; }
+  .vg-you { background: var(--gold); }
+  .vg-hollow { background: transparent; border: 1.5px solid var(--gold); box-sizing: border-box; }
+  .vg-you span { font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--bg); padding-left: 10px; }
+  .vg-hollow span { color: var(--gold); }
+  .vg-rows-ai .vg-hollow { animation: vgDrop 1.5s var(--ease-out) both; animation-play-state: paused; }
+  .void-graphic.in .vg-hollow { animation-play-state: running; }
+  .vg-cap { font-size: 15px; font-style: italic; color: #8a8a90; margin-top: 18px; }
+  .vg-cap-gold { color: var(--gold); }
+  .vg-trend { text-align: center; font-size: 14px; font-style: italic; color: var(--gold); margin: 30px 0 0; }
+  @keyframes vgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes vgDrop { 0%, 16% { opacity: 0; transform: translateY(-18px); } 100% { opacity: 1; transform: translateY(0); } }
+
+  /* Engine diagram */
+  .engines { margin: 24px 0 4px; }
+  .engine-group + .engine-group { margin-top: 18px; }
+  .engine-group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
+  .engine-group-label b { color: var(--gold); font-weight: 400; }
+  .engine-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font-family: var(--mono); font-size: 12px; color: var(--soft); background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 8px 12px; }
+  .chip.grade { border-color: rgba(212,197,150,0.32); color: var(--text); }
+
+  /* Rigor points */
+  .points { margin: 20px 0 0; }
+  .point { padding: 18px 0; border-top: 1px solid #1c1c1e; }
+  .point:last-child { border-bottom: 1px solid #1c1c1e; }
+  .point h3 { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); font-weight: 400; margin: 0 0 6px; }
+  .point p { margin: 0; }
+
+  /* Proof readout */
+  .readout { margin: 22px 0 8px; }
+  .readout-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
+  .readout-row { display: grid; grid-template-columns: 190px 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
+  .readout-name { font-family: var(--mono); font-size: 12px; color: var(--soft); }
+  .readout-track { height: 14px; background: #1c1c1e; border-radius: 3px; overflow: hidden; }
+  .readout-fill { height: 100%; background: var(--gold); border-radius: 3px; }
+  .readout-fill.faint { background: #3a3a3e; }
+  .readout-note { font-size: 14px; font-style: italic; color: var(--dim); margin-top: 16px; }
+
+  /* Pricing */
+  .prices { display: flex; gap: 18px; margin: 22px 0 18px; }
+  .price { flex: 1; border: 1px solid #2a2a2e; border-radius: 6px; padding: 24px; background: #131316; }
+  .price .amt { font-size: 34px; color: var(--gold); line-height: 1.1; }
+  .price .unit { font-family: var(--mono); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--dim); margin-top: 9px; }
+
+  /* Principal */
+  .principal { border-left: 2px solid var(--gold); padding-left: 26px; }
+  .principal .sign { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-top: 22px; }
+
+  /* Closing */
+  .close { text-align: center; }
+  .close h2 { font-size: 32px; margin-bottom: 24px; line-height: 1.25; }
+
+  /* Links block */
+  .links { border: 1px solid #2a2a2e; border-radius: 6px; padding: 8px 26px; background: #131316; }
+  .links a { display: block; padding: 13px 0; font-size: 15px; }
   .links a + a { border-top: 1px solid #1c1c1e; }
-  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
-  .footer a { color: #6a6a70; }
+  .links .sub { color: var(--dim); font-size: 13px; }
+
+  /* Footer */
+  .footer { border-top: 1px solid #1c1c1e; color: var(--dim); font-size: 12px; letter-spacing: 0.04em; text-align: center; padding: 40px 32px 64px; }
+  .footer a { color: var(--dim); }
+
+  @media (max-width: 680px) {
+    .nav-links { display: none; }
+    .hero { padding: 60px 0 64px; }
+    .hero h1 { font-size: 33px; }
+    .hero .turn { font-size: 19px; }
+    .section { padding: 64px 0; }
+    .vg-panels { flex-direction: column; gap: 30px; }
+    .prices { flex-direction: column; }
+    .close h2 { font-size: 26px; }
+    .readout-row { grid-template-columns: 124px 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .void-graphic, .vg-rows-ai .vg-hollow, .vg-rows-google .vg-row, .vg-cap { animation: none; }
+    .readout-fill { transition: none; width: var(--target-width, 0) !important; }
+    .hpr-you { animation: none; }
+    .hero-preview-query::after { animation: none; }
+    .cta:hover { box-shadow: none; }
+  }
+
+  /* ── Hero live-preview card ─────────────────────────────────── */
+  .hero-preview {
+    margin: 18px 0 30px;
+    padding: 22px 26px;
+    border: 1px solid #2a2a2e;
+    background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+    border-radius: 6px;
+    max-width: 480px;
+  }
+  .hero-preview-head {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--dim); margin-bottom: 14px;
+  }
+  .hero-preview-query {
+    font-family: var(--mono); font-size: 14px; color: var(--text);
+    margin-bottom: 18px; min-height: 22px;
+    transition: opacity 220ms var(--ease-out);
+  }
+  .hero-preview-query.fading { opacity: 0; }
+  .hero-preview-query::after {
+    content: '▮'; color: var(--gold); margin-left: 6px;
+    animation: cursorBlink 1.1s steps(2) infinite;
+  }
+  @keyframes cursorBlink { 50% { opacity: 0; } }
+  .hero-preview-response {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  }
+  .hero-preview-cite {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim); margin-right: 4px;
+  }
+  .hero-preview-row {
+    font-family: var(--mono); font-size: 12px; padding: 6px 11px;
+    border-radius: 4px; letter-spacing: 0.03em;
+  }
+  .hpr-named {
+    background: rgba(212,197,150,0.12);
+    border: 1px solid rgba(212,197,150,0.30);
+    color: var(--text);
+  }
+  .hpr-you {
+    background: transparent; border: 1.5px dashed var(--gold);
+    color: var(--gold);
+    animation: youPulse 2.6s ease-in-out infinite;
+  }
+  @keyframes youPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.62; }
+  }
+
+  /* ── Void graphic motion polish ─────────────────────────────── */
+  .vg-rows-google .vg-row {
+    opacity: 0; transform: translateX(-10px);
+    animation: vgRowSlide 440ms var(--ease-out) both;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-rows-google .vg-row { animation-play-state: running; }
+  .vg-rows-google .vg-row:nth-child(1) { animation-delay: 80ms; }
+  .vg-rows-google .vg-row:nth-child(2) { animation-delay: 145ms; }
+  .vg-rows-google .vg-row:nth-child(3) { animation-delay: 210ms; }
+  .vg-rows-google .vg-row:nth-child(4) { animation-delay: 275ms; }
+  .vg-rows-google .vg-row:nth-child(5) { animation-delay: 340ms; }
+  .vg-rows-google .vg-row:nth-child(6) { animation-delay: 405ms; }
+  .vg-rows-google .vg-row:nth-child(7) { animation-delay: 470ms; }
+  .vg-rows-google .vg-row:nth-child(8) { animation-delay: 535ms; }
+  .vg-rows-google .vg-row:nth-child(9) { animation-delay: 600ms; }
+  .vg-rows-google .vg-row:nth-child(10) { animation-delay: 665ms; }
+  @keyframes vgRowSlide { to { opacity: 1; transform: translateX(0); } }
+
+  /* Chain pulse after the existing vgDrop on the hollow "You" */
+  .vg-rows-ai .vg-hollow {
+    animation: vgDrop 1.5s var(--ease-out) both, vgHollowPulse 2.6s ease-in-out 1.6s infinite;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-rows-ai .vg-hollow { animation-play-state: running; }
+  @keyframes vgHollowPulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,197,150,0); }
+    50% { opacity: 0.78; box-shadow: 0 0 14px 1px rgba(212,197,150,0.18); }
+  }
+
+  /* Captions fade in after the bars build */
+  .vg-cap, .vg-trend {
+    opacity: 0;
+    animation: vgCapFade 540ms var(--ease-out) 900ms both;
+    animation-play-state: paused;
+  }
+  .void-graphic.in .vg-cap, .void-graphic.in .vg-trend { animation-play-state: running; }
+  @keyframes vgCapFade { to { opacity: 1; } }
+
+  /* ── Cohort readout bars animate on viewport entry ──────────── */
+  .readout-fill {
+    width: 0;
+    transition: width 1100ms var(--ease-out);
+  }
+  .readout.in .readout-fill { width: var(--target-width, 0); }
+  .readout.in .readout-row:nth-child(2) .readout-fill { transition-delay: 60ms; }
+  .readout.in .readout-row:nth-child(3) .readout-fill { transition-delay: 180ms; }
+  .readout.in .readout-row:nth-child(4) .readout-fill { transition-delay: 300ms; }
+  .readout.in .readout-row:nth-child(5) .readout-fill { transition-delay: 420ms; }
+
+  /* ── Pricing visual hierarchy ───────────────────────────────── */
+  .price { position: relative; transition: transform 220ms var(--ease-out), border-color 220ms ease; }
+  .price-primary {
+    background: linear-gradient(180deg, rgba(212,197,150,0.10), rgba(212,197,150,0.03));
+    border-color: rgba(212,197,150,0.42);
+  }
+  .price-primary .amt { color: var(--gold); font-size: 38px; }
+  .price-secondary .amt { font-size: 30px; color: var(--text); }
+  .price .role {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold);
+    margin-top: 16px; padding-top: 14px;
+    border-top: 1px solid rgba(212,197,150,0.18);
+  }
+  .price-secondary .role { color: var(--dim); border-top-color: #1c1c1e; }
+  @media (hover: hover) {
+    .price:hover { transform: translateY(-2px); }
+    .price-primary:hover { border-color: rgba(212,197,150,0.62); }
+  }
+
+  /* ── CTA polish pass ────────────────────────────────────────── */
+  .cta {
+    box-shadow: 0 0 0 0 rgba(212,197,150,0);
+    transition: transform 160ms var(--ease-out), background 220ms ease, box-shadow 280ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .cta:hover { box-shadow: 0 0 24px 0 rgba(212,197,150,0.18); }
+  }
+  .nav-cta {
+    box-shadow: 0 0 0 0 rgba(212,197,150,0);
+    transition: transform 160ms var(--ease-out), border-color 160ms var(--ease-out), background 160ms ease, box-shadow 240ms var(--ease-out);
+  }
+  @media (hover: hover) {
+    .nav-cta:hover { box-shadow: 0 0 14px 0 rgba(212,197,150,0.15); }
+  }
+  .nav-cta:active { transform: scale(0.97); }
+
+  @media (max-width: 680px) {
+    .hero-preview { max-width: 100%; padding: 18px 20px; }
+    .hero-preview-row { font-size: 11px; padding: 5px 9px; }
+    .price-primary .amt { font-size: 32px; }
+    .price-secondary .amt { font-size: 26px; }
+  }
+
+  /* ── Hero URL form (primary lead magnet above the fold) ─────── */
+  .hero-form {
+    display: flex; margin: 22px 0 12px; max-width: 540px;
+    border: 1px solid var(--gold); border-radius: 6px;
+    background: #0e0e11; overflow: hidden;
+    transition: box-shadow 260ms var(--ease-out), border-color 200ms ease;
+  }
+  .hero-form:focus-within {
+    box-shadow: 0 0 28px 0 rgba(212,197,150,0.22);
+    border-color: rgba(212,197,150,0.95);
+  }
+  .hero-form input {
+    flex: 1; min-width: 0; padding: 15px 18px;
+    background: transparent; border: 0; outline: none;
+    font-family: var(--mono); font-size: 14px;
+    color: var(--text); letter-spacing: 0.02em;
+  }
+  .hero-form input::placeholder { color: var(--dim); }
+  .hero-form button {
+    padding: 15px 24px; border: 0; cursor: pointer;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: #0b0b0c; font-weight: 600;
+    background: var(--gold);
+    transition: transform 160ms var(--ease-out), background 200ms ease;
+  }
+  .hero-form button:hover { background: #e8d9a8; }
+  .hero-form button:active { transform: scale(0.97); }
+  .hero-form-note {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
+    color: var(--dim); margin: 0 0 32px; max-width: 540px; line-height: 1.65;
+  }
+  .hero-secondary {
+    display: inline-block; margin-top: 16px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em;
+    color: var(--gold); text-decoration: none;
+    border-bottom: 1px solid rgba(212,197,150,0.32); padding-bottom: 2px;
+    transition: border-color 200ms ease;
+  }
+  @media (hover: hover) {
+    .hero-secondary:hover { border-bottom-color: var(--gold); }
+  }
+  @media (max-width: 560px) {
+    .hero-form { flex-direction: column; }
+    .hero-form input { padding: 13px 16px; }
+    .hero-form button { padding: 13px 16px; }
+  }
+
+  /* ── Engagement flow steps ──────────────────────────────────── */
+  .flow {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px;
+    margin: 28px 0 16px;
+  }
+  .flow-step {
+    padding: 22px 20px; border: 1px solid #2a2a2e; border-radius: 6px;
+    background: #131316; position: relative;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
+  }
+  @media (hover: hover) {
+    .flow-step:hover { transform: translateY(-2px); border-color: rgba(212,197,150,0.32); }
+  }
+  .flow-num {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+  }
+  .flow-step h3 {
+    font-family: Georgia, serif; font-size: 16px; font-weight: 400;
+    color: var(--text); margin: 0 0 8px; line-height: 1.3;
+  }
+  .flow-step p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
+  .flow-link {
+    display: inline-block; margin-top: 12px;
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em;
+    color: var(--gold); text-decoration: none;
+    border-bottom: 1px solid rgba(212,197,150,0.32);
+    padding-bottom: 1px;
+    transition: border-color 220ms ease;
+  }
+  @media (hover: hover) {
+    .flow-link:hover { border-bottom-color: var(--gold); }
+  }
+  .flow-note {
+    font-family: var(--mono); font-size: 12px; color: var(--dim);
+    text-align: center; margin: 22px 0 0; letter-spacing: 0.04em;
+  }
+  @media (max-width: 880px) { .flow { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 540px) { .flow { grid-template-columns: 1fr; } }
+
+  /* ── Teardown proof cards ───────────────────────────────────── */
+  .proof-label {
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--dim); margin: 42px 0 16px;
+  }
+  .teardowns {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+    margin: 0 0 4px;
+  }
+  .td-card {
+    display: block; padding: 22px 22px 24px; border: 1px solid #2a2a2e;
+    border-top: 2px solid var(--gold); border-radius: 6px;
+    background: #131316; color: var(--text); text-decoration: none;
+    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
+  }
+  @media (hover: hover) {
+    .td-card:hover {
+      transform: translateY(-2px);
+      background: linear-gradient(180deg, rgba(212,197,150,0.07), rgba(212,197,150,0.02));
+      border-color: rgba(212,197,150,0.42);
+      border-top-color: var(--gold);
+    }
+  }
+  .td-card .td-cat {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .td-card h3 {
+    font-family: Georgia, serif; font-size: 17px; font-weight: 400;
+    color: var(--text); margin: 0 0 8px; line-height: 1.3;
+  }
+  .td-card p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
+  @media (max-width: 880px) { .teardowns { grid-template-columns: 1fr; } }
+
+  /* ── Atlas demo block ───────────────────────────────────────────
+     The page's one interactive moment. Atlas answering a data
+     question crisply, then refusing an action question with a
+     punt pattern, on a loop. The refusal is the marketing. */
+  .atlas-section { padding: 88px 0; }
+  .atlas-card {
+    margin: 28px 0 18px;
+    background: linear-gradient(180deg, #131316 0%, #0e0e11 100%);
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .atlas-card-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid #1c1c1e;
+    background: #0e0e11;
+  }
+  .atlas-card-tag {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .atlas-card-dot {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--dim);
+  }
+  .atlas-card-dot::before {
+    content: ""; display: inline-block; width: 7px; height: 7px;
+    border-radius: 50%; background: var(--gold);
+    animation: atlasPulse 2.4s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(212,197,150,0.6);
+  }
+  @keyframes atlasPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(212,197,150,0.55); }
+    50% { box-shadow: 0 0 0 6px rgba(212,197,150,0); }
+  }
+  .atlas-chat {
+    padding: 22px 22px 8px;
+    min-height: 240px;
+  }
+  .atlas-msg { margin-bottom: 18px; max-width: 88%; }
+  .atlas-msg.user {
+    margin-left: auto; text-align: right;
+  }
+  .atlas-msg-label {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--dim);
+    margin-bottom: 6px;
+  }
+  .atlas-msg.user .atlas-msg-label { color: #8a8a90; }
+  .atlas-msg.atlas .atlas-msg-label { color: var(--gold); }
+  .atlas-msg-body {
+    display: inline-block;
+    padding: 11px 16px;
+    border-radius: 8px;
+    font-size: 15px;
+    line-height: 1.55;
+    text-align: left;
+  }
+  .atlas-msg.user .atlas-msg-body {
+    font-family: var(--mono); font-size: 13px;
+    background: #1c1c1e; color: var(--text);
+    border: 1px solid #2a2a2e;
+  }
+  .atlas-msg.atlas .atlas-msg-body {
+    background: transparent;
+    color: var(--text);
+    padding-left: 0; padding-right: 0;
+    font-family: Georgia, "Times New Roman", serif;
+  }
+  .atlas-cursor::after {
+    content: "";
+    display: inline-block;
+    width: 8px; height: 16px;
+    background: var(--gold);
+    vertical-align: -2px;
+    margin-left: 2px;
+    animation: atlasBlink 1s steps(2) infinite;
+  }
+  @keyframes atlasBlink {
+    0%, 50% { opacity: 1; }
+    50.01%, 100% { opacity: 0; }
+  }
+  .atlas-caption {
+    font-size: 14px; font-style: italic; color: var(--dim);
+    margin-top: 16px;
+  }
+  .atlas-boundary {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    margin: 30px 0 4px;
+  }
+  .atlas-boundary .col {
+    padding: 18px 20px;
+    background: #0e0e11;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+  }
+  .atlas-boundary .col h3 {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; margin: 0 0 10px; font-weight: 400;
+  }
+  .atlas-boundary .col.does h3 { color: var(--gold); }
+  .atlas-boundary .col.doesnt h3 { color: #8a8a90; }
+  .atlas-boundary .col ul {
+    margin: 0; padding-left: 16px; font-size: 14px; line-height: 1.6;
+  }
+  .atlas-boundary .col li { margin-bottom: 4px; }
+  @media (max-width: 680px) {
+    .atlas-boundary { grid-template-columns: 1fr; }
+    .atlas-chat { min-height: 280px; padding: 18px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .atlas-card-dot::before { animation: none; }
+    .atlas-cursor::after { animation: none; opacity: 0; }
+  }
+
+  /* ── Live operating proof strip ─────────────────────────────────
+     Thin mono strip under nav. Pulls page out of "static brochure"
+     by surfacing the measurement is operating right now. */
+  .proof-strip {
+    background: #0e0e11;
+    border-bottom: 1px solid #1c1c1e;
+    padding: 11px 0;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--dim);
+    overflow: hidden;
+  }
+  .proof-strip-inner {
+    max-width: 1040px; margin: 0 auto; padding: 0 32px;
+    display: flex; align-items: center; gap: 24px;
+    flex-wrap: wrap;
+  }
+  .proof-strip-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--gold);
+    animation: proofDot 2.6s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+  @keyframes proofDot {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,197,150,0.6); }
+    50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,197,150,0); }
+  }
+  .proof-strip span.sep { color: #2a2a2e; }
+  .proof-strip b { color: var(--text); font-weight: 400; }
+  @media (max-width: 680px) {
+    .proof-strip-inner { gap: 14px; font-size: 10px; }
+    .proof-strip-inner > .hide-sm { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .proof-strip-dot { animation: none; }
+  }
+
+  /* ── Scarcity callout in pricing ─────────────────────────────── */
+  .scarcity {
+    margin: 22px 0 8px;
+    padding: 18px 22px;
+    border: 1px solid rgba(212,197,150,0.30);
+    border-left: 2px solid var(--gold);
+    background: rgba(212,197,150,0.05);
+    border-radius: 4px;
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .scarcity b { color: var(--gold); font-weight: 400; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; display: block; margin-bottom: 6px; }
+
+  /* ── Teardown blocks inline ─────────────────────────────────── */
+  .td-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin: 24px 0 8px;
+  }
+  .td-card {
+    display: block;
+    padding: 22px 22px 20px;
+    background: #131316;
+    border: 1px solid #2a2a2e;
+    border-radius: 6px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 200ms var(--ease-out), transform 200ms var(--ease-out), background 200ms ease;
+  }
+  .td-card:active { transform: scale(0.99); }
+  @media (hover: hover) {
+    .td-card:hover {
+      border-color: rgba(212,197,150,0.45);
+      background: #15151a;
+    }
+    .td-card:hover .td-card-arrow { transform: translateX(3px); color: var(--gold); }
+  }
+  .td-card-cat {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
+  }
+  .td-card-stat {
+    font-size: 21px; font-weight: 400; color: var(--text);
+    margin: 0 0 6px; line-height: 1.3; letter-spacing: -0.003em;
+  }
+  .td-card-hook {
+    font-size: 14px; color: var(--soft); margin: 0 0 14px; line-height: 1.5;
+  }
+  .td-card-foot {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em;
+    color: var(--dim); display: flex; justify-content: space-between; align-items: center;
+  }
+  .td-card-arrow {
+    color: var(--dim); transition: transform 200ms var(--ease-out), color 200ms ease;
+  }
+  .td-card-wide { grid-column: 1 / -1; }
+  .td-card-wide .td-card-stat { font-size: 23px; }
+  .td-card-latest {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold);
+    margin-bottom: 6px;
+  }
+  @media (max-width: 680px) {
+    .td-grid { grid-template-columns: 1fr; }
+    .td-card-wide .td-card-stat { font-size: 21px; }
+  }
+
+  /* ── Inline objection FAQ ─────────────────────────────────────── */
+  .obj-list { margin: 22px 0 8px; }
+  .obj {
+    border-top: 1px solid #1c1c1e;
+    padding: 20px 0;
+  }
+  .obj:last-of-type { border-bottom: 1px solid #1c1c1e; }
+  .obj-q {
+    font-family: Georgia, serif; font-size: 17px; color: var(--text);
+    cursor: pointer; list-style: none; padding-right: 32px;
+    position: relative; line-height: 1.4;
+    transition: color 200ms var(--ease-out);
+  }
+  .obj-q::-webkit-details-marker { display: none; }
+  .obj-q::after {
+    content: '+'; position: absolute; right: 0; top: -2px;
+    font-family: var(--mono); font-size: 22px; color: var(--gold);
+    line-height: 1; font-weight: 300;
+    transition: transform 220ms var(--ease-out);
+  }
+  details.obj[open] .obj-q::after { content: '−'; }
+  details.obj[open] .obj-q { color: var(--gold); }
+  .obj-q:hover { color: var(--gold); }
+  .obj-a {
+    font-size: 15px; color: var(--soft); margin: 14px 0 0;
+    line-height: 1.65;
+  }
+  .obj-foot {
+    margin-top: 22px;
+    font-size: 14px;
+    color: var(--dim);
+  }
 </style>
 </head>
 <body>
-  <main>
-    <div class="top">
-      <h1>NeverRanked.</h1>
-      <div class="tag">Honolulu &middot; research engagement</div>
+
+  <header class="nav">
+    <div class="nav-inner">
+      <a class="wordmark" href="/">NeverRanked</a>
+      <nav class="nav-links">
+        <a href="/methodology/">Methodology</a>
+        <a href="/for-agencies/">For agencies</a>
+        <a href="/security/">Security</a>
+      </nav>
+      <a class="nav-cta" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
     </div>
+  </header>
 
-    <p>When someone asks ChatGPT or Perplexity for the best business in a category, the AI answers with a handful of names. NeverRanked measures whether yours is one of them, which competitors are cited instead, and what the AI engines pull from when they decide.</p>
-
-    <p>The deliverable is a forensic research memo plus a prepped punch list your team executes against. We do not execute. That separation is structural.</p>
-
-    <div class="rule"></div>
-
-    <h2>What we measure</h2>
-    <p><strong>Seven AI surfaces, every day.</strong> Five citation-grade engines that search the live web — Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews. Two model-knowledge engines that answer from training data alone — Claude, Gemma. The two layers measure different failure modes a brand can have.</p>
-
-    <h2>What we deliver</h2>
-    <p>A research memo per category. Per query, per engine, per competitor, per source type. Plus a prepped punch list ordered by impact, written for the customer's team or their agency to execute against. Daily measurement runs in the background. Monthly delta memo on ongoing engagements.</p>
-
-    <h2>Pricing</h2>
-    <p><strong>$4,500 kickoff per category</strong> (one time) plus <strong>$1,500 per month per category</strong> ongoing. Per category, not per client. No bundled tiers. A small five-query pilot on one category is offered at no cost as the wedge into the full engagement.</p>
-
-    <h2>Security posture</h2>
-    <p>The engagement does not touch your systems. No code on your property, no integration, no data flowing from your side. We observe the public AI engines from outside. This is a research engagement, not a software install — the procurement surface is an NDA and a vendor intake form, not a SOC 2 audit.</p>
-
-    <div class="rule"></div>
-
-    <h2>Where to dig in</h2>
-    <div class="links">
-      <a href="/example-engagement/">What a $4,500 kickoff produces &rarr; <span style="color:#6a6a70;font-size:13px">(real example deliverable)</span></a>
-      <a href="/methodology/">How we measure &rarr; <span style="color:#6a6a70;font-size:13px">(engines, classifier, working example)</span></a>
-      <a href="/vs/">vs Profound, Peec, AthenaHQ &rarr; <span style="color:#6a6a70;font-size:13px">(structural differences, honest)</span></a>
-      <a href="/for-agencies/">For agencies &rarr; <span style="color:#6a6a70;font-size:13px">(the channel model)</span></a>
-      <a href="/security/">Security posture &rarr; <span style="color:#6a6a70;font-size:13px">(for compliance teams)</span></a>
-      <a href="/first-30-days/">The first 30 days &rarr; <span style="color:#6a6a70;font-size:13px">(what a kickoff looks like, day by day)</span></a>
-      <a href="/about/">About NeverRanked &rarr;</a>
-      <a href="https://github.com/LanceRoylo/neverranked">Public source code &rarr; <span style="color:#6a6a70;font-size:13px">(github.com/LanceRoylo)</span></a>
+  <!-- Live operating proof strip -->
+  <div class="proof-strip" role="status" aria-label="Operating status">
+    <div class="proof-strip-inner">
+      <span class="proof-strip-dot" aria-hidden="true"></span>
+      <span><b>6</b> measurements tracked</span>
+      <span class="sep">/</span>
+      <span><b>378</b> prompts per run</span>
+      <span class="sep hide-sm">/</span>
+      <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools</span>
+      <span class="sep">/</span>
+      <span>last run <b>2026-05-26</b></span>
     </div>
+  </div>
 
-    <h2>To scope an engagement</h2>
-    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20scoping">Lance@hi.neverranked.com</a> with the category you want to measure and three to five competitors you want on the cohort. A five-query pilot runs at no cost so you see the shape of the deliverable on your data.</p>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="inner">
+      <div class="kicker reveal">A research practice &middot; Honolulu</div>
+      <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">When</span><span class="wpu-word" style="--wpu-delay:80ms">AI</span><span class="wpu-word" style="--wpu-delay:160ms">answers,</span><span class="wpu-word" style="--wpu-delay:240ms">does</span><span class="wpu-word" style="--wpu-delay:320ms">it</span><span class="wpu-word" style="--wpu-delay:400ms">name</span><span class="wpu-word" style="--wpu-delay:480ms">your</span><span class="wpu-word" style="--wpu-delay:560ms">business?</span></h1>
+      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Your customers are asking the same question to find a business like yours.</p>
 
-    <div class="footer">NeverRanked &middot; Honolulu &middot; founder-led, bootstrapped &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a></div>
-  </main>
+      <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
+        <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
+        <button type="submit">Check now &rarr;</button>
+      </form>
+      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. In the categories we measured, AI tools name 3 to 5 businesses per buyer question. We check whether yours is one of them.</div>
+
+      <div class="hero-preview reveal" style="transition-delay:.38s">
+        <div class="hero-preview-head">An AI answer right now might look like</div>
+        <div class="hero-preview-query" id="hero-query"></div>
+        <div class="hero-preview-response">
+          <span class="hero-preview-cite">AI cites</span>
+          <span class="hero-preview-row hpr-named">Firm A</span>
+          <span class="hero-preview-row hpr-named">Firm B</span>
+          <span class="hero-preview-row hpr-named">Firm C</span>
+          <span class="hero-preview-row hpr-you">&#9633; You</span>
+        </div>
+      </div>
+
+      <div class="reveal" style="transition-delay:.46s">
+        <a class="hero-secondary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Or get a custom 1-page diagnostic for your category &rarr;</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01 The blind spot -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">01</span>The blind spot</div>
+      <p class="lead">A Google search gives you ten links. An AI answer gives you three names. You can check a Google rank any time. You cannot see an AI answer that left you out.</p>
+      <div class="void-graphic">
+        <div class="vg-panels">
+          <div class="vg-panel">
+            <div class="vg-head">Google</div>
+            <div class="vg-rows vg-rows-google">
+              <div class="vg-row"></div><div class="vg-row"></div><div class="vg-row"></div>
+              <div class="vg-row"></div><div class="vg-row"></div><div class="vg-row"></div>
+              <div class="vg-row vg-you"><span>You</span></div>
+              <div class="vg-row"></div><div class="vg-row"></div><div class="vg-row"></div>
+            </div>
+            <div class="vg-cap">You might get picked.</div>
+          </div>
+          <div class="vg-panel">
+            <div class="vg-head">AI answer</div>
+            <div class="vg-rows vg-rows-ai">
+              <div class="vg-row" style="top:0"></div>
+              <div class="vg-row" style="top:26px"></div>
+              <div class="vg-row" style="top:52px"></div>
+              <div class="vg-row vg-you vg-hollow" style="top:156px"><span>You</span></div>
+            </div>
+            <div class="vg-cap vg-cap-gold">You are the answer, or you are not.</div>
+          </div>
+        </div>
+        <div class="vg-trend">Every quarter, more of the buying decision happens inside the answer.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 What we measure -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">02</span>What we measure</div>
+      <h2>Seven AI surfaces, every day.</h2>
+      <p>NeverRanked measures what the AI answer engines cite for your category, split across two layers that fail in different ways.</p>
+      <div class="engines">
+        <div class="engine-group">
+          <div class="engine-group-label"><b>Five</b> &middot; citation-grade &middot; search the live web</div>
+          <div class="engine-chips">
+            <span class="chip grade">Perplexity</span>
+            <span class="chip grade">ChatGPT search</span>
+            <span class="chip grade">Gemini grounded</span>
+            <span class="chip grade">Microsoft Copilot</span>
+            <span class="chip grade">Google AI Overviews</span>
+          </div>
+        </div>
+        <div class="engine-group">
+          <div class="engine-group-label"><b>Two</b> &middot; model-knowledge &middot; answer from training data</div>
+          <div class="engine-chips">
+            <span class="chip">Claude</span>
+            <span class="chip">Gemma</span>
+          </div>
+        </div>
+      </div>
+      <p style="margin-top:24px">The deliverable is a forensic research memo and a prepped punch list, ordered by impact. Your team executes it. We do not. That separation is structural.</p>
+    </div>
+  </section>
+
+  <!-- Atlas · between memos · the interactive demo block -->
+  <section class="section atlas-section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">Atlas</span>Between memos</div>
+      <h2>Ask the data. Get the answer. Never the prescription.</h2>
+      <p>Atlas is the data-interpretation layer of your dashboard. It answers what the measurement shows. It refuses to tell you what to do. That separation is the engagement.</p>
+
+      <div class="atlas-card" id="atlas-card" aria-label="Atlas demo">
+        <div class="atlas-card-head">
+          <span class="atlas-card-tag">Atlas</span>
+          <span class="atlas-card-dot">Live</span>
+        </div>
+        <div class="atlas-chat" id="atlas-chat" aria-live="polite">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <div class="atlas-boundary">
+        <div class="col does">
+          <h3>What Atlas answers</h3>
+          <ul>
+            <li>Mention counts, week over week deltas</li>
+            <li>Per-engine and per-question breakdowns</li>
+            <li>Cohort positions and competitor share</li>
+            <li>Source-type distribution shifts</li>
+            <li>Observable correlations to dated events</li>
+          </ul>
+        </div>
+        <div class="col doesnt">
+          <h3>What Atlas refuses</h3>
+          <ul>
+            <li>What you should do about it</li>
+            <li>Which fix to prioritize first</li>
+            <li>Whether a tactic is a good idea</li>
+            <li>Causation claims of any kind</li>
+            <li>Strategic positioning advice</li>
+          </ul>
+        </div>
+      </div>
+      <p class="atlas-caption">The boundary is structural. Prioritization lives in your monthly memo, written by the principal. Atlas holds the data. Crossing that line would damage the engagement.</p>
+      <p style="margin-top: 20px; text-align: center;"><a href="/atlas-preview/" style="font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); text-decoration: none; padding: 11px 22px; border: 1px solid var(--gold); border-radius: 3px; display: inline-block; transition: background 160ms ease;">See the full Atlas preview &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- 03 How the measurement holds up -->
+  <section class="section panel">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">03</span>How the measurement holds up</div>
+      <h2>A high-ticket engagement has to be checkable.</h2>
+      <p>This one is built to be. Four reasons the numbers can be trusted.</p>
+      <div class="points">
+        <div class="point">
+          <h3>Pre-registered</h3>
+          <p>Every methodology claim is anchored in a hash-locked pre-registration before the test runs. The claim cannot move after the data lands.</p>
+        </div>
+        <div class="point">
+          <h3>Public, auditable code</h3>
+          <p>The measurement and aggregator code is on GitHub. One of the seven engines, Gemma, is open-weight, so your own analyst can re-run the prompts and reproduce the numbers without us in the room.</p>
+        </div>
+        <div class="point">
+          <h3>Daily, not sampled</h3>
+          <p>Seven surfaces measured every day. An AI answer can change between two askings of the same question, so a single snapshot is not measurement.</p>
+        </div>
+        <div class="point">
+          <h3>Nothing on your property</h3>
+          <p>We never touch your website, your code, or your CRM. No integration, nothing installed, nothing to breach. We measure the public engines from outside. It is a research engagement, not a software install.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 What you actually receive -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">04</span>What you actually receive</div>
+      <h2>The engagement, end to end.</h2>
+      <p>Five stages. Plain words. No SaaS dashboard between you and the work.</p>
+      <div class="flow">
+        <div class="flow-step">
+          <div class="flow-num">Step 01</div>
+          <h3>Scoping call (30 min)</h3>
+          <p>Lock the category, the cohort, and the 18 buyer questions we will measure. One call, no homework.</p>
+          <a class="flow-link" href="/methodology/#query-set">See an example question set &rarr;</a>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 02</div>
+          <h3>Three-week kickoff</h3>
+          <p>We measure daily across 7 AI tools. Same questions, same hash, every run apples to apples.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 03</div>
+          <h3>Research memo + punch list</h3>
+          <p>PDF or markdown to your team. Named competitors, observed gaps, the clear list of what to fix first.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 04</div>
+          <h3>Your team executes</h3>
+          <p>You ship the work. We measure whether it lands. That separation is the whole position.</p>
+        </div>
+        <div class="flow-step">
+          <div class="flow-num">Step 05</div>
+          <h3>Monthly delta memo</h3>
+          <p>What moved, what did not. Updated punch list. Drift alerts when a competitor moves in your category.</p>
+        </div>
+      </div>
+      <p class="flow-note">The first research memo arrives three weeks after the scoping call.</p>
+
+      <p class="proof-label">Three published examples of what an engagement produces</p>
+      <div class="teardowns">
+        <a class="td-card" href="/teardowns/cross-category/">
+          <div class="td-cat">Cross-category + cross-geo</div>
+          <h3>Two axes, plus a third.</h3>
+          <p>Six measurements across five Hawaii categories plus the first cross-geo (Austin TX CPAs). The Claude collapse generalizes; the Gemma collapse does not.</p>
+        </a>
+        <a class="td-card" href="/teardowns/bank-honolulu/">
+          <div class="td-cat">Hawaii consumer banking</div>
+          <h3>The 75-point engine spread.</h3>
+          <p>21-bank cohort. The Microsoft Copilot gap no single-engine measurement catches.</p>
+        </a>
+        <a class="td-card" href="/teardowns/dental-honolulu/">
+          <div class="td-cat">Honolulu dental</div>
+          <h3>The Copilot first-mover opening.</h3>
+          <p>46-practice cohort. Zero practice-owned websites cited by Microsoft Copilot.</p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Teardown blocks — surface the work, do not bury it in a links list -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
+      <h2>Six measurements published. Five Hawaii categories plus the first cross-geo.</h2>
+      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. The Austin CPA teardown is the first non-Hawaii measurement, built specifically to test whether the Hawaii CPA training-data findings generalize across geographies. The cross-geo finding splits the original pattern.</p>
+
+      <div style="margin: 22px 0 28px; padding: 20px 24px; background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid var(--gold); border-radius: 4px;">
+        <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">Latest finding &middot; 2026-05-27</div>
+        <p style="margin: 0; font-size: 16px; color: var(--text); line-height: 1.55;">Hawaii CPA Claude own-share: 1%. Austin CPA Claude own-share: 0%. Hawaii CPA Gemma own-share: 2%. Austin CPA Gemma own-share: 23%. Same category, same query shape, two different geographies. The Claude collapse generalizes. The Gemma collapse does not. This is the kind of distinction single-geo measurement cannot surface. <a href="/teardowns/cpa-austin/" style="color: var(--gold);">Read the cross-geo teardown &rarr;</a></p>
+      </div>
+
+      <div class="td-grid">
+        <a class="td-card" href="/teardowns/bank-honolulu/">
+          <div class="td-card-cat">Hawaii consumer banking</div>
+          <div class="td-card-stat">53% own-site, 75-point engine spread</div>
+          <p class="td-card-hook">21-bank cohort. The widest cross-engine gap of any category measured. One bank owns the head queries on training-data tools; the long tail sits open on Copilot.</p>
+          <div class="td-card-foot"><span>21 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/wealth-mgmt-hawaii/">
+          <div class="td-card-cat">Hawaii wealth management</div>
+          <div class="td-card-stat">47% own-site, the lead-gen middleman pattern</div>
+          <p class="td-card-hook">42-firm cohort. AI defers to lead-gen aggregators (SmartAsset, Unbiased, Plannersearch) more than to any individual firm. The structural ground for firms sits outside that middleman tier.</p>
+          <div class="td-card-foot"><span>42 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/dental-honolulu/">
+          <div class="td-card-cat">Honolulu dental</div>
+          <div class="td-card-stat">44% own-site, the Copilot first-mover opening</div>
+          <p class="td-card-hook">46-practice cohort. Microsoft Copilot cites zero practice websites for the entire cohort. The first Honolulu practice that ranks first on Bing organic effectively owns the Copilot answer.</p>
+          <div class="td-card-foot"><span>46 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/law-firm-hawaii/">
+          <div class="td-card-cat">Hawaii law firms</div>
+          <div class="td-card-stat">Top 5 own 66% of all firm-owned mentions</div>
+          <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Microsoft Copilot.</p>
+          <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/cpa-hawaii/">
+          <div class="td-card-cat">Hawaii CPA firms</div>
+          <div class="td-card-stat">Training-data engines collapse to 1-2%</div>
+          <p class="td-card-hook">41-firm cohort. Claude and Gemma cite Hawaii CPA firms less than 2% of the time. Competitive game plays inside OpenAI, Gemini, Perplexity, and Google AI Overviews.</p>
+          <div class="td-card-foot"><span>41 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card td-card-wide" href="/teardowns/cpa-austin/">
+          <div class="td-card-latest">Latest &middot; cross-geo measurement</div>
+          <div class="td-card-cat">Austin TX CPA firms</div>
+          <div class="td-card-stat">Claude generalizes (0%). Gemma does not (23% Austin vs 2% Hawaii).</div>
+          <p class="td-card-hook">37-firm Austin cohort, 7,738 measured citations. First non-Hawaii measurement, built to test whether the Hawaii CPA training-data findings generalize. The cross-geo finding splits the original pattern: Claude's collapse holds across geographies, Gemma's does not. A category pattern from one geo measurement was actually two patterns once measured in two geos.</p>
+          <div class="td-card-foot"><span>37 firms &middot; 3+ runs &middot; published 2026-05-27</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+      </div>
+      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads all six measurements against each other &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- 05 What a readout reveals -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">05</span>What a readout reveals</div>
+      <h2>Per query, per engine, per competitor, per source type.</h2>
+      <p>Which questions in your category get answered, who gets cited when you do not, and which kinds of sources the engines actually pull from when they decide.</p>
+      <div class="readout">
+        <div class="readout-label">One category we measured &middot; an early read</div>
+        <div class="readout-row">
+          <div class="readout-name">Independent web</div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:96%"></div></div>
+        </div>
+        <div class="readout-row">
+          <div class="readout-name">Review directories</div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:7%"></div></div>
+        </div>
+        <div class="readout-row">
+          <div class="readout-name">YouTube</div>
+          <div class="readout-track"><div class="readout-fill" style="--target-width:4%"></div></div>
+        </div>
+        <div class="readout-row">
+          <div class="readout-name">Reddit, forums</div>
+          <div class="readout-track"><div class="readout-fill faint" style="--target-width:1.5%"></div></div>
+        </div>
+        <div class="readout-note">A single category, an early read. A data point, not a generalized pattern. And the two directories the engines did trust were niche ones most operators have never heard of.</div>
+      </div>
+      <p style="margin-top:22px">Take one named reference. At Hawaii Theatre Center, a forensic readout surfaced what a standard scan walks past: a Charity Navigator profile not updated since 2023, a Better Business Bureau profile last touched in 1999, a missing Bing Business Profile, authority backlinks pointed at the wrong places. The quiet, citation-shaping detail nobody is looking at.</p>
+      <p><a href="/example-engagement/">See a full example readout &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- 06 Pricing -->
+  <section class="section panel">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">06</span>Pricing</div>
+      <h2>Per category, not per client.</h2>
+      <p>No bundled tiers, no per-seat math.</p>
+      <div class="prices">
+        <div class="price price-secondary">
+          <div class="amt">$4,500</div>
+          <div class="unit">Kickoff per category &middot; one time</div>
+          <div class="role">Get started</div>
+        </div>
+        <div class="price price-primary">
+          <div class="amt">$1,500</div>
+          <div class="unit">Per month per category &middot; ongoing</div>
+          <div class="role">The engagement</div>
+        </div>
+      </div>
+      <div class="scarcity">
+        <b>4 customers maximum per category</b>
+        Cohort comparisons mean something only when the cohort stays stable. Each category caps at 4 paying customers so the cross-customer benchmark is real, not diluted. When your category fills, it closes to new customers until a slot opens. The five tracked categories (Hawaii consumer banking, wealth management, dental Honolulu, law firms, CPA Honolulu) are open at this writing.
+      </div>
+      <p>Free 1-page diagnostic before you commit. We run 5 real customer questions for your category across all 7 AI tools, then send a 1-page snapshot showing which competitors AI is naming and whether you&rsquo;re one of them. One per business. The full engagement adds the rest of the question set (18 per category), weekly tracking, a cohort baseline that makes the numbers mean something, and a clear list of what to fix.</p>
+    </div>
+  </section>
+
+  <!-- 07 Who runs it -->
+  <section class="section">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">07</span>Who runs it</div>
+      <h2>You work with the principal.</h2>
+      <div class="principal">
+        <p>NeverRanked is a research practice, not a software company. The measurement, the memos, and the punch lists are produced by Lance Roylo, in Honolulu. There is no account layer between you and the person doing the research.</p>
+        <p>How the practice operates: we measure, we do not execute. We report what the AI engines actually cite, never what we claim our work caused. We do not promise a citation lift in advance. A finding that cannot be substantiated does not ship. That discipline is the product.</p>
+        <div class="sign">Lance Roylo &middot; NeverRanked &middot; Honolulu</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Inline objection FAQ — the five conversion-killers, answered short -->
+  <section class="section panel">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">FAQ</span>The questions that stop people</div>
+      <h2>The five hard ones.</h2>
+      <p>Lifted from the inbound emails Lance answers most often.</p>
+      <div class="obj-list">
+        <details class="obj">
+          <summary class="obj-q">How is this different from SEO?</summary>
+          <p class="obj-a">SEO measures search engine ranking factors on your own site. We measure what AI tools actually cite when buyers ask category-shaped questions, across 7 surfaces. The deliverable is also different: SEO tools give you a dashboard to interpret yourself; we hand off an interpreted research memo plus a prepped punch list your team executes. See <a href="/vs/">/vs/</a> for the structural comparison.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">What if my buyers do not use AI tools yet?</summary>
+          <p class="obj-a">Two reads on this. First, AI search usage in B2B and high-consideration consumer decisions is already non-trivial and growing on the curve we have public visibility into. Second, even if your buyer is not asking ChatGPT today, your competitor showing up there first when they do is the move you can not undo. We measure that surface so you know whether the move has already started.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Will my mentions actually go up?</summary>
+          <p class="obj-a">We do not promise a lift in advance. The only promise we make is the measurement itself: you will know what AI cites for your category, what gaps exist, and what conditions a buyer of your category typically closes to move the needle. Whether your team executes the punch list well is what determines lift, and we measure that monthly so the answer is observable, not asserted.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Do you do the work or just measure?</summary>
+          <p class="obj-a">We measure. We do not execute. We do not write content, edit pages, deploy schema, update profiles, or change your site. Your in-house team or your agency executes against the punch list we deliver. That separation is structural and is the whole position. It also means we never compete with your agency for execution hours.</p>
+        </details>
+        <details class="obj">
+          <summary class="obj-q">Can I try before I commit?</summary>
+          <p class="obj-a">Two ways. The instant self-serve check at <a href="https://check.neverranked.com">check.neverranked.com</a> tells you what the 7 AI tools can read from your site. The hand-built 1-page diagnostic runs 5 real customer questions for your category across all 7 AI tools and sends a snapshot showing which competitors AI names and whether you are one of them. One free diagnostic per business.</p>
+        </details>
+      </div>
+      <p class="obj-foot">More: <a href="/faq/">the full FAQ</a> covers cancellation, NDAs, agency channel, data handling, and what happens if a finding turns out to be wrong.</p>
+    </div>
+  </section>
+
+  <!-- Closing CTA -->
+  <section class="section panel close">
+    <div class="inner reveal">
+      <h2>Find out whether the AI names you.</h2>
+      <a class="cta" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <div class="cta-note">Email Lance@hi.neverranked.com with the category you want measured and three to five competitors for the cohort.</div>
+    </div>
+  </section>
+
+  <!-- Where to dig in -->
+  <section class="section">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">&rarr;</span>Where to dig in</div>
+      <div class="links">
+        <a href="/results/">Results so far <span class="sub">&middot; the cumulative scoreboard</span></a>
+        <a href="/teardowns/">All teardowns <span class="sub">&middot; 7 published, 6 measurements (5 Hawaii + 1 Austin cross-geo)</span></a>
+        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 6 measurements, two axes plus the cross-geo split</span></a>
+        <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 21-bank cohort, the 75-point engine spread</span></a>
+        <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Copilot first-mover opening</span></a>
+        <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 30 firms, top 5 own 66% of mentions</span></a>
+        <a href="/teardowns/wealth-mgmt-hawaii/">Hawaii wealth management teardown <span class="sub">&middot; 42 firms, the lead-gen middleman pattern</span></a>
+        <a href="/teardowns/cpa-hawaii/">Hawaii CPA firms teardown <span class="sub">&middot; 41 firms, the training-data engine collapse</span></a>
+        <a href="/teardowns/cpa-austin/">Austin TX CPA firms teardown <span class="sub">&middot; 37 firms, the cross-geo split (first non-Hawaii)</span></a>
+        <a href="/hawaii-bank-aeo/">If you are a Hawaii bank <span class="sub">&middot; what 7 AI tools cite for consumer banking</span></a>
+        <a href="/hawaii-wealth-aeo/">If you are a Hawaii wealth firm <span class="sub">&middot; what 7 AI tools cite + the lead-gen pattern</span></a>
+        <a href="/honolulu-dental-aeo/">If you are a Honolulu dental practice <span class="sub">&middot; what 7 AI tools cite + the Copilot opening</span></a>
+        <a href="/hawaii-law-aeo/">If you are a Hawaii law firm <span class="sub">&middot; what 7 AI tools cite + the closable ground outside top 5</span></a>
+        <a href="/hawaii-cpa-aeo/">If you are a Hawaii CPA firm <span class="sub">&middot; what 7 AI tools cite + the training-data engine collapse</span></a>
+        <a href="/austin-cpa-aeo/">If you are an Austin TX CPA firm <span class="sub">&middot; what 7 AI tools cite + the Claude/Gemma cross-geo split</span></a>
+        <a href="/example-engagement/">What a $4,500 kickoff produces <span class="sub">&middot; real example deliverable</span></a>
+        <a href="/methodology/">How we measure <span class="sub">&middot; engines, classifier, working example</span></a>
+        <a href="/schema-library/">Schema library <span class="sub">&middot; deployable JSON-LD blocks for AI citation</span></a>
+        <a href="/templates/">Page templates <span class="sub">&middot; outlines for the 5 page types AI engines cite</span></a>
+        <a href="/directories/">Directory playbooks <span class="sub">&middot; what AI extracts from each third-party source</span></a>
+        <a href="/vs/">How we differ from the other tools <span class="sub">&middot; structural differences, honest</span></a>
+        <a href="/for-agencies/">For agencies <span class="sub">&middot; we measure, you keep the retainer</span></a>
+        <a href="/security/">Security posture <span class="sub">&middot; for compliance teams</span></a>
+        <a href="/faq/">FAQ <span class="sub">&middot; the questions that come up most</span></a>
+        <a href="/first-30-days/">The first 30 days <span class="sub">&middot; what a kickoff looks like, day by day</span></a>
+        <a href="/about/">About NeverRanked</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">NeverRanked &middot; Honolulu &middot; founder-led, bootstrapped &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a></div>
+
+  <script>
+    /* Scroll-reveal: elements fade and rise as they enter the viewport.
+       Above-the-fold elements fire immediately on load. No dependencies. */
+    (function () {
+      var els = document.querySelectorAll('.reveal, .void-graphic, .readout, .wpu');
+      if (!('IntersectionObserver' in window)) {
+        els.forEach(function (el) { el.classList.add('in'); });
+        return;
+      }
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            e.target.classList.add('in');
+            io.unobserve(e.target);
+          }
+        });
+      }, { rootMargin: '0px 0px -80px 0px', threshold: 0.12 });
+      els.forEach(function (el) { io.observe(el); });
+    })();
+
+    /* Hero form: capture URL and hand off to the grader with ?url= so
+       it auto-scans. Zero friction: paste, hit enter, see result. */
+    (function () {
+      var form = document.getElementById('hero-form');
+      if (!form) return;
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var input = document.getElementById('hero-url');
+        var url = (input.value || '').trim();
+        if (!url) { input.focus(); return; }
+        if (!/^https?:\/\//i.test(url)) { url = 'https://' + url; }
+        var target = 'https://check.neverranked.com/?url=' + encodeURIComponent(url);
+        window.location.href = target;
+      });
+    })();
+
+    /* Scroll-linked character opacity on the hero turn paragraph.
+       Each character starts at 0.2 opacity and ramps to 1 as it
+       scrolls into the reading zone (between 70% and 30% of viewport
+       height). Reading becomes a deliberate act, not a fade-in event.
+       Channels the Prisma scroll-reveal pattern but lighter (one
+       paragraph, not whole page sections). */
+    (function () {
+      var turn = document.getElementById('hero-turn');
+      if (!turn) return;
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (prefersReduced) return;
+
+      // Wrap each non-space character in a span. Spaces stay as text
+      // so word wrapping behaves naturally.
+      var text = turn.textContent || '';
+      turn.innerHTML = '';
+      var chars = [];
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (ch === ' ') {
+          turn.appendChild(document.createTextNode(' '));
+        } else {
+          var span = document.createElement('span');
+          span.className = 'schar';
+          span.textContent = ch;
+          turn.appendChild(span);
+          chars.push(span);
+        }
+      }
+
+      // Throttled scroll handler: compute viewport position of the
+      // turn element, set per-char opacity based on relative progress.
+      // Throttle via requestAnimationFrame for smoothness.
+      var ticking = false;
+      function update() {
+        var rect = turn.getBoundingClientRect();
+        var vh = window.innerHeight;
+        // 0 when element bottom is at viewport bottom; 1 when element
+        // top has scrolled to 30% of viewport. Linear ramp.
+        var start = vh * 0.85;
+        var end = vh * 0.30;
+        var elementCenter = rect.top + rect.height / 2;
+        var overallProgress = (start - elementCenter) / (start - end);
+        overallProgress = Math.max(0, Math.min(1, overallProgress));
+        // Apply per-char with a small lag so chars reveal in order
+        var n = chars.length;
+        for (var j = 0; j < n; j++) {
+          var charProgress = j / n;
+          // Each char's local progress window: [charProgress - 0.1, charProgress + 0.05]
+          var local = (overallProgress - (charProgress - 0.1)) / 0.15;
+          local = Math.max(0, Math.min(1, local));
+          var opacity = 0.2 + (1 - 0.2) * local;
+          chars[j].style.setProperty('--char-opacity', opacity.toFixed(3));
+        }
+        ticking = false;
+      }
+      window.addEventListener('scroll', function () {
+        if (!ticking) {
+          window.requestAnimationFrame(update);
+          ticking = true;
+        }
+      }, { passive: true });
+      update();
+    })();
+
+    /* Hero query cycler: rotates through real buyer-shaped questions
+       drawn from the categories we have measured. Pauses on reduced-
+       motion. Updates only the query text, not the AI response card,
+       so the "You" hollow row stays the persistent visual anchor. */
+    (function () {
+      var queryEl = document.getElementById('hero-query');
+      if (!queryEl) return;
+      var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var queries = [
+        'best wealth manager in Hawaii',
+        'best dentist in Honolulu',
+        'Hawaii law firm for business owners',
+        'best bank for small business in Hawaii',
+        'top CPA firms in Honolulu'
+      ];
+      if (prefersReduced) {
+        queryEl.textContent = queries[0];
+        return;
+      }
+
+      // Type-then-delete loop. Feels like someone keying a prompt
+      // into a real LLM, holding while it answers, then clearing
+      // and typing the next one. Jitter on per-char timing so it
+      // doesn't feel mechanical.
+      var qi = 0;
+      var typeMin = 38, typeMax = 92;   // ms per char while typing
+      var delMin = 18, delMax = 32;     // ms per char while deleting
+      var holdAfterType = 2400;          // beat to read the result
+      var holdAfterDelete = 320;         // brief pause before next
+
+      function rnd(a, b) { return a + Math.random() * (b - a); }
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+      function typeOut(text) {
+        return new Promise(function (resolve) {
+          var i = 0;
+          (function step() {
+            queryEl.textContent = text.slice(0, i);
+            if (i >= text.length) return resolve();
+            // Slight extra pause after spaces/punctuation, like real typing.
+            var ch = text.charAt(i);
+            var extra = (ch === ' ') ? 30 : 0;
+            i++;
+            setTimeout(step, rnd(typeMin, typeMax) + extra);
+          })();
+        });
+      }
+
+      function deleteOut() {
+        return new Promise(function (resolve) {
+          var text = queryEl.textContent;
+          (function step() {
+            if (text.length === 0) return resolve();
+            text = text.slice(0, -1);
+            queryEl.textContent = text;
+            setTimeout(step, rnd(delMin, delMax));
+          })();
+        });
+      }
+
+      (function loop() {
+        var q = queries[qi];
+        typeOut(q)
+          .then(function () { return sleep(holdAfterType); })
+          .then(deleteOut)
+          .then(function () { return sleep(holdAfterDelete); })
+          .then(function () {
+            qi = (qi + 1) % queries.length;
+            loop();
+          });
+      })();
+    })();
+
+    // ── Atlas demo: cycling typed exchanges ─────────────────────
+    // Two scripted exchanges. One Atlas answers (data). One Atlas
+    // refuses (action, punt pattern verbatim from system prompt).
+    // Triggers on scroll-into-view. Skipped under reduced-motion.
+    (function () {
+      var chat = document.getElementById('atlas-chat');
+      if (!chat) return;
+      var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      var script = [
+        {
+          user: "How many mentions did I have last week vs the week before?",
+          atlas: "37 mentions across 7 AI tools last week. 41 the week before. Perplexity dropped from 14 to 11. Google AI Overviews held at 8. The other 5 tools were stable within noise."
+        },
+        {
+          user: "What should I do about the Perplexity drop?",
+          atlas: "That's prioritization, which lives in your monthly memo. Your next memo arrives June 25. If you want this addressed before then, reply 'flag it' and I'll send Lance a note."
+        }
+      ];
+
+      function makeMsg(role) {
+        var wrap = document.createElement('div');
+        wrap.className = 'atlas-msg ' + role;
+        var label = document.createElement('div');
+        label.className = 'atlas-msg-label';
+        label.textContent = role === 'user' ? 'You' : 'Atlas';
+        var body = document.createElement('div');
+        body.className = 'atlas-msg-body atlas-cursor';
+        wrap.appendChild(label);
+        wrap.appendChild(body);
+        return { wrap: wrap, body: body };
+      }
+
+      function typeInto(node, text, speed) {
+        return new Promise(function (resolve) {
+          if (reduced) { node.textContent = text; node.classList.remove('atlas-cursor'); return resolve(); }
+          var i = 0;
+          (function step() {
+            node.textContent = text.slice(0, i);
+            if (i >= text.length) { node.classList.remove('atlas-cursor'); return resolve(); }
+            i++;
+            setTimeout(step, speed + (Math.random() * 18 - 9));
+          })();
+        });
+      }
+
+      function sleep(ms) { return new Promise(function (r) { setTimeout(r, reduced ? 0 : ms); }); }
+
+      var idx = 0;
+      var running = false;
+
+      function runOnce() {
+        if (running) return;
+        running = true;
+        var ex = script[idx];
+        chat.innerHTML = '';
+
+        var u = makeMsg('user');
+        chat.appendChild(u.wrap);
+        typeInto(u.body, ex.user, 28).then(function () {
+          return sleep(700);
+        }).then(function () {
+          var a = makeMsg('atlas');
+          chat.appendChild(a.wrap);
+          return typeInto(a.body, ex.atlas, 16);
+        }).then(function () {
+          return sleep(reduced ? 0 : 4200);
+        }).then(function () {
+          idx = (idx + 1) % script.length;
+          running = false;
+          runOnce();
+        });
+      }
+
+      // Trigger on scroll-into-view, once.
+      var started = false;
+      if (!('IntersectionObserver' in window) || reduced) {
+        runOnce();
+      } else {
+        var io = new IntersectionObserver(function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting && !started) {
+              started = true;
+              runOnce();
+              io.disconnect();
+            }
+          });
+        }, { threshold: 0.35 });
+        io.observe(chat);
+      }
+    })();
+  </script>
+
 </body>
 </html>

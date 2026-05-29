@@ -161,12 +161,88 @@ export interface RefreshResult {
   removed: number;
   unchanged: number;
   error?: string;
+  // Step-by-step trace fields populated when dryRun=true. Empty in
+  // normal cron runs to keep the response shape small.
+  trace?: {
+    step: string;
+    ok: boolean;
+    detail?: string;
+  }[];
 }
 
-export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResult> {
+/**
+ * Stale-data self-check. Called at the start of every refresh. If the
+ * last successful write was more than STALE_THRESHOLD_HOURS ago, fires
+ * a fresh admin_alert (deduped 24h) so a silent failure of the inner
+ * cron path never goes more than ~36h without surfacing. This is the
+ * "defense-in-depth" layer that catches the May-9-to-May-28 silent
+ * failure pattern (cron parent runs, inner refresh throws, error is
+ * caught and console-logged, schema_injections stays stale, nobody
+ * notices until a customer asks).
+ */
+const STALE_THRESHOLD_HOURS = 36;
+
+async function checkStaleness(env: Env): Promise<{ stale: boolean; ageHours: number | null; lastAt: number | null }> {
+  try {
+    const row = await env.DB.prepare(
+      "SELECT MAX(approved_at) AS last_at FROM schema_injections " +
+      "WHERE client_slug = ? AND schema_type = 'Event' AND status = 'approved'"
+    ).bind(CLIENT_SLUG).first<{ last_at: number | null }>();
+    const lastAt = row?.last_at ?? null;
+    if (!lastAt) return { stale: true, ageHours: null, lastAt: null };
+    const now = Math.floor(Date.now() / 1000);
+    const ageHours = (now - lastAt) / 3600;
+    return { stale: ageHours > STALE_THRESHOLD_HOURS, ageHours, lastAt };
+  } catch {
+    // If we can't even query the table, treat as stale so the alert
+    // fires. Better to over-alert than silently miss a DB failure.
+    return { stale: true, ageHours: null, lastAt: null };
+  }
+}
+
+/**
+ * Refresh the HTC event-schema injections from the live /upcoming-events/
+ * page. Runs daily under runDailyTasks (cron.ts).
+ *
+ * Options:
+ *   dryRun: if true, runs the full fetch + parse + diff but skips the
+ *           D1 batch write AND skips firing customer-feed alerts. Returns
+ *           the same RefreshResult shape PLUS a step-by-step `trace`
+ *           field so the caller can see exactly where execution stops on
+ *           failure. Used by /health/htc-events?dryrun=1 for no-auth
+ *           root-cause diagnostics.
+ *   skipStalenessCheck: if true, suppresses the up-front staleness alert.
+ *           Useful when called manually after a known fix so the
+ *           previous-state stale alert doesn't fire one last time.
+ */
+export async function refreshHawaiiTheatreEvents(
+  env: Env,
+  opts: { dryRun?: boolean; skipStalenessCheck?: boolean } = {},
+): Promise<RefreshResult> {
+  const dryRun = !!opts.dryRun;
   const result: RefreshResult = {
     fetched: 0, parsed: 0, complete: 0, added: 0, removed: 0, unchanged: 0,
+    trace: dryRun ? [] : undefined,
   };
+  const trace = (step: string, ok: boolean, detail?: string) => {
+    if (dryRun && result.trace) result.trace.push({ step, ok, detail });
+  };
+
+  // Up-front staleness check. Fires an admin_alert if data is older
+  // than STALE_THRESHOLD_HOURS (~36h). This is the "defense-in-depth"
+  // monitor that catches silent inner-cron failures. Even if THIS
+  // refresh succeeds, we still want a record that the prior state
+  // was stale so we can investigate.
+  const staleness = await checkStaleness(env);
+  trace("staleness_check", true, `last_age_hours=${staleness.ageHours?.toFixed(1) ?? "null"} stale=${staleness.stale}`);
+  if (!dryRun && !opts.skipStalenessCheck && staleness.stale) {
+    await createAlertIfFresh(env, {
+      clientSlug: CLIENT_SLUG,
+      type: "htc_events_stale",
+      title: `HTC events: stale data (${staleness.ageHours ? staleness.ageHours.toFixed(1) + "h" : "never written"})`,
+      detail: `schema_injections last refresh was ${staleness.ageHours ? staleness.ageHours.toFixed(1) + " hours" : "never"} ago. Threshold is ${STALE_THRESHOLD_HOURS}h. The daily refresh has been silently failing or being skipped. Check /health/htc-events?dryrun=1 for the step-by-step diagnostic.`,
+    });
+  }
 
   let html: string;
   try {
@@ -176,19 +252,24 @@ export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResul
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     html = await resp.text();
     result.fetched = html.length;
+    trace("fetch", true, `${html.length} bytes`);
   } catch (e) {
     result.error = `fetch failed: ${e}`;
-    await createAlertIfFresh(env, {
-      clientSlug: CLIENT_SLUG,
-      type: "htc_events_fetch_failed",
-      title: "HTC events scrape: fetch failed",
-      detail: `Could not fetch ${SOURCE_URL}: ${e}`,
-    });
+    trace("fetch", false, String(e));
+    if (!dryRun) {
+      await createAlertIfFresh(env, {
+        clientSlug: CLIENT_SLUG,
+        type: "htc_events_fetch_failed",
+        title: "HTC events scrape: fetch failed",
+        detail: `Could not fetch ${SOURCE_URL}: ${e}`,
+      });
+    }
     return result;
   }
 
   const raw = parseEvents(html);
   result.parsed = raw.length;
+  trace("parse", raw.length > 0, `chunks=${raw.length}`);
 
   const todayIso = new Date().toISOString().slice(0, 10);
   const fresh: EventSchema[] = [];
@@ -197,24 +278,46 @@ export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResul
     if (s) fresh.push(s);
   }
   result.complete = fresh.length;
+  trace("schema_build", fresh.length > 0, `complete=${fresh.length} of ${raw.length}`);
 
   // If parser produces zero rows from a non-empty page, the markup
   // probably changed -- bail out before we wipe live schemas.
   if (result.fetched > 1000 && fresh.length === 0) {
     result.error = "parser produced 0 events from a non-empty page";
-    await createAlertIfFresh(env, {
-      clientSlug: CLIENT_SLUG,
-      type: "htc_events_parser_drift",
-      title: "HTC events scrape: parser drift suspected",
-      detail: `Page returned ${result.fetched} bytes but parser produced 0 events. Check selectors in htc-events-cron.ts.`,
-    });
+    if (!dryRun) {
+      await createAlertIfFresh(env, {
+        clientSlug: CLIENT_SLUG,
+        type: "htc_events_parser_drift",
+        title: "HTC events scrape: parser drift suspected",
+        detail: `Page returned ${result.fetched} bytes but parser produced 0 events. Check selectors in htc-events-cron.ts.`,
+      });
+    }
     return result;
   }
 
   // Diff against existing rows so the alert log shows what changed.
-  const existing = (await env.DB.prepare(
-    "SELECT json_ld FROM schema_injections WHERE client_slug = ? AND schema_type = 'Event'"
-  ).bind(CLIENT_SLUG).all<{ json_ld: string }>()).results;
+  // Wrapped in try/catch (previously uncaught) so D1 SELECT failures
+  // surface as admin_alerts instead of silently propagating up to
+  // cron.ts and getting swallowed by its outer catch.
+  let existing: { json_ld: string }[] = [];
+  try {
+    existing = (await env.DB.prepare(
+      "SELECT json_ld FROM schema_injections WHERE client_slug = ? AND schema_type = 'Event'"
+    ).bind(CLIENT_SLUG).all<{ json_ld: string }>()).results;
+    trace("d1_select_existing", true, `rows=${existing.length}`);
+  } catch (e) {
+    result.error = `d1 SELECT failed: ${e}`;
+    trace("d1_select_existing", false, String(e));
+    if (!dryRun) {
+      await createAlertIfFresh(env, {
+        clientSlug: CLIENT_SLUG,
+        type: "htc_events_db_failed",
+        title: "HTC events scrape: D1 SELECT failed",
+        detail: `Could not read existing schema_injections rows for diff: ${e}. Inner refresh has likely been failing silently here.`,
+      });
+    }
+    return result;
+  }
 
   const existingIds = new Set<string>();
   for (const row of existing) {
@@ -234,6 +337,8 @@ export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResul
 
   // Idempotent rewrite. Wrapped so a single statement failing doesn't
   // leave us with a partial set. D1 batch is atomic across statements.
+  // Dry-run mode skips the actual write so the caller can see what
+  // WOULD happen without disturbing live data.
   const stmts = [
     env.DB.prepare(
       "DELETE FROM schema_injections WHERE client_slug = ? AND schema_type = 'Event'"
@@ -246,13 +351,31 @@ export async function refreshHawaiiTheatreEvents(env: Env): Promise<RefreshResul
       "VALUES (?, 'Event', ?, ?, 'approved', unixepoch())"
     ).bind(CLIENT_SLUG, JSON.stringify(s), tp));
   }
-  await env.DB.batch(stmts);
+  if (dryRun) {
+    trace("d1_batch_write", true, `SKIPPED (dryrun); ${stmts.length} statements prepared`);
+  } else {
+    try {
+      await env.DB.batch(stmts);
+      trace("d1_batch_write", true, `${stmts.length} statements committed`);
+    } catch (e) {
+      result.error = `d1 batch failed: ${e}`;
+      trace("d1_batch_write", false, String(e));
+      await createAlertIfFresh(env, {
+        clientSlug: CLIENT_SLUG,
+        type: "htc_events_db_failed",
+        title: "HTC events scrape: D1 batch write failed",
+        detail: `Batch write of ${stmts.length} statements failed: ${e}. This is most likely where the silent 18-day failure pattern lives.`,
+      });
+      return result;
+    }
+  }
 
   // Surface real state changes in the customer-visible activity
   // feed. Quiet runs (only unchanged) don't write an alert -- no
   // signal value, just feed noise. createAlertIfFresh dedupes
-  // within 24h so manual triggers don't multi-post.
-  if (result.added > 0 || result.removed > 0) {
+  // within 24h so manual triggers don't multi-post. Skipped on
+  // dryRun so diagnostic calls don't pollute Greg's activity feed.
+  if (!dryRun && (result.added > 0 || result.removed > 0)) {
     const parts: string[] = [];
     if (result.added > 0) parts.push(`${result.added} added`);
     if (result.removed > 0) parts.push(`${result.removed} removed`);

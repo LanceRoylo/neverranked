@@ -974,7 +974,15 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
     await env.DB.prepare(
       `INSERT INTO citation_snapshots
        (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(client_slug, week_start) DO UPDATE SET
+         total_queries = excluded.total_queries,
+         client_citations = excluded.client_citations,
+         citation_share = excluded.citation_share,
+         top_competitors = excluded.top_competitors,
+         keyword_breakdown = excluded.keyword_breakdown,
+         engines_breakdown = excluded.engines_breakdown,
+         created_at = excluded.created_at`
     )
       .bind(
         clientSlug,
@@ -1433,7 +1441,15 @@ export async function buildClientSnapshot(
   await env.DB.prepare(
     `INSERT INTO citation_snapshots
      (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(client_slug, week_start) DO UPDATE SET
+       total_queries = excluded.total_queries,
+       client_citations = excluded.client_citations,
+       citation_share = excluded.citation_share,
+       top_competitors = excluded.top_competitors,
+       keyword_breakdown = excluded.keyword_breakdown,
+       engines_breakdown = excluded.engines_breakdown,
+       created_at = excluded.created_at`
   ).bind(
     clientSlug,
     weekStart,

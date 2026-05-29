@@ -29,4 +29,10 @@ Disallow: /audit-template/
 Disallow: /scripts/
 Disallow: /content/
 
+# Private 1:1 deliverables (also marked noindex on the pages themselves)
+Disallow: /pitch/
+
+# Static design preview (also marked noindex on the page itself)
+Disallow: /dashboard-preview/
+
 Sitemap: https://neverranked.com/sitemap.xml

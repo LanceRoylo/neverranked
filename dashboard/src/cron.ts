@@ -669,6 +669,40 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] nvi: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Monthly memo drafts. On the 24th (the day before the 25th delivery
+  // cadence), draft a memo for every active/pilot customer and drop them
+  // in the admin review queue. Drafts land with delivered_at NULL and are
+  // INVISIBLE to the customer and to Atlas until Lance approves each one
+  // at /admin/memos. Nothing is auto-delivered: the generator is the
+  // blank-page work, the approval click is the judgment. One alert fires
+  // summarizing the batch so Lance knows the queue is ready.
+  try {
+    if (new Date().getUTCDate() === 24) {
+      const { generateAllMemoDrafts } = await import("./lib/memo-generator");
+      const results = await generateAllMemoDrafts(env, new Date());
+      const ok = results.filter((r) => r.ok);
+      const failed = results.filter((r) => !r.ok);
+      const flagged = ok.filter((r) => r.unverifiedNumbers || r.toneViolations);
+      console.log(`[cron] memo-drafts: ${ok.length} drafted, ${failed.length} failed, ${flagged.length} flagged`);
+      if (results.length > 0) {
+        const { createAlert } = await import("./admin-alerts");
+        const lines = [
+          `${ok.length} memo draft(s) ready for review at /admin/memos.`,
+          flagged.length ? `${flagged.length} have figures or tone to double-check.` : ``,
+          failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${f.error})`).join(", ")}` : ``,
+        ].filter(Boolean);
+        await createAlert(env, {
+          clientSlug: "_all",
+          type: "memo_drafts_ready",
+          title: `${ok.length} monthly memo draft(s) ready for review`,
+          detail: lines.join("\n"),
+        });
+      }
+    }
+  } catch (e) {
+    console.log(`[cron] memo-drafts: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
   // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
   // turnover is fast enough that daily refresh is the right cadence.
