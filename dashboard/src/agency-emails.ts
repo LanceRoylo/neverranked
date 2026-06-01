@@ -12,6 +12,7 @@
 
 import type { Env, Agency, Domain } from "./types";
 import { logEmailDelivery, emailGloballyPaused } from "./email";
+import { customerAuthLink } from "./lib/auth-link";
 
 const BRAND_FROM = "NeverRanked <hello@neverranked.com>";
 
@@ -594,8 +595,7 @@ export async function sendAgencyOnboardingEmail(
   args: { to: string; contactName: string; agencyName: string; magicLinkToken: string },
 ): Promise<void> {
   const { to, contactName, agencyName, magicLinkToken } = args;
-  const origin = (env as any).DASHBOARD_ORIGIN || "https://app.neverranked.com";
-  const loginUrl = `${origin}/auth/verify?token=${magicLinkToken}`;
+  const loginUrl = customerAuthLink(magicLinkToken);
   const firstName = (contactName || "").split(" ")[0] || "there";
 
   const subject = `Welcome to NeverRanked, ${escHtml(agencyName)}`;

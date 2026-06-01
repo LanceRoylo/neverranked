@@ -1717,10 +1717,10 @@ export default {
         if (!token) {
           return new Response(JSON.stringify({ error: "could not create magic link", reason: "user not found OR rate limited (3 emails per 15min)" }, null, 2), { status: 400, headers: { "content-type": "application/json" } });
         }
-        const origin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
+        const { customerAuthLink } = await import("./lib/auth-link");
         return new Response(JSON.stringify({
           email: targetEmail,
-          login_url: `${origin}/auth/verify?token=${token}`,
+          login_url: customerAuthLink(token),
           ttl_hours: 72,
         }, null, 2), { headers: { "content-type": "application/json" } });
       } catch (e: unknown) {
@@ -2380,6 +2380,12 @@ export default {
       return new Response(html, { headers: { "content-type": "text/html; charset=utf-8" } });
     }
     // NVI inbox + actions
+    // Grant a customer access to their dashboard + Atlas (one-click
+    // provision + sign-in link). The "customer says yes" button.
+    if (path === "/admin/grant-access" && method === "GET" && user.role === "admin") {
+      const { handleGrantAccess } = await import("./routes/admin-access");
+      return handleGrantAccess(user, env, url);
+    }
     // Monthly memo review + approval surface.
     if (path === "/admin/memos" && method === "GET" && user.role === "admin") {
       const { handleMemoInbox } = await import("./routes/admin-memos");

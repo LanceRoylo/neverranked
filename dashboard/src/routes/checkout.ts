@@ -14,6 +14,7 @@
 import type { Env, User, Domain } from "../types";
 import { layout, html, redirect } from "../render";
 import { createMagicLink } from "../auth";
+import { customerAuthLink } from "../lib/auth-link";
 import { scanDomain } from "../scanner";
 import { autoGenerateRoadmap } from "../auto-provision";
 import { sendSnippetDeliveryEmail } from "../agency-emails";
@@ -857,11 +858,10 @@ export async function handleStripeWebhook(
           // way; magic link expiry just controls the auto-login window).
           const magicToken = await createMagicLink(email, env, 7 * 24 * 60 * 60);
           if (magicToken) {
-            const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
             // Pulse customers go straight into the prompt-suggester
             // onboarding screen. Other plans land on the dashboard.
             const next = plan === "pulse" ? "/onboard/pulse" : "/";
-            const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent(next)}`;
+            const loginUrl = customerAuthLink(magicToken, { next });
             const planConfig = PLANS[plan];
 
             const welcomeResp = await sendViaResend(env, {
@@ -1453,8 +1453,7 @@ export async function handlePulseWaitlist(
     try {
       const magicToken = await createMagicLink(email, env, 7 * 24 * 60 * 60);
       if (magicToken) {
-        const dashboardOrigin = env.DASHBOARD_ORIGIN || "https://app.neverranked.com";
-        const loginUrl = `${dashboardOrigin}/auth/verify?token=${magicToken}&next=${encodeURIComponent("/onboard/pulse")}`;
+        const loginUrl = customerAuthLink(magicToken, { next: "/onboard/pulse" });
         const welcomeResp = await sendViaResend(env, {
           method: "POST",
           headers: {

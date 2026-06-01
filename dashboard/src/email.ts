@@ -8,6 +8,7 @@ import type { Agency, Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
 import { buildStateOfAeoBlock, type StateOfAeoLatest } from "./state-of-aeo";
+import { customerAuthLink } from "./lib/auth-link";
 
 /**
  * Global email kill switch. When EMAIL_GLOBAL_PAUSE === "1" every send
@@ -142,7 +143,7 @@ export async function sendMagicLinkEmail(
   env: Env,
   agency?: Agency | null
 ): Promise<boolean> {
-  const loginUrl = `https://app.neverranked.com/auth/verify?token=${token}`;
+  const loginUrl = customerAuthLink(token);
   const brand = brandFor(agency);
   const headerHtml = brand.logo
     ? `<p style="margin:0 0 24px"><img src="${brand.logo}" alt="${brand.name}" style="max-height:32px;max-width:240px"></p>`
