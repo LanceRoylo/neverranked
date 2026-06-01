@@ -7,6 +7,7 @@
 
 import type { Env, User } from "../types";
 import { layout, html, esc, redirect } from "../render";
+import { isCustomerVisibleAlert } from "../admin-alerts";
 
 interface Alert {
   id: number;
@@ -118,10 +119,16 @@ export async function handleAlerts(user: User, env: Env): Promise<Response> {
 
   let alerts: Alert[];
   if (clientSlug) {
+    // CUSTOMER alerts page: gate out internal ops/infra alert types so a
+    // customer never sees ops diagnostics (htc_events_*, atlas_flag,
+    // deploy, cron, etc.). Fetch extra and filter so internal bursts can't
+    // crowd genuine wins out of the visible 50. (Leak fixed 2026-06-01.)
     alerts = (await env.DB.prepare(
-      "SELECT * FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 50"
-    ).bind(clientSlug).all<Alert>()).results;
+      "SELECT * FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 120"
+    ).bind(clientSlug).all<Alert>())
+      .results.filter((a) => isCustomerVisibleAlert(a.type)).slice(0, 50);
   } else {
+    // ADMIN: sees everything, including internal ops alerts.
     alerts = (await env.DB.prepare(
       "SELECT * FROM admin_alerts ORDER BY created_at DESC LIMIT 100"
     ).all<Alert>()).results;

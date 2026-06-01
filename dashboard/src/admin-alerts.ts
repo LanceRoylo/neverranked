@@ -15,6 +15,47 @@
 
 import type { Env } from "./types";
 
+// Alert types that are INTERNAL ops/infra signals for Lance only. They
+// live in admin_alerts keyed by client_slug (so admin views can filter by
+// customer), but they must NEVER surface in a customer-facing feed. Any
+// customer-facing read MUST gate on isCustomerVisibleAlert().
+//
+// This list is the fix for the 2026-06-01 leak: HTC's customer activity
+// feed was showing "htc_events_stale ... Check /health/htc-events?dryrun=1"
+// (raw ops language) because the feed read admin_alerts with no type gate.
+//
+// Default posture is permissive (show), so genuine customer events with
+// dynamic suffixes (grade_reached_C/B/A, phase_completed_1/2/...) surface
+// without needing to be enumerated. ANY new internal/ops alert type MUST
+// be added here, or it will leak to customers.
+const INTERNAL_ALERT_TYPES = new Set<string>([
+  "atlas_flag",            // flags routed to Lance
+  "memo_drafts_ready",     // monthly memo draft queue
+  "deploy",                // deploy markers
+  "cron",                  // cron status
+  "cron_activated",        // cron activation
+  "gsc_token_dead",        // GSC auth expiry (ops)
+  "content_queue_low",     // content pipeline ops
+  "comp_expiry_marker",    // comp/billing marker
+  "audit_qa_run",          // internal QA audits
+  "nap_audit",             // internal NAP QA
+  "new_issue",             // ops issue tracker
+  "agency_apply_submit",   // agency funnel ops
+  "agency_onboarding",     // agency funnel ops
+]);
+
+/**
+ * True if an alert type is safe to show in a CUSTOMER-facing surface
+ * (activity feed, digest). Internal ops/infra alerts return false. The
+ * htc_events_* family is always internal (legacy snippet maintenance
+ * plumbing the customer should never see).
+ */
+export function isCustomerVisibleAlert(type: string | null | undefined): boolean {
+  if (!type) return false;
+  if (type.startsWith("htc_events_")) return false;
+  return !INTERNAL_ALERT_TYPES.has(type);
+}
+
 export interface AlertInput {
   clientSlug: string;
   type: string;

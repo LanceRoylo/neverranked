@@ -9,6 +9,7 @@
 import type { Env, User, Domain, ScanResult, CitationSnapshot, GscSnapshot, RoadmapItem, RoadmapPhase } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
+import { isCustomerVisibleAlert } from "../admin-alerts";
 
 export async function handleSummary(
   slug: string,
@@ -84,10 +85,13 @@ export async function handleSummary(
   const inProgressItems = allItems.filter(i => i.status === "in_progress").length;
   const roadmapPct = totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : 0;
 
-  // Recent alerts (milestones and wins)
+  // Recent alerts (milestones and wins). Customer-facing, so gate out
+  // internal ops/infra alert types (see isCustomerVisibleAlert). Fetch
+  // extra and filter so internal bursts can't crowd out real wins.
   const recentAlerts = (await env.DB.prepare(
-    "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 5"
-  ).bind(slug).all<{ type: string; title: string; detail: string | null; created_at: number }>()).results;
+    "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 25"
+  ).bind(slug).all<{ type: string; title: string; detail: string | null; created_at: number }>())
+    .results.filter((a) => isCustomerVisibleAlert(a.type)).slice(0, 5);
 
   // Recently completed roadmap items (last 2 weeks)
   const twoWeeksAgo = Math.floor(Date.now() / 1000) - 14 * 86400;

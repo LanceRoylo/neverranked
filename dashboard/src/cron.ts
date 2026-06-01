@@ -703,11 +703,14 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] memo-drafts: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Hawaii Theatre Center: rescrape /upcoming-events/ and rewrite
-  // Event schema rows. Cheap (one fetch + ~30 D1 writes) and event
-  // turnover is fast enough that daily refresh is the right cadence.
-  // Self-contained: a parser-drift safety check prevents wiping live
-  // schemas if the upstream markup changes.
+  // NOTE: the Hawaii Theatre Center event-schema refresh used to run here.
+  // It was moved to its own cron invocation ("45 6 * * *", see scheduled()
+  // in index.ts) on 2026-06-01 because it was failing every day with "Too
+  // many subrequests by single Worker invocation": by the time it ran at
+  // the tail of this heavy batch, the budget was exhausted and its fetch
+  // threw. Its own invocation gives it a fresh budget. Same fix as the
+  // weekly-summary-email split. Do not re-add it here.
+
   // Roadmap reconciler: mark schema-category roadmap items done
   // when the corresponding schema_type is in approved
   // schema_injections. This is the structural fix for the
@@ -724,17 +727,6 @@ export async function runDailyTasks(env: Env): Promise<void> {
     );
   } catch (e) {
     console.log(`[cron] roadmap-reconciler failed: ${e}`);
-  }
-  try {
-    const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
-    const r = await refreshHawaiiTheatreEvents(env);
-    console.log(
-      `[cron] htc-events: parsed=${r.parsed} complete=${r.complete} ` +
-      `added=${r.added} removed=${r.removed} unchanged=${r.unchanged}` +
-      (r.error ? ` error=${r.error}` : "")
-    );
-  } catch (e) {
-    console.log(`[cron] htc-events failed: ${e}`);
   }
   // QA cross-system consistency audit. Verifies marketing claims on
   // public surfaces still match the underlying production data

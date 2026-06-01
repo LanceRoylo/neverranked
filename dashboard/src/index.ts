@@ -1035,10 +1035,13 @@ export default {
     // Compute nav badges (lightweight counts for notification dots)
     try {
       if (user.role === "client" && user.client_slug) {
-        const alertCount = await env.DB.prepare(
-          "SELECT COUNT(*) as cnt FROM admin_alerts WHERE client_slug = ? AND read_at IS NULL"
-        ).bind(user.client_slug).first<{ cnt: number }>();
-        user._alertCount = alertCount?.cnt || 0;
+        // Count only customer-visible alert types so the nav badge never
+        // counts internal ops/infra alerts (htc_events_*, deploy, etc.).
+        const { isCustomerVisibleAlert } = await import("./admin-alerts");
+        const unread = (await env.DB.prepare(
+          "SELECT type FROM admin_alerts WHERE client_slug = ? AND read_at IS NULL"
+        ).bind(user.client_slug).all<{ type: string }>()).results;
+        user._alertCount = unread.filter((a) => isCustomerVisibleAlert(a.type)).length;
 
         const rmCount = await env.DB.prepare(
           "SELECT COUNT(*) as cnt FROM roadmap_items WHERE client_slug = ? AND status = 'in_progress'"
@@ -3778,6 +3781,31 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
           })
         );
       }
+      return;
+    }
+
+    // --- Dedicated HTC event-schema refresh invocation (06:45) ---
+    // Split out of runDailyTasks 2026-06-01 for the same reason as the
+    // weekly summary: it was failing every day with "Too many subrequests
+    // by single Worker invocation" because the heavy 06:00 batch exhausted
+    // the budget before its fetch ran. Its own invocation gives it a fresh
+    // budget. This maintains HTC's legacy event-snippet (measurement-only
+    // customers do not get this; it is HTC's grandfathered free maintenance).
+    if (cron === "45 6 * * *") {
+      ctx.waitUntil(
+        withCronLogging(env, "htc_events_refresh", async () => {
+          const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
+          const r = await refreshHawaiiTheatreEvents(env);
+          console.log(
+            `[cron 06:45] htc-events: parsed=${r.parsed} complete=${r.complete} ` +
+            `added=${r.added} removed=${r.removed} unchanged=${r.unchanged}` +
+            (r.error ? ` error=${r.error}` : "")
+          );
+          if (r.error) throw new Error(r.error);
+        }).catch((e) => {
+          console.log(`[cron 06:45] htc_events_refresh failed: ${e instanceof Error ? e.message : e}`);
+        })
+      );
       return;
     }
 

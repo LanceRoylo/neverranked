@@ -10,6 +10,7 @@ import { autoCompleteRoadmapItems } from "../auto-complete";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
 import { buildDomainStatusStrip } from "../status";
+import { isCustomerVisibleAlert } from "../admin-alerts";
 import { computeCitationLift, renderCitationLiftBlock } from "../citation-lift";
 
 /** Build a getting-started checklist for new clients */
@@ -936,10 +937,17 @@ async function buildActivityTimeline(domain: Domain, env: Env): Promise<string> 
     }
   }
 
-  // 2. Admin alerts for this client (last 10)
+  // 2. Customer-visible alerts for this client (last 10).
+  // admin_alerts holds BOTH customer events and internal ops/infra signals
+  // (htc_events_*, atlas_flag, deploy, cron, etc.) keyed by client_slug.
+  // This is a CUSTOMER-facing feed, so we gate every row through
+  // isCustomerVisibleAlert(). Fetch extra and filter in JS so a burst of
+  // internal alerts can't crowd genuine customer events out of the top 10.
+  // (Leak fixed 2026-06-01: customers were seeing raw ops diagnostics.)
   const alerts = (await env.DB.prepare(
-    "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 10"
-  ).bind(domain.client_slug).all<{ type: string; title: string; detail: string | null; created_at: number }>()).results;
+    "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 40"
+  ).bind(domain.client_slug).all<{ type: string; title: string; detail: string | null; created_at: number }>())
+    .results.filter((a) => isCustomerVisibleAlert(a.type)).slice(0, 10);
 
   for (const a of alerts) {
     let icon = "--";

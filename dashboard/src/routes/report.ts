@@ -9,6 +9,7 @@ import type { Env, User, Domain, ScanResult, RoadmapItem, CitationSnapshot, GscS
 import { layout, html, esc, redirect, safeParse, shortDate } from "../render";
 import { sendViaResend } from "../email";
 import { canAccessClient } from "../agency";
+import { isCustomerVisibleAlert } from "../admin-alerts";
 
 interface MonthBounds {
   label: string;       // "April 2026"
@@ -196,9 +197,11 @@ export async function handleReport(clientSlug: string, monthSlug: string, user: 
   // ------------------------------------------------------------------
   // 7. ALERTS THIS MONTH
   // ------------------------------------------------------------------
+  // Customer-facing monthly report: gate out internal ops/infra alerts.
   const alerts = (await env.DB.prepare(
     "SELECT type, title, detail, created_at FROM admin_alerts WHERE client_slug = ? AND created_at >= ? AND created_at < ? ORDER BY created_at DESC"
-  ).bind(clientSlug, bounds.startTs, bounds.endTs).all<{ type: string; title: string; detail: string | null; created_at: number }>()).results;
+  ).bind(clientSlug, bounds.startTs, bounds.endTs).all<{ type: string; title: string; detail: string | null; created_at: number }>())
+    .results.filter((a) => isCustomerVisibleAlert(a.type));
 
   // ------------------------------------------------------------------
   // BUILD THE PAGE
