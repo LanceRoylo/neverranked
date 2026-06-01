@@ -1,0 +1,142 @@
+<!doctype html>
+<!--
+  Referral earnings-at-scale one-pager for Katy (and future referrers).
+  Private asset. Open locally or screen-share / export to PDF to show.
+  Numbers assume single-market deals at current pricing
+  ($4,500 kickoff + $1,500/mo per category) and the agreed fee
+  (20% of kickoff = $900 one-time, 10% of monthly = $150/mo recurring).
+  Multi-market clients count as multiple. Edit the FEE constants below
+  if the structure changes.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Referral earnings &middot; NeverRanked</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0c;
+    --panel: #131316;
+    --line: #1f1f23;
+    --gold: #d4c596;
+    --gold-bright: #e8c767;
+    --text: #e8e8ea;
+    --soft: #b9b9bd;
+    --dim: #6a6a70;
+    --green: #7bdca0;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); }
+  body {
+    font-family: Georgia, "Times New Roman", serif;
+    color: var(--text);
+    line-height: 1.6;
+    padding: 56px 24px 80px;
+    display: flex;
+    justify-content: center;
+  }
+  main { max-width: 760px; width: 100%; }
+  .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 14px; }
+  h1 { font-size: 34px; font-weight: 400; letter-spacing: -0.01em; margin: 0 0 14px; line-height: 1.15; }
+  .lede { font-size: 18px; color: var(--soft); margin: 0 0 8px; }
+  .basis { font-family: var(--mono); font-size: 13px; color: var(--dim); margin: 18px 0 36px; padding: 14px 18px; background: var(--panel); border-left: 2px solid var(--gold-dim, #4a3d18); border-radius: 4px; }
+  .basis b { color: var(--gold); font-weight: 400; }
+
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 8px; }
+  thead th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); text-align: right; padding: 10px 14px 12px; border-bottom: 1px solid var(--line); font-weight: 400; }
+  thead th:first-child { text-align: left; }
+  tbody td { padding: 16px 14px; border-bottom: 1px solid var(--line); text-align: right; font-variant-numeric: tabular-nums; font-size: 17px; }
+  tbody td:first-child { text-align: left; font-family: var(--mono); font-size: 14px; color: var(--soft); }
+  tbody tr.hot { background: linear-gradient(90deg, rgba(212,197,150,0.07), rgba(212,197,150,0.02)); }
+  tbody tr.hot td:first-child { color: var(--gold-bright); }
+  .big { color: var(--gold); }
+  .rec { color: var(--green); }
+  .yr1 { font-size: 19px; }
+  caption { caption-side: bottom; font-size: 12px; color: var(--dim); padding-top: 14px; text-align: left; font-family: var(--mono); }
+
+  .callout { margin: 40px 0 0; padding: 24px 26px; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  .callout h2 { font-size: 19px; font-weight: 400; color: var(--gold); margin: 0 0 10px; }
+  .callout p { margin: 0 0 12px; color: var(--soft); font-size: 16px; }
+  .callout p:last-child { margin-bottom: 0; }
+  .effort { margin-top: 26px; font-size: 17px; color: var(--text); }
+  .effort b { color: var(--gold-bright); font-weight: 400; }
+  .foot { margin-top: 40px; font-family: var(--mono); font-size: 11.5px; color: var(--dim); line-height: 1.7; border-top: 1px solid var(--line); padding-top: 18px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">NeverRanked &middot; Referral</div>
+  <h1>What you earn as you send more.</h1>
+  <p class="lede">You qualify a business and introduce them to me. That is the whole job. I handle the pitch, the pricing, the work, and the relationship.</p>
+
+  <div class="basis">
+    You earn on every customer that closes: <b>$900 up front</b> (a cut of their setup fee) plus <b>$150 a month</b> for as long as they stay a customer. Per market. The monthly is the part that compounds.
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Customers you've sent</th>
+        <th>Up front</th>
+        <th>Every month</th>
+        <th>Year one</th>
+        <th>Every year after</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td class="big">$900</td>
+        <td class="rec">$150</td>
+        <td class="yr1">$2,700</td>
+        <td>$1,800</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td class="big">$2,700</td>
+        <td class="rec">$450</td>
+        <td class="yr1">$8,100</td>
+        <td>$5,400</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td class="big">$4,500</td>
+        <td class="rec">$750</td>
+        <td class="yr1">$13,500</td>
+        <td>$9,000</td>
+      </tr>
+      <tr class="hot">
+        <td>10</td>
+        <td class="big">$9,000</td>
+        <td class="rec">$1,500</td>
+        <td class="yr1">$27,000</td>
+        <td>$18,000</td>
+      </tr>
+      <tr>
+        <td>20</td>
+        <td class="big">$18,000</td>
+        <td class="rec">$3,000</td>
+        <td class="yr1">$54,000</td>
+        <td>$36,000</td>
+      </tr>
+    </tbody>
+    <caption>Single-market customers at current pricing. A customer who runs more than one market counts as more than one.</caption>
+  </table>
+
+  <div class="callout">
+    <h2>The monthly is the whole point.</h2>
+    <p>The up-front cut is nice. The monthly is what builds. Every customer you send raises your monthly floor, and it keeps paying while they stay, whether you send another one that month or not.</p>
+    <p>At ten customers you are at $1,500 a month coming in, on top of the $9,000 you already banked. That is real recurring income for work you did once.</p>
+  </div>
+
+  <p class="effort">And to be clear about your side of it: <b>you qualify and you introduce. That is it.</b> No selling, no pricing, no managing the account, no learning how the product works. You open the door. I do the rest.</p>
+
+  <div class="foot">
+    Figures assume single-market deals at current pricing ($4,500 setup + $1,500/month per market) and the agreed referral terms (20% of setup, 10% of monthly while active). Actual earnings depend on which introductions become customers and how many markets each runs. Multi-market clients multiply the numbers above. Nothing here is a guarantee of a specific result.
+  </div>
+</main>
+</body>
+</html>
