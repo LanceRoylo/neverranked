@@ -3767,6 +3767,31 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     // summary's ~12 gather queries got their turn. Its own cron trigger
     // gives it its own fresh subrequest budget.
     if (cron === "30 6 * * *") {
+      // HTC event-schema refresh runs HERE (daily), NOT in the heavy 06:00
+      // batch. It was failing every day in that batch with "Too many
+      // subrequests by single Worker invocation" because the batch exhausted
+      // the budget before its fetch. This 06:30 invocation is near-idle
+      // (the weekly summary below only runs Mondays), so the HTC refresh
+      // gets an effectively fresh budget every day. It is tiny (one fetch +
+      // one batched D1 write). Cloudflare caps cron triggers at 5, so we
+      // co-host here rather than add a 5th trigger. This maintains HTC's
+      // legacy event-snippet (measurement-only customers do not get this;
+      // it is HTC's grandfathered free maintenance).
+      ctx.waitUntil(
+        withCronLogging(env, "htc_events_refresh", async () => {
+          const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
+          const r = await refreshHawaiiTheatreEvents(env);
+          console.log(
+            `[cron 06:30] htc-events: parsed=${r.parsed} complete=${r.complete} ` +
+            `added=${r.added} removed=${r.removed} unchanged=${r.unchanged}` +
+            (r.error ? ` error=${r.error}` : "")
+          );
+          if (r.error) throw new Error(r.error);
+        }).catch((e) => {
+          console.log(`[cron 06:30] htc_events_refresh failed: ${e instanceof Error ? e.message : e}`);
+        })
+      );
+      // Founder weekly summary: Mondays only.
       if (scheduledAt.getUTCDay() === 1) {
         ctx.waitUntil(
           withCronLogging(env, "weekly_summary_email", async () => {
@@ -3781,31 +3806,6 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
           })
         );
       }
-      return;
-    }
-
-    // --- Dedicated HTC event-schema refresh invocation (06:45) ---
-    // Split out of runDailyTasks 2026-06-01 for the same reason as the
-    // weekly summary: it was failing every day with "Too many subrequests
-    // by single Worker invocation" because the heavy 06:00 batch exhausted
-    // the budget before its fetch ran. Its own invocation gives it a fresh
-    // budget. This maintains HTC's legacy event-snippet (measurement-only
-    // customers do not get this; it is HTC's grandfathered free maintenance).
-    if (cron === "45 6 * * *") {
-      ctx.waitUntil(
-        withCronLogging(env, "htc_events_refresh", async () => {
-          const { refreshHawaiiTheatreEvents } = await import("./htc-events-cron");
-          const r = await refreshHawaiiTheatreEvents(env);
-          console.log(
-            `[cron 06:45] htc-events: parsed=${r.parsed} complete=${r.complete} ` +
-            `added=${r.added} removed=${r.removed} unchanged=${r.unchanged}` +
-            (r.error ? ` error=${r.error}` : "")
-          );
-          if (r.error) throw new Error(r.error);
-        }).catch((e) => {
-          console.log(`[cron 06:45] htc_events_refresh failed: ${e instanceof Error ? e.message : e}`);
-        })
-      );
       return;
     }
 
