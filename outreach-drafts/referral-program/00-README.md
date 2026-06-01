@@ -5,8 +5,7 @@ Private working folder for the NeverRanked introducer (referral) arrangement. Bu
 ## What's in here
 
 - `00-README.md` — this file: the fee, the gate checklist, the model
-- `for-referrers.html` — **the all-in-one page to send Katy.** Explains what AEO is in plain terms + answers her likely questions + shows the earnings. Open locally, screen-share, or export to PDF.
-- `earnings-at-scale.html` — numbers-only cut (the earnings tiers, no explainer). Use if you just want the money picture.
+- `for-referrers.html` — **the one page to send Katy.** Explains what AEO is in plain terms + answers her likely questions + shows the earnings tiers. Open locally, screen-share, or export to PDF.
 - `introducer-agreement.md` — the one-page agreement (template, drop in the LLC name)
 - `referrer-brief.md` — internal: how a referrer talks about NeverRanked and makes a warm intro without pitching
 - `intro-template.md` — ready warm-intro wording (generic + Ruth Law specific)
