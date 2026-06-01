@@ -40,6 +40,11 @@ export interface Signals {
   /** Outbound links matched against the trust-profile platform list,
    *  deduped, in canonical "platform: url" form. Empty if none found. */
   trust_profile_links: { platform: string; url: string }[];
+  /** True when the served HTML is an empty JS shell whose content only
+   *  appears after client-side rendering. AI crawlers that don't execute
+   *  JS see nothing to cite. When true, the per-signal "missing" flags are
+   *  suppressed in favor of one clear finding (see flags.ts). */
+  client_side_rendered: boolean;
 }
 
 export interface Report {
@@ -51,6 +56,11 @@ export interface Report {
   grade: string;
   aeo_score: number;
   technical_signals: TechnicalSignal[];
+  /** Surfaced at top level so UIs and programmatic consumers (the MCP
+   *  aeo_scan tool, outreach generators) can branch on it without digging
+   *  into signals. When true, the score reflects what a non-JS crawler
+   *  sees (near-empty), and red_flags leads with the render explanation. */
+  client_side_rendered?: boolean;
 }
 
 export interface TechnicalSignal {

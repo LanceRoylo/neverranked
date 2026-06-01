@@ -17,6 +17,36 @@ export function countWords(html: string): number {
   return matches ? matches.length : 0;
 }
 
+/**
+ * Detect client-side (JavaScript) rendering: the served HTML is an almost
+ * empty shell whose content only appears after a framework runs in the
+ * browser. This matters for AEO because most AI engines and their crawlers
+ * do NOT execute JavaScript, so they receive the same empty shell we do and
+ * have nothing to cite. Without this detection the scanner would silently
+ * report a near-zero score and a laundry list of "missing" signals (no H1,
+ * thin content, no schema) that are misleading: those things exist in the
+ * rendered DOM, we just can't see them. Naming the real cause is both more
+ * honest and more useful.
+ *
+ * Conservative by design (guarded on an essentially empty body) so a normal
+ * server-rendered page can never be misclassified.
+ */
+export function detectClientSideRender(html: string, wordCount: number, h1Count: number): boolean {
+  // Only a near-empty served body is a candidate. A normal page has 50+ words.
+  if (wordCount >= 50 || h1Count > 0) return false;
+
+  // An empty app-root container the framework hydrates at runtime.
+  const appRoot = /<div[^>]+id=["'](?:root|app|__next|___gatsby|q-app|svelte|__nuxt)["']/i.test(html);
+  // Framework state/marker fingerprints.
+  const frameworkMarker = /__NEXT_DATA__|window\.__NUXT__|window\.__INITIAL_STATE__|data-reactroot|ng-version|data-server-rendered|window\.__remixContext|window\.__APOLLO_STATE__/i.test(html);
+  // ES module entry points are a strong SPA signal.
+  const moduleScript = /<script[^>]+type=["']module["']/i.test(html);
+  // A substantial shell with scripts but no readable content.
+  const bundledShell = html.length > 800 && (html.match(/<script\b/gi) || []).length >= 2;
+
+  return appRoot || frameworkMarker || moduleScript || bundledShell;
+}
+
 export function collectSchemaTypes(data: unknown, bucket: string[]): void {
   if (Array.isArray(data)) {
     for (const item of data) collectSchemaTypes(item, bucket);
@@ -184,6 +214,9 @@ export function extractMeta(html: string, targetUrl: string): Signals {
   // Word count
   const wordCount = countWords(html);
 
+  // Client-side-render detection (must run after wordCount + h1Count).
+  const clientSideRendered = detectClientSideRender(html, wordCount, h1Count);
+
   // Social proof
   const hasRatingText = /(\d[\.,]?\d?)\s*(?:stars?|\/\s*5|out of 5)/i.test(html);
   const hasTestimonialText = /testimonial|review|trusted by|\d{1,3}[,.]?\d{3}\+?\s*(?:agents|users|customers|listings|clients)/i.test(html);
@@ -217,6 +250,7 @@ export function extractMeta(html: string, targetUrl: string): Signals {
     has_person_schema: hasPersonSchema,
     person_nodes: personNodes,
     trust_profile_links: trustProfileLinks,
+    client_side_rendered: clientSideRendered,
   };
 }
 

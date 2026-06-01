@@ -51,6 +51,7 @@ export function buildReport(url: string, html: string): Report {
     grade,
     aeo_score: aeoScore,
     technical_signals: technicalSignals,
+    client_side_rendered: signals.client_side_rendered,
   };
 }
 

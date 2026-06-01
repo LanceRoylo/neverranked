@@ -9,6 +9,18 @@ import type { Signals } from "./types";
 import { hasSchemaType } from "./hierarchy";
 
 export function generateRedFlags(signals: Signals): string[] {
+  // Client-side rendering short-circuit. When the served HTML is an empty
+  // JS shell, every per-signal flag below is misleading: "no H1", "thin
+  // content", "no schema" all read as broken when those things exist in the
+  // rendered DOM the user sees. The honest finding is the one cause: AI
+  // crawlers that don't run JavaScript receive the same empty shell and have
+  // nothing to cite. Lead with that and suppress the symptom noise.
+  if (signals.client_side_rendered) {
+    return [
+      "This page renders its content with JavaScript. The HTML served to crawlers is nearly empty, and most AI engines do not execute JavaScript -- so they receive the same blank shell and have nothing to cite. This is a critical AEO problem on its own. The signals below read as missing because we are seeing the empty shell the engines see, not your rendered site. Server-rendering the content (SSR, static export, or prerendering) is the fix.",
+    ];
+  }
+
   const flags: string[] = [];
 
   if (!signals.canonical) {
