@@ -1144,7 +1144,7 @@
     <div class="inner reveal">
       <div class="sec-label"><span class="n">MATH</span>What being found is worth</div>
       <h2>What is one new customer worth to you?</h2>
-      <p>NeverRanked is $1,500 a month per market. In most categories, a single new customer covers it for the better part of a year. Pick yours.</p>
+      <p>NeverRanked is $1,500 a month per market, $22,500 for the first year. A handful of new customers a year covers the whole cost. Every customer after that, named by AI because of the work, is money you would not have had otherwise. Pick your category.</p>
       <div class="roi-wrap">
         <div class="roi-pick">
           <label for="roi-industry">Your category</label>
@@ -1169,20 +1169,20 @@
         <div class="roi-out" id="roi-out">
           <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
           <div class="roi-value" id="roi-amount">$15,000</div>
-          <p class="roi-months">That covers <b id="roi-months">10 months</b> of NeverRanked. <span id="roi-months-tail">One case, and the year is more than paid for.</span></p>
+          <p class="roi-months" id="roi-breakeven">It takes <b>2 new cases</b> to cover a full year of NeverRanked. Every case after that is found money you would not have had.</p>
           <div class="roi-bars">
             <div class="roi-bar you">
               <span class="nm">One customer</span>
-              <span class="track"><span class="fill" id="roi-fill-you" style="width:100%"></span></span>
+              <span class="track"><span class="fill" id="roi-fill-you" style="width:67%"></span></span>
               <span class="amt" id="roi-amt-you">$15,000</span>
             </div>
             <div class="roi-bar cost">
-              <span class="nm">NeverRanked / mo</span>
-              <span class="track"><span class="fill" id="roi-fill-cost" style="width:10%"></span></span>
-              <span class="amt">$1,500</span>
+              <span class="nm">A year of NeverRanked</span>
+              <span class="track"><span class="fill" id="roi-fill-cost" style="width:100%"></span></span>
+              <span class="amt">$22,500</span>
             </div>
           </div>
-          <p class="roi-basis" id="roi-basis">Based on avg settlement of $40,000 to $55,000 with a 33% contingency fee. One case more than covers the entire year.</p>
+          <p class="roi-basis" id="roi-basis">Based on avg settlement of $40,000 to $55,000 with a 33% contingency fee.</p>
           <p class="roi-honest">We measure and diagnose. We do not promise customers, and AEO is an early space with no guaranteed result. This shows what one customer is worth to you, not a return we are promising. Being named by AI for the questions buyers ask is how you get found in the first place.</p>
         </div>
       </div>
@@ -1507,7 +1507,7 @@
   // values by vertical; compares against $1,500/mo. Honest framing: shows
   // the value of one customer, not a promised return.
   (function () {
-    var COST = 1500;
+    var COST_YEAR = 22500; // $4,500 setup + $1,500 x 12 = first-year all-in
     var DATA = {
       'pi-law':     { value: 15000, unit: 'case',    basis: 'Average settlement of $40,000 to $55,000 at a 33% contingency fee.' },
       financial:    { value: 40000, unit: 'client',  basis: 'Average client lifetime value over a roughly 10-year relationship at 1% AUM on a $400K portfolio.' },
@@ -1525,10 +1525,10 @@
     if (!sel) return;
     var elAmount = document.getElementById('roi-amount');
     var elUnit = document.getElementById('roi-unit');
-    var elMonths = document.getElementById('roi-months');
-    var elTail = document.getElementById('roi-months-tail');
+    var elBreak = document.getElementById('roi-breakeven');
     var elBasis = document.getElementById('roi-basis');
     var elAmtYou = document.getElementById('roi-amt-you');
+    var elFillYou = document.getElementById('roi-fill-you');
     var elFillCost = document.getElementById('roi-fill-cost');
     var toggle = document.getElementById('roi-toggle');
     var custom = document.getElementById('roi-custom');
@@ -1536,29 +1536,31 @@
 
     function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
 
-    function tailFor(months) {
-      if (months >= 24) return 'More than ' + Math.floor(months / 12) + ' years, from a single customer.';
-      if (months >= 12) return 'More than a full year, from one customer.';
-      var perYear = Math.ceil(12 / months);
-      return 'Win ' + perYear + ' a year and it more than pays for itself.';
+    function breakevenSentence(n, unit) {
+      var plural = unit + 's';
+      if (n <= 1) {
+        return 'It takes <b>a single new ' + unit + '</b> to cover a full year of NeverRanked, and then some. Every ' + unit + ' after that is found money you would not have had.';
+      }
+      return 'It takes <b>' + n + ' new ' + plural + '</b> to cover a full year of NeverRanked. Every ' + unit + ' after that is found money you would not have had.';
     }
 
     function render() {
       var d = DATA[sel.value] || DATA['pi-law'];
       var usingCustom = custom.classList.contains('show') && customVal.value && Number(customVal.value) > 0;
       var value = usingCustom ? Number(customVal.value) : d.value;
-      var months = Math.max(1, Math.round(value / COST));
+      var n = Math.max(1, Math.ceil(COST_YEAR / value));
 
       elUnit.textContent = d.unit;
       elAmount.textContent = money(value);
       elAmtYou.textContent = money(value);
-      elMonths.textContent = months + (months === 1 ? ' month' : ' months');
-      elTail.textContent = tailFor(months);
+      elBreak.innerHTML = breakevenSentence(n, d.unit);
       elBasis.textContent = usingCustom ? 'Using your own number.' : d.basis;
 
-      // Cost bar is sized relative to one customer (min 2% so it stays visible).
-      var costPct = Math.max(2, Math.min(100, (COST / value) * 100));
-      elFillCost.style.width = costPct.toFixed(1) + '%';
+      // Both bars scaled to the larger of one customer vs a year of cost,
+      // so you see at a glance how few customers cover the year.
+      var max = Math.max(value, COST_YEAR);
+      elFillYou.style.width = Math.max(3, (value / max) * 100).toFixed(1) + '%';
+      elFillCost.style.width = Math.max(3, (COST_YEAR / max) * 100).toFixed(1) + '%';
     }
 
     sel.addEventListener('change', render);

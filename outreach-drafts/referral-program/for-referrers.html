@@ -110,7 +110,7 @@
   <p>For a business that already spends to get found, finding out you are invisible in the place buyers are increasingly looking is not a nice-to-know. It is urgent.</p>
 
   <p class="q">Here is why they say yes.</p>
-  <p>You do not have to make this case. The math does. Pick a category and see what one new customer is worth to a business in it, against what NeverRanked costs them. This is the part that makes the businesses you send move quickly.</p>
+  <p>You do not have to make this case. The math does. NeverRanked runs them $1,500 a month, $22,500 for the first year. A handful of new customers covers the whole thing, and every customer after that, named by AI because of the work, is money they would not have had. Pick a category and see how few it takes.</p>
   <div class="roi-wrap">
     <div class="roi-pick">
       <label for="roi-industry">Category</label>
@@ -135,10 +135,10 @@
     <div class="roi-out">
       <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
       <div class="roi-value" id="roi-amount">$15,000</div>
-      <p class="roi-months">That covers <b id="roi-months">10 months</b> of NeverRanked. <span id="roi-months-tail">Win 2 a year and it more than pays for itself.</span></p>
+      <p class="roi-months" id="roi-breakeven">It takes <b>2 new cases</b> to cover a full year of NeverRanked. Every case after that is found money they would not have had.</p>
       <div class="roi-bars">
-        <div class="roi-bar you"><span class="nm">One customer</span><span class="track"><span class="fill" id="roi-fill-you" style="width:100%"></span></span><span class="amt" id="roi-amt-you">$15,000</span></div>
-        <div class="roi-bar cost"><span class="nm">NeverRanked / mo</span><span class="track"><span class="fill" id="roi-fill-cost" style="width:10%"></span></span><span class="amt">$1,500</span></div>
+        <div class="roi-bar you"><span class="nm">One customer</span><span class="track"><span class="fill" id="roi-fill-you" style="width:67%"></span></span><span class="amt" id="roi-amt-you">$15,000</span></div>
+        <div class="roi-bar cost"><span class="nm">A year of NeverRanked</span><span class="track"><span class="fill" id="roi-fill-cost" style="width:100%"></span></span><span class="amt">$22,500</span></div>
       </div>
       <p class="roi-basis" id="roi-basis">Average settlement of $40,000 to $55,000 at a 33% contingency fee.</p>
       <p class="roi-honest">NeverRanked measures and diagnoses. It does not promise customers, and AEO is an early space with no guaranteed result. This shows what one customer is worth, not a return anyone is promising.</p>
@@ -175,7 +175,7 @@
 </main>
 <script>
   (function () {
-    var COST = 1500;
+    var COST_YEAR = 22500; // $4,500 setup + $1,500 x 12 = first-year all-in
     var DATA = {
       'pi-law':     { value: 15000, unit: 'case',    basis: 'Average settlement of $40,000 to $55,000 at a 33% contingency fee.' },
       financial:    { value: 40000, unit: 'client',  basis: 'Average client lifetime value over a roughly 10-year relationship at 1% AUM on a $400K portfolio.' },
@@ -190,26 +190,30 @@
     };
     var sel = document.getElementById('roi-industry'); if (!sel) return;
     var elAmount = document.getElementById('roi-amount'), elUnit = document.getElementById('roi-unit'),
-        elMonths = document.getElementById('roi-months'), elTail = document.getElementById('roi-months-tail'),
+        elBreak = document.getElementById('roi-breakeven'),
         elBasis = document.getElementById('roi-basis'), elAmtYou = document.getElementById('roi-amt-you'),
-        elFillCost = document.getElementById('roi-fill-cost'), toggle = document.getElementById('roi-toggle'),
+        elFillYou = document.getElementById('roi-fill-you'), elFillCost = document.getElementById('roi-fill-cost'),
+        toggle = document.getElementById('roi-toggle'),
         custom = document.getElementById('roi-custom'), customVal = document.getElementById('roi-customval');
     function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-    function tailFor(m) {
-      if (m >= 24) return 'More than ' + Math.floor(m / 12) + ' years, from a single customer.';
-      if (m >= 12) return 'More than a full year, from one customer.';
-      return 'Win ' + Math.ceil(12 / m) + ' a year and it more than pays for itself.';
+    function breakevenSentence(n, unit) {
+      var plural = unit + 's';
+      if (n <= 1) {
+        return 'It takes <b>a single new ' + unit + '</b> to cover a full year of NeverRanked, and then some. Every ' + unit + ' after that is found money they would not have had.';
+      }
+      return 'It takes <b>' + n + ' new ' + plural + '</b> to cover a full year of NeverRanked. Every ' + unit + ' after that is found money they would not have had.';
     }
     function render() {
       var d = DATA[sel.value] || DATA['pi-law'];
       var uc = custom.classList.contains('show') && customVal.value && Number(customVal.value) > 0;
       var value = uc ? Number(customVal.value) : d.value;
-      var months = Math.max(1, Math.round(value / COST));
+      var n = Math.max(1, Math.ceil(COST_YEAR / value));
       elUnit.textContent = d.unit; elAmount.textContent = money(value); elAmtYou.textContent = money(value);
-      elMonths.textContent = months + (months === 1 ? ' month' : ' months');
-      elTail.textContent = tailFor(months);
+      elBreak.innerHTML = breakevenSentence(n, d.unit);
       elBasis.textContent = uc ? 'Using a custom number.' : d.basis;
-      elFillCost.style.width = Math.max(2, Math.min(100, (COST / value) * 100)).toFixed(1) + '%';
+      var max = Math.max(value, COST_YEAR);
+      elFillYou.style.width = Math.max(3, (value / max) * 100).toFixed(1) + '%';
+      elFillCost.style.width = Math.max(3, (COST_YEAR / max) * 100).toFixed(1) + '%';
     }
     sel.addEventListener('change', render);
     customVal.addEventListener('input', render);
