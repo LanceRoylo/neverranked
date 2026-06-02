@@ -703,6 +703,34 @@
     font-size: 14px;
     color: var(--dim);
   }
+  /* ---------- What one customer is worth (ROI) ---------- */
+  .roi-wrap { border: 1px solid #1c1c1e; border-radius: 12px; background: var(--bg); padding: 30px 28px 28px; margin-top: 8px; }
+  .roi-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
+  .roi-pick label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
+  .roi-pick select { background: var(--panel); border: 1px solid #2a2a2e; color: var(--text); font-family: Georgia, serif; font-size: 16px; padding: 11px 14px; border-radius: 7px; cursor: pointer; min-width: 230px; }
+  .roi-pick select:hover { border-color: #3a3a3e; }
+  .roi-pick select:focus { border-color: var(--gold); outline: none; }
+  .roi-out { margin-top: 26px; }
+  .roi-lead { font-size: 17px; color: var(--soft); margin: 0 0 4px; }
+  .roi-value { font-size: 52px; line-height: 1.05; color: var(--gold); letter-spacing: -0.01em; margin: 2px 0 16px; font-variant-numeric: tabular-nums; }
+  .roi-months { font-size: 19px; color: var(--text); margin: 0 0 22px; }
+  .roi-months b { color: var(--gold); font-weight: 400; }
+  .roi-bars { display: flex; flex-direction: column; gap: 12px; margin: 0 0 22px; }
+  .roi-bar { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 14px; }
+  .roi-bar .nm { font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); text-align: right; }
+  .roi-bar .track { height: 10px; background: #16161a; border-radius: 6px; overflow: hidden; }
+  .roi-bar .fill { height: 100%; border-radius: 6px; transition: width 620ms var(--ease-out); }
+  .roi-bar.you .fill { background: linear-gradient(90deg, #d4c596, #e8d9a8); }
+  .roi-bar.cost .fill { background: #3a3a3e; }
+  .roi-bar .amt { font-family: var(--mono); font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+  .roi-basis { font-size: 13.5px; color: var(--dim); margin: 0 0 18px; line-height: 1.6; }
+  .roi-honest { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--dim); border-left: 2px solid #2a2a2e; padding-left: 14px; margin: 0 0 22px; line-height: 1.7; }
+  .roi-adjust { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
+  .roi-custom { display: none; margin: 14px 0 0; align-items: center; gap: 10px; font-size: 15px; color: var(--soft); }
+  .roi-custom.show { display: flex; flex-wrap: wrap; }
+  .roi-custom input { background: var(--panel); border: 1px solid #2a2a2e; color: var(--text); font-family: var(--mono); font-size: 15px; padding: 9px 12px; border-radius: 6px; width: 130px; }
+  .roi-custom input:focus { border-color: var(--gold); outline: none; }
+  @media (max-width: 560px) { .roi-value { font-size: 42px; } .roi-bar { grid-template-columns: 92px 1fr auto; } }
 </style>
 </head>
 <body>
@@ -1111,6 +1139,56 @@
     </div>
   </section>
 
+  <!-- What one customer is worth -->
+  <section class="section" id="worth">
+    <div class="inner reveal">
+      <div class="sec-label"><span class="n">MATH</span>What being found is worth</div>
+      <h2>What is one new customer worth to you?</h2>
+      <p>NeverRanked is $1,500 a month per market. In most categories, a single new customer covers it for the better part of a year. Pick yours.</p>
+      <div class="roi-wrap">
+        <div class="roi-pick">
+          <label for="roi-industry">Your category</label>
+          <select id="roi-industry" aria-label="Choose your industry">
+            <option value="pi-law">Personal Injury Law</option>
+            <option value="financial">Financial Advisory</option>
+            <option value="family-law">Family Law</option>
+            <option value="dentist">Dental Practice</option>
+            <option value="realestate">Real Estate</option>
+            <option value="roofing">Roofing</option>
+            <option value="medspa">Med Spa / Aesthetics</option>
+            <option value="hvac">HVAC</option>
+            <option value="chiro">Chiropractic / PT</option>
+            <option value="restaurant">Restaurant</option>
+          </select>
+          <button type="button" class="roi-adjust" id="roi-toggle">Adjust the numbers</button>
+        </div>
+        <div class="roi-custom" id="roi-custom">
+          <span>Your average customer is worth $</span>
+          <input type="number" id="roi-customval" inputmode="numeric" placeholder="15000" min="0">
+        </div>
+        <div class="roi-out" id="roi-out">
+          <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
+          <div class="roi-value" id="roi-amount">$15,000</div>
+          <p class="roi-months">That covers <b id="roi-months">10 months</b> of NeverRanked. <span id="roi-months-tail">One case, and the year is more than paid for.</span></p>
+          <div class="roi-bars">
+            <div class="roi-bar you">
+              <span class="nm">One customer</span>
+              <span class="track"><span class="fill" id="roi-fill-you" style="width:100%"></span></span>
+              <span class="amt" id="roi-amt-you">$15,000</span>
+            </div>
+            <div class="roi-bar cost">
+              <span class="nm">NeverRanked / mo</span>
+              <span class="track"><span class="fill" id="roi-fill-cost" style="width:10%"></span></span>
+              <span class="amt">$1,500</span>
+            </div>
+          </div>
+          <p class="roi-basis" id="roi-basis">Based on avg settlement of $40,000 to $55,000 with a 33% contingency fee. One case more than covers the entire year.</p>
+          <p class="roi-honest">We measure and diagnose. We do not promise customers, and AEO is an early space with no guaranteed result. This shows what one customer is worth to you, not a return we are promising. Being named by AI for the questions buyers ask is how you get found in the first place.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- Closing CTA -->
   <section class="section panel close">
     <div class="inner reveal">
@@ -1424,5 +1502,74 @@
     })();
   </script>
 
+<script>
+  // "What one customer is worth" calculator. National-average customer
+  // values by vertical; compares against $1,500/mo. Honest framing: shows
+  // the value of one customer, not a promised return.
+  (function () {
+    var COST = 1500;
+    var DATA = {
+      'pi-law':     { value: 15000, unit: 'case',    basis: 'Average settlement of $40,000 to $55,000 at a 33% contingency fee.' },
+      financial:    { value: 40000, unit: 'client',  basis: 'Average client lifetime value over a roughly 10-year relationship at 1% AUM on a $400K portfolio.' },
+      'family-law': { value: 11000, unit: 'case',    basis: 'Average case value for divorce and custody matters.' },
+      dentist:      { value: 10000, unit: 'patient', basis: 'Average patient lifetime value over a 5 to 7 year relationship, including procedures and referrals.' },
+      realestate:   { value: 10000, unit: 'deal',    basis: 'Average commission per transaction on a $400K home at 2.5%.' },
+      roofing:      { value: 15000, unit: 'job',     basis: 'Average residential roof replacement.' },
+      medspa:       { value: 5000,  unit: 'client',  basis: 'Average client lifetime value across treatments with repeat visits over 2 to 3 years.' },
+      hvac:         { value: 5000,  unit: 'job',     basis: 'Average job value including installs and major repairs. Lifetime value with maintenance contracts runs higher.' },
+      chiro:        { value: 4000,  unit: 'patient', basis: 'Average annual patient value with regular visits.' },
+      restaurant:   { value: 2000,  unit: 'regular', basis: 'One loyal regular spending about $35 a week for a year.' }
+    };
+
+    var sel = document.getElementById('roi-industry');
+    if (!sel) return;
+    var elAmount = document.getElementById('roi-amount');
+    var elUnit = document.getElementById('roi-unit');
+    var elMonths = document.getElementById('roi-months');
+    var elTail = document.getElementById('roi-months-tail');
+    var elBasis = document.getElementById('roi-basis');
+    var elAmtYou = document.getElementById('roi-amt-you');
+    var elFillCost = document.getElementById('roi-fill-cost');
+    var toggle = document.getElementById('roi-toggle');
+    var custom = document.getElementById('roi-custom');
+    var customVal = document.getElementById('roi-customval');
+
+    function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+    function tailFor(months) {
+      if (months >= 24) return 'More than ' + Math.floor(months / 12) + ' years, from a single customer.';
+      if (months >= 12) return 'More than a full year, from one customer.';
+      var perYear = Math.ceil(12 / months);
+      return 'Win ' + perYear + ' a year and it more than pays for itself.';
+    }
+
+    function render() {
+      var d = DATA[sel.value] || DATA['pi-law'];
+      var usingCustom = custom.classList.contains('show') && customVal.value && Number(customVal.value) > 0;
+      var value = usingCustom ? Number(customVal.value) : d.value;
+      var months = Math.max(1, Math.round(value / COST));
+
+      elUnit.textContent = d.unit;
+      elAmount.textContent = money(value);
+      elAmtYou.textContent = money(value);
+      elMonths.textContent = months + (months === 1 ? ' month' : ' months');
+      elTail.textContent = tailFor(months);
+      elBasis.textContent = usingCustom ? 'Using your own number.' : d.basis;
+
+      // Cost bar is sized relative to one customer (min 2% so it stays visible).
+      var costPct = Math.max(2, Math.min(100, (COST / value) * 100));
+      elFillCost.style.width = costPct.toFixed(1) + '%';
+    }
+
+    sel.addEventListener('change', render);
+    customVal.addEventListener('input', render);
+    toggle.addEventListener('click', function () {
+      custom.classList.toggle('show');
+      toggle.textContent = custom.classList.contains('show') ? 'Use category averages' : 'Adjust the numbers';
+      render();
+    });
+    render();
+  })();
+</script>
 </body>
 </html>
