@@ -45,6 +45,16 @@
   .big { color: var(--gold); } .rec { color: var(--green); }
   caption { caption-side: bottom; font-size: 12px; color: var(--dim); padding-top: 12px; text-align: left; font-family: var(--mono); }
   .foot { margin-top: 44px; font-family: var(--mono); font-size: 11.5px; color: var(--dim); line-height: 1.7; border-top: 1px solid var(--line); padding-top: 18px; }
+  /* The shift (AI adoption stat strip) */
+  .shift { margin: 22px 0 8px; }
+  .shift-lead { font-size: 19px; color: var(--text); margin: 0 0 16px; }
+  .shift-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .shift-stat { background: #0e0e11; padding: 20px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .shift-stat .num { font-size: 28px; color: var(--gold); line-height: 1; font-variant-numeric: tabular-nums; }
+  .shift-stat .lab { font-size: 12px; color: var(--soft); line-height: 1.45; }
+  .shift-src { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--dim); margin: 12px 0 0; }
+  @media (max-width: 600px) { .shift-stats { grid-template-columns: repeat(2, 1fr); } .shift-stat .num { font-size: 24px; } }
+
   /* ROI calculator */
   .roi-wrap { border: 1px solid var(--line); border-radius: 12px; background: #0e0e11; padding: 26px 24px 24px; margin: 14px 0 8px; }
   .roi-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 6px; }
@@ -93,6 +103,17 @@
   <p class="q">Is this real, or is it hype?</p>
   <p>It is real, and it is early, and early is exactly the point. Hundreds of millions of people use ChatGPT. Google now puts an AI answer above the links on a huge share of searches. People ask AI for recommendations more every month, the same way they moved to Google twenty years ago.</p>
   <p>The businesses that get named while this is still new build a head start that is hard to take back later, the same way the companies that took SEO seriously early spent the next decade ahead of the ones who waited. Getting in now, while most businesses are not even looking, is the whole advantage.</p>
+
+  <div class="shift">
+    <p class="shift-lead">And the numbers are not subtle.</p>
+    <div class="shift-stats">
+      <div class="shift-stat"><span class="num">2.5B</span><span class="lab">people a month see Google's AI answers, over half of everyone on Google</span></div>
+      <div class="shift-stat"><span class="num">1B</span><span class="lab">on Google's AI Mode in its first year, faster than any Search feature before it</span></div>
+      <div class="shift-stat"><span class="num">~900M</span><span class="lab">weekly ChatGPT users</span></div>
+      <div class="shift-stat"><span class="num">34%</span><span class="lab">of US adults have used ChatGPT, about double two years ago</span></div>
+    </div>
+    <p class="shift-src">Sources: Google, OpenAI, Pew Research.</p>
+  </div>
 
   <p class="q">Which AI tools are we talking about?</p>
   <p>The major ones people actually use: ChatGPT, Google's AI Overviews, Perplexity, Microsoft Copilot, Google Gemini, and Claude. I measure across them, because a business can be named by one and invisible on the rest, and that gap is the whole story.</p>

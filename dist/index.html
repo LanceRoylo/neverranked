@@ -703,6 +703,16 @@
     font-size: 14px;
     color: var(--dim);
   }
+  /* ---------- The shift (AI adoption stat strip) ---------- */
+  .shift { margin: 0 0 34px; }
+  .shift-lead { font-size: 22px; color: var(--text); font-weight: 400; margin: 0 0 18px; letter-spacing: -0.005em; }
+  .shift-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #1c1c1e; border: 1px solid #1c1c1e; border-radius: 10px; overflow: hidden; }
+  .shift-stat { background: var(--bg); padding: 22px 18px; display: flex; flex-direction: column; gap: 9px; }
+  .shift-stat .num { font-size: 31px; color: var(--gold); line-height: 1; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+  .shift-stat .lab { font-size: 12.5px; color: var(--soft); line-height: 1.45; }
+  .shift-src { font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--dim); margin: 13px 0 0; }
+  @media (max-width: 640px) { .shift-stats { grid-template-columns: repeat(2, 1fr); } .shift-stat .num { font-size: 26px; } }
+
   /* ---------- What one customer is worth (ROI) ---------- */
   .roi-wrap { border: 1px solid #1c1c1e; border-radius: 12px; background: var(--bg); padding: 30px 28px 28px; margin-top: 8px; }
   .roi-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
@@ -1143,6 +1153,16 @@
   <section class="section" id="worth">
     <div class="inner reveal">
       <div class="sec-label"><span class="n">MATH</span>What being found is worth</div>
+      <div class="shift">
+        <p class="shift-lead">AI is becoming the front door, fast.</p>
+        <div class="shift-stats">
+          <div class="shift-stat"><span class="num">2.5B</span><span class="lab">people a month see Google's AI answers, over half of everyone on Google</span></div>
+          <div class="shift-stat"><span class="num">1B</span><span class="lab">on Google's AI Mode in its first year, the fastest any Search feature has reached it</span></div>
+          <div class="shift-stat"><span class="num">~900M</span><span class="lab">weekly ChatGPT users</span></div>
+          <div class="shift-stat"><span class="num">34%</span><span class="lab">of US adults have used ChatGPT, about double two years ago</span></div>
+        </div>
+        <p class="shift-src">Sources: Google, OpenAI, Pew Research.</p>
+      </div>
       <h2>What is one new customer worth to you?</h2>
       <p>NeverRanked is $1,500 a month per market, $22,500 for the first year. A handful of new customers a year covers the whole cost. Every customer after that, named by AI because of the work, is money you would not have had otherwise. Pick your category.</p>
       <div class="roi-wrap">
