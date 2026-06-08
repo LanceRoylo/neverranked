@@ -125,21 +125,21 @@
         <tr><th>AI tool</th><th class="num">Firm-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
       </thead>
       <tbody>
-        <tr><td class="us">Perplexity</td><td class="num"><strong>52%</strong></td><td class="num">47%</td><td class="num">1,315</td></tr>
-        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>51%</strong></td><td class="num">49%</td><td class="num">350</td></tr>
-        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>45%</strong></td><td class="num">50%</td><td class="num">811</td></tr>
-        <tr><td class="us">ChatGPT search</td><td class="num"><strong>45%</strong></td><td class="num">55%</td><td class="num">745</td></tr>
-        <tr><td class="us">Gemini grounded</td><td class="num"><strong>44%</strong></td><td class="num">54%</td><td class="num">1,553</td></tr>
-        <tr><td class="us">Claude (training data)</td><td class="num"><strong>14%</strong></td><td class="num">86%</td><td class="num">646</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">82%</td><td class="num">787</td></tr>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>68%</strong></td><td class="num">32%</td><td class="num">350</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>58%</strong></td><td class="num">41%</td><td class="num">1,315</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>56%</strong></td><td class="num">43%</td><td class="num">1,553</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>55%</strong></td><td class="num">44%</td><td class="num">745</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>51%</strong></td><td class="num">45%</td><td class="num">811</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>38%</strong></td><td class="num">62%</td><td class="num">646</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">85%</td><td class="num">787</td></tr>
       </tbody>
     </table>
     <p>Two rows worth flagging. Microsoft Copilot cites zero firm-owned websites across 787 mentions, the same cohort-wide gap we documented for dental and law. Whichever Hawaii wealth firm ranks first in Bing organic results for the buyer questions effectively owns the Copilot answer while every competitor is invisible there.</p>
-    <p>The Claude row is the more surprising finding. Claude answers from training data and cites firm-owned websites only 14% of the time, by far the lowest of any AI tool in this cohort. The other 86% of Claude's mentions pull from third-party content. For a wealth firm asking "does Claude know my brand," the answer is largely "Claude knows the category but reaches for third-party context before naming any specific firm." Compare this to law firms where Claude cites firms at 51% (training-data presence for the named firms is strong) or to dental where Claude cites practices at 34% (training-data presence is moderate). Hawaii wealth firms have a notably weaker presence in Claude's training data than the other relationship-business cohort we measured.</p>
+    <p>The Claude row is worth a closer look. Claude answers from training data and cites firm-owned wealth websites 38% of the time, with the other 62% pulling from third-party content. That is moderate training-data presence: above dental (Claude 34%) and below law firms (Claude 51%, where named-partner editorial content runs deep). For a wealth firm asking "does Claude know my brand," the answer is "Claude names specific firms a fair amount, but still reaches for third-party context more often than not." Hawaii wealth firms sit mid-pack among the relationship-business cohorts in Claude's training data, not at the bottom.</p>
 
     <div class="callout">
       <h3>What this means for an individual firm</h3>
-      <p>If you are a Hawaii wealth firm: roughly 60% of the AI-citation surface for your category is off your own site. Of that 60%, the largest single block (12% of all citations) lives on two lead-gen platforms (SmartAsset, getwarmer.com) most firms probably do not actively manage. The remaining off-site share is fragmented across category-specific publications, Wikipedia entries for named principals, and Google self-references. The Microsoft Copilot opening is open for every firm in the cohort simultaneously, gated on Bing organic visibility. Claude's training-data layer for Hawaii wealth is structurally thinner than for other relationship categories we measured; closing that takes longer than any of the other moves.</p>
+      <p>If you are a Hawaii wealth firm: roughly half of the AI-citation surface for your category is off your own site. Within that off-site share, the largest single block lives on two lead-gen platforms (SmartAsset, getwarmer.com) that most firms probably do not actively manage. The rest is fragmented across category-specific publications, Wikipedia entries for named principals, and Google self-references. The Microsoft Copilot opening is open for every firm in the cohort simultaneously, gated on Bing organic visibility. Claude's training-data layer for Hawaii wealth is moderate, above dental and below law. It is not the bottleneck the lead-gen and Copilot gaps are.</p>
     </div>
 
     <h2>Top recurring firms (anonymized)</h2>
@@ -186,7 +186,7 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement window:</strong> 3 usable runs spanning 2026-05-23 to 2026-05-25. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Measurement window:</strong> 3 usable runs spanning 2026-05-23 to 2026-05-25, figures recomputed against the current cohort as of 2026-06-08. The cohort grew from 15 to 42 firms through cohort-coverage scans, which lifted the own-site shares above the original publication (a more complete cohort counts more firm-owned citations). Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
       <p><strong>Substantiation:</strong> question set locked by hash <code>ae13579a...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown. The locked 18-question set is published at <a href="/methodology/#query-set">/methodology/#query-set</a>.</p>
       <p><strong>Anonymization:</strong> the 42-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party platform sources (SmartAsset, getwarmer.com, Unbiased, gohawaii.com) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses for this category.</p>
     </div>
