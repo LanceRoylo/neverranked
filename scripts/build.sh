@@ -106,4 +106,20 @@ for d in "${DIRS[@]}"; do
   fi
 done
 
+# Teardown drift check — non-blocking. Runs only when the measurement repo
+# and its local run data are present (i.e. local builds, not CI). Warns if a
+# published teardown's numbers have drifted from current tooling, so a stale
+# page is caught before you deploy. Never fails the build.
+DRIFT="$ROOT/../neverranked-outreach/dryrun/forensic/teardown-drift.mjs"
+if [ -f "$DRIFT" ]; then
+  echo ""
+  if node "$DRIFT" > /tmp/nr-teardown-drift.out 2>/dev/null; then
+    echo "✓ teardown drift check: no material drift."
+  else
+    echo "⚠️  TEARDOWN DRIFT DETECTED before deploy:"
+    grep "DRIFT  " /tmp/nr-teardown-drift.out || true
+    echo "    Re-publish flagged pages from teardown-data.mjs, then update the drift registry."
+  fi
+fi
+
 echo "Build complete. Deploy with: npx wrangler deploy"
