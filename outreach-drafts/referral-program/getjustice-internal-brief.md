@@ -34,6 +34,11 @@ The two findings reinforce each other: the structural problem (invisible HTML) s
 
 1. LLC + insurance done.
 2. Katy makes the warm intro (see intro-template.md).
-3. Run the fresh full Tampa PI diagnostic.
+3. Run the fresh full Tampa PI diagnostic. **Cohort + runner are pre-staged (2026-06-08):**
+   - `cd ~/Desktop/neverranked-outreach && ./run.sh dryrun/run-pi-law-tampa.mjs` (run #1)
+   - `cd dryrun/forensic && node cohort-coverage.mjs --category pi_law_tampa` → curate the surfaced Tampa PI firms into `cohorts.mjs`, hand-filter directories (Avvo, FindLaw, Justia, Super Lawyers)
+   - Fire runs #2 and #3, then `node aggregate.mjs --category pi_law_tampa --json` and `node within-citation.mjs --category pi_law_tampa --json`
+   - getjustice.com is registered as the owned/prospect; anchors are Catania & Catania, Morgan & Morgan, Winters & Yonker, Distasio
+   - Run it FRESH, close to pitch time. Do not run early.
 4. Bring the finding ("AI names these firms when someone asks for the best PI lawyer in Tampa, you're not one of them, here's the gap"), make the offer.
 5. Katy's fee on close per the agreement.
