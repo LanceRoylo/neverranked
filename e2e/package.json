@@ -1,0 +1,12 @@
+{
+  "name": "neverranked-e2e",
+  "private": true,
+  "description": "Playwright end-to-end checks for the live NeverRanked surfaces (homepage, calculator, teardowns, nav, free scanner). Run before deploys.",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}
