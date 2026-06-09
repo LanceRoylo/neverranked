@@ -9,3 +9,18 @@
 # re-add it. /check and all marketing routes are intentionally down.
 # Instrument (app.neverranked.com) is a separate Worker, unaffected.
 # Restore: revert this + index.html + wrangler.jsonc, normal build.
+
+# ---------------------------------------------------------------------
+# Auth-link reputation redirect (added 2026-06-01).
+#
+# WHY: customer sign-in emails must link to a domain Gmail trusts.
+# app.neverranked.com is a new, uncrawlable subdomain with low Google
+# reputation, so Gmail flags "sign in" links to it as dangerous. This
+# root domain (neverranked.com) is crawlable and has real reputation,
+# so auth emails link here and we 302 to the dashboard's verify route.
+#
+# Cloudflare forwards the incoming query string to a destination that
+# has no query string of its own, so ?token=...[&next=...] passes through
+# intact. This is a specific path rule, not the forbidden /* catch-all,
+# so it is safe alongside the SPA holder.
+/signin  https://app.neverranked.com/auth/verify  302
