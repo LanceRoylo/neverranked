@@ -1,15 +1,15 @@
 <!doctype html>
 <!--
   Cross-category teardown 02. First published 2026-05-24.
-  Refreshed 2026-06-09: every figure regenerated from the aggregate
+  Refreshed 2026-06-11: every figure regenerated from the aggregate
   tooling (dryrun/forensic/teardown-data.mjs) against current
   cohorts, with Austin + Nashville CPA as cross-geo markets and
-  Honolulu med spas added as a sixth Hawaii category.
+  Honolulu med spas + Honolulu HVAC added as Hawaii categories 6 and 7.
 
-  8 measurements: Hawaii consumer banking, wealth management,
-  Honolulu dental, Honolulu med spas, Hawaii law firms, Hawaii CPA,
-  Austin CPA, Nashville CPA. Same 7-AI-tool, 18-question, hash-locked
-  methodology. Underlying runs span 2026-05-23 to 2026-06-09.
+  9 measurements: Hawaii consumer banking, wealth management,
+  Honolulu dental, Honolulu med spas, Honolulu HVAC, Hawaii law firms,
+  Hawaii CPA, Austin CPA, Nashville CPA. Same 7-AI-tool, 18-question,
+  hash-locked methodology. Underlying runs span 2026-05-23 to 2026-06-11.
 
   The refresh added a structural finding the 4-category version
   could not surface: own-site share and training-data presence are
@@ -27,10 +27,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 02: Two axes decide what AI cites for your category. Not one.</title>
-<meta name="description" content="8 measurements across 6 categories plus two cross-geo CPA markets, same 7-AI-tool methodology. Own-site share moves on one axis, training-data presence on another. Hawaii CPAs sit mid-table on own-site share but collapse to 1-2% on training-data engines. The two axes do not move together, and both vary by geography.">
+<meta name="description" content="9 measurements across 7 categories plus two cross-geo CPA markets, same 7-AI-tool methodology. Own-site share moves on one axis, training-data presence on another. Hawaii CPAs sit mid-table on own-site share but collapse to 1-2% on training-data engines. The two axes do not move together, and both vary by geography.">
 <link rel="canonical" href="https://neverranked.com/teardowns/cross-category/">
 <meta property="og:title" content="Teardown 02: The two-axis pattern in cross-category AI citations">
-<meta property="og:description" content="8 measurements with the same 7-AI-tool methodology. Own-site share and training-data presence are two separate axes, and both vary by geography. The cross-geo CPA data proves it.">
+<meta property="og:description" content="9 measurements with the same 7-AI-tool methodology. Own-site share and training-data presence are two separate axes, and both vary by geography. The cross-geo CPA data proves it.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -71,14 +71,14 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 02 &middot; Cross-category &middot; Cross-geo</div>
     <h1>Two axes decide what AI cites for your category. Geography is a third.</h1>
-    <p class="sub">8 measurement windows across 6 Hawaii categories plus two cross-geo CPA markets (Austin TX, Nashville TN). Same 7-AI-tool methodology, same 18-question discipline (hash-locked per geo). Own-site share is one axis. Training-data presence is a second axis. The Austin and Nashville CPA cross-geo measurements add a third dimension: the training-data axis itself varies by engine and by geography within the same category.</p>
+    <p class="sub">9 measurement windows across 7 Hawaii categories plus two cross-geo CPA markets (Austin TX, Nashville TN). Same 7-AI-tool methodology, same 18-question discipline (hash-locked per geo). Own-site share is one axis. Training-data presence is a second axis. The Austin and Nashville CPA cross-geo measurements add a third dimension: the training-data axis itself varies by engine and by geography within the same category.</p>
 
     <div class="notice">
       <strong>The headline finding in one sentence:</strong> when an AI tool searches the live web, own-site citation share runs from 35% (Hawaii law firms) to 51% (consumer banking), with banking on top. Austin CPA (47%) lands within two points of Hawaii CPA (45%), so the category gradient is largely geo-independent, but Nashville CPA (31%) sits well below both, so geography still moves the number. When an AI tool answers from training data (Claude and Gemma), the picture is different and varies by geography. Across three CPA geographies, Claude barely cites local firms anywhere (Hawaii 1%, Austin 0%, Nashville 3%), so its training-data collapse is geo-invariant. Gemma behaves differently. It cites local CPA firms 2% of the time in Hawaii, 7% in Nashville, and 23% in Austin, a continuum rather than a fixed behavior. The two surfaces (web-searching and training-data) are decided by different mechanisms, and Gemma varies enough across geographies that a measurement in one market does not predict another. Operators who treat "AI citation" as one number will miss where the real competitive ground sits.
     </div>
 
-    <h2>The eight-measurement table (web-searching engines)</h2>
-    <p>Own-site share across the five web-searching AI tools (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews), pooled by citation volume. Each row is the aggregate of that category&rsquo;s hash-locked runs, recomputed against current cohorts as of 2026-06-09. Citations and cohorts evolve, so this is a dated snapshot, not a live feed, which is the whole reason measurement is continuous rather than one-time.</p>
+    <h2>The nine-measurement table (web-searching engines)</h2>
+    <p>Own-site share across the five web-searching AI tools (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews), pooled by citation volume. Each row is the aggregate of that category&rsquo;s hash-locked runs, recomputed against current cohorts as of 2026-06-11. Citations and cohorts evolve, so this is a dated snapshot, not a live feed, which is the whole reason measurement is continuous rather than one-time.</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Own-site share</th><th class="num">3rd-party share</th><th class="num">Cohort size</th></tr>
@@ -90,6 +90,7 @@
         <tr><td class="us">Austin TX CPA firms</td><td class="num us"><strong>47%</strong></td><td class="num">50%</td><td class="num">37 firms</td></tr>
         <tr><td class="us">Hawaii CPA firms</td><td class="num us"><strong>45%</strong></td><td class="num">51%</td><td class="num">41 firms</td></tr>
         <tr><td class="us">Honolulu dental practices</td><td class="num us"><strong>43%</strong></td><td class="num">55%</td><td class="num">46 firms</td></tr>
+        <tr><td class="us">Honolulu HVAC</td><td class="num us"><strong>40%</strong></td><td class="num">57%</td><td class="num">12 firms</td></tr>
         <tr><td class="us">Hawaii law firms</td><td class="num us"><strong>35%</strong></td><td class="num">63%</td><td class="num">33 firms</td></tr>
         <tr><td class="us">Nashville TN CPA firms</td><td class="num us"><strong>31%</strong></td><td class="num">65%</td><td class="num">14 firms</td></tr>
       </tbody>
@@ -102,7 +103,7 @@
 
     <h2>The second axis: training-data engines (and the cross-geo split)</h2>
     <p>Two of the seven AI tools we measure (Claude and Gemma) answer from training data instead of searching the live web. So when they mention a business by name, it means that business has formed a presence in the AI&rsquo;s training data: through Wikipedia, news coverage, named-founder content, sustained editorial presence over years. This is the slowest signal in the measurement and the most defensible once it forms. A new competitor cannot show up in Claude&rsquo;s training data overnight. That presence is earned through years of editorial work that an AI model later learned from.</p>
-    <p>Across the training-data measurements (the six Hawaii categories plus two cross-geo CPA markets, Austin TX and Nashville TN), recomputed against current cohorts as of 2026-06-09:</p>
+    <p>Across the training-data measurements (the seven Hawaii categories plus two cross-geo CPA markets, Austin TX and Nashville TN), recomputed against current cohorts as of 2026-06-11:</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Claude own-site share</th><th class="num">Gemma own-site share</th></tr>
@@ -112,6 +113,7 @@
         <tr><td>Hawaii law firms</td><td class="num"><strong>51%</strong></td><td class="num"><strong>78%</strong></td></tr>
         <tr><td>Honolulu dental practices</td><td class="num"><strong>34%</strong></td><td class="num"><strong>58%</strong></td></tr>
         <tr><td>Honolulu med spas</td><td class="num"><strong>2%</strong></td><td class="num"><strong>32%</strong></td></tr>
+        <tr><td>Honolulu HVAC</td><td class="num"><strong>2%</strong></td><td class="num"><strong>63%</strong></td></tr>
         <tr><td>Austin TX CPA firms</td><td class="num"><strong>0%</strong></td><td class="num"><strong>23%</strong></td></tr>
         <tr><td>Nashville TN CPA firms</td><td class="num"><strong>3%</strong></td><td class="num"><strong>7%</strong></td></tr>
         <tr><td>Hawaii wealth management</td><td class="num"><strong>38%</strong></td><td class="num"><strong>68%</strong></td></tr>
@@ -133,10 +135,10 @@
     <p><strong>Gemma is a continuum.</strong> Hawaii CPA Gemma own-share is 2% (7 cites of 293), Nashville 7% (8 of 108), Austin 23% (73 of 313). Same engine, same category, three geographies, and the firm-owned citation rate climbs from 2% to 23% across them. Austin&rsquo;s high number does not replicate in Nashville, but Nashville sits clearly above Hawaii. So Gemma&rsquo;s representation of local CPA firms is geography-dependent, not a fixed category property. The cause is inferred (likely the geo-density of business-news content in Gemma&rsquo;s training data). The observation is direct.</p>
     <p>The reason this matters: a vendor measuring one geography per category would have published the Hawaii result and called it the category-level pattern. Measuring the same category in three geographies was the only way to discover that one of the two training-data engines (Claude) holds the pattern everywhere while the other (Gemma) varies enough that no single market predicts the next. A precise read of training-data engine behavior emerges only across geographies.</p>
     <p>For an operator, the closable competitive surface differs by market. Hawaii CPA firms have both training-data engines as a category-wide blind spot, so competing inside the web-searching engines is the short-term move. Austin CPA firms have Claude as a blind spot but Gemma reachable through sustained web presence over Gemma&rsquo;s training cycle. Nashville sits between: Claude closed, Gemma a narrower opening than Austin&rsquo;s. The recommendation depends on which market the operator is in.</p>
-    <p><strong>A second category confirms the Claude collapse is not CPA-specific.</strong> Honolulu med spas, measured the same way, show Claude citing firm-owned sources 2% of the time while Gemma reaches 32% and the web-searching engines run far higher on the same questions. Med spa is the second category, after CPA across three geographies, where Claude&rsquo;s training-data citation of local firms collapses to near-zero. The two categories that collapse on Claude (CPA and med spa) are both local-service categories with little national editorial coverage of individual firms. The categories that hold up on Claude (banking 88%, law 51%, wealth 38%, dental 34%) each have a canonical web presence or a deep editorial tradition that puts named firms into the training corpus. So the Claude collapse is not a quirk of one category. It is what happens to editorially thin local-service categories, and it now replicates across two of them in different industries. Med spa also shows the split is engine-specific, not training-data-wide: the same category that collapses on Claude reaches 32% on Gemma, so "the training-data axis" is really two engines that can diverge inside one category.</p>
+    <p><strong>A third category, this one predicted in advance, confirms the Claude collapse is not CPA-specific.</strong> Honolulu med spas (Claude 2%) were the second category after CPA. Honolulu HVAC and AC-repair companies (<a href="/teardowns/hvac-honolulu/">teardown 09</a>) are now the third, and this one we forecast before measuring: a prediction that Claude would cite these firms under 5% was committed to a public timestamped record on 2026-06-09, before any HVAC data existed. It landed at 2%, with Gemma at 63% and the web-searching engines at 38% to 66%. So three unrelated local-service industries (accounting, aesthetics, home services) all collapse on Claude. The categories that hold up on Claude (banking 88%, law 51%, wealth 38%, dental 34%) each have a canonical web presence or a deep editorial tradition that puts named firms into the training corpus. The collapse is not a quirk of one category. It is what happens to editorially thin local-service businesses, and it now replicates across three of them in different industries. HVAC also widens the engine split: Claude 2% against Gemma 63% is a 61-point gap inside the same category, the widest in the dataset, which is why "the training-data axis" is really two engines that can diverge completely. And because this third instance was a pre-registered forecast rather than an after-the-fact observation, the pattern is no longer a story told to fit the data. It is a rule that made a risky prediction and the data agreed.</p>
 
-    <h2>The Microsoft Copilot pattern (holds across all eight measurements, including Austin and Nashville)</h2>
-    <p>One pattern is consistent across all eight measurement windows (6 Hawaii categories plus Austin and Nashville CPA). Microsoft Copilot (which answers using Bing&rsquo;s organic search results) cites the firms&rsquo; own websites 0% to 2% of the time in every measurement.</p>
+    <h2>The Microsoft Copilot pattern (holds across all nine measurements, including Austin and Nashville)</h2>
+    <p>One pattern is consistent across all nine measurement windows (7 Hawaii categories plus Austin and Nashville CPA). Microsoft Copilot (which answers using Bing&rsquo;s organic search results) cites the firms&rsquo; own websites 0% to 2% of the time in every measurement.</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Bing/Copilot own-site share</th></tr>
@@ -146,22 +148,24 @@
         <tr><td>Hawaii wealth management</td><td class="num"><strong>0%</strong></td></tr>
         <tr><td>Honolulu dental practices</td><td class="num"><strong>0%</strong></td></tr>
         <tr><td>Honolulu med spas</td><td class="num"><strong>0%</strong></td></tr>
+        <tr><td>Honolulu HVAC</td><td class="num"><strong>0%</strong></td></tr>
         <tr><td>Austin TX CPA firms</td><td class="num"><strong>0%</strong></td></tr>
         <tr><td>Hawaii law firms</td><td class="num"><strong>1%</strong></td></tr>
         <tr><td>Hawaii CPA firms</td><td class="num"><strong>2%</strong></td></tr>
         <tr><td>Nashville TN CPA firms</td><td class="num"><strong>1%</strong></td></tr>
       </tbody>
     </table>
-    <p>This means: a buyer who asks Microsoft Copilot for a business recommendation in any of these eight categories or geographies gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap. The Austin and Nashville data points confirm the pattern is not Hawaii-specific.</p>
+    <p>This means: a buyer who asks Microsoft Copilot for a business recommendation in any of these nine categories or geographies gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap. The Austin and Nashville data points confirm the pattern is not Hawaii-specific.</p>
     <p>The first-mover read: whichever firm shows up first in Bing&rsquo;s organic search results for these queries gets the Copilot answer mostly to itself, because every competitor is also invisible there. The gap is open, and it does not appear to be a category-specific or geo-specific problem. It is a Microsoft Copilot pattern across local-service queries.</p>
 
     <h2>The implication for where to do the work, by category and geography</h2>
-    <p>The two-axis pattern, refined by the cross-geo CPA measurements, produces eight different recommendations:</p>
+    <p>The two-axis pattern, refined by the cross-geo CPA measurements, produces nine different recommendations:</p>
     <ul>
       <li><strong>Hawaii consumer bank.</strong> Own-site work pays off the most directly on both axes. AI is reading the bank&rsquo;s website 51% on web-search and 70-88% on training-data. Cleaner structured data, sharper product pages, better FAQ markup. Both axes respond.</li>
       <li><strong>Hawaii wealth firm.</strong> Own-site work matters (47%), off-site editorial matters (49%), and training-data presence is mid-pack (38-68%). The on-site cleanup is the necessary baseline. The harder work is getting into the third-party surfaces AI uses for the category (lead-gen platforms, named-planner editorial, professional bylines).</li>
       <li><strong>Honolulu dental practice.</strong> Similar shape to wealth on the web-searching surface (43%), middle of the pack on training-data (34-58%). Own-site work and review-directory presence both matter. The Microsoft Copilot first-mover opening is open here as in every category.</li>
       <li><strong>Honolulu med spa.</strong> 51% on the web-searching surface, tied with banking at the top, so own-site work pays off directly on the live-web engines where the category already scores well. But Claude collapses to 2% while Gemma holds at 32%, so one of the two training-data engines is a category blind spot and the other is reachable. The med spa playbook: clean on-site infrastructure for the web-searching engines, treat Claude as unreachable in the short term, and build the sustained editorial presence Gemma rewards. The Microsoft Copilot first-mover opening is open here too (0% own-share). See <a href="/teardowns/med-spa-honolulu/">teardown 08</a>.</li>
+      <li><strong>Honolulu HVAC / AC company.</strong> 40% on the web-searching surface, with ChatGPT search highest at 66%, so own-site work pays off on the live-web engines. Claude collapses to 2% (the pre-registered prediction) while Gemma sits high at 63%, the widest split in the dataset. The playbook: clean on-site infrastructure for the web-searching engines, treat Claude as a short-term blind spot, and build the editorial presence Gemma rewards. The Microsoft Copilot opening is wide open (0% own-share). See <a href="/teardowns/hvac-honolulu/">teardown 09</a>.</li>
       <li><strong>Hawaii law firm.</strong> 35% on the web-searching surface, but training-data presence is high (51-78%) because attorneys generate long-form editorial content (Chambers profiles, BestLawyers entries, named-attorney bylines). The implication: own-site cleanup plus continued investment in the editorial surfaces that feed into training data over time.</li>
       <li><strong>Hawaii CPA firm.</strong> 45% on the web-searching surface, near-zero on BOTH training-data engines (Claude 1%, Gemma 2%). Web-searching engines are where the competitive game plays. Training-data engines are a category-and-geo blind spot that no individual firm can close in the short term. Editorial work would help over years. In the meantime, the web-searching engines are the addressable surface.</li>
       <li><strong>Austin TX CPA firm.</strong> 47% on the web-searching surface (within two points of Hawaii CPA&rsquo;s 45%). Claude is a blind spot (0%) as it is in Hawaii. Gemma is reachable (23%): an Austin CPA firm CAN move the Gemma needle through sustained web presence in Texas-business-news content that Gemma&rsquo;s training cycle ingests. This is the materially different recommendation between Hawaii and Austin CPAs. The cross-geo data surfaced it.</li>
@@ -170,11 +174,12 @@
     <p>The non-obvious read across measurements: the conventional SEO instinct (clean up your website and AI will cite you) is correct in proportion to where your category sits on the web-searching axis, but it has nothing to say about the training-data axis. And the training-data axis is not one number. It can split by engine and by geography within the same category. A firm in a category like CPA in Hawaii could perfect its on-site infrastructure and not move either Claude or Gemma. The same firm operating in Texas would not move Claude but would have a path to moving Gemma. Both surfaces respond to different work. Both can vary by geography in ways that aren't visible from a single-geo measurement.</p>
 
     <h2>The cohort sizes (transparency note)</h2>
-    <p>The eight cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring, then expanded through cohort-coverage scans across multiple runs. Categories with more independent businesses (dental practices, CPAs, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
+    <p>The nine cohorts were not the same size. Cohort size is determined by how many distinct businesses AI tools mention with enough frequency to register as recurring, then expanded through cohort-coverage scans across multiple runs. Categories with more independent businesses (dental practices, CPAs, individual law firms) surface larger cohorts. Categories with consolidation (banking, wealth management) surface smaller ones. This is a feature of the measurement, not a bias: the cohort reflects who AI actually cites, not who we picked in advance.</p>
     <ul>
       <li><strong>Hawaii consumer banking:</strong> 23 cohort domains across about 21 distinct banks and credit unions (several institutions run multiple domains), named at <a href="/teardowns/bank-honolulu/">teardown 01</a>.</li>
       <li><strong>Honolulu dental practices:</strong> 46 dental practices (39 surfaced from run #1, 7 more added after run #2 cohort-coverage scan).</li>
       <li><strong>Honolulu med spas:</strong> 15 med spas (registered through cohort-coverage scans across 3 runs). See <a href="/teardowns/med-spa-honolulu/">teardown 08</a> for the per-category breakdown and the Claude-collapse detail.</li>
+      <li><strong>Honolulu HVAC:</strong> 12 AC companies (registered through cohort-coverage across 3 clean runs). See <a href="/teardowns/hvac-honolulu/">teardown 09</a> for the per-category breakdown and the pre-registered prediction.</li>
       <li><strong>Hawaii law firms:</strong> 33 firms (5 originally registered, 25 surfaced through run #1 cohort-coverage, 3 more after run #3).</li>
       <li><strong>Hawaii wealth management:</strong> 42 firms (15 originally registered, 27 surfaced through three rounds of cohort-coverage scans). The expansion lifted the own-site share from 27% on run 1 to 47% after the third expansion, illustrating the cohort-coverage discipline.</li>
       <li><strong>Hawaii CPA firms:</strong> 41 firms (5 anchors, 15 surfaced from run #1, 8 from run #2, 11 from run #3, with 2 anchor domain variants corrected). The expansion lifted the own-site share from 27% on run 1 to 45% against the current cohort. See <a href="/teardowns/cpa-hawaii/">teardown 06</a> for the per-category breakdown.</li>
@@ -189,16 +194,16 @@
       <li><strong>7 AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google search), Microsoft Copilot via Bing organic results, Google AI Overviews, Claude (claude-haiku-4-5), Gemma (open-weight, via Together AI).</li>
       <li><strong>18 questions per category,</strong> locked by hash so every run compares apples to apples. The questions mirror how a real buyer in each category would actually search.</li>
       <li><strong>3 repetitions per question per AI tool</strong> to separate signal from noise.</li>
-      <li><strong>3 usable runs per category</strong> across the dataset (Austin CPA, 4 runs). All eight measurements cleared the MOAT.md rule 5 pattern-readiness threshold. Banking, dental, and law numbers each held within one to two percentage points across their runs (stability signal at clean cohort coverage). Wealth's number rose from 27% on run 1 to 47% after three rounds of cohort expansion. CPA's number rose from 27% on run 1 to 45% against the current cohort. Both are the cohort-coverage discipline working as designed: more runs surface more cohort members, the headline number trends toward true ceiling rather than away from it.</li>
+      <li><strong>3 usable runs per category</strong> across the dataset (Austin CPA, 4 runs). All nine measurements cleared the MOAT.md rule 5 pattern-readiness threshold. Banking, dental, and law numbers each held within one to two percentage points across their runs (stability signal at clean cohort coverage). Wealth's number rose from 27% on run 1 to 47% after three rounds of cohort expansion. CPA's number rose from 27% on run 1 to 45% against the current cohort. Both are the cohort-coverage discipline working as designed: more runs surface more cohort members, the headline number trends toward true ceiling rather than away from it.</li>
     </ul>
     <p>Full methodology, source bucket definitions, and pattern-readiness rules at <a href="/methodology/">/methodology/</a>. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>. Gemma is open-weight, so any auditor (compliance team, outside reviewer, agency data lead, anyone) can independently re-run the same questions and verify the training-data numbers.</p>
 
     <h2>Honest scope and what this does not prove</h2>
-    <p>Eight measurements across six categories is enough to establish a two-axis pattern but not enough to declare a universal law. The pattern is consistent in direction (web-searching and training-data engines respond to different mechanisms) and in magnitude (the spread is wide enough to matter) but it lives inside a small sample of categories, mostly in Hawaii with two cross-geo CPA markets (Austin TX, Nashville TN), measured across May and June 2026.</p>
+    <p>Nine measurements across seven categories is enough to establish a two-axis pattern but not enough to declare a universal law. The pattern is consistent in direction (web-searching and training-data engines respond to different mechanisms) and in magnitude (the spread is wide enough to matter) but it lives inside a small sample of categories, mostly in Hawaii with two cross-geo CPA markets (Austin TX, Nashville TN), measured across May and June 2026.</p>
     <p>What is not in this teardown:</p>
     <ul>
-      <li>Large national categories. The set is six Hawaii categories plus two mainland CPA markets (Austin, Nashville). Bigger national categories may show different patterns because cohort dynamics differ.</li>
-      <li>Categories outside professional services, consumer financial services, and local aesthetics. The eight measured here cluster narrowly. B2B SaaS, restaurants, real estate brokerages, healthcare specialties beyond dental and med spa, all unmeasured here.</li>
+      <li>Large national categories. The set is seven Hawaii categories plus two mainland CPA markets (Austin, Nashville). Bigger national categories may show different patterns because cohort dynamics differ.</li>
+      <li>Categories outside professional services, consumer financial services, local aesthetics, and home services. The nine measured here cluster narrowly. B2B SaaS, restaurants, real estate brokerages, healthcare specialties beyond dental, all unmeasured here.</li>
       <li>Whether the pattern holds over time. AI tools refresh their training data and search indices on schedules we do not control. The same categories measured six months from now may produce different numbers.</li>
       <li>Causation. We measured what AI cites. We did not test whether changing what is on a firm&rsquo;s site or in third-party publications would cause AI to cite differently. That requires pre-registered experiments against named businesses with control for confounds. Different scope, different methodology.</li>
     </ul>
@@ -215,9 +220,9 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement windows:</strong> five Hawaii categories measured across 3 usable runs each (2026-05-23 to 2026-05-26), Honolulu med spas across 3 runs (2026-06-09), Austin CPA across 4 runs (late May 2026), Nashville CPA across 3 runs (2026-06-07). All figures recomputed against current cohorts as of 2026-06-09. Pattern-readiness cleared per MOAT.md rule 5 for every measurement. Wealth's own-site share rose from 27% on run 1 to 47% as cohort coverage expanded. CPA's rose from 27% to 45% against the current cohort. Both are the cohort-coverage methodology working as designed: more runs and more complete cohorts surface more cohort members, the headline number trends toward true ceiling rather than away from it. Banking, dental, and law numbers held within one to two percentage points across their three runs.</p>
+      <p><strong>Measurement windows:</strong> five Hawaii categories measured across 3 usable runs each (2026-05-23 to 2026-05-26), Honolulu med spas across 3 runs (2026-06-09), Honolulu HVAC across 3 clean runs (2026-06-11), Austin CPA across 4 runs (late May 2026), Nashville CPA across 3 runs (2026-06-07). All figures recomputed against current cohorts as of 2026-06-11. Pattern-readiness cleared per MOAT.md rule 5 for every measurement. Wealth's own-site share rose from 27% on run 1 to 47% as cohort coverage expanded. CPA's rose from 27% to 45% against the current cohort. Both are the cohort-coverage methodology working as designed: more runs and more complete cohorts surface more cohort members, the headline number trends toward true ceiling rather than away from it. Banking, dental, and law numbers held within one to two percentage points across their three runs.</p>
       <p><strong>Substantiation:</strong> question sets locked by hash, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
-      <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other seven categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public. Individual firm names are not.</p>
+      <p><strong>Anonymization:</strong> the Hawaii consumer banking cohort is named in full in <a href="/teardowns/bank-honolulu/">teardown 01</a> because that artifact already established public naming for the cohort. The other eight categories&rsquo; cohorts are anonymized here per the rule that non-customer businesses appear named only in 1:1 deliverables. Categories and counts are public. Individual firm names are not.</p>
     </div>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
