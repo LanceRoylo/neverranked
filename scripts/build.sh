@@ -46,6 +46,7 @@ DIRS=(
   atlas-preview
   blog
   case-studies
+  claims
   example-engagement
   first-30-days
   for-agencies
