@@ -89,6 +89,21 @@ if [ -f "$DIST/og.png" ]; then
   echo "  remove dist/og.png (replaced by og.jpg)"
 fi
 
+# Regenerate /claims/ from the claims registry (single source of truth) so the
+# public ledger can never silently drift from the measured data. Runs only when
+# the measurement repo is present (local builds, not CI); the committed page is
+# used as-is otherwise. Writes via a temp file so a failed run never truncates
+# the live page. Non-blocking.
+CLAIMS_GEN="$ROOT/../neverranked-outreach/dryrun/forensic/claims-ledger.mjs"
+if [ -f "$CLAIMS_GEN" ]; then
+  if node "$CLAIMS_GEN" > /tmp/nr-claims.html 2>/dev/null && [ -s /tmp/nr-claims.html ]; then
+    cp /tmp/nr-claims.html "$ROOT/claims/index.html"
+    echo "  regen claims/index.html from claims-registry.mjs"
+  else
+    echo "  ⚠ claims regen skipped/failed, using committed page"
+  fi
+fi
+
 for d in "${DIRS[@]}"; do
   if [ -d "$ROOT/$d" ]; then
     # Exclude internal working folders from public deploy:
