@@ -18,6 +18,12 @@
       "runtimeExecutable": "bash",
       "runtimeArgs": ["-c", "cd dashboard && npx wrangler dev --port 8788"],
       "port": 8788
+    },
+    {
+      "name": "hello-momentum",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "/Users/lanceroylo/Desktop/hello-momentum-site", "-l", "4321"],
+      "port": 4321
     }
   ]
 }
