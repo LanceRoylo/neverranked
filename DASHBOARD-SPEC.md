@@ -195,3 +195,44 @@ The dashboard supports the research practice. It doesn't replace it.
 This is a scope spec, not an implementation. Lance reviews it, asks questions, redirects what's wrong, and either greenlights a focused build session or shelves it for after more customers.
 
 Open questions, brutal constraints, and the sequencing are the actionable parts. The screen layout is intentionally lo-fi prose because the visual design will route through Hello Momentum principles when build actually happens, not now.
+
+---
+
+## Addendum (2026-06-12): the data bridge is the load-bearing piece
+
+Discovered while shipping HTC's first readout. The original spec sequences the *surfaces* (view, cohort table, trend, login) but treats the data layer as a `// TODO: D1 query layer`. That TODO is actually the whole job. Without it the dashboard is hardcoded Hamada fixtures and Atlas chat has nothing real to read. This addendum scopes it.
+
+### The actual problem
+
+We run two disconnected worlds today:
+- **Research pipeline:** the measurement runs live in `neverranked-outreach/dryrun/out/*.jsonl`, aggregated by `aggregate.mjs` + `cohort-coverage.mjs`. This is where every real number comes from (the teardowns, the HTC readout).
+- **Product:** the dashboard (`customer-view.ts`) and Atlas chat (`atlas-context.ts`, which already issues ~6 D1 queries) read from the product **D1** database.
+
+Nothing connects them. A customer's measurement dead-ends in a JSONL file and never reaches the surfaces that are supposed to show it. That is why HTC's `/c/hawaii-theatre/` cannot show the readout: the readout came from the research pipeline, and D1 has no HTC data.
+
+### The principle
+
+**One source of truth — a customer's run in D1 — feeding two read surfaces (dashboard + Atlas) that can never disagree.** Both surfaces read the same rows. They are physically incapable of telling different stories. That consistency is the whole point.
+
+### Build pieces (this is the spine of #37)
+
+1. **The bridge: research run -> D1.** A loader that takes a clean 3-run measurement for a category and writes `customers`, `citation_runs` (per-engine, per-question), and the curated `cohort` rows into D1. Run it as the final step of the monthly `orchestrate.mjs` path (after 3 clean) so every month self-populates. Critically, it also ingests **runs that already exist**, so a customer goes live the moment the bridge is built, not on the next monthly cycle.
+2. **Dashboard query layer.** Replace `loadCustomerView`'s hardcoded `HAMADA_DATA` + `// TODO` with SQL that computes the 5-section shape for any registered slug from `citation_runs` + `cohort`.
+3. **Atlas reads the same rows.** `atlas-context.ts` already targets D1. Once the bridge fills D1, the chat answers from the same tables the dashboard renders. No second data path.
+4. **Metric reconciliation.** The readout reports citation-share (Claude 14%); the dashboard reports questions-mentioning (X of 18) + mention counts. Compute BOTH from the same run and label them clearly so they reconcile instead of contradicting. Pick the canonical framing here, once.
+5. **Provisioning + auth.** A real `customers` row (`client_slug` = `hawaii-theatre`, Greg's email) so magic-link login admits only Greg + admin to `/c/hawaii-theatre/`.
+
+### Graceful history
+
+The "what changed (7 days)" and "8-week trend" sections need multiple runs over time. Month 1 shows position + cohort + gaps only; the change/trend sections fill from month 2 onward. `atlas-context.ts` already has the "(none on file)" pattern for this — reuse it, do not fake history.
+
+### HTC specifics (the first real fuel)
+
+- Slug: `hawaii-theatre` (matches `htc-events-cron.ts`).
+- Fuel already exists: 3 clean `htc_honolulu` runs, hash `7cfdba6e`, measured 2026-06-12, in the outreach dryrun pipeline.
+- The hand-built readout at `/pitch/hawaii-theatre-center/` is the spec for what the numbers must say. Dashboard + Atlas must reconcile to it exactly (HTC owns the category at 47% of venue citations, strongest on Claude 14%, Copilot 0%, Gemma points to a dead .org).
+- **Leak caution:** the 2026-06-01 incident leaked internal `htc_events_*` snippet-maintenance signals into HTC's customer feed (see `admin-alerts.ts`). Keep internal/operational signals OUT of the customer surface. The bridge writes measurement data only.
+
+### Why this is the prize, not a chore
+
+Once the bridge exists, every customer's monthly run auto-populates their dashboard and Atlas with zero hand-assembly. It is the productized version of the HTC readout built by hand on 2026-06-12, and the same engine the "Atlas readout drafter" scale path depends on (see memory `customer_readout_format`). Build the machine once instead of hand-faking per customer forever. This is the single highest-leverage piece in #37: do it first, the surfaces hang off it.
