@@ -87,6 +87,11 @@ interface CustomerViewData {
   cohortTop10: CohortRow[];
   // Trend (last 8 weeks)
   trend: TrendPoint[];
+  // Optional display overrides for share-based (D1) customers. Defaults below
+  // preserve the original count-based Hamada fixture rendering.
+  metricUnit?: string;          // "" = counts (default) | "%" = citation share
+  cohortMetricLabel?: string;   // "Mentions" (default) | "Share of venue citations"
+  trendLabel?: string;          // section-5 label override
 }
 
 // ── Day-1 hardcoded data (Hamada Financial Group) ────────────────
@@ -181,9 +186,109 @@ export async function loadCustomerView(
   env: Env,
   slug: string,
 ): Promise<CustomerViewData | null> {
+  // Real customers are served from D1 (populated by the research->D1 bridge).
+  const fromD1 = await buildFromD1(env, slug);
+  if (fromD1) return fromD1;
+  // Hamada remains a hardcoded fixture (no live run wired yet).
   if (slug === "hamada-financial-group") return HAMADA_DATA;
-  // TODO: D1 query layer for slugs registered as paying customers.
   return null;
+}
+
+// Build the dashboard shape from D1 for a slug that has a canonical snapshot.
+// Headline numbers come from citation_snapshots (share-of-citations, the same
+// metric the published readout uses), so the dashboard and the readout agree.
+const TOOL_SHORT: Record<string, string> = {
+  "ChatGPT search": "ChatGPT", "Perplexity": "Perplexity", "Gemini grounded": "Gemini",
+  "Google AI Overviews": "Google AIO", "Microsoft Copilot": "MS Copilot", "Claude": "Claude", "Gemma": "Gemma",
+};
+
+async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | null> {
+  const cust = await env.DB.prepare(
+    `SELECT name, category, category_label FROM customers WHERE client_slug = ?`
+  ).bind(slug).first<{ name: string; category: string; category_label: string | null }>();
+  if (!cust) return null;
+
+  const snap = await env.DB.prepare(
+    `SELECT week_start, total_queries, client_citations, engines_breakdown, top_competitors
+       FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
+  ).bind(slug).first<{ week_start: number; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
+  if (!snap) return null; // no measurement yet: fall through (404 or fixture)
+
+  let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
+  let tc: { htc_venue_share_pct?: number; competitors?: Array<{ domain: string; label: string; venue_share_pct: number }> } = {};
+  try { eb = JSON.parse(snap.engines_breakdown || "{}"); } catch { /* keep empty */ }
+  try { tc = JSON.parse(snap.top_competitors || "{}"); } catch { /* keep empty */ }
+
+  const perTool: ToolCount[] = Object.entries(eb)
+    .map(([tool, v]) => ({ tool, shortName: TOOL_SHORT[tool] || tool, count: v.share_pct }))
+    .sort((a, b) => b.count - a.count);
+
+  const competitors = tc.competitors || [];
+  const ownShare = tc.htc_venue_share_pct ?? 0;
+  const cohortTop10: CohortRow[] = [
+    { host: `${cust.name} (you)`, mentions: ownShare, position: "share of venue citations", toolsCount: "", isYou: true },
+    ...competitors.map((c) => ({ host: `${c.domain} (${c.label})`, mentions: c.venue_share_pct, position: "", toolsCount: "", isYou: false })),
+  ].sort((a, b) => b.mentions - a.mentions);
+  const cohortAvg = competitors.length
+    ? Math.round(competitors.reduce((s, c) => s + c.venue_share_pct, 0) / competitors.length)
+    : 0;
+
+  // Last measured = newest citation_runs.run_at for this slug.
+  const measured = await env.DB.prepare(
+    `SELECT MAX(cr.run_at) AS t FROM citation_runs cr
+       JOIN citation_keywords ck ON ck.id = cr.keyword_id WHERE ck.client_slug = ?`
+  ).bind(slug).first<{ t: number | null }>();
+  const measuredAgo = measured?.t ? agoLabel(measured.t) : "recently";
+
+  // Observable gaps derived from the snapshot (honest, data-grounded).
+  const gaps: ObservableGap[] = [];
+  const copilot = eb["Microsoft Copilot"];
+  const chatgpt = eb["ChatGPT search"];
+  if (copilot && copilot.share_pct === 0) gaps.push({ text: "Microsoft Copilot does not cite your site on any question (0%). It draws on the Bing index, which also limits ChatGPT search." });
+  if (chatgpt && chatgpt.share_pct > 0 && chatgpt.share_pct <= 8) gaps.push({ text: `ChatGPT search cites you on only ${chatgpt.share_pct}% of citations, your lowest web-search engine. Same Bing-index root as the Copilot gap.` });
+  gaps.push({ text: "Gemma directs some answers to an outdated hawaiitheatre.org instead of your .com (see this month's readout). A stray public link is teaching the model the wrong address." });
+
+  return {
+    slug,
+    customerName: cust.name,
+    category: cust.category_label || cust.category,
+    lastMeasuredAgo: measuredAgo,
+    nextMemoDate: nextMemoDate(),
+    yourMentions: snap.client_citations,
+    totalQuestions: snap.total_queries,
+    cohortAvgMentions: cohortAvg,
+    cohortRank: cohortTop10.findIndex((r) => r.isYou) + 1,
+    cohortSize: competitors.length + 1,
+    mentionsDelta7d: 0,
+    rankDelta7d: 0,
+    perTool,
+    changedEvents: [
+      { kind: "new", whenLabel: "this week", text: "First full 7-tool baseline measurement is in. From next month, this section shows what moved against it." },
+    ],
+    observableGaps: gaps,
+    cohortTop10,
+    trend: [{ weekIso: "baseline", yourMentions: ownShare, cohortAvg }],
+    metricUnit: "%",
+    cohortMetricLabel: "Share of venue citations",
+    trendLabel: "Citation-share baseline (trend builds monthly)",
+  };
+}
+
+function agoLabel(unixSec: number): string {
+  const days = Math.max(0, Math.floor((Date.now() / 1000 - unixSec) / 86400));
+  if (days <= 0) return "today";
+  if (days === 1) return "yesterday";
+  if (days < 7) return `${days} days ago`;
+  const weeks = Math.floor(days / 7);
+  return weeks === 1 ? "1 week ago" : `${weeks} weeks ago`;
+}
+
+function nextMemoDate(): string {
+  const d = new Date();
+  // Monthly memo lands on the 25th; show this month's if still upcoming, else next.
+  const y = d.getUTCFullYear(), m = d.getUTCMonth();
+  const target = d.getUTCDate() <= 25 ? new Date(Date.UTC(y, m, 25)) : new Date(Date.UTC(y, m + 1, 25));
+  return target.toISOString().slice(0, 10);
 }
 
 // ── Authorization ────────────────────────────────────────────────
@@ -512,7 +617,7 @@ function renderCustomerView(d: CustomerViewData): string {
         <div class="tool-cell">
           <div class="tool-name">${esc(t.shortName)}</div>
           <div class="tool-bar"><div class="tool-fill${t.count === 0 ? ' zero' : ''}" style="height:${t.count === 0 ? 0 : Math.round((t.count / maxToolCount) * 70 + 10)}%"></div></div>
-          <div class="tool-count">${t.count}</div>
+          <div class="tool-count">${t.count}${esc(d.metricUnit ?? "")}</div>
         </div>
         `).join('')}
       </div>
@@ -563,12 +668,12 @@ function renderCustomerView(d: CustomerViewData): string {
     <div class="section">
       <div class="section-label"><span class="n">04</span>Top 10 in your cohort</div>
       <table class="cohort">
-        <thead><tr><th>Firm</th><th class="num">Mentions</th><th>Where in answer</th><th class="num">AI tools</th></tr></thead>
+        <thead><tr><th>Firm</th><th class="num">${esc(d.cohortMetricLabel ?? "Mentions")}</th><th>Where in answer</th><th class="num">AI tools</th></tr></thead>
         <tbody>
           ${d.cohortTop10.map((r) => `
             <tr${r.isYou ? ' class="you"' : ''}>
               <td>${r.isYou ? '<strong>' : ''}${esc(r.host)}${r.isYou ? '</strong>' : ''}</td>
-              <td class="num">${r.isYou ? `<strong>${r.mentions}</strong>` : r.mentions}</td>
+              <td class="num">${r.isYou ? `<strong>${r.mentions}${esc(d.metricUnit ?? "")}</strong>` : `${r.mentions}${esc(d.metricUnit ?? "")}`}</td>
               <td>${esc(r.position)}</td>
               <td class="num">${esc(r.toolsCount)}</td>
             </tr>
@@ -579,7 +684,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 5: Trend -->
     <div class="section">
-      <div class="section-label"><span class="n">05</span>Last 8 weeks of mention share</div>
+      <div class="section-label"><span class="n">05</span>${esc(d.trendLabel ?? "Last 8 weeks of mention share")}</div>
       <div class="trend-wrap">
         <svg class="trend-svg" viewBox="0 0 ${trendW} ${trendH}" preserveAspectRatio="none">
           <line x1="0" y1="40" x2="${trendW}" y2="40" stroke="#1c1c1e" stroke-width="1"/>

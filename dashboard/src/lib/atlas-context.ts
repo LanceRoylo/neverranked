@@ -232,14 +232,33 @@ async function loadMeasurementWindow(
 
   // Last 12 weekly snapshots; gives Atlas the trend without flooding context.
   const snaps = await env.DB.prepare(
-    `SELECT week_start, citation_share, client_citations, total_queries
+    `SELECT week_start, citation_share, client_citations, total_queries, engines_breakdown
        FROM citation_snapshots
       WHERE client_slug = ?
       ORDER BY week_start DESC
       LIMIT 12`
   )
     .bind(slug)
-    .all<{ week_start: number; citation_share: number; client_citations: number; total_queries: number }>();
+    .all<{ week_start: number; citation_share: number; client_citations: number; total_queries: number; engines_breakdown: string }>();
+
+  // Canonical metric (locked 2026-06-12): share of citations, per engine, as
+  // stored in the latest snapshot's engines_breakdown by the research->D1 bridge.
+  // This is the same number the published readout shows, so Atlas and the readout
+  // never disagree. The citation_runs computation above is the fallback for any
+  // customer that has no snapshot yet (Atlas degrades honestly, not wrongly).
+  let byEngineOut = Array.from(byEngine.entries())
+    .map(([engine, e]) => ({ engine, total_runs: e.total, citations: e.cited, share_pct: e.total > 0 ? +(100 * e.cited / e.total).toFixed(1) : 0 }))
+    .sort((a, b) => b.share_pct - a.share_pct);
+  let sharePctOut = totalRuns > 0 ? +(100 * totalCited / totalRuns).toFixed(1) : 0;
+  const headSnap = snaps.results[0];
+  if (headSnap?.engines_breakdown) {
+    try {
+      const eb = JSON.parse(headSnap.engines_breakdown) as Record<string, { citations: number; total: number; share_pct: number }>;
+      const arr = Object.entries(eb).map(([engine, v]) => ({ engine, total_runs: v.total, citations: v.citations, share_pct: v.share_pct }));
+      if (arr.length) byEngineOut = arr.sort((a, b) => b.share_pct - a.share_pct);
+      if (typeof headSnap.citation_share === "number") sharePctOut = +(headSnap.citation_share * 100).toFixed(1);
+    } catch { /* malformed snapshot: keep the runs-based fallback */ }
+  }
 
   return {
     days: windowDays,
@@ -247,15 +266,8 @@ async function loadMeasurementWindow(
     end: new Date(now * 1000).toISOString(),
     total_runs: totalRuns,
     citations_of_customer: totalCited,
-    citation_share_pct: totalRuns > 0 ? +(100 * totalCited / totalRuns).toFixed(1) : 0,
-    by_engine: Array.from(byEngine.entries())
-      .map(([engine, e]) => ({
-        engine,
-        total_runs: e.total,
-        citations: e.cited,
-        share_pct: e.total > 0 ? +(100 * e.cited / e.total).toFixed(1) : 0,
-      }))
-      .sort((a, b) => b.share_pct - a.share_pct),
+    citation_share_pct: sharePctOut,
+    by_engine: byEngineOut,
     weekly_snapshots: dedupeByWeek(snaps.results)
       .map((s) => ({
         week_start: new Date(s.week_start * 1000).toISOString().slice(0, 10),
