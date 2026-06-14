@@ -1,39 +1,39 @@
-# Greg @ HTC — catch-up + Atlas invite
+# Greg @ HTC — first monthly readout cover note
 
-**Status:** ready to send. Permission already granted (HTC OK as proof point).
-**Last edited:** 2026-05-28 (snippet-status paragraph expanded)
+**Status:** ready to send. Permission already granted (HTC OK as proof point; do not reopen).
+**Last edited:** 2026-06-12 (rewritten readout-led; supersedes the 2026-05-28 Atlas-led version).
+**Send:** Lance sends. I draft only.
 
 ---
 
 **To:** Greg @ Hawaii Theatre Center
-**Subject:** Quick HTC catch-up + something I'm building
+**Subject:** Your first monthly HTC readout is live
 
 Greg,
 
-Owe you a catch-up. The snippet on HTC's site is still doing its work. I checked your measurements again last week: Perplexity now cites HTC on 14 of the 19 buyer questions in your category set, and the AEO score that started at 45 sits at 95.
+Long overdue catch-up, and this time I have something concrete. I built HTC its first full monthly AI-citation readout: what seven AI tools actually say about Honolulu arts and culture, with Hawaii Theatre named throughout. It is a private page, yours to read or print to PDF:
 
-A lot has happened on my end since then. NeverRanked turned from the one-off pilot you saw into a research practice. Six published measurements now. Five Hawaii categories plus the first cross-geo, Austin CPA firms. The HTC outcome is the one I lead with.
+neverranked.com/pitch/hawaii-theatre-center/
 
-One thing changed structurally and I want to name it, because it's the real difference between then and now. I no longer implement the changes for customers. With HTC I wrote and deployed the snippet myself because we were figuring it out together. The new practice is measurement only. I deliver a research memo and a prepped punch list. Your in-house team or your agency executes against it. The reason is honest: you cannot measure a thing rigorously while also being the one doing the work to move the number. Separating the two is what lets the monthly numbers mean something instead of being a marketing claim about my own labor.
+The short version is good news. Hawaii Theatre owns this category in AI answers. Nearly half of every citation that points to a Honolulu venue points to you, which is more than Diamond Head and the Blaisdell combined, and no competitor is close. You are strongest on Claude, the one engine where almost every other local business is invisible, because you have a century of real history behind you.
 
-The HTC engagement is what proved the punch list works. The 45-to-95 move came from deploying the right intervention for what AI was actually citing. The intervention shape does not change in the new model. What changes is who deploys it: the customer or their agency, not me. Same rigor, no conflict of interest, a research artifact you can actually trust because the person measuring is not the person being measured.
+It also surfaced two specific, fixable things. Microsoft Copilot does not recognize Hawaii Theatre at all yet, and Google's Gemma keeps pointing people to a dead hawaiitheatre.org instead of your real .com. Both are in the readout's punch list with what to do about each.
 
-The snippet on HTC stays live and maintained free, no charge, as long as you want it there. It is not at odds with the new measurement-only model. HTC was the engagement that proved the methodology before the practice formalized, and the snippet is part of that history. You do not need to do anything. If it ever breaks or you want it removed, just email and it's handled. You were the n=1, and that goes both ways.
+This is the recurring monthly version of what we started in the pilot, now on a fixed schedule. The way the practice works now: I measure and hand your team the prepped list, I do not deploy the changes myself, because the numbers only mean something if the person measuring is not the person being measured. The snippet I put on your site stays live and maintained free, as always.
 
-The reason I'm writing: I'm building something called Atlas, a chat layer that sits on top of the customer dashboard and answers questions about their measurement data. Things like "how many mentions did I have last week" or "which AI tool cited me most this month." It refuses to tell you what to do (prioritization lives in the monthly memo, written by me). I want HTC to be the first organization outside the company to test it. Free, no commitment, no setup on your end.
-
-There is a preview of what it looks like at neverranked.com/atlas-preview/. Six scripted exchanges showing how Atlas handles data questions and how it refuses prescriptive ones. If you want to see the shape before you commit, click through. The live version is already built and running on your real HTC numbers.
-
-If you're up for it, reply with a yes and I'll send you a private access link the same day. If now's not the time, that's fine.
+Feel free to forward it to Ron or anyone on your side. If anything in it does not hold up to your read, tell me and I will run it again.
 
 Lance
+
+P.S. With no rush: I'm building a chat layer called Atlas that answers questions about your measurement data, things like "how many mentions last week" or "which tool cited me most." I would love HTC to be the first organization outside the company to test it when it is ready. Quick preview at neverranked.com/atlas-preview/ if you are curious. No action needed now.
 
 ---
 
 ## Notes for sending
 
-- **When:** when you're ready. Sending now is fine; sending after LLC+insurance close gives more concrete future-state to point to. Your call.
-- **What it asks for:** one yes/no on whether Greg wants to be the first Atlas test user. No other commitment.
-- **What it does NOT ask for:** named-attribution permission (already granted; don't reopen).
-- **What it gives back:** the free maintained snippet (already in place; making it explicit) + first-test-user access to Atlas (Lance offers).
-- **Backup paragraph if you want to add news:** "If you want a 15-min coffee to catch up in person, I'm in town. Otherwise the email is the whole conversation."
+- **What's current as of 2026-06-12:** the readout link is live (noindex, private), numbers are hard-audited against source. Leads with the readout, not Atlas. Old pilot metric (14 of 19 Perplexity, 45 to 95 AEO) intentionally dropped from the body to avoid mixing it with the new per-engine citation-share numbers. The new headline is the 47% venue-citation share.
+- **One clear move:** read the readout. Everything else (forward to Ron, flag errors, Atlas) is optional and low-pressure.
+- **Ron angle:** Ron forwarded the JetStorm vendor pitch. This readout is the implicit counter (measurement, not a promised lift). The "forward to Ron" line invites that comparison without naming the competitor.
+- **Does NOT reopen:** named-attribution permission (already on file).
+- **Optional add-ons if Lance wants:** a one-line traction note ("NeverRanked has grown into a research practice with nine published measurements since the pilot" — verify the count against the homepage before using), or an in-person coffee offer.
+- **Atlas:** kept as a soft P.S. so the email stays single-ask. Cut the P.S. entirely if you want a pure readout note.
