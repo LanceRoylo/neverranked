@@ -1258,8 +1258,8 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
   </div>
 
   <section class="hero">
-    <h1>When AI answers,<br>does it mention <em>your business</em>?</h1>
-    <p class="sub">Enter your URL. See what AI tools like ChatGPT and Google AI can read from your site, and what they can't. Free. No signup.</p>
+    <h1>See what AI tools<br>can read from <em>your site</em>.</h1>
+    <p class="sub">Paste your URL. We show what ChatGPT, Google AI, and 5 more engines can pull from your pages, what they cannot, and the fixes. Free. No signup.</p>
     <div class="input-area">
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
       <button id="run-btn" type="button">Run check</button>
