@@ -215,7 +215,7 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   if (!snap) return null; // no measurement yet: fall through (404 or fixture)
 
   let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
-  let tc: { htc_venue_share_pct?: number; competitors?: Array<{ domain: string; label: string; venue_share_pct: number }> } = {};
+  let tc: { htc_venue_share_pct?: number; htc_engines_count?: number; competitors?: Array<{ domain: string; label: string; venue_share_pct: number; engines_count?: number }> } = {};
   try { eb = JSON.parse(snap.engines_breakdown || "{}"); } catch { /* keep empty */ }
   try { tc = JSON.parse(snap.top_competitors || "{}"); } catch { /* keep empty */ }
 
@@ -226,8 +226,8 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   const competitors = tc.competitors || [];
   const ownShare = tc.htc_venue_share_pct ?? 0;
   const cohortTop10: CohortRow[] = [
-    { host: `${cust.name} (you)`, mentions: ownShare, position: "share of venue citations", toolsCount: "", isYou: true },
-    ...competitors.map((c) => ({ host: `${c.domain} (${c.label})`, mentions: c.venue_share_pct, position: "", toolsCount: "", isYou: false })),
+    { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: `${tc.htc_engines_count ?? 0}/7`, isYou: true },
+    ...competitors.map((c) => ({ host: `${c.domain} (${c.label})`, mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/7`, isYou: false })),
   ].sort((a, b) => b.mentions - a.mentions);
   const cohortAvg = competitors.length
     ? Math.round(competitors.reduce((s, c) => s + c.venue_share_pct, 0) / competitors.length)
