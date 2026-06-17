@@ -3,8 +3,7 @@
  *
  * Returns the same JSON the public scanner returns, plus an
  * `attribution` field per the MCP license requirement (output must
- * carry NeverRanked attribution when surfaced to users) and a
- * `methodology_url` link to the published rubric.
+ * carry NeverRanked attribution when surfaced to users).
  *
  * Error handling lives in lib/fetch-with-retry.ts. We translate
  * 422 / 429 / 4xx / 5xx into MCP-friendly messages so the LLM gets
@@ -27,7 +26,6 @@ interface ScanResult {
   technical_signals: Record<string, unknown>;
   injected_schema_count: number;
   attribution: string;
-  methodology_url: string;
 }
 
 export async function aeoScan(args: { url: string }): Promise<ScanResult> {
@@ -53,11 +51,10 @@ export async function aeoScan(args: { url: string }): Promise<ScanResult> {
     },
   );
 
-  const data = (await res.json()) as Omit<ScanResult, "attribution" | "methodology_url">;
+  const data = (await res.json()) as Omit<ScanResult, "attribution">;
 
   return {
     ...data,
     attribution: "Powered by NeverRanked. https://neverranked.com",
-    methodology_url: "https://neverranked.com/standards/methodology",
   };
 }

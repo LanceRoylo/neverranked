@@ -14,7 +14,7 @@
  *   - agent_readiness_check(url, vertical?): grade for AI agent task
  *     surfaces (ReserveAction, ApplyAction, etc.)
  *
- * Methodology: https://neverranked.com/standards/methodology
+ * More: https://neverranked.com
  * Issues: https://github.com/LanceRoylo/neverranked/issues
  */
 
@@ -65,7 +65,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "aeo_scan",
       description:
-        "Score a website's Answer Engine Optimization (AEO) readiness from 0 to 100. Returns the score, letter grade, schema coverage breakdown, technical signals (og:image, h1 count, canonical, etc.), and red flags. Use this when you want to know how citable a site is to ChatGPT, Claude, Perplexity, Gemini, Microsoft Copilot, and Google AI Overviews. Methodology at neverranked.com/standards/methodology.",
+        "Score a website's Answer Engine Optimization (AEO) readiness from 0 to 100. Returns the score, letter grade, schema coverage breakdown, technical signals (og:image, h1 count, canonical, etc.), and red flags. Use this when you want to know how citable a site is to ChatGPT, Claude, Perplexity, Gemini, Microsoft Copilot, and Google AI Overviews. More at neverranked.com.",
       inputSchema: {
         type: "object",
         properties: {
@@ -81,7 +81,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "llms_txt_check",
       description:
-        "Audit a website's /llms.txt file against the published standard. Returns a 0-100 score, grade, presence of required structural elements (H1, blockquote, sections), link health, and freshness. Use this when you want to know if a site is properly exposing its content map to AI engines that respect llms.txt (Anthropic Claude, with OpenAI and others stated to follow). Standard at neverranked.com/standards/llms-txt.",
+        "Audit a website's /llms.txt file against the published standard. Returns a 0-100 score, grade, presence of required structural elements (H1, blockquote, sections), link health, and freshness. Use this when you want to know if a site is properly exposing its content map to AI engines that respect llms.txt (Anthropic Claude, with OpenAI and others stated to follow). More at neverranked.com.",
       inputSchema: {
         type: "object",
         properties: {
@@ -97,7 +97,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     {
       name: "agent_readiness_check",
       description:
-        "Audit a website for AI agent task-surface readiness. Looks for Schema.org Action types (ReserveAction, ApplyAction, BuyAction, OrderAction, ContactAction) in JSON-LD blocks. Returns a 0-100 score with vertical-specific baselines and validation issues. Use this when you want to know if a site is prepared for the agentic AI shift, where AI agents perform tasks (book, apply, buy) on behalf of users rather than just answering questions. Standard at neverranked.com/standards/agent-readiness.",
+        "Audit a website for AI agent task-surface readiness. Looks for Schema.org Action types (ReserveAction, ApplyAction, BuyAction, OrderAction, ContactAction) in JSON-LD blocks. Returns a 0-100 score with vertical-specific baselines and validation issues. Use this when you want to know if a site is prepared for the agentic AI shift, where AI agents perform tasks (book, apply, buy) on behalf of users rather than just answering questions. More at neverranked.com.",
       inputSchema: {
         type: "object",
         properties: {

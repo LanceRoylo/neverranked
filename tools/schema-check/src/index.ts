@@ -9,6 +9,20 @@
 export interface Env {
   LEADS: KVNamespace;
   RESEND_API_KEY?: string;
+  // Optional shared secret for the keyed Montaic API lane. When set,
+  // a request carrying a matching X-API-Key header bypasses the per-IP
+  // rate limit and is tagged as source "montaic" in telemetry. The
+  // worker only READS this value — it is provisioned via
+  // `wrangler secret put MONTAIC_API_KEY` and never generated here.
+  MONTAIC_API_KEY?: string;
+}
+
+// True when the request carries the configured Montaic API key. Used to
+// open a keyed, attributable, rate-limit-bypassing lane on the /api/*
+// scoring routes. Returns false whenever MONTAIC_API_KEY is unset, so
+// the public behavior is unchanged until the secret is provisioned.
+function isKeyed(request: Request, env: Env): boolean {
+  return !!env.MONTAIC_API_KEY && request.headers.get("X-API-Key") === env.MONTAIC_API_KEY;
 }
 
 // ---------- Rate limiting (in-memory, per-isolate) ----------
@@ -63,6 +77,7 @@ async function listAllKvKeys(
 // ---------- Shared analysis logic (packages/aeo-analyzer) ----------
 
 import { buildReport, buildReportFollowingSnippets, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
+import { agentReadinessCheck, llmsTxtCheck } from "./scoring-ports";
 
 // ---------- HTML UI ----------
 
@@ -2685,11 +2700,75 @@ export default {
     const corsHeaders: Record<string, string> = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
+      "Access-Control-Allow-Headers": "Content-Type, X-API-Key, X-Internal-Source",
     };
 
     if (request.method === "OPTIONS") {
       return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
+    // Agent-readiness scorer (ported from the MCP agent_readiness_check
+    // tool). Pass { url, vertical? }, get back the Action-schema
+    // coverage grade. Mirrors /api/check structure: CORS, optional
+    // keyed bypass, JSON-body validation, 10s fetch timeout (inside the
+    // port), error handling. Response carries the NeverRanked
+    // attribution literal.
+    if (url.pathname === "/api/agent-readiness" && request.method === "POST") {
+      const keyed = isKeyed(request, env);
+      const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
+      if (!keyed && isRateLimited(ip)) {
+        return Response.json({ error: "Rate limited. Try again in a minute." }, { status: 429, headers: corsHeaders });
+      }
+      let body: { url?: string; vertical?: string };
+      try { body = await request.json(); }
+      catch { return Response.json({ error: "Invalid JSON body." }, { status: 400, headers: corsHeaders }); }
+      const targetUrl = body.url?.trim();
+      if (!targetUrl) return Response.json({ error: "Provide a URL." }, { status: 400, headers: corsHeaders });
+      let parsed: URL;
+      try {
+        parsed = new URL(targetUrl);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+      } catch { return Response.json({ error: "Invalid URL. Include https://." }, { status: 400, headers: corsHeaders }); }
+
+      try {
+        const result = await agentReadinessCheck({ url: targetUrl, vertical: body.vertical?.trim() || undefined });
+        return Response.json(result, { headers: corsHeaders });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "Agent-readiness scan failed.";
+        const blocked = /HTTP 4\d\d|blocking automated/.test(msg);
+        return Response.json({ error: msg }, { status: blocked ? 422 : 502, headers: corsHeaders });
+      }
+    }
+
+    // llms.txt scorer (ported from the MCP llms_txt_check tool). Pass
+    // { url }, get back the /llms.txt completeness grade. Same route
+    // shape as /api/check: CORS, optional keyed bypass, JSON-body
+    // validation, 10s fetch timeout (inside the port), error handling.
+    // Response carries the NeverRanked attribution literal.
+    if (url.pathname === "/api/llms-txt" && request.method === "POST") {
+      const keyed = isKeyed(request, env);
+      const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
+      if (!keyed && isRateLimited(ip)) {
+        return Response.json({ error: "Rate limited. Try again in a minute." }, { status: 429, headers: corsHeaders });
+      }
+      let body: { url?: string };
+      try { body = await request.json(); }
+      catch { return Response.json({ error: "Invalid JSON body." }, { status: 400, headers: corsHeaders }); }
+      const targetUrl = body.url?.trim();
+      if (!targetUrl) return Response.json({ error: "Provide a URL." }, { status: 400, headers: corsHeaders });
+      let parsed: URL;
+      try {
+        parsed = new URL(targetUrl);
+        if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
+      } catch { return Response.json({ error: "Invalid URL. Include https://." }, { status: 400, headers: corsHeaders }); }
+
+      try {
+        const result = await llmsTxtCheck({ url: targetUrl });
+        return Response.json(result, { headers: corsHeaders });
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : "llms.txt scan failed.";
+        return Response.json({ error: msg }, { status: 502, headers: corsHeaders });
+      }
     }
 
     // Phase 6B: Public schema scorer. Single-purpose endpoint --
@@ -2699,8 +2778,9 @@ export default {
     // in marketing copy and used as a focused lead magnet for the
     // 18pp citation-penalty story.
     if (url.pathname === "/api/schema-score" && request.method === "POST") {
+      const keyed = isKeyed(request, env);
       const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
-      if (isRateLimited(ip)) {
+      if (!keyed && isRateLimited(ip)) {
         return Response.json({ error: "Rate limited. Try again in a minute." }, { status: 429, headers: corsHeaders });
       }
       let body: { url?: string };
@@ -2842,9 +2922,12 @@ export default {
 
     // API endpoint
     if (url.pathname === "/api/check" && request.method === "POST") {
+      // Keyed Montaic lane bypasses the per-IP rate limit and is tagged
+      // "montaic" in telemetry. Unkeyed traffic behaves exactly as before.
+      const keyed = isKeyed(request, env);
       // Rate limiting
       const ip = request.headers.get("CF-Connecting-IP") || request.headers.get("X-Forwarded-For") || "unknown";
-      if (isRateLimited(ip)) {
+      if (!keyed && isRateLimited(ip)) {
         return Response.json(
           { error: "Rate limit exceeded. Please wait a moment before trying again." },
           { status: 429, headers: corsHeaders }
@@ -2955,6 +3038,7 @@ export default {
             ts: new Date().toISOString(),
             ip_hash: ipHash,
             ua,
+            source: keyed ? "montaic" : "direct",
           };
           if (referrer) eventData.referrer = referrer;
           if (Object.keys(utm).length > 0) eventData.utm = utm;

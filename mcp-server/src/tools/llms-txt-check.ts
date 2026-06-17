@@ -3,7 +3,7 @@
  * NeverRanked scoring rubric.
  *
  * Logic mirrors scripts/llms-txt-check.mjs in the NeverRanked repo.
- * Standard at https://neverranked.com/standards/llms-txt.
+ * More at https://neverranked.com.
  */
 
 interface Finding {
@@ -20,7 +20,6 @@ interface LlmsTxtResult {
   findings: Finding[];
   flags: string[];
   attribution: string;
-  standard_url: string;
 }
 
 export async function llmsTxtCheck(args: { url: string }): Promise<LlmsTxtResult> {
@@ -182,6 +181,5 @@ export async function llmsTxtCheck(args: { url: string }): Promise<LlmsTxtResult
     findings,
     flags,
     attribution: "Powered by NeverRanked. https://neverranked.com",
-    standard_url: "https://neverranked.com/standards/llms-txt",
   };
 }

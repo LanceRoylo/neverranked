@@ -8,7 +8,7 @@
  * action-specific extended validation, vertical "why it matters" copy.
  *
  * Logic mirrors scripts/agent-readiness-check.mjs.
- * Standard at https://neverranked.com/standards/agent-readiness.
+ * More at https://neverranked.com.
  */
 
 // Vertical baselines map a business category to the ActionTypes a competent
@@ -111,7 +111,6 @@ interface AgentReadinessResult {
   fetch_status: number;
   fetch_blocked: boolean;
   attribution: string;
-  standard_url: string;
 }
 
 const NR_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) NeverRanked-Bot/1.0 (+https://neverranked.com/bot)';
@@ -416,6 +415,5 @@ export async function agentReadinessCheck(args: { url: string; vertical?: string
     fetch_status: fetchStatus,
     fetch_blocked: fetchBlocked,
     attribution: 'Powered by NeverRanked. https://neverranked.com',
-    standard_url: 'https://neverranked.com/standards/agent-readiness',
   };
 }
