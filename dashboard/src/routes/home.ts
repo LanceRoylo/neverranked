@@ -145,25 +145,37 @@ async function buildWeeklySummary(user: User, env: Env): Promise<string> {
     }
   }
 
-  // Citation share
+  // Citation share — the venue/cohort share (htc_venue_share_pct), the SAME
+  // headline metric /c/<slug>/, the readout, and Atlas use, so every surface
+  // agrees on one number. (Previously this used citation_share = owned/all
+  // citations, a different cut that read e.g. 10% next to the /c/ page's 47%.)
   const citSnaps = (await env.DB.prepare(
-    "SELECT citation_share, client_citations, total_queries FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 2"
-  ).bind(slug).all<{ citation_share: number; client_citations: number; total_queries: number }>()).results;
+    "SELECT top_competitors FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 2"
+  ).bind(slug).all<{ top_competitors: string }>()).results;
+
+  const venueShareOf = (row?: { top_competitors: string }): number | null => {
+    if (!row) return null;
+    try {
+      const tc = JSON.parse(row.top_competitors || "{}");
+      return typeof tc.htc_venue_share_pct === "number" ? tc.htc_venue_share_pct : null;
+    } catch { return null; }
+  };
 
   if (citSnaps.length > 0) {
-    const current = citSnaps[0];
-    const prev = citSnaps[1];
-    const pct = (current.citation_share * 100).toFixed(0);
-    const diff = prev ? (current.citation_share - prev.citation_share) * 100 : 0;
-    const deltaText = prev ? (diff > 0.5 ? `+${diff.toFixed(0)}%` : diff < -0.5 ? `${diff.toFixed(0)}%` : "steady") : "first week";
-    const deltaColor = diff > 0.5 ? "var(--green)" : diff < -0.5 ? "var(--red)" : "var(--text-faint)";
-    metrics.push({
-      label: "Citation Share",
-      value: `${pct}%`,
-      delta: deltaText,
-      deltaColor,
-      icon: "Ai",
-    });
+    const cur = venueShareOf(citSnaps[0]);
+    const prev = venueShareOf(citSnaps[1]);
+    if (cur !== null) {
+      const diff = prev !== null ? cur - prev : 0;
+      const deltaText = prev !== null ? (diff > 0.5 ? `+${diff.toFixed(0)}%` : diff < -0.5 ? `${diff.toFixed(0)}%` : "steady") : "first week";
+      const deltaColor = diff > 0.5 ? "var(--green)" : diff < -0.5 ? "var(--red)" : "var(--text-faint)";
+      metrics.push({
+        label: "Citation Share",
+        value: `${cur.toFixed(0)}%`,
+        delta: deltaText,
+        deltaColor,
+        icon: "Ai",
+      });
+    }
   }
 
   // GSC clicks
