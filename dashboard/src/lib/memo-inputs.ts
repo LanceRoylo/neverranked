@@ -123,7 +123,11 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     }
   }
 
-  const by_engine = Array.from(eng.entries()).map(([engine, e]) => ({
+  // Legacy run-based per-engine coverage. Used ONLY as a fallback for customers
+  // that have no canonical citation_snapshots row yet. For snapshot customers it
+  // is overridden below by the canonical share-of-citations so the memo, the
+  // dashboard, Atlas, and the readout all report the same metric.
+  let by_engine = Array.from(eng.entries()).map(([engine, e]) => ({
     engine,
     current_share_pct: pct(e.cc, e.cr),
     prior_share_pct: pct(e.pc, e.pr),
@@ -140,12 +144,76 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     current_runs: v.cr,
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
 
-  // ── Cohort rank (current window) ──
-  const cohortMembers = Array.from(cohortHosts.entries())
+  // ── Cohort rank (legacy run-based; overridden by snapshot below) ──
+  const cohortMembersLegacy = Array.from(cohortHosts.entries())
     .map(([key, label]) => ({ domain: key, label, mentions: cohortMentions.get(key) ?? 0 }))
     .sort((a, b) => b.mentions - a.mentions);
-  const allCounts = [...cohortMembers.map((m) => m.mentions), curCited].sort((a, b) => b - a);
-  const rank = cohortMembers.length > 0 ? allCounts.indexOf(curCited) + 1 : null;
+  const allCountsLegacy = [...cohortMembersLegacy.map((m) => m.mentions), curCited].sort((a, b) => b - a);
+  const rankLegacy = cohortMembersLegacy.length > 0 ? allCountsLegacy.indexOf(curCited) + 1 : null;
+
+  let overall = {
+    current: { runs: curRuns, cited: curCited, share_pct: pct(curCited, curRuns) },
+    prior: { runs: priRuns, cited: priCited, share_pct: pct(priCited, priRuns) },
+    share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
+  };
+  let cohort = { rank: rankLegacy, members: cohortMembersLegacy, customer_mentions: curCited };
+
+  // ── Canonical override: source headline + per-engine from the snapshot ──
+  // citation_snapshots is the authoritative share-of-citations rollup the
+  // readout, dashboard, and Atlas all read. Sourcing the memo's numbers from
+  // the same place is what keeps every surface on one metric (the divergence
+  // this replaces came from computing a run-coverage rate here instead).
+  // by_question stays run-based: per-question appearance has no snapshot form.
+  const snaps = await env.DB.prepare(
+    `SELECT engines_breakdown, top_competitors
+       FROM citation_snapshots WHERE client_slug = ?
+      ORDER BY week_start DESC LIMIT 2`
+  ).bind(slug).all<{ engines_breakdown: string; top_competitors: string }>();
+
+  const parseSnap = (row?: { engines_breakdown: string; top_competitors: string }) => {
+    if (!row) return null;
+    let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
+    let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }> } = {};
+    try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
+    try { tc = JSON.parse(row.top_competitors) ?? {}; } catch { /* keep empty */ }
+    return { eb, tc };
+  };
+  const curSnap = parseSnap(snaps.results[0]);
+  const priSnap = parseSnap(snaps.results[1]);
+
+  if (curSnap) {
+    const ownedCitations = Object.values(curSnap.eb).reduce((a, e) => a + (e.citations ?? 0), 0);
+    const comps = (curSnap.tc.competitors ?? [])
+      .map((c) => ({ domain: c.domain ?? "", label: c.label ?? null, mentions: c.citations ?? 0 }))
+      .sort((a, b) => b.mentions - a.mentions);
+    const venueShare = curSnap.tc.htc_venue_share_pct ?? 0;
+    const venueTotal = ownedCitations + comps.reduce((a, c) => a + c.mentions, 0);
+
+    by_engine = Object.entries(curSnap.eb).map(([engine, e]) => {
+      const ps = priSnap && priSnap.eb[engine] ? (priSnap.eb[engine].share_pct ?? 0) : null;
+      return {
+        engine,
+        current_share_pct: e.share_pct ?? 0,
+        prior_share_pct: ps ?? (e.share_pct ?? 0),
+        delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
+        current_runs: e.total ?? 0,
+      };
+    }).sort((a, b) => b.current_share_pct - a.current_share_pct);
+
+    const priVenue = priSnap ? (priSnap.tc.htc_venue_share_pct ?? null) : null;
+    overall = {
+      current: { runs: venueTotal, cited: ownedCitations, share_pct: venueShare },
+      prior: { runs: 0, cited: 0, share_pct: priVenue ?? venueShare },
+      share_delta_pp: priVenue === null ? 0 : +(venueShare - priVenue).toFixed(1),
+    };
+
+    const allCounts = [...comps.map((c) => c.mentions), ownedCitations].sort((a, b) => b - a);
+    cohort = {
+      rank: comps.length ? allCounts.indexOf(ownedCitations) + 1 : null,
+      members: comps,
+      customer_mentions: ownedCitations,
+    };
+  }
 
   // ── Prior memo (most recent delivered) ──
   const priorMemo = await env.DB.prepare(
@@ -161,14 +229,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       current_end: new Date(nowTs * 1000).toISOString().slice(0, 10),
       prior_start: new Date(priorStart * 1000).toISOString().slice(0, 10),
     },
-    overall: {
-      current: { runs: curRuns, cited: curCited, share_pct: pct(curCited, curRuns) },
-      prior: { runs: priRuns, cited: priCited, share_pct: pct(priCited, priRuns) },
-      share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
-    },
+    overall,
     by_engine,
     by_question,
-    cohort: { rank, members: cohortMembers, customer_mentions: curCited },
+    cohort,
     prior_memo: priorMemo ?? null,
     is_first_memo: !priorMemo,
   };
