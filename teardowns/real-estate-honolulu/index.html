@@ -1,0 +1,176 @@
+<!doctype html>
+<!--
+  Real-estate-Honolulu teardown 09. Published 2026-06-19.
+  7-AI-tool measurement on Honolulu / Oahu residential real estate
+  (agents + brokerages). 11-firm cohort, 18 hash-locked questions,
+  3 reps per question per run, 3 usable runs (2026-06-19, pattern-readiness
+  cleared per MOAT.md rule 5). Numbers generated from the aggregate tooling
+  (teardown-data.mjs) and drift-monitored (teardown-drift.mjs).
+
+  Cohort kept anonymized at the firm level. None of the 11 firms are paying
+  NeverRanked customers and the non-customer anonymization rule applies.
+  Categories, counts, and source-type distributions are public; individual
+  firm names are not.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 09: Honolulu real estate, where AI cites Zillow instead of any agent</title>
+<meta name="description" content="11 Honolulu real estate firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. Only 15% of citations go to a local firm. The training-data collapse inverts: Claude cites local firms 18% and ChatGPT search just 1%.">
+<link rel="canonical" href="https://neverranked.com/teardowns/real-estate-honolulu/">
+<meta property="og:title" content="Teardown 09: in Honolulu real estate, AI cites the aggregators, not the agents">
+<meta property="og:description" content="11 Honolulu real estate firms, 7 AI tools. Local firms get 15% of citations. The collapse inverts: Claude 18% vs ChatGPT search 1%.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #3a3a3e; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #1c1c1e; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Teardown 09 &middot; Honolulu real estate</div>
+    <h1>In Honolulu real estate, AI cites the aggregators, not the agents.</h1>
+    <p class="sub">11-firm Honolulu/Oahu real estate cohort, 18 hash-locked questions, 3 usable runs on 2026-06-19. Figures generated from the aggregate tooling. Individual firms anonymized. Counts and distributions named.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> across 11 local Honolulu real estate firms and 7 AI tools, only 15% of citations point to any local firm&rsquo;s own website. The other 77% go to aggregators (Zillow, Realtor.com), agent-ranking sites, and editorial. And the training-data collapse we found in every other category inverts here: Claude cites local firms 18% of the time and Gemma 20%, while the web-searching engines ChatGPT search (1%) and Microsoft Copilot (0%) barely cite a local agent at all. For real estate, the live-search engines are so saturated by the national portals that they surface almost no actual agent.
+    </div>
+
+    <h2>Why this category matters as a measurement subject</h2>
+    <p>Real estate is a high-value, marketing-forward local-services vertical. A single transaction is worth more than almost any other local-business lead, and buyers ask AI the way the queries name it: by role (agent, realtor, brokerage, listing agent), by area (Honolulu, Oahu, Kakaako, Kailua, Hawaii Kai), and by situation (first-time buyer, investment property, military relocation, selling a condo). It is also the most consolidated category we have measured on the demand side: the national portals (Zillow, Realtor.com) and agent-matching services (FastExpert, RealTrends) have spent years becoming the default answer, and the AI tools have learned that habit. That makes real estate the clearest test yet of whether a local firm can be cited at all when aggregators own the category.</p>
+
+    <h2>Methodology summary</h2>
+    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <ul>
+      <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
+    </ul>
+    <p>18 questions a Honolulu home buyer or seller would actually ask AI, locked at hash <code>628e3d2b...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-19. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>. The 11-firm cohort was built from the citations themselves: the first run with no cohort registered, then a cited-host audit that kept the genuinely local Honolulu/Oahu real estate firms and excluded the national portals and ranking sites.</p>
+    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+
+    <h2>Source-type distribution (cohort-wide)</h2>
+    <p>Across all 7 AI tools and 5,836 citations, AI pulled answers from these source types:</p>
+    <table>
+      <thead>
+        <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Independent web (portals, ranking sites, editorial)</td><td class="num"><strong>77%</strong></td><td class="num">4,517</td></tr>
+        <tr><td class="us">Competitor (local-firm-owned websites)</td><td class="num"><strong>15%</strong></td><td class="num">870</td></tr>
+        <tr><td>Review directories (Yelp and similar)</td><td class="num">4%</td><td class="num">207</td></tr>
+        <tr><td>Reddit</td><td class="num">1%</td><td class="num">87</td></tr>
+        <tr><td>Social</td><td class="num">1%</td><td class="num">77</td></tr>
+        <tr><td>YouTube</td><td class="num">1%</td><td class="num">36</td></tr>
+        <tr><td>Wikipedia</td><td class="num">1%</td><td class="num">30</td></tr>
+        <tr><td>Forum</td><td class="num">0%</td><td class="num">12</td></tr>
+      </tbody>
+    </table>
+    <p>This is the most aggregator-dominated category we have measured. For comparison, Honolulu med spas put 45% of citations on the firms&rsquo; own sites. Honolulu real estate firms get 15%. The difference is not that real estate firms have worse websites. It is that the national portals have so thoroughly captured the category that AI treats Zillow and Realtor.com as the answer to "best agent in Honolulu," and the local firm is a footnote. Yelp alone drew 147 citations across the runs, roughly as many as the single most-cited local firm.</p>
+
+    <h2>Per-AI-tool breakdown</h2>
+    <table>
+      <thead>
+        <tr><th>AI tool</th><th class="num">Local-firm share</th><th class="num">Independent-web share</th><th class="num">Total mentions</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>28%</strong></td><td class="num">71%</td><td class="num">1,345</td></tr>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>20%</strong></td><td class="num">80%</td><td class="num">330</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>18%</strong></td><td class="num">82%</td><td class="num">607</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>17%</strong></td><td class="num">72%</td><td class="num">1,521</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>12%</strong></td><td class="num">83%</td><td class="num">430</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>1%</strong></td><td class="num">99%</td><td class="num">824</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">95%</td><td class="num">779</td></tr>
+      </tbody>
+    </table>
+    <p>Read the top and bottom of that table together, because they overturn the pattern from every other category we have published. Until now, the web-searching engines cited local firms heavily and the training-data engine Claude collapsed to near zero. Here it is reversed. Claude (18%) and Gemma (20%) name local firms more often than ChatGPT search (1%) and Microsoft Copilot (0%) do. The training-data engines have learned the established Honolulu brokerages by name. The live-search engines, asked the same questions, return Zillow and Realtor.com instead.</p>
+
+    <div class="callout">
+      <h3>The collapse inverts, and why that is the informative part</h3>
+      <p>In Honolulu med spas, Hawaii and Austin CPA firms, and home services, Claude sat at 0% to 2% own-site share while the web-searching engines did the citing. Real estate breaks that cleanly. The reason is the demand side, not the supply side. Real-estate buyer queries are the most commercially valuable local searches on the internet, so the national portals have spent a decade making themselves the answer, and the live-search engines inherit those results. Claude, answering from training data rather than the current portal-saturated search index, actually reaches for the brokerage names it learned. The lesson NeverRanked keeps proving is the one this category states most plainly: the pattern is category-specific, and you cannot assume the engine that helps a med spa helps a real estate firm. You have to measure each one.</p>
+    </div>
+
+    <h2>The opening, such as it is</h2>
+    <p>On the web-searching engines, the local-firm citation that does exist is thin and contested, and Microsoft Copilot returns zero local-firm citations across 779 mentions. Copilot answers from Bing organic results, where the top results for "best real estate agent Honolulu" are portals and ranking lists, not agents. The structural opening is the same one we see everywhere: whichever local firm becomes the answer Bing surfaces first owns the Copilot result while every competitor is invisible there. In real estate that is a steeper climb than in other categories, because the competition for that slot is not other agents, it is Zillow. We name the condition. Whether a firm can change it is a measurement question we keep answering month over month, not a promise.</p>
+
+    <h2>Top recurring firms (anonymized)</h2>
+    <p>The 5 local firms AI cited most often across the 18 questions and 7 tools, by total mentions across the 3 runs:</p>
+    <table>
+      <thead>
+        <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">Questions cited on</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Firm A</td><td class="num">174</td><td class="num">15/18</td></tr>
+        <tr><td>Firm B</td><td class="num">147</td><td class="num">18/18</td></tr>
+        <tr><td>Firm C</td><td class="num">125</td><td class="num">11/18</td></tr>
+        <tr><td>Firm D</td><td class="num">78</td><td class="num">9/18</td></tr>
+        <tr><td>Firm E</td><td class="num">56</td><td class="num">15/18</td></tr>
+      </tbody>
+    </table>
+    <p>Firm B was cited on all 18 questions, the only firm with full coverage, which is the editorial-presence signal at work: a large, long-established brokerage the training-data engines have learned. The 11-firm cohort total is 870 citations, against 4,517 for independent web. Even the strongest local firm is cited far less often than the portals AI defaults to.</p>
+
+    <h2>What this teardown does and does not prove</h2>
+    <p>What it supports:</p>
+    <ul>
+      <li>The 11-firm cohort is the set of genuinely local Honolulu real estate firms AI cites for buyer-shaped questions, surfaced from the citations and hard-audited to exclude national portals and ranking sites.</li>
+      <li>Real estate is the most aggregator-dominated category we have measured: 15% local-firm share against 77% independent web.</li>
+      <li>The training-data collapse inverts here. Claude (18%) and Gemma (20%) cite local firms more than ChatGPT search (1%) and Microsoft Copilot (0%), the opposite of med spas and CPA firms, and it held across all 3 runs.</li>
+      <li>The Microsoft Copilot 0% local-firm share is cohort-wide and consistent across all 3 runs.</li>
+    </ul>
+    <p>What it does not yet support:</p>
+    <ul>
+      <li>That AI behavior on these questions stays stable over months. Models refresh training data and search indices on schedules outside our control. Re-measurement is the only honest answer.</li>
+      <li>That changing a firm&rsquo;s site or its third-party presence would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments against named firms with control for confounds. Different scope.</li>
+      <li>That the aggregator dominance is closable by any one firm. Competing with Zillow for the live-search slot is a category-level condition this measurement names but does not solve.</li>
+    </ul>
+
+    <h2>Why this is anonymized</h2>
+    <p>None of the 11 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, and per-AI-tool numbers are public. Individual firm names are not. The pattern is what is informative on a public surface. A firm that becomes a customer gets a 1:1 deliverable that names every firm in the cohort, names the queries it is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the free diagnostic</a>
+      <a href="/teardowns/cross-category/">Cross-category teardown</a>
+      <a href="/methodology/">How we measure</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement window:</strong> 3 usable runs on 2026-06-19. Figures generated from the aggregate tooling (teardown-data.mjs) and drift-monitored. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>628e3d2b...</code>, open-source measurement code, named AI tools on named dates. Gemma is open-weight, so any auditor can independently re-run the same questions and verify the training-data numbers.</p>
+      <p><strong>Anonymization:</strong> the 11-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and category-level source surfaces are public. Individual firm names are not.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
