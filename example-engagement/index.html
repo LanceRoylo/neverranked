@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Example engagement deliverable -- NeverRanked</title>
-<meta name="description" content="What a $4,500 kickoff actually produces. A redacted example of the research memo and prepped punch list a paying customer receives.">
+<meta name="description" content="What a $4,500 kickoff actually produces. An anonymized example of the research memo and prepped punch list a paying customer receives.">
 <link rel="canonical" href="https://neverranked.com/example-engagement/">
 <style>
   :root { color-scheme: dark; }
@@ -35,175 +35,195 @@
   .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
   .footer { color: #6a6a70; font-size: 12px; margin-top: 64px; letter-spacing: 0.04em; text-align: center; }
+  .printline { color: #6a6a70; font-size: 13px; margin: 28px 0 0; }
+  @media print {
+    html, body { background: #fff; }
+    body { color: #1a1a1a; padding: 0; display: block; }
+    main { max-width: 100%; padding: 0 12px; }
+    h1 { color: #111; }
+    h2 { color: #7a6a2c; border-color: #cfcfcf; }
+    h3, strong { color: #111; }
+    p, ul, li, td { color: #333; }
+    th { color: #7a6a2c; border-color: #999; }
+    td { border-color: #e6e6e6; }
+    .sub { color: #555; }
+    .notice { background: #f7f5ee; border-color: #cfcfcf; color: #444; }
+    .notice strong { color: #7a6a2c; }
+    .priority { background: #fafafa; border-color: #ddd; }
+    .priority .row { color: #555; }
+    .priority .row strong { color: #333; }
+    code { background: #f0eee6; color: #7a6a2c; }
+    a { color: #111; }
+    .rule { background: #ccc; }
+    .footer, .printline { color: #777; }
+  }
 </style>
 </head>
 <body>
   <main>
     <div class="meta-top">NeverRanked &middot; Example kickoff deliverable</div>
     <h1>What a $4,500 kickoff actually produces.</h1>
-    <p class="sub">A redacted example of the research memo and prepped punch list a paying customer receives at the end of the three-week kickoff engagement.</p>
+    <p class="sub">An anonymized example of the research memo and prepped punch list a paying customer receives at the end of the three-week kickoff engagement.</p>
 
     <div class="notice">
-      <strong>About this page.</strong> The data on this page is real, captured from the Honolulu med-spa cohort we measured in May 2026. The customer is a hypothetical Honolulu med-spa operator used here to show the shape of the deliverable. No real customer is named.
-    </div>
-
-    <div class="notice">
-      <strong>Note on this example's data vintage.</strong> The numbers below were captured from May-17-2026 seed runs measured on 2 of the 7 engines NeverRanked now uses (Perplexity and ChatGPT search). The current kickoff engagement ships all 7 surfaces from day one (5 citation-grade + 2 model-knowledge). The shape of the deliverable is the same; a current kickoff would add the Gemini, Microsoft Copilot (Bing), Google AI Overviews, Claude, and Gemma rows to every per-engine breakdown below. See the <a href="/teardowns/bank-honolulu/">bank-honolulu teardown</a> for what 7-engine data looks like in the published format. Updated source-type numbers are also corrected for the cohort-classifier fix shipped 2026-05-23. Earlier numbers on this page over-attributed cohort med-spa sites to "independent_web."
+      <strong>About this page.</strong> The numbers below are real, measured across the Honolulu med-spa category on 2026-06-09 (7 AI tools, 18 buyer-shaped questions, 3 clean runs). The "you" in this memo is a hypothetical Honolulu med-spa operator, used to show the shape of the deliverable. Competitors are labeled Med Spa A through J because they are not NeverRanked customers and did not consent to be named publicly. A real customer's deliverable names every firm in full, with domains. The named competitive map is the product. On a public page, the pattern is what carries.
     </div>
 
     <h2>1. Executive summary</h2>
-    <p>For the queries a Honolulu med-spa shopper actually types into ChatGPT and Perplexity, your business does not appear in the AI answer. Three of your competitors do, consistently, across both engines and across both head-intent ("best med spa in Honolulu") and long-tail intent ("med spa Kakaako that does morpheus8") queries.</p>
-    <p>The cohort spans 40 distinct queries, 2,104 total citation slots captured, 2 of the 7 measurement engines (Perplexity sonar and ChatGPT search). The headline pattern: <strong>AI cites Honolulu med-spa firm-owned sites and third-party content at roughly 1:1 (57% competitor / 41% independent web)</strong>, with the remaining 2% in review directories. Zero from Reddit. Zero from YouTube on ChatGPT search; 1% from YouTube on Perplexity. These shares are recomputed against the corrected source-type classifier shipped 2026-05-23.</p>
-    <p>The punch list at the end of this memo orders the actionable work by impact. Item 1 alone would put you on roughly one third of the queries currently being answered without you.</p>
+    <p>For the questions a Honolulu med-spa shopper actually types into AI, the engines name the same handful of firms over and over. One competitor appears on all 18 measured questions. Four more appear on the majority. If your firm is not in that set, you are absent on exactly the demand-shape queries that bring in new patients, while named competitors are present consistently.</p>
+    <p>Where the contest lives is specific. The five web-searching engines cite Honolulu med spas' own websites heavily (Gemini 64%, Perplexity 61%, ChatGPT search 57%, Google AI Overviews 53%), so on the surfaces where most AI discovery happens, your own site does more than half the work of getting cited. Two engines are category-wide blind spots: Claude cites med-spa sites just 2% of the time and Microsoft Copilot 0%. Those two are not a you-problem, they are an opening that sits open for every firm at once.</p>
+    <p>The punch list at the end of this memo orders the actionable work by impact. Item 1 is the highest-leverage single piece of work, and it is the same work that competitor A used to reach all 18 questions.</p>
 
     <h2>2. Methodology and scope</h2>
-    <p>Forty hash-locked queries split into 16 head-intent ("best med spa in Honolulu", "top rated medical spa Honolulu", neighborhood scoping, service scoping) and 24 long-tail intent (open-late, weekend-open, service-combined, insurance-fit, neighborhood-plus-service, value-conscious, trust-signal queries). Each query ran three times per engine per day for noise control.</p>
-    <h4>Engines measured</h4>
-    <p>In a current kickoff: all 7 surfaces from day one. Five citation-grade engines (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews) and two model-knowledge engines (Claude, Gemma). The data shown in this example was captured from May-17-2026 seed runs on 2 engines (Perplexity sonar + ChatGPT search). The 7-engine version of this same shape would add five more per-engine rows below; see the <a href="/teardowns/bank-honolulu/">bank-honolulu teardown</a> for the published format.</p>
+    <p>Eighteen hash-locked questions a Honolulu med-spa buyer would actually ask, split across head-intent ("best med spa in Honolulu", "top rated medical spa Honolulu"), service-intent (Botox, filler, laser hair removal, CoolSculpting), neighborhood-intent (Waikiki, Kakaako, Oahu), and trust-signal queries. Each question ran three times per engine per run to separate signal from noise. Question set locked at hash <code>26851ed8</code> so every future run compares cleanly.</p>
+    <h4>Engines measured (all 7 from day one)</h4>
+    <ul>
+      <li><strong>Five citation-grade engines:</strong> Perplexity (sonar), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing, Google AI Overviews.</li>
+      <li><strong>Two model-knowledge engines:</strong> Claude (claude-haiku-4-5) and Gemma (open-weight), which tell you what AI says about the category when it cannot search the live web.</li>
+    </ul>
+    <h4>Cohort</h4>
+    <p>The 15-firm cohort was built from the citations themselves, not picked in advance: a first run with no cohort registered, then a coverage scan that surfaced every firm the engines cited heavily for these questions. That is why the competitive map is the set of firms AI actually names, not a list we assumed.</p>
     <h4>What this engagement did not measure</h4>
     <ul>
       <li>Voice AI surfaces (Siri, Alexa, Google Assistant). Out of scope until measurable through public APIs.</li>
       <li>AI ad placements. Out of scope until those formats are measurable.</li>
-      <li>Geo variation outside Oahu. Citation patterns in other islands may differ.</li>
-      <li>Long-term causation. We measured what AI cites. We did not test whether shipping the punch list causes citation movement. Monthly delta memo will report observed movement honestly.</li>
+      <li>Geo variation outside Oahu. Citation patterns on other islands may differ.</li>
+      <li>Long-term causation. We measured what AI cites. We did not test whether shipping the punch list causes citation movement. The monthly delta memo reports observed movement honestly.</li>
     </ul>
 
     <h2>3. The headline finding</h2>
-    <p>You do not appear in the AI answer for 38 of 40 measured queries. The two queries where you do appear are exact-name matches ("[your business name] reviews", "[your business name] Honolulu"), queries a customer only types if they already know your name.</p>
-    <p>For every demand-shape query (a customer asking AI to find a provider in your category without naming you), you are absent. The competitors who do appear, consistently:</p>
+    <p>For every demand-shape query (a shopper asking AI to find a provider in your category without naming you), the engines return the same short list of competitors. The firms they named most often, across all three runs and all seven tools:</p>
     <ul>
-      <li><strong>Med Spa A</strong>: 88 citations across 18 of 40 queries</li>
-      <li><strong>Med Spa B</strong>: 88 citations across 16 of 40 queries</li>
-      <li><strong>Med Spa C</strong>: 58 citations across 14 of 40 queries</li>
-      <li><strong>Med Spa E</strong>: 53 citations across 12 of 40 queries</li>
+      <li><strong>Med Spa A</strong>: cited 531 times, present on all 18 of 18 questions, across 6 of 7 engines</li>
+      <li><strong>Med Spa B</strong>: 307 citations, 15 of 18 questions</li>
+      <li><strong>Med Spa C</strong>: 307 citations, 14 of 18 questions</li>
+      <li><strong>Med Spa D</strong>: 189 citations, 14 of 18 questions, the widest engine reach after A (5 of 7)</li>
+      <li><strong>Med Spa E</strong>: 143 citations, 15 of 18 questions</li>
     </ul>
-    <p>Three of those four are not the largest med spas on Oahu by revenue or chair count. They are among the businesses whose authority signals AI engines have learned to trust for this category. That distinction is the entire work of the engagement.</p>
-    <p style="font-size:13px;color:#8a8a90"><em>Note on the anonymization: the competitors in this public example are labeled Med Spa A through J because they are not NeverRanked customers and did not consent to appear in our public materials. A real customer's deliverable names every competitor in full, with domains. The named competitive map is the product. On a public page, the pattern is what carries.</em></p>
+    <p>Med Spa A is not the largest med spa on Oahu by chair count or revenue. It is the firm whose authority signals the engines have learned to trust for this category. That distinction, the gap between market size and AI-citation share, is the entire work of the engagement.</p>
 
     <h2>4. Source-type distribution</h2>
-    <p>Across 2,104 citations on the cohort, where AI engines pulled from:</p>
+    <p>Across every citation captured for the category, this is where the AI engines pulled from:</p>
     <table>
       <thead>
-        <tr><th>Source type</th><th>% of citations</th><th>Hosts driving it</th></tr>
+        <tr><th>Source type</th><th>% of citations</th><th>What it means for you</th></tr>
       </thead>
       <tbody>
-        <tr><td>Competitor (cohort med-spa sites)</td><td>57%</td><td>Med Spa A through J and the longer cohort tail</td></tr>
-        <tr><td>Independent web</td><td>41%</td><td>Vendor pages, blog posts, third-party content about med spas</td></tr>
-        <tr><td>Review directories</td><td>2%</td><td>two category-specific directories</td></tr>
-        <tr><td>YouTube</td><td>&lt;1%</td><td>Single tutorial channel (Perplexity only)</td></tr>
-        <tr><td>Reddit</td><td>0%</td><td>Not cited for this category in the 2-engine seed</td></tr>
-        <tr><td>Wikipedia</td><td>0%</td><td>Not cited (Bing typically surfaces Wikipedia for this category; would appear in a 7-engine kickoff)</td></tr>
-        <tr><td>Forum / Q&amp;A</td><td>0%</td><td>Not cited</td></tr>
+        <tr><td>Independent web (third-party content)</td><td>51%</td><td>Editorial pages, vendor and blog content about med spas</td></tr>
+        <tr><td>Competitor (med-spa-owned websites)</td><td>45%</td><td>The firms' own sites. This is the share you compete for directly.</td></tr>
+        <tr><td>Review directories (Yelp, RealSelf, Healthgrades, Vagaro)</td><td>3%</td><td>Low. Med spa is a firm-heavy category, not a directory-driven one.</td></tr>
+        <tr><td>Wikipedia</td><td>1%</td><td>Minor</td></tr>
+        <tr><td>YouTube</td><td>1%</td><td>Minor</td></tr>
+        <tr><td>Reddit, social, forum (combined)</td><td>0%</td><td>Not a citation source for this category</td></tr>
       </tbody>
     </table>
-    <p><strong>The non-obvious finding.</strong> The two review directories AI engines cite for Honolulu med spas are not Yelp, not Google, not Healthgrades, not RealSelf. They are two niche, category-specific directories most med-spa operators have never heard of. Claiming a profile on each costs nothing and would put you in a source class AI engines demonstrably trust for your category. The two directories are named explicitly in the real deliverable. They are withheld from this public example on purpose, because which specific directories AI trusts in a category is the proprietary finding the engagement is paid to produce.</p>
-    <p>The Reddit zero is also a real finding. Many med spas spend on Reddit-adjacent reputation management. For your category, on Perplexity, that spend produces no citation share. For comparison, cross-category aggregate data shows Reddit drives 20-35% of citations on Perplexity for B2C SaaS and consumer electronics categories.</p>
+    <p><strong>The non-obvious finding.</strong> Review directories are only 3% of citations for Honolulu med spas, far lower than a category like dental, where insurance-carrier directories dominate. The engines mostly choose between med spas' own sites (45%) and third-party editorial content (51%), not aggregators. The practical read: directory-claiming is low-leverage here, and own-site work is where the citations actually move. That is a real reversal from categories where directories carry the weight, and it is the kind of category-specific finding the kickoff is paid to produce.</p>
 
-    <h2>5. Per-engine breakdown (2 of 7 engines from the seed data)</h2>
-    <h4>Perplexity (916 citations measured)</h4>
-    <ul>
-      <li>51% competitor (cohort med-spa sites), 46% independent_web, 3% review_directory, 1% YouTube.</li>
-      <li>The only engine that cited YouTube at all in this category seed.</li>
-      <li>More likely to surface neighborhood-specific results.</li>
-    </ul>
-    <h4>ChatGPT search (gpt-4o-search-preview, 1,188 citations measured)</h4>
-    <ul>
-      <li>62% competitor (cohort med-spa sites), 37% independent_web, 1% review_directory.</li>
-      <li>Zero YouTube, zero Reddit.</li>
-      <li>Notably heavier weighting toward the spa's own site (62%) than Perplexity (51%). The per-engine asymmetry that single-engine measurement misses.</li>
-    </ul>
-    <h4>Gemini grounded, Microsoft Copilot (Bing), Google AI Overviews</h4>
-    <p>The current kickoff measures these from day one. The bank-honolulu teardown (<a href="/teardowns/bank-honolulu/">/teardowns/bank-honolulu/</a>) shows what the 7-engine version of this breakdown looks like in the published format. In banking, the per-engine spread between the strongest competitor-share engine (Perplexity, 75%) and the weakest (Microsoft Copilot via Bing, 0%) was 75 percentage points, a finding invisible to any single-engine measurement. Expect a similar shape for med-spa once the 7-engine kickoff version of this example ships.</p>
-    <h4>Claude and Gemma (model-knowledge)</h4>
-    <p>The current kickoff measures these from day one. They tell you what AI says about you when it cannot search, which is the baseline-mention layer behind every ungrounded AI conversation. In the bank-honolulu cohort, Claude and Gemma cited bank-owned sites 72% and 70% of the time respectively, meaningful brand-recognition presence even before web search.</p>
-
-    <h2>6. Competitive gap analysis</h2>
-    <p>For the 38 queries where you do not appear, the table below shows which competitors did. Frequency = number of distinct queries that competitor was cited on, out of 40.</p>
+    <h2>5. Per-engine breakdown (all 7 engines)</h2>
+    <p>How often each engine cited a Honolulu med spa's own website, versus third-party content. The spread across engines is the finding a single-engine tool would miss entirely.</p>
     <table>
       <thead>
-        <tr><th>Competitor</th><th>Frequency</th><th>Engines</th></tr>
+        <tr><th>AI tool</th><th>Med-spa-owned share</th><th>Third-party share</th><th>Total mentions</th></tr>
       </thead>
       <tbody>
-        <tr><td>Med Spa A</td><td>18/40</td><td>Both</td></tr>
-        <tr><td>Med Spa B</td><td>16/40</td><td>Both</td></tr>
-        <tr><td>Med Spa C</td><td>14/40</td><td>Both</td></tr>
-        <tr><td>Med Spa D</td><td>13/40</td><td>Both</td></tr>
-        <tr><td>Med Spa E</td><td>12/40</td><td>Both</td></tr>
-        <tr><td>Med Spa F</td><td>9/40</td><td>Both</td></tr>
-        <tr><td>Med Spa G</td><td>8/40</td><td>Perplexity only</td></tr>
-        <tr><td>Med Spa H</td><td>5/40</td><td>Perplexity only</td></tr>
-        <tr><td>Med Spa I</td><td>4/40</td><td>Perplexity only</td></tr>
-        <tr><td>Med Spa J</td><td>3/40</td><td>Both</td></tr>
+        <tr><td>Gemini grounded</td><td>64%</td><td>35%</td><td>1,590</td></tr>
+        <tr><td>Perplexity</td><td>61%</td><td>37%</td><td>1,194</td></tr>
+        <tr><td>ChatGPT search</td><td>57%</td><td>43%</td><td>895</td></tr>
+        <tr><td>Google AI Overviews</td><td>53%</td><td>42%</td><td>172</td></tr>
+        <tr><td>Gemma (training data)</td><td>32%</td><td>68%</td><td>307</td></tr>
+        <tr><td>Claude (training data)</td><td>2%</td><td>98%</td><td>583</td></tr>
+        <tr><td>Microsoft Copilot (Bing)</td><td>0%</td><td>92%</td><td>802</td></tr>
+      </tbody>
+    </table>
+    <p>Two rows decide the strategy. The top four (the web-searching engines) cite med-spa websites 53 to 64% of the time, so on the surfaces where most AI discovery happens, your own site is doing more than half the work. The bottom two are the blind spots: Claude at 2% and Microsoft Copilot at 0%.</p>
+    <h4>The Claude blind spot, and why it is not yours to fix alone</h4>
+    <p>Claude answers from training data, not live search. At 2% own-site share, it has effectively no memory of Honolulu med spas. We measured the identical collapse for Hawaii CPA firms (Claude 1%) and Austin CPA firms (Claude 0%): two unrelated local-service categories, same near-zero result. It is a property of how thinly local-service businesses appear in the editorial text a model learns from, not a quirk of one firm. The honest read: Claude is a category-wide blind spot no single med spa closes on a short timescale. Gemma (32%) is more reachable, through sustained editorial presence over the training cycle.</p>
+    <h4>The Microsoft Copilot opening</h4>
+    <p>Microsoft Copilot answers using Bing's organic results. Across 802 mentions for these questions, zero went to any med spa's own website, because the current Bing top results for these queries are dominated by directories and editorial content rather than individual firms' sites. The opening is open for everyone at once: whichever Honolulu med spa ranks first in Bing organic for the common queries effectively owns the Copilot answer while every competitor is still invisible there. We name the condition. Whether changing it moves the citation is a measurement question we keep answering month over month.</p>
+
+    <h2>6. Competitive gap analysis</h2>
+    <p>For the demand-shape questions where you do not appear, the table below shows which competitors did, by total citations, how many of the 18 questions they reached, and how many of the 7 engines named them.</p>
+    <table>
+      <thead>
+        <tr><th>Competitor</th><th>Citations</th><th>Questions (of 18)</th><th>Engines (of 7)</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Med Spa A</td><td>531</td><td>18</td><td>6</td></tr>
+        <tr><td>Med Spa B</td><td>307</td><td>15</td><td>4</td></tr>
+        <tr><td>Med Spa C</td><td>307</td><td>14</td><td>4</td></tr>
+        <tr><td>Med Spa D</td><td>189</td><td>14</td><td>5</td></tr>
+        <tr><td>Med Spa E</td><td>143</td><td>15</td><td>3</td></tr>
+        <tr><td>Med Spa F</td><td>105</td><td>12</td><td>4</td></tr>
+        <tr><td>Med Spa G</td><td>102</td><td>10</td><td>3</td></tr>
+        <tr><td>Med Spa H</td><td>87</td><td>11</td><td>3</td></tr>
+        <tr><td>Med Spa I</td><td>56</td><td>4</td><td>4</td></tr>
+        <tr><td>Med Spa J</td><td>45</td><td>5</td><td>3</td></tr>
       </tbody>
     </table>
     <p>Notable structural observations:</p>
     <ul>
-      <li>The two market leaders (Med Spa A, Med Spa B) appear on roughly 40-45% of queries each, including the head-intent "best med spa in Honolulu" variants. Closing the gap to them is a multi-quarter authority-signal project, not a quick fix.</li>
-      <li>Mid-tier competitors (Med Spa C, Med Spa D, Med Spa E) appear on 12-14 queries each. The gap to this tier is closeable in 3-6 months of consistent work on the punch list below.</li>
-      <li>The long-tail mid-tier shows up on 3-9 queries each, often on highly specific intent shapes. These are where focused effort produces fast, measurable movement.</li>
+      <li>Med Spa A is in a tier of its own: present on every question and across six of the seven engines. Closing the full gap to A is a multi-quarter authority project, not a quick fix.</li>
+      <li>Med Spa B through E form the contested middle, each on 14 to 15 of 18 questions. This is the realistic target tier. The gap to it is closeable in three to six months of consistent work on the punch list below.</li>
+      <li>Med Spa F through J show up on 4 to 12 questions each, often on narrower service or neighborhood intent. These are where focused effort produces the fastest, most measurable movement.</li>
+      <li>Engine reach is its own signal. Med Spa D reaches five engines on fewer citations than B and C, which reach four. Breadth across engines, not raw citation count, is often the more durable position.</li>
     </ul>
 
     <h2>7. Prepped punch list, ordered by impact</h2>
-    <p>Sequenced by ratio of likely citation-share movement to implementation cost. Item 1 is the highest-leverage single piece of work on the list.</p>
+    <p>Sequenced by the ratio of likely citation-share movement to implementation cost. Item 1 is the highest-leverage single piece of work on the list. Note that the work is concentrated on your own website, because the data shows that is where med-spa citations actually live.</p>
 
     <div class="priority">
-      <h4>Priority 1 &middot; Claim and complete the primary category directory profile</h4>
-      <p><strong>Why:</strong> This is the single review-directory AI engines demonstrably trust for your category on Perplexity. Three competitors hold claimed, complete profiles. You do not. (The directory is named explicitly in the real deliverable. It is withheld here because the specific directory is the proprietary finding.)</p>
-      <p><strong>What:</strong> Create the business profile, populate all fields (services, hours, location, photos, treatment list, certifications). Add aggregate review information that mirrors your actual Google Business rating.</p>
-      <div class="row"><strong>Effort:</strong> 2-3 hours of one team member's time.</div>
-      <div class="row"><strong>Expected window for movement:</strong> 4-6 weeks (directory recrawl + AI re-index cycle).</div>
+      <h4>Priority 1 &middot; Build out service-by-neighborhood pages on your own site</h4>
+      <p><strong>Why:</strong> The web-searching engines cite med spas' own sites 53 to 64% of the time, and the firms that reach the most questions (A through E) all have own-site pages that name the specific service and the Oahu neighborhood served. For a category where directories are only 3% of citations, this is where the citations are won.</p>
+      <p><strong>What:</strong> A page per high-value service (Botox, filler, laser hair removal, CoolSculpting) that explicitly states the neighborhoods served, the service variants offered, and who the service is for. The real deliverable lists which exact service-and-neighborhood combinations your competitors own and you do not.</p>
+      <div class="row"><strong>Effort:</strong> 3 to 6 hours of focused writing per service line.</div>
+      <div class="row"><strong>Expected window for movement:</strong> 4 to 8 weeks (recrawl plus AI re-index cycle).</div>
     </div>
 
     <div class="priority">
-      <h4>Priority 2 &middot; Claim and complete the secondary category directory profile</h4>
-      <p><strong>Why:</strong> Same logic as Priority 1. Smaller volume but same source-type weighting. (Also named explicitly in the real deliverable.)</p>
-      <div class="row"><strong>Effort:</strong> 1-2 hours.</div>
-      <div class="row"><strong>Expected window:</strong> 4-6 weeks.</div>
+      <h4>Priority 2 &middot; Claim the Microsoft Copilot first-mover opening in Bing organic</h4>
+      <p><strong>Why:</strong> Copilot cites med spas' own sites 0% of the time because Bing's organic top results for these queries are directories and editorial content. Whichever firm ranks first in Bing organic effectively owns the Copilot answer while every competitor is still absent.</p>
+      <p><strong>What:</strong> Verify the site in Bing Webmaster Tools, confirm the high-value service pages are indexed there, and add complete structured data (MedicalBusiness or LocalBusiness plus Service schema) so Bing can read the site as the provider for these queries.</p>
+      <div class="row"><strong>Effort:</strong> 2 to 4 hours.</div>
+      <div class="row"><strong>Expected window:</strong> 4 to 8 weeks.</div>
     </div>
 
     <div class="priority">
       <h4>Priority 3 &middot; Audit authority backlinks for currency</h4>
-      <p><strong>Why:</strong> AI engines weight authority backlinks heavily in this category. Stale, broken, or redirect-chained backlinks signal lower trust. We checked your site's inbound link profile against the three leading competitors; you have several authority links that 404 or redirect through chains.</p>
-      <div class="row"><strong>Effort:</strong> 4-8 hours for an SEO-capable team member.</div>
-      <div class="row"><strong>Expected window:</strong> 6-10 weeks for AI-engine recrawl.</div>
+      <p><strong>Why:</strong> The engines weight authority backlinks heavily for this category, and stale, broken, or redirect-chained links signal lower trust. We checked your inbound link profile against the leading competitors and flag the links that 404 or redirect through chains.</p>
+      <div class="row"><strong>Effort:</strong> 4 to 8 hours for an SEO-capable team member.</div>
+      <div class="row"><strong>Expected window:</strong> 6 to 10 weeks for AI-engine recrawl.</div>
     </div>
 
     <div class="priority">
-      <h4>Priority 4 &middot; Add neighborhood and intent specificity to service pages</h4>
-      <p><strong>Why:</strong> The four competitors who dominate the long-tail queries all have service pages that explicitly mention the Oahu neighborhoods served, the specific service variants offered, and the kind of customer the service is for. Your service pages are more generic and AI engines do not cite them for neighborhood-specific or intent-specific queries.</p>
-      <div class="row"><strong>Effort:</strong> 3-6 hours of focused writing per service line.</div>
-      <div class="row"><strong>Expected window:</strong> 4-8 weeks.</div>
+      <h4>Priority 4 &middot; Earn editorial mentions to reach Gemma over the training cycle</h4>
+      <p><strong>Why:</strong> Gemma cites med-spa-owned sites 32% of the time, the highest of the two training-data engines, and it rewards genuine editorial presence rather than live-search ranking. Sustained third-party coverage is what moves it.</p>
+      <div class="row"><strong>Effort:</strong> Ongoing, low weekly volume.</div>
+      <div class="row"><strong>Expected window:</strong> One to two training cycles. This is a compounding play, not a quick one.</div>
     </div>
 
     <div class="priority">
-      <h4>Priority 5 &middot; Update Bing Business Profile</h4>
-      <p><strong>Why:</strong> Microsoft Copilot pulls heavily from Bing Business Profile data. Most med spas in Honolulu have no Bing Business Profile.</p>
-      <div class="row"><strong>Effort:</strong> 1-2 hours.</div>
-      <div class="row"><strong>Expected window:</strong> 3-5 weeks.</div>
+      <h4>Priority 5 &middot; Refresh meta descriptions on the high-value service pages</h4>
+      <p><strong>Why:</strong> The web-searching engines read meta descriptions as one signal of page topic. Your meta descriptions on the highest-value service pages are either missing or generic.</p>
+      <div class="row"><strong>Effort:</strong> 1 to 2 hours.</div>
+      <div class="row"><strong>Expected window:</strong> 2 to 4 weeks.</div>
     </div>
 
-    <div class="priority">
-      <h4>Priority 6 &middot; Refresh meta descriptions on the four high-value service pages</h4>
-      <p><strong>Why:</strong> AI engines that grounded-search the web read meta descriptions as one signal of page topic. Your meta descriptions on the four highest-value service pages are either missing or generic.</p>
-      <div class="row"><strong>Effort:</strong> 1-2 hours.</div>
-      <div class="row"><strong>Expected window:</strong> 2-4 weeks.</div>
-    </div>
-
-    <p style="font-size:14px;color:#8a8a90;margin-top:16px">Items 7 through 12 (lower priority) are listed in the appendix of the customer deliverable. Five additional moves with the same effort and window estimates.</p>
+    <p style="font-size:14px;color:#8a8a90;margin-top:16px">Items 6 through 12 (lower priority) are listed in the appendix of the customer deliverable, with the same effort and window estimates.</p>
 
     <h2>8. What happens next (in a real engagement)</h2>
     <ul>
-      <li><strong>Day 1 of ongoing:</strong> daily measurement across the seven AI surfaces begins. Brief daily status email confirms runs completed.</li>
-      <li><strong>End of month 1:</strong> first monthly delta memo. What moved, what did not, why we think it moved, any punch list updates.</li>
-      <li><strong>Ongoing:</strong> punch list refreshes as your team ships items and as AI engines shift. Drift detection flags cohort-wide pattern changes affecting your numbers.</li>
+      <li><strong>Day 1 of ongoing:</strong> measurement across the seven AI surfaces continues on a fixed cadence. A brief status note confirms each run completed.</li>
+      <li><strong>End of month 1:</strong> the first monthly delta memo. What moved, what did not, why we think it moved, and any punch-list updates.</li>
+      <li><strong>Ongoing:</strong> the punch list refreshes as your team ships items and as the engines shift. Drift detection flags category-wide pattern changes that affect your numbers.</li>
     </ul>
 
     <div class="rule"></div>
 
     <h2>How to scope this for your category</h2>
-    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">Lance@hi.neverranked.com</a> with the category you want to measure and three to five competitors you would want on the cohort. The free 1-page diagnostic runs 5 real buyer questions for your category across all 7 AI tools and shows you which competitor firms AI is currently naming. One per business.</p>
-    <p>Full engagement is $4,500 to kick off a category, $1,500 a month after for ongoing measurement. Per category, not per client. Month to month after the kickoff.</p>
-    <p style="margin-top:24px"><a href="/">Return to NeverRanked</a> &middot; <a href="/methodology/">How we measure</a> &middot; <a href="/about/">About</a></p>
+    <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20scoping%20-%20[your%20category]">Lance@hi.neverranked.com</a> with the category you want to measure and three to five competitors you would want on the cohort. The free one-page diagnostic runs five real buyer questions for your category across all seven AI tools and shows you which competitor firms AI is currently naming. One per business.</p>
+    <p>Full engagement is $4,500 to kick off a category and $1,500 a month after for ongoing measurement. Per category, not per client. Month to month after the kickoff.</p>
+    <p class="printline">Anonymized example deliverable. Category data measured 2026-06-09. Question set hash 26851ed8. Figures produced by open-source measurement code from a hash-locked question set, independently reproducible.</p>
+    <p style="margin-top:18px"><a href="/">Return to NeverRanked</a> &middot; <a href="/methodology/">How we measure</a> &middot; <a href="/about/">About</a></p>
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
   </main>

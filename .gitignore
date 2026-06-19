@@ -31,3 +31,11 @@ audits/**/raw/
 # The teardown .md files are committed, but we don't need the
 # 200+ KB of raw scan output in git for each prospect.
 teardowns/_scan/
+
+# Personal business/insurance prep (revenue projections, not for git)
+INSURANCE-APPLICATION-PREP.md
+
+# Montaic integration handoff -- contains the live MONTAIC_API_KEY.
+# Secrets live in the Cloudflare Worker secret only, never in this public repo.
+MONTAIC-HANDOFF.md
+MONTAIC-INTEGRATION-ANSWERS.md

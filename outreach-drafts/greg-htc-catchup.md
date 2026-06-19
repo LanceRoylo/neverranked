@@ -7,6 +7,7 @@
 ---
 
 **To:** Greg @ Hawaii Theatre Center
+**Cc:** Ron @ Hawaii Theatre Center
 **Subject:** Your first monthly HTC readout is live
 
 Greg,
@@ -21,7 +22,7 @@ It also surfaced two specific, fixable things. Microsoft Copilot does not recogn
 
 This is the recurring monthly version of what we started in the pilot, now on a fixed schedule. The way the practice works now: I measure and hand your team the prepped list, I do not deploy the changes myself, because the numbers only mean something if the person measuring is not the person being measured. The snippet I put on your site stays live and maintained free, as always.
 
-Feel free to forward it to Ron or anyone on your side. If anything in it does not hold up to your read, tell me and I will run it again.
+Ron, cc'ing you as well so you both have it. If anything in the readout does not hold up to your read, tell me and I will run it again.
 
 Lance
 
