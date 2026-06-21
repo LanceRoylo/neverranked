@@ -78,6 +78,10 @@
   /* Hero */
   .hero { padding: 92px 0 96px; }
   .hero .inner { max-width: 760px; }
+  /* Two-column hero: copy + CTA left, phone visual right (uses the right-hand space). */
+  .hero .inner.hero-grid { max-width: 1080px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: center; }
+  .hero-visual { justify-self: center; }
+  .hero-visual .hero-preview { margin: 0; }
   .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin: 0 0 22px; }
   .hero h1 { font-size: 46px; font-weight: 400; line-height: 1.2; letter-spacing: -0.008em; margin: 0 0 26px; }
   .hero .turn { font-size: 21px; font-style: italic; color: var(--gold); line-height: 1.5; margin: 0 0 36px; }
@@ -166,6 +170,8 @@
     .hero { padding: 60px 0 64px; }
     .hero h1 { font-size: 33px; }
     .hero .turn { font-size: 19px; }
+    .hero .inner.hero-grid { grid-template-columns: 1fr; gap: 34px; max-width: 760px; }
+    .hero-visual { justify-self: center; margin-top: 4px; }
     .section { padding: 64px 0; }
     .vg-panels { flex-direction: column; gap: 30px; }
     .prices { flex-direction: column; }
@@ -824,7 +830,8 @@
 
   <!-- Hero -->
   <section class="hero">
-    <div class="inner">
+    <div class="inner hero-grid">
+      <div class="hero-copy">
       <div class="kicker reveal">A forensic research practice &middot; Honolulu</div>
       <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">When buyers ask AI to name the best in your category, it picks someone.</span></h1>
       <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Usually not you. We run the forensic measurement of who AI actually names across the seven tools your buyers use, then hand your team the fixes. Other tools promise to make you visible. We hand you the evidence of where you stand. Not a promise, the receipts.</p>
@@ -835,6 +842,12 @@
       </form>
       <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. In the categories we measured, AI tools name 3 to 5 businesses per buyer question. We check whether yours is one of them.</div>
 
+      <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
+        Named customer Hawaii Theatre Center went 45 to 95 in ten days. Eleven measurements published. Every number public and reproducible.
+      </div>
+      </div>
+
+      <div class="hero-visual">
       <div class="hero-preview reveal" style="transition-delay:.38s" aria-hidden="true">
         <div class="phone-screen">
           <div class="phone-island"></div>
@@ -869,9 +882,6 @@
           </div>
         </div>
       </div>
-
-      <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65;">
-        Named customer Hawaii Theatre Center went 45 to 95 in ten days. Eleven measurements published. Every number public and reproducible.
       </div>
     </div>
   </section>
