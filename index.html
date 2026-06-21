@@ -1260,6 +1260,7 @@
             <option value="hvac">HVAC</option>
             <option value="chiro">Chiropractic / PT</option>
             <option value="restaurant">Restaurant</option>
+            <option value="hotel">Hotel / Boutique Hotel</option>
           </select>
           <button type="button" class="roi-adjust" id="roi-toggle">Adjust the numbers</button>
         </div>
@@ -1678,7 +1679,8 @@
       medspa:       { value: 5000,  unit: 'client',  basis: 'Average client lifetime value across treatments with repeat visits over 2 to 3 years.' },
       hvac:         { value: 5000,  unit: 'job',     basis: 'Average job value including installs and major repairs. Lifetime value with maintenance contracts runs higher.' },
       chiro:        { value: 4000,  unit: 'patient', basis: 'Average annual patient value with regular visits.' },
-      restaurant:   { value: 2000,  unit: 'regular', basis: 'One loyal regular spending about $35 a week for a year.' }
+      restaurant:   { value: 2000,  unit: 'regular', basis: 'One loyal regular spending about $35 a week for a year.' },
+      hotel:        { value: 2500,  unit: 'booking', basis: 'Average value of one direct booking: a multi-night Hawaii stay (about 4 to 5 nights), with no 15 to 25 percent OTA commission skimmed off the top.' }
     };
 
     var sel = document.getElementById('roi-industry');
