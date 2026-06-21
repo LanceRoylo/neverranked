@@ -196,6 +196,8 @@
   }
   .phone-screen {
     position: relative;
+    display: flex; flex-direction: column;
+    min-height: 580px;
     background: linear-gradient(180deg, #141419 0%, #0c0c0f 100%);
     border-radius: 33px; overflow: hidden; padding-bottom: 12px;
   }
@@ -224,7 +226,7 @@
     background: linear-gradient(135deg, #e8c767, #b59a6a);
   }
   .chat-name { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--text); }
-  .chat-body { padding: 14px 13px 4px; display: flex; flex-direction: column; gap: 11px; }
+  .chat-body { padding: 14px 13px 4px; display: flex; flex-direction: column; gap: 11px; flex: 1 1 auto; justify-content: flex-end; }
   .chat-user { align-self: flex-end; max-width: 86%; }
   .chat-user-bubble {
     background: linear-gradient(135deg, #e8c767, #d4b65c); color: #15120a;
