@@ -262,6 +262,14 @@
     background: rgba(212,197,150,0.12);
     border: 1px solid rgba(212,197,150,0.30);
     color: var(--text);
+    transition: background 240ms var(--ease-out, ease), color 240ms var(--ease-out, ease), box-shadow 240ms var(--ease-out, ease), border-color 240ms var(--ease-out, ease);
+  }
+  /* AI "picks" this firm as the answer. Cycles A/B/C across queries; You never lights. */
+  .hpr-named.hpr-picked {
+    background: linear-gradient(135deg, #e8c767, #d4b65c);
+    border-color: #e8c767;
+    color: #15120a; font-weight: 600;
+    box-shadow: 0 0 0 3px rgba(232,199,103,0.16), 0 4px 14px rgba(232,199,103,0.22);
   }
   .hpr-you {
     background: transparent; border: 1.5px dashed var(--gold);
@@ -1491,6 +1499,7 @@
     (function () {
       var queryEl = document.getElementById('hero-query');
       if (!queryEl) return;
+      var namedFirms = document.querySelectorAll('.hpr-named');
       var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
       var queries = [
         'best wealth manager in Hawaii',
@@ -1546,8 +1555,11 @@
 
       (function loop() {
         var q = queries[qi];
+        var firm = namedFirms.length ? namedFirms[qi % namedFirms.length] : null;
         typeOut(q)
-          .then(function () { return sleep(holdAfterType); })
+          .then(function () { return sleep(480); })                                  // beat: AI "answers"
+          .then(function () { if (firm) firm.classList.add('hpr-picked'); return sleep(holdAfterType); })
+          .then(function () { if (firm) firm.classList.remove('hpr-picked'); })
           .then(deleteOut)
           .then(function () { return sleep(holdAfterDelete); })
           .then(function () {
