@@ -1255,7 +1255,11 @@ body.agency-mode #agency-cta-card{display:block !important}
     <!-- Trust + price-discovery in the hero. Was buried below the fold; now visible
          the moment users decide whether to engage. -->
     <div class="hero-trust" style="margin-top:18px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
-      <span><strong style="color:var(--text)">7</strong> AI tools we measure</span>
+      <span><strong style="color:var(--text)">10</strong> categories measured</span>
+      <span style="opacity:.4">&middot;</span>
+      <span><strong style="color:var(--text)">7</strong> AI tools</span>
+      <span style="opacity:.4">&middot;</span>
+      <span>every number public</span>
       <span style="opacity:.4">&middot;</span>
       <a href="https://neverranked.com/#pricing" id="hero-pricing-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See pricing &rarr;</a>
     </div>
