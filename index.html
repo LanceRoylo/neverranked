@@ -41,6 +41,7 @@
   .section.panel { background: var(--panel); }
   .inner { max-width: 624px; margin: 0 auto; padding: 0 32px; }
   .inner.wide { max-width: 860px; }
+  .inner.wide > p { max-width: 760px; }
   .sec-label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--dim); margin: 0 0 26px; }
   .sec-label .n { color: var(--gold); margin-right: 10px; }
   h2 { font-size: 25px; font-weight: 400; color: var(--text); margin: 0 0 14px; letter-spacing: 0.005em; }
@@ -71,7 +72,7 @@
      as the user scrolls past. JS sets --char-progress per element. */
   .schar {
     display: inline;
-    opacity: var(--char-opacity, 0.2);
+    opacity: var(--char-opacity, 0.6);
     transition: opacity 60ms linear;
   }
 
@@ -79,7 +80,7 @@
   .hero { padding: 92px 0 96px; }
   .hero .inner { max-width: 760px; }
   /* Two-column hero: copy + CTA left, phone visual right (uses the right-hand space). */
-  .hero .inner.hero-grid { max-width: 1080px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: center; }
+  .hero .inner.hero-grid { max-width: 1080px; display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 56px; align-items: start; }
   .hero-visual { justify-self: center; }
   .hero-visual .hero-preview { margin: 0; }
   .kicker { font-family: var(--mono); font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--dim); margin: 0 0 22px; }
@@ -203,7 +204,7 @@
   .phone-screen {
     position: relative;
     display: flex; flex-direction: column;
-    min-height: 580px;
+    min-height: 540px;
     background: linear-gradient(180deg, #141419 0%, #0c0c0f 100%);
     border-radius: 33px; overflow: hidden; padding-bottom: 12px;
   }
@@ -470,39 +471,7 @@
   @media (max-width: 880px) { .flow { grid-template-columns: repeat(2, 1fr); } }
   @media (max-width: 540px) { .flow { grid-template-columns: 1fr; } }
 
-  /* ── Teardown proof cards ───────────────────────────────────── */
-  .proof-label {
-    font-family: var(--mono); font-size: 12px; letter-spacing: 0.13em;
-    text-transform: uppercase; color: var(--dim); margin: 42px 0 16px;
-  }
-  .teardowns {
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
-    margin: 0 0 4px;
-  }
-  .td-card {
-    display: block; padding: 22px 22px 24px; border: 1px solid #2a2a2e;
-    border-top: 2px solid var(--gold); border-radius: 6px;
-    background: #131316; color: var(--text); text-decoration: none;
-    transition: transform 220ms var(--ease-out), border-color 220ms ease, background 220ms ease;
-  }
-  @media (hover: hover) {
-    .td-card:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(180deg, rgba(212,197,150,0.07), rgba(212,197,150,0.02));
-      border-color: rgba(212,197,150,0.42);
-      border-top-color: var(--gold);
-    }
-  }
-  .td-card .td-cat {
-    font-family: var(--mono); font-size: 10px; letter-spacing: 0.16em;
-    text-transform: uppercase; color: var(--gold); margin-bottom: 10px;
-  }
-  .td-card h3 {
-    font-family: Georgia, serif; font-size: 17px; font-weight: 400;
-    color: var(--text); margin: 0 0 8px; line-height: 1.3;
-  }
-  .td-card p { font-size: 13px; color: var(--soft); line-height: 1.55; margin: 0; }
-  @media (max-width: 880px) { .teardowns { grid-template-columns: 1fr; } }
+  /* (Older teardown-card styles removed. Live grid uses .td-grid / .td-card, defined below.) */
 
   /* ── Atlas demo block ───────────────────────────────────────────
      The page's one interactive moment. Atlas answering a data
@@ -810,7 +779,7 @@
         <a href="/for-agencies/">For agencies</a>
         <a href="/security/">Security</a>
       </nav>
-      <a class="nav-cta" href="https://check.neverranked.com/">See if AI names you</a>
+      <a class="nav-cta" href="https://check.neverranked.com/">Free AI check</a>
     </div>
   </header>
 
@@ -818,13 +787,13 @@
   <div class="proof-strip" role="status" aria-label="Operating status">
     <div class="proof-strip-inner">
       <span class="proof-strip-dot" aria-hidden="true"></span>
-      <span><b>9</b> measurements published</span>
+      <span><b>10</b> measurements published</span>
       <span class="sep">/</span>
       <span><b>378</b> prompts per run</span>
       <span class="sep hide-sm">/</span>
       <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools</span>
       <span class="sep">/</span>
-      <span>last run <b>2026-06-12</b></span>
+      <span>measured <b>daily</b>, not sampled</span>
     </div>
   </div>
 
@@ -834,16 +803,16 @@
       <div class="hero-copy">
       <div class="kicker reveal">A forensic research practice &middot; Honolulu</div>
       <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">When buyers ask AI to name the best in your category, it picks someone.</span></h1>
-      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Usually not you. We run the forensic measurement of who AI actually names across the seven tools your buyers use, then hand your team the fixes. Other tools promise to make you visible. We hand you the evidence of where you stand. Not a promise, the receipts.</p>
+      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Usually not you. Every other tool promises to make you visible, then quotes a lift it cannot control. We do the opposite. We measure who AI actually names across the seven tools your buyers use, then hand your team the evidence and the punch list. Not a promise. The receipts.</p>
 
       <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
         <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
-        <button type="submit">See if AI names you &rarr;</button>
+        <button type="submit">See what AI sees &rarr;</button>
       </form>
-      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. In the categories we measured, AI tools name 3 to 5 businesses per buyer question. We check whether yours is one of them.</div>
+      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows what the seven AI tools can read from your site, the first thing that decides whether they can name you at all.</div>
 
       <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
-        Named customer Hawaii Theatre Center went 45 to 95 in ten days. Eleven measurements published. Every number public and reproducible.
+        Named customer Hawaii Theatre Center went 45 to 95 in ten days. Ten measurements published. Every number public and reproducible.
       </div>
       </div>
 
@@ -890,8 +859,8 @@
   <section class="section">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">The difference</span>Everyone else sells a promise. We hand you the record.</div>
-      <p class="lead">The AEO field is full of tools that promise to make you visible and dashboards that quote a citation lift they cannot control. We do not promise a number. We run the measurement like evidence.</p>
-      <p>The question set is committed to a public timestamp before we measure. Three clean runs clear a pattern-readiness bar. The code is open source so anyone can re-run it. Every published number lives on a public claims record. You get the forensic truth of where AI puts you, plus the prepped punch list. Your team executes, and we never grade our own work.</p>
+      <p class="lead">The AEO field is full of tools that promise to make you visible and dashboards that quote a citation lift they cannot control. We do not promise a lift we cannot control. We promise the thing that is actually knowable: exactly where AI puts you today, who it names instead of you, and the punch list to close the gap.</p>
+      <p>The question set is committed to a public timestamp before we measure. Three clean runs clear a pattern-readiness bar. The code is open source so anyone can re-run it. Every published number lives on a public claims record. You get the truth of where AI puts you, plus the prepped punch list. Your team executes, and we never grade our own work.</p>
     </div>
   </section>
 
@@ -906,8 +875,8 @@
   <section class="section">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">Finding</span>The result most vendors will never show you</div>
-      <p class="lead">We measure whether the AI engines name a business when buyers ask the category question. Eleven measurements, three runs each, seven AI surfaces. One result keeps holding, and it is the one the AEO industry would rather you did not see.</p>
-      <p>The engines that answer from training data instead of searching the live web barely cite local businesses' own websites at all. Claude, on the same questions where web-searching engines reach 38 to 66 percent, collapses to near zero.</p>
+      <p class="lead">We measure whether the AI engines name a business when buyers ask the category question. Ten measurements, three runs each, seven AI surfaces. On the engines that search the live web, where most buyers already are, AI names three to five businesses per question. Someone in your category is getting picked. The first job is finding out whether it is you.</p>
+      <p>Then there is the result the AEO industry would rather you did not see. The engines that answer from training data instead of searching the live web barely cite local businesses at all. Claude, on the same questions where web-searching engines reach 38 to 66 percent, collapses to near zero. You can look strong on one surface and be invisible on another, which is exactly why a single-engine tool cannot tell you where you actually stand.</p>
       <table style="width:100%;border-collapse:collapse;margin:26px 0 10px;font-family:var(--mono);font-size:13px;line-height:1.4;">
         <thead><tr>
           <th style="text-align:left;padding:12px 14px 12px 0;border-bottom:1px solid #2a2a2e;color:var(--gold);font-weight:400;letter-spacing:0.06em;text-transform:uppercase;font-size:11px;">Category</th>
@@ -943,6 +912,7 @@
         </div>
       </div>
       <p style="font-size:14px; color:var(--dim);">The execution was theirs. The measurement, before and after, was ours. Because we never touch the property, there was nothing we could have done to flatter the number.</p>
+      <p style="margin-top:28px;"><a class="cta" href="https://check.neverranked.com/">See what AI sees on your site &rarr;</a></p>
     </div>
   </section>
 
@@ -1004,7 +974,7 @@
           </div>
         </div>
       </div>
-      <p style="margin-top:24px">The deliverable is a forensic research memo and a prepped punch list, ordered by impact. Your team executes it. We do not. That separation is structural.</p>
+      <p style="margin-top:24px">The deliverable is a research memo and a prepped punch list, ordered by impact. Your team executes it. We do not. That separation is structural.</p>
     </div>
   </section>
 
@@ -1121,15 +1091,27 @@
   <section class="section panel">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
-      <h2>Eleven measurements published. Nine Hawaii categories plus two cross-geo CPA markets.</h2>
+      <h2>Ten measurements published. Nine Hawaii categories plus a cross-geo CPA market.</h2>
       <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. Honolulu HVAC was the first finding we pre-registered: the prediction was committed to a public timestamp before the measurement ran. The Claude training-data collapse holds across three unrelated local-service industries, and the two newest teardowns, real estate and hotels, are where it inverts: AI hands the answer to the aggregators (Zillow, Booking), while the training-data engines cite the businesses more than the live-search engines do. In hotels, the boutiques AI names even out-cite the chains.</p>
 
       <div style="margin: 22px 0 28px; padding: 20px 24px; background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid var(--gold); border-radius: 4px;">
-        <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">Latest finding &middot; pre-registered &middot; 2026-06-11</div>
+        <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">The finding we called in advance &middot; pre-registered &middot; 2026-06-11</div>
         <p style="margin: 0; font-size: 16px; color: var(--text); line-height: 1.55;">Before running a single query, we committed a prediction to a public timestamp: Claude would cite Honolulu AC companies under 5% of the time. It came in at 2%, while the web-searching engines reached 38% to 66% on the same questions. A forecast made before the data, not a case study written after it. This is the third unrelated industry where Claude collapses on local firms, after CPA and med spas. <a href="/teardowns/hvac-honolulu/" style="color: var(--gold);">Read the pre-registered teardown &rarr;</a></p>
       </div>
 
       <div class="td-grid">
+        <a class="td-card" href="/teardowns/hotels-hawaii/">
+          <div class="td-card-cat">Hawaii hotels (boutique vs chain)</div>
+          <div class="td-card-stat">17% own-site. The boutiques AI names beat the chains.</div>
+          <p class="td-card-hook">13-hotel cohort. Only 17% of citations go to a hotel's own site. 74% go to Booking, Expedia, and travel editorial. But among hotels AI names, boutiques out-cite chains 493 to 457, and the most-cited hotel in Hawaii is a boutique. The contest is hotel versus OTA.</p>
+          <div class="td-card-foot"><span>13 hotels &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
+        <a class="td-card" href="/teardowns/real-estate-honolulu/">
+          <div class="td-card-cat">Honolulu real estate</div>
+          <div class="td-card-stat">15% own-site. The collapse inverts here.</div>
+          <p class="td-card-hook">11-firm cohort. Local agents get just 15% of citations while 77% go to portals like Zillow and Realtor.com. The training-data engines cite local firms more than the live-search engines do, the first category where Claude is not the blind spot.</p>
+          <div class="td-card-foot"><span>11 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
+        </a>
         <a class="td-card" href="/teardowns/bank-honolulu/">
           <div class="td-card-cat">Hawaii consumer banking</div>
           <div class="td-card-stat">53% own-site, 75-point engine spread</div>
@@ -1172,15 +1154,14 @@
           <p class="td-card-hook">15-firm cohort. The Claude training-data collapse, found again in a second unrelated industry. Strong on the web-searching engines, near-zero on Claude. The competitive game is on the live-web tools.</p>
           <div class="td-card-foot"><span>15 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
-        <a class="td-card td-card-wide" href="/teardowns/hvac-honolulu/">
-          <div class="td-card-latest">Latest &middot; pre-registered prediction</div>
-          <div class="td-card-cat">Honolulu HVAC</div>
+        <a class="td-card" href="/teardowns/hvac-honolulu/">
+          <div class="td-card-cat">Honolulu HVAC (pre-registered)</div>
           <div class="td-card-stat">We predicted Claude under 5%. It came in at 2%.</div>
-          <p class="td-card-hook">12-firm AC-company cohort, 6,218 citations across 3 clean runs. The prediction was committed to a public timestamp before any data existed. Claude landed at 2%, the web-searching engines at 38-66%, Gemma at 63%. The third unrelated industry where Claude collapses on local firms, and the first one we called in advance. A forecast, not a case study.</p>
-          <div class="td-card-foot"><span>12 firms &middot; 3 clean runs &middot; published 2026-06-11</span><span class="td-card-arrow">Read &rarr;</span></div>
+          <p class="td-card-hook">12-firm AC-company cohort. The prediction was committed to a public timestamp before any data existed. Claude landed at 2%, the web-searching engines at 38-66%. The first finding we called in advance, not a case study written after.</p>
+          <div class="td-card-foot"><span>12 firms &middot; 3 clean runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
       </div>
-      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads all eleven measurements against each other &rarr;</a></p>
+      <p style="margin-top: 22px; font-size: 14px; color: var(--dim);"><a href="/teardowns/cross-category/">The cross-category teardown reads every measurement against each other &rarr;</a></p>
       <p style="margin-top: 8px; font-size: 14px; color: var(--dim);"><a href="/claims/">Every number we publish is on the record, with the run and the open-source code that prove it &rarr;</a></p>
     </div>
   </section>
@@ -1211,7 +1192,7 @@
         </div>
         <div class="readout-note">A single category, an early read. A data point, not a generalized pattern. And the two directories the engines did trust were niche ones most operators have never heard of.</div>
       </div>
-      <p style="margin-top:22px">Take one named reference. At Hawaii Theatre Center, a forensic readout surfaced what a standard scan walks past: a Charity Navigator profile not updated since 2023, a Better Business Bureau profile last touched in 1999, a missing Bing Business Profile, authority backlinks pointed at the wrong places. The quiet, citation-shaping detail nobody is looking at.</p>
+      <p style="margin-top:22px">Take one named reference. At Hawaii Theatre Center, the readout surfaced what a standard scan walks past: a Charity Navigator profile not updated since 2023, a Better Business Bureau profile last touched in 1999, a missing Bing Business Profile, authority backlinks pointed at the wrong places. The quiet, citation-shaping detail nobody is looking at.</p>
       <p><a href="/example-engagement/">See a full example readout &rarr;</a></p>
     </div>
   </section>
@@ -1222,6 +1203,7 @@
       <div class="sec-label"><span class="n">06</span>Pricing</div>
       <h2>Per category, not per client.</h2>
       <p>No bundled tiers, no per-seat math.</p>
+      <p>Frame the number before you read it. The first year is $22,500 all in. In most categories, one new customer covers that. In the high-ticket ones, a single case covers it several times over. The calculator below runs your category.</p>
       <div class="prices">
         <div class="price price-secondary">
           <div class="amt">$4,500</div>
@@ -1307,7 +1289,7 @@
   <section class="section panel close">
     <div class="inner reveal">
       <h2>Start with the question that started this.</h2>
-      <p style="max-width:520px;margin:0 auto 26px;">Does AI name your business when your buyers ask? Paste your URL and find out in seconds.</p>
+      <p style="max-width:520px;margin:0 auto 26px;">Does AI name your business when your buyers ask? Paste your URL and see what AI reads from your site in seconds.</p>
       <a class="cta" href="https://check.neverranked.com/">Run the free check &rarr;</a>
     </div>
   </section>
@@ -1360,8 +1342,9 @@
   <!-- Closing CTA -->
   <section class="section panel close">
     <div class="inner reveal">
-      <h2>See whether AI names your business.</h2>
-      <a class="cta" href="https://check.neverranked.com/">Run the free check &rarr;</a>
+      <h2>We will not sell you a number. We will show you the one that is real.</h2>
+      <p style="max-width:520px;margin:0 auto 26px;">See where AI puts your business across the seven tools your buyers use.</p>
+      <a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a>
       <div class="cta-note">Paste your URL and see in seconds what the 7 AI tools can read from your site. Free, no signup. Prefer a hand-built 1-page diagnostic of your category? Email Lance@hi.neverranked.com.</div>
     </div>
   </section>
@@ -1372,8 +1355,8 @@
       <div class="sec-label"><span class="n">&rarr;</span>Where to dig in</div>
       <div class="links">
         <a href="/results/">Results so far <span class="sub">&middot; the cumulative scoreboard</span></a>
-        <a href="/teardowns/">All teardowns <span class="sub">&middot; 9 published, 9 measurements (7 Hawaii + Austin + Nashville)</span></a>
-        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 9 measurements, two axes plus the cross-geo split</span></a>
+        <a href="/teardowns/">All teardowns <span class="sub">&middot; 10 published &middot; 9 Hawaii categories + cross-geo Austin</span></a>
+        <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 10 measurements, two axes plus the cross-geo split</span></a>
         <a href="/teardowns/hvac-honolulu/">Honolulu HVAC teardown <span class="sub">&middot; pre-registered: predicted Claude under 5%, it came in at 2%</span></a>
         <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 21-bank cohort, the 75-point engine spread</span></a>
         <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Copilot first-mover opening</span></a>
@@ -1491,7 +1474,7 @@
           // Each char's local progress window: [charProgress - 0.1, charProgress + 0.05]
           var local = (overallProgress - (charProgress - 0.1)) / 0.15;
           local = Math.max(0, Math.min(1, local));
-          var opacity = 0.2 + (1 - 0.2) * local;
+          var opacity = 0.6 + (1 - 0.6) * local;
           chars[j].style.setProperty('--char-opacity', opacity.toFixed(3));
         }
         ticking = false;
