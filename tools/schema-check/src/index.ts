@@ -1218,34 +1218,7 @@ body.agency-mode #agency-cta-card{display:block !important}
 }
 </style>
 
-<!-- Meta Pixel -->
-<script>
-!function(f,b,e,v,n,t,s)
-{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-n.queue=[];t=b.createElement(e);t.async=!0;
-t.src=v;s=b.getElementsByTagName(e)[0];
-s.parentNode.insertBefore(t,s)}(window, document,'script',
-'https://connect.facebook.net/en_US/fbevents.js');
-fbq('init', 'YOUR_PIXEL_ID');
-fbq('track', 'PageView');
-</script>
-<noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"/></noscript>
-
-<!-- LinkedIn Insight Tag -->
-<script type="text/javascript">
-_linkedin_partner_id="YOUR_PARTNER_ID";
-window._linkedin_data_partner_ids=window._linkedin_data_partner_ids||[];
-window._linkedin_data_partner_ids.push(_linkedin_partner_id);
-</script>
-<script type="text/javascript">
-(function(l){if(!l){window.lintrk=function(a,b){window.lintrk.q.push([a,b])};window.lintrk.q=[]}
-var s=document.getElementsByTagName("script")[0];var b=document.createElement("script");
-b.type="text/javascript";b.async=true;b.src="https://snap.licdn.com/li.lms-analytics/insight.min.js";
-s.parentNode.insertBefore(b,s);})(window.lintrk);
-</script>
-<noscript><img height="1" width="1" style="display:none" alt="" src="https://px.ads.linkedin.com/collect/?pid=YOUR_PARTNER_ID&fmt=gif"/></noscript>
+<!-- Retargeting pixels intentionally not loaded. Add the Meta + LinkedIn tags here when paid acquisition is live. -->
 
 </head>
 <body>
@@ -1274,7 +1247,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
 
   <section class="hero">
     <h1>See what AI tools<br>can read from <em>your site</em>.</h1>
-    <p class="sub">Paste your URL. We show what ChatGPT, Google AI, and 5 more engines can pull from your pages, what they cannot, and the fixes. Free. No signup.</p>
+    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what 7 AI engines pull from your pages, what they miss, and why it matters. Free. No signup.</p>
     <div class="input-area">
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
       <button id="run-btn" type="button">Run check</button>
@@ -1371,7 +1344,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <div class="dash-preview">
       <div class="dash-preview-label">What a NeverRanked engagement produces <span class="rule"></span></div>
       <div class="dash-preview-frame" style="padding:24px 28px">
-        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use &mdash; ChatGPT, Google's AI answers, Perplexity, and four others &mdash; what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and four others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
@@ -1383,7 +1356,7 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     <!-- CTA -->
     <div class="cta-section">
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
-      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category &mdash; which competitors get named, which AI tool recommends who, and the specific work that moves the needle. The check is a starting point. The engagement tells you what's actually happening.</p>
+      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and the specific work that moves the needle. The check is a starting point. The engagement tells you what's actually happening.</p>
 
       <div class="social-proof">
         <span><span class="sp-num">7</span> AI tools</span>
@@ -1860,10 +1833,10 @@ s.parentNode.insertBefore(b,s);})(window.lintrk);
     var ctaSignal = document.getElementById('cta-signal');
     var ctaAmplify = document.getElementById('cta-amplify');
     var ctaPreview = document.getElementById('cta-preview');
-    if(ctaAudit) ctaAudit.href = 'https://app.neverranked.com/checkout/audit?domain='+encodeURIComponent(domain);
-    if(ctaSignal) ctaSignal.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
-    if(ctaAmplify) ctaAmplify.href = 'https://app.neverranked.com/checkout/amplify?domain='+encodeURIComponent(domain);
-    if(ctaPreview) ctaPreview.href = 'https://app.neverranked.com/checkout/signal?domain='+encodeURIComponent(domain);
+    // Retired checkout links removed 2026-06-22. The on-page CTAs are mailto
+    // links (Scope a kickoff / free diagnostic) and must NOT be overwritten
+    // with dead app.neverranked.com/checkout/* URLs (that was silently
+    // pointing "Scope a kickoff" at a dead self-serve checkout).
 
     // Reset email capture (guarded — the email-form element was removed from
     // the HTML when we killed the duplicate capture section; these null-safe
@@ -2328,7 +2301,7 @@ function buildReportEmail(report: any): string {
 
 const DRIP_DAY_3 = 3;
 const DRIP_DAY_7 = 7;
-const INDUSTRY_AVG = 52;
+const CITATION_LINE = 78; // score where AI engines reliably start citing a site; matches the on-page benchmark (no second "average" number)
 
 interface LeadData {
   email: string;
@@ -2464,19 +2437,17 @@ async function runDripSequence(env: Env): Promise<void> {
 }
 
 function buildDripDay3Email(scan: { domain: string; score: number; grade: string }, email: string): string {
-  const diff = scan.score - INDUSTRY_AVG;
+  const diff = scan.score - CITATION_LINE;
   const diffLabel = diff > 0 ? `+${diff} above` : diff < 0 ? `${Math.abs(diff)} below` : "right at";
   const diffColor = diff > 0 ? "#27ae60" : diff < 0 ? "#c0392b" : "#e8c767";
 
-  const narrative = diff >= 15
-    ? "You’re well ahead of the pack. But competitors are catching up fast as more people search through AI tools. Holding this lead takes active work."
-    : diff >= 5
-    ? "You’re ahead of most, but the gap is smaller than you think. A few small changes from a competitor could close it in weeks."
+  const narrative = diff >= 12
+    ? "You clear the line where AI engines reliably start citing a site. Holding that takes active work as competitors clean up their own sites."
     : diff >= 0
-    ? "You’re right around the industry average. That means you’re invisible to AI tools. They pick whoever shows up cleaner first."
-    : diff >= -10
-    ? "You’re behind the curve. AI tools are already recommending your competitors over you for the questions that matter."
-    : "You’re significantly behind. Every day without action is a day your competitors pull further ahead when people ask AI for recommendations.";
+    ? "You’re right at the line where AI engines start citing a site. That’s the threshold, not a lead. A competitor a few points cleaner gets named first."
+    : diff >= -15
+    ? "You’re below the line where AI engines reliably cite a site. They are already recommending cleaner competitors for the questions that matter."
+    : "You’re well below the line where AI engines cite a site. Every week without action is a week competitors get named instead of you.";
 
   return `<!doctype html>
 <html>
@@ -2497,7 +2468,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <!-- Comparison -->
   <tr><td style="padding:32px 0">
     <div style="font-family:Georgia,serif;font-size:22px;font-style:italic;color:#fbf8ef;margin-bottom:8px">How do you compare?</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">${escHtml(scan.domain)} vs. industry average</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;margin-bottom:28px">${escHtml(scan.domain)} vs. the citation line</div>
 
     <!-- Score bars -->
     <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:24px">
@@ -2511,27 +2482,27 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
         </td>
       </tr>
       <tr>
-        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#888888">Industry avg</td>
+        <td style="padding:8px 0;font-family:'Courier New',monospace;font-size:12px;color:#888888">Citation line</td>
         <td style="padding:8px 0">
           <div style="background:#1c1c1c;border-radius:2px;height:24px;position:relative">
-            <div style="background:#555555;height:24px;border-radius:2px;width:${INDUSTRY_AVG}%"></div>
-            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#888888">${INDUSTRY_AVG}</span>
+            <div style="background:#555555;height:24px;border-radius:2px;width:${CITATION_LINE}%"></div>
+            <span style="position:absolute;right:8px;top:4px;font-family:'Courier New',monospace;font-size:12px;color:#888888">${CITATION_LINE}</span>
           </div>
         </td>
       </tr>
     </table>
 
-    <div style="font-family:'Courier New',monospace;font-size:13px;color:${diffColor};margin-bottom:16px">${diffLabel} the industry average</div>
+    <div style="font-family:'Courier New',monospace;font-size:13px;color:${diffColor};margin-bottom:16px">${diffLabel} the citation line</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#b0b0a8;line-height:1.7">${narrative}</div>
   </td></tr>
 
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores. Not averages.</div>
-    <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores.</div>
+    <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
     <div style="margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or get a one-time audit for $750</a>
+      <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or start with a free 1-page diagnostic for your category</a>
     </div>
   </td></tr>
 
@@ -2612,12 +2583,10 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
     </table>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="mailto:lance@neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
+      <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
     </div>
     <div style="text-align:center;margin-top:12px">
-      <a href="https://app.neverranked.com/checkout/audit?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">One-time audit: $750</a>
-      <span style="color:#555555;margin:0 8px">|</span>
-      <a href="https://app.neverranked.com/checkout/amplify?domain=${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Full service: $4,500/mo</a>
+      <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or start with a free 1-page diagnostic for your category</a>
     </div>
   </td></tr>
 
