@@ -32,7 +32,6 @@ FILES=(
   favicon.ico
   favicon.png
   robots.txt
-  sitemap.xml
   llms.txt
   _headers
   _redirects
@@ -122,6 +121,29 @@ for d in "${DIRS[@]}"; do
     echo "  skip  $d/ (not in repo root)"
   fi
 done
+
+# ── Generate sitemap.xml from the deployed tree (single source of truth) ──
+# Emits every deployed page that is NOT noindex. Held pre-launch pages,
+# retired stubs, and private pitch/ pages are noindex; dark pages are absent
+# from dist/. All are excluded automatically, so the sitemap cannot drift:
+# flip a page to index + rebuild and it appears in the sitemap; nothing that
+# should stay hidden ever does. Replaces the old hand-maintained sitemap.xml.
+SITEMAP="$DIST/sitemap.xml"
+BUILD_DATE="$(date +%F)"
+{
+  echo '<?xml version="1.0" encoding="UTF-8"?>'
+  echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+  while IFS= read -r f; do
+    if grep -qi 'content="noindex' "$f"; then continue; fi
+    rel="${f#"$DIST"/}"
+    urlpath="/${rel%index.html}"
+    lastmod="$(git -C "$ROOT" log -1 --date=short --format=%cd -- "$rel" 2>/dev/null || true)"
+    [ -z "$lastmod" ] && lastmod="$BUILD_DATE"
+    echo "  <url><loc>https://neverranked.com${urlpath}</loc><lastmod>${lastmod}</lastmod></url>"
+  done < <(find "$DIST" -name index.html | sort)
+  echo '</urlset>'
+} > "$SITEMAP"
+echo "  gen   sitemap.xml ($(grep -c '<url>' "$SITEMAP" || echo 0) urls; noindex + private excluded)"
 
 # Teardown drift check — non-blocking. Runs only when the measurement repo
 # and its local run data are present (i.e. local builds, not CI). Warns if a
