@@ -48,6 +48,7 @@ DIRS=(
   case-studies
   claims
   example-engagement
+  faq
   first-30-days
   for-agencies
   kit
