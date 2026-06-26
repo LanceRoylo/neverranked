@@ -176,11 +176,11 @@
   .void-graphic.in .bs-arrow, .void-graphic.in .bs-phone, .void-graphic.in .bs-cap-now, .void-graphic.in .bs-row, .void-graphic.in .bs-caption { animation-play-state: running; }
   @keyframes bsUp { to { opacity: 1; transform: translateY(0); } }
   /* Attention: after the empty slot draws in, it breathes a soft glow -- that is you, and you are not there */
-  .bs-empty .bs-slot { animation: bsGlow 2.8s ease-in-out 1.7s infinite; animation-play-state: paused; }
+  .bs-empty .bs-slot { animation: bsGlow 2.3s ease-in-out 1.6s infinite; animation-play-state: paused; }
   .void-graphic.in .bs-empty .bs-slot { animation-play-state: running; }
   @keyframes bsGlow {
     0%, 100% { box-shadow: 0 0 0 0 rgba(212,197,150,0); border-color: #4a3d18; }
-    50% { box-shadow: 0 0 18px 0 rgba(212,197,150,0.20); border-color: #7d6c3a; }
+    50% { box-shadow: 0 0 13px 0 rgba(212,197,150,0.45), 0 0 40px 8px rgba(212,197,150,0.17); border-color: #b09a55; }
   }
 
   /* Engine diagram */
