@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Security posture -- NeverRanked</title>
+<title>Security posture &middot; NeverRanked</title>
 <meta name="description" content="The research engagement does not touch your systems. No code on your property, no integrations, no data flowing from your side. Procurement surface is an NDA and a vendor intake form, not a SOC 2 audit.">
 <link rel="canonical" href="https://neverranked.com/security/">
 <style>
@@ -95,15 +95,15 @@
       <li>Memos delivered to your designated recipients only. We do not publish or share them.</li>
       <li>Your data export stays exportable for the life of the engagement.</li>
       <li>After cancellation, customer-specific data is retained 30 days then deleted.</li>
-      <li>Aggregate-level category patterns we observe across our broader dataset stay with us, never tied to your name and never reverse-engineerable to your engagement. The host-surfacing gate in <code>aggregate.mjs</code> requires <code>min-runs &gt;= 2</code> before any host appears in cross-customer aggregate output, enforced in code.</li>
+      <li>Aggregate-level category patterns we observe across our broader dataset stay with us, never tied to your name and never reverse-engineerable to your engagement. The internal pattern-readiness rule requires a minimum number of runs before any host can appear in cross-customer aggregate output.</li>
     </ul>
 
     <h2>Reproducibility and audit</h2>
-    <p>The measurement infrastructure is auditable by your team without our cooperation:</p>
+    <p>The measurement work is checkable by your team:</p>
     <ul>
-      <li><strong>Public source code.</strong> <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a> for the measurement and aggregator tools.</li>
-      <li><strong>Gemma is open-weight.</strong> Your auditor can re-run the same prompts against Gemma independently and verify our numbers without our involvement.</li>
-      <li><strong>Pre-registration discipline.</strong> Any methodology claim (pattern-readiness, measurement validity) is anchored in a hash-locked pre-registration file in the repo before the test runs.</li>
+      <li><strong>Documented method.</strong> The full measurement method is written up at <a href="/methodology/">neverranked.com/methodology</a>, including which engines we read and how citations are counted.</li>
+      <li><strong>Hash-locked question sets.</strong> The exact question set for your engagement is locked at scoping, and every dated run on our <a href="/claims/">claims ledger</a> is anchored to that fixed set.</li>
+      <li><strong>Gemma is open-weight.</strong> One of the model-knowledge surfaces we read is Gemma, whose weights are public, so the model itself is independently inspectable.</li>
       <li><strong>Raw data export.</strong> All raw measurement data from your engagement is exportable in standard formats any time.</li>
     </ul>
 

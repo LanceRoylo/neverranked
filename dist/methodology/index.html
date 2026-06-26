@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Methodology -- NeverRanked</title>
+<title>Methodology &middot; NeverRanked</title>
 <meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
 <link rel="canonical" href="https://neverranked.com/methodology/">
 <style>
@@ -73,7 +73,7 @@
       <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up, which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
       <ul>
         <li><strong>Claude</strong>, accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
-        <li><strong>Gemma</strong>, accessed via Together AI. Open-weight, which means a compliance team or auditor can re-run the exact same prompts independently and verify our numbers.</li>
+        <li><strong>Gemma</strong>, accessed via Together AI. Open-weight, which means the Gemma model itself is independently inspectable.</li>
       </ul>
       <p>For each query, on each engine, the response is captured and scanned for mentions of the brand name. A brand is "mentioned in model knowledge" on a query if its name appears in the response.</p>
     </div>
@@ -81,16 +81,16 @@
     <p><strong>Why both layers matter.</strong> A brand invisible in citation is invisible when AI fact-checks itself before answering. A brand invisible in model knowledge is invisible at the baseline, before any search happens. These are different failure modes. Measuring only one half of the picture misses what the other half could tell you.</p>
 
     <h2 id="query-set">Query-set discipline</h2>
-    <p>Each engagement opens with a query-set design conversation. The goal: a frozen list of 15-30 queries that represent how the customer's buyers actually search in their category. Three rules govern the list:</p>
+    <p>Each engagement opens with a query-set design conversation. The goal: a frozen 18-question set that represents how the customer's buyers actually search in their category. Three rules govern the list:</p>
     <ul>
       <li><strong>Hash-locked.</strong> The query list is hashed on first run. Every subsequent run prints the same hash. If the hash changes, the runs are no longer comparable and the discipline has been broken. Hash printing is in <code>dryrun/run-dental-honolulu.mjs</code> and similar runners.</li>
       <li><strong>Intent-shaped.</strong> Queries cover head-intent ("best X in Y"), neighborhood scoping ("X in [specific area]"), service-combined ("X that also does Y"), trust-signal ("X for first-time customers"), value-conscious ("affordable X that takes [insurance]"). The shape mirrors how a real buyer searches, not how an SEO keyword tool ranks.</li>
       <li><strong>No naming the customer.</strong> Queries do not contain the customer's brand name. Branded queries are a different measurement (does the AI know who you are when asked directly), which we also report but separate from demand queries (does the AI surface you when a buyer searches for the category).</li>
     </ul>
-    <p>Every measured category gets its own runner with its own 18-question set, locked by hash. The runners are in the <a href="https://github.com/LanceRoylo/neverranked-outreach/tree/main/dryrun">public repo</a>. We have published runners and pattern-ready measurements for Hawaii consumer banking, Hawaii wealth management, Honolulu dental, Hawaii law firms, Hawaii CPAs, and Austin TX CPAs (our first cross-geo measurement). Each runner&rsquo;s hash is printed at the start of every run; any change to the question set produces a new hash and the runs are no longer comparable across the change.</p>
+    <p>Every measured category gets its own runner with its own 18-question set, locked by hash. We have published pattern-ready measurements across the categories we have measured, including Hawaii consumer banking, Hawaii wealth management, Honolulu dental, Hawaii law firms, Hawaii CPAs, and Austin TX CPAs (our first cross-geo measurement). The full ledger of published measurements, each with its dated run and locked question set, is at <a href="/claims/">/claims/</a>. Each runner&rsquo;s hash is printed at the start of every run; any change to the question set produces a new hash and the runs are no longer comparable across the change.</p>
 
     <h3 style="margin-top:32px">An example 18-question set</h3>
-    <p>The actual locked set we used for Hawaii wealth management (one of the six published measurements). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
+    <p>The actual locked set we used for Hawaii wealth management (one of the categories we have published). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
     <p style="font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 22px; margin-bottom: 12px;">Head queries (8) &middot; broad buyer intent</p>
     <ol style="font-size: 14px; line-height: 1.7; color: var(--soft); padding-left: 22px;">
       <li>best wealth manager in Hawaii</li>
@@ -112,7 +112,7 @@
       <li>Hawaii financial advisor first time investing</li>
       <li>Hawaii financial advisor that handles business sale proceeds</li>
       <li>Hawaii wealth manager for physician or attorney</li>
-      <li>Hamada Financial vs Cadinha vs CKW</li>
+      <li>Firm A vs Firm B vs Firm C</li>
       <li>Honolulu financial advisor Bishop Street</li>
     </ol>
     <p style="margin-top:18px">The shape repeats across categories: 8 head queries capturing the "name a few" demand surface plus 10 long-tail queries capturing specific buyer scenarios (and one named-comparison curiosity query that captures what AI says when someone is already evaluating known firms head-to-head). Per-category wording is tailored at the scoping call. Each set is locked by hash and never edited.</p>
@@ -122,7 +122,7 @@
     <p>A citation that appears in only one of three reps is a single-shot. A citation that appears in two of three reps is a moderate signal. A citation that appears in all three reps is the strongest single-day signal we report. Aggregate frequencies over the three-week kickoff are what the punch list is built against.</p>
 
     <h2>Source-type classifier</h2>
-    <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier source code is public at <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/classify.mjs">github.com/LanceRoylo/neverranked-outreach</a>. The buckets:</p>
+    <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier logic is documented here as part of the method. The buckets:</p>
     <table>
       <thead>
         <tr><th>Bucket</th><th>What's in it</th></tr>
@@ -155,15 +155,15 @@
       <li><strong>Position in the answer.</strong> Where in the AI's response does the brand name appear? Bucketed by text-quartile: Q1 (lead) means the AI is opening with you; Q4 (tail) means you're a footnote. The signal is real: in the Honolulu med-spa cohort, one med spa appears in Q1 55% of the time (the AI leads with them on most queries) while another appears in Q3 59% of the time (almost never lead, almost never tail). Same total mention count, very different competitive signal.</li>
       <li><strong>Sentiment context.</strong> Strong-positive ("top", "best", "trusted", "premier") and strong-negative ("avoid", "outdated", "limited") vocabulary detected within ±80 characters of each mention. Honest scope: this is heuristic pattern detection, not nuanced NLP. Strong positive and strong negative are real signals. The default "neutral" bucket may include mild positive/negative the heuristic misses. The honest framing is in the deliverable.</li>
     </ul>
-    <p>Tool: <code>dryrun/forensic/within-citation.mjs</code>. Public source code, runnable on any cohort that has raw measurement data.</p>
+    <p>Tool: <code>dryrun/forensic/within-citation.mjs</code>. Runnable on any cohort that has raw measurement data.</p>
 
     <h2>Drift detection (added 2026-05-21)</h2>
     <p>Day-over-day citation share movement, flagged when a host moves more than a configurable threshold (default 5 percentage points) between measurement windows. Same query-set hash required in both windows; the tool refuses to compare across different query sets because the universe of possible citations is different.</p>
-    <p>The current monthly delta memo surfaces drift findings as observation. Two drift tools ship in the public repo: <code>drift.mjs</code> for per-category point-in-time host-level deltas, and <code>drift-summary.mjs</code> for a one-line-per-category scan across all measured categories that the monthly memo workflow uses as a first-pass pre-write. Automated daily alerting (an email to the customer when a host gains or loses more than a threshold in a single day) is the obvious next layer and ships with the dashboard build.</p>
+    <p>The current monthly delta memo surfaces drift findings as observation. Two drift tools run as part of the method: <code>drift.mjs</code> for per-category point-in-time host-level deltas, and <code>drift-summary.mjs</code> for a one-line-per-category scan across all measured categories that the monthly memo workflow uses as a first-pass pre-write. Automated daily alerting (an email to the customer when a host gains or loses more than a threshold in a single day) is the obvious next layer and ships with the dashboard build.</p>
     <p>Tool: <code>dryrun/forensic/drift.mjs</code>. Hash-locked, engine-restrictable, JSON-output for piping into downstream alerting.</p>
 
     <h2>The pattern-readiness rule</h2>
-    <p>We do not claim a pattern in a category from a single run. The rule is in <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md</a> rule 5:</p>
+    <p>We do not claim a pattern in a category from a single run. The internal pattern-readiness rule is:</p>
     <blockquote>
       Every new category needs at least 3 USABLE runs before we claim a pattern. A usable run is one that produced at least one ok row. A run that returned all ok:false is a failed attempt, not a measurement, and does not count toward the pattern-readiness bar.
     </blockquote>
@@ -177,11 +177,11 @@
       <li>What recurring hosts (cited across two or more engagements) are the structural authorities in category X right now?</li>
       <li>When the same category is measured in two different geographies, do the same patterns hold? Or does the category-level pattern actually split by engine and by geography in ways that single-geo measurement cannot surface?</li>
     </ul>
-    <p>The fourth question is what we call the cross-geo discipline. The Austin TX CPA measurement (our first non-Hawaii category) tested whether the Hawaii CPA training-data engine findings generalize. The result split the original pattern: one training-data engine&rsquo;s collapse generalized cross-geo, the other did not. A vendor measuring one geography per category would have published the Hawaii result and called it the category-level pattern. The cross-geo measurement was the only way to discover that the framing needed to be more precise. See <a href="/teardowns/cross-category/">the cross-category teardown</a> and <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/patterns/01-training-data-collapse.md">pattern 01 in the patterns library</a> for the full detail.</p>
+    <p>The fourth question is what we call the cross-geo discipline. The Austin TX CPA measurement (our first non-Hawaii category) tested whether the Hawaii CPA training-data engine findings generalize. The result split the original pattern: one training-data engine&rsquo;s collapse generalized cross-geo, the other did not. A vendor measuring one geography per category would have published the Hawaii result and called it the category-level pattern. The cross-geo measurement was the only way to discover that the framing needed to be more precise. See <a href="/teardowns/cross-category/">the cross-category teardown</a> for the full detail.</p>
     <p>Privacy and handling stance for the aggregate: aggregate-level patterns observed across the dataset stay with us, never tied to a named customer, never reverse-engineerable to a specific engagement. The aggregator (<code>dryrun/forensic/aggregate.mjs</code>) has a host-surfacing gate set to <code>min-runs >= 2</code>: a host appears in aggregate output only when it appears in two or more distinct runs. Privacy is enforced in the code, not in the policy.</p>
 
     <h2>A working example from real data</h2>
-    <p>The first pattern-ready category in the aggregate was Honolulu med spas, measured in May 2026 against a 2-engine seed (OpenAI + Perplexity). The 7-engine methodology shipped shortly after; six full measurements have published since (5 Hawaii categories plus the first cross-geo, Austin TX CPAs). The med-spa example below is preserved because it documents the source-type classifier&rsquo;s post-bug-fix accuracy verification (see 2026-05-23 note further down). For the current state of measured categories with 7 engines, see <a href="/teardowns/">the published teardowns</a> and <a href="/teardowns/cross-category/">the cross-category teardown</a>. The methodology demonstrated here is the same one that produced those teardowns; the data shape repeats with more engines and tighter cohort coverage.</p>
+    <p>The first pattern-ready category in the aggregate was Honolulu med spas, measured in May 2026 against a 2-engine seed (OpenAI + Perplexity). The 7-engine methodology shipped shortly after, and full measurements have published across the categories we have measured (Hawaii categories plus the first cross-geo, Austin TX CPAs). The full ledger is at <a href="/claims/">/claims/</a>. The med-spa example below is preserved because it documents the source-type classifier&rsquo;s post-bug-fix accuracy verification (see 2026-05-23 note further down). For the current state of measured categories with 7 engines, see <a href="/teardowns/">the published teardowns</a> and <a href="/teardowns/cross-category/">the cross-category teardown</a>. The methodology demonstrated here is the same one that produced those teardowns; the data shape repeats with more engines and tighter cohort coverage.</p>
     <p>The historical med-spa findings:</p>
     <table>
       <thead>
@@ -234,16 +234,16 @@
       <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved; whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file.</li>
       <li><strong>Automated daily drift alerts.</strong> Daily measurement ships now; drift detection surfaces in the monthly delta memo as observation (see "Drift detection" section above). Automated daily alerts when a host's citation share moves more than a threshold are the obvious next layer and are not yet in the deliverable.</li>
       <li><strong>Cross-language coverage.</strong> English only. AI engines do answer in other languages but our query sets and classifier are English-shaped today.</li>
-      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> Standalone empirical teardowns are published at <a href="/teardowns/">/teardowns/</a> demonstrating the 7-AI-tool methodology on six measurements (Hawaii consumer banking, wealth management, dental, law firms, CPAs, plus the first cross-geo measurement on Austin TX CPAs). The cross-category teardown reads them against each other. The head-to-head comparison version, where the same subject is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
+      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> Standalone empirical teardowns are published at <a href="/teardowns/">/teardowns/</a> demonstrating the 7-AI-tool methodology across the categories we have measured (including Hawaii consumer banking, wealth management, dental, law firms, CPAs, plus the first cross-geo measurement on Austin TX CPAs). The cross-category teardown reads them against each other. The head-to-head comparison version, where the same subject is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
       <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
     </ul>
 
     <h2>Reproducibility</h2>
-    <p>The classifier source code is public. Gemma (one of the seven engines) is open-weight; any auditor can re-run the same prompts against Gemma and verify our numbers independently. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. The aggregator and catalog tools are public. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
+    <p>The method is documented here in full, the question sets are locked by hash, and every published claim ties back to a dated run on the <a href="/claims/">/claims/</a> ledger. Gemma (one of the seven engines) is open-weight, so the Gemma model itself is independently inspectable. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
 
     <h2>How public artifacts cite this methodology</h2>
     <p>Some of what we measure becomes a public artifact: a per-business "AI-visibility receipt" linked from outreach to a named subject. Every public receipt links back to this page for substantiation, and every quantitative claim it carries is anchored in a hash-locked measurement run on the methodology above.</p>
-    <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a NeverRanked artifact is derived from a hash-locked, pre-registered measurement, captured by open-source code, against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
+    <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a NeverRanked artifact is derived from a hash-locked, pre-registered measurement against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
     <p><strong>Phrasing discipline.</strong> Receipts speak observationally only. "On N of M observed queries between [dates], engine X cited business Y" is the canonical form. We do not say an engine "recommends," "prefers," "endorses," or "ranks" a business. Engines cite, full stop. We do not assert that being cited causes a business outcome, or that not being cited causes its absence. The grader rejects artifacts that drift into normative or causal language.</p>
     <p><strong>Anonymization commitment.</strong> Non-customer businesses are anonymized on every publicly-indexed page. The named subject of a receipt is named (they have notice through the outreach we sent them); other businesses in the same cohort appear as "Competitor A", "Competitor B", and so on. A named subject who is also a paying customer can consent to additional naming in their own deliverable; otherwise the public version stays anonymized.</p>
     <p><strong>Measurement window staleness.</strong> AI engine behavior changes weekly. Every public artifact carries the measurement window dates so a reader can see exactly when the underlying capture happened. If a finding is stale, we will re-run on request, at no charge, against the same hash-locked methodology so the new run is directly comparable.</p>

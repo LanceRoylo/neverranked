@@ -91,11 +91,11 @@
     <p class="sub">Pre-written schema blocks for the page types AI engines actually cite. Drop into a <code>&lt;script type="application/ld+json"&gt;</code> tag in your page head, fill in the bracketed values, validate at <a href="https://validator.schema.org/">validator.schema.org</a>. Annotated with notes on what each property does and which AI engines read which properties.</p>
 
     <div class="notice">
-      <strong>Why this exists:</strong> NeverRanked customers' per-query playbooks (the prepped punch list inside the kickoff appendix) name specific schema types to deploy per page type. This library is the deployable form of those recommendations. The schema is generic; the proprietary work is the per-customer measurement and the per-query playbook telling you which schema to deploy where and why.
+      <strong>Why this exists:</strong> NeverRanked customers' per-query playbooks (the prepped punch list inside the kickoff appendix) name specific schema types to deploy per page type. This library is the deployable form of those recommendations. The schema is generic. The proprietary work is the per-customer measurement and the per-query playbook telling you which schema to deploy where and why.
     </div>
 
     <div class="notice" style="border-left-color: #8a8a90;">
-      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across 5 categories and 7 AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
+      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across the categories we have measured and seven AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
     </div>
 
     <div class="notice" style="border-left-color: #8a8a90;">
@@ -124,7 +124,7 @@
       <li>Paste inside <code>&lt;script type="application/ld+json"&gt;...&lt;/script&gt;</code> in the page head.</li>
       <li>Validate at <a href="https://validator.schema.org/">validator.schema.org</a>. The validator should report no warnings.</li>
       <li>Test the page renders correctly. Schema is invisible to humans but should not break the page.</li>
-      <li>Wait for AI engines to re-index (typically 3-8 weeks; see your monthly NeverRanked measurement for confirmation).</li>
+      <li>Wait for AI engines to re-index (typically 4-8 weeks. See your monthly NeverRanked measurement for confirmation).</li>
     </ol>
 
     <p><strong>One page can have multiple schema blocks.</strong> A service-specific landing page might have Service + LocalBusiness + FAQPage + BreadcrumbList all on the same page. This is normal and AI engines handle it correctly.</p>
@@ -188,10 +188,10 @@
 
     <div class="engine-notes">
       <strong>Per-engine notes</strong><br>
-      <strong>ChatGPT search / Gemini grounded:</strong> read all properties; <code>name</code>, <code>address</code>, and <code>sameAs</code> drive the highest weight.<br>
+      <strong>ChatGPT search / Gemini grounded:</strong> read all properties. <code>name</code>, <code>address</code>, and <code>sameAs</code> drive the highest weight.<br>
       <strong>Perplexity:</strong> heavily uses <code>address</code> and <code>openingHoursSpecification</code> for local intent queries.<br>
-      <strong>Google AI Overviews:</strong> prefers <code>geo</code> + <code>address</code> together; cross-references with Google Business Profile.<br>
-      <strong>Microsoft Copilot (Bing):</strong> currently weak at extracting LocalBusiness schema; Bing Business Profile is the more direct path.<br>
+      <strong>Google AI Overviews:</strong> prefers <code>geo</code> + <code>address</code> together, and cross-references with Google Business Profile.<br>
+      <strong>Microsoft Copilot (Bing):</strong> currently weak at extracting LocalBusiness schema. Bing Business Profile is the more direct path.<br>
       <strong>Claude / Gemma (training data):</strong> don't read live schema. LocalBusiness presence here matters only for future training data refreshes (months to years).
     </div>
 
@@ -244,10 +244,10 @@
 
     <div class="engine-notes">
       <strong>Per-engine notes</strong><br>
-      <strong>ChatGPT search:</strong> quotes <code>description</code> field verbatim more than any other engine; write it as a self-contained answer.<br>
+      <strong>ChatGPT search:</strong> quotes <code>description</code> field verbatim more than any other engine. Write it as a self-contained answer.<br>
       <strong>Perplexity / Gemini grounded:</strong> use <code>serviceType</code> + <code>areaServed</code> as a combined ranking signal for long-tail queries.<br>
-      <strong>Google AI Overviews:</strong> reads <code>offers</code> for budget queries; missing pricing drops you from "best for the money" answer sets.<br>
-      <strong>Microsoft Copilot:</strong> reads Service schema lightly; relies more on body text patterns.
+      <strong>Google AI Overviews:</strong> reads <code>offers</code> for budget queries. Missing pricing drops you from "best for the money" answer sets.<br>
+      <strong>Microsoft Copilot:</strong> reads Service schema lightly and relies more on body text patterns.
     </div>
 
     <h2 id="faqpage">FAQPage</h2>
@@ -280,19 +280,19 @@
     <h4>Rules for the FAQ</h4>
     <ul>
       <li><strong>Questions must be real.</strong> Use questions buyers actually ask, not marketing-shaped questions. AI engines preferentially cite pages where the Q&amp;A maps to common buyer intent.</li>
-      <li><strong>Answers must be direct.</strong> 2-5 sentences. AI engines quote the <code>text</code> field verbatim; write it as if it's about to be the AI's answer to a buyer.</li>
+      <li><strong>Answers must be direct.</strong> 2-5 sentences. AI engines quote the <code>text</code> field verbatim. Write it as if it's about to be the AI's answer to a buyer.</li>
       <li><strong>Visible AND schema.</strong> The same Q&amp;A must appear in visible body text on the page, not just in schema. AI engines cross-check.</li>
-      <li><strong>5-8 questions is the sweet spot.</strong> Fewer than 3 looks thin; more than 12 dilutes signal.</li>
+      <li><strong>5-8 questions is the sweet spot.</strong> Fewer than 3 looks thin. More than 12 dilutes signal.</li>
       <li><strong>No nested HTML in answers.</strong> Plain text only. <code>&lt;br&gt;</code> or markup breaks AI quoting.</li>
     </ul>
 
     <div class="engine-notes">
       <strong>Per-engine notes</strong><br>
-      <strong>ChatGPT search:</strong> quotes <code>acceptedAnswer.text</code> directly in answers; this is the single highest-leverage schema for ChatGPT citation.<br>
+      <strong>ChatGPT search:</strong> quotes <code>acceptedAnswer.text</code> directly in answers. This is the single highest-leverage schema for ChatGPT citation.<br>
       <strong>Perplexity:</strong> reads FAQPage but weights it lower than independent third-party content.<br>
-      <strong>Google AI Overviews:</strong> heavily rewards FAQ schema; can surface individual Q&amp;A pairs as standalone answers.<br>
+      <strong>Google AI Overviews:</strong> heavily rewards FAQ schema and can surface individual Q&amp;A pairs as standalone answers.<br>
       <strong>Microsoft Copilot:</strong> reads visible Q&amp;A patterns from body text more than the schema itself.<br>
-      <strong>Claude / Gemma:</strong> training-data only; FAQ schema matters only for future training refresh.
+      <strong>Claude / Gemma:</strong> training-data only. FAQ schema matters only for future training refresh.
     </div>
 
     <h2 id="person">Person</h2>
@@ -335,7 +335,7 @@
         <tr><td><code>knowsAbout</code></td><td>Array of subject areas. The single highest-leverage Person property for AI citation. List specific specialties, not generic categories.</td></tr>
         <tr><td><code>hasCredential</code></td><td>Professional credentials. AI engines cite credentialed people more often for trust-shaped queries.</td></tr>
         <tr><td><code>alumniOf</code></td><td>Educational background. Particularly important for attorneys (law school) and financial advisors (designations).</td></tr>
-        <tr><td><code>sameAs</code></td><td>Professional profile URLs. LinkedIn is most important; industry-specific profiles (Bar association, AICPA, CFP Board) add weight.</td></tr>
+        <tr><td><code>sameAs</code></td><td>Professional profile URLs. LinkedIn is most important. Industry-specific profiles (Bar association, AICPA, CFP Board) add weight.</td></tr>
         <tr><td><code>worksFor</code></td><td>Links to the firm's LocalBusiness via <code>@id</code>. Lets AI cite person + firm together.</td></tr>
       </tbody>
     </table>
@@ -344,7 +344,7 @@
       <strong>Per-engine notes</strong><br>
       <strong>Claude / Gemma (training data):</strong> Person schema with strong <code>knowsAbout</code> + <code>sameAs</code> compounds in training data over years. The slowest-moving but most defensible AEO surface for named professionals.<br>
       <strong>ChatGPT search / Perplexity:</strong> use <code>jobTitle</code> + <code>knowsAbout</code> as a combined relevance signal for expertise queries.<br>
-      <strong>Google AI Overviews:</strong> cross-references <code>sameAs</code> URLs heavily; missing LinkedIn drops you from named-expert answer sets.
+      <strong>Google AI Overviews:</strong> cross-references <code>sameAs</code> URLs heavily. Missing LinkedIn drops you from named-expert answer sets.
     </div>
 
     <h2 id="article">Article</h2>
@@ -378,7 +378,7 @@
     <h4>Rules for Article</h4>
     <ul>
       <li><strong>Always reference a Person via <code>author.@id</code>.</strong> Anonymous Articles get cited less. AI engines preferentially cite named-byline content.</li>
-      <li><strong><code>datePublished</code> and <code>dateModified</code> matter.</strong> AI engines deprioritize stale content; updated dates keep articles citation-eligible longer.</li>
+      <li><strong><code>datePublished</code> and <code>dateModified</code> matter.</strong> AI engines deprioritize stale content. Updated dates keep articles citation-eligible longer.</li>
       <li><strong><code>about</code> is the most overlooked property.</strong> Specific subject areas help AI route the article to the right query intents.</li>
     </ul>
 
@@ -439,7 +439,7 @@
 }</pre>
 
     <h2 id="aggregaterating">AggregateRating</h2>
-    <p>For pages displaying review summaries. Use only with real, verifiable reviews; fake or unverified ratings will get the page penalized.</p>
+    <p>For pages displaying review summaries. Use only with real, verifiable reviews. Fake or unverified ratings will get the page penalized.</p>
 
     <h4>The block</h4>
     <pre>{
@@ -509,9 +509,9 @@
     <p>Schema deployment is necessary but not sufficient for AI citation. The full path:</p>
     <ol>
       <li><strong>Deploy the schema</strong> matching the page's intent (this library).</li>
-      <li><strong>Match the body content shape</strong> the cited competitors use (median word count, H2 structure, FAQ presence; all surfaced in your per-query NeverRanked playbook).</li>
+      <li><strong>Match the body content shape</strong> the cited competitors use (median word count, H2 structure, FAQ presence, all surfaced in your per-query NeverRanked playbook).</li>
       <li><strong>Internal link the page</strong> from existing high-traffic site sections so crawlers find it within the first re-index cycle.</li>
-      <li><strong>Wait 4-8 weeks</strong> for AI engines to re-index. Training-data engines (Claude, Gemma) take much longer; they reflect schema changes on the next model training cycle.</li>
+      <li><strong>Wait 4-8 weeks</strong> for AI engines to re-index. Training-data engines (Claude, Gemma) take much longer. They reflect schema changes on the next model training cycle.</li>
       <li><strong>Verify in your monthly NeverRanked measurement</strong> that the page is now being cited on the target queries.</li>
     </ol>
 

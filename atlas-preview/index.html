@@ -222,7 +222,7 @@
     <p class="sub">A preview of the Atlas chat surface that ships inside the NeverRanked customer dashboard. Six scripted exchanges drawn from the production system prompt. Atlas answers what the measurement shows. It refuses to tell you what to do.</p>
 
     <div class="notice">
-      <strong>What this is, what this is not.</strong> The exchanges below are scripted previews of how Atlas behaves in production. The data values are illustrative, not from a real customer's measurement. The voice, the refusal patterns, the flag-it offer, the named cadence: all match what a paying customer sees when they ask Atlas a question. The full system prompt is at <a href="https://github.com/LanceRoylo/neverranked/blob/main/atlas-system-prompt.md">/atlas-system-prompt.md</a> for anyone who wants to audit the discipline directly.
+      <strong>What this is, what this is not.</strong> The exchanges below are scripted previews of how Atlas behaves in production. The data values are illustrative, not from a real customer's measurement. The voice, the refusal patterns, the flag-it offer, the named cadence: all match what a paying customer sees when they ask Atlas a question. The measurement method is documented at <a href="/methodology/">/methodology/</a>, the question sets are hash-locked, and every dated run is on the <a href="/claims/">/claims/</a> ledger.
     </div>
 
     <div class="atlas-card" id="atlas-card" aria-label="Atlas chat preview">
@@ -265,7 +265,7 @@
     <p class="caption">The boundary is structural. Prioritization lives in your monthly memo, written by the principal. Atlas holds the data. Crossing that line would damage the engagement.</p>
 
     <h2>Why the refusal is the marketing</h2>
-    <p>Every other AI tool in this category is racing to be the one that tells you what to do. Atlas is the one that won't. The discipline is what makes the underlying measurement trustworthy: when Atlas tells you a number, that number is what the data shows, full stop. When you ask Atlas a strategic question, Atlas hands it off to the monthly memo and the principal. The two layers stay separate. The customer reads a research artifact, not a marketing artifact dressed up as one.</p>
+    <p>Every other vendor in this category races to tell you what to do. Atlas is the data layer of a research practice that will not. The discipline is what makes the underlying measurement trustworthy: when Atlas tells you a number, that number is what the data shows, full stop. When you ask Atlas a strategic question, Atlas hands it off to the monthly memo and the principal. The two layers stay separate. The customer reads a research artifact, not a marketing artifact dressed up as one.</p>
     <p>This boundary is the engagement. If Atlas crossed it (started giving recommendations, ranking options, claiming causation), NeverRanked would be a different company selling a different product. The discipline visible in the chat above is the same discipline visible in every measurement run, every cohort decision, every monthly memo, and every public teardown.</p>
 
     <h2>How Atlas reads the data context</h2>
@@ -302,7 +302,7 @@
     const EXCHANGES = [
       {
         user: "What's my AI citation share this week?",
-        atlas: "37% across the 7 measured AI tools, down 2 points from last week. Perplexity stable at 48%. ChatGPT search dropped from 42% to 36%, the biggest single-engine shift. Claude held at 31%.",
+        atlas: "37% across the five citation-grade engines, down 2 points from last week. Perplexity stable at 48%. ChatGPT search dropped from 42% to 36%, the biggest single-engine shift. The two model-knowledge tools are tracked separately and not averaged into that figure: Claude held at 31%.",
         kind: "data"
       },
       {

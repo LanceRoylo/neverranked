@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>We killed our own thesis -- NeverRanked</title>
+<title>We killed our own thesis &middot; NeverRanked</title>
 <meta name="description" content="NeverRanked sold a product that didn't work. We ran a pre-registered kill test against our own domain, got zero, and stopped selling it. This is the full story.">
 <link rel="canonical" href="https://neverranked.com/retraction/">
 <style>
@@ -52,7 +52,7 @@ Test: 18 hash-locked queries, three repetitions each, on
 Pass:   >= 30% of slots cite neverranked.com.
 Fail:   < 10% of slots cite neverranked.com.
 Gray:   10-30% triggers a follow-up before any decision.</pre>
-    <p>The pre-registration file lives in the research repo at <code>dryrun/schema-causal/PRE-REGISTRATION.md</code>. Hash: <code>87bd4abefb331bc9</code>. That hash is in the file. The same hash printed by the runner on the day the test ran. You can read the inputs without trusting the outputs.</p>
+    <p>The pre-registration file was hash-stamped before the test ran. Hash: <code>87bd4abefb331bc9</code>. That hash is in the file. The same hash printed by the runner on the day the test ran. The file is available on request, so you can read the inputs without trusting the outputs.</p>
     <p>We ran the test on 2026-05-19. The result was zero.</p>
     <p>Not "below the pass bar." Not "in the gray zone." Not "weak signal that needs more data." <strong>Zero of 409 citation slots cited neverranked.com.</strong> The snippet was on the page. The crawlers had been to the page. The structured data was rendered in the DOM. None of it produced a single citation.</p>
 
@@ -82,7 +82,7 @@ Gray:   10-30% triggers a follow-up before any decision.</pre>
     <div class="rule"></div>
 
     <h2>Why publish this</h2>
-    <p>The honest reason is that our buyers can read. Anyone evaluating NeverRanked seriously can dig into the GitHub repo, find the pre-registration file, see the test results, and notice the retracted content in the git history. We can either own the retraction in our own voice, or wait for someone else to surface it. Owning it is better business and more honest.</p>
+    <p>The honest reason is that our buyers can read. Anyone evaluating NeverRanked seriously can read the documented method at <a href="/methodology/">/methodology/</a>, check the hash-locked question sets, and review the dated runs on the <a href="/claims/">claims ledger</a>. We can either own the retraction in our own voice, or wait for someone else to surface it. Owning it is better business and more honest.</p>
     <p>The harder reason is that the category is full of vendors making the same claim we just retracted. Every AEO tool on the market promises some version of "ship our structured data and AI cites you." Some of them may eventually prove it. Most of them have not run the test. We do not believe a vendor in this space should be trusted on the citation-causation claim without a pre-registered, hash-locked, reproducible kill test against their own domain. We ran ours. We failed. We stopped selling. The honest move now is to say so.</p>
 
     <h2>What we changed about how we work</h2>
@@ -92,7 +92,7 @@ Gray:   10-30% triggers a follow-up before any decision.</pre>
     <h3>2. The grader is fail-closed</h3>
     <p>Any prospect-facing artifact (cold email, preview page, research memo, dashboard report) is graded by a separate model against a canonical fact list before it ships. Mention something we cannot substantiate, the grader rejects the artifact and the send is held. The canonical fact list lives in the codebase. Anyone can read it.</p>
     <h3>3. Pattern-readiness has a numeric bar</h3>
-    <p>The cross-category dataset our engagements feed is governed by a rule: claim a pattern in a category only when three or more usable runs in that category agree. A run with zero successful API captures does not count, even if its log is the right length. This is in <code>dryrun/forensic/MOAT.md</code> in the research repo. The discipline is enforced by the catalog tool, not by us remembering.</p>
+    <p>The cross-category dataset our engagements feed is governed by the internal pattern-readiness rule: claim a pattern in a category only when three or more usable runs in that category agree. A run with zero successful API captures does not count, even if its log is the right length. The discipline is enforced by the catalog tool, not by us remembering.</p>
 
     <div class="rule"></div>
 
@@ -100,18 +100,17 @@ Gray:   10-30% triggers a follow-up before any decision.</pre>
     <ul>
       <li>Zero current paying customers under the new product. The demand for honest research-only measurement is being tested, not assumed. Validation requires actual paid commitments, not warm replies.</li>
       <li>One named customer reference (Hawaii Theatre Center) and only as a capability example: the kinds of gaps a forensic measurement engagement surfaces that a standard SEO scan misses. The 45-to-95 score lift and 14-of-19 Perplexity citation claims are retracted.</li>
-      <li>The measurement infrastructure is real and live. The aggregate now covers four Hawaii business categories (consumer banking, wealth management, dental, law) measured across 7 AI tools each, with 3 usable runs per category clearing pattern-readiness. Four public teardowns at <a href="/teardowns/">/teardowns/</a> document the findings.</li>
+      <li>The measurement infrastructure is real and live. As of this publication, the aggregate covers ten dated measurements, nine Hawaii business categories plus a cross-geo Austin CPA run, measured across the seven AI tools each, with three usable runs per category clearing the internal pattern-readiness rule. Public teardowns at <a href="/teardowns/">/teardowns/</a> document the findings, and the dated runs are listed on the <a href="/claims/">claims ledger</a>.</li>
       <li>The cold outreach pipeline is paused until the rewritten generator and grader are deployed and verified against the new positioning.</li>
       <li>Pricing is locked, not provisional. $4,500 kickoff, $1,500 a month, per category.</li>
     </ul>
 
     <h2>If you want to dig in</h2>
     <ul>
-      <li>The pre-registration file: <code>dryrun/schema-causal/PRE-REGISTRATION.md</code> in the research repo.</li>
-      <li>The moat discipline document: <code>dryrun/forensic/MOAT.md</code>.</li>
-      <li>The fail-closed grader's canonical fact list:
-        <code>dashboard/src/preview/CANONICAL_FACTS-DRAFT.md</code>.</li>
-      <li>The public source code: <a href="https://github.com/LanceRoylo/neverranked">github.com/LanceRoylo/neverranked</a>.</li>
+      <li>The documented method: <a href="/methodology/">/methodology/</a>, including how the hash-locked question sets are built and run.</li>
+      <li>The dated runs and the hashes that lock each question set: the <a href="/claims/">claims ledger</a>.</li>
+      <li>The published teardowns: <a href="/teardowns/">/teardowns/</a>.</li>
+      <li>The pre-registration file, the canonical fact list, and the per-run logs are available on request.</li>
       <li>To talk: <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a>.</li>
     </ul>
 

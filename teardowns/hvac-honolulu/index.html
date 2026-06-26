@@ -9,9 +9,8 @@
 
   This teardown is unusual: the headline finding was PRE-REGISTERED. A
   prediction that Claude would cite these firms under 5% of the time was
-  committed to git on 2026-06-09, before any HVAC data existed. The
-  commit timestamp predates the first run. See:
-  github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/findings/prediction-hvac-claude-collapse.md
+  committed to a timestamped private record on 2026-06-09, before any HVAC
+  data existed. The commit timestamp predates the first run.
 
   Cohort kept anonymized at the firm level. None of the 12 AC companies
   are paying NeverRanked customers and the non-customer anonymization
@@ -24,7 +23,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 09: We predicted the Claude collapse for Honolulu HVAC before we measured it</title>
-<meta name="description" content="A pre-registered measurement. We committed a prediction to a timestamped public record before any data existed: Claude would cite Honolulu AC companies under 5% of the time. It landed at 2%, while the web-searching engines reached 38-66%. The third category where Claude's training-data collapse holds.">
+<meta name="description" content="A pre-registered measurement. We committed a prediction to a timestamped private record before any data existed: Claude would cite Honolulu AC companies under 5% of the time. It landed at 2%, while the web-searching engines reached 38-66%. The third category where Claude's training-data collapse holds.">
 <link rel="canonical" href="https://neverranked.com/teardowns/hvac-honolulu/">
 <meta property="og:title" content="Teardown 09: The Claude collapse, predicted in writing before the data">
 <meta property="og:description" content="12 Honolulu AC companies, 7 AI tools. We forecast Claude under 5% before measuring. It came in at 2%. A pre-registered finding no marketing-driven shop can fake.">
@@ -68,10 +67,10 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 09 &middot; Honolulu HVAC</div>
     <h1>We predicted Claude would ignore Honolulu AC companies. Then we measured.</h1>
-    <p class="sub">12-firm Honolulu/Oahu HVAC cohort, 18 hash-locked questions, 3 clean runs finalized 2026-06-11. The prediction was committed to a public timestamped record on 2026-06-09, before any HVAC data existed. Individual firms anonymized. Counts and distributions named.</p>
+    <p class="sub">12-firm Honolulu/Oahu HVAC cohort, 18 hash-locked questions, 3 clean runs finalized 2026-06-11. The prediction was committed to a timestamped private record on 2026-06-09, before any HVAC data existed. Individual firms anonymized. Counts and distributions named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> before any HVAC data existed, NeverRanked committed a prediction to a timestamped public record: Claude would cite Honolulu AC companies&rsquo; own websites less than 5% of the time. The measurement came in at 2% across 606 Claude citations, while the web-searching engines reach 38% to 66% on the identical questions. The forecast held. This is the third unrelated category where Claude&rsquo;s training-data citation of local firms collapses to near-zero, after CPA firms (across three geographies) and med spas.
+      <strong>The headline finding in one sentence:</strong> before any HVAC data existed, NeverRanked committed a prediction to a timestamped private record: Claude would cite Honolulu AC companies&rsquo; own websites less than 5% of the time. The measurement came in at 2% across 606 Claude citations, while the web-searching engines reach 38% to 66% on the identical questions. The forecast held. This is the third unrelated category where Claude&rsquo;s training-data citation of local firms collapses to near-zero, after CPA firms (across three geographies) and med spas.
     </div>
 
     <h2>The prediction, on the record</h2>
@@ -80,7 +79,7 @@
       <li><strong>Claude would cite AC companies&rsquo; own websites under 5% of the time.</strong> The reasoning: home services is an editorially thin local trade. Individual AC companies generate almost no national editorial coverage, so they barely exist in Claude&rsquo;s training data.</li>
       <li><strong>The web-searching engines would reach 35% or higher</strong> on the same questions, so any collapse would be Claude-specific rather than a category nobody cites.</li>
     </ul>
-    <p>Both held. Claude came in at 2%. The four AI-answer web engines pooled to 47%. We also wrote down what would have falsified the prediction (Claude at 10% or higher, or web engines below 35%), so this was a real forecast with a way to be wrong, not a hedge. The committed file, with the falsification criteria and the result recorded next to the forecast, is public: <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/findings/prediction-hvac-claude-collapse.md">prediction-hvac-claude-collapse.md</a>. That is the difference between a finding and a forecast, and it is the difference between research and a marketing claim.</p>
+    <p>Both held. Claude came in at 2%. The four AI-answer web engines pooled to 47%. We also wrote down what would have falsified the prediction (Claude at 10% or higher, or web engines below 35%), so this was a real forecast with a way to be wrong, not a hedge. The committed file, with the falsification criteria and the result recorded next to the forecast, is a timestamped entry in our internal record. That is the difference between a finding and a forecast, and it is the difference between research and a marketing claim.</p>
 
     <h2>Why HVAC, and why it matters as a measurement subject</h2>
     <p>Home services is the largest agency-served local vertical there is. Whole marketing agencies do nothing but HVAC, plumbing, and roofing. The queries are pure commercial intent: buyers search by service (AC repair, AC installation, mini split), by area (Honolulu, Oahu, Waikiki), and by urgency (emergency AC repair). The field has no dominant national brand, so the AI-citation surface is genuinely contested. It is also a clean test of the training-data hypothesis: if editorially thin local trades collapse on Claude, HVAC should collapse. It did.</p>
@@ -91,8 +90,8 @@
       <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
     </ul>
-    <p>18 questions a Honolulu AC buyer would actually ask AI, locked at hash <code>86b2b18e...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 clean usable runs, 6,218 citations total. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>. The 12-firm cohort was built from the citations themselves: a first run with no cohort registered, then a cohort-coverage scan that surfaced every AC company AI cited 45 or more times across the runs. Directories (Angi, HomeAdvisor) and national retailers (Home Depot) were excluded by rule, so the cohort is AC companies only.</p>
-    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+    <p>18 questions a Honolulu AC buyer would actually ask AI, locked at hash <code>86b2b18e...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 clean usable runs, 6,218 citations total. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 12-firm cohort was built from the citations themselves: a first run with no cohort registered, then a cohort-coverage scan that surfaced every AC company AI cited 45 or more times across the runs. Directories (Angi, HomeAdvisor) and national retailers (Home Depot) were excluded by rule, so the cohort is AC companies only.</p>
+    <p>Full documented methodology at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
     <p>Across all 12 AC companies and all 7 AI tools, AI pulled answers from these source types:</p>
@@ -176,9 +175,9 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Pre-registration:</strong> the prediction (Claude under 5%, web engines 35% or higher) was committed to git on 2026-06-09, before any HVAC run existed. The commit predates the first measurement. Falsification criteria and the recorded result are public in the committed file.</p>
-      <p><strong>Measurement window:</strong> 3 clean usable runs finalized 2026-06-11, 6,218 citations. Figures generated from the aggregate tooling (teardown-data.mjs) and drift-monitored. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
-      <p><strong>Substantiation:</strong> question set locked by hash <code>86b2b18e...</code>, open-source measurement code, named AI tools on named dates. Gemma is open-weight, so any auditor can independently re-run the same questions and verify the training-data numbers.</p>
+      <p><strong>Pre-registration:</strong> the prediction (Claude under 5%, web engines 35% or higher) was committed to a timestamped private record on 2026-06-09, before any HVAC run existed. The commit predates the first measurement. Falsification criteria and the recorded result are committed next to the forecast in that record.</p>
+      <p><strong>Measurement window:</strong> 3 clean usable runs finalized 2026-06-11, 6,218 citations. Figures generated from the aggregate tooling (teardown-data.mjs) and drift-monitored. Pattern-readiness rule of 3 runs cleared per the internal pattern-readiness rule. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>86b2b18e...</code>, documented method at <a href="/methodology/">/methodology/</a>, dated runs on the <a href="/claims/">/claims/</a> ledger, named AI tools on named dates. Gemma is open-weight, so the model itself is independently inspectable.</p>
       <p><strong>Anonymization:</strong> the 12-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and category-level source surfaces are public. Individual firm names are not.</p>
     </div>
 

@@ -77,8 +77,8 @@
       <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
     </ul>
-    <p>18 questions a Honolulu home buyer or seller would actually ask AI, locked at hash <code>628e3d2b...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-19. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>. The 11-firm cohort was built from the citations themselves: the first run with no cohort registered, then a cited-host audit that kept the genuinely local Honolulu/Oahu real estate firms and excluded the national portals and ranking sites.</p>
-    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+    <p>18 questions a Honolulu home buyer or seller would actually ask AI, locked at hash <code>628e3d2b...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-19. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 11-firm cohort was built from the citations themselves: the first run with no cohort registered, then a cited-host audit that kept the genuinely local Honolulu/Oahu real estate firms and excluded the national portals and ranking sites.</p>
+    <p>Full documented methodology at <a href="/methodology/">/methodology/</a>, with the hash-locked question sets and the dated runs on the <a href="/claims/">/claims/</a> ledger.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
     <p>Across all 7 AI tools and 5,836 citations, AI pulled answers from these source types:</p>
@@ -165,8 +165,8 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement window:</strong> 3 usable runs on 2026-06-19. Figures generated from the aggregate tooling (teardown-data.mjs) and drift-monitored. Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
-      <p><strong>Substantiation:</strong> question set locked by hash <code>628e3d2b...</code>, open-source measurement code, named AI tools on named dates. Gemma is open-weight, so any auditor can independently re-run the same questions and verify the training-data numbers.</p>
+      <p><strong>Measurement window:</strong> 3 usable runs on 2026-06-19. Figures generated from the aggregate tooling (teardown-data.mjs) and drift-monitored. Pattern-readiness rule of 3 runs cleared per the internal pattern-readiness rule. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>628e3d2b...</code>, documented method at <a href="/methodology/">/methodology/</a>, named AI tools on named dates with the dated runs on the <a href="/claims/">/claims/</a> ledger. Gemma is open-weight, so the model itself is independently inspectable.</p>
       <p><strong>Anonymization:</strong> the 11-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and category-level source surfaces are public. Individual firm names are not.</p>
     </div>
 

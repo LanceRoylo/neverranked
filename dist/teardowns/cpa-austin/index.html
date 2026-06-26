@@ -71,7 +71,7 @@
     </div>
 
     <h2>Why this measurement existed</h2>
-    <p>The Hawaii CPA teardown (published 2026-05-26) surfaced what looked like a category-level pattern: training-data AI engines (Claude and Gemma) cite Hawaii CPA firms at near-zero rates (1% and 2% respectively), in contrast to 4 other measured categories where training-data engines were the highest own-share tier. The pattern was documented at low confidence (n=1) because we had only measured Hawaii CPAs in that category.</p>
+    <p>The Hawaii CPA teardown (published 2026-05-26) surfaced what looked like a category-level pattern: training-data AI engines (Claude and Gemma) cite Hawaii CPA firms at near-zero rates (1% and 2% respectively), in contrast to the other categories we had measured at that point, where training-data engines were the highest own-share tier. The pattern was documented at low confidence because we had only measured Hawaii CPAs in that category.</p>
     <p>The cross-geo question is direct: does the collapse generalize, or is it Hawaii-specific? Austin TX was chosen as the test bed because it is a comparable market (mid-size professional-services hub) with a direct structural analog (Texas Society of CPAs vs Hawaii Society of CPAs). Same question shape, geo-swapped from Hawaii/Honolulu to Austin. Same 7 AI engines, same 3 reps, same hash-locked discipline.</p>
     <p>The result split the pattern into two findings, neither of which we could have surfaced from one geo alone.</p>
 
@@ -81,9 +81,9 @@
       <li><strong>5 web-searching AI tools:</strong> Perplexity (sonar API), ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with Google Search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (claude-haiku-4-5, via Anthropic API), Gemma (open-weight, via Together AI).</li>
     </ul>
-    <p>18 questions an Austin CPA buyer would actually ask AI, locked at hash <code>17fec069...</code>. The question set is structurally identical to the Hawaii CPA set (8 head + 10 long-tail) with geographic terms swapped (Hawaii/Honolulu/Bishop Street replaced with Austin/downtown Austin/Texas equivalents). 3 repetitions per question per AI tool. 3+ usable runs on 2026-05-27. Pattern-readiness rule of 3 usable runs cleared per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>.</p>
+    <p>18 questions an Austin CPA buyer would actually ask AI, locked at hash <code>17fec069...</code>. The question set is structurally identical to the Hawaii CPA set (8 head + 10 long-tail) with geographic terms swapped (Hawaii/Honolulu/Bishop Street replaced with Austin/downtown Austin/Texas equivalents). 3 repetitions per question per AI tool. 3+ usable runs on 2026-05-27. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
     <p>The 37-firm cohort was built in four passes. 5 anchor firms registered before run 1 (one with a corrected domain after run #1 surfaced the actual primary domain, same pattern as Hawaii where kmhcpas.com surfaced as kmhllp.com). 16 additional firms surfaced through the run #1 within-citation scan. 9 more surfaced after run #2 cohort-coverage. 8 final additions after run #3. National Big-X firms (KPMG, PwC, Deloitte, EY, BDO, RSM, CLA, Cherry Bekaert, Weaver, Withum, CohnReznick) and out-of-state firms were excluded from the cohort to keep the comparison Austin-specific. Texas Society of CPAs (state association), city/state surfaces, gig platforms, and review aggregators were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
-    <p>Full methodology + open-source measurement code at <a href="/methodology/">/methodology/</a>.</p>
+    <p>Full methodology documented at <a href="/methodology/">/methodology/</a>. The question set is locked by hash and every run is dated on the <a href="/claims/">claims ledger</a>.</p>
 
     <h2>Source-type distribution (cohort-wide)</h2>
     <p>Across all 37 firms and all 7 AI tools, 7,738 total citations, AI pulled answers from these source types:</p>
@@ -125,7 +125,7 @@
 
     <div class="callout">
       <h3>What the split means for an Austin CPA firm</h3>
-      <p>For an Austin CPA firm specifically, the recommendation is materially different from the Hawaii CPA recommendation. Claude is the same kind of category-wide blind spot for Austin firms as it is for Hawaii firms; do not invest in trying to move Claude's needle on a short timeline. Gemma is reachable for Austin firms in a way it is not for Hawaii firms; Gemma's 23% own-share means sustained editorial presence on the web ingestible by Gemma's training cycle does move the needle for Austin CPA firms specifically. The web-searching engines (Perplexity 61%, Gemini 61%, Google AIO 50%, OpenAI 45%) are the primary closable surface; Microsoft Copilot is the universal first-mover opening as in every measured category.</p>
+      <p>For an Austin CPA firm specifically, the recommendation is materially different from the Hawaii CPA recommendation. Claude is the same kind of category-wide blind spot for Austin firms as it is for Hawaii firms; do not invest in trying to move Claude's needle on a short timeline. Gemma already cites Austin firms in a way it does not cite Hawaii firms. Gemma's 23% own-share means sustained editorial presence on the web ingestible by Gemma's training cycle is a plausible lever for Austin CPA firms specifically. We measure what AI cites and do not promise a lift. The web-searching engines (Perplexity 61%, Gemini 61%, Google AIO 50%, OpenAI 45%) are the surface where firm-owned content already shows up most. Microsoft Copilot is the cohort-wide 0% gap that holds in every measured category.</p>
     </div>
 
     <h2>Top recurring firms (anonymized)</h2>
@@ -167,7 +167,7 @@
       <li>The 40%/54% firm-own / third-party split is stable across the expanded cohort and 4 measurement windows.</li>
       <li>The Claude training-data collapse on CPA firms generalizes across two distinct geographies (Hawaii 1%, Austin 0%). Two-geo confidence is medium; a third geo measurement would strengthen or break the pattern.</li>
       <li>Gemma's CPA-firm coverage is geo-specific rather than category-specific (Hawaii 2%, Austin 23%). The original "training-data engine collapse" pattern from the Hawaii CPA teardown overstated the symmetry between Claude and Gemma; the cross-geo measurement corrected the overstatement.</li>
-      <li>Microsoft Copilot's 0% own-share holds in Austin as it does in every other measured category. Universal pattern (n=6 categories now).</li>
+      <li>Microsoft Copilot's 0% own-share holds in Austin as it does across every category we have measured. The pattern is universal across the measurement windows.</li>
       <li>The web-searching engines are the primary closable AEO surface for Austin CPA firms (40-61% own-share band depending on engine).</li>
     </ul>
     <p>What it does not yet support:</p>
@@ -190,8 +190,8 @@
     </div>
 
     <div class="disclosure-block">
-      <p><strong>Measurement window:</strong> 4 manifest-recorded runs on 2026-05-27 (3 deliberate runs + 1 partial-recovery run that completed cleanly). Pattern-readiness rule of 3 runs cleared per MOAT.md rule 5. Refresh cadence is monthly or on customer request.</p>
-      <p><strong>Substantiation:</strong> question set locked by hash <code>17fec069...</code>, open-source measurement code, named AI tools on named dates. The fact-checker (also public source) rejected zero claims in this teardown.</p>
+      <p><strong>Measurement window:</strong> 4 manifest-recorded runs on 2026-05-27 (3 deliberate runs + 1 partial-recovery run that completed cleanly). Pattern-readiness rule of 3 runs cleared per the internal pattern-readiness rule. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>17fec069...</code>, documented method at <a href="/methodology/">/methodology/</a>, named AI tools on named dates, every run dated on the <a href="/claims/">claims ledger</a>. The Gemma model itself is open-weight and independently inspectable.</p>
       <p><strong>Anonymization:</strong> the 37-firm cohort is kept anonymized at the firm level per the non-customer rule. Counts, distributions, and named third-party sources (Cherry Bekaert, CLA, CX Research Institute) are public because they are categorically named already and the substantiation value depends on naming the specific structural surfaces AI uses.</p>
     </div>
 

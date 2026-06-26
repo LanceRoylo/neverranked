@@ -11,10 +11,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Results so far | NeverRanked</title>
-<meta name="description" content="The cumulative measurement output of NeverRanked to date. 4 Hawaii business categories measured at 3/3 pattern-readiness. 142 firms tracked across cohorts. 5 public teardowns. All hash-locked, all open-source code, all observable from outside.">
+<meta name="description" content="The cumulative measurement output of NeverRanked to date, across the categories we have measured. Hash-locked question sets, dated runs on the public claims ledger, all observable from outside.">
 <link rel="canonical" href="https://neverranked.com/results/">
 <meta property="og:title" content="NeverRanked: results so far">
-<meta property="og:description" content="4 categories measured, 142 firms tracked, 5 published teardowns, 16,000+ AI mentions captured. The cumulative state of the practice.">
+<meta property="og:description" content="Ten published measurements across the categories we have measured. The cumulative state of the practice.">
 <style>
   :root {
     color-scheme: dark;
@@ -92,16 +92,16 @@
     <h2>The scoreboard</h2>
     <div class="stat-grid">
       <div class="stat">
-        <span class="num">4</span>
-        <span class="lbl">Hawaii business<br>categories measured</span>
+        <span class="num">10</span>
+        <span class="lbl">Published<br>measurements</span>
       </div>
       <div class="stat">
         <span class="num">142</span>
         <span class="lbl">Firms tracked<br>across cohorts</span>
       </div>
       <div class="stat">
-        <span class="num">5</span>
-        <span class="lbl">Public teardowns<br>shipped</span>
+        <span class="num">10</span>
+        <span class="lbl">Categories with a<br>published teardown</span>
       </div>
       <div class="stat">
         <span class="num">16k+</span>
@@ -110,7 +110,7 @@
     </div>
 
     <h2>Categories measured</h2>
-    <p>Each category was measured the same way: 18 buyer questions locked by hash, 3 repetitions per question per AI tool, 7 AI tools per run (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews, Claude, Gemma), 3+ usable runs per category to clear the MOAT.md rule 5 pattern-readiness threshold.</p>
+    <p>Each category was measured the same way: 18 buyer questions locked by hash, 3 repetitions per question per AI tool, 7 AI tools per run. Five are citation-grade engines that read the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) and two are model-knowledge engines answering from training data (Claude, Gemma). A category needs 3+ usable runs to clear the internal pattern-readiness rule.</p>
     <table>
       <thead>
         <tr><th>Category</th><th class="num">Cohort</th><th class="num">Own-site share</th><th class="num">Runs</th><th>Teardown</th></tr>
@@ -127,31 +127,30 @@
     <h2>What we publish vs what we keep private</h2>
     <p>Two-tier transparency:</p>
     <ul>
-      <li><strong>Public (anonymized at the firm level):</strong> the 5 teardowns at <a href="/teardowns/">/teardowns/</a>. Cohort sizes, source-type distributions, per-AI-tool breakdowns, named third-party platforms (Chambers, BestLawyers, SmartAsset, getwarmer, HMSA, Delta Dental, etc.), and the cross-category gradient. The banking cohort is named in full because all 21 firms are publicly competing brands.</li>
+      <li><strong>Public (anonymized at the firm level):</strong> the teardowns at <a href="/teardowns/">/teardowns/</a>. Cohort sizes, source-type distributions, per-AI-tool breakdowns, named third-party platforms (Chambers, BestLawyers, SmartAsset, getwarmer, HMSA, Delta Dental, etc.), and the cross-category gradient. The banking cohort is named in full because all 21 firms are publicly competing brands.</li>
       <li><strong>Private (named in full):</strong> the 1:1 deliverables inside paying engagements. Each customer&rsquo;s engagement names every firm in their cohort, names the questions they&rsquo;re missing on, and ranks the closable conditions. That deliverable is private to the customer.</li>
     </ul>
     <p>Non-customer firms appearing in our cohorts can request removal at any time by emailing <a href="mailto:takedown@neverranked.com">takedown@neverranked.com</a>. 24-hour SLA.</p>
 
     <h2>The discipline behind the numbers</h2>
     <ul>
-      <li><strong>Pre-registration.</strong> Every question set is locked by hash before measurement starts. The lock never breaks. Public source code at <a href="https://github.com/LanceRoylo/neverranked-outreach">github.com/LanceRoylo/neverranked-outreach</a>.</li>
-      <li><strong>Reproducibility.</strong> Gemma is open-weight. Any auditor can independently re-run the same prompts and verify our training-data numbers without us in the room.</li>
-      <li><strong>Pattern-readiness.</strong> No category claims a pattern until 3 usable runs land per <a href="https://github.com/LanceRoylo/neverranked-outreach/blob/main/dryrun/forensic/MOAT.md">MOAT.md rule 5</a>. The catalog tool enforces this and labels any premature pattern claim "data point, not pattern" in the deliverable itself.</li>
+      <li><strong>Pre-registration.</strong> Every question set is locked by hash before measurement starts, and the hash is committed to a timestamped record. The lock never breaks. The method is documented at <a href="/methodology/">/methodology/</a>, and every dated run is listed on the <a href="/claims/">claims ledger</a>.</li>
+      <li><strong>Inspectable model.</strong> Gemma is open-weight, so the model itself is independently inspectable rather than a closed box we describe from the outside.</li>
+      <li><strong>Pattern-readiness.</strong> No category claims a pattern until 3 usable runs land, per the internal pattern-readiness rule. The catalog tool enforces this and labels any premature pattern claim "data point, not pattern" in the deliverable itself.</li>
       <li><strong>Cohort-coverage discipline.</strong> Each run surfaces additional cohort members through automated coverage scans. The wealth cohort grew from 15 to 42 firms over three rounds; the headline number rose from 27% to 47% as coverage improved. The teardowns document this kind of cohort-driven shift transparently.</li>
-      <li><strong>Fail-closed factual grader.</strong> Every prospect-facing artifact is graded against a canonical fact list before ship. The grader (public source code) rejects unsubstantiated claims. Today across all 5 published teardowns and the Hamada brief, the grader rejected zero claims (everything substantiated cleanly).</li>
+      <li><strong>Fail-closed factual grader.</strong> Every prospect-facing artifact is graded against a canonical fact list before ship. The grader rejects unsubstantiated claims. Today across every published teardown and the Hamada brief, the grader rejected zero claims (everything substantiated cleanly).</li>
     </ul>
 
     <h2>What is NOT in this scoreboard</h2>
     <ul>
       <li>Customer engagement count. We are at <strong>zero current paying customers under the rebuilt positioning.</strong> The measurement work and the discipline are real; the demand for honest research-only measurement is being validated, not assumed.</li>
-      <li>Categories outside Hawaii. The methodology works for any geography; today the seeded categories are all Hawaii because Hawaii is where the first measurement effort landed.</li>
-      <li>National or international cohorts. Same reason.</li>
-      <li>Categories beyond the four measured (banking, wealth, dental, law). Future categories publish here as they clear pattern-readiness.</li>
+      <li>A full national or international map. The methodology works for any geography. Most of the categories measured so far are in Hawaii because that is where the first measurement effort landed, with one published cross-geo measurement, Austin CPA, outside it.</li>
+      <li>Categories we have not yet measured. New categories publish here as they clear pattern-readiness.</li>
     </ul>
 
     <div class="cta-block">
-      <h3>See how 7 AI tools read your site right now</h3>
-      <p style="font-size:15px;color:var(--soft);margin:8px 0 16px;line-height:1.6">Free check. Enter your URL and we will show you what AI tools can read, what they cannot, and what is making you harder to find. No signup.</p>
+      <h3>See how AI tools read your site right now</h3>
+      <p style="font-size:15px;color:var(--soft);margin:8px 0 16px;line-height:1.6">Free check. Enter your URL and we will show you what the live-web AI engines can read, what they cannot, and what is making you harder to find. No signup.</p>
       <a class="primary" href="https://check.neverranked.com">Run the AI search check</a>
       <a class="secondary" href="mailto:Lance@hi.neverranked.com?subject=Free%20diagnostic">Get the 1-page diagnostic</a>
     </div>

@@ -159,7 +159,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions every week across 7 AI tools (ChatGPT, Google AI, Perplexity, Microsoft Copilot, and three others), track who gets recommended instead of you, and hand your team a clear list of what to fix. $4,500 to set up, $1,500/month ongoing."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 7 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. $4,500 to set up, $1,500/month ongoing."
           }
         }
       ]
@@ -1358,7 +1358,7 @@ body.agency-mode #agency-cta-card{display:block !important}
     <!-- CTA -->
     <div class="cta-section">
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
-      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and the specific work that moves the needle. The check is a starting point. The engagement tells you what's actually happening.</p>
+      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
 
       <div class="social-proof">
         <span><span class="sp-num">7</span> AI tools</span>
@@ -1650,7 +1650,7 @@ body.agency-mode #agency-cta-card{display:block !important}
     } else if(score >= 50){
       compText.textContent = 'Sites scoring above 78 are the ones AI engines consistently cite. You are close, but close is not enough when AI picks one winner per query. NeverRanked tracks the gap in real time.';
     } else {
-      compText.textContent = 'The sites getting cited by AI engines score 78 or higher. At '+score+', you are not in the conversation. NeverRanked shows you exactly what to fix and tracks your climb week over week.';
+      compText.textContent = 'The sites getting cited by AI engines score 78 or higher. At '+score+', you are not in the conversation. NeverRanked measures what AI tools say about your category, hands you the prioritized punch list, and tracks the change week over week.';
     }
 
     // What used to live here: a "Quick wins" block listing 5 specific
@@ -1749,18 +1749,18 @@ body.agency-mode #agency-cta-card{display:block !important}
       setBorder(tierSignal, 'var(--gold)');
     } else if(score >= 50){
       setHeadline("You're close to the top.<br><em>One push gets you there.</em>");
-      setSubtext('You have a foundation. What you need is a roadmap to close the gap and monitoring to make sure you stay there. That is exactly what NeverRanked does.');
+      setSubtext('You have a foundation. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
       setBorder(tierSignal, 'var(--gold)');
     } else if(score >= 30){
       setHeadline("Your competitors are already <em>ahead.</em>");
-      setSubtext('At this score, AI engines are choosing your competitors every time. The good news: the fixes are known and the path is clear. NeverRanked builds the roadmap and tracks your climb.');
+      setSubtext('At this score, AI engines are citing your competitors for the questions that matter. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
       setBorder(tierSignal, 'var(--line)');
       setBorder(tierAmplify, 'var(--gold)');
       recolorBtn(tierAmplify, true);
       recolorBtn(tierSignal, false);
     } else {
       setHeadline("You are <em>invisible</em> to AI search.");
-      setSubtext('AI engines cannot parse your site well enough to cite it. Every week without action, the gap grows. NeverRanked provides the full-service fix: we audit, build the roadmap, and execute.');
+      setSubtext('AI engines cannot parse your site well enough to cite it. NeverRanked measures what AI tools say about your category and hands you (or your agency) the prioritized punch list. You execute, we track the change.');
       setBorder(tierSignal, 'var(--line)');
       setBorder(tierAmplify, 'var(--gold)');
       recolorBtn(tierAmplify, true);
@@ -2501,7 +2501,7 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a phased action roadmap. Real domains. Real scores.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a prioritized punch list you or your agency execute. Real domains. Real scores.</div>
     <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
     <div style="margin-top:12px">
       <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or start with a free 1-page diagnostic for your category</a>
