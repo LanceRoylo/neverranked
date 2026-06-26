@@ -92,6 +92,14 @@ interface CustomerViewData {
   metricUnit?: string;          // "" = counts (default) | "%" = citation share
   cohortMetricLabel?: string;   // "Mentions" (default) | "Share of venue citations"
   trendLabel?: string;          // section-5 label override
+  // Cadence overrides. The Hamada fixture is weekly/count-based; live D1
+  // customers come in monthly/share-based on a single baseline snapshot, so
+  // the weekly framing ("this week", "vs 7 days ago") is wrong for them.
+  positionLabel?: string;       // section-1 label (default "Where you are this week")
+  changedLabel?: string;        // section-2 label (default "What changed in the last 7 days")
+  deltaSuffix?: string;         // delta tail (default "vs 7 days ago")
+  isBaseline?: boolean;         // first measurement: deltas read "baseline", not "unchanged"
+  footerCadence?: string;       // footer cadence note (default daily-update line)
 }
 
 // ── Day-1 hardcoded data (Hamada Financial Group) ────────────────
@@ -246,7 +254,9 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   const chatgpt = eb["ChatGPT search"];
   if (copilot && copilot.share_pct === 0) gaps.push({ text: "Microsoft Copilot does not cite your site on any question (0%). It draws on the Bing index, which also limits ChatGPT search." });
   if (chatgpt && chatgpt.share_pct > 0 && chatgpt.share_pct <= 8) gaps.push({ text: `ChatGPT search cites you on only ${chatgpt.share_pct}% of citations, your lowest web-search engine. Same Bing-index root as the Copilot gap.` });
-  gaps.push({ text: "Gemma directs some answers to an outdated hawaiitheatre.org instead of your .com (see this month's readout). A stray public link is teaching the model the wrong address." });
+  // Generic fallback so section 3 never renders empty. No customer-specific
+  // copy is hardcoded here: the named, per-firm gaps live in the monthly readout.
+  if (gaps.length === 0) gaps.push({ text: "No empty-engine gaps in this baseline. Your first monthly readout names the per-question openings and which competitors hold them." });
 
   return {
     slug,
@@ -271,6 +281,10 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     metricUnit: "%",
     cohortMetricLabel: "Share of venue citations",
     trendLabel: "Citation-share baseline (trend builds monthly)",
+    positionLabel: "Where you are now",
+    changedLabel: "Your baseline measurement",
+    isBaseline: true,
+    footerCadence: "Refreshed with each monthly readout",
   };
 }
 
@@ -336,8 +350,9 @@ function deltaText(n: number, suffix = "vs 7 days ago"): { className: string; te
 }
 
 function renderCustomerView(d: CustomerViewData): string {
-  const mentionsDelta = deltaText(d.mentionsDelta7d);
-  const rankDelta = deltaText(d.rankDelta7d);
+  const baselineDelta = { className: "flat", text: "baseline · first measurement" };
+  const mentionsDelta = d.isBaseline ? baselineDelta : deltaText(d.mentionsDelta7d, d.deltaSuffix);
+  const rankDelta = d.isBaseline ? baselineDelta : deltaText(d.rankDelta7d, d.deltaSuffix);
   const maxToolCount = Math.max(1, ...d.perTool.map((t) => t.count));
 
   // Trend SVG: 8 points, normalized to 200px height
@@ -598,7 +613,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 1: Current position -->
     <div class="section">
-      <div class="section-label"><span class="n">01</span>Where you are this week</div>
+      <div class="section-label"><span class="n">01</span>${esc(d.positionLabel ?? "Where you are this week")}</div>
       <div class="position-grid">
         <div class="position-card">
           <div class="label">Questions mentioning you</div>
@@ -625,7 +640,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 2: What changed in 7 days -->
     <div class="section">
-      <div class="section-label"><span class="n">02</span>What changed in the last 7 days</div>
+      <div class="section-label"><span class="n">02</span>${esc(d.changedLabel ?? "What changed in the last 7 days")}</div>
       <div class="changed-list">
         ${d.changedEvents.length === 0 ? `
           <div class="changed-row"><div class="changed-text" style="color:var(--dim);font-style:italic">No significant changes in the last 7 days. The data has been stable.</div></div>
@@ -706,7 +721,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Footer -->
     <div class="footer">
-      <div>Data updated daily at 06:00 HST &middot; <a href="https://neverranked.com/methodology/">methodology</a> &middot; <a href="https://neverranked.com/takedowns/">opt-out</a></div>
+      <div>${esc(d.footerCadence ?? "Data updated daily at 06:00 HST")} &middot; <a href="https://neverranked.com/methodology/">methodology</a> &middot; <a href="https://neverranked.com/takedowns/">opt-out</a></div>
       <div>Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a> &middot; <a href="/logout">sign out</a></div>
     </div>
 
