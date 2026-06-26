@@ -49,6 +49,7 @@ DIRS=(
   example-engagement
   faq
   first-30-days
+  first-look
   for-agencies
   kit
   methodology
