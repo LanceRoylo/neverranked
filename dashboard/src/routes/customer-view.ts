@@ -295,7 +295,7 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     positionLabel: "Where you are now",
     changedLabel: "Your baseline measurement",
     isBaseline: true,
-    footerCadence: "Refreshed with each monthly readout",
+    footerCadence: "Measured daily · headline refreshed with each monthly readout",
   };
 }
 
