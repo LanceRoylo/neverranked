@@ -21,9 +21,15 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { loadCustomerView } from "../src/routes/customer-view.ts";
 
-// Minimal Env stub for loadCustomerView (Day 1 data is hardcoded
-// so the env isn't read; this stub is enough).
-const envStub = {} as any;
+// Minimal Env stub for loadCustomerView. loadCustomerView tries the live D1
+// path (buildFromD1) first, so the stub must answer env.DB queries: every
+// lookup returns null, so buildFromD1 finds no customer and falls through to
+// the hardcoded Hamada fixture (and null for unknown slugs).
+const envStub = {
+  DB: {
+    prepare: () => ({ bind: () => ({ first: async () => null }) }),
+  },
+} as any;
 
 // ---------------------------------------------------------------------
 // UNIT: loadCustomerView

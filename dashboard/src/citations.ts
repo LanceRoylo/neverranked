@@ -9,6 +9,27 @@
 import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from "./types";
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
+import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
+
+/**
+ * A forensic-managed customer's authoritative snapshot is the rich "readout
+ * shape" written by the dryrun->D1 bridge and refreshed monthly with their
+ * readout, NOT by this weekly auto-writer. The auto-writer emits the thin
+ * legacy shape, which the cockpit / monthly memo / Atlas cannot read. If we
+ * let it run, it would overwrite the customer's good row (same client_slug +
+ * week_start) and zero out every panel. So: skip the auto snapshot whenever a
+ * readout-shape row is already present for the slug. Fresh measurement
+ * (citation_runs) still accumulates; only the snapshot clobber is prevented.
+ * See lib/snapshot-shape.ts + the dashboard_snapshot_shape_split_brain note.
+ */
+async function isForensicManaged(env: Env, clientSlug: string): Promise<boolean> {
+  const snap = await env.DB.prepare(
+    `SELECT engines_breakdown, top_competitors FROM citation_snapshots
+       WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
+  ).bind(clientSlug).first<{ engines_breakdown: string; top_competitors: string }>();
+  if (!snap) return false;
+  return isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors);
+}
 
 /** After a citation_runs INSERT, fire alert detection for the
  *  (keyword, engine) tuple. No-op when last_row_id can't be read or
@@ -971,7 +992,10 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
     mondayDate.setUTCDate(mondayDate.getUTCDate() - diff);
     const weekStart = Math.floor(mondayDate.getTime() / 1000);
 
-    await env.DB.prepare(
+    // Forensic-managed customers own a readout-shape snapshot refreshed by the
+    // dryrun->D1 bridge. Skip the legacy snapshot write so it can't clobber it.
+    const forensicManaged = await isForensicManaged(env, clientSlug);
+    if (!forensicManaged) await env.DB.prepare(
       `INSERT INTO citation_snapshots
        (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -997,8 +1021,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       )
       .run();
 
-    console.log(
-      `Citations for ${clientSlug}: ${clientCitations}/${totalQueries} queries cited (${(citationShare * 100).toFixed(1)}%), ${topCompetitors.length} competitors tracked`
+    console.log(forensicManaged
+      ? `runWeeklyCitations: snapshot skipped for ${clientSlug} (forensic-managed); ${clientCitations}/${totalQueries} measured this run, readout snapshot preserved.`
+      : `Citations for ${clientSlug}: ${clientCitations}/${totalQueries} queries cited (${(citationShare * 100).toFixed(1)}%), ${topCompetitors.length} competitors tracked`
     );
 
     // Citation-lost alert: mirror of first-citation. If this client had
@@ -1007,7 +1032,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
     // means future traffic loss. Cooldown: 30 days, so a flapping
     // client doesn't get spammed if citations bounce back.
     try {
-      if (clientCitations === 0 && domain) {
+      if (!forensicManaged && clientCitations === 0 && domain) {
         const previousSnapshot = await env.DB.prepare(
           `SELECT client_citations, total_queries, created_at FROM citation_snapshots
             WHERE client_slug = ? AND created_at < ?
@@ -1342,6 +1367,10 @@ export async function buildClientSnapshot(
   clientSlug: string,
   lookbackDays: number = 7
 ): Promise<void> {
+  if (await isForensicManaged(env, clientSlug)) {
+    console.log(`buildClientSnapshot: skipping "${clientSlug}" -- forensic-managed (readout-shape snapshot present); not clobbering.`);
+    return;
+  }
   const now = Math.floor(Date.now() / 1000);
   const runStartTs = now - Math.floor(lookbackDays * 86400);
 

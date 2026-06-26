@@ -31,6 +31,7 @@
 import type { Env } from "../types";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
+import { isReadoutShapeSnapshot } from "../lib/snapshot-shape";
 
 // ── Data shape (returned by loadCustomerView) ─────────────────────
 
@@ -221,6 +222,16 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
        FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
   ).bind(slug).first<{ week_start: number; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
   if (!snap) return null; // no measurement yet: fall through (404 or fixture)
+
+  // Refuse a legacy-shape snapshot. The cockpit can only read the readout
+  // shape; rendering a legacy row would zero out every panel. Falling through
+  // (404) is the honest failure for a half-onboarded customer. The legacy
+  // weekly writer is also blocked from clobbering forensic customers (see
+  // buildClientSnapshot), so this should only fire mid-onboarding.
+  if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) {
+    console.warn(`customer-view: legacy-shape snapshot for "${slug}"; refusing to render zeros.`);
+    return null;
+  }
 
   let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
   let tc: { htc_venue_share_pct?: number; htc_engines_count?: number; competitors?: Array<{ domain: string; label: string; venue_share_pct: number; engines_count?: number }> } = {};
