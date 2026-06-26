@@ -42,6 +42,10 @@ export interface MemoInputs {
     members: Array<{ domain: string; label: string | null; mentions: number }>;
     customer_mentions: number;
   };
+  offsite: {
+    source_types: Array<{ type: string; share_pct: number }>;
+    hosts: Array<{ host: string; share_pct: number }>;
+  };
   prior_memo: { month_key: string; title: string | null; body_markdown: string } | null;
   is_first_memo: boolean;
 }
@@ -157,6 +161,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     share_delta_pp: +(pct(curCited, curRuns) - pct(priCited, priRuns)).toFixed(1),
   };
   let cohort = { rank: rankLegacy, members: cohortMembersLegacy, customer_mentions: curCited };
+  let offsite: MemoInputs["offsite"] = { source_types: [], hosts: [] };
 
   // ── Canonical override: source headline + per-engine from the snapshot ──
   // citation_snapshots is the authoritative share-of-citations rollup the
@@ -173,7 +178,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   const parseSnap = (row?: { engines_breakdown: string; top_competitors: string }) => {
     if (!row) return null;
     let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
-    let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }> } = {};
+    let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }>; source_types?: Record<string, { citations?: number; share_pct?: number }>; offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }> } = {};
     try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
     try { tc = JSON.parse(row.top_competitors) ?? {}; } catch { /* keep empty */ }
     return { eb, tc };
@@ -213,6 +218,19 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       members: comps,
       customer_mentions: ownedCitations,
     };
+
+    // Off-site sources: where AI pulls its category answers from, and the top
+    // third-party hosts to target (written into the snapshot by the dryrun->D1 bridge).
+    const st = curSnap.tc.source_types ?? {};
+    offsite = {
+      source_types: Object.entries(st)
+        .map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 }))
+        .filter((s) => s.share_pct > 0)
+        .sort((a, b) => b.share_pct - a.share_pct),
+      hosts: (curSnap.tc.offsite_hosts ?? [])
+        .map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 }))
+        .filter((h) => h.host),
+    };
   }
 
   // ── Prior memo (most recent delivered) ──
@@ -233,6 +251,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     by_engine,
     by_question,
     cohort,
+    offsite,
     prior_memo: priorMemo ?? null,
     is_first_memo: !priorMemo,
   };

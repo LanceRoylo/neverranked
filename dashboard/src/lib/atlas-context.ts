@@ -75,6 +75,10 @@ export interface MeasurementWindow {
     client_citations: number;
     total_queries: number;
   }>;
+  offsite: {
+    source_types: Array<{ type: string; share_pct: number }>;
+    hosts: Array<{ host: string; share_pct: number }>;
+  };
 }
 
 export interface LockedQuestionSet {
@@ -232,14 +236,14 @@ async function loadMeasurementWindow(
 
   // Last 12 weekly snapshots; gives Atlas the trend without flooding context.
   const snaps = await env.DB.prepare(
-    `SELECT week_start, citation_share, client_citations, total_queries, engines_breakdown
+    `SELECT week_start, citation_share, client_citations, total_queries, engines_breakdown, top_competitors
        FROM citation_snapshots
       WHERE client_slug = ?
       ORDER BY week_start DESC
       LIMIT 12`
   )
     .bind(slug)
-    .all<{ week_start: number; citation_share: number; client_citations: number; total_queries: number; engines_breakdown: string }>();
+    .all<{ week_start: number; citation_share: number; client_citations: number; total_queries: number; engines_breakdown: string; top_competitors: string }>();
 
   // Canonical metric (locked 2026-06-12): share of citations, per engine, as
   // stored in the latest snapshot's engines_breakdown by the research->D1 bridge.
@@ -260,6 +264,20 @@ async function loadMeasurementWindow(
     } catch { /* malformed snapshot: keep the runs-based fallback */ }
   }
 
+  // Off-site sources (where AI pulls its category answers from) + the top
+  // third-party hosts to target. Written into the snapshot's top_competitors
+  // by the dryrun->D1 bridge, so Atlas can answer "where does AI cite for me".
+  let offsiteOut: MeasurementWindow["offsite"] = { source_types: [], hosts: [] };
+  if (headSnap?.top_competitors) {
+    try {
+      const tc = JSON.parse(headSnap.top_competitors) as { source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }> };
+      offsiteOut = {
+        source_types: Object.entries(tc.source_types ?? {}).map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 })).filter((s) => s.share_pct > 0).sort((a, b) => b.share_pct - a.share_pct),
+        hosts: (tc.offsite_hosts ?? []).map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 })).filter((h) => h.host),
+      };
+    } catch { /* malformed: keep empty */ }
+  }
+
   return {
     days: windowDays,
     start: new Date(startTs * 1000).toISOString(),
@@ -276,6 +294,7 @@ async function loadMeasurementWindow(
         total_queries: s.total_queries,
       }))
       .reverse(), // chronological for the model
+    offsite: offsiteOut,
   };
 }
 

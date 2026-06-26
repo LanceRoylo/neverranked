@@ -43,9 +43,10 @@ STRUCTURE (markdown, in this order):
 4. "### What you own" : the questions or framings where the customer is cited most. Name them with their percentages.
 5. "### Where you are invisible" (first memo) or "### What moved" (later memos): the weak questions and notable deltas. Be specific with numbers. For later memos, lead with what changed since last month.
 6. "### The punch list, in priority order" : a proposed, numbered, prioritized list of interventions, each tied to a specific measured gap. Open this section by stating plainly that this is the proposed order and that prioritization is Lance's call. Keep to 2 to 4 items. Each item names the gap it addresses.
-7. "### One engine note" : if any engine is a notable outlier (very high or very low share), note it. Frame low-data or ambiguous engine behavior as "watching, not prescribing." If nothing stands out, keep this to one sentence or omit.
-8. "### What I am watching next month" : 2 to 3 specific things, tied to the punch list.
-9. Close with a short line reminding the customer they can ask Atlas about the numbers between memos, and that Atlas reports data while this memo handles what to do. Sign as "Lance".
+7. "### Where AI looks" : the off-site sources AI pulls its category answers from. State the source-type mix (independent web, review directories, and the like, with their shares) and name the top third-party hosts the customer should aim to be cited on. Frame this as where the leverage is, not a promise, and note that the customer or their agency works this list while we map it. If no off-site data is provided, omit this section entirely.
+8. "### One engine note" : if any engine is a notable outlier (very high or very low share), note it. Frame low-data or ambiguous engine behavior as "watching, not prescribing." If nothing stands out, keep this to one sentence or omit.
+9. "### What I am watching next month" : 2 to 3 specific things, tied to the punch list.
+10. Close with a short line reminding the customer they can ask Atlas about the numbers between memos, and that Atlas reports data while this memo handles what to do. Sign as "Lance".
 
 HONESTY GUARDRAILS:
 - Never promise a lift or a result. Measure, do not predict.
@@ -87,6 +88,8 @@ function allowedNumberSet(inp: MemoInputs): Set<string> {
   for (const m of inp.cohort.members) add(m.mentions);
   for (const e of inp.by_engine) { add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs); }
   for (const qn of inp.by_question) { add(qn.current_pct); add(qn.prior_pct); add(Math.abs(qn.delta_pp)); add(qn.current_runs); }
+  for (const st of inp.offsite.source_types) add(st.share_pct);
+  for (const h of inp.offsite.hosts) add(h.share_pct);
   return s;
 }
 
