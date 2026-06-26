@@ -131,29 +131,49 @@
   @media (hover: hover) { .cta:hover { background: rgba(212,197,150,0.10); } }
   .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 16px; }
 
-  /* Blind-spot answer device (the AI answer rendered as the artifact) */
+  /* Blind-spot journey device (search -> phone, you out of the answer) */
   .void-graphic { margin: 30px 0 8px; }
-  .ans-card { max-width: 720px; background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 38px 42px; }
-  .ans-eyebrow { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 26px; }
-  .ans-eyebrow svg { width: 14px; height: 14px; stroke: var(--dim); fill: none; stroke-width: 1.5; flex: 0 0 auto; }
-  .ans-answer { font-size: 29px; line-height: 1.5; color: var(--soft); margin: 0 0 18px; }
-  .ans-name { color: var(--gold); }
-  .ans-sources { font-family: var(--mono); font-size: 11px; line-height: 1.9; color: var(--dim); border-left: 1px solid #4a3d18; padding-left: 12px; margin: 0 0 26px; }
-  .ans-rule { width: 38%; height: 1px; background: #4a3d18; margin-bottom: 14px; }
-  .ans-vacancy { display: flex; align-items: baseline; gap: 14px; }
-  .ans-tick { display: inline-block; width: 16px; height: 1px; background: var(--dim); transform: translateY(-6px); flex: 0 0 auto; }
-  .ans-vac-label { font-size: 20px; color: var(--dim); }
-  .ans-foreclose { font-family: var(--mono); font-size: 11px; color: var(--dim); margin-top: 12px; }
-  .ans-bridge { font-size: 16px; line-height: 1.6; color: var(--soft); max-width: 540px; border-top: 1px solid #1c1c1e; margin: 28px 0 0; padding-top: 22px; }
-  .ans-emph { color: var(--gold); }
-  .ans-link { display: inline-block; margin-top: 12px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--gold); text-decoration: none; border-bottom: 1px solid #4a3d18; padding-bottom: 2px; }
-  .ans-link:hover { border-bottom-color: var(--gold); }
-  /* Staged reveal: the answer + receipts settle first, the vacancy registers after */
-  .ans-eyebrow, .ans-answer, .ans-sources, .ans-out, .ans-bridge { opacity: 0; transform: translateY(8px); animation: ansUp 460ms var(--ease-out) both; animation-play-state: paused; }
-  .ans-out { animation-duration: 520ms; animation-delay: 600ms; }
-  .ans-bridge { animation-delay: 900ms; }
-  .void-graphic.in .ans-eyebrow, .void-graphic.in .ans-answer, .void-graphic.in .ans-sources, .void-graphic.in .ans-out, .void-graphic.in .ans-bridge { animation-play-state: running; }
-  @keyframes ansUp { to { opacity: 1; transform: translateY(0); } }
+  .bs-journey { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 30px; }
+  .bs-then { width: 190px; flex: 0 0 auto; opacity: 0.4; }
+  .bs-browser { border: 1px solid #2a2a2e; border-radius: 8px; background: #101013; padding: 13px; }
+  .bs-search { display: flex; align-items: center; gap: 6px; border: 1px solid #2a2a2e; border-radius: 16px; padding: 6px 10px; margin-bottom: 12px; }
+  .bs-dot { width: 10px; height: 10px; border: 1.5px solid var(--dim); border-radius: 50%; flex: 0 0 auto; }
+  .bs-bar { height: 6px; background: #2c2c32; border-radius: 3px; flex: 1; }
+  .bs-links { display: flex; flex-direction: column; gap: 7px; }
+  .bs-links span { height: 7px; background: #22222a; border-radius: 2px; }
+  .bs-links span:nth-child(2) { width: 86%; } .bs-links span:nth-child(4) { width: 80%; } .bs-links span:nth-child(6) { width: 74%; }
+  .bs-cap-then { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); text-align: center; margin-top: 12px; }
+  .bs-arrow { flex: 0 0 auto; display: flex; align-items: center; }
+  .bs-arrow svg { width: 40px; height: 16px; }
+  .bs-now { width: 290px; flex: 0 0 auto; }
+  .bs-phone { border: 1px solid #3a3a3e; border-radius: 30px; background: #131316; padding: 18px 16px 22px; box-shadow: 0 0 0 1px #1c1c1e, 0 18px 50px rgba(0,0,0,0.55); }
+  .bs-notch { width: 42px; height: 4px; border-radius: 3px; background: #2a2a2e; margin: 0 auto 16px; }
+  .bs-q { display: flex; align-items: center; gap: 8px; border: 1px solid #2a2a2e; border-radius: 18px; padding: 9px 13px; margin-bottom: 18px; }
+  .bs-q svg { width: 13px; height: 13px; flex: 0 0 auto; }
+  .bs-q span { font-size: 13px; color: var(--soft); }
+  .bs-ans-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
+  .bs-rows { display: flex; flex-direction: column; gap: 10px; }
+  .bs-row { display: flex; align-items: center; gap: 11px; }
+  .bs-num { font-family: var(--mono); font-size: 12px; color: var(--bg); background: var(--gold); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+  .bs-num-dim { color: var(--dim); background: transparent; }
+  .bs-bar2 { flex: 1; height: 16px; border-radius: 4px; background: var(--gold); }
+  .bs-empty { margin-top: 6px; }
+  .bs-slot { flex: 1; height: 16px; border-radius: 4px; border: 1px dashed #4a3d18; display: flex; align-items: center; padding-left: 11px; box-sizing: border-box; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
+  .bs-cap-now { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); text-align: center; margin-top: 12px; }
+  .bs-caption { text-align: center; font-size: 21px; line-height: 1.5; color: var(--text); margin: 34px auto 0; max-width: 600px; }
+  .bs-soft { color: var(--soft); }
+  .bs-link { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--gold); text-decoration: none; border-bottom: 1px solid #4a3d18; padding-bottom: 2px; }
+  .bs-link:hover { border-bottom-color: var(--gold); }
+  /* Staged reveal: phone arrives, the three names land one by one, then the empty You slot draws in last */
+  .bs-arrow, .bs-phone, .bs-cap-now, .bs-row, .bs-caption { opacity: 0; transform: translateY(8px); animation: bsUp 440ms var(--ease-out) both; animation-play-state: paused; }
+  .bs-rows .bs-row { transform: translateY(6px); animation-duration: 380ms; }
+  .bs-rows .bs-row:nth-child(1) { animation-delay: 280ms; }
+  .bs-rows .bs-row:nth-child(2) { animation-delay: 400ms; }
+  .bs-rows .bs-row:nth-child(3) { animation-delay: 520ms; }
+  .bs-rows .bs-row:nth-child(4) { animation-delay: 840ms; animation-duration: 540ms; }
+  .bs-caption { animation-delay: 1040ms; }
+  .void-graphic.in .bs-arrow, .void-graphic.in .bs-phone, .void-graphic.in .bs-cap-now, .void-graphic.in .bs-row, .void-graphic.in .bs-caption { animation-play-state: running; }
+  @keyframes bsUp { to { opacity: 1; transform: translateY(0); } }
 
   /* Engine diagram */
   .engines { margin: 24px 0 4px; }
@@ -213,9 +233,9 @@
     .hero .inner.hero-grid { grid-template-columns: 1fr; gap: 34px; max-width: 760px; }
     .hero-visual { justify-self: center; margin-top: 4px; }
     .section { padding: 64px 0; }
-    .ans-card { padding: 26px 20px; }
-    .ans-answer { font-size: 22px; }
-    .ans-vac-label { font-size: 18px; }
+    .bs-then, .bs-arrow { display: none; }
+    .bs-now { width: 100%; max-width: 320px; }
+    .bs-caption { font-size: 18px; }
     .prices { flex-direction: column; }
     .close h2 { font-size: 26px; }
     .readout-row { grid-template-columns: 124px 1fr; }
@@ -223,7 +243,7 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
-    .ans-eyebrow, .ans-answer, .ans-sources, .ans-out, .ans-bridge { animation: none; opacity: 1; transform: none; }
+    .bs-arrow, .bs-phone, .bs-cap-now, .bs-row, .bs-caption { animation: none; opacity: 1; transform: none; }
     .readout-fill { transition: none; width: var(--target-width, 0) !important; }
     .hpr-you { animation: none; }
     .chat-input-text::after { animation: none; }
@@ -926,21 +946,33 @@
       <div class="sec-label"><span class="n">01</span>The blind spot</div>
       <p class="lead">A Google search gives you ten links. An AI answer gives you three names. You can check a Google rank any time. You cannot see an AI answer that left you out.</p>
       <div class="void-graphic">
-        <div class="ans-card">
-          <div class="ans-eyebrow"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2.5"/><line x1="10.5" y1="18.4" x2="13.5" y2="18.4"/></svg>Asked on a phone, Honolulu</div>
-          <p class="ans-answer">For wealth management in Honolulu, the firms most often recommended are <span class="ans-name">the established downtown advisory</span>, <span class="ans-name">the large bank-owned wealth group</span>, and <span class="ans-name">a boutique on the windward side</span>.</p>
-          <div class="ans-sources">
-            <div>named in: 3 city best-of guides, 1 finance directory</div>
-            <div>named in: 2 directories, a regional business journal</div>
-            <div>named in: 4 review roundups, 1 local guide</div>
+        <div class="bs-journey">
+          <div class="bs-then">
+            <div class="bs-browser">
+              <div class="bs-search"><span class="bs-dot"></span><span class="bs-bar"></span></div>
+              <div class="bs-links"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+            </div>
+            <div class="bs-cap-then">Then &middot; ten links</div>
           </div>
-          <div class="ans-out">
-            <div class="ans-rule"></div>
-            <div class="ans-vacancy"><span class="ans-tick"></span><span class="ans-vac-label">where your name would be</span></div>
-            <div class="ans-foreclose">no fourth name. no page two.</div>
+          <div class="bs-arrow" aria-hidden="true">
+            <svg viewBox="0 0 40 16" fill="none" stroke="#d4c596" stroke-width="1.5"><line x1="0" y1="8" x2="36" y2="8"/><polyline points="29,2 37,8 29,14"/></svg>
           </div>
-          <p class="ans-bridge">To choose those three, AI did not read your site. It read <span class="ans-emph">everyone else&rsquo;s</span> account of you. <a class="ans-link" href="/teardowns/cross-category/#offsite">See where AI sources its answers, across nine categories &rarr;</a></p>
+          <div class="bs-now">
+            <div class="bs-phone">
+              <div class="bs-notch"></div>
+              <div class="bs-q"><svg viewBox="0 0 24 24" fill="none" stroke="#6a6a70" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg><span>best wealth manager in Honolulu</span></div>
+              <div class="bs-ans-label">AI names three</div>
+              <div class="bs-rows">
+                <div class="bs-row bs-filled"><span class="bs-num">1</span><span class="bs-bar2"></span></div>
+                <div class="bs-row bs-filled"><span class="bs-num">2</span><span class="bs-bar2"></span></div>
+                <div class="bs-row bs-filled"><span class="bs-num">3</span><span class="bs-bar2"></span></div>
+                <div class="bs-row bs-empty"><span class="bs-num bs-num-dim">&ndash;</span><span class="bs-slot">You &middot; not named</span></div>
+              </div>
+            </div>
+            <div class="bs-cap-now">Now &middot; three names</div>
+          </div>
         </div>
+        <p class="bs-caption">One answer. Three names. You are not one of them. <span class="bs-soft">AI chose those three from everyone else&rsquo;s account of you.</span> <a class="bs-link" href="/teardowns/cross-category/#offsite">See where AI sources its answers &rarr;</a></p>
       </div>
     </div>
   </section>
