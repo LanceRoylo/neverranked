@@ -91,11 +91,13 @@
   .reveal { opacity: 0; transform: translateY(18px); transition: opacity 660ms var(--ease-out), transform 660ms var(--ease-out); }
   .reveal.in { opacity: 1; transform: translateY(0); }
 
-  /* WordsPullUp — per-word staggered slide-up on the H1 + select
-     headlines. Each word starts at y:20 opacity:0, transitions to
-     y:0 opacity:1, with --wpu-delay set per word via inline style.
+  /* WordsPullUp — slide-up entrance on the H1 + select headlines.
+     The headline starts at y:20 opacity:0 and transitions to y:0
+     opacity:1 once .wpu.in is set, with --wpu-delay via inline style.
      Punchier ease curve than the generic reveal (Emil Kowalski:
-     custom ease curves > default browser ease). */
+     custom ease curves > default browser ease). The per-word ::before
+     space rule below supports splitting a headline into staggered
+     word spans where wanted; the hero H1 animates as a single block. */
   .wpu-word {
     display: inline-block;
     opacity: 0;
@@ -110,7 +112,7 @@
      as the user scrolls past. JS sets --char-progress per element. */
   .schar {
     display: inline;
-    opacity: var(--char-opacity, 0.6);
+    opacity: var(--char-opacity, 0.85);
     transition: opacity 60ms linear;
   }
 
@@ -233,8 +235,17 @@
   .footer { border-top: 1px solid #1c1c1e; color: var(--dim); font-size: 12px; letter-spacing: 0.04em; text-align: center; padding: 40px 32px 64px; }
   .footer a { color: var(--dim); }
 
+  /* Collapse the two-column hero to single column before it cramps
+     (tablets, small laptops, split-screen) instead of waiting for 680px. */
+  @media (max-width: 900px) {
+    .hero .inner.hero-grid { grid-template-columns: 1fr; gap: 34px; max-width: 760px; }
+    .hero-visual { justify-self: center; }
+    .hero h1 { font-size: 40px; }
+  }
+
   @media (max-width: 680px) {
-    .nav-links { display: none; }
+    .nav-links { display: flex; gap: 0; }
+    .nav-links a:not(:first-child) { display: none; }
     .hero { padding: 60px 0 64px; }
     .hero h1 { font-size: 33px; }
     .hero .turn { font-size: 19px; }
@@ -255,7 +266,8 @@
     .bs-empty .bs-slot { animation: none; }
     .readout-fill { transition: none; width: var(--target-width, 0) !important; }
     .hpr-you { animation: none; }
-    .chat-input-text::after { animation: none; }
+    .chat-user-bubble::after { animation: none; content: none; }
+    .wpu-word { opacity: 1; transform: none; transition: none; }
     .cta:hover { box-shadow: none; }
   }
 
@@ -824,7 +836,7 @@
       <span class="sep">/</span>
       <span><b>378</b> prompts per run</span>
       <span class="sep hide-sm">/</span>
-      <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools</span>
+      <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools (5 citation-grade)</span>
       <span class="sep">/</span>
       <span>measured <b>daily</b>, not sampled</span>
     </div>
@@ -842,7 +854,7 @@
         <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
         <button type="submit">See what AI sees &rarr;</button>
       </form>
-      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows what the seven AI tools can read from your site, the first thing that decides whether they can name you at all.</div>
+      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows whether the seven AI tools can even read your site, the first thing that decides whether they can name you at all.</div>
 
       <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
         Named customer Hawaii Theatre Center went 45 to 95 in ten days. Ten measurements published. Every number dated and on the public record.
@@ -1169,7 +1181,7 @@
         </a>
         <a class="td-card" href="/teardowns/law-firm-hawaii/">
           <div class="td-card-cat">Hawaii law firms</div>
-          <div class="td-card-stat">Top 5 own 66% of all firm-owned mentions</div>
+          <div class="td-card-stat">Top 5 own 64% of all firm-owned mentions</div>
           <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Microsoft Copilot.</p>
           <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
@@ -1257,7 +1269,11 @@
         <b>4 customers maximum per category, per market</b>
         Cohort comparisons mean something only when the cohort stays stable. Each category in each market takes at most four customers, so the cross-customer benchmark stays real, not diluted. Only four firms in your category and your metro can hold a slot. When your market fills, it closes to new customers until a slot opens. Most markets are open at this writing, and we will build a new category or metro for a serious customer in any local-service vertical.
       </div>
-      <p>Free 1-page diagnostic before you commit. We run 5 real customer questions for your category across all 7 AI tools, then send a 1-page snapshot showing which competitors AI is naming and whether you&rsquo;re one of them. One per business. The full engagement adds the rest of the question set (18 per category), weekly tracking, a cohort baseline that makes the numbers mean something, and a clear list of what to fix.</p>
+      <p>Free 1-page diagnostic before you commit. We run 5 real customer questions for your category across all 7 AI tools, then send a 1-page snapshot showing which competitors AI is naming and whether you&rsquo;re one of them. One per business. The full engagement adds the rest of the question set (18 per category), daily measurement, a cohort baseline that makes the numbers mean something, and a clear list of what to fix.</p>
+      <p style="margin-top:26px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
+        <a class="cta" href="https://check.neverranked.com/">Run the free check &rarr;</a>
+        <a class="hero-secondary" href="mailto:Lance@hi.neverranked.com?subject=Hand-built%201-page%20diagnostic" style="margin-top:0;">Or request the hand-built diagnostic &rarr;</a>
+      </p>
     </div>
   </section>
 
@@ -1305,7 +1321,7 @@
           <p class="roi-months" id="roi-breakeven">It takes <b>2 new cases</b> to cover a full year of NeverRanked. Every case after that is found money you would not have had.</p>
           <div class="roi-bars">
             <div class="roi-bar you">
-              <span class="nm">One customer</span>
+              <span class="nm">One customer is worth</span>
               <span class="track"><span class="fill" id="roi-fill-you" style="width:67%"></span></span>
               <span class="amt" id="roi-amt-you">$15,000</span>
             </div>
@@ -1384,16 +1400,6 @@
     </div>
   </section>
 
-  <!-- Closing CTA -->
-  <section class="section panel close">
-    <div class="inner reveal">
-      <h2>We will not sell you a number. We will show you the one that is real.</h2>
-      <p style="max-width:520px;margin:0 auto 26px;">See where AI puts your business across the seven tools your buyers use.</p>
-      <a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a>
-      <div class="cta-note">Paste your URL and see in seconds what the 7 AI tools can read from your site. Free, no signup. Prefer a hand-built 1-page diagnostic of your category? Email Lance@hi.neverranked.com.</div>
-    </div>
-  </section>
-
   <!-- Where to dig in -->
   <section class="section">
     <div class="inner reveal">
@@ -1405,7 +1411,7 @@
         <a href="/teardowns/hvac-honolulu/">Honolulu HVAC teardown <span class="sub">&middot; pre-registered: predicted Claude under 5%, it came in at 2%</span></a>
         <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 21-bank cohort, the 75-point engine spread</span></a>
         <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Copilot first-mover opening</span></a>
-        <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 30 firms, top 5 own 66% of mentions</span></a>
+        <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 33 firms, top 5 own 64% of mentions</span></a>
         <a href="/teardowns/wealth-mgmt-hawaii/">Hawaii wealth management teardown <span class="sub">&middot; 42 firms, the lead-gen middleman pattern</span></a>
         <a href="/teardowns/cpa-hawaii/">Hawaii CPA firms teardown <span class="sub">&middot; 41 firms, the training-data engine collapse</span></a>
         <a href="/teardowns/cpa-austin/">Austin TX CPA firms teardown <span class="sub">&middot; 37 firms, the cross-geo split (first non-Hawaii)</span></a>
@@ -1429,6 +1435,17 @@
       </div>
     </div>
   </section>
+
+  <!-- Closing CTA -->
+  <section class="section panel close">
+    <div class="inner reveal">
+      <h2>We will not sell you a number. We will show you the one that is real.</h2>
+      <p style="max-width:520px;margin:0 auto 26px;">See where AI puts your business across the seven tools your buyers use.</p>
+      <a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a>
+      <div class="cta-note">Paste your URL and see in seconds what the 7 AI tools can read from your site. Free, no signup. Prefer a hand-built 1-page diagnostic of your category? Email <a href="mailto:Lance@hi.neverranked.com?subject=Hand-built%201-page%20diagnostic">Lance@hi.neverranked.com</a>.</div>
+    </div>
+  </section>
+
 
   <div class="footer">NeverRanked &middot; Honolulu &middot; founder-led, bootstrapped &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a></div>
 
@@ -1519,7 +1536,7 @@
           // Each char's local progress window: [charProgress - 0.1, charProgress + 0.05]
           var local = (overallProgress - (charProgress - 0.1)) / 0.15;
           local = Math.max(0, Math.min(1, local));
-          var opacity = 0.6 + (1 - 0.6) * local;
+          var opacity = 0.85 + (1 - 0.85) * local;
           chars[j].style.setProperty('--char-opacity', opacity.toFixed(3));
         }
         ticking = false;
@@ -1606,6 +1623,11 @@
           .then(function () { return sleep(holdAfterDelete); })
           .then(function () {
             qi = (qi + 1) % queries.length;
+            // Rest the loop when the tab is hidden or the hero has
+            // scrolled out of view, then resume when it returns.
+            if (document.hidden) { setTimeout(loop, 1500); return; }
+            var r = queryEl.getBoundingClientRect();
+            if (r.bottom < 0 || r.top > window.innerHeight) { setTimeout(loop, 1500); return; }
             loop();
           });
       })();
