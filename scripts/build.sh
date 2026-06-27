@@ -67,6 +67,15 @@ DIRS=(
   terms
   thanks
   vs
+  # Per-vertical -aeo landing pages. Shipped + linked from the homepage
+  # but were never added here, so the build skipped them and they stayed
+  # frozen at their first deploy. Added 2026-06-26 to unfreeze them.
+  austin-cpa-aeo
+  hawaii-bank-aeo
+  hawaii-cpa-aeo
+  hawaii-law-aeo
+  hawaii-wealth-aeo
+  honolulu-dental-aeo
   # teardowns/ added 2026-05-23 — bank-honolulu populated from the
   # first 7-engine measurement runs. Future teardowns ship under
   # /teardowns/<slug>/ following the same template pattern.
