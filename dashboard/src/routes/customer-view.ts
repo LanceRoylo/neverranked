@@ -360,24 +360,52 @@ function deltaText(n: number, suffix = "vs 7 days ago"): { className: string; te
   return { className: "flat", text: `unchanged ${suffix}` };
 }
 
-function renderCustomerView(d: CustomerViewData): string {
+export function renderCustomerView(d: CustomerViewData): string {
   const baselineDelta = { className: "flat", text: "baseline · first measurement" };
   const mentionsDelta = d.isBaseline ? baselineDelta : deltaText(d.mentionsDelta7d, d.deltaSuffix);
   const rankDelta = d.isBaseline ? baselineDelta : deltaText(d.rankDelta7d, d.deltaSuffix);
   const maxToolCount = Math.max(1, ...d.perTool.map((t) => t.count));
 
-  // Trend SVG: 8 points, normalized to 200px height
+  // Trend SVG geometry. A new customer renders on ONE baseline point; the
+  // multi-point path assumes >=2, so branch explicitly (a single point must
+  // draw a centered dot, no line, and one centered axis tick, not a lone
+  // far-left dot with a duplicated label).
   const trendW = 800;
   const trendH = 200;
   const padX = 50;
+  const onePoint = d.trend.length === 1;
   const allValues = [...d.trend.map((p) => p.yourMentions), ...d.trend.map((p) => p.cohortAvg)];
-  const yMin = 0;
   const yMax = Math.max(8, Math.ceil(Math.max(...allValues) * 1.2));
   const xStep = (trendW - 2 * padX) / Math.max(1, d.trend.length - 1);
-  const yScale = (val: number) => trendH - 30 - ((val - yMin) / (yMax - yMin)) * (trendH - 60);
-  const yourPoints = d.trend.map((p, i) => `${padX + i * xStep},${yScale(p.yourMentions)}`).join(" ");
-  const avgPoints = d.trend.map((p, i) => `${padX + i * xStep},${yScale(p.cohortAvg)}`).join(" ");
+  const yScale = (val: number) => trendH - 30 - (val / yMax) * (trendH - 60);
+  const xAt = (i: number) => onePoint ? trendW / 2 : padX + i * xStep;
   const lastYour = d.trend[d.trend.length - 1];
+  const yourPoints = d.trend.map((p, i) => `${xAt(i)},${yScale(p.yourMentions)}`).join(" ");
+  const avgPoints = d.trend.map((p, i) => `${xAt(i)},${yScale(p.cohortAvg)}`).join(" ");
+  const trendDots = d.trend.map((p, i) => {
+    const last = i === d.trend.length - 1;
+    return `<circle cx="${xAt(i)}" cy="${yScale(p.yourMentions)}" r="${last ? 6 : 4}"${last ? ' stroke="#0b0b0c" stroke-width="2"' : ''}/>`;
+  }).join("");
+  const trendPolylines = onePoint ? "" : `
+          <polyline points="${yourPoints}" fill="none" stroke="#d4c596" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="${avgPoints}" fill="none" stroke="#3a3a3e" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>`;
+  // Value labels: right-anchored along the trend, centered above the dot for a
+  // single baseline point. Nudge cohort-avg down when it collides with 'you'
+  // (e.g. a baseline where both are zero), so they never stack illegibly.
+  const lyY = yScale(lastYour.yourMentions), caY = yScale(lastYour.cohortAvg);
+  const labelX = onePoint ? trendW / 2 : trendW - 30;
+  const labelAnchor = onePoint ? "middle" : "end";
+  const avgLabelY = Math.abs(lyY - caY) < 14 ? caY + 16 : caY - 12;
+  const trendLabels = `
+          <text x="${labelX}" y="${lyY - 12}" fill="#d4c596" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">you: ${lastYour.yourMentions} of ${d.totalQuestions}</text>
+          <text x="${labelX}" y="${avgLabelY}" fill="#828289" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">cohort avg: ${lastYour.cohortAvg} of ${d.totalQuestions}</text>`;
+  const trendAxis = onePoint
+    ? `<text x="${trendW / 2}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10" text-anchor="middle">${esc(d.trend[0].weekIso)}</text>`
+    : `<text x="${padX}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10">${esc(d.trend[0].weekIso)}</text>
+          <text x="${trendW - padX}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10" text-anchor="end">${esc(d.trend[d.trend.length - 1].weekIso)}</text>`;
+  const trendDesc = onePoint
+    ? `Baseline measured: ${lastYour.yourMentions} of ${d.totalQuestions}, versus a cohort average of ${lastYour.cohortAvg}. The trend line builds from your next monthly readout.`
+    : `Your mentions over the window versus the cohort average. Latest: you ${lastYour.yourMentions} of ${d.totalQuestions}, cohort average ${lastYour.cohortAvg}.`;
 
   return `<!doctype html>
 <html lang="en">
@@ -397,7 +425,7 @@ function renderCustomerView(d: CustomerViewData): string {
     --gold-dim: #4a3d18;
     --text: #e8e8ea;
     --soft: #b9b9bd;
-    --dim: #6a6a70;
+    --dim: #828289;
     --line: #2a2a2e;
     --line-soft: #1c1c1e;
     --green: #7fb88b;
@@ -419,7 +447,7 @@ function renderCustomerView(d: CustomerViewData): string {
   }
   .top-left .customer {
     font-family: var(--serif); font-size: 22px; color: var(--text);
-    margin: 0 0 4px;
+    margin: 0 0 4px; font-weight: 400; letter-spacing: -0.01em;
   }
   .top-left .category {
     font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em;
@@ -437,15 +465,18 @@ function renderCustomerView(d: CustomerViewData): string {
     color: var(--gold); font-family: var(--mono); font-size: 11px;
     letter-spacing: 0.1em; text-transform: uppercase;
     text-decoration: none; cursor: pointer;
-    transition: border-color 200ms ease, background 200ms ease;
+    transition: border-color 160ms var(--ease-out), background 160ms var(--ease-out), transform 80ms var(--ease-out);
   }
-  .top-msg:hover { border-color: var(--gold); background: rgba(212,197,150,0.06); }
+  .top-msg:hover, .top-msg:focus-visible { border-color: var(--gold); background: rgba(212,197,150,0.06); }
+  .top-msg:active { transform: scale(0.97); }
+  .top-msg:focus-visible, .footer a:focus-visible { outline: 1px solid var(--gold); outline-offset: 3px; border-radius: 3px; }
 
   /* Section labels */
   .section { margin-bottom: 40px; }
   .section-label {
     font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em;
     text-transform: uppercase; color: var(--dim); margin-bottom: 14px;
+    font-weight: 400;
   }
   .section-label .n { color: var(--gold); margin-right: 10px; }
 
@@ -462,8 +493,9 @@ function renderCustomerView(d: CustomerViewData): string {
   .position-card .value {
     font-family: var(--serif); font-size: 36px; color: var(--gold);
     line-height: 1.1; margin-bottom: 8px;
+    font-variant-numeric: tabular-nums; letter-spacing: -0.015em;
   }
-  .position-card .value .denom { font-size: 22px; color: var(--dim); }
+  .position-card .value .denom { font-size: 18px; font-weight: 400; color: var(--dim); }
   .position-card .delta {
     font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em;
   }
@@ -490,7 +522,7 @@ function renderCustomerView(d: CustomerViewData): string {
     background: var(--gold);
   }
   .tool-fill.zero {
-    background: transparent;
+    top: 0; bottom: 0; background: transparent;
     border: 1px dashed var(--gold-dim); box-sizing: border-box;
   }
   .tool-count {
@@ -574,13 +606,14 @@ function renderCustomerView(d: CustomerViewData): string {
   table.cohort td.num { text-align: right; }
   table.cohort tr.you td { background: rgba(212,197,150,0.06); color: var(--text); }
   table.cohort tr.you td:first-child { border-left: 2px solid var(--gold); padding-left: 16px; }
+  .cohort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 6px; }
 
   /* Trend chart */
   .trend-wrap {
     background: var(--panel); border: 1px solid var(--line);
     border-radius: 6px; padding: 24px 26px;
   }
-  .trend-svg { width: 100%; height: 200px; display: block; }
+  .trend-svg { width: 100%; height: auto; min-height: 140px; display: block; }
 
   /* Footer */
   .footer {
@@ -589,18 +622,28 @@ function renderCustomerView(d: CustomerViewData): string {
     letter-spacing: 0.06em; display: flex; justify-content: space-between;
     flex-wrap: wrap; gap: 18px;
   }
-  .footer a { color: var(--gold); text-decoration: none; }
+  .footer a { color: var(--gold); text-decoration: none; transition: color 140ms var(--ease-out); }
+  .footer a:hover { color: var(--gold-bright); }
+  .changed-empty { font-family: var(--serif); font-style: italic; color: var(--soft); }
 
   @media (max-width: 700px) {
     .wrap { padding: 18px 16px 60px; }
     .position-grid { grid-template-columns: 1fr; }
     .tool-grid { grid-template-columns: repeat(4, 1fr); }
     .tool-name { min-height: 30px; }
+    table.cohort { min-width: 540px; }
     table.cohort th, table.cohort td { padding: 10px 12px; font-size: 13px; }
+    .top-right { flex-direction: column; align-items: flex-start; gap: 14px; width: 100%; }
     .top-right .meta { text-align: left; }
+    .top-msg { padding: 12px 16px; }
+    .changed-row { flex-direction: column; gap: 8px; padding: 14px 16px; }
+    .changed-icon, .changed-when { margin-top: 0; }
   }
   @media (max-width: 460px) {
     .tool-grid { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
   }
 </style>
 </head>
@@ -610,7 +653,7 @@ function renderCustomerView(d: CustomerViewData): string {
     <!-- Header strip -->
     <div class="top">
       <div class="top-left">
-        <div class="customer">${esc(d.customerName)}</div>
+        <h1 class="customer">${esc(d.customerName)}</h1>
         <div class="category">${esc(d.category)}</div>
       </div>
       <div class="top-right">
@@ -624,7 +667,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 1: Current position -->
     <div class="section">
-      <div class="section-label"><span class="n">01</span>${esc(d.positionLabel ?? "Where you are this week")}</div>
+      <h2 class="section-label"><span class="n">01</span>${esc(d.positionLabel ?? "Where you are this week")}</h2>
       <div class="position-grid">
         <div class="position-card">
           <div class="label">Questions mentioning you</div>
@@ -642,7 +685,7 @@ function renderCustomerView(d: CustomerViewData): string {
         ${d.perTool.map((t) => `
         <div class="tool-cell">
           <div class="tool-name">${esc(t.shortName)}</div>
-          <div class="tool-bar"><div class="tool-fill${t.count === 0 ? ' zero' : ''}" style="height:${t.count === 0 ? 0 : Math.round((t.count / maxToolCount) * 70 + 10)}%"></div></div>
+          <div class="tool-bar"><div class="tool-fill${t.count === 0 ? ' zero' : ''}"${t.count === 0 ? '' : ` style="height:${Math.round((t.count / maxToolCount) * 70 + 10)}%"`}></div></div>
           <div class="tool-count">${t.count}${esc(d.metricUnit ?? "")}</div>
         </div>
         `).join('')}
@@ -651,10 +694,10 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 2: What changed in 7 days -->
     <div class="section">
-      <div class="section-label"><span class="n">02</span>${esc(d.changedLabel ?? "What changed in the last 7 days")}</div>
+      <h2 class="section-label"><span class="n">02</span>${esc(d.changedLabel ?? "What changed in the last 7 days")}</h2>
       <div class="changed-list">
         ${d.changedEvents.length === 0 ? `
-          <div class="changed-row"><div class="changed-text" style="color:var(--dim);font-style:italic">No significant changes in the last 7 days. The data has been stable.</div></div>
+          <div class="changed-row"><div class="changed-text changed-empty">${d.isBaseline ? "Your baseline is set. From next month, this is where movement against it appears." : "No significant changes in the last 7 days. The data has been stable."}</div></div>
         ` : d.changedEvents.map((e) => `
           <div class="changed-row">
             <div class="changed-icon ${e.kind}">${e.kind === 'new' ? 'New source' : e.kind === 'gain' ? 'Gain' : e.kind === 'drop' ? 'Drop' : 'Shift'}</div>
@@ -667,7 +710,7 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 3: Currently observable gaps -->
     <div class="section">
-      <div class="section-label"><span class="n">03</span>Currently observable gaps</div>
+      <h2 class="section-label"><span class="n">03</span>Currently observable gaps</h2>
       <div class="changed-list gaps-list">
         ${d.observableGaps.map((g) => `
           <div class="changed-row">
@@ -692,7 +735,8 @@ function renderCustomerView(d: CustomerViewData): string {
 
     <!-- Section 4: Cohort table -->
     <div class="section">
-      <div class="section-label"><span class="n">04</span>Top 10 in your cohort</div>
+      <h2 class="section-label"><span class="n">04</span>Top 10 in your cohort</h2>
+      <div class="cohort-scroll">
       <table class="cohort">
         <thead><tr><th>Firm</th><th class="num">${esc(d.cohortMetricLabel ?? "Mentions")}</th><th>Where in answer</th><th class="num">AI tools</th></tr></thead>
         <tbody>
@@ -706,26 +750,22 @@ function renderCustomerView(d: CustomerViewData): string {
           `).join('')}
         </tbody>
       </table>
+      </div>
     </div>
 
     <!-- Section 5: Trend -->
     <div class="section">
-      <div class="section-label"><span class="n">05</span>${esc(d.trendLabel ?? "Last 8 weeks of mention share")}</div>
+      <h2 class="section-label"><span class="n">05</span>${esc(d.trendLabel ?? "Last 8 weeks of mention share")}</h2>
       <div class="trend-wrap">
-        <svg class="trend-svg" viewBox="0 0 ${trendW} ${trendH}" preserveAspectRatio="none">
+        <svg class="trend-svg" viewBox="0 0 ${trendW} ${trendH}" role="img" aria-labelledby="trend-title trend-desc">
+          <title id="trend-title">Your mention trend versus cohort average</title>
+          <desc id="trend-desc">${esc(trendDesc)}</desc>
           <line x1="0" y1="40" x2="${trendW}" y2="40" stroke="#1c1c1e" stroke-width="1"/>
           <line x1="0" y1="80" x2="${trendW}" y2="80" stroke="#1c1c1e" stroke-width="1"/>
           <line x1="0" y1="120" x2="${trendW}" y2="120" stroke="#1c1c1e" stroke-width="1"/>
-          <line x1="0" y1="160" x2="${trendW}" y2="160" stroke="#1c1c1e" stroke-width="1"/>
-          <polyline points="${yourPoints}" fill="none" stroke="#d4c596" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="${avgPoints}" fill="none" stroke="#3a3a3e" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>
-          <g fill="#d4c596">
-            ${d.trend.map((p, i) => `<circle cx="${padX + i * xStep}" cy="${yScale(p.yourMentions)}" r="${i === d.trend.length - 1 ? 6 : 4}"${i === d.trend.length - 1 ? ' stroke="#0b0b0c" stroke-width="2"' : ''}/>`).join('')}
-          </g>
-          <text x="${trendW - 30}" y="${yScale(lastYour.yourMentions) - 10}" fill="#d4c596" font-family="ui-monospace, monospace" font-size="11" text-anchor="end">you: ${lastYour.yourMentions} of ${d.totalQuestions}</text>
-          <text x="${trendW - 30}" y="${yScale(lastYour.cohortAvg) - 10}" fill="#6a6a70" font-family="ui-monospace, monospace" font-size="11" text-anchor="end">cohort avg: ${lastYour.cohortAvg} of ${d.totalQuestions}</text>
-          <text x="${padX}" y="${trendH - 5}" fill="#6a6a70" font-family="ui-monospace, monospace" font-size="10">${esc(d.trend[0].weekIso)}</text>
-          <text x="${trendW - padX}" y="${trendH - 5}" fill="#6a6a70" font-family="ui-monospace, monospace" font-size="10" text-anchor="end">${esc(d.trend[d.trend.length - 1].weekIso)}</text>
+          <line x1="0" y1="160" x2="${trendW}" y2="160" stroke="#1c1c1e" stroke-width="1"/>${trendPolylines}
+          <g fill="#d4c596">${trendDots}</g>${trendLabels}
+          ${trendAxis}
         </svg>
       </div>
     </div>
