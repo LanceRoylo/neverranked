@@ -72,8 +72,8 @@
     <h2>Methodology summary</h2>
     <p>7 AI surfaces measured, all on the same day, all on the same query set:</p>
     <ul>
-      <li><strong>5 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search (gpt-4o-mini-search-preview), Gemini grounded (gemini-2.5-flash with googleSearch tool), Microsoft Copilot via Bing organic SERP, Google AI Overviews.</li>
-      <li><strong>2 model-knowledge engines</strong> (answer from training data, no web search): Claude (claude-haiku-4-5), Gemma (google/gemma-4-31B-it via Together AI, open-weight).</li>
+      <li><strong>5 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic SERP, Google AI Overviews.</li>
+      <li><strong>2 model-knowledge engines</strong> (answer from training data, no web search): Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 queries hash-locked at <code>48b6c76f...</code>. 3 repetitions per query per engine for noise control. 3 usable runs all on 2026-05-23, totaling 1,134 successful API calls and 862 cited-text rows scanned. Pattern-readiness rule of 3+ usable runs is cleared.</p>
     <p>Full methodology, with the hash-locked question sets and the dated runs on the <a href="/claims/">/claims/</a> ledger, at <a href="/methodology/">/methodology/</a>.</p>
