@@ -56,6 +56,24 @@
   .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
   .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
   .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  .toc { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; font-size: 14px; line-height: 1.6; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; }
+  @media (max-width: 640px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 18px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table { white-space: nowrap; font-size: 13px; }
+    td.num, th.num { padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -68,10 +86,24 @@
       <strong>The headline finding in one sentence:</strong> across 15 Honolulu med spas and 7 AI tools, the five web-searching engines cite the med spas&rsquo; own websites heavily (Gemini 64%, Perplexity 61%, ChatGPT 57%, Google AI Overviews 53%), but the training-data engine Claude cites them just 2%, and Microsoft Copilot cites them 0%. So the competitive game for a Honolulu med spa is on the web-searching engines, where own-site work pays off directly. Claude is a category-wide blind spot no single firm closes in the short term. This is the same training-data collapse we measured for CPA firms (Claude 1%), which means it is a local-service-business pattern, not a CPA quirk.
     </div>
 
-    <h2>Why this category matters as a measurement subject</h2>
+    <nav class="toc" aria-label="Sections">
+      <div class="toc-label">What&rsquo;s in this teardown</div>
+      <ol>
+        <li><a href="#why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</a></li>
+        <li><a href="#methodology-summary">Methodology summary</a></li>
+        <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
+        <li><a href="#per-ai-tool-breakdown">Per-AI-tool breakdown</a></li>
+        <li><a href="#the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</a></li>
+        <li><a href="#top-recurring-med-spas-anonymized">Top recurring med spas (anonymized)</a></li>
+        <li><a href="#what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</a></li>
+        <li><a href="#why-this-is-anonymized">Why this is anonymized</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</h2>
     <p>Med spa is a high-value local-services vertical. A single aesthetics patient is worth far more than one search click, and buyers search the way the queries name it: by service (Botox, filler, laser hair removal, CoolSculpting), by area (Honolulu, Waikiki, Oahu), and by trust signals (best, top-rated). The field has no dominant brand, so the AI-citation surface is genuinely contested. Med spas also tend to run marketing-forward websites, which is visible in the data: their own-site citation share on the web-searching engines (51% pooled) is the highest of any Hawaii category we have measured, tied with consumer banking.</p>
 
-    <h2>Methodology summary</h2>
+    <h2 id="methodology-summary">Methodology summary</h2>
     <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
       <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
@@ -80,8 +112,9 @@
     <p>18 questions a Honolulu med spa buyer would actually ask AI, locked at hash <code>26851ed8...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-09. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 15-firm cohort was built from the citations themselves: the first run with no cohort registered, then a cohort-coverage scan that surfaced every firm AI cited 50 or more times across the runs.</p>
     <p>Full methodology, the hash-locked question sets, and the dated runs on the <a href="/claims/">/claims/</a> ledger are documented at <a href="/methodology/">/methodology/</a>.</p>
 
-    <h2>Source-type distribution (cohort-wide)</h2>
+    <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
     <p>Across all 15 med spas and all 7 AI tools, AI pulled answers from these source types:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
@@ -95,9 +128,11 @@
         <tr><td>Reddit, social, forum (combined)</td><td class="num">0%</td><td class="num">16</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The overall 45% med-spa-owned share is dragged down by the training-data engines. On the web-searching engines alone, own-site share is 51% (the highest Hawaii category, tied with banking). One notable absence: review directories are only 3% of all mentions, lower than dental (where insurance carrier directories dominate). The med spa field is firm-heavy, not directory-heavy. AI mostly chooses between the med spas&rsquo; own sites and editorial third-party content, not aggregators.</p>
 
-    <h2>Per-AI-tool breakdown</h2>
+    <h2 id="per-ai-tool-breakdown">Per-AI-tool breakdown</h2>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>AI tool</th><th class="num">Med-spa-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
@@ -112,6 +147,7 @@
         <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">92%</td><td class="num">802</td></tr>
       </tbody>
     </table>
+    </div>
     <p>Two rows decide the strategy. The web-searching engines (top four rows) cite med-spa websites 53-64% of the time, so on the surfaces where most AI discovery happens, a med spa&rsquo;s own site is doing more than half the work. The bottom two rows are the blind spots. Claude cites med spa websites 2% of the time, and Microsoft Copilot 0%.</p>
 
     <div class="callout">
@@ -119,11 +155,12 @@
       <p>Claude answers from training data, not live search. At 2% own-site share for Honolulu med spas, it has effectively no memory of these firms. We measured the identical collapse for Hawaii CPA firms (Claude 1%) and Austin CPA firms (Claude 0%). Two unrelated local-service verticals, same near-zero result. That is the informative part: the training-data collapse is not specific to accountants. It is a property of how thinly local-service businesses are represented in the editorial content an AI model learns from. For a med spa, the practical read is that Claude is a category-wide blind spot no single firm closes on a short timescale, so the addressable surface is the web-searching engines, where own-site work moves the number directly, plus Gemma (32%), which is reachable through sustained editorial presence over the training cycle.</p>
     </div>
 
-    <h2>The Microsoft Copilot first-mover opening</h2>
+    <h2 id="the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</h2>
     <p>Microsoft Copilot answers using Bing&rsquo;s organic search results. Across 802 mentions for Honolulu med spa questions, zero went to any of the 15 firms&rsquo; own websites. The same cohort-wide gap shows up in every category we measure, because for these queries the current Bing top results are dominated by directories and editorial content, not individual firms&rsquo; sites. The opening is open for every med spa simultaneously: whichever Honolulu med spa ranks first in Bing organic for the common queries (best med spa Honolulu, Botox Honolulu, laser hair removal Honolulu) effectively owns the Copilot answer while every competitor is still invisible there. We name the condition. Whether changing it closes the citation is a measurement question we keep answering month over month.</p>
 
-    <h2>Top recurring med spas (anonymized)</h2>
+    <h2 id="top-recurring-med-spas-anonymized">Top recurring med spas (anonymized)</h2>
     <p>The 5 med spas AI cited most often across the 18 questions and 7 tools, by total mentions across the 3 runs:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Med spa (anonymized)</th><th class="num">Total mentions</th><th class="num">Runs cited in</th></tr>
@@ -136,9 +173,10 @@
         <tr><td>Med Spa E</td><td class="num">172</td><td class="num">3/3</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The top 5 appeared in all 3 measurement runs, a consistency signal rather than run-to-run noise. The remaining 10 firms in the cohort have meaningful but lower mention counts. The shape matches other Hawaii service categories: a small top tier AI knows well, a longer tail it cites less often.</p>
 
-    <h2>What this teardown does and does not prove</h2>
+    <h2 id="what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</h2>
     <p>What it supports:</p>
     <ul>
       <li>The 15-firm cohort is the set of Honolulu med spas AI tools actually cite for buyer-shaped questions, surfaced from the citations rather than picked in advance.</li>
@@ -153,7 +191,7 @@
       <li>That the Microsoft Copilot first-mover opening is actually closable. The Bing organic ranking competition is its own beast this measurement does not measure.</li>
     </ul>
 
-    <h2>Why this is anonymized</h2>
+    <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
     <p>None of the 15 med spas in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, and per-AI-tool numbers are public. Individual firm names are not. The pattern is what is informative on a public surface. A med spa that becomes a customer gets a 1:1 deliverable that names every firm in the cohort, names the queries it is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
 
     <div class="cta-row">

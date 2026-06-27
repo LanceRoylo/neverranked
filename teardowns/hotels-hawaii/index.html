@@ -56,6 +56,24 @@
   .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
   .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
   .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  .toc { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; font-size: 14px; line-height: 1.6; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; }
+  @media (max-width: 640px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 18px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table { white-space: nowrap; font-size: 13px; }
+    td.num, th.num { padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -68,10 +86,24 @@
       <strong>The headline finding in one sentence:</strong> across 13 Hawaii hotels and 7 AI tools, only 17% of citations point to a hotel&rsquo;s own website. The other 74% go to the OTAs (Booking, Expedia, Hotels.com) and travel editorial (TripAdvisor, Conde Nast, US News). But among the hotels AI does name, the boutiques out-cite the chains, 493 citations to 457, and the single most-cited hotel in Hawaii is a Maui boutique, ahead of every chain. So for a hotel the contest is not boutique versus chain. It is hotel versus OTA, and the boutiques that break through are winning their half of it.
     </div>
 
-    <h2>Why this category matters as a measurement subject</h2>
+    <nav class="toc" aria-label="Sections">
+      <div class="toc-label">What&rsquo;s in this teardown</div>
+      <ol>
+        <li><a href="#why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</a></li>
+        <li><a href="#methodology-summary">Methodology summary</a></li>
+        <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
+        <li><a href="#per-ai-tool-breakdown">Per-AI-tool breakdown</a></li>
+        <li><a href="#the-ota-wall-and-the-opening">The OTA wall, and the opening</a></li>
+        <li><a href="#top-recurring-hotels-anonymized">Top recurring hotels (anonymized)</a></li>
+        <li><a href="#what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</a></li>
+        <li><a href="#why-this-is-anonymized">Why this is anonymized</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</h2>
     <p>Hawaii hotels are a high-value, fiercely competitive category across every island, and a booking is worth far more than a single lead. Travelers ask AI the way the queries name it: by island (Maui, Kauai, Oahu, the Big Island), by type (boutique, luxury, resort), and by occasion (honeymoon, adults-only, ocean-view). It is also one of the most aggregator-captured categories on the internet: the OTAs and review platforms have spent two decades becoming the default answer, and a hotel that wins a direct booking keeps the 15 to 25 percent commission an OTA would take. That makes hotels a clean test of whether an individual property, especially a boutique, can be named by AI at all when Booking and Expedia own the category.</p>
 
-    <h2>Methodology summary</h2>
+    <h2 id="methodology-summary">Methodology summary</h2>
     <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
       <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
@@ -80,8 +112,9 @@
     <p>18 questions a Hawaii hotel shopper would actually ask AI, mixing generic intent (best hotel in Waikiki) with boutique and occasion intent (adults-only, honeymoon, ocean-view) across all the major islands, locked at hash <code>45ed5eee...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-21. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 13-hotel cohort was built from the citations themselves, then hard-audited to real hotel own-sites and tagged boutique or chain, with the OTAs and directories excluded as aggregators.</p>
     <p>Full methodology, the hash-locked question sets, and the dated runs on the <a href="/claims/">/claims/</a> ledger. Method documented at <a href="/methodology/">/methodology/</a>.</p>
 
-    <h2>Source-type distribution (cohort-wide)</h2>
+    <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
     <p>Across all 7 AI tools and 5,775 citations, AI pulled answers from these source types:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
@@ -96,9 +129,11 @@
         <tr><td>Wikipedia</td><td class="num">0%</td><td class="num">27</td></tr>
       </tbody>
     </table>
+    </div>
     <p>This is aggregator domination on the scale of real estate. The OTAs (Booking, Expedia, Hotels.com, Travelocity) and the review and editorial platforms (TripAdvisor, Conde Nast Traveler, US News, Forbes Travel, plus boutique-hotel directories) make up the bulk of that 74 percent. For most of the answer, AI is recommending a platform, not a property. A hotel&rsquo;s own website earns 17 percent of the total, which is the share a direct-booking strategy competes for.</p>
 
-    <h2>Per-AI-tool breakdown</h2>
+    <h2 id="per-ai-tool-breakdown">Per-AI-tool breakdown</h2>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>AI tool</th><th class="num">Hotel-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
@@ -113,6 +148,7 @@
         <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">95%</td><td class="num">810</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The training-data engines lead, the same inversion the real-estate teardown found. Claude (47%) and Gemma (42%) cite hotels&rsquo; own sites far more than the web-searching engines do, because iconic and well-marketed Hawaii hotels have the editorial and historical footprint a model learns from. The live-search engines lean on the OTAs instead: Gemini 12 percent, Perplexity 6 percent, and Microsoft Copilot 0 percent, which is the cohort-wide Copilot pattern we see in every category. The practical read for a hotel: the editorial and brand presence that feeds the training-data engines is the most reachable surface, and it is exactly where a distinctive property can out-perform its size.</p>
 
     <div class="callout">
@@ -120,11 +156,12 @@
       <p>The natural fear for a boutique hotel is that AI favors the big chains. The data says the opposite. Among the 958 hotel-owned citations, the boutique and independent properties drew 493 and the chains drew 457. The single most-cited hotel in the entire measurement is a Maui boutique, ahead of every chain brand, and the two most-cited hotels overall are both independent. When a boutique gets named, it competes with the chains on equal footing and often wins, because the AI tools reward a distinctive, well-documented identity more than corporate scale. The real adversary for any Hawaii hotel is not the Four Seasons down the road. It is Booking.com. And on the surface that decides it, the editorial-presence surface, a boutique has a structural advantage a generic chain property does not.</p>
     </div>
 
-    <h2>The OTA wall, and the opening</h2>
+    <h2 id="the-ota-wall-and-the-opening">The OTA wall, and the opening</h2>
     <p>Microsoft Copilot returned zero hotel-owned citations across 810 mentions, and Perplexity only 6 percent, because the live-search results for hotel queries are dominated by Booking, Expedia, and TripAdvisor. That is the wall. The opening is the training-data engines and ChatGPT search, where hotels already earn 30 to 47 percent, and where a property with real editorial coverage, a clear identity, and a well-structured own-site can be the named answer. Whether a given hotel can move from absent to named there is a measurement question we keep answering month over month, not a promise.</p>
 
-    <h2>Top recurring hotels (anonymized)</h2>
+    <h2 id="top-recurring-hotels-anonymized">Top recurring hotels (anonymized)</h2>
     <p>The 5 hotels AI cited most often across the 18 questions and 7 tools, by total mentions across the 3 runs, with their bucket:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Hotel (anonymized)</th><th class="num">Total mentions</th><th class="num">Questions cited on</th></tr>
@@ -137,9 +174,10 @@
         <tr><td>Chain C</td><td class="num">74</td><td class="num">11/18</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The top two are boutique and independent properties, both ahead of the most-cited chain. Across the full cohort the boutiques (7 properties) and the chains (6 properties) finish nearly level on total citations, with the boutiques ahead. The chains appear on slightly more distinct questions (broader coverage), while the top boutiques appear deeply on the questions they own. Both shapes are a path: breadth or depth.</p>
 
-    <h2>What this teardown does and does not prove</h2>
+    <h2 id="what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</h2>
     <p>What it supports:</p>
     <ul>
       <li>The 13-hotel cohort is the set of Hawaii hotels AI cites for buyer-shaped questions, surfaced from the citations and hard-audited to real properties, with OTAs and directories excluded.</li>
@@ -154,7 +192,7 @@
       <li>That the OTA dominance is closable by any one property. Competing with Booking for the live-search slot is a category-level condition this measurement names but does not solve.</li>
     </ul>
 
-    <h2>Why this is anonymized</h2>
+    <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
     <p>None of the 13 hotels in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, per-AI-tool numbers, and the boutique-versus-chain split are public. Individual property names are not. The OTAs and directories are named because they are public infrastructure, not cohort businesses. A hotel that becomes a customer gets a 1:1 deliverable that names every property in the cohort, names the questions it is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
 
     <div class="cta-row">

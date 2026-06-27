@@ -60,6 +60,24 @@
   .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
   .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
   .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  .toc { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; font-size: 14px; line-height: 1.6; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; }
+  @media (max-width: 640px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 18px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table { white-space: nowrap; font-size: 13px; }
+    td.num, th.num { padding-right: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -72,10 +90,24 @@
       <strong>The headline finding in one sentence:</strong> across 42 Hawaii wealth-management firms and 7 AI tools, the top two non-firm sources AI cites are lead-gen platforms (SmartAsset and getwarmer.com, 432 mentions combined) rather than any individual firm. AI is structurally routing wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. For any Hawaii wealth firm, that platform layer is a measurable AEO surface most firms likely do not actively manage.
     </div>
 
-    <h2>Why this category matters as a measurement subject</h2>
+    <nav class="toc" aria-label="Sections">
+      <div class="toc-label">What&rsquo;s in this teardown</div>
+      <ol>
+        <li><a href="#why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</a></li>
+        <li><a href="#methodology-summary">Methodology summary</a></li>
+        <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
+        <li><a href="#the-lead-gen-middleman-pattern">The lead-gen middleman pattern</a></li>
+        <li><a href="#per-ai-tool-breakdown-the-cohort-wide-copilot-gap">Per-AI-tool breakdown, the cohort-wide Copilot gap</a></li>
+        <li><a href="#top-recurring-firms-anonymized">Top recurring firms (anonymized)</a></li>
+        <li><a href="#what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</a></li>
+        <li><a href="#why-this-is-anonymized">Why this is anonymized</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="why-this-category-matters-as-a-measurement-subject">Why this category matters as a measurement subject</h2>
     <p>Hawaii wealth management is the relationship-end category in our cross-category teardown. A buyer choosing a wealth manager makes a high-trust, long-horizon decision based on the firm's principals, philosophy, and fit with the buyer's specific scenario (business owner, physician, inherited wealth, etc.). The category's AI-citation surface reflects that: a firm-owned share (47%) just below its third-party share (49%), less firm-dominated than commodity categories like banking. The third-party surface is where the closable competitive ground sits.</p>
 
-    <h2>Methodology summary</h2>
+    <h2 id="methodology-summary">Methodology summary</h2>
     <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
       <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
@@ -85,8 +117,9 @@
     <p>The 42-firm cohort grew through two passes. 15 anchor firms registered before run 1. 8 additional firms surfaced through run 1 cohort-coverage scan and registered after. The cohort expansion lifted the firm-owned share from 27% on the initial 15-firm cohort to 47% on the full 42-firm cohort, illustrating the cohort-coverage discipline named on the methodology page. National lead-gen platforms and financial-planner directories were deliberately excluded from the cohort; they appear in the data as third-party content sources.</p>
     <p>Full methodology, the hash-locked question set, and the dated runs on the claims ledger are at <a href="/methodology/">/methodology/</a> and <a href="/claims/">/claims/</a>.</p>
 
-    <h2>Source-type distribution (cohort-wide)</h2>
+    <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
     <p>Across all 42 firms and all 7 AI tools, AI pulled answers from these source types:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Source type</th><th class="num">% of mentions</th><th class="num">Count</th></tr>
@@ -100,10 +133,12 @@
         <tr><td>Social (LinkedIn, Facebook, Instagram)</td><td class="num">0%</td><td class="num">29</td></tr>
       </tbody>
     </table>
+    </div>
     <p>Hawaii wealth management sits in the middle of the cross-category cluster. For comparison: Hawaii consumer banking is 53% firm-owned (uniquely high), Honolulu dental is 44%, and Hawaii law firms is 39%. The earlier reading on this measurement (1 run, 15 firms) showed 27% firm-owned and put wealth in the "relationship-end" tier with law. Three rounds of cohort expansion (15 firms grew to 42) showed that reading was an artifact of incomplete cohort coverage. The real number sits in the cluster with dental and law. Banking is the outlier. Why banking is different is the more interesting question, and we have a hypothesis on the cross-category teardown.</p>
 
-    <h2>The lead-gen middleman pattern</h2>
+    <h2 id="the-lead-gen-middleman-pattern">The lead-gen middleman pattern</h2>
     <p>The 3,029 third-party-content mentions are not all the same shape. The top recurring non-firm sources across runs:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Source</th><th class="num">Mentions</th><th>What it is</th></tr>
@@ -116,10 +151,12 @@
         <tr><td>Unbiased</td><td class="num">74</td><td>UK-origin financial-advisor directory</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The structural finding is in the top two rows. SmartAsset (211 mentions) and getwarmer.com (221 mentions) are both lead-gen platforms whose business model is collecting buyer information and routing it to wealth advisors who pay for placement. Combined, they account for 432 of the 3,029 third-party mentions (14% of all non-firm citations). AI is using these platforms as primary sources when answering wealth-management questions for Hawaii.</p>
     <p>For a wealth-management firm, this is a real structural fact about the category. If your firm is not represented on SmartAsset and getwarmer.com, you are missing a meaningful share of the AI-citation surface, even before considering Microsoft Copilot or any of the per-firm dynamics. This is also a different shape of surface than the categories below: dental does not have a SmartAsset equivalent; banking does not have a getwarmer.com. Wealth has both because the lead-gen advisor-matchmaker model is a real economic layer in this vertical.</p>
 
-    <h2>Per-AI-tool breakdown, the cohort-wide Copilot gap</h2>
+    <h2 id="per-ai-tool-breakdown-the-cohort-wide-copilot-gap">Per-AI-tool breakdown, the cohort-wide Copilot gap</h2>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>AI tool</th><th class="num">Firm-owned share</th><th class="num">Third-party share</th><th class="num">Total mentions</th></tr>
@@ -134,6 +171,7 @@
         <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">85%</td><td class="num">787</td></tr>
       </tbody>
     </table>
+    </div>
     <p>Two rows worth flagging. Microsoft Copilot cites zero firm-owned websites across 787 mentions, the same cohort-wide gap we documented for dental and law. Whichever Hawaii wealth firm ranks first in Bing organic results for the buyer questions effectively owns the Copilot answer while every competitor is invisible there.</p>
     <p>The Claude row is worth a closer look. Claude answers from training data and cites firm-owned wealth websites 38% of the time, with the other 62% pulling from third-party content. That is moderate training-data presence: above dental (Claude 34%) and below law firms (Claude 51%, where named-partner editorial content runs deep). For a wealth firm asking "does Claude know my brand," the answer is "Claude names specific firms a fair amount, but still reaches for third-party context more often than not." Hawaii wealth firms sit mid-pack among the relationship-business cohorts in Claude's training data, not at the bottom.</p>
 
@@ -142,8 +180,9 @@
       <p>If you are a Hawaii wealth firm: roughly half of the AI-citation surface for your category is off your own site. Within that off-site share, the largest single block lives on two lead-gen platforms (SmartAsset, getwarmer.com) that most firms probably do not actively manage. The rest is fragmented across category-specific publications, Wikipedia entries for named principals, and Google self-references. The Microsoft Copilot opening is open for every firm in the cohort simultaneously, gated on Bing organic visibility. Claude's training-data layer for Hawaii wealth is moderate, above dental and below law. It is not the bottleneck the lead-gen and Copilot gaps are.</p>
     </div>
 
-    <h2>Top recurring firms (anonymized)</h2>
+    <h2 id="top-recurring-firms-anonymized">Top recurring firms (anonymized)</h2>
     <p>The 5 firms AI cited most often across the 18 questions and 7 tools:</p>
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th>Firm (anonymized)</th><th class="num">Total mentions</th><th class="num">% of cohort competitor share</th><th class="num">Runs cited in</th></tr>
@@ -156,9 +195,10 @@
         <tr><td>Firm E</td><td class="num">161</td><td class="num">7%</td><td class="num">3/3</td></tr>
       </tbody>
     </table>
+    </div>
     <p>The top 5 firms account for 36% of all firm-owned mentions (1,062 of 2,944). This is a notably less concentrated category than Hawaii law firms, where the top 5 owned 64% of competitor mentions. Wealth management has a flatter distribution: the long tail of firms has more meaningful share, and the relative gap between the top firm and the fifth firm is smaller. For a firm outside the top 5, the gap to closing is shorter in wealth than in law.</p>
 
-    <h2>What this teardown does and does not prove</h2>
+    <h2 id="what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</h2>
     <p>What it does support:</p>
     <ul>
       <li>The 42-firm cohort is a representative slice of Hawaii wealth-management firms AI tools actually cite for buyer-shaped questions.</li>
@@ -174,7 +214,7 @@
       <li>That the Microsoft Copilot first-mover opportunity is actually closable for any specific firm. The Bing organic ranking competition is outside what this measurement captures.</li>
     </ul>
 
-    <h2>Why this is anonymized</h2>
+    <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
     <p>None of the 42 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
     <p>One related private artifact exists: a 1:1 brief prepared for Hamada Financial Group as part of an in-person scoping conversation. That brief names the cohort in full and is private to Hamada (noindex, nofollow, takedown on request). The public teardown you are reading is the anonymized version of the same underlying measurement.</p>
     <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
