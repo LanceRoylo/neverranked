@@ -108,11 +108,11 @@
       <h3>Layer 1: Citation-grade engines (5)</h3>
       <p>Engines that search the live web at query time and surface the sources they cite. Five of them dominate the surface area today:</p>
       <ul>
-        <li><strong>Perplexity</strong>, accessed via the sonar API.</li>
-        <li><strong>ChatGPT search</strong>, accessed via the OpenAI gpt-4o-search-preview model.</li>
-        <li><strong>Gemini grounded</strong>, accessed via Gemini 2.5-flash with the google_search tool enabled.</li>
-        <li><strong>Microsoft Copilot</strong>, accessed via Bing organic search through the DataForSEO API.</li>
-        <li><strong>Google AI Overviews</strong>, accessed via the DataForSEO ai_overview endpoint.</li>
+        <li><strong>Perplexity</strong>, accessed via its API.</li>
+        <li><strong>ChatGPT search</strong>, accessed via OpenAI's search-grade API.</li>
+        <li><strong>Gemini grounded</strong>, accessed via the Gemini API with web grounding enabled.</li>
+        <li><strong>Microsoft Copilot</strong>, accessed via Bing's organic results through a search-data provider.</li>
+        <li><strong>Google AI Overviews</strong>, accessed via a search-data provider's AI Overview feed.</li>
       </ul>
       <p>For each query, on each engine, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer.</p>
     </div>
@@ -122,7 +122,7 @@
       <p>Engines that answer from training data without searching the live web. These represent the baseline of what AI says about a brand when it cannot look anything up, which is what users of Claude.ai or any Claude-powered support tool see by default.</p>
       <ul>
         <li><strong>Claude</strong>, accessed via the Anthropic API. No native web tool is invoked, so the response reflects model knowledge plus RLHF.</li>
-        <li><strong>Gemma</strong>, accessed via Together AI. Open-weight, which means the Gemma model itself is independently inspectable.</li>
+        <li><strong>Gemma</strong>, accessed via a model-hosting provider. Open-weight, which means the Gemma model itself is independently inspectable.</li>
       </ul>
       <p>For each query, on each engine, the response is captured and scanned for mentions of the brand name. A brand is "mentioned in model knowledge" on a query if its name appears in the response.</p>
     </div>
