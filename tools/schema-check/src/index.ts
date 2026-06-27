@@ -178,7 +178,7 @@ const HTML_PAGE = `<!doctype html>
   --text:#fbf8ef;
   --text-soft:rgba(251,248,239,.98);
   --text-mute:rgba(251,248,239,.86);
-  --text-faint:rgba(251,248,239,.68);
+  --text-faint:rgba(251,248,239,.78);
   --line:rgba(251,248,239,.28);
   --line-strong:rgba(251,248,239,.44);
   --serif:"Playfair Display",Georgia,serif;
@@ -208,7 +208,36 @@ body{
 img,svg{display:block;max-width:100%}
 a{color:inherit;text-decoration:none}
 button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;padding:0}
+button:active{transform:translateY(1px)}
 ::selection{background:var(--gold);color:var(--bg)}
+
+/* keyboard focus ring — only fires for keyboard users, no change for mouse */
+a:focus-visible,button:focus-visible,input:focus-visible{
+  outline:2px solid var(--gold);
+  outline-offset:2px;
+  border-radius:2px;
+}
+
+/* tabular figures so the instrument's headline numbers stay aligned */
+.grade-circle .letter,.aeo-score span,.schema-summary-count,
+.email-gate-count,.flag-summary-count,.comp-bar-score,
+.grade-dist-pct,.tech-summary-count{
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:'tnum' 1;
+}
+
+/* respect reduced-motion: kill decorative loops, keep final states */
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.001ms !important;
+    scroll-behavior:auto !important;
+  }
+  .grain{animation:none}
+  .loading .dot{animation:none}
+  button:active{transform:none}
+}
 
 /* grain overlay */
 .grain{
@@ -279,6 +308,12 @@ body::before{
   letter-spacing:-.02em;
   line-height:1.08;
   margin-bottom:20px;
+  text-wrap:balance;
+}
+/* visually hidden, available to assistive tech */
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
 }
 .hero h1 em{font-style:italic;color:var(--gold)}
 .hero .sub{
@@ -311,9 +346,9 @@ body::before{
 .input-area input:focus{border-color:var(--gold)}
 .input-area input::placeholder{color:var(--text-faint)}
 .input-area button{
-  background:transparent;
+  background:var(--gold);
   border:1px solid var(--gold);
-  color:var(--gold);
+  color:var(--bg);
   padding:14px 28px;
   font-family:var(--label);
   text-transform:uppercase;
@@ -321,10 +356,10 @@ body::before{
   font-size:12px;
   font-weight:500;
   border-radius:4px;
-  transition:background .35s var(--ease),color .35s var(--ease);
+  transition:background .35s var(--ease),border-color .35s var(--ease);
   white-space:nowrap;
 }
-.input-area button:hover{background:var(--gold);color:var(--bg)}
+.input-area button:hover{background:#f0e2b0;border-color:#f0e2b0;color:var(--bg)}
 .input-area button:disabled{opacity:.4;cursor:not-allowed}
 
 /* loading */
@@ -410,9 +445,48 @@ body::before{
   margin:0 auto;
   line-height:1.5;
 }
+/* above-gate comparison: shows the gap visually before the email ask,
+   exact score still withheld */
+.grade-band-compare{
+  max-width:420px;
+  margin:28px auto 0;
+  text-align:left;
+}
+.gbc-bar{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:10px;
+}
+.gbc-label{
+  font-family:var(--mono);
+  font-size:11px;
+  color:var(--text-faint);
+  width:118px;
+  flex-shrink:0;
+  text-align:right;
+}
+.gbc-track{
+  flex:1;height:8px;
+  background:var(--bg-lift);
+  border-radius:4px;overflow:hidden;
+}
+.gbc-fill{
+  height:100%;width:0;border-radius:4px;
+  transition:width .9s var(--ease);
+}
+.gbc-you{background:var(--gold)}
+.gbc-bench{background:var(--gold-dim);opacity:.5}
+.gbc-caption{
+  font-family:var(--mono);
+  font-size:12px;
+  color:var(--text-faint);
+  line-height:1.6;
+  margin-top:14px;
+  text-align:center;
+}
 @media (max-width:640px){
   .grade-band-headline{font-size:32px}
   .grade-band-sub{font-size:14px;padding:0 20px}
+  .gbc-label{width:92px;font-size:10px}
 }
 .grade-circle{
   display:inline-flex;
@@ -723,7 +797,7 @@ body.agency-mode #agency-cta-card{display:block !important}
   font-weight:600;
   transition:background 160ms ease;
 }
-.qw-cta-button:hover{background:#e8d9a8}
+.qw-cta-button:hover{background:#f0e2b0}
 .qw-cta-note{
   font-family:var(--mono);
   font-size:11px;
@@ -780,8 +854,10 @@ body.agency-mode #agency-cta-card{display:block !important}
   font-size:12px;
   color:var(--text-faint);
 }
-.footer a{color:var(--gold-dim);transition:color .3s}
+.footer a{color:var(--gold-dim);transition:color .3s;display:inline-block;padding:6px 4px;min-height:44px;line-height:32px}
 .footer a:hover{color:var(--gold)}
+/* comfortable mobile tap zone for bare inline price-discovery links (#20) */
+.tap-link{display:inline-block;padding:8px 4px;min-height:44px;line-height:28px}
 .footer .email{
   margin-top:8px;
   font-family:var(--mono);
@@ -842,9 +918,9 @@ body.agency-mode #agency-cta-card{display:block !important}
 .email-gate-form button{
   padding:14px 26px;background:var(--gold);color:var(--bg);border:0;border-radius:3px;
   font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;font-weight:600;
-  cursor:pointer;transition:opacity .2s;white-space:nowrap;
+  cursor:pointer;transition:background .2s var(--ease);white-space:nowrap;
 }
-.email-gate-form button:hover{opacity:.88}
+.email-gate-form button:hover{background:#f0e2b0}
 .email-gate-form button:disabled{opacity:.4;cursor:not-allowed}
 .email-gate-privacy{
   font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-top:8px;
@@ -963,6 +1039,19 @@ body.agency-mode #agency-cta-card{display:block !important}
   min-width:32px;
   text-align:right;
 }
+.comp-gap-line{
+  font-family:var(--mono);
+  font-size:13px;
+  color:var(--text-mute);
+  margin:14px 0 4px;
+  letter-spacing:.01em;
+}
+.comp-gap-num{
+  color:var(--gold);
+  font-size:16px;
+  font-variant-numeric:tabular-nums;
+  font-feature-settings:'tnum' 1;
+}
 .comp-teaser-text{
   font-family:var(--mono);
   font-size:12px;
@@ -988,9 +1077,9 @@ body.agency-mode #agency-cta-card{display:block !important}
   font-size:12px;
   font-weight:600;
   border-radius:4px;
-  transition:opacity .3s var(--ease);
+  transition:background .3s var(--ease);
 }
-.btn-primary:hover{opacity:.85}
+.btn-primary:hover{background:#f0e2b0 !important}
 .btn-ghost-link{
   display:inline-block;
   border:1px solid var(--line) !important;
@@ -1211,7 +1300,7 @@ body.agency-mode #agency-cta-card{display:block !important}
   .email-capture-form{margin-left:0;width:100%}
   .email-capture-form input{flex:1;width:auto}
   .cta-buttons{flex-direction:column;align-items:center}
-  .comp-bar-label{min-width:70px;font-size:9px}
+  .comp-bar-label{min-width:70px;font-size:10px}
   .dash-mock-row{flex-direction:column;gap:8px}
   .qw-item{flex-wrap:wrap}
   .social-proof{flex-direction:column;align-items:center;gap:8px}
@@ -1246,9 +1335,10 @@ body.agency-mode #agency-cta-card{display:block !important}
   </div>
 
   <section class="hero">
-    <h1>See what AI tools<br>can read from <em>your site</em>.</h1>
-    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what 7 AI engines pull from your pages, what they miss, and why it matters. Free. No signup.</p>
+    <h1>See what AI tools can read from <em>your site</em>.</h1>
+    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what 7 AI tools pull from your pages, what they miss, and why it matters. Free. No signup.</p>
     <div class="input-area">
+      <label for="url-input" class="sr-only">Your website URL</label>
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
       <button id="run-btn" type="button">Run check</button>
     </div>
@@ -1261,19 +1351,19 @@ body.agency-mode #agency-cta-card{display:block !important}
       <span style="opacity:.4">&middot;</span>
       <span>every number public</span>
       <span style="opacity:.4">&middot;</span>
-      <a href="https://neverranked.com/#pricing" id="hero-pricing-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See pricing &rarr;</a>
+      <a href="https://neverranked.com/#pricing" id="hero-pricing-link" class="tap-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">See pricing &rarr;</a>
     </div>
   </section>
 
-  <div class="loading" id="loading">
+  <div class="loading" id="loading" role="status" aria-live="polite">
     <span class="dot"></span>
     <span class="text" id="loading-text">Analyzing...</span>
   </div>
 
-  <div class="error-msg" id="error-msg"></div>
+  <div class="error-msg" id="error-msg" role="alert"></div>
 
   <section class="results" id="results">
-    <div class="grade-section" id="grade-section"></div>
+    <div class="grade-section" id="grade-section" aria-live="polite"></div>
     <div class="grade-insight" id="grade-insight"></div>
 
     <!-- Email gate: teaser + capture. Hidden once email is captured.
@@ -1289,12 +1379,13 @@ body.agency-mode #agency-cta-card{display:block !important}
       </div>
       <div class="email-gate-teaser" id="email-gate-teaser"></div>
       <div class="email-gate-body">
-        <p id="email-gate-body-text">The full report shows every label AI is missing on your site, every fix in plain language, and why each one matters. Email below.</p>
+        <p id="email-gate-body-text">One page, sent once: every signal AI is missing on your site, each fix in plain language, why it matters, and the read from a person, not a bot.</p>
         <div class="email-gate-form">
+          <label for="gate-email-input" class="sr-only">Your work email</label>
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
           <button type="button" id="gate-email-btn">Show me every fix</button>
         </div>
-        <div class="email-gate-privacy">No spam. Unsubscribe anytime.</div>
+        <div class="email-gate-privacy">One report, sent once. No drip sequence.</div>
       </div>
     </div>
 
@@ -1321,11 +1412,12 @@ body.agency-mode #agency-cta-card{display:block !important}
             <div class="comp-bar-score" id="comp-score-you"></div>
           </div>
           <div class="comp-bar">
-            <div class="comp-bar-label" style="color:var(--text-faint)" id="comp-bar-bench-label">AI-cited sites</div>
+            <div class="comp-bar-label" style="color:var(--text-faint)" id="comp-bar-bench-label">Top quartile audited</div>
             <div class="comp-bar-track"><div class="comp-bar-fill" id="comp-bar-bench-fill" style="background:var(--gold-dim);width:78%;opacity:.5"></div></div>
-            <div class="comp-bar-score" style="color:var(--text-faint)" id="comp-bar-bench-score">78+</div>
+            <div class="comp-bar-score" style="color:var(--text-faint)" id="comp-bar-bench-score"></div>
           </div>
         </div>
+        <div class="comp-gap-line" id="comp-gap-line" style="display:none"></div>
         <div class="grade-dist" id="grade-dist"></div>
         <div class="comp-teaser-text" id="comp-teaser-text"></div>
       </div>
@@ -1349,7 +1441,7 @@ body.agency-mode #agency-cta-card{display:block !important}
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and four others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-primary" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
+          <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-ghost-link" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
           <a href="https://neverranked.com/methodology/" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or read the full methodology</a>
         </div>
       </div>
@@ -1376,7 +1468,8 @@ body.agency-mode #agency-cta-card{display:block !important}
         <div id="agency-cta-contact" style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--text-faint)"></div>
       </div>
 
-      <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:28px 0;flex-wrap:wrap">
+      <div id="cta-pricing-intro" style="text-align:center;margin:24px 0 4px;font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--text-faint)">When you are ready, what an engagement costs</div>
+      <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:14px 0 28px;flex-wrap:wrap">
         <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:180px;max-width:280px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Kickoff</div>
           <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500</div>
@@ -1388,7 +1481,7 @@ body.agency-mode #agency-cta-card{display:block !important}
           <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category ongoing<br>Daily measurement + delta memo</div>
         </div>
       </div>
-      <div style="text-align:center;margin-top:12px"><a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
+      <div style="text-align:center;margin-top:12px"><a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" class="tap-link" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
 
       <div class="cta-features">
         <span>7-engine measurement</span>
@@ -1399,8 +1492,8 @@ body.agency-mode #agency-cta-card{display:block !important}
         <span>Research memo deliverable</span>
       </div>
       <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;align-items:center;gap:10px">
-        <a href="https://neverranked.com/teardowns/bank-honolulu/" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim);padding-bottom:1px">See the published Hawaii consumer banking teardown</a>
-        <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20inquiry" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
+        <a href="https://neverranked.com/teardowns/bank-honolulu/" class="tap-link" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">See the published Hawaii consumer banking teardown</a>
+        <a href="mailto:Lance@hi.neverranked.com?subject=Engagement%20inquiry" class="tap-link" style="font-family:var(--mono);font-size:11px;color:var(--text-faint);text-decoration:none">Want the full engagement on your category? <span style="color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:1px">Email Lance &rarr;</span></a>
       </div>
     </div>
 
@@ -1503,13 +1596,34 @@ body.agency-mode #agency-cta-card{display:block !important}
       data._fullGradeHtml = fullGradeHtml;
       data._insightText = insightText;
       var inTopHalf = score >= 50;
+      // Above-gate proof (#13): show the visitor's bar sitting short of
+      // the citation tier BEFORE the email ask. Exact number stays hidden
+      // (no score text on the You bar); the gap is shown, not stated.
+      var bandBenchP75 = (window.NR_BENCHMARK && window.NR_BENCHMARK.p75) ? window.NR_BENCHMARK.p75 : 78;
+      var youW = Math.max(4, Math.min(100, score));
+      var benchW = Math.max(4, Math.min(100, bandBenchP75));
       gradeSection.innerHTML =
         '<div class="grade-band-domain">'+escHtml(scannedDisplay)+'</div>'+
         '<div class="grade-band-headline">Your site is in the '+
           '<strong>'+(inTopHalf ? 'top half' : 'bottom half')+'</strong>'+
         '</div>'+
-        '<div class="grade-band-sub">of sites we have audited. Enter your email below to see your exact score, your grade, and the full breakdown.</div>';
+        '<div class="grade-band-sub">of sites we have audited. Enter your email below to see your exact score, your grade, and the full breakdown.</div>'+
+        '<div class="grade-band-compare">'+
+          '<div class="gbc-bar"><div class="gbc-label">You</div><div class="gbc-track"><div class="gbc-fill gbc-you" data-w="'+youW+'"></div></div></div>'+
+          '<div class="gbc-bar"><div class="gbc-label">Top quartile audited</div><div class="gbc-track"><div class="gbc-fill gbc-bench" data-w="'+benchW+'"></div></div></div>'+
+          '<div class="gbc-caption">Your bar sits short of the tier AI engines cite from. The email below shows exactly how short.</div>'+
+        '</div>';
       if (insight) insight.innerHTML = '';
+      // Animate the fills from 0 once painted (respecting reduced-motion).
+      var gbcReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+      var gbcFills = gradeSection.querySelectorAll('.gbc-fill');
+      if(gbcReduce){
+        gbcFills.forEach(function(el){ el.style.width = el.dataset.w + '%'; });
+      } else {
+        requestAnimationFrame(function(){ requestAnimationFrame(function(){
+          gbcFills.forEach(function(el){ el.style.width = el.dataset.w + '%'; });
+        }); });
+      }
     } else {
       // MILD variant (original behavior): score + grade + insight all
       // visible above the gate. The gate only hides the detailed report
@@ -1549,8 +1663,8 @@ body.agency-mode #agency-cta-card{display:block !important}
     // description, canonical tag, etc.) gives away the fix list.
     techList.innerHTML='';
     var techBad = data.technical_signals.filter(function(t){return t.status==='bad';}).length;
-    var techWarn = data.technical_signals.filter(function(t){return t.status==='warn';}).length;
-    var techGood = data.technical_signals.filter(function(t){return t.status==='good' || t.status==='pass';}).length;
+    var techWarn = data.technical_signals.filter(function(t){return t.status==='warning';}).length;
+    var techGood = data.technical_signals.filter(function(t){return t.status==='good';}).length;
     var techTotal = data.technical_signals.length;
     var techSummary = document.createElement('div');
     techSummary.className = 'tech-summary';
@@ -1643,14 +1757,31 @@ body.agency-mode #agency-cta-card{display:block !important}
     });
     distEl.innerHTML = distHtml;
 
-    // Competitor teaser text (grade-aware)
+    // Competitor teaser text (grade-aware). Framed as distribution
+    // language about the sites we have audited, never as a hard external
+    // "AI cites sites scoring X" claim — that reads as an invented stat
+    // to the rigor-valuing buyer and is not something this scan proves.
     var compText = document.getElementById('comp-teaser-text');
     if(score >= 75){
       compText.textContent = 'You are in the top tier. But this scan checks one page at one point in time. NeverRanked monitors your full site weekly and shows you exactly which competitors are closing the gap.';
     } else if(score >= 50){
-      compText.textContent = 'Sites scoring above 78 are the ones AI engines consistently cite. You are close, but close is not enough when AI picks one winner per query. NeverRanked tracks the gap in real time.';
+      compText.textContent = 'Across the sites we have audited, the ones AI engines cite consistently cluster at the top of this scale. At '+score+', you sit just below that band. Close is not enough when AI names one winner per query. NeverRanked tracks the gap in real time.';
     } else {
-      compText.textContent = 'The sites getting cited by AI engines score 78 or higher. At '+score+', you are not in the conversation. NeverRanked measures what AI tools say about your category, hands you the prioritized punch list, and tracks the change week over week.';
+      compText.textContent = 'Across the sites we have audited, the ones AI engines cite consistently sit well above your score. At '+score+', you are not yet in the conversation. NeverRanked measures what AI tools say about your category, hands you the prioritized punch list, and tracks the change week over week.';
+    }
+    // One-line gap-to-target (#14): the honest distance between the
+    // visitor's score and the citation line we track, matching the
+    // bench bar shown above. Uses live p75 when present.
+    var compGapLine = document.getElementById('comp-gap-line');
+    if(compGapLine){
+      var benchP75 = (window.NR_BENCHMARK && window.NR_BENCHMARK.p75) ? window.NR_BENCHMARK.p75 : 78;
+      var gapToTarget = benchP75 - score;
+      if(gapToTarget > 0){
+        compGapLine.innerHTML = '<span class="comp-gap-num">'+gapToTarget+'</span> points below the score where AI engines reliably start citing.';
+        compGapLine.style.display = 'block';
+      } else {
+        compGapLine.style.display = 'none';
+      }
     }
 
     // What used to live here: a "Quick wins" block listing 5 specific
@@ -1828,6 +1959,14 @@ body.agency-mode #agency-cta-card{display:block !important}
       compBarYou.style.width = data.aeo_score+'%';
       compScoreYou.textContent = data.aeo_score;
     }
+    // Text-equivalent for the comparison (#26): the bars convey the gap by
+    // width alone, so a screen reader gets two bare numbers with no stated
+    // relationship. Give the group a spoken summary.
+    const compInner = document.querySelector('.comp-teaser-inner');
+    if(compInner){
+      compInner.setAttribute('role','group');
+      compInner.setAttribute('aria-label','Your AI-readability score '+data.aeo_score+' out of 100, versus the top quartile of sites we have audited.');
+    }
 
     // Update CTA links with domain param
     var domain = data.domain || '';
@@ -1918,7 +2057,7 @@ body.agency-mode #agency-cta-card{display:block !important}
   var GATE_COPY = {
     A: {
       title: 'things on your site AI tools can’t read',
-      body: 'Drop your email. We’ll send the full breakdown: every label AI is missing on your site, every signal that’s making you harder to find, and a plain-language explanation of why each one matters.',
+      body: 'Drop your email and we’ll send the full breakdown as one page: every signal AI is missing on your site, every label making you harder to find, why each one matters in plain language, and the read from a person, not a bot.',
       button: 'Send me the full breakdown',
       buttonInProgress: 'Sending...'
     },
@@ -1958,14 +2097,65 @@ body.agency-mode #agency-cta-card{display:block !important}
   function revealGatedDetails(){
     if(gatedDetails) gatedDetails.style.display = 'block';
     if(emailGateEl) emailGateEl.style.display = 'none';
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
     // Swap the directional band for the full grade reveal once email
     // is captured. lastReportData was set when the scan completed and
     // carries the cached HTML/insight produced by renderResults.
     if(lastReportData && lastReportData._fullGradeHtml){
       var gs = document.getElementById('grade-section');
-      if(gs) gs.innerHTML = lastReportData._fullGradeHtml;
+      if(gs){
+        gs.innerHTML = lastReportData._fullGradeHtml;
+        // Accessibility (#9): the grade letter is the headline payoff —
+        // give it an image role with a spoken label, else SR reads a bare
+        // "C". And animate the reveal (#11): fade the circle in and count
+        // the score up from 0, the one moment worth a little motion.
+        var circle = gs.querySelector('.grade-circle');
+        if(circle) circle.setAttribute('role','img');
+        if(circle && lastReportData.grade) circle.setAttribute('aria-label','Grade '+lastReportData.grade);
+        var scoreSpan = gs.querySelector('.aeo-score span');
+        var target = Number(lastReportData.aeo_score) || 0;
+        if(scoreSpan){
+          if(reduceMotion || !window.requestAnimationFrame){
+            scoreSpan.textContent = String(target);
+          } else {
+            if(circle){ circle.style.animation = 'none'; requestAnimationFrame(function(){ circle.style.animation = 'fadeUp .5s var(--ease) both'; }); }
+            var startT = null;
+            var step = function(ts){
+              if(startT === null) startT = ts;
+              var p = Math.min(1, (ts - startT) / 600);
+              var eased = 1 - Math.pow(1 - p, 3);
+              scoreSpan.textContent = String(Math.round(target * eased));
+              if(p < 1) requestAnimationFrame(step); else scoreSpan.textContent = String(target);
+            };
+            scoreSpan.textContent = '0';
+            requestAnimationFrame(step);
+          }
+        }
+      }
       var insightEl = document.getElementById('grade-insight');
       if(insightEl) insightEl.innerHTML = lastReportData._insightText || '';
+    }
+    // Animate the in-report bar fills (#12). Their widths were baked into
+    // markup while #gated-details was display:none, so the CSS width
+    // transition never fired and they painted flat. Re-run them from 0
+    // now that the container is visible (skip under reduced-motion).
+    if(!reduceMotion && window.requestAnimationFrame){
+      var fills = (gatedDetails || document).querySelectorAll('.schema-summary-fill,.grade-dist-fill,.comp-bar-fill');
+      fills.forEach(function(el){
+        var w = el.style.width;
+        if(!w || w === '0%') return;
+        el.setAttribute('data-target-w', w);  // stash before zeroing
+        el.style.transition = 'none';
+        el.style.width = '0%';
+      });
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){
+        fills.forEach(function(el){
+          var w = el.getAttribute('data-target-w');
+          if(!w) return;
+          el.style.transition = '';  // restore CSS transition, then animate to target
+          el.style.width = w;
+        });
+      }); });
     }
     // Bottom-of-page email form is redundant once they've unlocked — hide it
     var bottomCapture = document.getElementById('email-capture');
@@ -1975,10 +2165,14 @@ body.agency-mode #agency-cta-card{display:block !important}
   function updateEmailGate(data){
     if(!emailGateEl || !gatedDetails) return;
 
-    // Count hidden issues: all red flags + missing critical schemas + failing tech signals
+    // Count hidden issues: red flags + missing critical schemas + blocking
+    // tech signals. Uses status 'bad' so this gate number reconciles exactly
+    // with the report's totalGaps (the analyzer emits good|warning|bad; the
+    // old 'fail'||'warn' matched nothing, silently undercounting the number
+    // the visitor trades their email for).
     var flags = (data.red_flags || []).length;
     var missingSchemas = ((data.schema_coverage || []).filter(function(s){ return !s.present; })).length;
-    var failingTech = ((data.technical_signals || []).filter(function(t){ return t.status === 'fail' || t.status === 'warn'; })).length;
+    var failingTech = ((data.technical_signals || []).filter(function(t){ return t.status === 'bad'; })).length;
     var total = flags + missingSchemas + failingTech;
 
     if(gateCount) gateCount.textContent = String(total || '');
@@ -2147,35 +2341,95 @@ body.agency-mode #agency-cta-card{display:block !important}
       // kicks off and the UI enters the loading state.
       setTimeout(function(){ runCheckFinal(); }, 50);
     } catch (e) { /* ignore */ }
+  } else if (window.matchMedia && window.matchMedia('(min-width:700px)').matches) {
+    // Autofocus the URL field on desktop only (#17) — removes a click at
+    // the activation moment. Skipped on mobile so we don't force the
+    // keyboard open on load, and skipped when a ?url= scan is auto-running.
+    try { input.focus({ preventScroll: true }); } catch (e) { try { input.focus(); } catch (e2) {} }
   }
 
   // Rebind
-  async function runCheckFinal(){
-    const url = normalizeUrl(input.value);
-    if(!url){input.focus();return;}
+  function showInputError(msg){
+    errorMsg.textContent = msg;
+    errorMsg.classList.add('active');
+    input.focus();
+  }
 
-    let domain;
-    try{domain=new URL(url).hostname}catch{domain=url}
+  async function runCheckFinal(){
+    const raw = (input.value || '').trim();
+    // Activation-moment feedback (#6): empty and malformed input used to
+    // fail silently (refocus only) or POST garbage and surface a generic
+    // backend error. Give a visible, friendly inline message instead.
+    if(!raw){ showInputError('Enter your site URL to run the check.'); return; }
+    const url = normalizeUrl(raw);
+    let domain, parsed;
+    try{ parsed = new URL(url); domain = parsed.hostname; }
+    catch{ showInputError('That does not look like a valid URL. Try yoursite.com.'); return; }
+    if(!domain || domain.indexOf('.') === -1){
+      showInputError('That does not look like a valid URL. Try yoursite.com.'); return;
+    }
 
     btn.disabled=true;
     errorMsg.classList.remove('active');
     results.classList.remove('active');
     loading.classList.add('active');
-    loadingText.textContent='Analyzing '+domain+'...';
+
+    // Staged loader (#10): a multi-second multi-engine scan should look
+    // like work, not a frozen line. Advance through the real checks. Copy
+    // maps to what the scanner actually does (no hype, no emoji).
+    const stages = [
+      'Fetching '+domain+'…',
+      'Reading the markup AI crawlers see…',
+      'Checking schema and structured data…',
+      'Testing agent-readiness and llms.txt…',
+      'Scoring against the citation line…'
+    ];
+    let si = 0;
+    loadingText.textContent = stages[0];
+    const reduceLoad = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    const stageTimer = reduceLoad ? null : setInterval(function(){
+      si = Math.min(si + 1, stages.length - 1);
+      loadingText.textContent = stages[si];
+    }, 1400);
+
+    // Abort guard (#7): the one fetch the visitor waits on had no timeout,
+    // so a slow or blocking target site (our best prospects) could pulse
+    // forever. Cap it and resolve into the branded error UI.
+    const controller = ('AbortController' in window) ? new AbortController() : null;
+    const slowTimer = setTimeout(function(){
+      loadingText.textContent = 'Still reading the site… slow or large pages take a moment.';
+    }, 12000);
+    const abortTimer = controller ? setTimeout(function(){ controller.abort(); }, 25000) : null;
 
     try{
       const resp = await fetch('/api/check',{
         method:'POST',
         headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({url, referrer:_ref, utm:Object.keys(_utm).length?_utm:undefined})
+        body:JSON.stringify({url, referrer:_ref, utm:Object.keys(_utm).length?_utm:undefined}),
+        signal: controller ? controller.signal : undefined
       });
-      const data = await resp.json();
-      if(!resp.ok) throw new Error(data.error||'Check failed');
+      let data = {};
+      try{ data = await resp.json(); }catch{ data = {}; }
+      if(!resp.ok){ const e = new Error('http'); e.serverMsg = data && data.error; throw e; }
       renderResultsWrapped(data);
     }catch(err){
-      errorMsg.textContent=err.message||'Something went wrong. Please try again.';
+      // Error hardening (#21): only surface server-provided diagnostics or
+      // a branded fallback — never a raw 'Failed to fetch' / JSON parse
+      // string in the styled card at the moment trust matters most.
+      let msg;
+      if(err && err.name === 'AbortError'){
+        msg = 'The scan is taking longer than expected, which often means the site is slow or blocking automated requests, the same thing AI crawlers hit. Try again, or point us at the homepage.';
+      } else if(err && err.serverMsg){
+        msg = err.serverMsg;
+      } else {
+        msg = 'We could not complete the scan. The site may be slow, unreachable, or blocking automated requests. Try again, or point us at the homepage.';
+      }
+      errorMsg.textContent = msg;
       errorMsg.classList.add('active');
     }finally{
+      if(stageTimer) clearInterval(stageTimer);
+      clearTimeout(slowTimer);
+      if(abortTimer) clearTimeout(abortTimer);
       loading.classList.remove('active');
       btn.disabled=false;
     }
