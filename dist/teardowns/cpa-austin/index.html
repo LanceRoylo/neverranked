@@ -12,7 +12,7 @@
   doesn't.
 
   Cohort kept anonymized at the firm level. None are paying
-  NeverRanked customers; the non-customer anonymization rule applies.
+  NeverRanked customers. The non-customer anonymization rule applies.
 -->
 <html lang="en">
 <head>
@@ -23,7 +23,7 @@
 <meta name="description" content="37 Austin CPA firms measured across 7 AI tools, 18 hash-locked questions, 3+ usable runs. Cross-geo test of the Hawaii CPA training-data engine collapse: Claude generalizes (0% Austin, 1% Hawaii), Gemma doesn't (23% Austin, 2% Hawaii).">
 <link rel="canonical" href="https://neverranked.com/teardowns/cpa-austin/">
 <meta property="og:title" content="Teardown 07: Austin CPA firms in the AI-citation data (cross-geo)">
-<meta property="og:description" content="37-firm Austin cohort. First non-Hawaii measured category. The Claude training-data collapse generalizes across geos; the Gemma collapse does not.">
+<meta property="og:description" content="37-firm Austin cohort. First non-Hawaii measured category. The Claude training-data collapse generalizes across geos. The Gemma collapse does not.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -154,10 +154,10 @@
     </table>
     </div>
     <p>Two things to read from this table at once.</p>
-    <p><strong>The web-searching engines are roughly comparable across the two geographies.</strong> Perplexity, Gemini, Google AIO, and OpenAI all reach between 45% and 61% own-share in both Hawaii and Austin. There are small differences (Austin Perplexity is 61% vs Hawaii 46%; Hawaii OpenAI is 60% vs Austin 45%) but the cluster is the same shape. Web-searching engines find CPA firms in both geographies through similar mechanisms.</p>
+    <p><strong>The web-searching engines are roughly comparable across the two geographies.</strong> Perplexity, Gemini, Google AIO, and OpenAI all reach between 45% and 61% own-share in both Hawaii and Austin. There are small differences (Austin Perplexity is 61% vs Hawaii 46%. Hawaii OpenAI is 60% vs Austin 45%) but the cluster is the same shape. Web-searching engines find CPA firms in both geographies through similar mechanisms.</p>
     <p><strong>The training-data engines diverge dramatically.</strong> Claude cites Austin CPAs 0% of the time and Hawaii CPAs 1% of the time. The collapse holds. Gemma cites Austin CPAs 23% of the time and Hawaii CPAs 2% of the time. The collapse breaks. Same query shape, same week, same methodology. The difference is geographic, not categorical.</p>
-    <p>The Claude finding is the more important of the two, because it generalizes. The category-level claim (Claude under-cites CPA firms regardless of geo) is now supported by two distinct geographies. The original Hawaii-only observation was at low confidence (n=1); the cross-geo data promotes it to medium confidence.</p>
-    <p>The Gemma finding is the more surprising. The same model, the same questions, the same week. The only difference is the geography embedded in the queries. Gemma's training corpus appears to know Texas CPA firms substantially better than Hawaii CPA firms. This is a geo-density finding about the training corpus, not a category finding about CPAs. Hawaii's smaller business-news footprint relative to Texas is a plausible explanation; we observe the difference without claiming the cause.</p>
+    <p>The Claude finding is the more important of the two, because it generalizes. The category-level claim (Claude under-cites CPA firms regardless of geo) is now supported by two distinct geographies. The original Hawaii-only observation was at low confidence (n=1). The cross-geo data promotes it to medium confidence.</p>
+    <p>The Gemma finding is the more surprising. The same model, the same questions, the same week. The only difference is the geography embedded in the queries. Gemma's training corpus appears to know Texas CPA firms substantially better than Hawaii CPA firms. This is a geo-density finding about the training corpus, not a category finding about CPAs. Hawaii's smaller business-news footprint relative to Texas is a plausible explanation. We observe the difference without claiming the cause.</p>
 
     <div class="callout">
       <h3>What the split means for an Austin CPA firm</h3>
@@ -198,28 +198,28 @@
       </tbody>
     </table>
     </div>
-    <p>The top recurring third-party sources are dominated by national firms with Austin offices (Cherry Bekaert, CLA) and generic Austin-area reference content. There is no single dominant editorial trust layer the way HSCPA dominates the Hawaii CPA third-party tier (HSCPA appeared 130 times in Hawaii CPA data). The Texas Society of CPAs (tscpa.org) is registered as excluded from the cohort but did not surface as a top-cited source for these queries; the Austin third-party landscape is more fragmented than the Hawaii third-party landscape for the same category.</p>
+    <p>The top recurring third-party sources are dominated by national firms with Austin offices (Cherry Bekaert, CLA) and generic Austin-area reference content. There is no single dominant editorial trust layer the way HSCPA dominates the Hawaii CPA third-party tier (HSCPA appeared 130 times in Hawaii CPA data). The Texas Society of CPAs (tscpa.org) is registered as excluded from the cohort but did not surface as a top-cited source for these queries. The Austin third-party landscape is more fragmented than the Hawaii third-party landscape for the same category.</p>
 
     <h2 id="what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</h2>
     <p>What it does support:</p>
     <ul>
       <li>The 37-firm cohort is a representative slice of Austin TX CPA firms AI tools actually cite for buyer-shaped queries.</li>
       <li>The 40%/54% firm-own / third-party split is stable across the expanded cohort and 4 measurement windows.</li>
-      <li>The Claude training-data collapse on CPA firms generalizes across two distinct geographies (Hawaii 1%, Austin 0%). Two-geo confidence is medium; a third geo measurement would strengthen or break the pattern.</li>
-      <li>Gemma's CPA-firm coverage is geo-specific rather than category-specific (Hawaii 2%, Austin 23%). The original "training-data engine collapse" pattern from the Hawaii CPA teardown overstated the symmetry between Claude and Gemma; the cross-geo measurement corrected the overstatement.</li>
+      <li>The Claude training-data collapse on CPA firms generalizes across two distinct geographies (Hawaii 1%, Austin 0%). Two-geo confidence is medium. A third geo measurement would strengthen or break the pattern.</li>
+      <li>Gemma's CPA-firm coverage is geo-specific rather than category-specific (Hawaii 2%, Austin 23%). The original "training-data engine collapse" pattern from the Hawaii CPA teardown overstated the symmetry between Claude and Gemma. The cross-geo measurement corrected the overstatement.</li>
       <li>Microsoft Copilot's 0% own-share holds in Austin as it does across every category we have measured. The pattern is universal across the measurement windows.</li>
       <li>The web-searching engines are the primary closable AEO surface for Austin CPA firms (40-61% own-share band depending on engine).</li>
     </ul>
     <p>What it does not yet support:</p>
     <ul>
-      <li>That the Claude collapse holds outside the two measured geographies. A third (and fourth, etc.) measured CPA geo would strengthen the cross-geo claim. As of this teardown, the pattern is observable in Hawaii and Texas; it has not been measured elsewhere.</li>
+      <li>That the Claude collapse holds outside the two measured geographies. A third (and fourth, etc.) measured CPA geo would strengthen the cross-geo claim. As of this teardown, the pattern is observable in Hawaii and Texas. It has not been measured elsewhere.</li>
       <li>That Gemma's 23% Austin own-share is the ceiling. Cohort expansion could move it slightly up or down on additional runs.</li>
-      <li>That the geo-density hypothesis (Gemma knows larger-market business content better) is the cause of the Gemma split. We observe the split; we infer the cause. A measurement of a CPA category in a third geography of different population density would test the hypothesis directly.</li>
+      <li>That the geo-density hypothesis (Gemma knows larger-market business content better) is the cause of the Gemma split. We observe the split. We infer the cause. A measurement of a CPA category in a third geography of different population density would test the hypothesis directly.</li>
       <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
-    <p>None of the 37 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>None of the 37 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public. Individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
     <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
 
     <div class="cta-row">

@@ -9,8 +9,8 @@
   Cohort kept anonymized at the firm level. None of the 33 firms
   are paying NeverRanked customers and the non-customer
   anonymization rule applies. Categories, counts, source-type
-  distributions, and named third-party directories are public;
-  individual firm names are not.
+  distributions, and named third-party directories are public.
+  Individual firm names are not.
 -->
 <html lang="en">
 <head>
@@ -80,7 +80,7 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 04 &middot; Hawaii law firms</div>
     <h1>The top 5 own nearly two-thirds of the mentions. The opening sits outside the tier.</h1>
-    <p class="sub">33-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-24 and 2026-05-25. Pattern-readiness cleared. Individual firms anonymized; counts and distributions named.</p>
+    <p class="sub">33-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-24 and 2026-05-25. Pattern-readiness cleared. Individual firms anonymized. Counts and distributions named.</p>
 
     <div class="notice">
       <strong>The headline finding in one sentence:</strong> across 33 Hawaii law firms and 7 AI tools, the top 5 firms account for 64% of all firm-owned mentions (1,549 of 2,410). The dominant firm alone gets 538 mentions, roughly three times the second-tier firms. For any firm outside that top 5, the closable competitive ground sits in two specific places: Microsoft Copilot (which cites zero firm websites for any firm in the cohort) and the long tail of buyer-specific questions where AI defaults to legal directories instead of firm websites.
@@ -110,7 +110,7 @@
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Hawaii law-firm buyer would actually ask AI, locked at hash <code>b7016e68...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs spanning 2026-05-24 and 2026-05-25. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
-    <p>The 33-firm cohort was built in two passes. 5 anchor firms registered before run 1 (the obvious incumbents). 25 additional firms surfaced through the measurement and registered after run 1 cohort-coverage scan. National BigLaw firms with Hawaii presence were excluded from the cohort to keep the comparison Hawaii-specific. Legal directories (Chambers, BestLawyers, Justia, BestLawFirms, SuperLawyers, BCG Search) were deliberately not registered as competitors; they appear in the data as third-party content sources.</p>
+    <p>The 33-firm cohort was built in two passes. 5 anchor firms registered before run 1 (the obvious incumbents). 25 additional firms surfaced through the measurement and registered after run 1 cohort-coverage scan. National BigLaw firms with Hawaii presence were excluded from the cohort to keep the comparison Hawaii-specific. Legal directories (Chambers, BestLawyers, Justia, BestLawFirms, SuperLawyers, BCG Search) were deliberately not registered as competitors. They appear in the data as third-party content sources.</p>
     <p>Full documented methodology at <a href="/methodology/">/methodology/</a>, with question sets locked by hash and every run dated on the <a href="/claims/">/claims/</a> ledger.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
@@ -206,13 +206,13 @@
     </ul>
     <p>What it does not yet support:</p>
     <ul>
-      <li>That the top-5 dominance is permanent. AI tools refresh their training data and search indices on schedules outside our control. The cohort below the top 5 may shift positions month to month; we measure that.</li>
+      <li>That the top-5 dominance is permanent. AI tools refresh their training data and search indices on schedules outside our control. The cohort below the top 5 may shift positions month to month. We measure that.</li>
       <li>That changing a firm's content, directory presence, or third-party listings would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
       <li>That the Microsoft Copilot first-mover opportunity is actually closable for any specific firm. The Bing organic ranking competition is its own beast and outside what this measurement captures.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
-    <p>None of the 33 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public; individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
+    <p>None of the 33 firms in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, source-type breakdowns, and per-AI-tool numbers are public. Individual firm names are not. The pattern is what is informative on a public surface. The named cohort lives only inside paid engagement deliverables, where the named firm is the customer authorizing the use.</p>
     <p>A firm that becomes a NeverRanked customer gets a 1:1 deliverable that names every firm in the cohort, names the queries the customer is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
 
     <div class="cta-row">
