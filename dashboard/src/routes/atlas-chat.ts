@@ -285,13 +285,14 @@ export async function handleAtlasMessage(
     });
   } catch (e) {
     console.log(`[atlas] message handler error for ${slug}: ${e}`);
+    const reply =
+      "Something went wrong on my end fetching your data. Try again in a moment. " +
+      "If it keeps happening, reply 'flag it' and Lance will take a look.";
+    // Persist the error reply so the question (saved before the model call) is
+    // not left orphaned without an answer on the next page load.
+    try { await saveMessage(env, slug, "assistant", reply, { graderVerdict: "error" }); } catch { /* best-effort */ }
     return new Response(
-      JSON.stringify({
-        error: "internal",
-        reply:
-          "Something went wrong on my end fetching your data. Try again in a moment. " +
-          "If it keeps happening, reply 'flag it' and Lance will take a look.",
-      }),
+      JSON.stringify({ error: "internal", reply }),
       { status: 500, headers: { "content-type": "application/json" } }
     );
   }
@@ -327,7 +328,7 @@ export async function handleAtlasChat(
 
 // ── HTML render ──────────────────────────────────────────────────────
 
-function renderAtlasChat(
+export function renderAtlasChat(
   slug: string,
   customerName: string,
   categoryLabel: string | null,
@@ -354,7 +355,8 @@ function renderAtlasChat(
     --gold-dim: #4a3d18;
     --text: #e8e8ea;
     --soft: #b9b9bd;
-    --dim: #6a6a70;
+    --dim: #828289;
+    --hair: #5a5a60;
     --mono: ui-monospace, "SF Mono", Menlo, monospace;
     --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   }
@@ -366,6 +368,7 @@ function renderAtlasChat(
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh;
   }
   header {
     border-bottom: 1px solid #1c1c1e;
@@ -393,8 +396,9 @@ function renderAtlasChat(
     margin-bottom: 6px;
   }
   .msg.user .role { color: var(--soft); }
+  .msg.atlas { padding-left: 16px; border-left: 1px solid var(--gold-dim); }
   .msg.atlas .role { color: var(--gold); }
-  .msg .body { white-space: pre-wrap; color: var(--text); }
+  .msg .body { white-space: pre-wrap; color: var(--text); font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; }
   .msg.user .body { color: var(--soft); }
   .empty-hint {
     max-width: 720px; margin: 0 auto; color: var(--dim);
@@ -404,6 +408,14 @@ function renderAtlasChat(
     font-family: var(--mono); font-size: 13px; color: var(--gold);
     background: var(--panel); padding: 2px 6px; border-radius: 4px;
   }
+  .suggest {
+    display: block; margin: 8px 0; width: 100%; text-align: left;
+    border: 1px solid var(--gold-dim); background: var(--panel); color: var(--soft);
+    font-family: var(--mono); font-size: 13px; padding: 10px 14px; border-radius: 8px;
+    cursor: pointer; transition: border-color 140ms var(--ease-out), background 140ms var(--ease-out);
+  }
+  .suggest:hover, .suggest:focus-visible { border-color: var(--gold); background: var(--panel-light); outline: none; }
+  .suggest:focus-visible { box-shadow: 0 0 0 3px rgba(212,197,150,0.12); }
   footer {
     border-top: 1px solid #1c1c1e;
     padding: 16px 24px 22px;
@@ -423,7 +435,7 @@ function renderAtlasChat(
     line-height: 1.5;
     max-height: 160px;
   }
-  textarea:focus { outline: none; border-color: var(--gold-dim); }
+  textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 3px rgba(212,197,150,0.12); }
   button {
     background: var(--gold);
     color: #1a1500;
@@ -433,12 +445,20 @@ function renderAtlasChat(
     font-size: 13px;
     letter-spacing: 0.04em;
     padding: 0 20px;
+    min-height: 44px;
     cursor: pointer;
-    transition: transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
+    transition: background 160ms var(--ease-out), transform 160ms var(--ease-out), opacity 160ms var(--ease-out);
   }
-  button:active { transform: scale(0.97); }
+  button:hover:not(:disabled) { background: var(--gold-bright); }
+  button:active:not(:disabled) { transform: scale(0.97); }
+  button:focus-visible { outline: 1px solid var(--gold-bright); outline-offset: 2px; }
   button:disabled { opacity: 0.4; cursor: default; }
-  .thinking { color: var(--dim); font-family: var(--mono); font-size: 13px; }
+  .thinking { color: var(--dim); font-family: var(--mono); font-size: 13px; animation: atlas-breathe 1.4s var(--ease-out) infinite; }
+  @keyframes atlas-breathe { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) {
+    button { transition: none; } button:active { transform: none; }
+    .thinking { animation: none; opacity: 0.7; }
+  }
   .disclaimer {
     max-width: 720px; margin: 10px auto 0; color: var(--dim);
     font-size: 11px; font-family: var(--mono); text-align: center;
@@ -451,19 +471,19 @@ function renderAtlasChat(
     <span class="who">${esc(customerName)}${categoryLabel ? " &middot; " + esc(categoryLabel) : ""}</span>
   </header>
   <div class="scroll" id="scroll">
-    <div class="thread" id="thread"></div>
+    <div class="thread" id="thread" role="log" aria-live="polite" aria-atomic="false"></div>
     <div class="empty-hint" id="hint" style="display:none">
-      Ask about your measurement data. For example:<br><br>
-      &ldquo;How many mentions did I have last week?&rdquo;<br>
-      &ldquo;Which AI tool cites me most?&rdquo;<br>
-      &ldquo;Who are the top firms in my cohort?&rdquo;<br>
-      &ldquo;Which questions don't mention me at all?&rdquo;<br><br>
-      Atlas answers what the data shows. It won't tell you what to do. Prioritization lives in your monthly memo.
+      <div style="margin-bottom:14px">Ask about your measurement data. For example:</div>
+      <button class="suggest" data-q="How many mentions did I have last week?">How many mentions did I have last week?</button>
+      <button class="suggest" data-q="Which AI tool cites me most?">Which AI tool cites me most?</button>
+      <button class="suggest" data-q="Who are the top firms in my cohort?">Who are the top firms in my cohort?</button>
+      <button class="suggest" data-q="Which questions do not mention me at all?">Which questions do not mention me at all?</button>
+      <div style="margin-top:16px">Atlas answers what the data shows. It won&rsquo;t tell you what to do. Prioritization lives in your monthly memo.</div>
     </div>
   </div>
   <footer>
     <div class="inputwrap">
-      <textarea id="input" rows="1" placeholder="Ask about your data..." autofocus></textarea>
+      <textarea id="input" rows="1" placeholder="Ask about your data..." aria-label="Ask Atlas about your measurement data" autofocus></textarea>
       <button id="send">Send</button>
     </div>
     <div class="disclaimer">Atlas reports your measurement data. It does not give recommendations.</div>
@@ -478,59 +498,86 @@ function renderAtlasChat(
   let history = ${historyJson};
   let busy = false;
 
-  function render() {
-    thread.innerHTML = '';
-    if (history.length === 0) { hint.style.display = 'block'; return; }
-    hint.style.display = 'none';
-    for (const m of history) {
-      const wrap = document.createElement('div');
-      wrap.className = 'msg ' + (m.role === 'user' ? 'user' : 'atlas');
-      const role = document.createElement('div');
-      role.className = 'role';
-      role.textContent = m.role === 'user' ? 'You' : 'Atlas';
-      const body = document.createElement('div');
-      body.className = 'body';
-      body.textContent = m.content;
-      wrap.appendChild(role); wrap.appendChild(body);
-      thread.appendChild(wrap);
-    }
+  function msgEl(m) {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + (m.role === 'user' ? 'user' : 'atlas');
+    const role = document.createElement('div');
+    role.className = 'role';
+    role.textContent = m.role === 'user' ? 'You' : 'Atlas';
+    const body = document.createElement('div');
+    body.className = 'body';
+    body.textContent = m.content;
+    wrap.appendChild(role); wrap.appendChild(body);
+    return wrap;
   }
+  // First paint only: render the full server history. New turns are appended
+  // one at a time so the live region announces only the new message, not the
+  // whole thread, and prior messages are never torn down and rebuilt.
+  function renderAll() {
+    thread.innerHTML = '';
+    hint.style.display = history.length === 0 ? 'block' : 'none';
+    for (const m of history) thread.appendChild(msgEl(m));
+  }
+  function appendMsg(m) { hint.style.display = 'none'; thread.appendChild(msgEl(m)); }
 
   function scrollToEnd() { scroll.scrollTop = scroll.scrollHeight; }
+  function setSendState() { send.disabled = busy || input.value.trim() === ''; }
 
+  let slowTimer = null;
   function addThinking() {
     const wrap = document.createElement('div');
     wrap.className = 'msg atlas'; wrap.id = 'thinking';
-    wrap.innerHTML = '<div class="role">Atlas</div><div class="thinking">reading your data...</div>';
+    wrap.innerHTML = '<div class="role">Atlas</div><div class="thinking" role="status">reading your data...</div>';
     thread.appendChild(wrap); scrollToEnd();
+    slowTimer = setTimeout(function () {
+      const t = document.querySelector('#thinking .thinking');
+      if (t) t.textContent = 'still reading...';
+    }, 6000);
   }
   function removeThinking() {
+    if (slowTimer) { clearTimeout(slowTimer); slowTimer = null; }
     const t = document.getElementById('thinking'); if (t) t.remove();
   }
 
   async function submit() {
     const text = input.value.trim();
     if (!text || busy) return;
-    busy = true; send.disabled = true;
-    history.push({ role: 'user', content: text });
+    busy = true;
     input.value = ''; input.style.height = 'auto';
-    render(); scrollToEnd(); addThinking();
+    const userTurn = { role: 'user', content: text };
+    history.push(userTurn); appendMsg(userTurn);
+    send.textContent = 'Sending'; setSendState();
+    scrollToEnd(); addThinking(); scroll.setAttribute('aria-busy', 'true');
+    const ctrl = new AbortController();
+    const abortTimer = setTimeout(function () { ctrl.abort(); }, 45000);
     try {
       const resp = await fetch('/c/' + SLUG + '/atlas/message', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text }),
+        signal: ctrl.signal,
       });
-      const data = await resp.json();
+      const data = await resp.json().catch(function () { return {}; });
       removeThinking();
-      history.push({ role: 'assistant', content: data.reply || '(no response)' });
-      render(); scrollToEnd();
+      let reply = data.reply;
+      if (!resp.ok && !reply) {
+        reply = data.error === 'too_long'
+          ? 'That question is longer than I can take in one message. Trim it and send again.'
+          : "I could not reach your data just now. Try again in a moment, or reply 'flag it' and Lance will look.";
+      }
+      const atlasTurn = { role: 'assistant', content: reply || "I could not reach your data just now. Try again in a moment." };
+      history.push(atlasTurn); appendMsg(atlasTurn); scrollToEnd();
     } catch (e) {
       removeThinking();
-      history.push({ role: 'assistant', content: 'Connection error. Try again in a moment.' });
-      render(); scrollToEnd();
+      const msg = (e && e.name === 'AbortError')
+        ? "That took longer than expected. Try again, or reply 'flag it' and Lance will look."
+        : "I could not reach your data just now. Try again in a moment, or reply 'flag it' and Lance will look.";
+      const atlasTurn = { role: 'assistant', content: msg };
+      history.push(atlasTurn); appendMsg(atlasTurn); scrollToEnd();
     } finally {
-      busy = false; send.disabled = false; input.focus();
+      clearTimeout(abortTimer);
+      scroll.removeAttribute('aria-busy');
+      busy = false; send.textContent = 'Send'; setSendState(); input.focus();
     }
   }
 
@@ -541,9 +588,13 @@ function renderAtlasChat(
   input.addEventListener('input', () => {
     input.style.height = 'auto';
     input.style.height = Math.min(160, input.scrollHeight) + 'px';
+    setSendState();
+  });
+  document.querySelectorAll('.suggest').forEach(function (b) {
+    b.addEventListener('click', function () { input.value = b.getAttribute('data-q'); setSendState(); submit(); });
   });
 
-  render(); scrollToEnd();
+  renderAll(); setSendState(); scrollToEnd();
 </script>
 </body>
 </html>`;
