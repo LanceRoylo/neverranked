@@ -267,11 +267,38 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   const gaps: ObservableGap[] = [];
   const copilot = eb["Microsoft Copilot"];
   const chatgpt = eb["ChatGPT search"];
-  if (copilot && copilot.share_pct === 0) gaps.push({ text: "Microsoft Copilot does not cite your site on any question (0%). It draws on the Bing index, which also limits ChatGPT search." });
-  if (chatgpt && chatgpt.share_pct > 0 && chatgpt.share_pct <= 8) gaps.push({ text: `ChatGPT search cites you on only ${chatgpt.share_pct}% of citations, your lowest web-search engine. Same Bing-index root as the Copilot gap.` });
-  // Generic fallback so section 3 never renders empty. No customer-specific
-  // copy is hardcoded here: the named, per-firm gaps live in the monthly readout.
-  if (gaps.length === 0) gaps.push({ text: "No empty-engine gaps in this baseline. Your first monthly readout names the per-question openings and which competitors hold them." });
+  if (copilot && copilot.share_pct === 0) gaps.push({ text: "Microsoft Copilot cites you on no question (0%). It builds from the Bing index, not your live pages, so verifying your site in Bing Webmaster Tools is the lever that opens it." });
+  if (chatgpt && chatgpt.share_pct > 0 && chatgpt.share_pct <= 8) gaps.push({ text: `ChatGPT search cites you on only ${chatgpt.share_pct}% of citations, your weakest web-search engine. It shares the Bing-index root with the Copilot gap, so the same fix moves both.` });
+  // Fallback when no engine is at zero: say something true and useful, not a
+  // jargon all-clear. The named per-question openings live in the readout.
+  if (gaps.length === 0) {
+    const citedCount = perTool.filter((t) => t.count > 0).length;
+    const strongest = perTool[0];
+    gaps.push({ text: `You are cited on ${citedCount} of 7 engines${strongest ? `, strongest on ${strongest.shortName}` : ""}. No engine sits at zero, so your opening here is share, not presence, and your monthly readout ranks which questions to push first.` });
+  }
+
+  // Derived "so-what" facts for the at-a-glance narrative. These assemble one
+  // true analyst sentence the cockpit shows in place of a templated status line.
+  const yourMentions = Number(snap.client_citations) || 0;
+  const totalQuestions = Number(snap.total_queries) || 0;
+  const myRank = cohortTop10.findIndex((r) => r.isYou) + 1;
+  const cohortN = competitors.length + 1;
+  const leaderShare = cohortTop10[0]?.mentions ?? ownShare;
+  const iAmLeader = cohortTop10[0]?.isYou ?? false;
+  const zeroNames = perTool.filter((t) => t.count === 0).map((t) => t.shortName);
+  const andList = (xs: string[]): string =>
+    xs.length <= 1 ? (xs[0] ?? "") : xs.length === 2 ? `${xs[0]} and ${xs[1]}` : `${xs.slice(0, -1).join(", ")}, and ${xs[xs.length - 1]}`;
+  const baselineStartLine =
+    `Your starting line: cited on ${yourMentions} of ${totalQuestions} questions` +
+    (cohortN > 1
+      ? `, ranked ${myRank} of ${cohortN} venues at ${ownShare}% citation share` +
+        (iAmLeader ? ` (you hold the top share)` : ` (the cohort leader holds ${leaderShare}%)`)
+      : ` at ${ownShare}% citation share`) +
+    `. ` +
+    (zeroNames.length
+      ? `${zeroNames.length} of 7 engines show zero so far${zeroNames.length <= 4 ? ` (${andList(zeroNames)})` : ""}, which is where next month's work points. `
+      : `You appear on all 7 engines. `) +
+    `From next month, this section shows what moved against this baseline.`;
 
   return {
     slug,
@@ -279,16 +306,16 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     category: cust.category_label || cust.category,
     lastMeasuredAgo: measuredAgo,
     nextMemoDate: nextMemoDate(),
-    yourMentions: Number(snap.client_citations) || 0,
-    totalQuestions: Number(snap.total_queries) || 0,
+    yourMentions,
+    totalQuestions,
     cohortAvgMentions: cohortAvg,
-    cohortRank: cohortTop10.findIndex((r) => r.isYou) + 1,
-    cohortSize: competitors.length + 1,
+    cohortRank: myRank,
+    cohortSize: cohortN,
     mentionsDelta7d: 0,
     rankDelta7d: 0,
     perTool,
     changedEvents: [
-      { kind: "new", whenLabel: "this week", text: "First full 7-tool baseline measurement is in. From next month, this section shows what moved against it." },
+      { kind: "new", whenLabel: "baseline", text: baselineStartLine },
     ],
     observableGaps: gaps,
     cohortTop10,
@@ -400,16 +427,20 @@ export function renderCustomerView(d: CustomerViewData): string {
   const labelX = onePoint ? trendW / 2 : trendW - 30;
   const labelAnchor = onePoint ? "middle" : "end";
   const avgLabelY = Math.abs(lyY - caY) < 14 ? caY + 16 : caY - 12;
+  // Metric-aware value formatter: the D1 path plots citation SHARE (a percent),
+  // the demo fixture plots question-mention counts ("of N"). Label each in its
+  // own unit so a 9% share is never rendered as "9 of 18".
+  const fmtMetric = (v: number): string => d.metricUnit === "%" ? `${v}% share` : `${v} of ${d.totalQuestions}`;
   const trendLabels = `
-          <text x="${labelX}" y="${lyY - 12}" fill="#d4c596" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">you: ${lastYour.yourMentions} of ${d.totalQuestions}</text>
-          <text x="${labelX}" y="${avgLabelY}" fill="#828289" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">cohort avg: ${lastYour.cohortAvg} of ${d.totalQuestions}</text>`;
+          <text x="${labelX}" y="${lyY - 12}" fill="#d4c596" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">you: ${fmtMetric(lastYour.yourMentions)}</text>
+          <text x="${labelX}" y="${avgLabelY}" fill="#828289" font-family="ui-monospace, monospace" font-size="11" text-anchor="${labelAnchor}">cohort avg: ${fmtMetric(lastYour.cohortAvg)}</text>`;
   const trendAxis = onePoint
     ? `<text x="${trendW / 2}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10" text-anchor="middle">${esc(d.trend[0].weekIso)}</text>`
     : `<text x="${padX}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10">${esc(d.trend[0].weekIso)}</text>
           <text x="${trendW - padX}" y="${trendH - 5}" fill="#828289" font-family="ui-monospace, monospace" font-size="10" text-anchor="end">${esc(d.trend[d.trend.length - 1].weekIso)}</text>`;
   const trendDesc = onePoint
-    ? `Baseline measured: ${lastYour.yourMentions} of ${d.totalQuestions}, versus a cohort average of ${lastYour.cohortAvg}. The trend line builds from your next monthly readout.`
-    : `Your mentions over the window versus the cohort average. Latest: you ${lastYour.yourMentions} of ${d.totalQuestions}, cohort average ${lastYour.cohortAvg}.`;
+    ? `Baseline measured: ${fmtMetric(lastYour.yourMentions)}, versus a cohort average of ${fmtMetric(lastYour.cohortAvg)}. The trend line builds from your next monthly readout.`
+    : `Your position over the window versus the cohort average. Latest: you ${fmtMetric(lastYour.yourMentions)}, cohort average ${fmtMetric(lastYour.cohortAvg)}.`;
 
   return `<!doctype html>
 <html lang="en">
@@ -676,7 +707,7 @@ export function renderCustomerView(d: CustomerViewData): string {
         <div class="position-card">
           <div class="label">Questions mentioning you</div>
           <div class="value">${d.yourMentions} <span class="denom">of ${d.totalQuestions}</span></div>
-          <div class="delta ${mentionsDelta.className}">${esc(mentionsDelta.text)} &middot; cohort average: ${d.cohortAvgMentions} of ${d.totalQuestions}</div>
+          <div class="delta ${mentionsDelta.className}">${esc(mentionsDelta.text)}</div>
         </div>
         <div class="position-card">
           <div class="label">Cohort rank</div>
@@ -701,7 +732,7 @@ export function renderCustomerView(d: CustomerViewData): string {
       <h2 class="section-label"><span class="n">02</span>${esc(d.changedLabel ?? "What changed in the last 7 days")}</h2>
       <div class="changed-list">
         ${d.changedEvents.length === 0 ? `
-          <div class="changed-row"><div class="changed-text changed-empty">${d.isBaseline ? "Your baseline is set. From next month, this is where movement against it appears." : "No significant changes in the last 7 days. The data has been stable."}</div></div>
+          <div class="changed-row"><div class="changed-text changed-empty">${d.isBaseline ? "Your baseline is set. From next month, this is where movement against it appears." : `Nothing moved in the last 7 days. At your current rank that is the status quo holding, not progress, and your ${esc(d.nextMemoDate)} memo is where we turn these signals into moves.`}</div></div>
         ` : d.changedEvents.map((e) => `
           <div class="changed-row">
             <div class="changed-icon ${e.kind}">${e.kind === 'new' ? 'New source' : e.kind === 'gain' ? 'Gain' : e.kind === 'drop' ? 'Drop' : 'Shift'}</div>
