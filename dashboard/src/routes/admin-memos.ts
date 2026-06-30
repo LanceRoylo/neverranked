@@ -137,6 +137,28 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
   const body = String(form.get("body_markdown") || "");
 
   if (action === "deliver") {
+    // Fail-closed gate: re-vet the (possibly hand-edited) body against the
+    // same checks the generator runs. A flagged number or banned phrasing
+    // blocks delivery unless Lance explicitly overrides after seeing the
+    // flags. Without this, a fabricated figure could be one-click delivered
+    // into the customer dashboard and Atlas.
+    const override = String(form.get("override") || "") === "1";
+    if (!override) {
+      const memo = await env.DB.prepare(
+        `SELECT client_slug FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string }>();
+      if (memo) {
+        const { vetMemoBody } = await import("../lib/memo-generator");
+        const vet = await vetMemoBody(env, memo.client_slug, body, new Date());
+        if (vet.unverifiedNumbers.length || vet.toneViolations.length) {
+          // Persist the edits as a draft (don't lose them), then block.
+          await env.DB.prepare(
+            `UPDATE monthly_memos SET title=?, body_markdown=?, updated_at=unixepoch() WHERE id=?`
+          ).bind(title, body, id).run();
+          return renderDeliveryBlocked(id, title, body, vet, user);
+        }
+      }
+    }
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, delivered_at=unixepoch(), updated_at=unixepoch() WHERE id=?`
     ).bind(title, body, id).run();
@@ -150,6 +172,37 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     ).bind(title, body, id).run();
   }
   return redirect(`/admin/memos/${id}`);
+}
+
+// Rendered when a deliver is blocked by the fail-closed memo gate. Shows the
+// flags plus an explicit override path (which re-submits the saved body).
+function renderDeliveryBlocked(
+  id: number,
+  title: string,
+  body: string,
+  vet: { unverifiedNumbers: string[]; toneViolations: string[] },
+  user: User,
+): Response {
+  const items: string[] = [];
+  if (vet.unverifiedNumbers.length) items.push(`<li><strong>Unverified numbers</strong> (not found in the measured data): <span style="color:#e8c767">${esc(vet.unverifiedNumbers.join(", "))}</span></li>`);
+  if (vet.toneViolations.length) items.push(`<li><strong>Tone / phrasing blocks</strong>: <span style="color:#e8a0a0">${esc(vet.toneViolations.join(", "))}</span></li>`);
+  const inner = `
+    <p style="margin-bottom:4px"><a href="/admin/memos/${id}" style="color:var(--dim)">&larr; Back to the memo</a></p>
+    <h1 style="font-weight:400;color:#e8a0a0">Delivery blocked</h1>
+    <p style="color:var(--dim);max-width:62ch">This memo was not delivered. The body tripped the same gates the generator runs, so it is held until you fix the flags or explicitly override. Your edits are saved as a draft.</p>
+    <ul style="line-height:1.9">${items.join("")}</ul>
+    <div style="margin-top:24px;display:flex;gap:12px;align-items:center">
+      <a href="/admin/memos/${id}" style="background:var(--gold);color:#1a1500;border-radius:6px;padding:10px 18px;text-decoration:none;font-family:ui-monospace,monospace">Go back and fix</a>
+      <form method="POST" action="/admin/memos/${id}" style="margin:0" onsubmit="return confirm('Deliver despite the flags? It becomes visible to the customer and Atlas immediately.')">
+        <input type="hidden" name="action" value="deliver">
+        <input type="hidden" name="override" value="1">
+        <input type="hidden" name="title" value="${esc(title)}">
+        <input type="hidden" name="body_markdown" value="${esc(body)}">
+        <button type="submit" style="background:#5a1a1a;color:#e8c0c0;border:1px solid #7a2a2a;border-radius:6px;padding:10px 18px;cursor:pointer;font-family:ui-monospace,monospace">Deliver anyway</button>
+      </form>
+    </div>
+  `;
+  return html(layout(`Delivery blocked · memo ${id}`, inner, user));
 }
 
 // ── Generate on demand ───────────────────────────────────────────────

@@ -169,6 +169,24 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
       return { ok: false, error: "no measurement runs in the current window" };
     }
 
+    // Resolve the month this draft is FOR: the earliest month at or after
+    // the current month that does not already have a DELIVERED memo. This
+    // makes the generator idempotent against delivered memos. If the
+    // current month is already delivered, it rolls forward (e.g. May is
+    // delivered, so it drafts June, a delta memo against May).
+    // NOTE: this block MUST stay above the first use of monthKey below (it
+    // feeds deliveryMonthLabel). Moving it back down reintroduces a
+    // temporal-dead-zone ReferenceError that silently fails every memo.
+    const curKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
+    const curDelivered = await env.DB.prepare(
+      `SELECT 1 FROM monthly_memos WHERE client_slug=? AND month_key=? AND delivered_at IS NOT NULL`
+    ).bind(slug, curKey).first();
+    let monthKey = curKey;
+    if (curDelivered) {
+      const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
+      monthKey = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
+    }
+
     const [yr0, mo0] = monthKey.split("-").map(Number);
     const deliveryMonthLabel = new Date(Date.UTC(yr0, mo0 - 1, 1)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
@@ -180,21 +198,6 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
       title_instruction: `Title the memo and its opening H2 by the DELIVERY month: "${deliveryMonthLabel}". Do not date it by the month the data falls in. This memo ships in ${deliveryMonthLabel} on the monthly cadence.`,
       data: inputs,
     }, null, 2);
-
-    // Resolve the month this draft is FOR: the earliest month at or after
-    // the current month that does not already have a DELIVERED memo. This
-    // makes the generator idempotent against delivered memos. If the
-    // current month is already delivered, it rolls forward (e.g. May is
-    // delivered, so it drafts June, a delta memo against May).
-    const curKey = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
-    const curDelivered = await env.DB.prepare(
-      `SELECT 1 FROM monthly_memos WHERE client_slug=? AND month_key=? AND delivered_at IS NOT NULL`
-    ).bind(slug, curKey).first();
-    let monthKey = curKey;
-    if (curDelivered) {
-      const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1));
-      monthKey = `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}`;
-    }
 
     const raw = await callClaude(env, payload);
     const parsed = parseDraft(raw);
@@ -247,6 +250,24 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
   } catch (e) {
     return { ok: false, error: String(e).slice(0, 300) };
   }
+}
+
+// Re-vet a (possibly hand-edited) memo body against the SAME gates the
+// generator runs: unverified-number detection and the human-tone block list.
+// The deliver action calls this so a flagged number or banned phrasing can
+// never be silently shipped to the customer + Atlas; delivery requires either
+// a clean body or an explicit override.
+export async function vetMemoBody(
+  env: Env,
+  slug: string,
+  body: string,
+  now: Date,
+): Promise<{ unverifiedNumbers: string[]; toneViolations: string[] }> {
+  const inputs = await gatherMemoInputs(env, slug, now);
+  const tone = checkHumanTone(body, "customer-email");
+  const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
+  const unverifiedNumbers = findUnverifiedNumbers(body, allowedNumberSet(inputs));
+  return { unverifiedNumbers, toneViolations };
 }
 
 // Generates drafts for every active/pilot customer. Returns a per-customer

@@ -218,9 +218,9 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   if (!cust) return null;
 
   const snap = await env.DB.prepare(
-    `SELECT week_start, total_queries, client_citations, engines_breakdown, top_competitors
+    `SELECT week_start, created_at, total_queries, client_citations, engines_breakdown, top_competitors
        FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
-  ).bind(slug).first<{ week_start: number; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
+  ).bind(slug).first<{ week_start: number; created_at: number | null; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
   if (!snap) return null; // no measurement yet: fall through (404 or fixture)
 
   // Refuse a legacy-shape snapshot. The cockpit can only read the readout
@@ -235,11 +235,13 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
 
   let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
   let tc: { htc_venue_share_pct?: number; htc_engines_count?: number; competitors?: Array<{ domain: string; label: string; venue_share_pct: number; engines_count?: number }> } = {};
-  try { eb = JSON.parse(snap.engines_breakdown || "{}"); } catch { /* keep empty */ }
-  try { tc = JSON.parse(snap.top_competitors || "{}"); } catch { /* keep empty */ }
+  // `|| {}` after the parse coalesces a literal "null" column (JSON.parse("null")
+  // returns null) so the Object.entries / .competitors derefs below cannot throw.
+  try { eb = JSON.parse(snap.engines_breakdown || "{}") || {}; } catch { /* keep empty */ }
+  try { tc = JSON.parse(snap.top_competitors || "{}") || {}; } catch { /* keep empty */ }
 
   const perTool: ToolCount[] = Object.entries(eb)
-    .map(([tool, v]) => ({ tool, shortName: TOOL_SHORT[tool] || tool, count: v.share_pct }))
+    .map(([tool, v]) => ({ tool, shortName: TOOL_SHORT[tool] || tool, count: Number(v?.share_pct) || 0 }))
     .sort((a, b) => b.count - a.count);
 
   const competitors = tc.competitors || [];
@@ -252,12 +254,14 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     ? Math.round(competitors.reduce((s, c) => s + c.venue_share_pct, 0) / competitors.length)
     : 0;
 
-  // Last measured = newest citation_runs.run_at for this slug.
-  const measured = await env.DB.prepare(
-    `SELECT MAX(cr.run_at) AS t FROM citation_runs cr
-       JOIN citation_keywords ck ON ck.id = cr.keyword_id WHERE ck.client_slug = ?`
-  ).bind(slug).first<{ t: number | null }>();
-  const measuredAgo = measured?.t ? agoLabel(measured.t) : "recently";
+  // "Last measured" must reflect the HEADLINE's age, not the daily capture.
+  // The headline reads from this frozen snapshot (refreshed on each monthly
+  // re-bridge), so tie the freshness label to the snapshot's own date
+  // (created_at = bridge time, week_start as fallback). Using
+  // MAX(citation_runs.run_at) here would advance daily and falsely imply the
+  // headline numbers moved today.
+  const snapTs = snap.created_at || snap.week_start;
+  const measuredAgo = snapTs ? agoLabel(snapTs) : "recently";
 
   // Observable gaps derived from the snapshot (honest, data-grounded).
   const gaps: ObservableGap[] = [];
@@ -275,8 +279,8 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     category: cust.category_label || cust.category,
     lastMeasuredAgo: measuredAgo,
     nextMemoDate: nextMemoDate(),
-    yourMentions: snap.client_citations,
-    totalQuestions: snap.total_queries,
+    yourMentions: Number(snap.client_citations) || 0,
+    totalQuestions: Number(snap.total_queries) || 0,
     cohortAvgMentions: cohortAvg,
     cohortRank: cohortTop10.findIndex((r) => r.isYou) + 1,
     cohortSize: competitors.length + 1,
@@ -658,7 +662,7 @@ export function renderCustomerView(d: CustomerViewData): string {
       </div>
       <div class="top-right">
         <div class="meta">
-          Last measured <strong>${esc(d.lastMeasuredAgo)}</strong><br>
+          ${d.isBaseline ? "Baseline measured" : "Last measured"} <strong>${esc(d.lastMeasuredAgo)}</strong><br>
           Next monthly memo <strong>${esc(d.nextMemoDate)}</strong>
         </div>
         <a class="top-msg" href="mailto:Lance@hi.neverranked.com?subject=${encodeURIComponent(d.customerName + " - dashboard question")}">Message Lance &rarr;</a>
