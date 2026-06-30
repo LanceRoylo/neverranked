@@ -159,8 +159,7 @@
 
   .bsq-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
   .bsq-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
-  .bsq-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:bsq-pulse 2s infinite; }
-  @keyframes bsq-pulse{ 0%{box-shadow:0 0 0 0 rgba(212,197,150,.5)} 70%{box-shadow:0 0 0 7px rgba(212,197,150,0)} 100%{box-shadow:0 0 0 0 rgba(212,197,150,0)} }
+  .bsq-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:nr-pulse 2s infinite; }
   .bsq-status{ font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--gold); white-space:nowrap; }
 
   .bsq-query{ display:flex; align-items:baseline; gap:10px; padding:11px 13px; border:1px solid #23211c; border-radius:8px; background:#0b0b0c; margin-bottom:14px; }
@@ -275,8 +274,8 @@
   .engine-group-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 10px; }
   .engine-group-label b { color: var(--gold); font-weight: 400; }
   .engine-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { font-family: var(--mono); font-size: 12px; color: var(--soft); background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 8px 12px; }
-  .chip.grade { border-color: rgba(212,197,150,0.32); color: var(--text); }
+  .chip { font-family: var(--mono); font-size: 12px; color: var(--soft); background: transparent; border: 1px solid #23211c; border-radius: 999px; padding: 7px 14px; }
+  .chip.grade { border-color: rgba(212,197,150,0.5); background: rgba(212,197,150,0.06); color: var(--text); }
 
   /* Rigor points */
   .points { margin: 20px 0 0; }
@@ -290,9 +289,9 @@
   .readout-label { font-family: var(--mono); font-size: 11px; letter-spacing: 0.13em; text-transform: uppercase; color: var(--dim); margin-bottom: 16px; }
   .readout-row { display: grid; grid-template-columns: 190px 1fr; gap: 16px; align-items: center; margin-bottom: 12px; }
   .readout-name { font-family: var(--mono); font-size: 12px; color: var(--soft); }
-  .readout-track { height: 14px; background: #1c1c1e; border-radius: 3px; overflow: hidden; }
-  .readout-fill { height: 100%; background: var(--gold); border-radius: 3px; }
-  .readout-fill.faint { background: #3a3a3e; }
+  .readout-track { height: 14px; background: #211e18; border-radius: 4px; overflow: hidden; }
+  .readout-fill { height: 100%; background: var(--gold); border-radius: 4px; }
+  .readout-fill.faint { background: #4a4740; }
   .readout-note { font-size: 14px; font-style: italic; color: var(--dim); margin-top: 16px; }
 
   /* Pricing */
@@ -735,12 +734,8 @@
   .proof-strip-dot {
     width: 6px; height: 6px; border-radius: 50%;
     background: var(--gold);
-    animation: proofDot 2.6s ease-in-out infinite;
+    animation: nr-pulse 2.6s ease-in-out infinite;
     flex-shrink: 0;
-  }
-  @keyframes proofDot {
-    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(212,197,150,0.6); }
-    50% { opacity: 0.4; box-shadow: 0 0 0 5px rgba(212,197,150,0); }
   }
   .proof-strip span.sep { color: #2a2a2e; }
   .proof-strip b { color: var(--text); font-weight: 400; }
@@ -897,8 +892,9 @@
   .rvs{ background:var(--panel); border:1px solid #23211c; border-radius:14px; padding:20px 22px 16px; max-width:680px; margin:28px 0 6px; }
   .rvs-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
   .rvs-eyebrow{ display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
-  .rvs-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:rvs-pulse 2s infinite; }
-  @keyframes rvs-pulse{ 0%{box-shadow:0 0 0 0 rgba(212,197,150,.5)} 70%{box-shadow:0 0 0 7px rgba(212,197,150,0)} 100%{box-shadow:0 0 0 0 rgba(212,197,150,0)} }
+  .rvs-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:nr-pulse 2s infinite; }
+  /* nr-pulse: the one shared live-dot pulse. Every "this is running" indicator uses it (standings + blind-spot devices, proof strip), so the live signal reads identically across the page. */
+  @keyframes nr-pulse{ 0%{box-shadow:0 0 0 0 rgba(212,197,150,.5)} 70%{box-shadow:0 0 0 7px rgba(212,197,150,0)} 100%{box-shadow:0 0 0 0 rgba(212,197,150,0)} }
   .rvs-month{ font-family:var(--mono); font-size:12px; color:var(--gold); letter-spacing:.04em; }
   .rvs-engines{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
   .rvs-eng{ font-size:10.5px; color:var(--dim); border:1px solid #23211c; border-radius:999px; padding:3px 9px; transition:color .35s ease, border-color .35s ease, background .35s ease; }
@@ -973,7 +969,7 @@
         <div class="phone-screen">
           <div class="phone-island"></div>
           <div class="phone-status">
-            <span>9:41</span>
+            <span id="hero-clock">9:41</span>
             <span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="batt"></span></span>
           </div>
           <div class="chat-bar">
@@ -1959,6 +1955,20 @@
             loop();
           });
       })();
+    })();
+
+    /* Hero status-bar clock: show the viewer's own local time, in their
+       time zone and 12h/24h format, so the mockup reads as their phone.
+       Falls back to the static 9:41 if JS is off. */
+    (function () {
+      var el = document.getElementById('hero-clock');
+      if (!el) return;
+      function tick() {
+        var s = new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }).replace(/\s*[AP]M$/i, '').trim();
+        if (s) el.textContent = s;
+      }
+      tick();
+      setInterval(tick, 20000);
     })();
 
     // ── Atlas demo: cycling typed exchanges ─────────────────────
