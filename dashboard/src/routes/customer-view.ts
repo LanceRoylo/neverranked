@@ -419,7 +419,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   }).join("");
   const trendPolylines = onePoint ? "" : `
           <polyline points="${yourPoints}" fill="none" stroke="#d4c596" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <polyline points="${avgPoints}" fill="none" stroke="#3a3a3e" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>`;
+          <polyline points="${avgPoints}" fill="none" stroke="#4a4740" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"/>`;
   // Value labels: right-anchored along the trend, centered above the dot for a
   // single baseline point. Nudge cohort-avg down when it collides with 'you'
   // (e.g. a baseline where both are zero), so they never stack illegibly.
@@ -462,7 +462,7 @@ export function renderCustomerView(d: CustomerViewData): string {
     --soft: #b9b9bd;
     --dim: #828289;
     --line: #2a2a2e;
-    --line-soft: #1c1c1e;
+    --line-soft: #211e18;
     --green: #7fb88b;
     --red: #d48a8a;
     --mono: ui-monospace, "SF Mono", Menlo, monospace;
@@ -558,7 +558,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   }
   .tool-fill.zero {
     top: 0; bottom: 0; background: transparent;
-    border: 1px dashed var(--gold-dim); box-sizing: border-box;
+    border: 1px dashed #6e5d34; box-sizing: border-box;
   }
   .tool-count {
     font-family: var(--mono); font-size: 11px; color: var(--text);
@@ -795,10 +795,10 @@ export function renderCustomerView(d: CustomerViewData): string {
         <svg class="trend-svg" viewBox="0 0 ${trendW} ${trendH}" role="img" aria-labelledby="trend-title trend-desc">
           <title id="trend-title">Your mention trend versus cohort average</title>
           <desc id="trend-desc">${esc(trendDesc)}</desc>
-          <line x1="0" y1="40" x2="${trendW}" y2="40" stroke="#1c1c1e" stroke-width="1"/>
-          <line x1="0" y1="80" x2="${trendW}" y2="80" stroke="#1c1c1e" stroke-width="1"/>
-          <line x1="0" y1="120" x2="${trendW}" y2="120" stroke="#1c1c1e" stroke-width="1"/>
-          <line x1="0" y1="160" x2="${trendW}" y2="160" stroke="#1c1c1e" stroke-width="1"/>${trendPolylines}
+          <line x1="0" y1="40" x2="${trendW}" y2="40" stroke="#211e18" stroke-width="1"/>
+          <line x1="0" y1="80" x2="${trendW}" y2="80" stroke="#211e18" stroke-width="1"/>
+          <line x1="0" y1="120" x2="${trendW}" y2="120" stroke="#211e18" stroke-width="1"/>
+          <line x1="0" y1="160" x2="${trendW}" y2="160" stroke="#211e18" stroke-width="1"/>${trendPolylines}
           <g fill="#d4c596">${trendDots}</g>${trendLabels}
           ${trendAxis}
         </svg>
