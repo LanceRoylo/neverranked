@@ -62,15 +62,15 @@ test.describe("Public pages", () => {
     expect(body?.toLowerCase()).toContain("neverranked");
   });
 
-  test("main site has Client Login link", async ({ page }) => {
+  test("main site has a Free AI check CTA", async ({ page }) => {
     await page.goto(URLS.mainSite);
     await page.waitForLoadState("networkidle");
 
-    // Look for a login link pointing to the app
-    const loginLink = page.locator(
-      'a[href*="app.neverranked.com"], a:has-text("Client Login"), a:has-text("Login"), a:has-text("Sign in")'
-    );
-    expect(await loginLink.count()).toBeGreaterThan(0);
+    // The marketing site's primary CTA is the free check tool. There is
+    // intentionally no client-login link here -- the cockpit is reached by a
+    // magic link emailed to signed customers, not via a homepage login.
+    const checkCta = page.locator('a[href*="check.neverranked.com"]');
+    expect(await checkCta.count()).toBeGreaterThan(0);
   });
 
   test("404 page returns for unknown routes", async ({ page }) => {

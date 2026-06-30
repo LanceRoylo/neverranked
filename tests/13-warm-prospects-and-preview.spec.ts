@@ -123,17 +123,8 @@ test.describe("Preview + outreach public surfaces (no auth)", () => {
     );
   });
 
-  test("/check is a 2-label 302 to the scanner, query + utm preserved", async ({
-    request,
-  }) => {
-    const r = await request.get(
-      `${SITE}/check?url=test.com&utm_source=cold-email&utm_campaign=smb-cold`,
-      { maxRedirects: 0 },
-    );
-    expect(r.status()).toBe(302);
-    const loc = r.headers()["location"] || "";
-    expect(loc).toBe(
-      "https://check.neverranked.com/?url=test.com&utm_source=cold-email&utm_campaign=smb-cold",
-    );
-  });
+  // The /check -> check.neverranked.com funnel redirect was retired (see
+  // _redirects: "/check and all marketing routes are intentionally down").
+  // Cold-email links now point at check.neverranked.com directly, so the
+  // redirect test was removed rather than left asserting a dead route.
 });
