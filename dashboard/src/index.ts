@@ -71,6 +71,7 @@ import { handlePublishingGet, handlePublishingSave, handlePublishingTest, handle
 import { handleCalendarGet, handleCalendarAdd, handleCalendarSkip } from "./routes/calendar";
 import { handleContentReviewList, handleContentReviewClear } from "./routes/content-review";
 import { handleOnboarding, handleOnboardingSubmit, handleOnboardingSkip } from "./routes/onboarding";
+import { isForensicManaged } from "./citations";
 import { handlePublicReport, handleCreateShare } from "./routes/share";
 import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads, handleLeadsJson } from "./routes/leads";
@@ -1159,13 +1160,18 @@ export default {
     // onboarding flow. (Reported by Hawaii Theatre on 2026-05-07: the
     // unset flag was redirecting every menu click to /onboarding.)
     if (user.role === "client" && !user.onboarded && user.client_slug) {
-      const hasActive = await env.DB.prepare(
+      let onboarded = (await env.DB.prepare(
         `SELECT 1 FROM domains d
             JOIN scan_results sr ON sr.domain_id = d.id
             WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1
             LIMIT 1`
-      ).bind(user.client_slug).first<{ 1: number }>();
-      if (hasActive) {
+      ).bind(user.client_slug).first<{ 1: number }>()) != null;
+      // Forensic-managed customers (cockpit at /c/<slug>/) have a readout
+      // snapshot but no legacy scan_results, so the scan check above misses
+      // them and the /onboarding redirect below would trap them out of their
+      // own dashboard. A cockpit-ready snapshot is itself proof of onboarding.
+      if (!onboarded) onboarded = await isForensicManaged(env, user.client_slug);
+      if (onboarded) {
         await env.DB.prepare(
           "UPDATE users SET onboarded = 1 WHERE id = ? AND onboarded = 0"
         ).bind(user.id).run().catch(() => {});
@@ -1209,6 +1215,11 @@ export default {
         return redirect("/agency");
       }
       if (user.role === "client" && user.client_slug) {
+        // Forensic-managed customers live on the readout cockpit, not the
+        // legacy per-domain scanner report. Send them straight there.
+        if (await isForensicManaged(env, user.client_slug)) {
+          return redirect(`/c/${user.client_slug}/`);
+        }
         const clientDomains = (await env.DB.prepare(
           "SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1"
         ).bind(user.client_slug).all<{ id: number }>()).results;

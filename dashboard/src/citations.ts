@@ -22,7 +22,7 @@ import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
  * (citation_runs) still accumulates; only the snapshot clobber is prevented.
  * See lib/snapshot-shape.ts + the dashboard_snapshot_shape_split_brain note.
  */
-async function isForensicManaged(env: Env, clientSlug: string): Promise<boolean> {
+export async function isForensicManaged(env: Env, clientSlug: string): Promise<boolean> {
   const snap = await env.DB.prepare(
     `SELECT engines_breakdown, top_competitors FROM citation_snapshots
        WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
