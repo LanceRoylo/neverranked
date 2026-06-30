@@ -812,6 +812,34 @@
   .roi-custom input { background: var(--panel); border: 1px solid #2a2a2e; color: var(--text); font-family: var(--mono); font-size: 15px; padding: 9px 12px; border-radius: 6px; width: 130px; }
   .roi-custom input:focus { border-color: var(--gold); outline: none; }
   @media (max-width: 560px) { .roi-value { font-size: 42px; } .roi-bar { grid-template-columns: 92px 1fr auto; } }
+
+  /* The moving target -- live standings animation (recurring-value section).
+     Built on the page tokens so it stays in one visual language. */
+  .rvs{ background:var(--panel); border:1px solid #23211c; border-radius:14px; padding:20px 22px 16px; max-width:680px; margin:28px 0 6px; }
+  .rvs-top{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+  .rvs-eyebrow{ display:flex; align-items:center; gap:8px; font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .rvs-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:rvs-pulse 2s infinite; }
+  @keyframes rvs-pulse{ 0%{box-shadow:0 0 0 0 rgba(212,197,150,.5)} 70%{box-shadow:0 0 0 7px rgba(212,197,150,0)} 100%{box-shadow:0 0 0 0 rgba(212,197,150,0)} }
+  .rvs-month{ font-family:var(--mono); font-size:12px; color:var(--gold); letter-spacing:.04em; }
+  .rvs-engines{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
+  .rvs-eng{ font-size:10.5px; color:var(--dim); border:1px solid #23211c; border-radius:999px; padding:3px 9px; transition:color .35s ease, border-color .35s ease, background .35s ease; }
+  .rvs-eng.scan{ color:var(--gold); border-color:rgba(212,197,150,.5); background:rgba(212,197,150,.06); }
+  .rvs-board{ position:relative; height:266px; }
+  .rvs-row{ position:absolute; left:0; right:0; height:46px; display:flex; align-items:center; gap:12px; transform:translateY(0); transition:transform .7s var(--ease-out); will-change:transform; }
+  .rvs-rank{ width:20px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--dim); transition:color .4s ease; }
+  .rvs-name{ width:120px; font-size:13.5px; color:var(--soft); transition:color .4s ease; flex:none; }
+  .rvs-track{ flex:1; height:12px; background:#211e18; border-radius:6px; overflow:hidden; }
+  .rvs-fill{ height:100%; width:0%; border-radius:6px; background:#4a4740; transition:width .7s var(--ease-out), background .4s ease; }
+  .rvs-val{ width:38px; text-align:right; font-family:var(--mono); font-size:12.5px; color:var(--soft); transition:color .4s ease; }
+  .rvs-ec{ width:54px; text-align:right; font-size:11px; color:var(--dim); transition:color .4s ease; }
+  .rvs-row.you .rvs-name{ color:var(--text); font-weight:600; }
+  .rvs-row.you .rvs-rank{ color:var(--gold); }
+  .rvs-row.you .rvs-fill{ background:var(--gold); }
+  .rvs-row.you .rvs-val{ color:var(--gold); }
+  .rvs-row.you .rvs-ec{ color:var(--soft); }
+  .rvs-caption{ margin-top:18px; padding-top:14px; border-top:1px solid #23211c; font-size:13px; line-height:1.5; color:var(--dim); max-width:52ch; }
+  @media (prefers-reduced-motion: reduce){ .rvs-live,.rvs-row,.rvs-fill,.rvs-eng{ animation:none !important; transition:none !important; } }
+  @media (max-width:560px){ .rvs-top{ flex-direction:column; align-items:flex-start; gap:6px; } .rvs-name{ width:84px; } .rvs-ec{ display:none; } .rvs-board{ height:286px; } }
 </style>
 </head>
 <body>
@@ -997,6 +1025,66 @@
       </div>
     </div>
   </section>
+
+  <!-- The moving target (recurring value) -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label">The moving target</div>
+      <h2>AI doesn&rsquo;t decide once.</h2>
+      <p class="lead">The engines re-read the web constantly. What they cite for your category changes week to week. A competitor ships a page, an engine re-crawls, a new source gets picked up, and the answer moves without anyone telling you. A one-time audit is a photograph of a river.</p>
+
+      <div class="rvs" role="img" aria-label="A live standings board showing a business climbing past competitors in AI-citation share month over month, measured across seven AI engines.">
+        <div class="rvs-top">
+          <div class="rvs-eyebrow"><span class="rvs-live"></span> Tracked across 7 AI engines, every day</div>
+          <div class="rvs-month"><span class="rvs-month-v">Month 1</span></div>
+        </div>
+        <div class="rvs-engines"></div>
+        <div class="rvs-board"></div>
+        <p class="rvs-caption">Your standing changes every month. The month you stop measuring is the month you stop knowing.</p>
+      </div>
+
+      <p>Your position is contested share, and share is taken. The first read tells you where you stand. The second tells you whether you are moving. By the sixth you have a trend most of your category is not even watching.</p>
+    </div>
+  </section>
+  <script>
+  (function(){
+    var stage = document.querySelector('.rvs'); if(!stage) return;
+    var board = stage.querySelector('.rvs-board'), engEl = stage.querySelector('.rvs-engines'), monthEl = stage.querySelector('.rvs-month-v');
+    var ENGINES = ['Perplexity','ChatGPT','Gemini','Copilot','Google AIO','Claude','Gemma'], ROWH = 46;
+    var VENUES = ['You','Competitor A','Competitor B','Competitor C','Competitor D'];
+    var MONTHS = [
+      {label:'Month 1', d:[[9,3],[22,6],[18,5],[12,4],[7,2]]},
+      {label:'Month 2', d:[[13,4],[20,6],[17,5],[11,4],[8,3]]},
+      {label:'Month 3', d:[[18,5],[19,6],[15,5],[10,3],[9,3]]},
+      {label:'Month 4', d:[[23,6],[17,5],[14,5],[10,3],[9,3]]}
+    ];
+    ENGINES.forEach(function(n){ var s=document.createElement('span'); s.className='rvs-eng'; s.textContent=n; engEl.appendChild(s); });
+    var chips = Array.prototype.slice.call(engEl.children);
+    var rows = VENUES.map(function(name){
+      var r=document.createElement('div'); r.className='rvs-row'+(name==='You'?' you':'');
+      r.innerHTML='<div class="rvs-rank"></div><div class="rvs-name">'+name+'</div><div class="rvs-track"><div class="rvs-fill"></div></div><div class="rvs-val"></div><div class="rvs-ec"></div>';
+      board.appendChild(r);
+      return {el:r, rank:r.querySelector('.rvs-rank'), fill:r.querySelector('.rvs-fill'), val:r.querySelector('.rvs-val'), ec:r.querySelector('.rvs-ec')};
+    });
+    var MAX=24;
+    function render(mi){
+      var m=MONTHS[mi]; monthEl.textContent=m.label;
+      var order=VENUES.map(function(_,i){return i;}).sort(function(a,b){return m.d[b][0]-m.d[a][0];});
+      var rankOf={}; order.forEach(function(idx,pos){ rankOf[idx]=pos; });
+      VENUES.forEach(function(_,i){
+        var share=m.d[i][0], eng=m.d[i][1], pos=rankOf[i];
+        rows[i].el.style.transform='translateY('+(pos*ROWH)+'px)';
+        rows[i].rank.textContent=(pos+1); rows[i].fill.style.width=(share/MAX*100)+'%';
+        rows[i].val.textContent=share+'%'; rows[i].ec.textContent=eng+'/7';
+      });
+    }
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduce){ render(MONTHS.length-1); return; }
+    var mi=0; render(0);
+    setInterval(function(){ mi=(mi+1)%MONTHS.length; render(mi); }, 2300);
+    var si=0; setInterval(function(){ chips.forEach(function(c){c.classList.remove('scan');}); chips[si].classList.add('scan'); si=(si+1)%chips.length; }, 380);
+  })();
+  </script>
 
   <!-- 02 What we measure -->
   <section class="section">
