@@ -179,4 +179,12 @@ if [ -f "$DRIFT" ]; then
   fi
 fi
 
+# ── Internal-link integrity (BLOCKING) ──────────────────────────────────
+# Fail the build if any shipped page links to an internal path that does not
+# resolve to a real file in dist/. This makes the "linked but frozen" /
+# soft-200 homepage-fallback bug (see build_dirs_whitelist_gotcha) impossible
+# to ship silently: a dead link now stops the build instead of looking alive.
+echo ""
+node "$ROOT/scripts/check-internal-links.mjs"
+
 echo "Build complete. Deploy with: npx wrangler deploy"
