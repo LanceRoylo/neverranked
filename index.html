@@ -134,55 +134,139 @@
   .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 16px; }
 
   /* Blind-spot journey device (search -> phone, you out of the answer) */
-  .void-graphic { margin: 30px 0 8px; }
-  .bs-journey { display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 30px; }
-  .bs-then { width: 190px; flex: 0 0 auto; opacity: 0.4; }
-  .bs-browser { border: 1px solid #2a2a2e; border-radius: 8px; background: #101013; padding: 13px; }
-  .bs-search { display: flex; align-items: center; gap: 6px; border: 1px solid #2a2a2e; border-radius: 16px; padding: 6px 10px; margin-bottom: 12px; }
-  .bs-dot { width: 10px; height: 10px; border: 1.5px solid var(--dim); border-radius: 50%; flex: 0 0 auto; }
-  .bs-bar { height: 6px; background: #2c2c32; border-radius: 3px; flex: 1; }
-  .bs-links { display: flex; flex-direction: column; gap: 7px; }
-  .bs-links span { height: 7px; background: #22222a; border-radius: 2px; }
-  .bs-links span:nth-child(2) { width: 86%; } .bs-links span:nth-child(4) { width: 80%; } .bs-links span:nth-child(6) { width: 74%; }
-  .bs-cap-then { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); text-align: center; margin-top: 12px; }
-  .bs-arrow { flex: 0 0 auto; display: flex; align-items: center; }
-  .bs-arrow svg { width: 40px; height: 16px; }
-  .bs-now { width: 290px; flex: 0 0 auto; }
-  .bs-phone { border: 1px solid #3a3a3e; border-radius: 30px; background: #131316; padding: 18px 16px 22px; box-shadow: 0 0 0 1px #1c1c1e, 0 18px 50px rgba(0,0,0,0.55); }
-  .bs-notch { width: 42px; height: 4px; border-radius: 3px; background: #2a2a2e; margin: 0 auto 16px; }
-  .bs-q { display: flex; align-items: center; gap: 8px; border: 1px solid #2a2a2e; border-radius: 18px; padding: 9px 13px; margin-bottom: 18px; }
-  .bs-q svg { width: 13px; height: 13px; flex: 0 0 auto; }
-  .bs-q span { font-size: 13px; color: var(--soft); }
-  .bs-ans-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--dim); margin-bottom: 12px; }
-  .bs-rows { display: flex; flex-direction: column; gap: 10px; }
-  .bs-row { display: flex; align-items: center; gap: 11px; }
-  .bs-num { font-family: var(--mono); font-size: 12px; color: var(--bg); background: var(--gold); width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
-  .bs-num-dim { color: var(--dim); background: transparent; }
-  .bs-bar2 { flex: 1; height: 16px; border-radius: 4px; background: var(--gold); }
-  .bs-empty { margin-top: 6px; }
-  .bs-slot { flex: 1; height: 16px; border-radius: 4px; border: 1px dashed #4a3d18; display: flex; align-items: center; padding-left: 11px; box-sizing: border-box; font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--dim); }
-  .bs-you { color: var(--text); }
-  .bs-cap-now { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); text-align: center; margin-top: 12px; }
-  .bs-caption { text-align: center; font-size: 21px; line-height: 1.5; color: var(--text); margin: 34px auto 0; max-width: 600px; }
-  .bs-soft { color: var(--soft); }
-  .bs-link { display: inline-block; margin-top: 14px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--gold); text-decoration: none; border-bottom: 1px solid #4a3d18; padding-bottom: 2px; }
-  .bs-link:hover { border-bottom-color: var(--gold); }
-  /* Staged reveal: phone arrives, the three names land one by one, then the empty You slot draws in last */
-  .bs-arrow, .bs-phone, .bs-cap-now, .bs-row, .bs-caption { opacity: 0; transform: translateY(8px); animation: bsUp 440ms var(--ease-out) both; animation-play-state: paused; }
-  .bs-rows .bs-row { transform: translateY(6px); animation-duration: 380ms; }
-  .bs-rows .bs-row:nth-child(1) { animation-delay: 280ms; }
-  .bs-rows .bs-row:nth-child(2) { animation-delay: 400ms; }
-  .bs-rows .bs-row:nth-child(3) { animation-delay: 520ms; }
-  .bs-rows .bs-row:nth-child(4) { animation-delay: 840ms; animation-duration: 540ms; }
-  .bs-caption { animation-delay: 1040ms; }
-  .void-graphic.in .bs-arrow, .void-graphic.in .bs-phone, .void-graphic.in .bs-cap-now, .void-graphic.in .bs-row, .void-graphic.in .bs-caption { animation-play-state: running; }
-  @keyframes bsUp { to { opacity: 1; transform: translateY(0); } }
-  /* Attention: after the empty slot draws in, it breathes a soft glow -- that is you, and you are not there */
-  .bs-empty .bs-slot { animation: bsGlow 2.3s ease-in-out 1.6s infinite; animation-play-state: paused; }
-  .void-graphic.in .bs-empty .bs-slot { animation-play-state: running; }
-  @keyframes bsGlow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(212,197,150,0); border-color: #4a3d18; }
-    50% { box-shadow: 0 0 13px 0 rgba(212,197,150,0.45), 0 0 40px 8px rgba(212,197,150,0.17); border-color: #b09a55; }
+  .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+  /* =====================================================================
+     THE BLIND SPOT - direction: THE LIVE QUERY (forensic incompletion).
+     A measurement caught mid-run. The instrument resolves everything
+     except you, and your absence is the only thing left moving.
+     Grafts:
+       - the auditable-ten half is shown ON SCREEN as a collapsing column
+         of ten link rows (from "the collapse"), not left to caption prose.
+       - a tally (from "the roll call"): "named 0 of 3" where the 3 fills
+         in as answers land and the 0 never moves.
+       - after resolve, the only living element is a near-miss ghost of
+         "You" rising into the empty seat and dissolving (from "the empty
+         chair") - the instrument trying to seat you, and failing.
+     The sequence plays once on scroll-in and then HOLDS the resolved
+     absence (no auto re-run), so a viewer who arrives or lingers always
+     lands on the climax; it pauses fully when scrolled off-screen.
+     ANONYMIZATION: the three answers are placeholders "Firm A/B/C"; the
+     fourth slot is always "You"; numbers are an obvious demo, not an audit.
+     ===================================================================== */
+  .bsq{ width:100%; max-width:680px; margin:30px 0 8px; }
+  .bsq-panel{ background:var(--panel); border:1px solid #23211c; border-radius:14px; padding:20px 22px 18px; }
+
+  .bsq-top{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+  .bsq-eyebrow{ display:flex; align-items:center; gap:8px; font-family:var(--mono); font-size:11px; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+  .bsq-live{ width:7px; height:7px; border-radius:50%; background:var(--gold); flex:none; animation:bsq-pulse 2s infinite; }
+  @keyframes bsq-pulse{ 0%{box-shadow:0 0 0 0 rgba(212,197,150,.5)} 70%{box-shadow:0 0 0 7px rgba(212,197,150,0)} 100%{box-shadow:0 0 0 0 rgba(212,197,150,0)} }
+  .bsq-status{ font-family:var(--mono); font-size:11px; letter-spacing:.04em; color:var(--gold); white-space:nowrap; }
+
+  .bsq-query{ display:flex; align-items:baseline; gap:10px; padding:11px 13px; border:1px solid #23211c; border-radius:8px; background:#0b0b0c; margin-bottom:14px; }
+  .bsq-prompt{ font-family:var(--mono); font-size:12px; color:var(--dim); flex:none; }
+  .bsq-typed{ font-family:var(--mono); font-size:13px; letter-spacing:.01em; color:var(--soft); white-space:nowrap; overflow:hidden; }
+  .bsq-caret{ display:inline-block; width:7px; height:14px; vertical-align:-2px; background:var(--gold); margin-left:1px; animation:bsq-caret 1.05s steps(2) infinite; }
+  @keyframes bsq-caret{ 50%{ opacity:0; } }
+
+  .bsq-engines{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:18px; }
+  .bsq-eng{ font-family:var(--mono); font-size:10.5px; color:var(--dim); border:1px solid #23211c; border-radius:999px; padding:3px 9px; transition:color .35s ease, border-color .35s ease, background .35s ease; }
+  .bsq-eng.scan{ color:var(--gold); border-color:rgba(212,197,150,.5); background:rgba(212,197,150,.06); }
+  .bsq-eng.done{ color:var(--soft); border-color:#2a2a2e; }
+
+  /* The two-column stage: ten auditable links -> three named answers. */
+  .bsq-stage{ display:grid; grid-template-columns:1fr 28px 1.25fr; align-items:start; gap:14px; }
+  .bsq-cap{ font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--dim); margin-bottom:11px; height:13px; }
+  .bsq-cap b{ font-weight:400; }
+  .bsq-cap-then b{ color:var(--soft); }
+  .bsq-cap-now b{ color:var(--gold); }
+
+  /* THEN - ten link rows you can audit. They collapse into a dim, flattened
+     ghost (still ten things, no longer auditable) and rest there. */
+  .bsq-links{ display:flex; flex-direction:column; gap:7px; }
+  .bsq-link{ height:10px; border-radius:3px; background:#211e18; position:relative; overflow:hidden;
+    transform:translateY(0) scaleY(1); opacity:1; transform-origin:center top;
+    transition:transform .66s var(--ease-out), opacity .5s var(--ease-out); }
+  .bsq-link::after{ content:""; position:absolute; inset:0; width:var(--w,70%); background:#34312a; border-radius:3px; }
+  .bsq.run .bsq-link{ transform:translateY(var(--ty,30px)) scaleY(.5); opacity:.15; }
+  .bsq.run .bsq-link::after{ background:#211e18; }
+
+  /* The collapse arrow - the act of compression. */
+  .bsq-arrow{ display:flex; align-items:center; justify-content:center; padding-top:46px; }
+  .bsq-arrow svg{ width:28px; height:14px; overflow:visible; }
+  .bsq-arrow .ln{ stroke:var(--dim); stroke-width:1.5; transition:stroke .5s ease; }
+  .bsq-arrow .hd{ stroke:var(--gold); stroke-width:1.5; opacity:.35; transform:translateX(-6px);
+    transition:transform .6s var(--ease-out) .12s, opacity .6s ease .12s; stroke-linecap:round; stroke-linejoin:round; }
+  .bsq.run .bsq-arrow .hd{ transform:translateX(0); opacity:1; }
+  .bsq.run .bsq-arrow .ln{ stroke:rgba(212,197,150,.5); }
+
+  /* NOW - the answer board. */
+  .bsq-board{ display:flex; flex-direction:column; gap:11px; }
+  .bsq-row{ display:flex; align-items:center; gap:10px; height:18px; }
+  .bsq-rank{ width:16px; text-align:center; font-family:var(--mono); font-size:12px; color:var(--dim); flex:none; }
+  .bsq-name{ width:58px; font-family:var(--mono); font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--soft); flex:none; }
+  .bsq-track{ flex:1; height:14px; background:#211e18; border-radius:4px; overflow:hidden; }
+  .bsq-fill{ height:100%; border-radius:4px; background:var(--gold); transform-origin:left center; transform:scaleX(0); transition:transform .62s var(--ease-out); }
+
+  .bsq-named{ opacity:0; transform:translateY(7px); transition:opacity .5s var(--ease-out), transform .5s var(--ease-out); }
+  .bsq-named.in{ opacity:1; transform:translateY(0); }
+  .bsq-named.in .bsq-fill{ transform:scaleX(var(--s,1)); }
+
+  /* The fourth slot - the absence. Always present, never resolves. Lifted so
+     the empty seat (the thesis) is legible at rest, not the dimmest element. */
+  .bsq-row.you .bsq-rank{ color:var(--dim); }
+  .bsq-row.you .bsq-name{ color:var(--text); }
+  .bsq-slot{ position:relative; flex:1; height:14px; border-radius:4px; border:1px dashed #6e5d34; background:rgba(212,197,150,.05); overflow:hidden;
+    display:flex; align-items:center; padding:0 10px; }
+  .bsq-slot .tag{ font-family:var(--mono); font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--soft); margin-left:auto; }
+  /* the near-miss ghost: "You" rises into the seat, then dissolves - the
+     single living element once everything else has settled. */
+  .bsq-ghost{ position:absolute; left:10px; top:50%; transform:translateY(-50%) translateY(5px); opacity:0;
+    font-family:var(--mono); font-size:10px; letter-spacing:.1em; text-transform:uppercase; color:var(--gold); white-space:nowrap; }
+  .bsq.miss .bsq-ghost{ animation:bsq-nearmiss 4.2s var(--ease-out) infinite; }
+  .bsq.miss .bsq-slot{ animation:bsq-seat 4.2s ease-in-out infinite; }
+  @keyframes bsq-nearmiss{
+    0%,12%{ opacity:0; transform:translateY(-50%) translateY(5px); }
+    34%,46%{ opacity:.34; transform:translateY(-50%) translateY(0); }
+    72%,100%{ opacity:0; transform:translateY(-50%) translateY(-4px); }
+  }
+  @keyframes bsq-seat{
+    0%,12%,100%{ border-color:#6e5d34; box-shadow:0 0 0 0 rgba(212,197,150,0); }
+    42%{ border-color:#9a854c; box-shadow:0 0 12px 0 rgba(212,197,150,.14); }
+    72%{ border-color:#6e5d34; box-shadow:0 0 0 0 rgba(212,197,150,0); }
+  }
+
+  /* The tally - the moment of comprehension. 3 fills in, the 0 never moves.
+     Gold is reserved for the single signal numeral: the "0" you are in. */
+  .bsq-tally{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:18px; padding-top:14px; border-top:1px solid #23211c; }
+  .bsq-tally-count{ font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--soft); font-variant-numeric:tabular-nums; }
+  .bsq-tally-count b{ font-weight:400; }
+  .bsq-tally-you{ font-family:var(--mono); font-size:12px; letter-spacing:.04em; color:var(--soft); font-variant-numeric:tabular-nums; }
+  .bsq-tally-you b{ color:var(--gold); font-weight:400; }
+
+  .bsq-caption{ margin:16px 2px 0; font-size:14.5px; line-height:1.55; color:var(--soft); max-width:52ch; }
+  .bsq-caption b{ color:var(--text); font-weight:400; }
+
+  @media (max-width:520px){
+    .bsq-status{ display:none; }
+    .bsq-stage{ grid-template-columns:1fr 24px 1.15fr; gap:9px; }
+    .bsq-name{ display:none; }
+    .bsq-tally{ flex-direction:column; align-items:flex-start; gap:6px; }
+  }
+
+  /* Reduced motion - fully resolved, nothing moving, no loops. The ghost is
+     pinned faintly visible so the climax still reads as one still frame. */
+  @media (prefers-reduced-motion: reduce){
+    .bsq-live{ animation:none; }
+    .bsq-caret{ display:none; }
+    .bsq-eng{ transition:none; }
+    .bsq-link{ transition:none; }
+    .bsq-arrow .hd{ transition:none; }
+    .bsq-named{ opacity:1; transform:none; transition:none; }
+    .bsq-fill{ transition:none; }
+    .bsq.miss .bsq-ghost, .bsq.miss .bsq-slot{ animation:none; }
+    .bsq-ghost{ opacity:.3; transform:translateY(-50%); }
+    .bsq-slot{ border-color:#9a854c; }
   }
 
   /* Engine diagram */
@@ -252,9 +336,6 @@
     .hero .inner.hero-grid { grid-template-columns: 1fr; gap: 34px; max-width: 760px; }
     .hero-visual { justify-self: center; margin-top: 4px; }
     .section { padding: 64px 0; }
-    .bs-then, .bs-arrow { display: none; }
-    .bs-now { width: 100%; max-width: 320px; }
-    .bs-caption { font-size: 18px; }
     .prices { flex-direction: column; }
     .close h2 { font-size: 26px; }
     .readout-row { grid-template-columns: 124px 1fr; }
@@ -262,8 +343,6 @@
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     .reveal { opacity: 1; transform: none; transition: none; }
-    .bs-arrow, .bs-phone, .bs-cap-now, .bs-row, .bs-caption { animation: none; opacity: 1; transform: none; }
-    .bs-empty .bs-slot { animation: none; }
     .readout-fill { transition: none; width: var(--target-width, 0) !important; }
     .hpr-you { animation: none; }
     .chat-user-bubble::after { animation: none; content: none; }
@@ -994,37 +1073,198 @@
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">01</span>The blind spot</div>
       <p class="lead">A Google search gives you ten links. An AI answer gives you three names. You can check a Google rank any time. You cannot see an AI answer that left you out.</p>
-      <div class="void-graphic">
-        <div class="bs-journey">
-          <div class="bs-then">
-            <div class="bs-browser">
-              <div class="bs-search"><span class="bs-dot"></span><span class="bs-bar"></span></div>
-              <div class="bs-links"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-            </div>
-            <div class="bs-cap-then">Then &middot; ten links</div>
+      <div class="bsq">
+        <p class="sr-only">A demonstration of an AI answer engine being queried for the best wealth manager in Honolulu. A column of ten auditable search links collapses into three named placeholder firms. Your business is measured but never named, and nothing on the screen shows that you were left out.</p>
+
+        <div class="bsq-panel" id="bsq" aria-hidden="true">
+          <div class="bsq-top">
+            <div class="bsq-eyebrow"><span class="bsq-live"></span>Live query</div>
+            <div class="bsq-status" id="bsq-status">running</div>
           </div>
-          <div class="bs-arrow" aria-hidden="true">
-            <svg viewBox="0 0 40 16" fill="none" stroke="#d4c596" stroke-width="1.5"><line x1="0" y1="8" x2="36" y2="8"/><polyline points="29,2 37,8 29,14"/></svg>
+
+          <div class="bsq-query">
+            <span class="bsq-prompt">&gt;</span>
+            <span class="bsq-typed" id="bsq-typed"></span><span class="bsq-caret" id="bsq-caret"></span>
           </div>
-          <div class="bs-now">
-            <div class="bs-phone">
-              <div class="bs-notch"></div>
-              <div class="bs-q"><svg viewBox="0 0 24 24" fill="none" stroke="#6a6a70" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg><span>best wealth manager in Honolulu</span></div>
-              <div class="bs-ans-label">AI names three</div>
-              <div class="bs-rows">
-                <div class="bs-row bs-filled"><span class="bs-num">1</span><span class="bs-bar2"></span></div>
-                <div class="bs-row bs-filled"><span class="bs-num">2</span><span class="bs-bar2"></span></div>
-                <div class="bs-row bs-filled"><span class="bs-num">3</span><span class="bs-bar2"></span></div>
-                <div class="bs-row bs-empty"><span class="bs-num bs-num-dim">&ndash;</span><span class="bs-slot"><span class="bs-you">You</span> &middot; not named</span></div>
+
+          <div class="bsq-engines" id="bsq-engines"></div>
+
+          <div class="bsq-stage">
+            <div class="bsq-then">
+              <div class="bsq-cap bsq-cap-then">A search &middot; <b>ten links</b></div>
+              <div class="bsq-links">
+                <div class="bsq-link" style="--w:78%; --ty:30px"></div>
+                <div class="bsq-link" style="--w:66%; --ty:23px"></div>
+                <div class="bsq-link" style="--w:84%; --ty:16px"></div>
+                <div class="bsq-link" style="--w:58%; --ty:9px"></div>
+                <div class="bsq-link" style="--w:72%; --ty:3px"></div>
+                <div class="bsq-link" style="--w:62%; --ty:-3px"></div>
+                <div class="bsq-link" style="--w:80%; --ty:-9px"></div>
+                <div class="bsq-link" style="--w:54%; --ty:-16px"></div>
+                <div class="bsq-link" style="--w:70%; --ty:-23px"></div>
+                <div class="bsq-link" style="--w:60%; --ty:-30px"></div>
               </div>
             </div>
-            <div class="bs-cap-now">Now &middot; three names</div>
+
+            <div class="bsq-arrow">
+              <svg viewBox="0 0 28 14" fill="none">
+                <line class="ln" x1="0" y1="7" x2="22" y2="7"/>
+                <polyline class="hd" points="17,2 25,7 17,12"/>
+              </svg>
+            </div>
+
+            <div class="bsq-now">
+              <div class="bsq-cap bsq-cap-now">An answer &middot; <b>three names</b></div>
+              <div class="bsq-board">
+                <div class="bsq-row bsq-named" data-i="0">
+                  <span class="bsq-rank">1</span>
+                  <span class="bsq-name">Firm A</span>
+                  <span class="bsq-track"><span class="bsq-fill" style="--s:.92; transition-delay:.08s"></span></span>
+                </div>
+                <div class="bsq-row bsq-named" data-i="1">
+                  <span class="bsq-rank">2</span>
+                  <span class="bsq-name">Firm B</span>
+                  <span class="bsq-track"><span class="bsq-fill" style="--s:.74; transition-delay:.08s"></span></span>
+                </div>
+                <div class="bsq-row bsq-named" data-i="2">
+                  <span class="bsq-rank">3</span>
+                  <span class="bsq-name">Firm C</span>
+                  <span class="bsq-track"><span class="bsq-fill" style="--s:.58; transition-delay:.08s"></span></span>
+                </div>
+                <div class="bsq-row you">
+                  <span class="bsq-rank">&ndash;</span>
+                  <span class="bsq-name">You</span>
+                  <span class="bsq-slot"><span class="bsq-ghost">You</span><span class="tag">not named</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bsq-tally">
+            <div class="bsq-tally-count">named <b id="bsq-named-n">0</b> of 3 answers</div>
+            <div class="bsq-tally-you">you in <b>0</b> of them</div>
           </div>
         </div>
-        <p class="bs-caption">One answer. Three names. You are not one of them. <span class="bs-soft">AI chose those three from everyone else&rsquo;s account of you.</span> <a class="bs-link" href="/teardowns/cross-category/#offsite">See where AI sources its answers &rarr;</a></p>
+
+        <p class="bsq-caption">A search returns ten links you can audit. <b>This answer returns three names.</b> You are not one of them, and nothing on the screen tells you that you were left out.</p>
       </div>
+      <p class="bsq-followon">AI builds those three names from everyone else&rsquo;s account of you, not from your own site. <a href="/teardowns/cross-category/#offsite">See where AI sources its answers &rarr;</a></p>
     </div>
   </section>
+
+  <script>
+  (function(){
+    var ENGINES = ["Perplexity","ChatGPT","Gemini","Copilot","Google AIO","Claude","Gemma"];
+    var QUERY = "best wealth manager in Honolulu";
+    var SCAN_MS = 240; // engine-scan cadence (sibling standings board runs ~380; kept in the same family, faster here to shorten the pre-roll)
+
+    var panel    = document.getElementById('bsq');
+    var typedEl  = document.getElementById('bsq-typed');
+    var caretEl  = document.getElementById('bsq-caret');
+    var statusEl = document.getElementById('bsq-status');
+    var engEl    = document.getElementById('bsq-engines');
+    var namedNEl = document.getElementById('bsq-named-n');
+    var rows     = Array.prototype.slice.call(panel.querySelectorAll('.bsq-named'));
+
+    ENGINES.forEach(function(n){
+      var s = document.createElement('span');
+      s.className = 'bsq-eng';
+      s.textContent = n;
+      engEl.appendChild(s);
+    });
+    var chips = Array.prototype.slice.call(engEl.querySelectorAll('.bsq-eng'));
+
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (reduce){
+      typedEl.textContent = QUERY;
+      statusEl.textContent = "answered";
+      panel.classList.add('run', 'miss'); // resolved + collapsed; CSS strips motion
+      chips.forEach(function(c){ c.classList.add('done'); });
+      rows.forEach(function(r){ r.classList.add('in'); });
+      namedNEl.textContent = "3";
+      return;
+    }
+
+    var timers = [];
+    var scanIv = null;
+    function clearAll(){ timers.forEach(clearTimeout); timers = []; if (scanIv){ clearInterval(scanIv); scanIv = null; } }
+    function after(ms, fn){ timers.push(setTimeout(fn, ms)); }
+
+    function run(){
+      clearAll();
+      panel.classList.remove('run', 'miss');
+      typedEl.textContent = "";
+      statusEl.textContent = "running";
+      rows.forEach(function(r){ r.classList.remove('in'); });
+      namedNEl.textContent = "0";
+      chips.forEach(function(c){ c.classList.remove('scan', 'done'); });
+      caretEl.style.display = "";
+
+      var i = 0;
+      (function type(){
+        if (i <= QUERY.length){
+          typedEl.textContent = QUERY.slice(0, i);
+          i++;
+          timers.push(setTimeout(type, 14 + Math.random() * 18));
+        } else {
+          beginScan();
+        }
+      })();
+
+      function beginScan(){
+        statusEl.textContent = "querying 7 engines";
+        var si = 0;
+        scanIv = setInterval(function(){
+          chips.forEach(function(c, idx){ c.classList.toggle('scan', idx === si); c.classList.toggle('done', idx < si); });
+          si++;
+          if (si >= chips.length){
+            clearInterval(scanIv); scanIv = null;
+            chips.forEach(function(c){ c.classList.remove('scan'); c.classList.add('done'); });
+            after(200, collapse);
+          }
+        }, SCAN_MS);
+      }
+
+      function collapse(){
+        // the ten auditable links compress into three; then the answers land.
+        panel.classList.add('run');
+        statusEl.textContent = "answer returned";
+        caretEl.style.display = "none";
+        after(520, resolve);
+      }
+
+      function resolve(){
+        rows.forEach(function(r, idx){
+          after(idx * 280, function(){
+            r.classList.add('in');
+            namedNEl.textContent = String(idx + 1);
+          });
+        });
+        // once the three have landed, the only living thing is the near-miss ghost.
+        after(rows.length * 280 + 140, function(){ panel.classList.add('miss'); });
+        // the climax HOLDS - no auto re-run, so a viewer who arrives or lingers
+        // always lands on the resolved absence. (Re-entry replays via the observer.)
+      }
+    }
+
+    if ('IntersectionObserver' in window){
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(e){
+          if (e.isIntersecting){
+            run();                          // play once on entry, then hold the climax
+          } else {
+            clearAll();                     // off-screen: stop every timer and the scan
+            panel.classList.remove('miss'); // and stop the ghost/seat keyframe loops
+          }
+        });
+      }, { threshold: 0.2 });
+      io.observe(panel);
+    } else {
+      run();
+    }
+  })();
+  </script>
 
   <!-- The moving target (recurring value) -->
   <section class="section panel">
@@ -1541,7 +1781,7 @@
     /* Scroll-reveal: elements fade and rise as they enter the viewport.
        Above-the-fold elements fire immediately on load. No dependencies. */
     (function () {
-      var els = document.querySelectorAll('.reveal, .void-graphic, .readout, .wpu');
+      var els = document.querySelectorAll('.reveal, .readout, .wpu');
       if (!('IntersectionObserver' in window)) {
         els.forEach(function (el) { el.classList.add('in'); });
         return;
