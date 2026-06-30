@@ -216,7 +216,7 @@ export async function handleMemoGenerate(user: User, env: Env): Promise<Response
     <h1 style="font-weight:400">Generated ${ok.length} draft(s)</h1>
     <ul style="line-height:1.8">
       ${results.map((r) => `<li>${esc(r.slug)}: ${r.ok
-        ? `drafted${r.unverifiedNumbers ? ` — <span style="color:#e8c767">check figures: ${esc(r.unverifiedNumbers.join(", "))}</span>` : ""}${r.toneViolations ? ` — <span style="color:#e8a0a0">tone: ${esc(r.toneViolations.join(", "))}</span>` : ""}`
+        ? `drafted${r.unverifiedNumbers ? ` — <span style="color:#e8c767">check figures: ${esc(r.unverifiedNumbers.join(", "))}</span>` : ""}${r.toneViolations ? ` — <span style="color:#e8a0a0">tone: ${esc(r.toneViolations.join(", "))}</span>` : ""}${r.gate ? ` — <span style="color:${r.gate.would_ship ? "#7bdca0" : "#9aa0e8"}">gate: ${r.gate.would_ship ? "would ship" : "would escalate"} (judge ${esc(r.gate.judge_verdict)}${r.gate.verifier_objected ? ", verifier objected" : r.gate.judge_verdict === "ship" ? ", verifier clear" : ""})${r.gate.judge_reasons && r.gate.judge_reasons.length ? ": " + esc(r.gate.judge_reasons[0]) : ""}</span>` : ""}`
         : `<span style="color:#e8a0a0">failed: ${esc(r.error || "unknown")}</span>`}</li>`).join("")}
     </ul>
     <p style="margin-top:20px"><a href="/admin/memos" style="color:var(--gold)">Review the queue &rarr;</a></p>

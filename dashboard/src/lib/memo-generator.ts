@@ -19,6 +19,7 @@
 import type { Env } from "../types";
 import { gatherMemoInputs, type MemoInputs } from "./memo-inputs";
 import { checkHumanTone } from "../human-tone-guard";
+import type { DeliverableVerdict } from "./deliverable-judge";
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -63,6 +64,7 @@ export interface MemoDraftResult {
   title?: string;
   toneViolations?: string[];
   unverifiedNumbers?: string[];
+  gate?: DeliverableVerdict;
   error?: string;
 }
 
@@ -240,12 +242,28 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
       `SELECT id FROM monthly_memos WHERE client_slug = ? AND month_key = ?`
     ).bind(slug, monthKey).first<{ id: number }>();
 
+    // Gate 3: the editorial ship gate (shadow mode). Records what the judge +
+    // cross-provider verifier would do. Does not change delivery: the memo still
+    // queues for review until the graduation tracker flips the gate live.
+    let gate: DeliverableVerdict | undefined;
+    try {
+      const { gateDeliverable } = await import("./deliverable-judge");
+      gate = await gateDeliverable(env, {
+        artifactType: "monthly_memo",
+        artifactId: row?.id ?? null,
+        clientSlug: slug,
+        factsJson: JSON.stringify(inputs).slice(0, 6000),
+        draftMarkdown: parsed.body_markdown,
+      });
+    } catch { /* gate is best-effort in shadow mode */ }
+
     return {
       ok: true,
       memoId: row?.id,
       title: parsed.title,
       toneViolations: toneViolations.length ? toneViolations : undefined,
       unverifiedNumbers: unverified.length ? unverified : undefined,
+      gate,
     };
   } catch (e) {
     return { ok: false, error: String(e).slice(0, 300) };
