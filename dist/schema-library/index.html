@@ -1,0 +1,523 @@
+<!doctype html>
+<!--
+  /schema-library/ — Phase 2 of the world-class punch list build.
+
+  Pre-written JSON-LD blocks for the page types AI engines actually
+  cite. Each block is deployable as-is (just fill in the bracketed
+  placeholders), validates at validator.schema.org, and is annotated
+  with notes on what each property does and which AI engines reward
+  which properties.
+
+  Lives at neverranked.com/schema-library/. Referenced from per-query
+  playbooks in customer appendices. Built to be useful even for
+  visitors who are not paying customers; the schema is generic, the
+  proprietary work is the per-customer measurement and punch list.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Schema library. Deployable JSON-LD blocks for AI citation.</title>
+<meta name="description" content="Pre-written JSON-LD schema blocks for the page types AI engines actually cite. LocalBusiness, Service, FAQPage, Person, Article, Offer, BreadcrumbList. Each deployable, validated, annotated with per-engine notes.">
+<link rel="canonical" href="https://neverranked.com/schema-library/">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; line-height: 1.7; padding: 60px 0 120px; -webkit-font-smoothing: antialiased; }
+  main { max-width: 860px; margin: 0 auto; padding: 0 32px; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 24px; font-weight: 400; color: #d4c596; margin: 56px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 18px; font-weight: 400; color: #e8e8ea; margin: 24px 0 10px; }
+  h4 { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: #d4c596; margin: 22px 0 8px; font-weight: 400; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  pre {
+    background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px;
+    padding: 18px 20px; overflow-x: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 13px; line-height: 1.55; color: #e8e8ea;
+    margin: 14px 0 22px;
+  }
+  pre .k { color: #d4c596; }
+  pre .s { color: #b9b9bd; }
+  pre .c { color: #6a6a70; font-style: italic; }
+  .toc {
+    background: #0e0e11; border: 1px solid #2a2a2e; border-radius: 6px;
+    padding: 18px 22px; margin: 28px 0;
+  }
+  .toc h4 { margin: 0 0 10px; }
+  .toc ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { color: #b9b9bd; text-decoration: none; }
+  .toc a:hover { color: #d4c596; }
+  .engine-notes {
+    background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px;
+    padding: 14px 18px; margin: 8px 0 18px; font-size: 14px;
+  }
+  .engine-notes strong { color: #d4c596; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 400; }
+  .property-table {
+    width: 100%; border-collapse: collapse; margin: 10px 0 22px;
+    font-size: 13px; color: #b9b9bd;
+  }
+  .property-table th {
+    color: #d4c596; text-align: left; font-weight: 400;
+    letter-spacing: 0.04em; text-transform: uppercase;
+    font-size: 10px; padding: 10px 12px 10px 0;
+    border-bottom: 1px solid #3a3a3e; vertical-align: top;
+  }
+  .property-table td {
+    padding: 8px 12px 8px 0; border-bottom: 1px solid #1c1c1e;
+    vertical-align: top;
+  }
+  .property-table td.req { color: #d4c596; font-family: ui-monospace, monospace; font-size: 11px; }
+  .property-table td code { font-size: 12px; }
+  .rule { width: 60px; height: 1px; background: #3a3a3e; margin: 56px 0; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top">NeverRanked &middot; Schema library</div>
+    <h1>Deployable JSON-LD blocks for AI citation.</h1>
+    <p class="sub">Pre-written schema blocks for the page types AI engines actually cite. Drop into a <code>&lt;script type="application/ld+json"&gt;</code> tag in your page head, fill in the bracketed values, validate at <a href="https://validator.schema.org/">validator.schema.org</a>. Annotated with notes on what each property does and which AI engines read which properties.</p>
+
+    <div class="notice">
+      <strong>Why this exists:</strong> NeverRanked customers' per-query playbooks (the prepped punch list inside the kickoff appendix) name specific schema types to deploy per page type. This library is the deployable form of those recommendations. The schema is generic. The proprietary work is the per-customer measurement and the per-query playbook telling you which schema to deploy where and why.
+    </div>
+
+    <div class="notice" style="border-left-color: #8a8a90;">
+      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across the categories we have measured and seven AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
+    </div>
+
+    <div class="notice" style="border-left-color: #8a8a90;">
+      <strong style="color: #8a8a90;">Where the line is.</strong> NeverRanked publishes this library as a spec. The customer's developer (or the customer's agency) deploys the schema, validates it, and ships the page. NeverRanked does not touch the customer's site, CMS, deploy pipeline, or schema-validator setup. The boundary is structural: we measure, we hand off a spec, the customer or agency executes. That separation is the engagement. Crossing it (NeverRanked deploying schema directly) would compromise the integrity of the measurement, since we cannot honestly measure what we are also responsible for shipping.
+    </div>
+
+    <div class="toc">
+      <h4>Schema types in this library</h4>
+      <ul>
+        <li><a href="#localbusiness">LocalBusiness</a>. The root schema for any local-service firm.</li>
+        <li><a href="#service">Service</a>. One block per service variant the firm offers.</li>
+        <li><a href="#faqpage">FAQPage</a>. The FAQ structure AI engines reward most.</li>
+        <li><a href="#person">Person</a>. Named partners, attorneys, advisors, principals.</li>
+        <li><a href="#article">Article</a>. Case studies, named-byline content, thought leadership.</li>
+        <li><a href="#offer">Offer</a>. For pricing-transparent service pages.</li>
+        <li><a href="#breadcrumblist">BreadcrumbList</a>. Site navigation context.</li>
+        <li><a href="#aggregaterating">AggregateRating</a>. For review-bearing pages.</li>
+        <li><a href="#organization">Organization</a>. Parent schema for the firm itself.</li>
+      </ul>
+    </div>
+
+    <h2>How to use these blocks</h2>
+    <ol>
+      <li>Copy the block for the page type you are building.</li>
+      <li>Replace every bracketed placeholder (e.g., <code>[YOUR FIRM NAME]</code>) with the actual value for your firm.</li>
+      <li>Paste inside <code>&lt;script type="application/ld+json"&gt;...&lt;/script&gt;</code> in the page head.</li>
+      <li>Validate at <a href="https://validator.schema.org/">validator.schema.org</a>. The validator should report no warnings.</li>
+      <li>Test the page renders correctly. Schema is invisible to humans but should not break the page.</li>
+      <li>Wait for AI engines to re-index (typically 4-8 weeks. See your monthly NeverRanked measurement for confirmation).</li>
+    </ol>
+
+    <p><strong>One page can have multiple schema blocks.</strong> A service-specific landing page might have Service + LocalBusiness + FAQPage + BreadcrumbList all on the same page. This is normal and AI engines handle it correctly.</p>
+
+    <div class="rule"></div>
+
+    <h2 id="localbusiness">LocalBusiness</h2>
+    <p>The root schema for any local-service firm (CPA, attorney, dentist, wealth manager, bank branch, med spa, restaurant). Tells AI engines the firm exists, where it is, what it does, and how to reach it. Deploy this on the homepage and any location-specific page.</p>
+
+    <h4>The block</h4>
+    <pre><span class="c">// Drop inside &lt;script type="application/ld+json"&gt;...&lt;/script&gt;</span>
+{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"LocalBusiness"</span>,
+  <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#localbusiness"</span>,
+  <span class="k">"name"</span>: <span class="s">"[YOUR FIRM NAME]"</span>,
+  <span class="k">"url"</span>: <span class="s">"https://[YOUR DOMAIN]/"</span>,
+  <span class="k">"telephone"</span>: <span class="s">"+1-[AREA CODE]-[NUMBER]"</span>,
+  <span class="k">"email"</span>: <span class="s">"[CONTACT EMAIL]"</span>,
+  <span class="k">"image"</span>: <span class="s">"https://[YOUR DOMAIN]/[PATH TO PHOTO].jpg"</span>,
+  <span class="k">"priceRange"</span>: <span class="s">"$$"</span>,
+  <span class="k">"address"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"PostalAddress"</span>,
+    <span class="k">"streetAddress"</span>: <span class="s">"[STREET ADDRESS]"</span>,
+    <span class="k">"addressLocality"</span>: <span class="s">"[CITY]"</span>,
+    <span class="k">"addressRegion"</span>: <span class="s">"[STATE 2-LETTER]"</span>,
+    <span class="k">"postalCode"</span>: <span class="s">"[ZIP]"</span>,
+    <span class="k">"addressCountry"</span>: <span class="s">"US"</span>
+  },
+  <span class="k">"geo"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"GeoCoordinates"</span>,
+    <span class="k">"latitude"</span>: <span class="s">"[LAT]"</span>,
+    <span class="k">"longitude"</span>: <span class="s">"[LNG]"</span>
+  },
+  <span class="k">"openingHoursSpecification"</span>: [{
+    <span class="k">"@type"</span>: <span class="s">"OpeningHoursSpecification"</span>,
+    <span class="k">"dayOfWeek"</span>: [<span class="s">"Monday"</span>, <span class="s">"Tuesday"</span>, <span class="s">"Wednesday"</span>, <span class="s">"Thursday"</span>, <span class="s">"Friday"</span>],
+    <span class="k">"opens"</span>: <span class="s">"08:00"</span>,
+    <span class="k">"closes"</span>: <span class="s">"17:00"</span>
+  }],
+  <span class="k">"sameAs"</span>: [
+    <span class="s">"https://www.linkedin.com/company/[YOUR LINKEDIN]"</span>,
+    <span class="s">"https://www.facebook.com/[YOUR FACEBOOK]"</span>,
+    <span class="s">"https://[OTHER PROFILE]"</span>
+  ]
+}</pre>
+
+    <h4>Property notes</h4>
+    <table class="property-table">
+      <thead><tr><th>Property</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><code>@id</code></td><td>Stable identifier AI engines use to link this LocalBusiness to other schema (Service, Person) on the same page. Use the firm's domain + <code>#localbusiness</code>.</td></tr>
+        <tr><td><code>name</code></td><td>Must match the firm's primary brand name exactly. AI engines cross-reference this with web mentions.</td></tr>
+        <tr><td><code>address</code></td><td>Full <code>PostalAddress</code> object. AI engines extract location signal here for geographic queries. Address must also appear in visible body text.</td></tr>
+        <tr><td><code>geo</code></td><td>Lat/lng coordinates. Some AI engines (particularly Google AI Overviews) prefer geo over address for distance-based ranking.</td></tr>
+        <tr><td><code>openingHoursSpecification</code></td><td>Array of day-range objects. AI engines surface "open now" and "open late" facts directly from this. Get it right.</td></tr>
+        <tr><td><code>sameAs</code></td><td>Array of authoritative profile URLs (LinkedIn, Facebook, industry directory). AI engines use these to confirm entity identity.</td></tr>
+        <tr><td><code>priceRange</code></td><td>Optional. <code>$</code>, <code>$$</code>, <code>$$$</code>, or <code>$$$$</code>. AI engines use this for budget-shaped queries.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="engine-notes">
+      <strong>Per-engine notes</strong><br>
+      <strong>ChatGPT search / Gemini grounded:</strong> read all properties. <code>name</code>, <code>address</code>, and <code>sameAs</code> drive the highest weight.<br>
+      <strong>Perplexity:</strong> heavily uses <code>address</code> and <code>openingHoursSpecification</code> for local intent queries.<br>
+      <strong>Google AI Overviews:</strong> prefers <code>geo</code> + <code>address</code> together, and cross-references with Google Business Profile.<br>
+      <strong>Microsoft Copilot (Bing):</strong> currently weak at extracting LocalBusiness schema. Bing Business Profile is the more direct path.<br>
+      <strong>Claude / Gemma (training data):</strong> don't read live schema. LocalBusiness presence here matters only for future training data refreshes (months to years).
+    </div>
+
+    <h2 id="service">Service</h2>
+    <p>One block per distinct service the firm offers. Deploy on service-specific landing pages. The most important schema for long-tail-by-service queries (e.g., "fee-only tax advisor", "estate planning attorney").</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"Service"</span>,
+  <span class="k">"serviceType"</span>: <span class="s">"[EXACT SERVICE NAME]"</span>,
+  <span class="k">"name"</span>: <span class="s">"[SERVICE NAME AS A BUYER WOULD SAY IT]"</span>,
+  <span class="k">"description"</span>: <span class="s">"[ONE PARAGRAPH DESCRIBING WHAT THE SERVICE COVERS, WHO IT'S FOR, AND WHAT THE DELIVERABLE IS. 50-150 WORDS.]"</span>,
+  <span class="k">"provider"</span>: {
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#localbusiness"</span>
+  },
+  <span class="k">"areaServed"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"AdministrativeArea"</span>,
+    <span class="k">"name"</span>: <span class="s">"[CITY OR REGION YOU SERVE]"</span>
+  },
+  <span class="k">"audience"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"Audience"</span>,
+    <span class="k">"audienceType"</span>: <span class="s">"[BUYER TYPE: small business, individuals, nonprofits, etc.]"</span>
+  },
+  <span class="k">"offers"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"Offer"</span>,
+    <span class="k">"priceCurrency"</span>: <span class="s">"USD"</span>,
+    <span class="k">"price"</span>: <span class="s">"[PRICE OR PRICE RANGE]"</span>,
+    <span class="k">"priceSpecification"</span>: {
+      <span class="k">"@type"</span>: <span class="s">"PriceSpecification"</span>,
+      <span class="k">"priceCurrency"</span>: <span class="s">"USD"</span>,
+      <span class="k">"price"</span>: <span class="s">"[PRICE]"</span>,
+      <span class="k">"description"</span>: <span class="s">"[Hourly, project-based, retainer, etc.]"</span>
+    }
+  }
+}</pre>
+
+    <h4>Property notes</h4>
+    <table class="property-table">
+      <thead><tr><th>Property</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><code>serviceType</code></td><td>Use the exact service name a buyer would type. "Fee-only tax planning" beats "Tax services." Match the query intent.</td></tr>
+        <tr><td><code>description</code></td><td>50-150 words. AI engines often quote this directly. Lead with the deliverable, not your firm's history.</td></tr>
+        <tr><td><code>provider</code></td><td>Reference the firm's LocalBusiness via <code>@id</code>. This links the service to the firm and lets AI cite both together.</td></tr>
+        <tr><td><code>areaServed</code></td><td>Geographic scope. Critical for long-tail-by-geo queries. Use specific city/region names, not "United States."</td></tr>
+        <tr><td><code>audience</code></td><td>Buyer-type signal. AI engines reward pages that visibly target a named audience over generic service pages.</td></tr>
+        <tr><td><code>offers</code></td><td>If you can publish pricing (even a range), do. AI engines preferentially cite price-transparent pages for budget-shaped queries.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="engine-notes">
+      <strong>Per-engine notes</strong><br>
+      <strong>ChatGPT search:</strong> quotes <code>description</code> field verbatim more than any other engine. Write it as a self-contained answer.<br>
+      <strong>Perplexity / Gemini grounded:</strong> use <code>serviceType</code> + <code>areaServed</code> as a combined ranking signal for long-tail queries.<br>
+      <strong>Google AI Overviews:</strong> reads <code>offers</code> for budget queries. Missing pricing drops you from "best for the money" answer sets.<br>
+      <strong>Microsoft Copilot:</strong> reads Service schema lightly and relies more on body text patterns.
+    </div>
+
+    <h2 id="faqpage">FAQPage</h2>
+    <p>One of the highest-leverage schemas for AEO. AI engines preferentially cite pages with FAQPage schema for question-shaped queries because the structured Q&amp;A maps cleanly to what a buyer is asking. Deploy on service pages, location pages, and any page where buyers commonly have follow-up questions.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"FAQPage"</span>,
+  <span class="k">"mainEntity"</span>: [
+    {
+      <span class="k">"@type"</span>: <span class="s">"Question"</span>,
+      <span class="k">"name"</span>: <span class="s">"[A QUESTION YOUR BUYER ACTUALLY ASKS]"</span>,
+      <span class="k">"acceptedAnswer"</span>: {
+        <span class="k">"@type"</span>: <span class="s">"Answer"</span>,
+        <span class="k">"text"</span>: <span class="s">"[DIRECT, COMPLETE ANSWER. 2-5 SENTENCES. WRITE AS IF QUOTED BY AI.]"</span>
+      }
+    },
+    {
+      <span class="k">"@type"</span>: <span class="s">"Question"</span>,
+      <span class="k">"name"</span>: <span class="s">"[ANOTHER REAL QUESTION]"</span>,
+      <span class="k">"acceptedAnswer"</span>: {
+        <span class="k">"@type"</span>: <span class="s">"Answer"</span>,
+        <span class="k">"text"</span>: <span class="s">"[DIRECT ANSWER]"</span>
+      }
+    }
+  ]
+}</pre>
+
+    <h4>Rules for the FAQ</h4>
+    <ul>
+      <li><strong>Questions must be real.</strong> Use questions buyers actually ask, not marketing-shaped questions. AI engines preferentially cite pages where the Q&amp;A maps to common buyer intent.</li>
+      <li><strong>Answers must be direct.</strong> 2-5 sentences. AI engines quote the <code>text</code> field verbatim. Write it as if it's about to be the AI's answer to a buyer.</li>
+      <li><strong>Visible AND schema.</strong> The same Q&amp;A must appear in visible body text on the page, not just in schema. AI engines cross-check.</li>
+      <li><strong>5-8 questions is the sweet spot.</strong> Fewer than 3 looks thin. More than 12 dilutes signal.</li>
+      <li><strong>No nested HTML in answers.</strong> Plain text only. <code>&lt;br&gt;</code> or markup breaks AI quoting.</li>
+    </ul>
+
+    <div class="engine-notes">
+      <strong>Per-engine notes</strong><br>
+      <strong>ChatGPT search:</strong> quotes <code>acceptedAnswer.text</code> directly in answers. This is the single highest-leverage schema for ChatGPT citation.<br>
+      <strong>Perplexity:</strong> reads FAQPage but weights it lower than independent third-party content.<br>
+      <strong>Google AI Overviews:</strong> heavily rewards FAQ schema and can surface individual Q&amp;A pairs as standalone answers.<br>
+      <strong>Microsoft Copilot:</strong> reads visible Q&amp;A patterns from body text more than the schema itself.<br>
+      <strong>Claude / Gemma:</strong> training-data only. FAQ schema matters only for future training refresh.
+    </div>
+
+    <h2 id="person">Person</h2>
+    <p>Named partners, attorneys, advisors, principals. Critical for high-trust professional-services categories (law, wealth, accounting) where AI engines cite specific named professionals more often than firms.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"Person"</span>,
+  <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/team/[SLUG]#person"</span>,
+  <span class="k">"name"</span>: <span class="s">"[FULL NAME]"</span>,
+  <span class="k">"jobTitle"</span>: <span class="s">"[ROLE: Partner, Senior Wealth Advisor, etc.]"</span>,
+  <span class="k">"image"</span>: <span class="s">"https://[YOUR DOMAIN]/[PHOTO PATH].jpg"</span>,
+  <span class="k">"description"</span>: <span class="s">"[ONE-PARAGRAPH BIO. 50-100 WORDS. NAME THE PERSON'S SPECIALTY, NOT GENERIC PRAISE.]"</span>,
+  <span class="k">"worksFor"</span>: {
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#localbusiness"</span>
+  },
+  <span class="k">"alumniOf"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"EducationalOrganization"</span>,
+    <span class="k">"name"</span>: <span class="s">"[INSTITUTION]"</span>
+  },
+  <span class="k">"hasCredential"</span>: [
+    <span class="s">"[CREDENTIAL: CPA, JD, CFP, MD, etc.]"</span>,
+    <span class="s">"[ADDITIONAL CREDENTIAL]"</span>
+  ],
+  <span class="k">"knowsAbout"</span>: [
+    <span class="s">"[SUBJECT AREA THIS PERSON SPECIALIZES IN]"</span>,
+    <span class="s">"[ANOTHER SUBJECT AREA]"</span>
+  ],
+  <span class="k">"sameAs"</span>: [
+    <span class="s">"https://www.linkedin.com/in/[LINKEDIN SLUG]"</span>,
+    <span class="s">"https://[OTHER PROFESSIONAL PROFILE]"</span>
+  ]
+}</pre>
+
+    <h4>Property notes</h4>
+    <table class="property-table">
+      <thead><tr><th>Property</th><th>Why it matters</th></tr></thead>
+      <tbody>
+        <tr><td><code>knowsAbout</code></td><td>Array of subject areas. The single highest-leverage Person property for AI citation. List specific specialties, not generic categories.</td></tr>
+        <tr><td><code>hasCredential</code></td><td>Professional credentials. AI engines cite credentialed people more often for trust-shaped queries.</td></tr>
+        <tr><td><code>alumniOf</code></td><td>Educational background. Particularly important for attorneys (law school) and financial advisors (designations).</td></tr>
+        <tr><td><code>sameAs</code></td><td>Professional profile URLs. LinkedIn is most important. Industry-specific profiles (Bar association, AICPA, CFP Board) add weight.</td></tr>
+        <tr><td><code>worksFor</code></td><td>Links to the firm's LocalBusiness via <code>@id</code>. Lets AI cite person + firm together.</td></tr>
+      </tbody>
+    </table>
+
+    <div class="engine-notes">
+      <strong>Per-engine notes</strong><br>
+      <strong>Claude / Gemma (training data):</strong> Person schema with strong <code>knowsAbout</code> + <code>sameAs</code> compounds in training data over years. The slowest-moving but most defensible AEO surface for named professionals.<br>
+      <strong>ChatGPT search / Perplexity:</strong> use <code>jobTitle</code> + <code>knowsAbout</code> as a combined relevance signal for expertise queries.<br>
+      <strong>Google AI Overviews:</strong> cross-references <code>sameAs</code> URLs heavily. Missing LinkedIn drops you from named-expert answer sets.
+    </div>
+
+    <h2 id="article">Article</h2>
+    <p>For case studies, named-byline thought leadership, technical explainers. Critical for high-trust professional services where editorial presence drives training-data engine citations over time.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"Article"</span>,
+  <span class="k">"headline"</span>: <span class="s">"[ARTICLE TITLE, &lt;= 110 CHARS]"</span>,
+  <span class="k">"description"</span>: <span class="s">"[ONE-SENTENCE SUMMARY]"</span>,
+  <span class="k">"image"</span>: <span class="s">"https://[YOUR DOMAIN]/[HERO IMAGE].jpg"</span>,
+  <span class="k">"datePublished"</span>: <span class="s">"YYYY-MM-DD"</span>,
+  <span class="k">"dateModified"</span>: <span class="s">"YYYY-MM-DD"</span>,
+  <span class="k">"author"</span>: {
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/team/[AUTHOR SLUG]#person"</span>
+  },
+  <span class="k">"publisher"</span>: {
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#localbusiness"</span>
+  },
+  <span class="k">"mainEntityOfPage"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"WebPage"</span>,
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/[ARTICLE PATH]"</span>
+  },
+  <span class="k">"about"</span>: [
+    <span class="s">"[SUBJECT AREA]"</span>,
+    <span class="s">"[ANOTHER SUBJECT AREA]"</span>
+  ]
+}</pre>
+
+    <h4>Rules for Article</h4>
+    <ul>
+      <li><strong>Always reference a Person via <code>author.@id</code>.</strong> Anonymous Articles get cited less. AI engines preferentially cite named-byline content.</li>
+      <li><strong><code>datePublished</code> and <code>dateModified</code> matter.</strong> AI engines deprioritize stale content. Updated dates keep articles citation-eligible longer.</li>
+      <li><strong><code>about</code> is the most overlooked property.</strong> Specific subject areas help AI route the article to the right query intents.</li>
+    </ul>
+
+    <h2 id="offer">Offer</h2>
+    <p>For service pages with transparent pricing. AI engines cite price-transparent pages more often for budget-shaped queries (e.g., "affordable", "best value", "under $X").</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"Offer"</span>,
+  <span class="k">"name"</span>: <span class="s">"[OFFER NAME]"</span>,
+  <span class="k">"description"</span>: <span class="s">"[WHAT THE OFFER INCLUDES]"</span>,
+  <span class="k">"price"</span>: <span class="s">"[PRICE NUMBER, NO CURRENCY SYMBOL]"</span>,
+  <span class="k">"priceCurrency"</span>: <span class="s">"USD"</span>,
+  <span class="k">"availability"</span>: <span class="s">"https://schema.org/InStock"</span>,
+  <span class="k">"validFrom"</span>: <span class="s">"YYYY-MM-DD"</span>,
+  <span class="k">"itemOffered"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"Service"</span>,
+    <span class="k">"name"</span>: <span class="s">"[SERVICE NAME]"</span>
+  },
+  <span class="k">"priceSpecification"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"UnitPriceSpecification"</span>,
+    <span class="k">"price"</span>: <span class="s">"[PRICE]"</span>,
+    <span class="k">"priceCurrency"</span>: <span class="s">"USD"</span>,
+    <span class="k">"unitText"</span>: <span class="s">"[per hour, per project, per month, etc.]"</span>
+  }
+}</pre>
+
+    <p>For ranges, use <code>PriceRange</code> instead of <code>Offer</code>. For free initial consultations, set <code>price</code> to <code>"0"</code> with <code>description</code> noting "initial consultation."</p>
+
+    <h2 id="breadcrumblist">BreadcrumbList</h2>
+    <p>Site navigation context. Tells AI engines how this page fits in your site structure. Particularly important for service-specific or location-specific deep pages.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"BreadcrumbList"</span>,
+  <span class="k">"itemListElement"</span>: [
+    {
+      <span class="k">"@type"</span>: <span class="s">"ListItem"</span>,
+      <span class="k">"position"</span>: 1,
+      <span class="k">"name"</span>: <span class="s">"Home"</span>,
+      <span class="k">"item"</span>: <span class="s">"https://[YOUR DOMAIN]/"</span>
+    },
+    {
+      <span class="k">"@type"</span>: <span class="s">"ListItem"</span>,
+      <span class="k">"position"</span>: 2,
+      <span class="k">"name"</span>: <span class="s">"Services"</span>,
+      <span class="k">"item"</span>: <span class="s">"https://[YOUR DOMAIN]/services/"</span>
+    },
+    {
+      <span class="k">"@type"</span>: <span class="s">"ListItem"</span>,
+      <span class="k">"position"</span>: 3,
+      <span class="k">"name"</span>: <span class="s">"[SPECIFIC SERVICE]"</span>,
+      <span class="k">"item"</span>: <span class="s">"https://[YOUR DOMAIN]/services/[SLUG]"</span>
+    }
+  ]
+}</pre>
+
+    <h2 id="aggregaterating">AggregateRating</h2>
+    <p>For pages displaying review summaries. Use only with real, verifiable reviews. Fake or unverified ratings will get the page penalized.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"AggregateRating"</span>,
+  <span class="k">"itemReviewed"</span>: {
+    <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#localbusiness"</span>
+  },
+  <span class="k">"ratingValue"</span>: <span class="s">"[ACTUAL AVERAGE, e.g., 4.8]"</span>,
+  <span class="k">"bestRating"</span>: <span class="s">"5"</span>,
+  <span class="k">"worstRating"</span>: <span class="s">"1"</span>,
+  <span class="k">"reviewCount"</span>: <span class="s">"[ACTUAL COUNT]"</span>
+}</pre>
+
+    <p><strong>Important:</strong> <code>ratingValue</code> and <code>reviewCount</code> must reflect a verifiable source (Google Business Profile, Yelp, etc.). Inflated or fabricated values violate Google's structured-data guidelines and risk de-indexing.</p>
+
+    <h2 id="organization">Organization</h2>
+    <p>The umbrella schema for the firm as an entity (separate from a specific LocalBusiness location). Use for multi-location firms or firms whose primary entity is more abstract than a single physical location.</p>
+
+    <h4>The block</h4>
+    <pre>{
+  <span class="k">"@context"</span>: <span class="s">"https://schema.org"</span>,
+  <span class="k">"@type"</span>: <span class="s">"Organization"</span>,
+  <span class="k">"@id"</span>: <span class="s">"https://[YOUR DOMAIN]/#organization"</span>,
+  <span class="k">"name"</span>: <span class="s">"[FIRM NAME]"</span>,
+  <span class="k">"url"</span>: <span class="s">"https://[YOUR DOMAIN]/"</span>,
+  <span class="k">"logo"</span>: <span class="s">"https://[YOUR DOMAIN]/[LOGO PATH]"</span>,
+  <span class="k">"description"</span>: <span class="s">"[ONE-PARAGRAPH FIRM DESCRIPTION]"</span>,
+  <span class="k">"foundingDate"</span>: <span class="s">"YYYY"</span>,
+  <span class="k">"founders"</span>: [{
+    <span class="k">"@type"</span>: <span class="s">"Person"</span>,
+    <span class="k">"name"</span>: <span class="s">"[FOUNDER NAME]"</span>
+  }],
+  <span class="k">"areaServed"</span>: {
+    <span class="k">"@type"</span>: <span class="s">"AdministrativeArea"</span>,
+    <span class="k">"name"</span>: <span class="s">"[REGION YOU SERVE]"</span>
+  },
+  <span class="k">"sameAs"</span>: [
+    <span class="s">"https://www.linkedin.com/company/[SLUG]"</span>,
+    <span class="s">"https://en.wikipedia.org/wiki/[WIKI SLUG IF EXISTS]"</span>
+  ]
+}</pre>
+
+    <div class="rule"></div>
+
+    <h2>Common mistakes to avoid</h2>
+    <ul>
+      <li><strong>Schema that contradicts visible page content.</strong> AI engines cross-check. If schema says you serve Hawaii and the body text says California, both signals get downweighted.</li>
+      <li><strong>Generic <code>description</code> fields.</strong> "Leading provider of services in our category" tells AI nothing. Specific, deliverable-focused descriptions get quoted.</li>
+      <li><strong>Schema-only with no visible counterpart.</strong> The FAQ, the service description, the address all need to appear in body text too. Schema-only signals get treated as cloaking.</li>
+      <li><strong>Stale <code>dateModified</code>.</strong> Update when you make material changes. AI engines penalize content marked fresh that hasn't actually changed.</li>
+      <li><strong>Missing <code>@id</code> linkages.</strong> Without <code>@id</code>, AI engines can't connect Service to LocalBusiness to Person on the same page. Add stable <code>@id</code> values everywhere.</li>
+      <li><strong>One giant block for everything.</strong> Use separate <code>&lt;script type="application/ld+json"&gt;</code> tags per schema type. Easier to validate, easier to update.</li>
+    </ul>
+
+    <h2>Validation</h2>
+    <p>After deploying any schema:</p>
+    <ol>
+      <li>Paste your live URL into <a href="https://validator.schema.org/">validator.schema.org</a>.</li>
+      <li>Fix any errors (these block AI engines from reading the schema at all).</li>
+      <li>Address warnings where they apply (these reduce AI confidence in the schema).</li>
+      <li>For Google-specific validation, also test at <a href="https://search.google.com/test/rich-results">Google Rich Results Test</a>.</li>
+      <li>Re-validate any time you change the schema.</li>
+    </ol>
+
+    <h2>What happens next</h2>
+    <p>Schema deployment is necessary but not sufficient for AI citation. The full path:</p>
+    <ol>
+      <li><strong>Deploy the schema</strong> matching the page's intent (this library).</li>
+      <li><strong>Match the body content shape</strong> the cited competitors use (median word count, H2 structure, FAQ presence, all surfaced in your per-query NeverRanked playbook).</li>
+      <li><strong>Internal link the page</strong> from existing high-traffic site sections so crawlers find it within the first re-index cycle.</li>
+      <li><strong>Wait 4-8 weeks</strong> for AI engines to re-index. Training-data engines (Claude, Gemma) take much longer. They reflect schema changes on the next model training cycle.</li>
+      <li><strong>Verify in your monthly NeverRanked measurement</strong> that the page is now being cited on the target queries.</li>
+    </ol>
+
+    <p style="margin-top: 32px;"><a href="/methodology/">How NeverRanked measures</a> &middot; <a href="/teardowns/">Public teardowns</a> &middot; <a href="/">Return to NeverRanked</a></p>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>

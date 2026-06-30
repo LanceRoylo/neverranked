@@ -175,8 +175,8 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52</pre>
 
     <h2 id="noise">Noise control</h2>
-    <p>AI engines produce different answers to the same query on different runs, so we treat repetition as the signal test. A citation that appears in only one of three reps is a single-shot. A citation in two of three reps is a moderate signal. A citation in all three reps is the strongest single-day signal we report. Aggregate frequencies over the three-week kickoff are what the punch list is built against.</p>
-    <p>The mechanism: every query runs three times per engine per day, and the daily cadence continues past the three-week kickoff as the standing measurement. Across a three-week kickoff alone, that is roughly 18 × 3 × 5 × 21 = 5,670 citation captures per engagement on the citation-grade engines, plus the model-knowledge captures.</p>
+    <p>AI engines produce different answers to the same query on different runs, so we treat repetition as the signal test. In a measurement run, where a query is sampled three times per engine, a citation in one of three reps is a single-shot, two of three is a moderate signal, and all three is the strongest signal we report. The standing daily measurement applies the same logic across days. Aggregate frequencies over the three-week kickoff are what the punch list is built against.</p>
+    <p>The mechanism: the standing measurement runs every query once per engine per day, seven days a week, and that daily cadence continues past the three-week kickoff. Across a three-week kickoff, that is roughly 18 × 1 × 5 × 21 = 1,890 citation captures per engagement on the citation-grade engines, plus the model-knowledge captures.</p>
 
     <h2 id="classifier">Source-type classifier</h2>
     <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier logic is documented here as part of the method. The buckets:</p>

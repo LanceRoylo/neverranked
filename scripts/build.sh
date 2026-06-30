@@ -79,6 +79,14 @@ DIRS=(
   # teardowns/ added 2026-05-23 — bank-honolulu populated from the
   # first 7-engine measurement runs. Future teardowns ship under
   # /teardowns/<slug>/ following the same template pattern.
+  # These four are linked from the homepage "Where to dig in" section but
+  # were never in DIRS, so they shipped as a soft-200 homepage fallback
+  # (dead links on the primary funnel page). Added 2026-06-29 to unfreeze.
+  # Keep this set in sync with .github/workflows/deploy.yml paths.
+  directories
+  results
+  schema-library
+  templates
 )
 
 echo "Building dist/ from repo root…"
