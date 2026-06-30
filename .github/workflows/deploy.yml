@@ -59,6 +59,7 @@ on:
       - 'templates/**'
       # Build + config
       - 'wrangler.jsonc'
+      - 'worker.js'
       - 'scripts/build.sh'
       - '.github/workflows/deploy.yml'
   workflow_dispatch:

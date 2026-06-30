@@ -1883,7 +1883,7 @@
       if (!queryEl) return;
       var namedFirms = document.querySelectorAll('.hpr-named');
       var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-      var queries = [
+      var HAWAII_QUERIES = [
         'best boutique hotel in Waikiki',
         'best wealth manager in Hawaii',
         'best dentist in Honolulu',
@@ -1891,10 +1891,19 @@
         'best bank for small business in Hawaii',
         'top CPA firms in Honolulu'
       ];
-      if (prefersReduced) {
-        queryEl.textContent = queries[0];
-        return;
+      // Templated to the viewer's own city when Cloudflare resolves it, so the
+      // problem reads as their market. Falls back to the Hawaii set otherwise.
+      function queriesForCity(city) {
+        return [
+          'best boutique hotel in ' + city,
+          'best wealth manager in ' + city,
+          'best dentist in ' + city,
+          'law firm for business owners in ' + city,
+          'best bank for small business in ' + city,
+          'top CPA firms in ' + city
+        ];
       }
+      var queries = HAWAII_QUERIES;   // replaced once /geo resolves
 
       // Type-then-delete loop. Feels like someone keying a prompt
       // into a real LLM, holding while it answers, then clearing
@@ -1936,7 +1945,7 @@
         });
       }
 
-      (function loop() {
+      function loop() {
         var q = queries[qi];
         var firm = namedFirms.length ? namedFirms[qi % namedFirms.length] : null;
         typeOut(q)
@@ -1954,7 +1963,33 @@
             if (r.bottom < 0 || r.top > window.innerHeight) { setTimeout(loop, 1500); return; }
             loop();
           });
-      })();
+      }
+
+      // Resolve the query set from /geo (Cloudflare's own edge geolocation, no
+      // permission prompt, no third party), then start. A short timeout means
+      // the phone never sits blank, and any failure falls back to the Hawaii set.
+      var started = false;
+      function begin(qs) {
+        if (started) return;
+        started = true;
+        queries = qs;
+        qi = 0;
+        if (prefersReduced) {
+          queryEl.textContent = queries[0];
+          if (namedFirms[0]) namedFirms[0].classList.add('hpr-picked');
+          return;
+        }
+        loop();
+      }
+      var geoTimer = setTimeout(function () { begin(HAWAII_QUERIES); }, 1200);
+      fetch('/geo', { headers: { 'accept': 'application/json' } })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (d) {
+          clearTimeout(geoTimer);
+          var city = d && typeof d.city === 'string' ? d.city.trim() : '';
+          begin(city ? queriesForCity(city) : HAWAII_QUERIES);
+        })
+        .catch(function () { clearTimeout(geoTimer); begin(HAWAII_QUERIES); });
     })();
 
     /* Hero status-bar clock: show the viewer's own local time, in their
