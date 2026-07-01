@@ -53,6 +53,7 @@ HONESTY GUARDRAILS:
 - Never promise a lift or a result. Measure, do not predict.
 - Never claim causation. State correlation as correlation.
 - If the data is thin or a window is short, say so plainly rather than over-reading it.
+- Every number must come from THIS data payload. For competitors, cite each member's share_pct (already computed and ranked highest-first); never present a raw mention count as a percentage, and keep the ranking consistent with the shares. For prior-period figures, use the prior values in this payload, not any number quoted inside the included prior memo text.
 
 OUTPUT FORMAT:
 Return ONLY a JSON object, no prose around it:
@@ -87,7 +88,7 @@ function allowedNumberSet(inp: MemoInputs): Set<string> {
   add(inp.cohort.customer_mentions);
   add(inp.cohort.members.length);
   add(inp.cohort.members.length + 1); // cohort + customer
-  for (const m of inp.cohort.members) add(m.mentions);
+  for (const m of inp.cohort.members) { add(m.mentions); add(m.share_pct); }
   for (const e of inp.by_engine) { add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs); }
   for (const qn of inp.by_question) { add(qn.current_pct); add(qn.prior_pct); add(Math.abs(qn.delta_pp)); add(qn.current_runs); }
   for (const st of inp.offsite.source_types) add(st.share_pct);

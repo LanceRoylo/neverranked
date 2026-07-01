@@ -26,6 +26,10 @@ import { recentDecisions } from "./decision-log";
 import { gradeWithLLM } from "./qa-llm-grader";
 
 const JUDGE_MODEL = "claude-opus-4-8";
+// Capable + confirmed-working (the memo generator uses it). The judge falls
+// back to this if the primary model is unavailable, so the gate never goes
+// dark. The verdict records when it fell back.
+const JUDGE_FALLBACK_MODEL = "claude-sonnet-4-5";
 const VERIFY_MODEL = "gpt-4o";
 
 // A cheap, deterministic hash of a drafted body. The graduation tracker
@@ -60,6 +64,46 @@ export interface GateArgs {
   clientSlug?: string | null;
   factsJson: string;
   draftMarkdown: string;
+}
+
+// One judge call against a specific model. Returns the parsed verdict, or an
+// error string so the caller can fall back and surface WHY the model failed
+// (instead of silently returning "judge layer unavailable").
+async function callJudgeModel(
+  key: string, model: string, system: string, user: string,
+): Promise<{ verdict: "ship" | "escalate"; confidence: "high" | "medium" | "low"; reasons: string[] } | { error: string }> {
+  let resp: Response;
+  try {
+    resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
+      body: JSON.stringify({ model, max_tokens: 700, temperature: 0.1, system, messages: [{ role: "user", content: user }] }),
+      signal: AbortSignal.timeout(45000),
+    });
+  } catch (e) {
+    return { error: `${model}: fetch failed (${String(e).slice(0, 100)})` };
+  }
+  if (!resp.ok) {
+    const b = await resp.text().catch(() => "");
+    return { error: `${model}: HTTP ${resp.status} ${b.slice(0, 160)}` };
+  }
+  let text = "";
+  try {
+    const data = (await resp.json()) as { content?: Array<{ text?: string }> };
+    text = (data.content?.map((b) => b.text || "").join("") || "").trim();
+  } catch {
+    return { error: `${model}: unreadable response body` };
+  }
+  try {
+    const m = text.match(/\{[\s\S]*\}/);
+    const obj = JSON.parse(m ? m[0] : text) as { verdict?: string; confidence?: string; reasons?: unknown };
+    const verdict = obj.verdict === "ship" ? "ship" : "escalate";
+    const confidence = (["high", "medium", "low"] as const).includes(obj.confidence as "high") ? (obj.confidence as "high" | "medium" | "low") : "low";
+    const reasons = Array.isArray(obj.reasons) ? obj.reasons.map(String).slice(0, 5) : [];
+    return { verdict, confidence, reasons };
+  } catch {
+    return { error: `${model}: unparseable verdict` };
+  }
 }
 
 // ── the judge: Anthropic Opus 4.8, grounded on lance_decisions ──────
@@ -100,35 +144,23 @@ ${args.draftMarkdown.slice(0, 8000)}
 
 Would Lance ship this as-is? Return only the JSON verdict.`;
 
-  let resp: Response;
-  try {
-    resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model: JUDGE_MODEL, max_tokens: 700, temperature: 0.1, system, messages: [{ role: "user", content: user }] }),
-      signal: AbortSignal.timeout(45000),
-    });
-  } catch {
-    return null;
+  // Try the primary judge model, then the fallback. Capture the primary error
+  // so a degraded verdict stays transparent about which model actually judged.
+  const models = [JUDGE_MODEL, JUDGE_FALLBACK_MODEL];
+  const errors: string[] = [];
+  for (let i = 0; i < models.length; i++) {
+    const r = await callJudgeModel(key, models[i], system, user);
+    if ("verdict" in r) {
+      if (i > 0) {
+        console.warn(`deliverable judge fell back to ${models[i]}; primary error: ${errors[0] ?? "?"}`);
+        r.reasons = [...r.reasons, `[judged by fallback ${models[i]}; primary unavailable: ${errors[0] ?? "unknown"}]`].slice(0, 6);
+      }
+      return r;
+    }
+    errors.push(r.error);
   }
-  if (!resp.ok) return null;
-  let text = "";
-  try {
-    const data = (await resp.json()) as { content?: Array<{ text?: string }> };
-    text = (data.content?.map((b) => b.text || "").join("") || "").trim();
-  } catch {
-    return null;
-  }
-  try {
-    const m = text.match(/\{[\s\S]*\}/);
-    const obj = JSON.parse(m ? m[0] : text) as { verdict?: string; confidence?: string; reasons?: unknown };
-    const verdict = obj.verdict === "ship" ? "ship" : "escalate";
-    const confidence = (["high", "medium", "low"] as const).includes(obj.confidence as "high") ? (obj.confidence as "high" | "medium" | "low") : "low";
-    const reasons = Array.isArray(obj.reasons) ? obj.reasons.map(String).slice(0, 5) : [];
-    return { verdict, confidence, reasons };
-  } catch {
-    return null;
-  }
+  console.warn(`deliverable judge unavailable across all models: ${errors.join(" | ")}`);
+  return null;
 }
 
 // ── the verifier: OpenAI gpt-4o, adversarial, only on a "ship" verdict ──

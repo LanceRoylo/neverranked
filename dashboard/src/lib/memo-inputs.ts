@@ -39,7 +39,7 @@ export interface MemoInputs {
   }>;
   cohort: {
     rank: number | null;
-    members: Array<{ domain: string; label: string | null; mentions: number }>;
+    members: Array<{ domain: string; label: string | null; mentions: number; share_pct: number }>;
     customer_mentions: number;
   };
   offsite: {
@@ -149,8 +149,12 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
 
   // ── Cohort rank (legacy run-based; overridden by snapshot below) ──
+  const legacyVenueTotal = Array.from(cohortMentions.values()).reduce((a, n) => a + n, 0) + curCited;
   const cohortMembersLegacy = Array.from(cohortHosts.entries())
-    .map(([key, label]) => ({ domain: key, label, mentions: cohortMentions.get(key) ?? 0 }))
+    .map(([key, label]) => {
+      const mentions = cohortMentions.get(key) ?? 0;
+      return { domain: key, label, mentions, share_pct: legacyVenueTotal > 0 ? +(100 * mentions / legacyVenueTotal).toFixed(1) : 0 };
+    })
     .sort((a, b) => b.mentions - a.mentions);
   const allCountsLegacy = [...cohortMembersLegacy.map((m) => m.mentions), curCited].sort((a, b) => b - a);
   const rankLegacy = cohortMembersLegacy.length > 0 ? allCountsLegacy.indexOf(curCited) + 1 : null;
@@ -215,7 +219,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     const allCounts = [...comps.map((c) => c.mentions), ownedCitations].sort((a, b) => b - a);
     cohort = {
       rank: comps.length ? allCounts.indexOf(ownedCitations) + 1 : null,
-      members: comps,
+      members: comps.map((c) => ({ ...c, share_pct: venueTotal > 0 ? +(100 * c.mentions / venueTotal).toFixed(1) : 0 })),
       customer_mentions: ownedCitations,
     };
 
