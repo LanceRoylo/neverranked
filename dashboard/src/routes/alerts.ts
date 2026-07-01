@@ -1,13 +1,19 @@
 /**
- * Dashboard -- Client alerts page
+ * Dashboard -- alerts page (two lanes)
  *
- * Shows all alerts for the current user's client, lets them
- * mark individual alerts as read, or mark all as read.
+ * Needs you  = UNREAD concerns (a human must act), worst severity first,
+ *              each with a fix affordance (resolve in-app, or copy a fix
+ *              request for Claude).
+ * Activity   = routine + good-news + anything already read. A feed, not an
+ *              alarm. Kept out of the count so the badge stays honest.
+ *
+ * Lane + severity come from classifyAlert() in lib/alert-triage.ts.
  */
 
 import type { Env, User } from "../types";
 import { layout, html, esc, redirect } from "../render";
 import { isCustomerVisibleAlert } from "../admin-alerts";
+import { classifyAlert, isConcernType, severityRank, type AlertSeverity } from "../lib/alert-triage";
 
 interface Alert {
   id: number;
@@ -116,103 +122,132 @@ function alertActionUrl(a: Alert, isAdmin: boolean): string | null {
 
 export async function handleAlerts(user: User, env: Env): Promise<Response> {
   const clientSlug = user.role === "admin" ? null : user.client_slug;
+  const isAdmin = user.role === "admin";
 
   let alerts: Alert[];
   if (clientSlug) {
-    // CUSTOMER alerts page: gate out internal ops/infra alert types so a
-    // customer never sees ops diagnostics (htc_events_*, atlas_flag,
-    // deploy, cron, etc.). Fetch extra and filter so internal bursts can't
-    // crowd genuine wins out of the visible 50. (Leak fixed 2026-06-01.)
+    // Customer view: gate out internal ops types first (leak fix 2026-06-01).
     alerts = (await env.DB.prepare(
-      "SELECT * FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 120"
+      "SELECT * FROM admin_alerts WHERE client_slug = ? ORDER BY created_at DESC LIMIT 200"
     ).bind(clientSlug).all<Alert>())
-      .results.filter((a) => isCustomerVisibleAlert(a.type)).slice(0, 50);
+      .results.filter((a) => isCustomerVisibleAlert(a.type)).slice(0, 80);
   } else {
-    // ADMIN: sees everything, including internal ops alerts.
     alerts = (await env.DB.prepare(
-      "SELECT * FROM admin_alerts ORDER BY created_at DESC LIMIT 100"
+      "SELECT * FROM admin_alerts ORDER BY created_at DESC LIMIT 150"
     ).all<Alert>()).results;
   }
 
-  const unreadCount = alerts.filter(a => !a.read_at).length;
+  // Triage into lanes. Needs-you = UNREAD concerns (worst severity first, then
+  // newest). Activity = routine types plus anything already read.
+  const triaged = alerts.map((a) => ({ a, t: classifyAlert(a.type) }));
+  const needsYou = triaged
+    .filter((x) => !x.a.read_at && x.t.lane === "needs_you")
+    .sort((p, q) => severityRank(p.t.severity) - severityRank(q.t.severity) || q.a.created_at - p.a.created_at);
+  const activity = triaged.filter((x) => !(!x.a.read_at && x.t.lane === "needs_you"));
+  const unreadActivity = activity.filter((x) => !x.a.read_at).length;
 
-  const isAdmin = user.role === "admin";
-  const alertRows = alerts.length > 0 ? alerts.map(a => {
+  const sevColor = (s: AlertSeverity) => s === "high" ? "var(--red,#e07158)" : s === "medium" ? "var(--gold,#e8c767)" : "var(--text-faint)";
+  const dateStr = (ts: number) => {
+    const d = new Date(ts * 1000);
+    return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })} at ${d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`;
+  };
+  const titleLink = (a: Alert) => {
+    const url = alertActionUrl(a, isAdmin);
+    const ct = url ? `/alerts/click/${a.id}?next=${encodeURIComponent(url)}` : null;
+    return ct
+      ? `<a href="${ct}" style="font-size:14px;color:var(--text);text-decoration:none;border-bottom:1px solid transparent" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(a.title)}</a>`
+      : `<span style="font-size:14px;color:var(--text)">${esc(a.title)}</span>`;
+  };
+  const clientTag = (a: Alert) => (user.role === "admin" && !user._viewAsClient && a.client_slug) ? `<span>${esc(a.client_slug)}</span>` : "";
+  const markReadBtn = (a: Alert) => `
+    <form method="POST" action="/alerts/read/${a.id}" style="display:inline">
+      <button type="submit" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);background:none;border:1px solid var(--line);padding:4px 10px;border-radius:2px;cursor:pointer">Mark read</button>
+    </form>`;
+
+  // Needs-you row: severity pill, the concern, and a fix affordance.
+  const needsYouRow = ({ a, t }: { a: Alert; t: ReturnType<typeof classifyAlert> }) => {
+    const c = sevColor(t.severity);
+    const fixReq = `In the NeverRanked dashboard, an alert needs attention.\n[${a.type}]${a.client_slug ? " (" + a.client_slug + ")" : ""} ${a.title}\n${a.detail ? "Detail: " + a.detail + "\n" : ""}Suggested fix: ${t.fixHint}\nInvestigate and resolve it, then confirm the underlying condition cleared.`;
+    return `
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid rgba(251,248,239,.06);border-left:3px solid ${c}">
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:5px;flex-wrap:wrap">
+            <span style="font-family:var(--label);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:${c};border:1px solid ${c};padding:1px 6px;border-radius:2px">${t.severity}</span>
+            ${titleLink(a)}
+          </div>
+          ${a.detail ? `<div style="font-size:12px;color:var(--text-faint);line-height:1.5;margin-bottom:8px">${esc(a.detail)}</div>` : ""}
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text-faint);flex-wrap:wrap">
+            <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:9px">${esc(alertTypeLabel(a.type))}</span>
+            ${clientTag(a)}
+            <span>${dateStr(a.created_at)}</span>
+          </div>
+        </div>
+        <div style="flex-shrink:0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+          ${a.roadmap_item_id ? `<a href="/roadmap/${encodeURIComponent(a.client_slug)}" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--line);padding:4px 10px;border-radius:2px;text-decoration:none">Resolve</a>` : ""}
+          <button type="button" class="alert-fix" data-fix="${esc(fixReq)}" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);background:none;border:1px solid var(--gold);padding:4px 10px;border-radius:2px;cursor:pointer">Copy fix request</button>
+          ${markReadBtn(a)}
+        </div>
+      </div>`;
+  };
+
+  // Activity row: the lighter feed. No severity, no fix button.
+  const activityRow = ({ a }: { a: Alert; t: ReturnType<typeof classifyAlert> }) => {
     const { icon, color } = alertIcon(a.type);
     const isRead = !!a.read_at;
-    const date = new Date(a.created_at * 1000);
-    const dateStr = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    const timeStr = date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    const opacity = isRead ? "opacity:.55" : "";
-    const actionUrl = alertActionUrl(a, isAdmin);
-    // Title is a link to the action page. Routed through
-    // /alerts/click/:id which marks the alert read in one
-    // pass and then redirects -- no manual "Mark read" click
-    // required after click-through. Falls back to inert text
-    // when no action URL exists for the alert type.
-    const clickThroughUrl = actionUrl
-      ? `/alerts/click/${a.id}?next=${encodeURIComponent(actionUrl)}`
-      : null;
-    const titleHtml = clickThroughUrl
-      ? `<a href="${clickThroughUrl}" style="font-size:14px;color:var(--text);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s" onmouseover="this.style.borderBottomColor='var(--gold)'" onmouseout="this.style.borderBottomColor='transparent'">${esc(a.title)}</a>`
-      : `<span style="font-size:14px;color:var(--text)">${esc(a.title)}</span>`;
-
     return `
-      <div style="display:flex;align-items:flex-start;gap:14px;padding:16px 20px;border-bottom:1px solid rgba(251,248,239,.06);${opacity}">
-        <div style="flex-shrink:0;width:32px;height:32px;border-radius:4px;background:var(--bg-edge);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;font-weight:500;color:${color}">${icon}</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;padding:13px 20px;border-bottom:1px solid rgba(251,248,239,.05);${isRead ? "opacity:.5" : ""}">
+        <div style="flex-shrink:0;width:28px;height:28px;border-radius:4px;background:var(--bg-edge);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:10px;color:${color}">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
-            ${titleHtml}
-            ${!isRead ? '<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0"></span>' : ''}
-          </div>
-          ${a.detail ? `<div style="font-size:12px;color:var(--text-faint);line-height:1.5;margin-bottom:6px">${esc(a.detail)}</div>` : ''}
-          <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text-faint)">
-            <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:9px;color:${color};border:1px solid ${color};padding:1px 6px;border-radius:2px">${alertTypeLabel(a.type)}</span>
-            ${user.role === "admin" && !user._viewAsClient ? `<span>${esc(a.client_slug)}</span>` : ''}
-            <span>${dateStr} at ${timeStr}</span>
+          <div style="margin-bottom:3px">${titleLink(a)}${!isRead ? ' <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold)"></span>' : ""}</div>
+          ${a.detail ? `<div style="font-size:12px;color:var(--text-faint);line-height:1.5;margin-bottom:4px">${esc(a.detail)}</div>` : ""}
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;color:var(--text-faint);flex-wrap:wrap">
+            <span style="font-family:var(--label);text-transform:uppercase;letter-spacing:.1em;font-size:9px;color:${color}">${esc(alertTypeLabel(a.type))}</span>
+            ${clientTag(a)}
+            <span>${dateStr(a.created_at)}</span>
           </div>
         </div>
-        <div style="flex-shrink:0;display:flex;gap:8px;align-items:center">
-          ${a.roadmap_item_id ? `<a href="/roadmap/${encodeURIComponent(a.client_slug)}" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);border:1px solid var(--line);padding:4px 10px;border-radius:2px;text-decoration:none;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--gold)';this.style.borderColor='var(--gold)'" onmouseout="this.style.color='var(--text-faint)';this.style.borderColor='var(--line)'">Roadmap</a>` : ''}
-          ${!isRead ? `
-            <form method="POST" action="/alerts/read/${a.id}" style="display:inline">
-              <button type="submit" style="font-family:var(--label);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-faint);background:none;border:1px solid var(--line);padding:4px 10px;border-radius:2px;cursor:pointer;transition:color .2s,border-color .2s" onmouseover="this.style.color='var(--green)';this.style.borderColor='var(--green)'" onmouseout="this.style.color='var(--text-faint)';this.style.borderColor='var(--line)'">Mark read</button>
-            </form>
-          ` : ''}
-        </div>
-      </div>
-    `;
-  }).join("") : "";
+        ${!isRead ? `<div style="flex-shrink:0">${markReadBtn(a)}</div>` : ""}
+      </div>`;
+  };
+
+  const needsYouHtml = needsYou.length > 0
+    ? `<div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;overflow:hidden">${needsYou.map(needsYouRow).join("")}</div>`
+    : `<div style="padding:22px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;color:var(--text-faint);font-size:14px">Nothing needs you right now. All clear.</div>`;
+
+  const activityHtml = activity.length > 0
+    ? `<div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;overflow:hidden">${activity.slice(0, 60).map(activityRow).join("")}</div>`
+    : `<div style="padding:18px;color:var(--text-faint);font-size:13px">No recent activity.</div>`;
 
   const body = `
-    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:40px">
-      <div>
-        <div class="label" style="margin-bottom:8px">Dashboard</div>
-        <h1>Your <em>alerts</em></h1>
-      </div>
-      ${unreadCount > 0 ? `
-        <form method="POST" action="/alerts/read-all">
-          <button type="submit" class="btn btn-ghost" style="font-size:11px">Mark all as read</button>
-        </form>
-      ` : ''}
+    <div style="margin-bottom:28px">
+      <div class="label" style="margin-bottom:8px">Dashboard</div>
+      <h1>Your <em>alerts</em></h1>
     </div>
 
-    ${unreadCount > 0 ? `
-      <div style="margin-bottom:24px;font-size:13px;color:var(--text-soft)">
-        ${unreadCount} unread alert${unreadCount > 1 ? 's' : ''}
-      </div>
-    ` : ''}
+    <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:14px">
+      <h2 style="font-weight:400;margin:0">Needs you</h2>
+      <span style="font-family:var(--mono);font-size:13px;color:${needsYou.length > 0 ? "var(--gold)" : "var(--text-faint)"}">${needsYou.length}</span>
+    </div>
+    ${needsYouHtml}
 
-    ${alerts.length > 0 ? `
-      <div style="background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;overflow:hidden">
-        ${alertRows}
-      </div>
-    ` : `
-      <div class="empty">
-        <h3>No alerts</h3>
-        <p style="color:var(--text-faint);font-size:14px;line-height:1.7;max-width:440px;margin:0 auto">When something changes with your AEO score, schema coverage, or roadmap progress, it will show up here.</p>
-      </div>
-    `}
+    <div style="display:flex;align-items:baseline;gap:12px;margin:34px 0 14px">
+      <h2 style="font-weight:400;margin:0">Activity</h2>
+      <span style="font-size:11px;color:var(--text-faint)">good news and routine, no action needed</span>
+      ${unreadActivity > 0 ? `<form method="POST" action="/alerts/read-activity" style="margin-left:auto"><button type="submit" class="btn btn-ghost" style="font-size:11px">Mark activity read</button></form>` : ""}
+    </div>
+    ${activityHtml}
+
+    <script>
+      (function(){
+        document.querySelectorAll('.alert-fix').forEach(function(btn){
+          btn.addEventListener('click', function(){
+            if (navigator.clipboard) navigator.clipboard.writeText(btn.getAttribute('data-fix') || '');
+            var old = btn.textContent; btn.textContent = 'Copied';
+            setTimeout(function(){ btn.textContent = old; }, 1500);
+          });
+        });
+      })();
+    </script>
   `;
 
   return html(layout("Alerts", body, user));
@@ -260,5 +295,29 @@ export async function handleMarkAllAlertsRead(user: User, env: Env): Promise<Res
     await env.DB.prepare("UPDATE admin_alerts SET read_at = ? WHERE client_slug = ? AND read_at IS NULL").bind(now, user.client_slug).run();
   }
 
+  return redirect("/alerts");
+}
+
+/**
+ * Mark ONLY the Activity lane (routine / good-news, non-concern) read. The
+ * two-lane design must never let a bulk dismiss wipe concerns, so this clears
+ * the noise feed and leaves every Needs-you item for individual attention.
+ */
+export async function handleMarkActivityRead(user: User, env: Env): Promise<Response> {
+  const now = Math.floor(Date.now() / 1000);
+  let rows: { id: number; type: string }[] = [];
+  if (user.role === "admin") {
+    rows = (await env.DB.prepare("SELECT id, type FROM admin_alerts WHERE read_at IS NULL").all<{ id: number; type: string }>()).results
+      .filter((r) => !isConcernType(r.type));
+  } else if (user.client_slug) {
+    rows = (await env.DB.prepare("SELECT id, type FROM admin_alerts WHERE client_slug = ? AND read_at IS NULL").bind(user.client_slug).all<{ id: number; type: string }>()).results
+      .filter((r) => isCustomerVisibleAlert(r.type) && !isConcernType(r.type));
+  }
+  const ids = rows.map((r) => r.id);
+  for (let i = 0; i < ids.length; i += 50) {
+    const chunk = ids.slice(i, i + 50);
+    const ph = chunk.map(() => "?").join(",");
+    await env.DB.prepare(`UPDATE admin_alerts SET read_at = ? WHERE id IN (${ph})`).bind(now, ...chunk).run();
+  }
   return redirect("/alerts");
 }

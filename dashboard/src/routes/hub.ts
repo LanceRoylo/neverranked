@@ -23,6 +23,7 @@ import type { Env, User } from "../types";
 import { html, layout, esc } from "../render";
 import { recentVerdictCounts } from "../lib/qa-auditor";
 import { isReadoutShapeSnapshot } from "../lib/snapshot-shape";
+import { countNeedsYouAlerts } from "../lib/alert-triage";
 
 type Status = "green" | "yellow" | "red" | "unknown";
 
@@ -402,7 +403,7 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
     }
   }
   const pending: Pending[] = [
-    { label: "Unread alerts", count: await count("SELECT COUNT(*) as n FROM admin_alerts WHERE read_at IS NULL"), href: "/admin/inbox" },
+    { label: "Alerts needing you", count: await countNeedsYouAlerts(env).catch(() => null), href: "/alerts" },
     { label: "Inbox items pending", count: await count("SELECT COUNT(*) as n FROM admin_inbox WHERE status = 'pending'"), href: "/admin/inbox" },
     { label: "NVI reports awaiting review", count: await count("SELECT COUNT(*) as n FROM nvi_reports WHERE status = 'pending'"), href: "/admin/nvi" },
     { label: "Content drafts held by QA", count: await count("SELECT COUNT(*) as n FROM content_drafts WHERE qa_level = 'held'"), href: "/admin/content-review" },

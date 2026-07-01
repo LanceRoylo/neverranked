@@ -87,7 +87,7 @@ import { handleInjectAdmin, handleInjectConfig, handleInjectGenerate, handleInje
 import { handleCitations, handleAdminCitations, handleAddKeyword, handleBulkAddKeywords, handleDeleteKeyword, handleGenerateKeywords, handleManualCitationRun, handleManualKeywordRun } from "./routes/citations";
 import { handleGoogleCallback, handleAdminGsc, handleLinkProperty, handleUnlinkProperty, handleManualGscPull, handleSearchPerformance } from "./routes/gsc";
 import { handleSummary } from "./routes/summary";
-import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead, handleAlertClickThrough } from "./routes/alerts";
+import { handleAlerts, handleMarkAlertRead, handleMarkAllAlertsRead, handleAlertClickThrough, handleMarkActivityRead } from "./routes/alerts";
 import { handleLearn, handleLearnArticle } from "./routes/learn";
 import { handleReport, handleReportIndex, handleSendReport } from "./routes/report";
 import { handleDemoRedirect, handleDemoDomain, handleDemoCitations, handleDemoRoadmap, handleDemoPost } from "./routes/demo";
@@ -1058,10 +1058,11 @@ export default {
         ).bind(user.client_slug).first<{ cnt: number }>();
         user._roadmapInProgress = rmCount?.cnt || 0;
       } else if (user.role === "admin") {
-        const alertCount = await env.DB.prepare(
-          "SELECT COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL"
-        ).first<{ cnt: number }>();
-        user._alertCount = alertCount?.cnt || 0;
+        // Badge counts only alerts that actually need a human (concern types),
+        // not routine/good-news activity, so it reflects the "needs you" lane
+        // instead of a scary all-unread total.
+        const { countNeedsYouAlerts } = await import("./lib/alert-triage");
+        user._alertCount = await countNeedsYouAlerts(env);
         // NVI pending count: reports awaiting Lance's review before
         // customer delivery. Surfaces as a badge on the NVI Inbox
         // sidebar item so manual review is visible without opening
@@ -3612,6 +3613,10 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     }
     if (path === "/alerts/read-all" && method === "POST") {
       return handleMarkAllAlertsRead(user, env);
+    }
+    // Clear only the Activity lane (routine/good-news); never bulk-clears concerns.
+    if (path === "/alerts/read-activity" && method === "POST") {
+      return handleMarkActivityRead(user, env);
     }
 
     // Monthly reports

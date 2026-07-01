@@ -252,16 +252,15 @@ export async function computeStatus(user: User, env: Env): Promise<StatusSnapsho
       });
     }
   } else if (user.role === "admin") {
-    // Unread alerts
-    const alerts = await env.DB.prepare(
-      "SELECT COUNT(*) as cnt FROM admin_alerts WHERE read_at IS NULL"
-    ).first<{ cnt: number }>();
-    if (alerts && alerts.cnt > 0) {
+    // Alerts that actually need a human (concern types), not routine activity.
+    const { countNeedsYouAlerts } = await import("./lib/alert-triage");
+    const needs = await countNeedsYouAlerts(env).catch(() => 0);
+    if (needs > 0) {
       actions.push({
-        label: alerts.cnt + " unread " + (alerts.cnt === 1 ? "alert" : "alerts"),
-        detail: "Regression, stall, or snippet issues flagged by automations. Review before the week starts.",
-        href: "/admin",
-        cta: "Open cockpit",
+        label: needs + (needs === 1 ? " alert needs you" : " alerts need you"),
+        detail: "Regressions, stalls, and infra issues flagged by automations. The good-news feed is separate.",
+        href: "/alerts",
+        cta: "Open alerts",
       });
     }
 
