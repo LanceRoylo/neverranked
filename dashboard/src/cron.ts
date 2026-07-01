@@ -779,6 +779,32 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] memo-drafts-watchdog: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Alert age-out — keeps the Needs-you queue honest. Concerns are all
+  // monitor-driven and re-fire while a problem is live, so an unread alert past
+  // its window has either been resolved or will re-surface on its own; keeping
+  // it only buries the current signal (the queue IS the scoreboard). Two
+  // windows: point-in-time engine anomalies are noise after a few days (a
+  // resolved blip is not actionable), everything else gets two weeks. One-time
+  // customer signals (atlas flags) never age out. Without this, weeks of
+  // resolved concerns pile up (120 unread / 73 "Needs you", ~90% stale, as of
+  // the 2026-07-01 cleanup) and a real alert hides in the backlog.
+  try {
+    const transient = await env.DB.prepare(
+      `UPDATE admin_alerts SET read_at = unixepoch()
+         WHERE read_at IS NULL AND created_at < unixepoch() - 3 * 86400
+           AND type IN ('anomaly_engine_row_drop','anomaly_engine_empty_spike','engine_degraded','engine_recovered')`,
+    ).run();
+    const rest = await env.DB.prepare(
+      `UPDATE admin_alerts SET read_at = unixepoch()
+         WHERE read_at IS NULL AND created_at < unixepoch() - 14 * 86400
+           AND type NOT IN ('atlas_flag')`,
+    ).run();
+    const cleared = (transient.meta?.changes ?? 0) + (rest.meta?.changes ?? 0);
+    if (cleared > 0) console.log(`[cron] alert-age-out: marked ${cleared} stale alert(s) read`);
+  } catch (e) {
+    console.log(`[cron] alert-age-out: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // NOTE: the Hawaii Theatre Center event-schema refresh used to run here.
   // It was moved to its own cron invocation ("45 6 * * *", see scheduled()
   // in index.ts) on 2026-06-01 because it was failing every day with "Too
