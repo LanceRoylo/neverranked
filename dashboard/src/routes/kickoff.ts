@@ -14,41 +14,40 @@ import { layout, html, esc } from "../render";
 
 type Section = { key: string; title: string; help: string };
 
+// The kickoff PRESENTS what we determine (the queries, who AI names, the punch
+// list) and only ASKS for the business context that helps us PRIORITIZE and
+// INTERPRET. It never asks the customer to supply the research we produce, and
+// it never invites out-of-scope custom work.
 const SECTIONS: Section[] = [
   {
     key: "findings",
     title: "What we already found — open by showing them this",
-    help: "Walk them through the diagnostic before you ask anything. It anchors the call in evidence, not opinion.",
+    help: "Present the diagnostic first. You are showing them what AI says about them today. This is the reason they are here, so lead with it. Do not ask them for it.",
   },
   {
-    key: "search",
-    title: "How their buyers actually search",
-    help: "The core input. How would you describe what makes you distinctive? When someone asks an AI to find a business like yours, what would they type? Which customers matter most? Any phrases you know your buyers use?",
+    key: "priorities",
+    title: "What matters most to their business",
+    help: "We already map the questions their buyers ask AI. This is only about which of those matter most to THEM, and what a clear win looks like in three months. Which parts of the business do they most want to grow? Which customers or bookings are most valuable? It points a set we already measure at what they care about.",
   },
   {
-    key: "competitors",
-    title: "Competitors",
-    help: "Who are your direct competitors? Anyone you especially hate losing to? Anyone AI keeps naming that surprises you?",
+    key: "competitive_frame",
+    title: "Their competitive frame",
+    help: "We measure who AI actually names, and you will show them. This is their view, for context: who they consider their real competitive set and who they most want to outrank. It frames how we report the cohort. Do not ask them who AI names; that is ours to show.",
   },
   {
     key: "owned",
-    title: "What you control",
-    help: "Confirm the website, booking or lead path, Google Business Profile, key listings. Who can make website changes (your implementer)? What systems should we know about (for the schema fixes)?",
+    title: "What they control and who executes",
+    help: "Confirm the website, booking or lead path, Google Business Profile, key listings. Most important: who on their side or their agency actually makes the changes, because we hand a prioritized punch list, we do not execute it. Note any system we need for the schema fixes.",
   },
   {
-    key: "goals",
-    title: "Goals and what success looks like",
-    help: "What makes this a clear win in three months? Which queries matter most? Any competitor position you specifically want to take?",
-  },
-  {
-    key: "wants",
-    title: "What you want specifically",
-    help: "Anything you are hoping we surface or fix? Any must-haves or concerns? Capture their words verbatim.",
+    key: "scope",
+    title: "Set the scope so nothing drifts",
+    help: "Reinforce what they get and what they do not. Every month: the measurement plus a prioritized punch list. We do not make the changes or take on custom work; their team or agency executes. If they ask for something outside that, note it here and hold the line.",
   },
   {
     key: "logistics",
     title: "Logistics and cadence",
-    help: "Who gets the monthly readout? Preferred format and cadence? Who executes the punch list? Any dates or seasonality to plan around?",
+    help: "Who gets the monthly readout? Preferred format and cadence? Any dates or seasonality to plan around?",
   },
 ];
 
