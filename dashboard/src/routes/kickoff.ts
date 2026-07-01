@@ -36,8 +36,8 @@ const SECTIONS: Section[] = [
   },
   {
     key: "owned",
-    title: "What they control and who executes",
-    help: "Confirm the website, booking or lead path, Google Business Profile, key listings. Most important: who on their side or their agency actually makes the changes, because we hand a prioritized punch list, we do not execute it. Note any system we need for the schema fixes.",
+    title: "Who can act on the punch list",
+    help: "We hand a prioritized punch list and their side executes it, so the fixes have to be things they can actually change. What we need: who controls the website, and whether it is even theirs to change (a locked corporate or brand template takes some fixes off the table, and we steer to what they can control instead). The booking and lead path we detect from the scan; we only confirm it so the reservation-schema fix points at the right place.",
   },
   {
     key: "scope",
@@ -59,7 +59,7 @@ const PREFILL: Record<string, Record<string, string>> = {
       'Most closable win: "upscale, not beachfront, great dining" — your own differentiator, missed by 3 of 4 tools.\n' +
       "Agent-readiness 0/F: no ReserveAction, the booking schema hotels need.",
     owned:
-      "Site: princewaikiki.com\nBooking engine: ?\nGoogle Business Profile: ?\nKey listings (TripAdvisor, Expedia, ...): ?\nWho can change the site: ?",
+      "Who controls princewaikiki.com and can make site changes: ?\nIs it theirs to change, or a brand/corporate template: ?\nBooking path (we detect it from the scan, just confirm): ?",
     logistics:
       "Readout recipients: Joy Tomita Anderson (janderson@princewaikiki.com), Heather Labra (Director of Marketing)\nCadence: monthly\nTrial: 3 months, then month to month",
   },
@@ -85,6 +85,18 @@ export async function handleKickoff(request: Request, env: Env, user: User, slug
 
   const saved = await loadAnswers(env, slug);
   const pre = PREFILL[slug] || {};
+
+  const shareToken = await ensureShareToken(env, slug);
+  const shareUrl = new URL(request.url).origin + "/kickoff-intake/" + shareToken;
+  const custRow = await env.DB.prepare(
+    "SELECT customer_json FROM kickoff_notes WHERE client_slug = ?"
+  ).bind(slug).first<{ customer_json: string | null }>();
+  let custAns: Record<string, string> = {};
+  if (custRow && custRow.customer_json) { try { custAns = JSON.parse(custRow.customer_json); } catch { custAns = {}; } }
+  const hasCust = CUSTOMER_SECTIONS.some((s) => (custAns[s.key] || "").trim());
+  const custPreHtml = hasCust
+    ? `<div class="kx-cust"><div class="kx-cust-label">Their pre-read</div>${CUSTOMER_SECTIONS.filter((s) => (custAns[s.key] || "").trim()).map((s) => `<div class="kx-cust-row"><b>${esc(s.title)}</b><span>${esc(custAns[s.key])}</span></div>`).join("")}</div>`
+    : "";
 
   const sectionsHtml = SECTIONS.map((s, i) => {
     const val = saved[s.key] !== undefined ? saved[s.key] : (pre[s.key] || "");
@@ -115,7 +127,17 @@ export async function handleKickoff(request: Request, env: Env, user: User, slug
     .kx-body textarea{width:100%;box-sizing:border-box;background:#0b0b0c;border:1px solid #2a2a2e;border-radius:6px;color:var(--text);font-family:var(--mono);font-size:13px;line-height:1.6;padding:11px 13px;resize:vertical}
     .kx-body textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,197,150,.1)}
     .kx-print{font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border:1px solid var(--gold-dim,#4a3d18);border-radius:4px;padding:6px 12px;letter-spacing:.06em;text-transform:uppercase}
-    @media print{ .kx-help{color:#444} .kx-body textarea{border-color:#ccc;color:#000;background:#fff} .kx-print,.kx-save{display:none} }
+    .kx-share{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 2px 22px;padding:12px 14px;border:1px solid #211e18;border-radius:8px;background:#111114}
+    .kx-share-label{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+    .kx-share-row{display:flex;gap:8px;flex:1;min-width:220px}
+    .kx-share-row input{flex:1;min-width:0;background:#0b0b0c;border:1px solid #2a2a2e;border-radius:5px;color:var(--soft);font-family:var(--mono);font-size:11px;padding:7px 10px}
+    .kx-share-row button{background:var(--gold);color:#1a1500;border:none;border-radius:5px;font-family:var(--mono);font-size:11px;padding:0 14px;cursor:pointer}
+    .kx-cust{margin:0 2px 24px;padding:14px 16px;border:1px solid rgba(212,197,150,.25);border-radius:8px;background:rgba(212,197,150,.04)}
+    .kx-cust-label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:10px}
+    .kx-cust-row{margin-bottom:10px;font-size:13px;color:var(--soft);line-height:1.55}
+    .kx-cust-row b{display:block;color:var(--text);font-weight:400;font-family:var(--mono);font-size:11px;margin-bottom:2px}
+    .kx-cust-row span{white-space:pre-wrap}
+    @media print{ .kx-help{color:#444} .kx-body textarea{border-color:#ccc;color:#000;background:#fff} .kx-print,.kx-save,.kx-share{display:none} }
   </style>
   <div class="kx-wrap">
     <div class="kx-top">
@@ -126,6 +148,11 @@ export async function handleKickoff(request: Request, env: Env, user: User, slug
       </div>
     </div>
     <p class="kx-lead">Read each prompt aloud and type their answer in the box below it. Everything auto-saves. When you are done, these answers feed the keyword and cohort setup.</p>
+    <div class="kx-share">
+      <span class="kx-share-label">Pre-read link (optional, send before the call)</span>
+      <span class="kx-share-row"><input id="kx-share-url" readonly value="${esc(shareUrl)}"><button type="button" id="kx-copy">Copy</button></span>
+    </div>
+    ${custPreHtml}
     ${sectionsHtml}
   </div>
   <script>
@@ -147,6 +174,8 @@ export async function handleKickoff(request: Request, env: Env, user: User, slug
         b.addEventListener('input', function(){ clearTimeout(t); status.textContent = 'Editing...'; t = setTimeout(save, 900); });
         b.addEventListener('blur', function(){ clearTimeout(t); save(); });
       });
+      var copyBtn = document.getElementById('kx-copy');
+      if (copyBtn) copyBtn.addEventListener('click', function(){ var u = document.getElementById('kx-share-url'); u.select(); if (navigator.clipboard) navigator.clipboard.writeText(u.value); copyBtn.textContent = 'Copied'; setTimeout(function(){ copyBtn.textContent = 'Copy'; }, 1500); });
     })();
   </script>`;
 
@@ -174,4 +203,120 @@ export async function handleKickoffSave(request: Request, env: Env, user: User, 
     status: 200,
     headers: { "content-type": "application/json" },
   });
+}
+
+// ── Shareable customer pre-read ────────────────────────────────────────────
+// A token the customer opens (no login) to answer a few questions before the
+// call. Customer-facing phrasing: it asks only what THEY can usefully answer
+// (priorities, competitors, who executes, who gets access), never the research
+// we produce, and never opens the door to custom work.
+const CUSTOMER_SECTIONS: Section[] = [
+  {
+    key: "priorities",
+    title: "What would make this worth it?",
+    help: "What are you hoping to learn from how AI describes your business, and what would make this obviously worth it in a few months? Which parts of the business do you most want to grow?",
+  },
+  {
+    key: "competitive_frame",
+    title: "Who are your main competitors?",
+    help: "The businesses you most want to win against when someone is deciding between you and them.",
+  },
+  {
+    key: "owned",
+    title: "Who can update your website?",
+    help: "The person or partner on your side who can make changes to the site, so the fixes we hand over go to the right hands.",
+  },
+  {
+    key: "logistics",
+    title: "Who should get your monthly readout?",
+    help: "Name and email for each person who should have access to the cockpit and the monthly readout.",
+  },
+];
+
+async function ensureShareToken(env: Env, slug: string): Promise<string> {
+  const row = await env.DB.prepare(
+    "SELECT share_token FROM kickoff_notes WHERE client_slug = ?"
+  ).bind(slug).first<{ share_token: string | null }>();
+  if (row && row.share_token) return row.share_token;
+  const token = crypto.randomUUID().replace(/-/g, "");
+  const now = new Date().toISOString();
+  await env.DB.prepare(
+    `INSERT INTO kickoff_notes (client_slug, answers_json, updated_at, share_token) VALUES (?, '{}', ?, ?)
+     ON CONFLICT(client_slug) DO UPDATE SET share_token = COALESCE(kickoff_notes.share_token, excluded.share_token)`
+  ).bind(slug, now, token).run();
+  const check = await env.DB.prepare(
+    "SELECT share_token FROM kickoff_notes WHERE client_slug = ?"
+  ).bind(slug).first<{ share_token: string }>();
+  return check!.share_token;
+}
+
+export async function handleKickoffIntake(request: Request, env: Env, token: string): Promise<Response> {
+  const row = await env.DB.prepare(
+    "SELECT client_slug, customer_json FROM kickoff_notes WHERE share_token = ?"
+  ).bind(token).first<{ client_slug: string; customer_json: string | null }>();
+  if (!row) return html(layout("Not found", "<div style='max-width:520px;margin:80px auto;text-align:center'><h1>This link is not valid.</h1></div>"), 404);
+
+  if (request.method === "POST") {
+    const answers: Record<string, string> = {};
+    try {
+      const posted = (await request.json()) as Record<string, unknown>;
+      for (const s of CUSTOMER_SECTIONS) {
+        const v = posted[s.key];
+        if (typeof v === "string") answers[s.key] = v.slice(0, 8000);
+      }
+    } catch {
+      return new Response("Bad request", { status: 400 });
+    }
+    await env.DB.prepare(
+      "UPDATE kickoff_notes SET customer_json = ?, updated_at = ? WHERE share_token = ?"
+    ).bind(JSON.stringify(answers), new Date().toISOString(), token).run();
+    return new Response(JSON.stringify({ ok: true }), { status: 200, headers: { "content-type": "application/json" } });
+  }
+
+  const cust = await env.DB.prepare(
+    "SELECT name FROM customers WHERE client_slug = ?"
+  ).bind(row.client_slug).first<{ name: string }>();
+  const name = cust?.name || "your business";
+  let saved: Record<string, string> = {};
+  if (row.customer_json) { try { saved = JSON.parse(row.customer_json); } catch { saved = {}; } }
+
+  const secHtml = CUSTOMER_SECTIONS.map((s) => `
+    <section class="kx-sec"><div class="kx-body">
+      <h2>${esc(s.title)}</h2>
+      <p class="kx-help">${esc(s.help)}</p>
+      <textarea data-key="${esc(s.key)}" rows="4" placeholder="Type your answer...">${esc(saved[s.key] || "")}</textarea>
+    </div></section>`).join("");
+
+  const body = `
+  <style>
+    body{background:#0b0b0c}
+    .kx-wrap{max-width:680px;margin:0 auto;padding:44px 22px 90px}
+    .kx-head{font-family:Georgia,serif;font-weight:400;font-size:26px;margin:0 0 6px;color:#e8e8ea}
+    .kx-eyebrow{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#d4c596;margin-bottom:22px}
+    .kx-lead{color:#b9b9bd;font-size:15px;line-height:1.65;margin:0 0 26px}
+    .kx-sec{padding:20px 0;border-bottom:1px solid #211e18}
+    .kx-body h2{font-family:Georgia,serif;font-weight:400;font-size:19px;margin:0 0 6px;color:#e8e8ea}
+    .kx-help{color:#828289;font-size:13px;line-height:1.6;margin:0 0 12px}
+    .kx-body textarea{width:100%;box-sizing:border-box;background:#111114;border:1px solid #2a2a2e;border-radius:6px;color:#e8e8ea;font-family:Georgia,serif;font-size:15px;line-height:1.6;padding:12px 14px;resize:vertical}
+    .kx-body textarea:focus{outline:none;border-color:#d4c596;box-shadow:0 0 0 3px rgba(212,197,150,.1)}
+    .kx-status{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#828289;margin-top:24px}
+  </style>
+  <div class="kx-wrap">
+    <div class="kx-eyebrow">NeverRanked</div>
+    <h1 class="kx-head">A few questions before we meet</h1>
+    <p class="kx-lead">This helps us point the research at what matters to ${esc(name)}. It takes a couple of minutes, and your answers save as you type. There are no wrong answers, and you can leave any blank.</p>
+    ${secHtml}
+    <div class="kx-status" id="kx-status">Your answers save automatically</div>
+  </div>
+  <script>
+    (function(){
+      var status=document.getElementById('kx-status');
+      var boxes=Array.prototype.slice.call(document.querySelectorAll('textarea[data-key]'));
+      var t=null;
+      function collect(){var o={};boxes.forEach(function(b){o[b.getAttribute('data-key')]=b.value;});return o;}
+      function save(){status.textContent='Saving...';fetch(location.pathname,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(collect())}).then(function(r){status.textContent=r.ok?'Saved':'Save failed, retrying';if(!r.ok)setTimeout(save,3000);}).catch(function(){status.textContent='Offline, will retry';setTimeout(save,3000);});}
+      boxes.forEach(function(b){b.addEventListener('input',function(){clearTimeout(t);status.textContent='Editing...';t=setTimeout(save,900);});b.addEventListener('blur',save);});
+    })();
+  </script>`;
+  return html(layout("A few questions — " + name, body), 200);
 }

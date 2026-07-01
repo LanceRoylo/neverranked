@@ -976,6 +976,14 @@ export default {
       return handleAgencyApplyPost(request, env);
     }
 
+    // Public kickoff pre-read (token-gated, no login) — the customer fills this
+    // before the call; it only ever writes their own pre-read answers.
+    const intakeMatch = path.match(/^\/kickoff-intake\/([a-z0-9]+)\/?$/i);
+    if (intakeMatch) {
+      const { handleKickoffIntake } = await import("./routes/kickoff");
+      return handleKickoffIntake(request, env, intakeMatch[1]);
+    }
+
     // --- Auth check ---
 
     const user = await getUser(request, env);

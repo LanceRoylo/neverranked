@@ -81,6 +81,7 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
       <div class="card" style="margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
           <h3 style="font-style:italic">${esc(slug)}</h3>
+          <a href="/admin/kickoff/${esc(slug)}" style="font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);text-decoration:none;border:1px solid var(--gold-dim,#4a3d18);border-radius:4px;padding:5px 11px">Kickoff</a>
         </div>
         <div class="label" style="margin-bottom:8px">Domains</div>
         ${primary.map(d => `
