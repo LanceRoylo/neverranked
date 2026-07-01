@@ -371,7 +371,7 @@ export function renderAtlasChat(
     height: 100dvh;
   }
   header {
-    border-bottom: 1px solid #1c1c1e;
+    border-bottom: 1px solid #211e18;
     padding: 18px 24px;
     display: flex;
     align-items: baseline;
@@ -417,7 +417,7 @@ export function renderAtlasChat(
   .suggest:hover, .suggest:focus-visible { border-color: var(--gold); background: var(--panel-light); outline: none; }
   .suggest:focus-visible { box-shadow: 0 0 0 3px rgba(212,197,150,0.12); }
   footer {
-    border-top: 1px solid #1c1c1e;
+    border-top: 1px solid #211e18;
     padding: 16px 24px 22px;
     flex-shrink: 0;
   }
