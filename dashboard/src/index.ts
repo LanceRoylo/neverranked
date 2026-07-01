@@ -1343,6 +1343,12 @@ export default {
       return handleAdminHealth(user, env, url);
     }
 
+    // Graduation tracker: go-live scoreboard for the deliverable judge gate.
+    if (path === "/admin/graduation" && method === "GET" && user.role === "admin") {
+      const { handleGraduation } = await import("./routes/graduation");
+      return handleGraduation(user, env);
+    }
+
     // Manual trigger for the anomaly detection cron. Same logic as the
     // daily cron, on-demand for verification without waiting for the
     // 06:00 UTC tick. Also logs to cron_runs so the health page reflects

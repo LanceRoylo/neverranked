@@ -28,6 +28,21 @@ import { gradeWithLLM } from "./qa-llm-grader";
 const JUDGE_MODEL = "claude-opus-4-8";
 const VERIFY_MODEL = "gpt-4o";
 
+// A cheap, deterministic hash of a drafted body. The graduation tracker
+// compares this (captured at gate time) to the body Lance actually delivers,
+// to tell "shipped as-is" (true agreement) from "shipped after edits".
+// Whitespace-normalized so trivial reflowing does not read as an edit. Not a
+// security hash, just change detection.
+export function hashDraft(s: string): string {
+  const norm = (s || "").replace(/\s+/g, " ").trim();
+  let h = 0x811c9dc5;
+  for (let i = 0; i < norm.length; i++) {
+    h ^= norm.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return (h >>> 0).toString(16).padStart(8, "0");
+}
+
 export interface DeliverableVerdict {
   judge_verdict: "ship" | "escalate";
   judge_confidence: "high" | "medium" | "low";
@@ -117,7 +132,7 @@ Would Lance ship this as-is? Return only the JSON verdict.`;
 }
 
 // ── the verifier: OpenAI gpt-4o, adversarial, only on a "ship" verdict ──
-async function runVerify(env: Env, args: GateArgs): Promise<{ objected: boolean; reason: string }> {
+async function runVerify(env: Env, args: GateArgs): Promise<{ objected: boolean; reason: string; available: boolean }> {
   const system = `You are an independent skeptic verifying a customer deliverable that a first judge already approved for shipping. Your ONLY job is to find the single strongest reason this draft should NOT go to a paying customer as-is.
 
 Look for: a claim that does not follow from the FACTS, a headline that buries the real lede, a punch-list item generic enough to fit any business (it fails the swap test), a section that restates numbers without interpreting them, hedging that dodges the finding.
@@ -145,11 +160,12 @@ Find the strongest reason NOT to ship, or confirm it is sound.`;
       required: ["objected", "reason"],
     },
   });
-  // If verify is unavailable, do not fabricate an objection. Shadow mode already
-  // escalates everything, and live mode below treats a missing verify as "did
-  // not clear" via the would_ship logic in the caller.
-  if (!r.ok || !r.parsed) return { objected: false, reason: "" };
-  return { objected: !!r.parsed.objected, reason: String(r.parsed.reason || "") };
+  // If verify is unavailable (API error), report available:false so the caller
+  // never counts a failed verify as a clean pass. A missing verify must not
+  // read as "did not object" — that would let an unverified draft record as a
+  // would_ship and contaminate the graduation signal (and, live, auto-ship).
+  if (!r.ok || !r.parsed) return { objected: false, reason: "", available: false };
+  return { objected: !!r.parsed.objected, reason: String(r.parsed.reason || ""), available: true };
 }
 
 // ── the gate ────────────────────────────────────────────────────────
@@ -160,17 +176,25 @@ export async function gateDeliverable(env: Env, args: GateArgs): Promise<Deliver
 
   let verifier_objected: boolean | null = null;
   let verifier_reason: string | null = null;
-  let verifyRan = false;
+  let verifyCleared = false; // the verifier actually ran AND did not object
   if (jv.verdict === "ship") {
     const v = await runVerify(env, args);
-    verifyRan = true;
-    verifier_objected = v.objected;
-    verifier_reason = v.reason || null;
+    if (v.available) {
+      verifier_objected = v.objected;
+      verifier_reason = v.reason || null;
+      verifyCleared = !v.objected;
+    } else {
+      // Verify could not run: record objection as unknown (null), do NOT clear.
+      verifier_objected = null;
+      verifier_reason = "verifier unavailable";
+      verifyCleared = false;
+    }
   }
 
-  // What the gate WOULD do live: ship only if the judge approved, the verifier
-  // ran, and it did not object. A missing verify never auto-ships.
-  const would_ship = jv.verdict === "ship" && verifyRan && verifier_objected === false;
+  // What the gate WOULD do live: ship only if the judge approved AND the
+  // verifier actually ran and did not object. A missing/failed verify never
+  // counts as a clear, so it never records a would_ship.
+  const would_ship = jv.verdict === "ship" && verifyCleared;
 
   const verdict: DeliverableVerdict = {
     judge_verdict: jv.verdict,
@@ -189,8 +213,8 @@ export async function gateDeliverable(env: Env, args: GateArgs): Promise<Deliver
     await env.DB.prepare(
       `INSERT INTO deliverable_verdicts
          (artifact_type, artifact_id, client_slug, judge_verdict, judge_confidence, judge_reasons,
-          verifier_objected, verifier_reason, would_ship, effective_action, mode)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          verifier_objected, verifier_reason, would_ship, effective_action, mode, draft_hash)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
       .bind(
         args.artifactType,
@@ -204,6 +228,7 @@ export async function gateDeliverable(env: Env, args: GateArgs): Promise<Deliver
         would_ship ? 1 : 0,
         "escalate",
         "shadow",
+        hashDraft(args.draftMarkdown),
       )
       .run();
   } catch {

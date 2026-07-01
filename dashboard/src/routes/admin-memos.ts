@@ -162,10 +162,39 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, delivered_at=unixepoch(), updated_at=unixepoch() WHERE id=?`
     ).bind(title, body, id).run();
+    // Graduation tracker: record the real ship decision on this memo's latest
+    // verdict. ship_as_is = delivered body unchanged from what the judge saw
+    // (true agreement); ship_edited = Lance rewrote before delivering.
+    // Race note: if the monthly generate cron regenerated this memo in the
+    // instant between the deliver write above and this read, a newer verdict is
+    // targeted and the hash mismatch records ship_edited. That is the SAFE
+    // direction -- it undercounts agreement, never manufactures a clean ship --
+    // so at worst it delays go-live, never advances it wrongly.
+    try {
+      const { hashDraft } = await import("../lib/deliverable-judge");
+      const v = await env.DB.prepare(
+        `SELECT id, draft_hash FROM deliverable_verdicts WHERE artifact_type='monthly_memo' AND artifact_id=? ORDER BY id DESC LIMIT 1`
+      ).bind(id).first<{ id: number; draft_hash: string | null }>();
+      if (v) {
+        const decision = v.draft_hash && v.draft_hash === hashDraft(body) ? "ship_as_is" : "ship_edited";
+        await env.DB.prepare(
+          `UPDATE deliverable_verdicts SET lance_decision=?, lance_decided_at=unixepoch() WHERE id=?`
+        ).bind(decision, v.id).run();
+      }
+    } catch (e) {
+      console.warn("graduation capture failed (memo delivered ok):", String(e).slice(0, 200));
+    }
   } else if (action === "undeliver") {
     await env.DB.prepare(
       `UPDATE monthly_memos SET delivered_at=NULL, updated_at=unixepoch() WHERE id=?`
     ).bind(id).run();
+    // A pull-back is a reject signal against the latest verdict.
+    try {
+      await env.DB.prepare(
+        `UPDATE deliverable_verdicts SET lance_decision='reverted', lance_decided_at=unixepoch()
+         WHERE id = (SELECT id FROM deliverable_verdicts WHERE artifact_type='monthly_memo' AND artifact_id=? ORDER BY id DESC LIMIT 1)`
+      ).bind(id).run();
+    } catch { /* best-effort */ }
   } else {
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, updated_at=unixepoch() WHERE id=?`
