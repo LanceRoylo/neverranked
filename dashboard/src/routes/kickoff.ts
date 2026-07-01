@@ -46,8 +46,8 @@ const SECTIONS: Section[] = [
   },
   {
     key: "logistics",
-    title: "Logistics and cadence",
-    help: "Who gets the monthly readout? Preferred format and cadence? Any dates or seasonality to plan around?",
+    title: "Who gets access",
+    help: "Every name you add gets their own login: the cockpit, Atlas, and the monthly readout by email. Real access, not a forward. Who should be on the account (Joy and Heather to start)? Cadence is monthly and the format is fixed, so there is nothing to configure here beyond the people.",
   },
 ];
 
