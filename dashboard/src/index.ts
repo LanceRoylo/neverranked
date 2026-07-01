@@ -1308,6 +1308,15 @@ export default {
     }
 
     // Admin routes
+    // Guided kickoff-meeting worksheet (auto-saves the intake answers).
+    const kickoffMatch = path.match(/^\/admin\/kickoff\/([a-z0-9-]+)\/?$/i);
+    if (kickoffMatch && user.role === "admin") {
+      const { handleKickoff, handleKickoffSave } = await import("./routes/kickoff");
+      const kSlug = kickoffMatch[1];
+      if (method === "POST") return handleKickoffSave(request, env, user, kSlug);
+      return handleKickoff(request, env, user, kSlug);
+    }
+
     if (path === "/admin" && method === "GET" && user.role === "admin") {
       return handleCockpit(user, env);
     }
