@@ -2450,6 +2450,40 @@ function escHtml(s: string): string {
   return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
 
+// Parse robots.txt for AI crawlers that are fully disallowed (Disallow: /).
+// Heuristic, not a full robots.txt engine: groups consecutive User-agent lines,
+// and if that group disallows "/", flags any AI bot (or "*") it names. Good
+// enough to catch the common "block the AI crawlers" and "Disallow: / for all"
+// cases; deliberate per-bot allow overrides are rare enough to leave to the eye.
+function blockedAiBots(robotsTxt: string): string[] {
+  const AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web", "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "CCBot", "cohere-ai", "Bytespider", "Amazonbot", "Meta-ExternalAgent"];
+  const groups: { agents: string[]; disallow: string[] }[] = [];
+  let cur: { agents: string[]; disallow: string[] } | null = null;
+  for (const raw of robotsTxt.split(/\r?\n/)) {
+    const line = raw.replace(/#.*/, "").trim();
+    const m = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const field = m[1].toLowerCase();
+    const val = m[2].trim();
+    if (field === "user-agent") {
+      if (cur && cur.disallow.length > 0) cur = null; // rules already seen -> next UA starts a new group
+      if (!cur) { cur = { agents: [], disallow: [] }; groups.push(cur); }
+      cur.agents.push(val);
+    } else if (field === "disallow" && cur) {
+      cur.disallow.push(val);
+    }
+  }
+  const blocked = new Set<string>();
+  for (const g of groups) {
+    if (!g.disallow.includes("/")) continue;
+    for (const a of g.agents) {
+      if (a === "*") blocked.add("all crawlers (User-agent: *)");
+      else if (AI_BOTS.some((b) => b.toLowerCase() === a.toLowerCase())) blocked.add(a);
+    }
+  }
+  return [...blocked];
+}
+
 function buildReportEmail(report: any): string {
   const gradeColor = report.grade === "A" ? "#27ae60"
     : report.grade === "B" ? "#e8c767"
@@ -3218,6 +3252,39 @@ export default {
       // on their own snippet-installed sites see a falsely low score
       // (a raw HTML scrape can't see client-side-injected schema).
       const report = await buildReportFollowingSnippets(targetUrl, html);
+
+      // Crawlability gate. The analyzer scores schema, llms.txt, and authority
+      // signals but never gates on whether crawlers are even allowed in. A page
+      // that sends `noindex`, or a robots.txt that blocks the AI crawlers, is
+      // uncitable no matter how strong its schema, so it must not score high.
+      // Caught here in the free-check path (where prospects self-serve) so a
+      // gagged site grades honestly -- including our own noindex site.
+      try {
+        const robotsMeta = (report.signals.robots_meta || "").toLowerCase();
+        const noindex = /noindex/.test(robotsMeta);
+        const nofollow = /nofollow/.test(robotsMeta);
+        let aiBotsBlocked: string[] = [];
+        try {
+          const rc = new AbortController();
+          const rt = setTimeout(() => rc.abort(), 6000);
+          const rr = await fetch(new URL("/robots.txt", targetUrl).toString(), {
+            headers: { "User-Agent": "NeverRanked-SchemaCheck/1.0" },
+            signal: rc.signal,
+          });
+          clearTimeout(rt);
+          if (rr.ok) aiBotsBlocked = blockedAiBots(await rr.text());
+        } catch { /* robots.txt unreachable -> treat as not blocking */ }
+
+        if (noindex || aiBotsBlocked.length > 0) {
+          report.aeo_score = Math.min(report.aeo_score, 35);
+          report.grade = report.aeo_score >= 90 ? "A" : report.aeo_score >= 75 ? "B" : report.aeo_score >= 60 ? "C" : report.aeo_score >= 40 ? "D" : "F";
+          const lead = noindex
+            ? "This page sends noindex to crawlers, which tells AI engines not to index it. It cannot be cited no matter how strong the schema is. Fix this first. Nothing else on this list matters until the page is indexable."
+            : `robots.txt blocks AI crawlers (${aiBotsBlocked.join(", ")}). Those engines are told to stay out, so they cannot cite the site. Allow them in robots.txt before anything else.`;
+          report.red_flags.unshift(lead);
+          if (nofollow && !noindex) report.red_flags.splice(1, 0, "The page also sends nofollow, so crawlers will not follow its links to the rest of the site.");
+        }
+      } catch { /* never let the crawlability gate break the report */ }
 
       // Internal-source filter: the outreach pipeline scans every
       // prospect's site as part of email generation, and those scans
