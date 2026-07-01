@@ -77,7 +77,9 @@ async function callJudgeModel(
     resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      body: JSON.stringify({ model, max_tokens: 700, temperature: 0.1, system, messages: [{ role: "user", content: user }] }),
+      // No temperature: Opus 4.8 rejects it ("deprecated for this model", HTTP
+      // 400). Omitting it works across the judge + fallback models alike.
+      body: JSON.stringify({ model, max_tokens: 700, system, messages: [{ role: "user", content: user }] }),
       signal: AbortSignal.timeout(45000),
     });
   } catch (e) {
