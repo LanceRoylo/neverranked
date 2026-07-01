@@ -26,10 +26,12 @@ import { recentDecisions } from "./decision-log";
 import { gradeWithLLM } from "./qa-llm-grader";
 
 const JUDGE_MODEL = "claude-opus-4-8";
-// Capable + confirmed-working (the memo generator uses it). The judge falls
-// back to this if the primary model is unavailable, so the gate never goes
-// dark. The verdict records when it fell back.
-const JUDGE_FALLBACK_MODEL = "claude-sonnet-4-5";
+// Upgraded 2026-07-01 from claude-sonnet-4-5 to claude-sonnet-5 (a strict
+// improvement over 4.5, confirmed live on our key). The judge falls back to this
+// if the primary is unavailable, so the gate never goes dark; the verdict records
+// when it fell back. Sonnet 5 defaults to adaptive thinking, so callJudgeModel
+// disables thinking to keep the short JSON verdict inside max_tokens.
+const JUDGE_FALLBACK_MODEL = "claude-sonnet-5";
 const VERIFY_MODEL = "gpt-4o";
 
 // A cheap, deterministic hash of a drafted body. The graduation tracker
@@ -77,9 +79,11 @@ async function callJudgeModel(
     resp = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json" },
-      // No temperature: Opus 4.8 rejects it ("deprecated for this model", HTTP
-      // 400). Omitting it works across the judge + fallback models alike.
-      body: JSON.stringify({ model, max_tokens: 700, system, messages: [{ role: "user", content: user }] }),
+      // No temperature: Opus 4.8 AND claude-sonnet-5 both reject it ("deprecated
+      // for this model", HTTP 400). thinking disabled so Sonnet 5's default
+      // adaptive thinking cannot consume the 700-token budget before the JSON
+      // verdict (Opus 4.8 accepts disabled too, so both models stay consistent).
+      body: JSON.stringify({ model, max_tokens: 700, thinking: { type: "disabled" }, system, messages: [{ role: "user", content: user }] }),
       signal: AbortSignal.timeout(45000),
     });
   } catch (e) {
