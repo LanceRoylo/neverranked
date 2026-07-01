@@ -1572,11 +1572,11 @@ body.agency-mode #agency-cta-card{display:block !important}
     if(score >= 80){
       insightText = 'Your site is in strong shape for AI search. The foundation is there. The real question is whether AI tools are actually <strong>recommending you</strong> when someone asks, and whether you’re <em>keeping that lead</em> as competitors catch up.';
     } else if(score >= 65){
-      insightText = 'You’re close to the line where AI tools start picking favorites. A few targeted fixes could move you across it. Right now, competitors with slightly cleaner sites are getting picked over you.';
+      insightText = 'You’re close to the line. A few targeted fixes would make your site read as cleanly to AI as the strongest sites in your space. Whether AI is recommending those cleaner sites over you right now is <em>what a full measurement shows</em>.';
     } else if(score >= 45){
-      insightText = 'Your site has gaps AI tools notice. When ChatGPT, Google AI, or Perplexity need to recommend someone in your space, they’re <em>skipping you</em> for competitors that are easier to read. The first question worth answering is which specific competitors they are recommending instead.';
+      insightText = 'Your site has gaps that make it harder for AI tools to read and cite than cleaner sites in your space. Those gaps are fixable. The question that matters next: when someone asks ChatGPT or Google’s AI for a business like yours, who gets recommended instead? <em>That takes measurement, not a page scan.</em>';
     } else {
-      insightText = 'AI tools can’t reliably read your site. You’re <em>invisible</em> to the fastest-growing way people search. The gap between you and AI-friendly competitors widens every week.';
+      insightText = 'AI tools can’t reliably read your site, and a page that can’t be read can’t be cited. Cleaner sites in your space have a real edge right now. Fixing the readability is step one. <em>Measuring who AI actually recommends is step two.</em>';
     }
     // Build the full grade markup once; how it's rendered depends on
     // gateLevel below.
@@ -1611,7 +1611,7 @@ body.agency-mode #agency-cta-card{display:block !important}
         '<div class="grade-band-compare">'+
           '<div class="gbc-bar"><div class="gbc-label">You</div><div class="gbc-track"><div class="gbc-fill gbc-you" data-w="'+youW+'"></div></div></div>'+
           '<div class="gbc-bar"><div class="gbc-label">Top quartile audited</div><div class="gbc-track"><div class="gbc-fill gbc-bench" data-w="'+benchW+'"></div></div></div>'+
-          '<div class="gbc-caption">Your bar sits short of the tier AI engines cite from. The email below shows exactly how short.</div>'+
+          '<div class="gbc-caption">Your bar sits short of the sites AI tools read most cleanly. The email below shows exactly how short.</div>'+
         '</div>';
       if (insight) insight.innerHTML = '';
       // Animate the fills from 0 once painted (respecting reduced-motion).
