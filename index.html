@@ -1151,7 +1151,27 @@
   <script>
   (function(){
     var ENGINES = ["Perplexity","ChatGPT","Gemini","Copilot","Google AIO","Claude","Gemma"];
-    var QUERY = "best wealth manager in Honolulu";
+    // Cycles buyer-shaped questions across categories, so "you are not named"
+    // lands for the whole market, not one example. Geo-templated to the viewer's
+    // city (falls back to Honolulu), matching the hero phone.
+    var HONOLULU_QUERIES = [
+      "best wealth manager in Honolulu",
+      "best boutique hotel in Honolulu",
+      "best dentist in Honolulu",
+      "best law firm in Honolulu",
+      "best CPA in Honolulu"
+    ];
+    function queriesForCity(city){
+      return [
+        "best wealth manager in " + city,
+        "best boutique hotel in " + city,
+        "best dentist in " + city,
+        "best law firm in " + city,
+        "best CPA in " + city
+      ];
+    }
+    var QUERIES = HONOLULU_QUERIES;   // replaced once /geo resolves
+    var qi = 0;
     var SCAN_MS = 240; // engine-scan cadence (sibling standings board runs ~380; kept in the same family, faster here to shorten the pre-roll)
 
     var panel    = document.getElementById('bsq');
@@ -1173,7 +1193,7 @@
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (reduce){
-      typedEl.textContent = QUERY;
+      typedEl.textContent = QUERIES[0];
       statusEl.textContent = "answered";
       panel.classList.add('run', 'miss'); // resolved + collapsed; CSS strips motion
       chips.forEach(function(c){ c.classList.add('done'); });
@@ -1197,10 +1217,11 @@
       chips.forEach(function(c){ c.classList.remove('scan', 'done'); });
       caretEl.style.display = "";
 
+      var q = QUERIES[qi];
       var i = 0;
       (function type(){
-        if (i <= QUERY.length){
-          typedEl.textContent = QUERY.slice(0, i);
+        if (i <= q.length){
+          typedEl.textContent = q.slice(0, i);
           i++;
           timers.push(setTimeout(type, 14 + Math.random() * 18));
         } else {
@@ -1239,8 +1260,10 @@
         });
         // once the three have landed, the only living thing is the near-miss ghost.
         after(rows.length * 280 + 140, function(){ panel.classList.add('miss'); });
-        // the climax HOLDS - no auto re-run, so a viewer who arrives or lingers
-        // always lands on the resolved absence. (Re-entry replays via the observer.)
+        // hold on the resolved absence long enough to read it, then advance to the
+        // next category and loop, so the point lands across the whole market. The
+        // observer pauses this off-screen, so it only cycles while it is in view.
+        after(rows.length * 280 + 140 + 3000, function(){ qi = (qi + 1) % QUERIES.length; run(); });
       }
     }
 
@@ -1259,6 +1282,14 @@
     } else {
       run();
     }
+
+    // Upgrade the examples to the viewer's own city (Cloudflare edge geo, no
+    // prompt, no third party). Fire-and-forget: QUERIES starts on Honolulu and
+    // the next cycle picks up the city set once /geo resolves; failures keep it.
+    fetch('/geo', { headers: { 'accept': 'application/json' } })
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){ var city = d && typeof d.city === 'string' ? d.city.trim() : ''; if (city) QUERIES = queriesForCity(city); })
+      .catch(function(){});
   })();
   </script>
 
