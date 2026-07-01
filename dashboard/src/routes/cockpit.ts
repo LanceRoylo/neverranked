@@ -2,7 +2,7 @@
  * Dashboard -- Admin cockpit (morning view)
  *
  * Single page showing revenue, leads, client health, action queue.
- * GET /admin
+ * GET /admin/cockpit (mission control at /admin is the front door now).
  */
 
 import type { Env, User, Domain, ScanResult } from "../types";
@@ -715,6 +715,8 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
     </div>
   `;
 
+  // Title "Admin" drives the sidebar "Cockpit" active-state in render.ts.
+  // If you change it, update that active-state check too.
   return html(layout("Admin", body, user));
 }
 
@@ -729,12 +731,12 @@ export async function handleCockpit(user: User, env: Env): Promise<Response> {
 export async function handleAutomationToggle(user: User, env: Env): Promise<Response> {
   const current = await getAutomationSettings(env);
   await setAutomationPaused(env, !current.paused, current.paused ? null : "toggled via admin cockpit");
-  return redirect("/admin");
+  return redirect("/admin/cockpit");
 }
 
 /** POST /admin/automation/digest — toggle the daily digest email on/off. */
 export async function handleAutomationDigestToggle(user: User, env: Env): Promise<Response> {
   const current = await getAutomationSettings(env);
   await setDailyDigestEnabled(env, !current.dailyDigestEnabled);
-  return redirect("/admin");
+  return redirect("/admin/cockpit");
 }

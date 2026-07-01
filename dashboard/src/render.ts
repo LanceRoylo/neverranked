@@ -98,7 +98,8 @@ export function layout(
       ${isAdmin ? `
       <div class="sidebar-section collapsible" data-section="ops">
         <div class="sidebar-section-header">Ops</div>
-        <a href="/admin" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
+        <a href="/admin" class="sidebar-item${title === 'Mission control' ? ' active' : ''}">Mission control</a>
+        <a href="/admin/cockpit" class="sidebar-item${title === 'Admin' || title === 'Inject' ? ' active' : ''}">Cockpit</a>
         <a href="/admin/health" class="sidebar-item${title === 'System Health' ? ' active' : ''}" title="System health: engines, crons, queues, alerts">Health</a>
         <a href="/admin/qa" class="sidebar-item${title === 'QA Audits' ? ' active' : ''}" title="QA audit log: independent grader for production outputs">QA Audits</a>
         <a href="/admin/decisions" class="sidebar-item${title === 'Decision Log' ? ' active' : ''}" title="Unified decision log: every approve/reject/edit you make across the admin">Decisions</a>

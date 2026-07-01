@@ -385,7 +385,9 @@ export async function handleAdminHome(user: User, env: Env, url?: URL): Promise<
     </div>
   `;
 
-  return html(layout("Admin", body, user));
+  // Title "Manage Clients" drives the matching sidebar active-state and
+  // keeps this page from falsely activating the "Cockpit" nav link.
+  return html(layout("Manage Clients", body, user));
 }
 
 /** Add a domain */

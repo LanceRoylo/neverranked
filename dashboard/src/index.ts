@@ -23,6 +23,7 @@ import { handleAdminQa } from "./routes/qa";
 import { handleAdminQaDetail } from "./routes/qa-detail";
 import { handleAdminDecisions } from "./routes/decisions";
 import { handleCockpit, handleAutomationToggle, handleAutomationDigestToggle } from "./routes/cockpit";
+import { handleHub } from "./routes/hub";
 import { handleEmailTestGet, handleEmailTestPost } from "./routes/admin-email-test";
 import { handleAdminEmailLogGet } from "./routes/admin-email-log";
 import { handleAdminFreeCheckStats } from "./routes/admin-free-check";
@@ -1325,8 +1326,13 @@ export default {
       return handleKickoff(request, env, user, kSlug);
     }
 
-    if (path === "/admin" && method === "GET" && user.role === "admin") {
+    // Mission control is the admin front door (/admin). The former cockpit
+    // (revenue, client health, action queue) moves to /admin/cockpit.
+    if (path === "/admin/cockpit" && method === "GET" && user.role === "admin") {
       return handleCockpit(user, env);
+    }
+    if (path === "/admin" && method === "GET" && user.role === "admin") {
+      return handleHub(user, env);
     }
 
     // System health page -- Phase 1 of the agent-foundation work.
@@ -2005,7 +2011,7 @@ export default {
           });
         }
       } catch { /* logging is best-effort */ }
-      return redirect("/admin");
+      return redirect("/admin/cockpit");
     }
     // Alert action: mark roadmap item done + dismiss alert
     const alertCompleteMatch = path.match(/^\/admin\/alert\/(\d+)\/complete$/);
@@ -2045,7 +2051,7 @@ export default {
           }
         } catch { /* logging is best-effort */ }
       }
-      return redirect("/admin");
+      return redirect("/admin/cockpit");
     }
     // Alert action: dismiss (mark as read, no roadmap change)
     const alertDismissMatch = path.match(/^\/admin\/alert\/(\d+)\/dismiss$/);
@@ -2066,7 +2072,7 @@ export default {
           metadata: { alert_type: alert?.type ?? null },
         });
       } catch { /* logging is best-effort */ }
-      return redirect("/admin");
+      return redirect("/admin/cockpit");
     }
     if (path === "/admin/domain" && method === "POST" && user.role === "admin") {
       return handleAddDomain(request, user, env);
