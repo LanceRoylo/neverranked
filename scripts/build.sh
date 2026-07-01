@@ -128,7 +128,12 @@ for d in "${DIRS[@]}"; do
     #  _data        — citation tracking screenshots, raw results JSON
     #  _engagement* — engagement config (client metadata)
     #  _meta        — internal notes
-    rsync -a --delete \
+    # --checksum: compare by file content, not size+mtime. A length-preserving
+    # edit (e.g. a hex color swap #1c1c1e -> #211e18) is byte-identical in size,
+    # and on a fresh git checkout all mtimes match, so the default quick-check
+    # would silently SKIP content-changed files and ship a stale dist. Checksum
+    # is slower but correct; the tree is small.
+    rsync -a --checksum --delete \
       --exclude='_data' \
       --exclude='_engagement*' \
       --exclude='_meta' \
