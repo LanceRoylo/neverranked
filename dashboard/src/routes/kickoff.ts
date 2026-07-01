@@ -276,7 +276,10 @@ export async function handleKickoffIntake(request: Request, env: Env, token: str
   const cust = await env.DB.prepare(
     "SELECT name FROM customers WHERE client_slug = ?"
   ).bind(row.client_slug).first<{ name: string }>();
-  const name = cust?.name || "your business";
+  // The pre-read is typically sent BEFORE onboarding, so there is usually
+  // no customers row yet. Fall back to a humanized slug ("prince-waikiki"
+  // -> "Prince Waikiki") rather than a generic "your business".
+  const name = cust?.name || row.client_slug.split(/[-_]/).map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   let saved: Record<string, string> = {};
   if (row.customer_json) { try { saved = JSON.parse(row.customer_json); } catch { saved = {}; } }
 
