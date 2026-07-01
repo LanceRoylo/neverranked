@@ -110,9 +110,9 @@ async function callJudgeModel(
 async function runJudge(
   env: Env,
   args: GateArgs,
-): Promise<{ verdict: "ship" | "escalate"; confidence: "high" | "medium" | "low"; reasons: string[] } | null> {
+): Promise<{ verdict: "ship" | "escalate"; confidence: "high" | "medium" | "low"; reasons: string[] } | { error: string }> {
   const key = (env as { ANTHROPIC_API_KEY?: string }).ANTHROPIC_API_KEY;
-  if (!key) return null;
+  if (!key) return { error: "ANTHROPIC_API_KEY missing" };
 
   const decisions = await recentDecisions(env, { artifactType: args.artifactType, limit: 25 }).catch(() => []);
   const examples = decisions.length
@@ -160,7 +160,7 @@ Would Lance ship this as-is? Return only the JSON verdict.`;
     errors.push(r.error);
   }
   console.warn(`deliverable judge unavailable across all models: ${errors.join(" | ")}`);
-  return null;
+  return { error: errors.join(" | ").slice(0, 400) };
 }
 
 // ── the verifier: OpenAI gpt-4o, adversarial, only on a "ship" verdict ──
@@ -203,8 +203,11 @@ Find the strongest reason NOT to ship, or confirm it is sound.`;
 // ── the gate ────────────────────────────────────────────────────────
 export async function gateDeliverable(env: Env, args: GateArgs): Promise<DeliverableVerdict> {
   const judge = await runJudge(env, args);
-  // Judge unavailable -> fail safe to escalate.
-  const jv = judge ?? { verdict: "escalate" as const, confidence: "low" as const, reasons: ["judge layer unavailable"] };
+  // Judge unavailable -> fail safe to escalate, and record the ACTUAL error in
+  // the reason (visible in the verdict row) instead of a generic "unavailable".
+  const jv = "verdict" in judge
+    ? judge
+    : { verdict: "escalate" as const, confidence: "low" as const, reasons: [`judge unavailable: ${judge.error}`.slice(0, 400)] };
 
   let verifier_objected: boolean | null = null;
   let verifier_reason: string | null = null;
