@@ -41,6 +41,7 @@ const CONCERN: Record<string, { severity: AlertSeverity; fix: string }> = {
   anomaly_engine_empty_spike: { severity: "high", fix: "An engine's empty-response rate spiked above baseline (API key expired, model changed, or service degraded). Check /admin/qa and validate keys, model names, and endpoints." },
   anomaly_engine_row_drop: { severity: "high", fix: "An engine's row count fell below 50% of baseline (cron dispatch, rate limit, or API down). Check cron_runs for missed citations and engine connectivity." },
   anomaly_cron_overdue: { severity: "high", fix: "A cron task is more than 2x its expected cadence overdue (trigger misconfigured or worker errored mid-run). Check the Cloudflare scheduled triggers and worker logs." },
+  monthly_refresh_overdue: { severity: "high", fix: "The monthly measurement did not refresh this customer this month — the scheduled GitHub run is best-effort and likely skipped. Re-run it (`gh workflow run htc-monthly.yml` for HTC, or the customer's category runner + apply-bridge-to-d1.sh), then confirm the cockpit's measured date updated." },
 
   htc_events_stale: { severity: "medium", fix: "HTC event data is older than 36h (silent cron-failure catch). Check /health/htc-events?dryrun=1." },
   htc_events_fetch_failed: { severity: "medium", fix: "The fetch from hawaiitheatre.com/upcoming-events/ failed. Test the URL and check the site's availability." },

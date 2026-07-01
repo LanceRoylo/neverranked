@@ -19,6 +19,8 @@ import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, sendSnippetPauseCheckIn, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
+import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
+import { monthlyRefreshOverdue } from "./lib/monthly-refresh";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
 
@@ -701,6 +703,44 @@ export async function runDailyTasks(env: Env): Promise<void> {
     }
   } catch (e) {
     console.log(`[cron] memo-drafts: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Monthly-refresh watchdog. The measurement fires on the 1st via a GitHub
+  // scheduled cron, which is best-effort and can silently skip (verified
+  // 2026-07-01: the workflow's first scheduled occurrence did not fire). For
+  // every managed customer (a bridge-fed readout snapshot), if we are past the
+  // grace day and this month's refresh has not landed, fire a needs-you alert
+  // so a missed run shows up in the queue instead of the customer's cockpit /
+  // memo / Atlas silently aging on last month's numbers. Deduped to ~monthly.
+  try {
+    const now = new Date();
+    const slugs = (await env.DB.prepare(
+      "SELECT DISTINCT client_slug FROM citation_snapshots",
+    ).all<{ client_slug: string }>()).results;
+    for (const { client_slug } of slugs) {
+      const snap = await env.DB.prepare(
+        `SELECT engines_breakdown, top_competitors, created_at, week_start
+           FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
+      ).bind(client_slug).first<{ engines_breakdown: string; top_competitors: string; created_at: number | null; week_start: number }>();
+      if (!snap) continue;
+      // Only bridge-fed customers are on the monthly cadence. Daily-measured
+      // dogfood slugs (neverranked / and-scene) write legacy-shape snapshots,
+      // so isReadoutShapeSnapshot skips them — no false "overdue" for those.
+      if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) continue;
+      const ts = snap.created_at || snap.week_start; // epoch secs; created_at = bridge write time
+      if (monthlyRefreshOverdue(now, ts)) {
+        const last = ts ? new Date(ts * 1000).toISOString().slice(0, 10) : "never";
+        await createAlertIfFresh(env, {
+          clientSlug: client_slug,
+          type: "monthly_refresh_overdue",
+          title: `Monthly measurement overdue for ${client_slug}`,
+          detail: `This month's refresh has not landed (latest snapshot ${last}). The scheduled GitHub run likely skipped — they are best-effort. Re-run the measurement + bridge for ${client_slug}, then confirm the cockpit shows the new date.`,
+          windowHours: 24 * 25, // at most ~once per customer per month
+        });
+      }
+    }
+  } catch (e) {
+    console.log(`[cron] monthly-refresh-watchdog: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   // NOTE: the Hawaii Theatre Center event-schema refresh used to run here.
