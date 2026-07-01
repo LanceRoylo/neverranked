@@ -49,3 +49,26 @@ test("today's exact scenario: Jul 1, HTC refreshed today -> not overdue, and gra
     false,
   );
 });
+
+// ── memo-drafts watchdog reuses the same helper with graceDay 26 (memos draft
+//    on the 24th, deliver ~25th) ──
+test("memo grace (graceDay 26): on the 25th, last month's memo is still within grace -> NOT overdue", () => {
+  assert.equal(
+    monthlyRefreshOverdue(new Date("2026-08-25T12:00:00Z"), secs("2026-07-24T06:00:00Z"), 26),
+    false,
+  );
+});
+
+test("memo: past the 26th with no memo this month -> OVERDUE (missed 24th cron)", () => {
+  assert.equal(
+    monthlyRefreshOverdue(new Date("2026-08-27T12:00:00Z"), secs("2026-07-24T06:00:00Z"), 26),
+    true,
+  );
+});
+
+test("memo: this month's draft landed on the 24th -> NOT overdue on the 27th", () => {
+  assert.equal(
+    monthlyRefreshOverdue(new Date("2026-08-27T12:00:00Z"), secs("2026-08-24T06:00:00Z"), 26),
+    false,
+  );
+});

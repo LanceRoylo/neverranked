@@ -743,6 +743,42 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] monthly-refresh-watchdog: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Memo-drafts watchdog. The monthly memo drafts on the 24th (date-gated to
+  // getUTCDate()===24 above). If daily_tasks misses SPECIFICALLY on the 24th,
+  // the cron heartbeat stays green from adjacent days yet no memo lands; a
+  // generation failure only reaches the buried activity feed. Outcome check:
+  // for every customer with an established memo cadence (>=1 prior memo), if we
+  // are past the grace day and no memo landed this month, fire a needs-you
+  // alert. Gating on a prior memo means a brand-new customer whose first memo
+  // is not yet due is correctly skipped (no false alarm at onboarding).
+  try {
+    const now = new Date();
+    const customers = (await env.DB.prepare(
+      "SELECT client_slug FROM customers WHERE status IN ('active','pilot')",
+    ).all<{ client_slug: string }>()).results;
+    for (const { client_slug } of customers) {
+      const memo = await env.DB.prepare(
+        "SELECT created_at FROM monthly_memos WHERE client_slug = ? ORDER BY created_at DESC LIMIT 1",
+      ).bind(client_slug).first<{ created_at: number }>();
+      if (!memo) continue; // no memo cadence yet -> not overdue
+      // graceDay 26: memos draft on the 24th and deliver ~25th, so a missing
+      // memo is genuinely overdue by the 26th. Reuses the same "latest monthly
+      // outcome predates this month, past grace" logic as the measurement check.
+      if (monthlyRefreshOverdue(now, memo.created_at, 26)) {
+        const last = new Date(memo.created_at * 1000).toISOString().slice(0, 10);
+        await createAlertIfFresh(env, {
+          clientSlug: client_slug,
+          type: "memo_generation_missed",
+          title: `Monthly memo not drafted for ${client_slug}`,
+          detail: `No memo draft has landed this month (latest ${last}). The 24th draft cron may have missed the 24th specifically, or generation failed. Open /admin/memos and use "Generate drafts now" for ${client_slug}.`,
+          windowHours: 24 * 20, // at most ~once per customer per month
+        });
+      }
+    }
+  } catch (e) {
+    console.log(`[cron] memo-drafts-watchdog: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // NOTE: the Hawaii Theatre Center event-schema refresh used to run here.
   // It was moved to its own cron invocation ("45 6 * * *", see scheduled()
   // in index.ts) on 2026-06-01 because it was failing every day with "Too
