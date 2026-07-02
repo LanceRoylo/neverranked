@@ -56,7 +56,7 @@ function reportNo(i: number): string {
  * competitor names lifted from AI-engine output (attacker-influenceable), so a
  * `javascript:`/`data:` href must never survive. No raw HTML passthrough.
  */
-function renderReportMarkdown(md: string): string {
+export function renderReportMarkdown(md: string): string {
   const escHtml = (s: string) =>
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const safeHref = (url: string): string | null => {
@@ -81,9 +81,24 @@ function renderReportMarkdown(md: string): string {
   const out: string[] = [];
   let inUl = false;
   const flushUl = () => { if (inUl) { out.push("</ul>"); inUl = false; } };
-  for (const raw of lines) {
-    const line = raw.trimEnd();
+  const isTableSep = (s: string) => /^\|(\s*:?-{2,}:?\s*\|)+\s*$/.test(s.trim());
+  const cells = (s: string) => s.trim().replace(/^\|/, "").replace(/\|\s*$/, "").split("|").map((c) => c.trim());
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trimEnd();
     if (!line.trim()) { flushUl(); continue; }
+    // GFM table: a header row immediately followed by a |---|---| separator.
+    if (/^\|.*\|\s*$/.test(line) && i + 1 < lines.length && isTableSep(lines[i + 1])) {
+      flushUl();
+      const header = cells(line);
+      const rows: string[][] = [];
+      i += 2; // consume header + separator
+      while (i < lines.length && /^\|.*\|\s*$/.test(lines[i].trim())) { rows.push(cells(lines[i])); i++; }
+      i--; // step back so the loop's i++ lands on the following line
+      const thead = `<thead><tr>${header.map((h) => `<th>${inline(h)}</th>`).join("")}</tr></thead>`;
+      const tbody = `<tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${inline(c)}</td>`).join("")}</tr>`).join("")}</tbody>`;
+      out.push(`<table>${thead}${tbody}</table>`);
+      continue;
+    }
     let m: RegExpMatchArray | null;
     if ((m = line.match(/^#\s+(.*)$/)))   { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
     if ((m = line.match(/^##\s+(.*)$/)))  { flushUl(); out.push(`<h2>${inline(m[1])}</h2>`); continue; }
@@ -136,6 +151,10 @@ function shell(title: string, inner: string): string {
   .body li { margin:0 0 7px; color:#dcd8d0; }
   .body a { color:#d4c596; }
   .body code { background:#1a1916; padding:1px 5px; border-radius:4px; font-size:13px; }
+  .body table { width:100%; border-collapse:collapse; margin:20px 0; font-size:14px; font-variant-numeric:tabular-nums; }
+  .body th { text-align:left; font-weight:500; color:#b7b1a3; letter-spacing:.03em; text-transform:uppercase; font-size:11px; padding:8px 14px 8px 0; border-bottom:1px solid #38352d; }
+  .body td { padding:8px 14px 8px 0; border-bottom:1px solid #211e18; color:#dcd8d0; }
+  .body td:first-child { color:#e8e8ea; }
   .empty { color:#8a857a; padding:48px 0; text-align:center; }
   .foot { margin-top:56px; padding-top:20px; border-top:1px solid #26241f; font-size:13px; color:#6f6a60; }
 </style></head><body><div class="wrap">${inner}</div></body></html>`;

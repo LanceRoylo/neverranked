@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { handleReadoutView, handleReadoutsIndex } from "../src/routes/customer-readouts.ts";
+import { handleReadoutView, handleReadoutsIndex, renderReportMarkdown } from "../src/routes/customer-readouts.ts";
 
 // Minimal fake Env whose DB returns a fixed set of delivered + draft memos.
 function fakeEnv(rows: any[]) {
@@ -57,6 +57,28 @@ test("unauthenticated readouts index redirects to login", async () => {
 // The render internals (report numbering, safe markdown, dropdown) are pure and
 // exercised here by re-implementing the exact numbering contract the route uses,
 // so a regression in the ordering assumption is caught.
+test("GFM tables render to a real <table> (reports carry before/after tables)", () => {
+  const md = [
+    "| AI tool | June | July |",
+    "| --- | --- | --- |",
+    "| Copilot | 0% | 1% |",
+    "| ChatGPT search | 7% | 10% |",
+  ].join("\n");
+  const html = renderReportMarkdown(md);
+  assert.match(html, /<table>/);
+  assert.match(html, /<th>AI tool<\/th>/);
+  assert.match(html, /<td>Copilot<\/td>/);
+  assert.match(html, /<td>10%<\/td>/);
+  assert.doesNotMatch(html, /\| --- \|/); // separator row must be consumed, not printed
+});
+
+test("markdown links with unsafe schemes are stripped to text (no javascript:)", () => {
+  const html = renderReportMarkdown("See [click](javascript:alert(1)) and [site](https://ok.com).");
+  assert.doesNotMatch(html, /javascript:/);
+  assert.match(html, /<a href="https:\/\/ok.com"[^>]*>site<\/a>/);
+  assert.match(html, /click/); // text preserved even though the link was dropped
+});
+
 test("report numbering is chronological + 1-based two-digit", () => {
   const months = ["2026-06", "2026-07", "2026-08"];
   const numbered = months.map((m, i) => ({ m, no: String(i + 1).padStart(2, "0") }));
