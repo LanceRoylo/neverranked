@@ -334,7 +334,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
 
   const inner = `
     <div class="top">
-      <a class="back" href="/c/${esc(slug)}/">&larr; Back to dashboard</a>
+      <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
       ${selector}
     </div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>

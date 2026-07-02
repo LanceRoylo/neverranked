@@ -239,6 +239,38 @@ async function handleAsk(
 
 // ── POST /c/<slug>/atlas/message ─────────────────────────────────────
 
+// Atlas question caps (per customer). Every question calls a paid model and
+// Anthropic auto-recharge is ON, so external sessions must be bounded or an
+// unbounded/adversarial tester runs uncapped API spend. Admins (Lance) are
+// exempt. Counts user turns only; "flag it" support messages are always free.
+const ATLAS_DAILY_CAP = 20;
+const ATLAS_MONTHLY_CAP = 200;
+
+// Returns a friendly cap message if the customer is over their daily or monthly
+// question limit, else null. Counts role='user' rows in atlas_messages (the
+// current question is not yet saved at check time, so the Nth allows N).
+export async function checkAtlasCap(env: Env, slug: string): Promise<string | null> {
+  const nowSecs = Math.floor(Date.now() / 1000);
+  const dayAgo = nowSecs - 86400;
+  const d = new Date();
+  const monthStart = Math.floor(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1) / 1000);
+  const row = await env.DB.prepare(
+    `SELECT
+       COUNT(CASE WHEN created_at >= ? THEN 1 END) AS day_n,
+       COUNT(CASE WHEN created_at >= ? THEN 1 END) AS month_n
+     FROM atlas_messages WHERE client_slug = ? AND role = 'user'`,
+  ).bind(dayAgo, monthStart, slug).first<{ day_n: number; month_n: number }>();
+  const dayN = Number(row?.day_n ?? 0);
+  const monthN = Number(row?.month_n ?? 0);
+  if (dayN >= ATLAS_DAILY_CAP) {
+    return `You have reached today's limit of ${ATLAS_DAILY_CAP} questions. Atlas resets tomorrow. If you need more sooner, reply "flag it" and Lance will follow up.`;
+  }
+  if (monthN >= ATLAS_MONTHLY_CAP) {
+    return `You have reached this month's limit of ${ATLAS_MONTHLY_CAP} questions. Atlas resets at the start of next month. Reply "flag it" if you need Lance in the meantime.`;
+  }
+  return null;
+}
+
 export async function handleAtlasMessage(
   request: Request,
   env: Env,
@@ -278,6 +310,16 @@ export async function handleAtlasMessage(
       return new Response(JSON.stringify({ reply: FLAG_CONFIRM, flagged: true }), {
         headers: { "content-type": "application/json" },
       });
+    }
+    // Rate + cost cap for real questions (flag-it above is always free). Admins
+    // exempt so Lance can test. Over-cap returns a friendly reply, not an error.
+    if (user.role !== "admin") {
+      const capMsg = await checkAtlasCap(env, slug);
+      if (capMsg) {
+        return new Response(JSON.stringify({ reply: capMsg, capped: true }), {
+          headers: { "content-type": "application/json" },
+        });
+      }
     }
     const { reply, verdict } = await handleAsk(env, slug, message);
     return new Response(JSON.stringify({ reply, verdict }), {

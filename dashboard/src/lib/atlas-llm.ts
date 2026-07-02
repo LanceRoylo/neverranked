@@ -9,18 +9,20 @@
 //      Marking them cache_control: ephemeral means turns 2..N within a
 //      ~5min window read the cached prefix instead of re-billing it.
 //
-//   2. Low temperature. Atlas is a disciplined data-reporting surface,
-//      not a creative writer. We want deterministic, grader-passable
-//      output, so temperature is held low.
+//   2. Thinking disabled. Atlas is a disciplined data-reporting surface,
+//      not a reasoner, and its boundary is enforced by a deterministic
+//      grader downstream. Sonnet 5 defaults to adaptive thinking, which
+//      adds latency + cost and can eat a short reply, so we disable it to
+//      keep the chat snappy. (Sonnet 5 also rejects the `temperature`
+//      parameter with a 400, so it is omitted entirely.)
 
 import type { Env } from "../types";
 import { buildAtlasSystemPrompt } from "./atlas-system-prompt";
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
-const ATLAS_MODEL = "claude-sonnet-4-5";
+const ATLAS_MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 1200; // Atlas answers are short. Caps runaway cost.
-const TEMPERATURE = 0.2;
 
 export interface AtlasTurn {
   role: "user" | "assistant";
@@ -76,7 +78,9 @@ export async function askAtlas(
       system,
       messages,
       max_tokens: MAX_TOKENS,
-      temperature: TEMPERATURE,
+      // No temperature: Sonnet 5 returns HTTP 400 on it. thinking disabled
+      // keeps the chat fast + cheap and stops adaptive thinking truncating.
+      thinking: { type: "disabled" },
     }),
     signal: AbortSignal.timeout(60_000),
   });
