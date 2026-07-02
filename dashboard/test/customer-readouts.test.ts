@@ -109,6 +109,21 @@ test("renderCharts draws bars, delta pills, captions, and highlights the custome
   assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Microsoft Copilot"));
 });
 
+test("topSources renders a 4th chart with linkable domains, and refuses to link a malformed host", () => {
+  const facts = JSON.stringify({
+    topSources: [
+      { host: "gohawaii.com", pct: 3 },
+      { host: "broadway.org", pct: 2 },
+      { host: "evil .com/../x", pct: 1 }, // malformed -> escaped, never linked
+    ],
+  });
+  const html = renderCharts(facts);
+  assert.match(html, /The specific sites AI pulls from/);
+  assert.match(html, /<a href="https:\/\/gohawaii\.com"[^>]*>gohawaii\.com<\/a>/);
+  assert.match(html, /<a href="https:\/\/broadway\.org"[^>]*>broadway\.org<\/a>/);
+  assert.doesNotMatch(html, /href="https:\/\/evil/); // malformed host cannot become an href
+});
+
 test("renderCharts escapes untrusted labels (competitor names come from AI output)", () => {
   const facts = JSON.stringify({ venue: { rows: [{ label: "<img src=x onerror=alert(1)>", pct: 5 }] } });
   const html = renderCharts(facts);

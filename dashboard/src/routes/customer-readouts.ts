@@ -141,12 +141,13 @@ interface ReportFacts {
   engines?: ChartEngine[];
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
+  topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
 }
 
 function num(v: unknown): number { const n = Number(v); return Number.isFinite(n) ? n : 0; }
 
 /** One horizontal bar row. width is relative to the chart's max so small values stay visible. */
-function barRow(label: string, pct: number, maxPct: number, i: number, opts: { hl?: boolean; delta?: number | null; title?: string } = {}): string {
+function barRow(label: string, pct: number, maxPct: number, i: number, opts: { hl?: boolean; delta?: number | null; title?: string; labelHtml?: string } = {}): string {
   const w = Math.max(2, Math.min(100, Math.round((pct / Math.max(1, maxPct)) * 100)));
   let pill = "";
   if (typeof opts.delta === "number") {
@@ -156,8 +157,10 @@ function barRow(label: string, pct: number, maxPct: number, i: number, opts: { h
     pill = ` <span class="nr-d ${cls}">${txt}</span>`;
   }
   const t = opts.title ? ` title="${esc(opts.title)}"` : "";
+  // opts.labelHtml is a pre-built, already-safe label (e.g. a validated link);
+  // otherwise the plain label is escaped.
   return `<div class="nr-row" style="--i:${i}"${t}>
-    <div class="nr-lab">${esc(label)}</div>
+    <div class="nr-lab">${opts.labelHtml ?? esc(label)}</div>
     <div class="nr-track"><div class="nr-fill${opts.hl ? " nr-hl" : ""}" style="width:${w}%"></div></div>
     <div class="nr-val">${num(pct)}%${pill}</div>
   </div>`;
@@ -207,6 +210,25 @@ export function renderCharts(factsJson: string | null): string {
     const bars = sources.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.own, title: `${r.label}: ${num(r.pct)}% of cited sources` })).join("");
     const cap = `Where the AI tools pulled the information behind their answers. Most is the independent web, not anyone's own website, which is why off-site presence matters as much as your own site.`;
     blocks.push(chartBlock("Where AI's answers come from", bars, cap));
+  }
+
+  // 4. The specific third-party sites AI cited (answers "which ones?" for the
+  // buckets above). Each host is a clickable link — the off-site punch list.
+  const topSources = Array.isArray(f.topSources) ? f.topSources.filter((r) => r && typeof r.host === "string") : [];
+  if (topSources.length) {
+    const max = Math.max(...topSources.map((r) => num(r.pct)), 1);
+    const bars = topSources.map((r, i) => {
+      const host = String(r.host);
+      // Only link plain, well-formed hostnames (defensive: no scheme/path/space
+      // ever reaches the href, so a measured string can't smuggle a bad URL).
+      const isHost = /^[a-z0-9][a-z0-9.-]*\.[a-z]{2,}$/i.test(host);
+      const labelHtml = isHost
+        ? `<a href="https://${host}" target="_blank" rel="noopener noreferrer nofollow">${esc(host)}</a>`
+        : esc(host);
+      return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of cited sources` });
+    }).join("");
+    const cap = `The independent sites the AI tools cited most in your category. These are where to be listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
+    blocks.push(chartBlock("The specific sites AI pulls from", bars, cap));
   }
 
   if (!blocks.length) return "";
