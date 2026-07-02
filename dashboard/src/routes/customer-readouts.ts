@@ -28,6 +28,7 @@ interface ReportRow {
   title: string | null;
   body_markdown: string;
   delivered_at: number;
+  facts_json: string | null; // frozen chart data for this report (null = narrative-only)
 }
 
 function userCanView(user: { role?: string; client_slug?: string }, slug: string): boolean {
@@ -117,11 +118,100 @@ export function renderReportMarkdown(md: string): string {
 
 async function loadDeliveredReports(env: Env, slug: string): Promise<ReportRow[]> {
   return (await env.DB.prepare(
-    `SELECT month_key, title, body_markdown, delivered_at
+    `SELECT month_key, title, body_markdown, delivered_at, facts_json
        FROM monthly_memos
       WHERE client_slug = ? AND delivered_at IS NOT NULL
       ORDER BY month_key ASC`,
   ).bind(slug).all<ReportRow>()).results;
+}
+
+// ── Charts ───────────────────────────────────────────────────────────
+// Rendered from the report's FROZEN facts_json (never a live snapshot, which
+// gets overwritten). Div-based horizontal bars: the fill animates via scaleX
+// (transform only, 60fps), staggered, ease-out, with a prefers-reduced-motion
+// fallback. Every chart carries a plain-language "How to read this" caption --
+// the interpretation layer is the point. Fully defensive: bad/absent facts_json
+// renders nothing (the report stays narrative-only).
+
+interface ChartEngine { name: string; pct: number; prev?: number | null; }
+interface ChartRow { label: string; pct: number; you?: boolean; own?: boolean; }
+interface ReportFacts {
+  period_label?: string;
+  prior_label?: string;
+  engines?: ChartEngine[];
+  venue?: { rows?: ChartRow[] };
+  sources?: ChartRow[];
+}
+
+function num(v: unknown): number { const n = Number(v); return Number.isFinite(n) ? n : 0; }
+
+/** One horizontal bar row. width is relative to the chart's max so small values stay visible. */
+function barRow(label: string, pct: number, maxPct: number, i: number, opts: { hl?: boolean; delta?: number | null; title?: string } = {}): string {
+  const w = Math.max(2, Math.min(100, Math.round((pct / Math.max(1, maxPct)) * 100)));
+  let pill = "";
+  if (typeof opts.delta === "number") {
+    const d = opts.delta;
+    const cls = d > 0 ? "up" : d < 0 ? "down" : "even";
+    const txt = d > 0 ? `+${d}` : d < 0 ? `${d}` : "even";
+    pill = ` <span class="nr-d ${cls}">${txt}</span>`;
+  }
+  const t = opts.title ? ` title="${esc(opts.title)}"` : "";
+  return `<div class="nr-row" style="--i:${i}"${t}>
+    <div class="nr-lab">${esc(label)}</div>
+    <div class="nr-track"><div class="nr-fill${opts.hl ? " nr-hl" : ""}" style="width:${w}%"></div></div>
+    <div class="nr-val">${num(pct)}%${pill}</div>
+  </div>`;
+}
+
+function chartBlock(title: string, bars: string, caption: string): string {
+  return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div><p class="nr-cap"><strong>How to read this.</strong> ${caption}</p></section>`;
+}
+
+export function renderCharts(factsJson: string | null): string {
+  if (!factsJson) return "";
+  let f: ReportFacts;
+  try { f = JSON.parse(factsJson) as ReportFacts; } catch { return ""; }
+  if (!f || typeof f !== "object") return "";
+  const prior = f.prior_label ? esc(f.prior_label) : "last month";
+  const blocks: string[] = [];
+
+  // 1. Per-engine citation share (with month-over-month delta pills).
+  const engines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
+  if (engines.length) {
+    const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
+    const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
+    const bars = sorted.map((e, i) => {
+      const delta = typeof e.prev === "number" ? num(e.pct) - num(e.prev) : null;
+      const title = delta === null
+        ? `${e.name}: ${num(e.pct)}% of its citations point to you`
+        : `${e.name}: ${num(e.pct)}% this period, ${delta >= 0 ? "up" : "down"} from ${num(e.prev)}%`;
+      return barRow(e.name, num(e.pct), max, i, { delta, title });
+    }).join("");
+    const cap = `Each bar is the share of that AI tool's citations that point to your own site. Higher is better. The pill shows the change since ${prior}.`;
+    blocks.push(chartBlock("Where each AI tool cites you", bars, cap));
+  }
+
+  // 2. Venue-share ranking (you highlighted).
+  const vrows = f.venue && Array.isArray(f.venue.rows) ? f.venue.rows.filter((r) => r && typeof r.label === "string") : [];
+  if (vrows.length) {
+    const max = Math.max(...vrows.map((r) => num(r.pct)), 1);
+    const bars = vrows.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of venue citations` })).join("");
+    const cap = `Of every mention the AI tools made of a venue in your category, this is who got named. Your bar is highlighted.`;
+    blocks.push(chartBlock("Who AI names in your category", bars, cap));
+  }
+
+  // 3. Where the answers come from (source types; your own site highlighted).
+  const sources = Array.isArray(f.sources) ? f.sources.filter((r) => r && typeof r.label === "string") : [];
+  if (sources.length) {
+    const max = Math.max(...sources.map((r) => num(r.pct)), 1);
+    const bars = sources.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.own, title: `${r.label}: ${num(r.pct)}% of cited sources` })).join("");
+    const cap = `Where the AI tools pulled the information behind their answers. Most is the independent web, not anyone's own website, which is why off-site presence matters as much as your own site.`;
+    blocks.push(chartBlock("Where AI's answers come from", bars, cap));
+  }
+
+  if (!blocks.length) return "";
+  const heading = f.period_label ? `By the numbers &middot; ${esc(f.period_label)}` : "By the numbers";
+  return `<div class="nrcharts"><div class="nr-h">${heading}</div>${blocks.join("")}</div>`;
 }
 
 function shell(title: string, inner: string): string {
@@ -157,7 +247,42 @@ function shell(title: string, inner: string): string {
   .body td:first-child { color:#e8e8ea; }
   .empty { color:#8a857a; padding:48px 0; text-align:center; }
   .foot { margin-top:56px; padding-top:20px; border-top:1px solid #26241f; font-size:13px; color:#6f6a60; }
-</style></head><body><div class="wrap">${inner}</div></body></html>`;
+  /* charts */
+  .nrcharts { margin:4px 0 44px; }
+  .nr-h { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#8a857a; margin:0 0 20px; padding-bottom:10px; border-bottom:1px solid #26241f; }
+  .nr-chart { margin:0 0 32px; }
+  .nr-ctitle { font-weight:500; font-size:16px; color:#f2efe6; margin:0 0 14px; }
+  .nr-bars { display:flex; flex-direction:column; gap:9px; }
+  .nr-row { display:grid; grid-template-columns:154px 1fr 92px; align-items:center; gap:12px; }
+  .nr-lab { font-size:13px; color:#c9c4b8; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .nr-track { height:20px; background:#17160f; border-radius:5px; overflow:hidden; }
+  .nr-fill { height:100%; background:#5b563f; border-radius:5px; transform:scaleX(0); transform-origin:left; transition:transform .55s cubic-bezier(.23,1,.32,1); transition-delay:calc(var(--i) * 55ms); }
+  .nr-fill.nr-hl { background:linear-gradient(90deg,#d4c596,#b79a53); }
+  .nr-row:hover .nr-fill { filter:brightness(1.12); }
+  .nr-val { font-size:13px; color:#e8e8ea; font-variant-numeric:tabular-nums; opacity:0; transition:opacity .4s ease; transition-delay:calc(var(--i) * 55ms + .15s); }
+  .nrcharts.in .nr-fill { transform:scaleX(1); }
+  .nrcharts.in .nr-val { opacity:1; }
+  .nr-d { font-size:11px; padding:1px 5px; border-radius:4px; margin-left:5px; }
+  .nr-d.up { color:#7bdca0; background:rgba(123,220,160,.12); }
+  .nr-d.down { color:#e0a488; background:rgba(224,164,136,.12); }
+  .nr-d.even { color:#8a857a; }
+  .nr-cap { font-size:13px; color:#8a857a; margin:12px 0 0; line-height:1.55; }
+  .nr-cap strong { color:#b7b1a3; }
+  @media (max-width:560px){ .nr-row{ grid-template-columns:92px 1fr 70px; gap:8px; } .nr-lab{ font-size:12px; } }
+  @media (prefers-reduced-motion:reduce){ .nr-fill{ transition:none; transform:scaleX(1); } .nr-val{ transition:none; opacity:1; } }
+</style></head><body><div class="wrap">${inner}</div>
+<script>
+(function(){
+  var c = document.querySelector('.nrcharts');
+  if(!c) return;
+  if(!('IntersectionObserver' in window)){ c.classList.add('in'); return; }
+  var io = new IntersectionObserver(function(es){
+    es.forEach(function(e){ if(e.isIntersecting){ c.classList.add('in'); io.disconnect(); } });
+  }, { threshold: 0.12 });
+  io.observe(c);
+})();
+</script>
+</body></html>`;
 }
 
 /** GET /c/<slug>/readouts — redirect to the latest report (or empty state). */
@@ -214,6 +339,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     </div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
+    ${renderCharts(r.facts_json)}
     <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery. Newer months appear as separate reports in the selector above.</div>`;
 

@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { handleReadoutView, handleReadoutsIndex, renderReportMarkdown } from "../src/routes/customer-readouts.ts";
+import { handleReadoutView, handleReadoutsIndex, renderReportMarkdown, renderCharts } from "../src/routes/customer-readouts.ts";
 
 // Minimal fake Env whose DB returns a fixed set of delivered + draft memos.
 function fakeEnv(rows: any[]) {
@@ -77,6 +77,43 @@ test("markdown links with unsafe schemes are stripped to text (no javascript:)",
   assert.doesNotMatch(html, /javascript:/);
   assert.match(html, /<a href="https:\/\/ok.com"[^>]*>site<\/a>/);
   assert.match(html, /click/); // text preserved even though the link was dropped
+});
+
+test("renderCharts is fully defensive: null/garbage/empty renders nothing", () => {
+  assert.equal(renderCharts(null), "");
+  assert.equal(renderCharts("not json"), "");
+  assert.equal(renderCharts("{}"), "");
+  assert.equal(renderCharts(JSON.stringify({ engines: [] })), "");
+});
+
+test("renderCharts draws bars, delta pills, captions, and highlights the customer", () => {
+  const facts = JSON.stringify({
+    period_label: "July 2026",
+    prior_label: "June 2026",
+    engines: [
+      { name: "Microsoft Copilot", pct: 1, prev: 0 },
+      { name: "ChatGPT search", pct: 10, prev: 7 },
+      { name: "Gemini grounded", pct: 8, prev: 11 },
+    ],
+    venue: { rows: [{ label: "Hawaii Theatre", pct: 48, you: true }, { label: "Diamond Head Theatre", pct: 15 }] },
+    sources: [{ label: "Independent web", pct: 69 }, { label: "Your own site", pct: 9, own: true }],
+  });
+  const html = renderCharts(facts);
+  assert.match(html, /By the numbers/);
+  assert.match(html, /How to read this/);
+  assert.match(html, /nr-fill nr-hl/);          // the "you"/own bar is highlighted
+  assert.match(html, /nr-d up">\+3/);           // ChatGPT +3
+  assert.match(html, /nr-d down">-3/);          // Gemini -3
+  assert.match(html, /nr-d up">\+1/);           // Copilot +1 (off zero)
+  // engines sorted by pct desc: ChatGPT(10) before Gemini(8) before Copilot(1)
+  assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Microsoft Copilot"));
+});
+
+test("renderCharts escapes untrusted labels (competitor names come from AI output)", () => {
+  const facts = JSON.stringify({ venue: { rows: [{ label: "<img src=x onerror=alert(1)>", pct: 5 }] } });
+  const html = renderCharts(facts);
+  assert.doesNotMatch(html, /<img src=x/);
+  assert.match(html, /&lt;img/);
 });
 
 test("report numbering is chronological + 1-based two-digit", () => {
