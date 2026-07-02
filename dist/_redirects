@@ -24,3 +24,74 @@
 # intact. This is a specific path rule, not the forbidden /* catch-all,
 # so it is safe alongside the SPA holder.
 /signin  https://app.neverranked.com/auth/verify  302
+
+# ---------------------------------------------------------------------
+# Retired-page 301 map (go-live cleanup, 2026-07-01).
+#
+# 53 dead pages -> their closest live successor, so old inbound links and
+# Google's index consolidate onto the evidence surfaces instead of dying
+# in soft-200 stubs. Specific path rules only — never the forbidden /*.
+#
+# Companion change: the fully-redirected dirs (agencies, blog,
+# case-studies, kit, principles, profile, state-of-aeo) are pruned from
+# scripts/build.sh DIRS so no physical stub competes with these rules.
+#
+# Deliberately NOT redirected: /schemas/* and /standards/* — those serve
+# intentional retirement tombstones (noindex) that disavow the dead
+# thesis (commit b7552d9). Redirecting them would resurrect disavowed
+# content onto live trust surfaces. They stay as-is.
+# ---------------------------------------------------------------------
+/agencies/                                      /for-agencies/                      301
+/agencies/partner-program/                      /for-agencies/                      301
+/blog/                                          /teardowns/                         301
+/blog/aeo-for-dentists/                         /honolulu-dental-aeo/               301
+/blog/aeo-for-lawyers/                          /hawaii-law-aeo/                    301
+/blog/aeo-for-financial-advisors/               /hawaii-wealth-aeo/                 301
+/blog/aeo-for-real-estate/                      /teardowns/real-estate-honolulu/    301
+/blog/aeo-for-hvac/                             /teardowns/hvac-honolulu/           301
+/blog/aeo-for-med-spas/                         /teardowns/med-spa-honolulu/        301
+/blog/aeo-for-restaurants/                      /teardowns/                         301
+/blog/aeo-for-chiropractors/                    /teardowns/                         301
+/blog/aeo-pricing/                              /                                   301
+/blog/aeo-score-what-it-means/                  /methodology/                       301
+/blog/best-aeo-agency/                          /                                   301
+/blog/check-if-business-shows-up-chatgpt/       https://check.neverranked.com/      301
+/blog/how-long-does-aeo-take/                   /methodology/                       301
+/blog/is-seo-dead/                              /                                   301
+/blog/schema-markup-ai-search/                  /schema-library/                    301
+/blog/the-first-aeo-mcp-server/                 /teardowns/                         301
+/blog/we-audited-ourselves-first/               /claims/                            301
+/blog/website-traffic-dropped/                  /                                   301
+/blog/what-is-aeo/                              /methodology/                       301
+/blog/why-chatgpt-recommends-your-competitor/   /                                   301
+/case-studies/                                  /results/                           301
+/case-studies/and-scene/                        /results/                           301
+/case-studies/hawaii-theatre/                   /results/                           301
+/case-studies/montaic/                          /results/                           301
+/case-studies/neverranked/                      /claims/                            301
+/case-studies-drafts/hawaii-theatre/            /results/                           301
+/kit/                                           /templates/                         301
+/principles/                                    /methodology/                       301
+/profile/                                       /teardowns/                         301
+/profile/american-savings-bank/                 /teardowns/bank-honolulu/           301
+/profile/bank-of-hawaii/                        /teardowns/bank-honolulu/           301
+/profile/central-pacific-bank/                  /teardowns/bank-honolulu/           301
+/profile/first-hawaiian-bank/                   /teardowns/bank-honolulu/           301
+/profile/cades-schutte/                         /teardowns/law-firm-hawaii/         301
+/profile/carlsmith-ball/                        /teardowns/law-firm-hawaii/         301
+/profile/damon-key-leong-kupchak-hastert/       /teardowns/law-firm-hawaii/         301
+/profile/goodsill-anderson-quinn-and-stifel/    /teardowns/law-firm-hawaii/         301
+/profile/schlack-ito/                           /teardowns/law-firm-hawaii/         301
+/profile/watanabe-ing/                          /teardowns/law-firm-hawaii/         301
+/profile/halepuna-waikiki-by-halekulani/        /teardowns/hotels-hawaii/           301
+/profile/hotel-wailea/                          /teardowns/hotels-hawaii/           301
+/profile/lotus-honolulu-at-diamond-head/        /teardowns/hotels-hawaii/           301
+/profile/the-cliffs-at-princeville/             /teardowns/hotels-hawaii/           301
+/profile/the-laylow-autograph-collection/       /teardowns/hotels-hawaii/           301
+/profile/the-surfjack-hotel-and-swim-club/      /teardowns/hotels-hawaii/           301
+/profile/volcano-village-lodge/                 /teardowns/hotels-hawaii/           301
+/state-of-aeo/                                  /teardowns/                         301
+/state-of-aeo/2026-05-10/                       /teardowns/                         301
+/state-of-aeo/2026-05-11/                       /teardowns/                         301
+/state-of-aeo/hawaii-2026/                      /teardowns/cross-category/          301
+/your-clicks-are-down/                          /                                   301

@@ -38,30 +38,30 @@ FILES=(
 )
 
 # Public folders — each is rsync'd into dist/ preserving structure
+#
+# PRUNED at the 2026-07-01 go-live cleanup (now 301'd in _redirects, so the
+# physical "Page retired" stubs must NOT ship or they'd compete with the
+# redirect rules): agencies, blog, case-studies, kit, principles, profile,
+# state-of-aeo. Their source dirs remain in the repo for history.
+# schemas/ and standards/ stay: they serve intentional noindex retirement
+# tombstones (thesis disavowal, commit b7552d9) and must keep resolving.
 DIRS=(
   .well-known
   about
-  agencies
   atlas-preview
-  blog
-  case-studies
   claims
   example-engagement
   faq
   first-30-days
   first-look
   for-agencies
-  kit
   methodology
   pitch
-  principles
   privacy
-  profile
   retraction
   schemas
   security
   standards
-  state-of-aeo
   takedowns
   teardowns
   terms

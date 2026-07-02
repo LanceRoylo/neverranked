@@ -19,29 +19,24 @@ on:
       # Public folders — keep this set IDENTICAL to DIRS in scripts/build.sh.
       # A folder in DIRS but missing here ships stale (no deploy fires on edit);
       # a folder here but not in DIRS deploys as a soft-200 homepage fallback.
+      # (agencies, blog, case-studies, kit, principles, profile, state-of-aeo
+      # pruned 2026-07-01 with the retired-page 301 map — see _redirects.)
       - '.well-known/**'
       - 'about/**'
-      - 'agencies/**'
       - 'atlas-preview/**'
-      - 'blog/**'
-      - 'case-studies/**'
       - 'claims/**'
       - 'example-engagement/**'
       - 'faq/**'
       - 'first-30-days/**'
       - 'first-look/**'
       - 'for-agencies/**'
-      - 'kit/**'
       - 'methodology/**'
       - 'pitch/**'
-      - 'principles/**'
       - 'privacy/**'
-      - 'profile/**'
       - 'retraction/**'
       - 'schemas/**'
       - 'security/**'
       - 'standards/**'
-      - 'state-of-aeo/**'
       - 'takedowns/**'
       - 'teardowns/**'
       - 'terms/**'
