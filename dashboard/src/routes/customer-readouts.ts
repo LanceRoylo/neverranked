@@ -227,7 +227,7 @@ export function renderCharts(factsJson: string | null): string {
         : esc(host);
       return barRow(host, num(r.pct), max, i, { labelHtml, title: `${host}: ${num(r.pct)}% of cited sources` });
     }).join("");
-    const cap = `The independent sites the AI tools cited most in your category. These are where to be listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
+    const cap = `Each percent is that site's share of every source the AI tools cited in your category, the same base as the chart above, so these are the biggest individual names inside the independent web. They are the off-site places to get listed and accurate. This is the top of a long tail, not the full picture, and each is a domain, not a single page.`;
     blocks.push(chartBlock("The specific sites AI pulls from", bars, cap));
   }
 
