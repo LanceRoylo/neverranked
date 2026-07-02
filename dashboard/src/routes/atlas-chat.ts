@@ -334,7 +334,18 @@ export function renderAtlasChat(
   categoryLabel: string | null,
   history: AtlasTurn[]
 ): string {
-  const historyJson = JSON.stringify(
+  // SECURITY: this JSON is embedded inside an inline <script> block below.
+  // JSON.stringify does NOT escape "<", ">" or "&", so a stored message
+  // containing "</script>" would close the tag and execute attacker HTML/JS
+  // in the viewer's session (including an admin opening a customer's chat).
+  // Escape script-breaking characters as unicode sequences, which are valid
+  // JSON and inert in HTML. Applied to every JSON-in-script embed here.
+  const jsonForScript = (v: unknown): string =>
+    JSON.stringify(v)
+      .replace(/</g, "\\u003c")
+      .replace(/>/g, "\\u003e")
+      .replace(/&/g, "\\u0026");
+  const historyJson = jsonForScript(
     history.map((t) => ({ role: t.role, content: t.content }))
   );
   return `<!doctype html>
@@ -489,7 +500,7 @@ export function renderAtlasChat(
     <div class="disclaimer">Atlas reports your measurement data. It does not give recommendations.</div>
   </footer>
 <script>
-  const SLUG = ${JSON.stringify(slug)};
+  const SLUG = ${jsonForScript(slug)};
   const thread = document.getElementById('thread');
   const hint = document.getElementById('hint');
   const scroll = document.getElementById('scroll');

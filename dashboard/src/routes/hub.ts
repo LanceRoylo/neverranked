@@ -193,8 +193,13 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
 
   // --- Tile: cron heartbeats (12) --------------------------------------
   try {
+    // Only a SUCCESS or PARTIAL run counts as a heartbeat. A task that ran and
+    // FAILED still writes a cron_runs row (status='failure'), so an unfiltered
+    // MAX(ran_at) would read a broken cron as "on time" and keep this tile green
+    // through an outage — the exact green-means-green violation the hub exists to
+    // prevent. Excluding failures makes a persistently-failing task go stale->red.
     const rows = (await env.DB.prepare(
-      "SELECT task_name, MAX(ran_at) as last_ran FROM cron_runs GROUP BY task_name"
+      "SELECT task_name, MAX(ran_at) as last_ran FROM cron_runs WHERE status IN ('success','partial') GROUP BY task_name"
     ).all<{ task_name: string; last_ran: number }>()).results;
     const m = new Map(rows.map((r) => [r.task_name, r.last_ran]));
     const tasks = Object.keys(CRON_CADENCE);

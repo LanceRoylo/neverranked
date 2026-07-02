@@ -480,11 +480,26 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron daily] failed to dispatch weekly-extras workflow: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  await sendOnboardingDripEmails(env);
-  await sendNurtureDripEmails(env);
-  await checkStaleRoadmapItems(env);
-  await runSnippetSweep(env);
-  await runMissingRoadmapSweep(env);
+  // Each of these does its own D1 work and some have an unguarded top-level
+  // query (e.g. sendOnboardingDripEmails' initial SELECT). An unwrapped throw
+  // here used to abort the rest of runDailyTasks — including the monthly-refresh
+  // + memo watchdogs, the alert age-out, the 24th memo-draft cron, and anomaly
+  // detection below — while the hub heartbeat tile still read green. Isolate
+  // each so one failure can never silence the monitors that follow.
+  const dailySteps: Array<[string, () => Promise<unknown>]> = [
+    ["onboarding-drip", () => sendOnboardingDripEmails(env)],
+    ["nurture-drip", () => sendNurtureDripEmails(env)],
+    ["stale-roadmap", () => checkStaleRoadmapItems(env)],
+    ["snippet-sweep", () => runSnippetSweep(env)],
+    ["missing-roadmap-sweep", () => runMissingRoadmapSweep(env)],
+  ];
+  for (const [name, step] of dailySteps) {
+    try {
+      await step();
+    } catch (e) {
+      console.log(`[cron daily] step ${name} failed (continuing): ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
 
   // One-shot internal validation report for the Gemini grounding-redirect
   // resolver. Microsecond no-op until 2026-05-12, fires once, then no-op
@@ -714,15 +729,40 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // memo / Atlas silently aging on last month's numbers. Deduped to ~monthly.
   try {
     const now = new Date();
-    const slugs = (await env.DB.prepare(
-      "SELECT DISTINCT client_slug FROM citation_snapshots",
-    ).all<{ client_slug: string }>()).results;
-    for (const { client_slug } of slugs) {
+    const nowSecs = Math.floor(now.getTime() / 1000);
+    // Roster-driven, NOT snapshot-driven. Driving off citation_snapshots meant a
+    // customer with ZERO snapshot rows was invisible here — and that is exactly
+    // the dangerous state: the bridge does DELETE-before-INSERT, so a partial
+    // failure can leave a paying customer with no snapshot at all, silently
+    // aging their cockpit / memo / Atlas. `customers` is the managed-forensic
+    // roster (self-serve scanner users are not in it), so every active/pilot row
+    // is a customer who SHOULD have a readout snapshot.
+    const customers = (await env.DB.prepare(
+      "SELECT client_slug, created_at FROM customers WHERE status IN ('active','pilot')",
+    ).all<{ client_slug: string; created_at: number | null }>()).results;
+    const ONBOARDING_GRACE_SECS = 4 * 24 * 3600; // don't alarm a customer mid-onboarding
+    for (const { client_slug, created_at } of customers) {
       const snap = await env.DB.prepare(
         `SELECT engines_breakdown, top_competitors, created_at, week_start
            FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
       ).bind(client_slug).first<{ engines_breakdown: string; top_competitors: string; created_at: number | null; week_start: number }>();
-      if (!snap) continue;
+
+      if (!snap) {
+        // No snapshot at all: either never bridged, or a bridge run zeroed the
+        // rows (delete-before-insert data loss). Skip during the onboarding
+        // window so a just-signed customer awaiting first bridge is not flagged.
+        const ageSecs = nowSecs - (created_at || nowSecs);
+        if (ageSecs >= ONBOARDING_GRACE_SECS) {
+          await createAlertIfFresh(env, {
+            clientSlug: client_slug,
+            type: "monthly_refresh_overdue",
+            title: `No measurement snapshot for ${client_slug}`,
+            detail: `A signed customer (${client_slug}) has ZERO citation_snapshots rows — their cockpit / memo / Atlas cannot render. Either the baseline bridge never ran, or a bridge run cleared the rows without re-inserting (the DELETE-before-INSERT hazard). Re-run the bridge for ${client_slug} and confirm the cockpit renders before this clears.`,
+            windowHours: 24 * 25,
+          });
+        }
+        continue;
+      }
       // Only bridge-fed customers are on the monthly cadence. Daily-measured
       // dogfood slugs (neverranked / and-scene) write legacy-shape snapshots,
       // so isReadoutShapeSnapshot skips them — no false "overdue" for those.
