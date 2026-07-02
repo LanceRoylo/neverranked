@@ -170,6 +170,48 @@ function chartBlock(title: string, bars: string, caption: string): string {
   return `<section class="nr-chart"><h3 class="nr-ctitle">${esc(title)}</h3><div class="nr-bars">${bars}</div><p class="nr-cap"><strong>How to read this.</strong> ${caption}</p></section>`;
 }
 
+// Dumbbell / slope chart for the per-engine month-over-month move (used only when
+// a prior value exists; a baseline report has no prev and falls back to bars).
+// Two dots per engine (prior + current) on a track, connected by a direction-
+// colored line, so the MOVEMENT is the visual, not a footnote pill.
+function renderDumbbell(engines: ChartEngine[], prior: string): string {
+  const maxV = Math.max(...engines.map((e) => Math.max(num(e.pct), num(e.prev))), 1);
+  const posOf = (v: number) => 4 + (num(v) / maxV) * 92; // inset [4%,96%] so dots never clip
+  const rows = [...engines].sort((a, b) => num(b.pct) - num(a.pct)).map((e, i) => {
+    const cur = num(e.pct), prev = num(e.prev);
+    const pc = posOf(cur), pp = posOf(prev);
+    const lo = Math.min(pc, pp), span = Math.abs(pc - pp);
+    const dir = cur > prev ? "up" : cur < prev ? "down" : "flat";
+    const title = `${e.name}: ${cur}% this period, ${cur >= prev ? "up" : "down"} from ${prev}%`;
+    return `<div class="nr-row" style="--i:${i}" title="${esc(title)}">
+      <div class="nr-lab">${esc(e.name)}</div>
+      <div class="dumb-track">
+        <div class="dumb-line ${dir}" style="left:${lo}%;width:${span}%"></div>
+        <div class="dumb-dot prev" style="left:${pp}%"></div>
+        <div class="dumb-dot cur" style="left:${pc}%"></div>
+      </div>
+      <div class="dumb-vals">${prev}<span class="to">&rarr;</span><span class="cur">${cur}%</span></div>
+    </div>`;
+  }).join("");
+  const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool cites you more than it did. To the left means less. The line is the size of the move.`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool cites you</h3><div class="nr-bars">${rows}</div><p class="nr-cap"><strong>How to read this.</strong> ${cap}</p></section>`;
+}
+
+// 100% stacked bar for the source-type composition (part-to-whole). One bar
+// split into segments, "your own site" in gold, with a matched legend below.
+const STACK_COLORS = ["#9c8a4e", "#75704f", "#5b563f", "#4a4436", "#3d382c", "#332f25", "#2b271f", "#232019"];
+function renderStack(sources: ChartRow[]): string {
+  const total = sources.reduce((s, r) => s + num(r.pct), 0) || 100;
+  let ci = 0;
+  const colors = sources.map((r) => (r.own ? "#d4c596" : STACK_COLORS[ci++ % STACK_COLORS.length]));
+  const segs = sources.map((r, i) =>
+    `<div class="stack-seg" style="width:${(num(r.pct) / total) * 100}%;background:${colors[i]}" title="${esc(r.label)}: ${num(r.pct)}%"></div>`).join("");
+  const legend = sources.map((r, i) =>
+    `<div class="leg-item${r.own ? " own" : ""}"><span class="leg-sw" style="background:${colors[i]}"></span>${esc(r.label)} <span class="leg-pct">${num(r.pct)}%</span></div>`).join("");
+  const cap = `One bar, split by where the AI tools got their information. The independent web is most of it and your own site (the gold segment) is a thin sliver, which is why off-site presence matters as much as your own website.`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where AI's answers come from</h3><div class="stack-bar">${segs}</div><div class="stack-legend">${legend}</div><p class="nr-cap"><strong>How to read this.</strong> ${cap}</p></section>`;
+}
+
 export function renderCharts(factsJson: string | null): string {
   if (!factsJson) return "";
   let f: ReportFacts;
@@ -178,20 +220,19 @@ export function renderCharts(factsJson: string | null): string {
   const prior = f.prior_label ? esc(f.prior_label) : "last month";
   const blocks: string[] = [];
 
-  // 1. Per-engine citation share (with month-over-month delta pills).
+  // 1. Per-engine citation share. A dumbbell (foregrounds the movement) when a
+  // prior month exists; bars for a baseline report (nothing to move from yet).
   const engines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
   if (engines.length) {
-    const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
-    const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
-    const bars = sorted.map((e, i) => {
-      const delta = typeof e.prev === "number" ? num(e.pct) - num(e.prev) : null;
-      const title = delta === null
-        ? `${e.name}: ${num(e.pct)}% of its citations point to you`
-        : `${e.name}: ${num(e.pct)}% this period, ${delta >= 0 ? "up" : "down"} from ${num(e.prev)}%`;
-      return barRow(e.name, num(e.pct), max, i, { delta, title });
-    }).join("");
-    const cap = `Each bar is the share of that AI tool's citations that point to your own site. Higher is better. The pill shows the change since ${prior}.`;
-    blocks.push(chartBlock("Where each AI tool cites you", bars, cap));
+    if (engines.some((e) => typeof e.prev === "number")) {
+      blocks.push(renderDumbbell(engines, prior));
+    } else {
+      const sorted = [...engines].sort((a, b) => num(b.pct) - num(a.pct));
+      const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
+      const bars = sorted.map((e, i) => barRow(e.name, num(e.pct), max, i, { title: `${e.name}: ${num(e.pct)}% of its citations point to you` })).join("");
+      const cap = `Each bar is the share of that AI tool's citations that point to your own site. Higher is better. This is your baseline; next month shows the movement.`;
+      blocks.push(chartBlock("Where each AI tool cites you", bars, cap));
+    }
   }
 
   // 2. Venue-share ranking (you highlighted).
@@ -203,13 +244,10 @@ export function renderCharts(factsJson: string | null): string {
     blocks.push(chartBlock("Who AI names in your category", bars, cap));
   }
 
-  // 3. Where the answers come from (source types; your own site highlighted).
+  // 3. Where the answers come from (source types) -- a 100% stacked bar (part-to-whole).
   const sources = Array.isArray(f.sources) ? f.sources.filter((r) => r && typeof r.label === "string") : [];
   if (sources.length) {
-    const max = Math.max(...sources.map((r) => num(r.pct)), 1);
-    const bars = sources.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.own, title: `${r.label}: ${num(r.pct)}% of cited sources` })).join("");
-    const cap = `Where the AI tools pulled the information behind their answers. Most is the independent web, not anyone's own website, which is why off-site presence matters as much as your own site.`;
-    blocks.push(chartBlock("Where AI's answers come from", bars, cap));
+    blocks.push(renderStack(sources));
   }
 
   // 4. The specific third-party sites AI cited (answers "which ones?" for the
@@ -292,6 +330,29 @@ function shell(title: string, inner: string): string {
   .nr-cap strong { color:#b7b1a3; }
   @media (max-width:560px){ .nr-row{ grid-template-columns:92px 1fr 70px; gap:8px; } .nr-lab{ font-size:12px; } }
   @media (prefers-reduced-motion:reduce){ .nr-fill{ transition:none; transform:scaleX(1); } .nr-val{ transition:none; opacity:1; } }
+  /* dumbbell (per-engine movement) */
+  .dumb-track { position:relative; height:22px; }
+  .dumb-track::before { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:#211e18; transform:translateY(-50%); }
+  .dumb-line { position:absolute; top:50%; height:2px; transform:translateY(-50%) scaleX(0); transform-origin:left; transition:transform .5s cubic-bezier(.23,1,.32,1); transition-delay:calc(var(--i) * 55ms); }
+  .nrcharts.in .dumb-line { transform:translateY(-50%) scaleX(1); }
+  .dumb-line.up { background:#7bdca0; } .dumb-line.down { background:#e0a488; } .dumb-line.flat { background:#5b563f; }
+  .dumb-dot { position:absolute; top:50%; width:11px; height:11px; border-radius:50%; transform:translate(-50%,-50%) scale(0); transition:transform .4s cubic-bezier(.23,1,.32,1); }
+  .nrcharts.in .dumb-dot { transform:translate(-50%,-50%) scale(1); }
+  .dumb-dot.prev { background:#26231c; border:1.5px solid #5b563f; transition-delay:calc(var(--i) * 55ms + .1s); }
+  .dumb-dot.cur { background:#d4c596; transition-delay:calc(var(--i) * 55ms + .28s); }
+  .dumb-vals { font-size:13px; color:#8a857a; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .dumb-vals .to { padding:0 3px; color:#4a4740; } .dumb-vals .cur { color:#e8e8ea; }
+  /* stacked bar (source composition) */
+  .stack-bar { display:flex; height:26px; border-radius:6px; overflow:hidden; margin:2px 0 16px; transform:scaleX(0); transform-origin:left; transition:transform .6s cubic-bezier(.23,1,.32,1); }
+  .nrcharts.in .stack-bar { transform:scaleX(1); }
+  .stack-seg { height:100%; }
+  .stack-seg + .stack-seg { box-shadow:inset 1px 0 0 rgba(11,11,12,.55); }
+  .stack-legend { display:flex; flex-wrap:wrap; gap:7px 16px; }
+  .leg-item { font-size:12.5px; color:#c9c4b8; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity .4s ease; transition-delay:.28s; }
+  .nrcharts.in .leg-item { opacity:1; }
+  .leg-sw { width:10px; height:10px; border-radius:2px; flex:none; }
+  .leg-pct { color:#8a857a; } .leg-item.own { color:#e8e8ea; } .leg-item.own .leg-pct { color:#d4c596; }
+  @media (prefers-reduced-motion:reduce){ .dumb-line{ transition:none; transform:translateY(-50%) scaleX(1); } .dumb-dot{ transition:none; transform:translate(-50%,-50%) scale(1); } .stack-bar{ transition:none; transform:scaleX(1); } .leg-item{ transition:none; opacity:1; } }
 </style></head><body><div class="wrap">${inner}</div>
 <script>
 (function(){

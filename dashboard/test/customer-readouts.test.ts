@@ -86,7 +86,7 @@ test("renderCharts is fully defensive: null/garbage/empty renders nothing", () =
   assert.equal(renderCharts(JSON.stringify({ engines: [] })), "");
 });
 
-test("renderCharts draws bars, delta pills, captions, and highlights the customer", () => {
+test("renderCharts: dumbbell for engine movement, bars for venue, stacked bar for sources", () => {
   const facts = JSON.stringify({
     period_label: "July 2026",
     prior_label: "June 2026",
@@ -101,12 +101,26 @@ test("renderCharts draws bars, delta pills, captions, and highlights the custome
   const html = renderCharts(facts);
   assert.match(html, /By the numbers/);
   assert.match(html, /How to read this/);
-  assert.match(html, /nr-fill nr-hl/);          // the "you"/own bar is highlighted
-  assert.match(html, /nr-d up">\+3/);           // ChatGPT +3
-  assert.match(html, /nr-d down">-3/);          // Gemini -3
-  assert.match(html, /nr-d up">\+1/);           // Copilot +1 (off zero)
-  // engines sorted by pct desc: ChatGPT(10) before Gemini(8) before Copilot(1)
+  // engines -> dumbbell (movement), not delta-pill bars
+  assert.match(html, /dumb-line up/);   // ChatGPT/Copilot rose
+  assert.match(html, /dumb-line down/); // Gemini fell
+  assert.match(html, /dumb-dot prev/);
+  assert.match(html, /dumb-dot cur/);
+  assert.doesNotMatch(html, /nr-d up/); // no delta pills anymore
+  // engines sorted by cur desc: ChatGPT(10) before Copilot(1)
   assert.ok(html.indexOf("ChatGPT search") < html.indexOf("Microsoft Copilot"));
+  // venue -> bars, "you" highlighted
+  assert.match(html, /nr-fill nr-hl/);
+  // sources -> stacked bar + legend, own highlighted
+  assert.match(html, /class="stack-bar"/);
+  assert.match(html, /leg-item own/);
+});
+
+test("renderCharts: engine baseline (no prev) falls back to bars, not a dumbbell", () => {
+  const html = renderCharts(JSON.stringify({ engines: [{ name: "Claude", pct: 14 }, { name: "ChatGPT search", pct: 7 }] }));
+  assert.match(html, /Where each AI tool cites you/);
+  assert.match(html, /nr-fill/);
+  assert.doesNotMatch(html, /dumb-dot/);
 });
 
 test("topSources renders a 4th chart with linkable domains, and refuses to link a malformed host", () => {
