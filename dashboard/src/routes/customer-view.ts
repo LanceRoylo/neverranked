@@ -696,6 +696,7 @@ export function renderCustomerView(d: CustomerViewData): string {
           ${d.isBaseline ? "Baseline measured" : "Last measured"} <strong>${esc(d.lastMeasuredAgo)}</strong><br>
           Next monthly memo <strong>${esc(d.nextMemoDate)}</strong>
         </div>
+        <a class="top-msg" href="/c/${esc(d.slug)}/readouts">Past reports &rarr;</a>
         <a class="top-msg" href="mailto:Lance@hi.neverranked.com?subject=${encodeURIComponent(d.customerName + " - dashboard question")}">Message Lance &rarr;</a>
       </div>
     </div>

@@ -1122,6 +1122,18 @@ export default {
         const { handleAtlasChat } = await import("./routes/atlas-chat");
         return handleAtlasChat(request, env, atlasMatch[1]);
       }
+      // Readout archive. A specific month is the permalink; the bare /readouts
+      // redirects to the latest. Match BEFORE the bare /c/<slug>/ view.
+      const readoutViewMatch = path.match(/^\/c\/([a-z0-9-]+)\/readouts\/(\d{4}-\d{2})\/?$/i);
+      if (readoutViewMatch && method === "GET") {
+        const { handleReadoutView } = await import("./routes/customer-readouts");
+        return handleReadoutView(request, env, readoutViewMatch[1], readoutViewMatch[2]);
+      }
+      const readoutsMatch = path.match(/^\/c\/([a-z0-9-]+)\/readouts\/?$/i);
+      if (readoutsMatch && method === "GET") {
+        const { handleReadoutsIndex } = await import("./routes/customer-readouts");
+        return handleReadoutsIndex(request, env, readoutsMatch[1]);
+      }
       const cMatch = path.match(/^\/c\/([a-z0-9-]+)\/?$/i);
       if (cMatch && method === "GET") {
         const { handleCustomerView } = await import("./routes/customer-view");
