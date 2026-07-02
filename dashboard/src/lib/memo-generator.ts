@@ -244,6 +244,15 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
       `SELECT id FROM monthly_memos WHERE client_slug = ? AND month_key = ?`
     ).bind(slug, monthKey).first<{ id: number }>();
 
+    // Freeze the report's chart data (facts_json) from the snapshot so the
+    // readout archive renders all four charts. Best-effort: never blocks the
+    // draft. This is what makes every future customer's charts automatic (no
+    // hand-backfill like HTC needed).
+    try {
+      const { emitReportFacts } = await import("./report-facts");
+      await emitReportFacts(env, slug, monthKey);
+    } catch { /* charts are optional; the memo still saves */ }
+
     // Gate 3: the editorial ship gate (shadow mode). Records what the judge +
     // cross-provider verifier would do. Does not change delivery: the memo still
     // queues for review until the graduation tracker flips the gate live.

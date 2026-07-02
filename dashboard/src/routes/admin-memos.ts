@@ -162,6 +162,19 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     await env.DB.prepare(
       `UPDATE monthly_memos SET title=?, body_markdown=?, delivered_at=unixepoch(), updated_at=unixepoch() WHERE id=?`
     ).bind(title, body, id).run();
+    // Freeze the report's chart data (facts_json) now that it is delivered. This
+    // is the catch-all that makes charts automatic for EVERY report -- generated
+    // or hand-authored -- so no future customer needs the HTC hand-backfill.
+    // Best-effort: a failure leaves the report narrative-only, never blocks it.
+    try {
+      const meta = await env.DB.prepare(
+        `SELECT client_slug, month_key FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string; month_key: string }>();
+      if (meta) {
+        const { emitReportFacts } = await import("../lib/report-facts");
+        await emitReportFacts(env, meta.client_slug, meta.month_key);
+      }
+    } catch { /* charts are optional; delivery already succeeded */ }
     // Graduation tracker: record the real ship decision on this memo's latest
     // verdict. ship_as_is = delivered body unchanged from what the judge saw
     // (true agreement); ship_edited = Lance rewrote before delivering.
