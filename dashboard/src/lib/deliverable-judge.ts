@@ -132,7 +132,7 @@ async function runJudge(
 You are NOT checking numbers or banned punctuation. Separate deterministic gates already guarantee every number traces to the data and the voice rules hold. Your job is EDITORIAL QUALITY:
 - Does it lead with the single most action-worthy finding (the largest fixable gap or movement), not a victory lap?
 - Does every interpretation follow from the facts, with no over-reading or invented causation?
-- Is the punch list specific, prioritized, and doable, not generic advice that fits any business?
+- Is the punch list specific, prioritized, and doable, not generic advice that fits any business? Does each item name a VERIFIED root cause rather than a restated symptom, assert only fixes the supplied evidence supports (framing anything unverified as a check to run, not a claim), and correct prior advice this month's evidence overturns instead of repeating it?
 - Does it read like a sharp analyst who respects a busy executive's time?
 
 Be conservative. When in doubt, escalate. A false escalate costs Lance 30 seconds. A false ship puts a weak deliverable in front of a paying customer with his name on it.
@@ -173,7 +173,7 @@ Would Lance ship this as-is? Return only the JSON verdict.`;
 async function runVerify(env: Env, args: GateArgs): Promise<{ objected: boolean; reason: string; available: boolean }> {
   const system = `You are an independent skeptic verifying a customer deliverable that a first judge already approved for shipping. Your ONLY job is to find the single strongest reason this draft should NOT go to a paying customer as-is.
 
-Look for: a claim that does not follow from the FACTS, a headline that buries the real lede, a punch-list item generic enough to fit any business (it fails the swap test), a section that restates numbers without interpreting them, hedging that dodges the finding.
+Look for: a claim that does not follow from the FACTS, a headline that buries the real lede, a punch-list item generic enough to fit any business (it fails the swap test), a punch-list item that asserts a fix the evidence does not support or names a symptom instead of a root cause, a section that restates numbers without interpreting them, hedging that dodges the finding.
 
 You are NOT checking banned punctuation or whether numbers trace to the data. Separate gates handle those. If you find a real, specific problem, object. If the draft is genuinely sound, do not manufacture an objection.
 
