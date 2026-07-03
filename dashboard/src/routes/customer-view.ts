@@ -415,7 +415,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   const avgPoints = d.trend.map((p, i) => `${xAt(i)},${yScale(p.cohortAvg)}`).join(" ");
   const trendDots = d.trend.map((p, i) => {
     const last = i === d.trend.length - 1;
-    return `<circle cx="${xAt(i)}" cy="${yScale(p.yourMentions)}" r="${last ? 6 : 4}"${last ? ' stroke="#0b0b0c" stroke-width="2"' : ''}/>`;
+    return `<circle cx="${xAt(i)}" cy="${yScale(p.yourMentions)}" r="${last ? 6 : 4}"${last ? ' stroke="#0c0b09" stroke-width="2"' : ''}/>`;
   }).join("");
   const trendPolylines = onePoint ? "" : `
           <polyline points="${yourPoints}" fill="none" stroke="#d4c596" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -452,16 +452,17 @@ export function renderCustomerView(d: CustomerViewData): string {
 <style>
   :root {
     color-scheme: dark;
-    --bg: #0b0b0c;
-    --panel: #131316;
-    --panel-light: #1a1a1d;
+    /* Warm ink, matching the readout's frozen-ledger palette. */
+    --bg: #0c0b09;
+    --panel: #14130e;
+    --panel-light: #1b1913;
     --gold: #d4c596;
     --gold-bright: #e8c767;
     --gold-dim: #4a3d18;
     --text: #e8e8ea;
     --soft: #b9b9bd;
     --dim: #828289;
-    --line: #2a2a2e;
+    --line: rgba(255,255,255,.07);
     --line-soft: #211e18;
     --green: #7fb88b;
     --red: #d48a8a;
@@ -471,8 +472,11 @@ export function renderCustomerView(d: CustomerViewData): string {
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; background: var(--bg); }
-  body { font-family: var(--serif); color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased; }
-  .wrap { max-width: 1100px; margin: 0 auto; padding: 24px 22px 80px; }
+  body { font-family: var(--serif); color: var(--text); line-height: 1.55; -webkit-font-smoothing: antialiased; position:relative; }
+  /* Same warm glow as the readout header: the page is ink, not void. */
+  body::before { content:""; position:absolute; top:0; left:0; right:0; height:420px; pointer-events:none;
+                 background:radial-gradient(620px 300px at 50% -80px, rgba(156,138,78,.12), transparent 70%); }
+  .wrap { position:relative; max-width: 1100px; margin: 0 auto; padding: 24px 22px 80px; }
 
   /* Top strip */
   .top {
@@ -519,7 +523,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   .position-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   .position-card {
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 6px; padding: 24px 26px;
+    border-radius: 14px; padding: 24px 26px;
   }
   .position-card .label {
     font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em;
@@ -568,7 +572,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   /* Changed list */
   .changed-list {
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 6px; padding: 4px 0;
+    border-radius: 14px; padding: 4px 0;
   }
   .changed-row {
     padding: 16px 26px; border-bottom: 1px solid var(--line-soft);
@@ -602,7 +606,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   .memo-pointer {
     background: linear-gradient(180deg, rgba(212,197,150,0.08), rgba(212,197,150,0.02));
     border: 1px solid rgba(212,197,150,0.30);
-    border-radius: 6px;
+    border-radius: 14px;
     padding: 18px 22px;
     margin: 32px 0 0;
     display: flex; gap: 14px; align-items: flex-start;
@@ -625,7 +629,7 @@ export function renderCustomerView(d: CustomerViewData): string {
   table.cohort {
     width: 100%; border-collapse: collapse; font-size: 14px; color: var(--soft);
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 6px; overflow: hidden;
+    border-radius: 14px; overflow: hidden;
   }
   table.cohort th {
     color: var(--gold); text-align: left; font-weight: 400;
@@ -641,12 +645,12 @@ export function renderCustomerView(d: CustomerViewData): string {
   table.cohort td.num { text-align: right; }
   table.cohort tr.you td { background: rgba(212,197,150,0.06); color: var(--text); }
   table.cohort tr.you td:first-child { border-left: 2px solid var(--gold); padding-left: 16px; }
-  .cohort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 6px; }
+  .cohort-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; }
 
   /* Trend chart */
   .trend-wrap {
     background: var(--panel); border: 1px solid var(--line);
-    border-radius: 6px; padding: 24px 26px;
+    border-radius: 14px; padding: 24px 26px;
   }
   .trend-svg { width: 100%; height: auto; min-height: 140px; display: block; }
 
