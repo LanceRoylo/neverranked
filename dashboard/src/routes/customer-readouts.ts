@@ -361,17 +361,16 @@ export function shell(title: string, inner: string): string {
      gentle curve everywhere, generous stagger, nothing rushed. */
   .nr-chart { margin:0 0 22px; background:rgba(255,255,255,.026); border-radius:14px; padding:22px 24px 20px;
               opacity:0; transform:translateY(14px);
-              transition:opacity .8s cubic-bezier(.22,1,.36,1), transform .8s cubic-bezier(.22,1,.36,1); }
-  .nr-chart.in { opacity:1; transform:none; }
+              transition:opacity 1.3s cubic-bezier(.22,1,.36,1), transform 1.3s cubic-bezier(.22,1,.36,1); }  .nr-chart.in { opacity:1; transform:none; }
   .nr-ctitle { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:19px; color:#f2efe6; margin:0 0 16px; letter-spacing:-.01em; }
   .nr-bars { display:flex; flex-direction:column; gap:9px; }
   .nr-row { display:grid; grid-template-columns:154px 1fr 92px; align-items:center; gap:12px; }
   .nr-lab { font-size:13px; color:#c9c4b8; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .nr-track { height:20px; background:#17160f; border-radius:5px; overflow:hidden; }
-  .nr-fill { height:100%; background:#5b563f; border-radius:5px; transform:scaleX(0); transform-origin:left; transition:transform 1s cubic-bezier(.22,1,.36,1); transition-delay:calc(220ms + var(--i) * 90ms); }
+  .nr-fill { height:100%; background:#5b563f; border-radius:5px; transform:scaleX(0); transform-origin:left; transition:transform 1.9s cubic-bezier(.16,1,.3,1); transition-delay:calc(350ms + var(--i) * 150ms); }
   .nr-fill.nr-hl { background:linear-gradient(90deg,#d4c596,#b79a53); }
   .nr-row:hover .nr-fill { filter:brightness(1.12); }
-  .nr-val { font-size:13px; color:#e8e8ea; font-variant-numeric:tabular-nums; opacity:0; transition:opacity .7s ease; transition-delay:calc(420ms + var(--i) * 90ms); }
+  .nr-val { font-size:13px; color:#e8e8ea; font-variant-numeric:tabular-nums; opacity:0; transition:opacity 1.1s ease; transition-delay:calc(700ms + var(--i) * 150ms); }
   .nr-chart.in .nr-fill { transform:scaleX(1); }
   .nr-chart.in .nr-val { opacity:1; }
   .nr-d { font-size:11px; padding:1px 5px; border-radius:4px; margin-left:5px; }
@@ -384,7 +383,7 @@ export function shell(title: string, inner: string): string {
      reads as the voice of the report (brighter, gold-edged), not a footnote. */
   .nr-read { font-size:14.5px; color:#d6d1c4; margin:14px 0 0; line-height:1.6;
              padding:10px 14px; border-left:2px solid #9c8a4e; background:rgba(156,138,78,.07); border-radius:0 6px 6px 0;
-             opacity:0; transform:translateY(6px); transition:opacity .8s ease, transform .8s cubic-bezier(.22,1,.36,1); transition-delay:.9s; }
+             opacity:0; transform:translateY(6px); transition:opacity 1.2s ease, transform 1.2s cubic-bezier(.22,1,.36,1); transition-delay:1.7s; }
   .nr-chart.in .nr-read { opacity:1; transform:none; }
   .nr-read strong { color:#d4c596; }
   /* Questions won and lost */
@@ -392,7 +391,7 @@ export function shell(title: string, inner: string): string {
   .qm-h.win { color:#d4c596; }
   .qm-h.loss { color:#8a857a; }
   .qm-row { display:flex; align-items:baseline; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.05);
-            opacity:0; transform:translateY(6px); transition:opacity .7s ease, transform .7s cubic-bezier(.22,1,.36,1); transition-delay:calc(260ms + var(--i) * 110ms); }
+            opacity:0; transform:translateY(6px); transition:opacity 1.1s ease, transform 1.1s cubic-bezier(.22,1,.36,1); transition-delay:calc(400ms + var(--i) * 180ms); }
   .nr-chart.in .qm-row { opacity:1; transform:none; }
   .qm-row:last-child { border-bottom:0; }
   .qm-mark { font-weight:700; width:14px; flex:0 0 auto; text-align:center; }
@@ -409,23 +408,23 @@ export function shell(title: string, inner: string): string {
   /* dumbbell (per-engine movement) */
   .dumb-track { position:relative; height:22px; }
   .dumb-track::before { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:#211e18; transform:translateY(-50%); }
-  .dumb-line { position:absolute; top:50%; height:2px; transform:translateY(-50%) scaleX(0); transform-origin:left; transition:transform .9s cubic-bezier(.22,1,.36,1); transition-delay:calc(480ms + var(--i) * 90ms); }
+  .dumb-line { position:absolute; top:50%; height:2px; transform:translateY(-50%) scaleX(0); transform-origin:left; transition:transform 1.7s cubic-bezier(.16,1,.3,1); transition-delay:calc(800ms + var(--i) * 150ms); }
   .nr-chart.in .dumb-line { transform:translateY(-50%) scaleX(1); }
   .dumb-line.up { background:#7bdca0; } .dumb-line.down { background:#e0a488; } .dumb-line.flat { background:#5b563f; }
-  .dumb-dot { position:absolute; top:50%; width:11px; height:11px; border-radius:50%; transform:translate(-50%,-50%) scale(0); transition:transform .6s cubic-bezier(.22,1,.36,1); }
+  .dumb-dot { position:absolute; top:50%; width:11px; height:11px; border-radius:50%; transform:translate(-50%,-50%) scale(0); transition:transform 1s cubic-bezier(.22,1,.36,1); }
   .nr-chart.in .dumb-dot { transform:translate(-50%,-50%) scale(1); }
   /* The journey reads left to right: where you were, the move, where you are. */
-  .dumb-dot.prev { background:#26231c; border:1.5px solid #5b563f; transition-delay:calc(240ms + var(--i) * 90ms); }
-  .dumb-dot.cur { background:#d4c596; transition-delay:calc(900ms + var(--i) * 90ms); }
+  .dumb-dot.prev { background:#26231c; border:1.5px solid #5b563f; transition-delay:calc(400ms + var(--i) * 150ms); }
+  .dumb-dot.cur { background:#d4c596; transition-delay:calc(1700ms + var(--i) * 150ms); }
   .dumb-vals { font-size:13px; color:#8a857a; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .dumb-vals .to { padding:0 3px; color:#4a4740; } .dumb-vals .cur { color:#e8e8ea; }
   /* stacked bar (source composition) */
-  .stack-bar { display:flex; height:26px; border-radius:6px; overflow:hidden; margin:2px 0 16px; transform:scaleX(0); transform-origin:left; transition:transform 1.1s cubic-bezier(.22,1,.36,1); transition-delay:220ms; }
+  .stack-bar { display:flex; height:26px; border-radius:6px; overflow:hidden; margin:2px 0 16px; transform:scaleX(0); transform-origin:left; transition:transform 2.1s cubic-bezier(.16,1,.3,1); transition-delay:350ms; }
   .nr-chart.in .stack-bar { transform:scaleX(1); }
   .stack-seg { height:100%; }
   .stack-seg + .stack-seg { box-shadow:inset 1px 0 0 rgba(11,11,12,.55); }
   .stack-legend { display:flex; flex-wrap:wrap; gap:7px 16px; }
-  .leg-item { font-size:12.5px; color:#c9c4b8; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity .7s ease; transition-delay:.75s; }
+  .leg-item { font-size:12.5px; color:#c9c4b8; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity 1.1s ease; transition-delay:1.4s; }
   .nr-chart.in .leg-item { opacity:1; }
   .leg-sw { width:10px; height:10px; border-radius:2px; flex:none; }
   .leg-pct { color:#8a857a; } .leg-item.own { color:#e8e8ea; } .leg-item.own .leg-pct { color:#d4c596; }
@@ -462,11 +461,11 @@ export function shell(title: string, inner: string): string {
       if(reduce || v <= 0){ el.textContent = String(v); return; }
       // Starts as the value fades in (420ms), runs long and eases out hard,
       // so the number drifts into place rather than racing there.
-      var t0 = null, D = 950, DELAY = 420;
+      var t0 = null, D = 1900, DELAY = 700;
       function step(t){
         if(t0 === null) t0 = t;
         var p = Math.min(1, (t - t0) / D);
-        p = 1 - Math.pow(1 - p, 4); // ease-out quart: long soft landing
+        p = 1 - Math.pow(1 - p, 5); // ease-out quint: most of the time is the landing
         el.textContent = String(Math.round(v * p));
         if(p < 1) requestAnimationFrame(step);
       }
@@ -480,7 +479,11 @@ export function shell(title: string, inner: string): string {
   if(reduce || !('IntersectionObserver' in window)){ charts.forEach(arm); return; }
   var io = new IntersectionObserver(function(es){
     es.forEach(function(e){ if(e.isIntersecting){ arm(e.target); io.unobserve(e.target); } });
-  }, { threshold: 0.18 });
+    // threshold 0 + a small bottom rootMargin: fires shortly after the card's
+    // top enters view. A ratio threshold can NEVER fire for a card taller
+    // than the viewport (its ratio caps below the threshold), which froze
+    // tall cards at opacity 0 on small screens.
+  }, { threshold: 0, rootMargin: "0px 0px -12% 0px" });
   charts.forEach(function(c){ io.observe(c); });
 })();
 </script>
