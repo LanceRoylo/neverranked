@@ -194,7 +194,7 @@ function barRow(label: string, pct: number, maxPct: number, i: number, opts: { h
   return `<div class="nr-row" style="--i:${i}"${t}>
     <div class="nr-lab">${opts.labelHtml ?? esc(label)}</div>
     <div class="nr-track"><div class="nr-fill${opts.hl ? " nr-hl" : ""}" style="width:${w}%"></div></div>
-    <div class="nr-val">${num(pct)}%${pill}</div>
+    <div class="nr-val"><span class="cnt" data-v="${num(pct)}">${num(pct)}</span>%${pill}</div>
   </div>`;
 }
 
@@ -222,7 +222,7 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
         <div class="dumb-dot prev" style="left:${pp}%"></div>
         <div class="dumb-dot cur" style="left:${pc}%"></div>
       </div>
-      <div class="dumb-vals">${prev}<span class="to">&rarr;</span><span class="cur">${cur}%</span></div>
+      <div class="dumb-vals">${prev}<span class="to">&rarr;</span><span class="cur"><span class="cnt" data-v="${cur}">${cur}</span>%</span></div>
     </div>`;
   }).join("");
   const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool cites you more than it did. To the left means less. The line is the size of the move.`;
@@ -324,8 +324,11 @@ export function shell(title: string, inner: string): string {
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
-  body { margin:0; background:#0b0b0c; color:#e8e8ea; font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 40px 24px 96px; }
+  body { margin:0; background:#0c0b09; color:#e8e8ea; font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  /* Warm glow behind the header: the page is ink, not void. */
+  body::before { content:""; position:absolute; top:0; left:0; right:0; height:420px; pointer-events:none;
+                 background:radial-gradient(620px 300px at 50% -80px, rgba(156,138,78,.13), transparent 70%); }
+  .wrap { position:relative; max-width: 760px; margin: 0 auto; padding: 40px 24px 96px; }
   .top { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; padding-bottom:20px; border-bottom:1px solid #26241f; margin-bottom:36px; }
   .top a.back { color:#8a857a; text-decoration:none; font-size:14px; }
   .top a.back:hover { color:#d4c596; }
@@ -333,8 +336,10 @@ export function shell(title: string, inner: string): string {
   select { background:#151512; color:#e8e8ea; border:1px solid #38352d; border-radius:8px; padding:9px 12px; font-size:14px; min-width:220px; }
   select:hover { border-color:#d4c596; }
   .meta { font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:#8a857a; margin-bottom:6px; }
-  h1.report-title { font-weight:400; font-size:26px; margin:0 0 28px; letter-spacing:-.01em; }
-  .body h2 { font-weight:500; font-size:20px; margin:34px 0 12px; color:#f2efe6; }
+  /* The house display face (same identity as the pitch/teardown pages): the
+     report is a dated evidentiary artifact, not a SaaS screen. */
+  h1.report-title { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:34px; margin:0 0 30px; letter-spacing:-.012em; line-height:1.15; color:#f2efe6; }
+  .body h2 { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:23px; margin:36px 0 12px; color:#f2efe6; letter-spacing:-.01em; }
   .body h3 { font-weight:600; font-size:15px; letter-spacing:.02em; text-transform:uppercase; color:#b7b1a3; margin:26px 0 8px; }
   .body p { margin:0 0 14px; color:#dcd8d0; }
   .body ul { margin:0 0 16px; padding-left:22px; }
@@ -349,9 +354,10 @@ export function shell(title: string, inner: string): string {
   .foot { margin-top:56px; padding-top:20px; border-top:1px solid #26241f; font-size:13px; color:#6f6a60; }
   /* charts */
   .nrcharts { margin:4px 0 44px; }
-  .nr-h { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:#8a857a; margin:0 0 20px; padding-bottom:10px; border-bottom:1px solid #26241f; }
-  .nr-chart { margin:0 0 32px; }
-  .nr-ctitle { font-weight:500; font-size:16px; color:#f2efe6; margin:0 0 14px; }
+  .nr-h { font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:#9c8a4e; margin:0 0 20px; padding-bottom:10px; border-bottom:1px solid #26241f; }
+  /* Each chart is a card: background differentiation, not borders. */
+  .nr-chart { margin:0 0 22px; background:rgba(255,255,255,.026); border-radius:14px; padding:22px 24px 20px; }
+  .nr-ctitle { font-family:Georgia,"Times New Roman",serif; font-weight:400; font-size:19px; color:#f2efe6; margin:0 0 16px; letter-spacing:-.01em; }
   .nr-bars { display:flex; flex-direction:column; gap:9px; }
   .nr-row { display:grid; grid-template-columns:154px 1fr 92px; align-items:center; gap:12px; }
   .nr-lab { font-size:13px; color:#c9c4b8; text-align:right; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -360,8 +366,8 @@ export function shell(title: string, inner: string): string {
   .nr-fill.nr-hl { background:linear-gradient(90deg,#d4c596,#b79a53); }
   .nr-row:hover .nr-fill { filter:brightness(1.12); }
   .nr-val { font-size:13px; color:#e8e8ea; font-variant-numeric:tabular-nums; opacity:0; transition:opacity .4s ease; transition-delay:calc(var(--i) * 55ms + .15s); }
-  .nrcharts.in .nr-fill { transform:scaleX(1); }
-  .nrcharts.in .nr-val { opacity:1; }
+  .nr-chart.in .nr-fill { transform:scaleX(1); }
+  .nr-chart.in .nr-val { opacity:1; }
   .nr-d { font-size:11px; padding:1px 5px; border-radius:4px; margin-left:5px; }
   .nr-d.up { color:#7bdca0; background:rgba(123,220,160,.12); }
   .nr-d.down { color:#e0a488; background:rgba(224,164,136,.12); }
@@ -387,42 +393,82 @@ export function shell(title: string, inner: string): string {
   .qm-eng { flex:0 0 auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
   .qm-chip { font-size:11px; color:#b7b1a3; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:99px; padding:2px 9px; white-space:nowrap; }
   .qm-row.win .qm-chip { color:#d4c596; border-color:rgba(212,197,150,.25); background:rgba(156,138,78,.10); }
-  @media (max-width:560px){ .qm-row{flex-wrap:wrap} .qm-eng{justify-content:flex-start; padding-left:24px} }
+  @media (max-width:560px){ .qm-row{display:grid; grid-template-columns:14px 1fr; row-gap:4px} .qm-eng{grid-column:2; justify-content:flex-start} }
   @media (max-width:560px){ .nr-row{ grid-template-columns:92px 1fr 70px; gap:8px; } .nr-lab{ font-size:12px; } }
   @media (prefers-reduced-motion:reduce){ .nr-fill{ transition:none; transform:scaleX(1); } .nr-val{ transition:none; opacity:1; } }
   /* dumbbell (per-engine movement) */
   .dumb-track { position:relative; height:22px; }
   .dumb-track::before { content:""; position:absolute; left:0; right:0; top:50%; height:1px; background:#211e18; transform:translateY(-50%); }
   .dumb-line { position:absolute; top:50%; height:2px; transform:translateY(-50%) scaleX(0); transform-origin:left; transition:transform .5s cubic-bezier(.23,1,.32,1); transition-delay:calc(var(--i) * 55ms); }
-  .nrcharts.in .dumb-line { transform:translateY(-50%) scaleX(1); }
+  .nr-chart.in .dumb-line { transform:translateY(-50%) scaleX(1); }
   .dumb-line.up { background:#7bdca0; } .dumb-line.down { background:#e0a488; } .dumb-line.flat { background:#5b563f; }
   .dumb-dot { position:absolute; top:50%; width:11px; height:11px; border-radius:50%; transform:translate(-50%,-50%) scale(0); transition:transform .4s cubic-bezier(.23,1,.32,1); }
-  .nrcharts.in .dumb-dot { transform:translate(-50%,-50%) scale(1); }
+  .nr-chart.in .dumb-dot { transform:translate(-50%,-50%) scale(1); }
   .dumb-dot.prev { background:#26231c; border:1.5px solid #5b563f; transition-delay:calc(var(--i) * 55ms + .1s); }
   .dumb-dot.cur { background:#d4c596; transition-delay:calc(var(--i) * 55ms + .28s); }
   .dumb-vals { font-size:13px; color:#8a857a; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .dumb-vals .to { padding:0 3px; color:#4a4740; } .dumb-vals .cur { color:#e8e8ea; }
   /* stacked bar (source composition) */
   .stack-bar { display:flex; height:26px; border-radius:6px; overflow:hidden; margin:2px 0 16px; transform:scaleX(0); transform-origin:left; transition:transform .6s cubic-bezier(.23,1,.32,1); }
-  .nrcharts.in .stack-bar { transform:scaleX(1); }
+  .nr-chart.in .stack-bar { transform:scaleX(1); }
   .stack-seg { height:100%; }
   .stack-seg + .stack-seg { box-shadow:inset 1px 0 0 rgba(11,11,12,.55); }
   .stack-legend { display:flex; flex-wrap:wrap; gap:7px 16px; }
   .leg-item { font-size:12.5px; color:#c9c4b8; display:flex; align-items:center; gap:6px; opacity:0; transition:opacity .4s ease; transition-delay:.28s; }
-  .nrcharts.in .leg-item { opacity:1; }
+  .nr-chart.in .leg-item { opacity:1; }
   .leg-sw { width:10px; height:10px; border-radius:2px; flex:none; }
   .leg-pct { color:#8a857a; } .leg-item.own { color:#e8e8ea; } .leg-item.own .leg-pct { color:#d4c596; }
   @media (prefers-reduced-motion:reduce){ .dumb-line{ transition:none; transform:translateY(-50%) scaleX(1); } .dumb-dot{ transition:none; transform:translate(-50%,-50%) scale(1); } .stack-bar{ transition:none; transform:scaleX(1); } .leg-item{ transition:none; opacity:1; } }
+  /* Print: the forwardable artifact. Black on white, charts intact, chrome gone. */
+  @media print {
+    body { background:#fff; color:#111; }
+    body::before { display:none; }
+    .top, .sel { display:none; }
+    .wrap { max-width:100%; padding:0; }
+    h1.report-title, .body h2, .nr-ctitle { color:#111; }
+    .body p, .body li, .body td, .qm-q, .nr-lab, .dumb-vals, .leg-item { color:#222; }
+    .meta, .nr-cap, .foot, .qm-h.loss, .leg-pct { color:#555; }
+    .nr-h, .qm-h.win { color:#7a6a35; }
+    .nr-chart { background:#f7f6f2; break-inside:avoid; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .nr-read { background:#f3efe2; color:#333; border-left-color:#9c8a4e; }
+    .nr-read strong { color:#7a6a35; }
+    .nr-fill, .dumb-line, .dumb-dot, .stack-bar { transition:none !important; transform:none !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .nr-val, .leg-item { opacity:1 !important; color:#111; }
+    .nr-track { background:#e8e5da; }
+    .body a { color:#111; text-decoration:underline; }
+  }
 </style></head><body><div class="wrap">${inner}</div>
 <script>
 (function(){
-  var c = document.querySelector('.nrcharts');
-  if(!c) return;
-  if(!('IntersectionObserver' in window)){ c.classList.add('in'); return; }
+  // Per-chart entrance: each card animates as IT enters the viewport (not all
+  // at once when the container does), plus a count-up on the numeric values.
+  var charts = document.querySelectorAll('.nr-chart');
+  if(!charts.length) return;
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function countUp(card){
+    card.querySelectorAll('.cnt').forEach(function(el){
+      var v = parseFloat(el.getAttribute('data-v')) || 0;
+      if(reduce || v <= 0){ el.textContent = String(v); return; }
+      var t0 = null, D = 600;
+      function step(t){
+        if(t0 === null) t0 = t;
+        var p = Math.min(1, (t - t0) / D);
+        p = 1 - Math.pow(1 - p, 3); // ease-out cubic
+        el.textContent = String(Math.round(v * p));
+        if(p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+      // Hard settle: rAF can be throttled (background tab); the final value
+      // must never depend on it.
+      setTimeout(function(){ el.textContent = String(v); }, D + 250);
+    });
+  }
+  function arm(card){ card.classList.add('in'); countUp(card); }
+  if(reduce || !('IntersectionObserver' in window)){ charts.forEach(arm); return; }
   var io = new IntersectionObserver(function(es){
-    es.forEach(function(e){ if(e.isIntersecting){ c.classList.add('in'); io.disconnect(); } });
-  }, { threshold: 0.12 });
-  io.observe(c);
+    es.forEach(function(e){ if(e.isIntersecting){ arm(e.target); io.unobserve(e.target); } });
+  }, { threshold: 0.25 });
+  charts.forEach(function(c){ io.observe(c); });
 })();
 </script>
 </body></html>`;
@@ -483,6 +529,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
     ${renderCharts(r.facts_json)}
+    ${r.facts_json ? `<div class="nr-h">The record &middot; full readout</div>` : ""}
     <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery. Newer months appear as separate reports in the selector above.</div>`;
 
