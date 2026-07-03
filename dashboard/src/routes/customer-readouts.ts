@@ -434,7 +434,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
 
   const inner = `
     <div class="top">
-      <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
+      <span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/plan">The plan</a> &middot; <a class="back" href="/c/${esc(slug)}/atlas">Ask Atlas &rarr;</a></span>
       ${selector}
     </div>
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
@@ -444,6 +444,41 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery. Newer months appear as separate reports in the selector above.</div>`;
 
   return new Response(shell(`${title} · Report ${reportNo(idx)}`, inner), {
+    status: 200,
+    headers: { "content-type": "text/html;charset=utf-8" },
+  });
+}
+
+/** GET /c/<slug>/plan — the standing engagement plan (expectation ladder).
+ *  Set once at kickoff (customers.plan_markdown), frozen like a measurement:
+ *  every monthly readout grades itself against this page. */
+export async function handlePlanView(request: Request, env: Env, slug: string): Promise<Response> {
+  const user = await getUser(request, env);
+  if (!user) return redirect("/login?next=" + encodeURIComponent(`/c/${slug}/plan`));
+  if (!userCanView(user as any, slug)) return new Response("Forbidden", { status: 403 });
+
+  const row = await env.DB.prepare(
+    `SELECT name, plan_markdown, plan_set_at FROM customers WHERE client_slug = ?`,
+  ).bind(slug).first<{ name: string; plan_markdown: string | null; plan_set_at: number | null }>();
+
+  const nav = `<div class="top"><span class="topnav"><a class="back" href="/c/${esc(slug)}/">&larr; Dashboard</a> &middot; <a class="back" href="/c/${esc(slug)}/readouts">Past reports &rarr;</a></span></div>`;
+
+  if (!row?.plan_markdown) {
+    return new Response(shell("The plan", `${nav}
+      <div class="empty">Your engagement plan will appear here.<br>It is set at kickoff and stays fixed, so every monthly report can be graded against it.</div>`),
+      { status: 200, headers: { "content-type": "text/html;charset=utf-8" } });
+  }
+
+  const setOn = row.plan_set_at
+    ? new Date(row.plan_set_at * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+    : null;
+
+  const inner = `${nav}
+    <div class="meta">The plan${setOn ? ` &middot; set ${esc(setOn)}` : ""} &middot; fixed at kickoff</div>
+    <div class="body">${renderReportMarkdown(row.plan_markdown)}</div>
+    <div class="foot">This plan was written before the work began and does not change. Each monthly report opens by grading the month against it. That is the point: you always know what we said to expect, and whether it happened.</div>`;
+
+  return new Response(shell(`The plan · ${row.name}`, inner), {
     status: 200,
     headers: { "content-type": "text/html;charset=utf-8" },
   });

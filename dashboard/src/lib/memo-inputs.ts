@@ -16,6 +16,9 @@ const DAY = 86400;
 
 export interface MemoInputs {
   customer: { client_slug: string; name: string; category_label: string | null };
+  /** The frozen engagement plan (expectation ladder) set at kickoff, if any.
+   *  When present, the memo opens with a "Where we are in the plan" grading. */
+  plan_markdown?: string | null;
   window: { current_start: string; current_end: string; prior_start: string };
   overall: {
     current: { runs: number; cited: number; share_pct: number };
@@ -70,8 +73,8 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   const priorStart = nowTs - 60 * DAY;
 
   const customer = await env.DB.prepare(
-    `SELECT client_slug, name, category_label FROM customers WHERE client_slug = ?`
-  ).bind(slug).first<{ client_slug: string; name: string; category_label: string | null }>();
+    `SELECT client_slug, name, category_label, plan_markdown FROM customers WHERE client_slug = ?`
+  ).bind(slug).first<{ client_slug: string; name: string; category_label: string | null; plan_markdown: string | null }>();
 
   // All runs in the last 60 days, tagged by which window they fall in.
   const runs = await env.DB.prepare(
@@ -245,7 +248,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   ).bind(slug).first<{ month_key: string; title: string | null; body_markdown: string }>();
 
   return {
-    customer: customer ?? { client_slug: slug, name: slug, category_label: null },
+    customer: customer
+      ? { client_slug: customer.client_slug, name: customer.name, category_label: customer.category_label }
+      : { client_slug: slug, name: slug, category_label: null },
+    plan_markdown: customer?.plan_markdown ?? null,
     window: {
       current_start: new Date(curStart * 1000).toISOString().slice(0, 10),
       current_end: new Date(nowTs * 1000).toISOString().slice(0, 10),

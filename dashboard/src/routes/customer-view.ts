@@ -698,6 +698,7 @@ export function renderCustomerView(d: CustomerViewData): string {
         </div>
         <a class="top-msg" href="/c/${esc(d.slug)}/atlas">Ask Atlas &rarr;</a>
         <a class="top-msg" href="/c/${esc(d.slug)}/readouts">Past reports &rarr;</a>
+        <a class="top-msg" href="/c/${esc(d.slug)}/plan">The plan &rarr;</a>
         <a class="top-msg" href="mailto:Lance@hi.neverranked.com?subject=${encodeURIComponent(d.customerName + " - dashboard question")}">Message Lance &rarr;</a>
       </div>
     </div>

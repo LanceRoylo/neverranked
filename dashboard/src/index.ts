@@ -1134,6 +1134,12 @@ export default {
         const { handleReadoutsIndex } = await import("./routes/customer-readouts");
         return handleReadoutsIndex(request, env, readoutsMatch[1]);
       }
+      // The standing engagement plan (set at kickoff, frozen; readouts grade against it).
+      const planMatch = path.match(/^\/c\/([a-z0-9-]+)\/plan\/?$/i);
+      if (planMatch && method === "GET") {
+        const { handlePlanView } = await import("./routes/customer-readouts");
+        return handlePlanView(request, env, planMatch[1]);
+      }
       const cMatch = path.match(/^\/c\/([a-z0-9-]+)\/?$/i);
       if (cMatch && method === "GET") {
         const { handleCustomerView } = await import("./routes/customer-view");
