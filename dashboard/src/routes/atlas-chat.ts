@@ -529,7 +529,7 @@ export function renderAtlasChat(
       <div style="margin-bottom:14px">Ask about your measurement data. For example:</div>
       <button class="suggest" data-q="How many mentions did I have last week?">How many mentions did I have last week?</button>
       <button class="suggest" data-q="Which AI tool cites me most?">Which AI tool cites me most?</button>
-      <button class="suggest" data-q="Who are the top firms in my cohort?">Who are the top firms in my cohort?</button>
+      <button class="suggest" data-q="Who is cited most in my category?">Who is cited most in my category?</button>
       <button class="suggest" data-q="Which questions do not mention me at all?">Which questions do not mention me at all?</button>
       <div style="margin-top:16px">Atlas answers what the data shows. It won&rsquo;t tell you what to do. Prioritization lives in your monthly memo.</div>
     </div>

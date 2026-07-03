@@ -272,8 +272,8 @@ export function renderCharts(factsJson: string | null): string {
   const vrows = f.venue && Array.isArray(f.venue.rows) ? f.venue.rows.filter((r) => r && typeof r.label === "string") : [];
   if (vrows.length) {
     const max = Math.max(...vrows.map((r) => num(r.pct)), 1);
-    const bars = vrows.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of venue citations` })).join("");
-    const cap = `Of every mention the AI tools made of a venue in your category, this is who got named. Your bar is highlighted.`;
+    const bars = vrows.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of citations in your category` })).join("");
+    const cap = `Of every mention the AI tools made of a business in your category, this is who got named. Your bar is highlighted.`;
     blocks.push(chartBlock("Who AI names in your category", bars, cap, notes.venue));
   }
 
@@ -443,6 +443,9 @@ export function shell(title: string, inner: string): string {
     .nr-read { background:#f3efe2; color:#333; border-left-color:#9c8a4e; }
     .nr-read strong { color:#7a6a35; }
     .nr-fill, .dumb-line, .dumb-dot, .stack-bar { transition:none !important; transform:none !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    /* Cards/reads/rows start at opacity:0 until scrolled into view; force them
+       visible for print so charts never scrolled to don't print as blanks. */
+    .nr-chart, .nr-read, .qm-row { opacity:1 !important; transform:none !important; }
     .nr-val, .leg-item { opacity:1 !important; color:#111; }
     .nr-track { background:#e8e5da; }
     .body a { color:#111; text-decoration:underline; }

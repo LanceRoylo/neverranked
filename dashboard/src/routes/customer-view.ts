@@ -321,7 +321,7 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     cohortTop10,
     trend: [{ weekIso: "baseline", yourMentions: ownShare, cohortAvg }],
     metricUnit: "%",
-    cohortMetricLabel: "Share of venue citations",
+    cohortMetricLabel: "Share of category citations",
     trendLabel: "Citation-share baseline (trend builds monthly)",
     positionLabel: "Where you are now",
     changedLabel: "Your baseline measurement",
@@ -771,7 +771,7 @@ export function renderCustomerView(d: CustomerViewData): string {
     <div class="memo-pointer">
       <div class="memo-pointer-icon">Next memo</div>
       <div class="memo-pointer-text">
-        This dashboard shows you what changed and where the gaps are. Your next monthly delta memo arrives <strong>${esc(d.nextMemoDate)}</strong> and turns these signals into your prioritized punch list: what to ship first, what to skip this month, what the cohort movement actually means for your firm.
+        This dashboard shows you what changed and where the gaps are. Your next monthly memo arrives <strong>${esc(d.nextMemoDate)}</strong> and turns these signals into your prioritized punch list: what to ship first, what to skip this month, what the cohort movement actually means for your business.
       </div>
     </div>
 
@@ -780,7 +780,7 @@ export function renderCustomerView(d: CustomerViewData): string {
       <h2 class="section-label"><span class="n">04</span>Top 10 in your cohort</h2>
       <div class="cohort-scroll">
       <table class="cohort">
-        <thead><tr><th>Firm</th><th class="num">${esc(d.cohortMetricLabel ?? "Mentions")}</th><th>Where in answer</th><th class="num">AI tools</th></tr></thead>
+        <thead><tr><th>Name</th><th class="num">${esc(d.cohortMetricLabel ?? "Mentions")}</th><th>Where in answer</th><th class="num">AI tools</th></tr></thead>
         <tbody>
           ${d.cohortTop10.map((r) => `
             <tr${r.isYou ? ' class="you"' : ''}>
