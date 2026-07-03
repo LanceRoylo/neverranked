@@ -43,8 +43,54 @@ export interface ReportFacts {
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
+  /** Question-level movement: where the customer got newly cited (or stopped
+   *  being cited) by a specific engine this window vs the prior one. The
+   *  month-2 "wins" layer: concrete movement even when aggregates are flat. */
+  questions?: {
+    appeared: Array<{ q: string; engines: string[] }>;
+    disappeared: Array<{ q: string; engines: string[] }>;
+  };
   /** Per-chart "The read this month" analyst commentary (frozen with the numbers). */
   notes?: AnalystNotes;
+}
+
+/** Per-question, per-engine cited-at-all flips between the prior and current
+ *  30-day windows. Requires runs in BOTH windows (a baseline month has no
+ *  prior window, so this returns undefined and the section never renders). */
+async function buildQuestionMovement(env: Env, slug: string): Promise<ReportFacts["questions"]> {
+  const DAY = 86400;
+  const nowTs = Math.floor(Date.now() / 1000);
+  const curStart = nowTs - 30 * DAY;
+  const priorStart = nowTs - 60 * DAY;
+  const runs = await env.DB.prepare(
+    `SELECT cr.engine, cr.client_cited, cr.run_at, ck.keyword
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ?`,
+  ).bind(slug, priorStart).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
+
+  // key = question \u0000 engine -> cited-at-all per window
+  const cur = new Map<string, boolean>(), pri = new Map<string, boolean>();
+  let curCount = 0, priCount = 0;
+  for (const r of runs.results) {
+    const key = `${r.keyword}\u0000${r.engine}`;
+    const m = r.run_at >= curStart ? (curCount++, cur) : (priCount++, pri);
+    m.set(key, (m.get(key) || false) || r.client_cited === 1);
+  }
+  if (!curCount || !priCount) return undefined; // baseline month: nothing to compare
+
+  const appeared = new Map<string, string[]>(), disappeared = new Map<string, string[]>();
+  for (const [key, was] of pri) {
+    if (!cur.has(key)) continue; // engine not measured this window: not a flip
+    const [q, engine] = key.split("\u0000");
+    const is = cur.get(key)!;
+    if (is && !was) (appeared.get(q) ?? appeared.set(q, []).get(q)!).push(engine);
+    else if (!is && was) (disappeared.get(q) ?? disappeared.set(q, []).get(q)!).push(engine);
+  }
+  const pack = (m: Map<string, string[]>) =>
+    [...m.entries()].map(([q, engines]) => ({ q, engines: engines.sort() }))
+      .sort((a, b) => b.engines.length - a.engines.length).slice(0, 6);
+  const out = { appeared: pack(appeared), disappeared: pack(disappeared) };
+  return out.appeared.length || out.disappeared.length ? out : undefined;
 }
 
 /** Derive the report's chart facts from the customer's latest snapshot + the
@@ -104,6 +150,10 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     .filter((h) => h && typeof h.host === "string")
     .map((h) => ({ host: String(h.host), pct: n(h.share_pct) }));
 
+  // Question-level appeared/disappeared (defensive: absent on any failure).
+  let questions: ReportFacts["questions"];
+  try { questions = await buildQuestionMovement(env, slug); } catch { questions = undefined; }
+
   return {
     period_label: monthLabel(monthKey),
     prior_label: priorLabel,
@@ -111,6 +161,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     venue: { rows: venueRows },
     sources,
     topSources,
+    ...(questions ? { questions } : {}),
   };
 }
 

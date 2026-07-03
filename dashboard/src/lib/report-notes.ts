@@ -30,6 +30,7 @@ export interface AnalystNotes {
   venue?: string;
   sources?: string;
   topSources?: string;
+  questions?: string;
 }
 
 /** The set of numbers a note is allowed to mention: every measured value,
@@ -51,6 +52,9 @@ export function allowedNumbers(facts: ReportFacts): Set<number> {
   add(vr.length);
   add((facts.sources || []).length);
   add((facts.topSources || []).length);
+  add((facts.questions?.appeared || []).length);
+  add((facts.questions?.disappeared || []).length);
+  for (const e of [...(facts.questions?.appeared || []), ...(facts.questions?.disappeared || [])]) add(e.engines.length);
   // Years in period labels ("Jul 2026") so dates don't trip the check.
   for (const lbl of [facts.period_label, facts.prior_label]) {
     const y = /(\d{4})/.exec(String(lbl || ""));
@@ -85,12 +89,13 @@ Voice rules, all hard:
 - Use ONLY numbers that appear in the data you are given. Do not compute new statistics. Do not use em dashes, semicolons, or emojis.
 
 You receive the frozen chart data as JSON. Reply with STRICT JSON only, no markdown fences, exactly this shape:
-{"engines":"...","venue":"...","sources":"...","topSources":"..."}
+{"engines":"...","venue":"...","sources":"...","topSources":"...","questions":"..."}
 - engines: the per-AI-tool citation share (and the month-over-month move when prior values exist). Name the move that matters most and any dip worth watching.
 - venue: where the customer ranks among named competitors in their category.
 - sources: what the source-type composition (independent web vs their own site etc.) means for where to invest effort.
 - topSources: what the specific named domains imply about where to be present and accurate.
-If a section's data is empty, return an empty string for it.`;
+- questions: ONLY if question-level appeared/disappeared data is provided. Name the most meaningful specific question won or lost (quote it) and which tool it happened in. A win on a high-intent question matters even when totals are flat. Never editorialize a loss into a crisis.
+If a section's data is empty or absent, return an empty string for it.`;
 
 /** Generate the four analyst notes from frozen facts. Best-effort: returns {}
  *  on any failure (missing key, API error, bad JSON) — charts then render
@@ -111,6 +116,7 @@ export async function writeAnalystNotes(
       venue: facts.venue,
       sources: facts.sources,
       top_sources: facts.topSources,
+      question_movement: facts.questions,
     };
     const resp = await fetch(ANTHROPIC_ENDPOINT, {
       method: "POST",
@@ -141,10 +147,12 @@ export async function writeAnalystNotes(
     const venue = cleanNote(raw.venue, allowed);
     const sources = cleanNote(raw.sources, allowed);
     const topSources = cleanNote(raw.topSources, allowed);
+    const questions = facts.questions ? cleanNote(raw.questions, allowed) : undefined;
     if (engines) notes.engines = engines;
     if (venue) notes.venue = venue;
     if (sources) notes.sources = sources;
     if (topSources) notes.topSources = topSources;
+    if (questions) notes.questions = questions;
     return notes;
   } catch (e) {
     console.log(`[report-notes] failed: ${e instanceof Error ? e.message : String(e)}`);

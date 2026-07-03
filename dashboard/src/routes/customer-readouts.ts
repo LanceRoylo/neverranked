@@ -142,9 +142,30 @@ interface ReportFacts {
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
+  questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Frozen per-chart analyst commentary ("The read this month"), written at
   // report generation from the same frozen numbers. Absent = mechanics-only.
-  notes?: { engines?: string; venue?: string; sources?: string; topSources?: string };
+  notes?: { engines?: string; venue?: string; sources?: string; topSources?: string; questions?: string };
+}
+
+// Question-level movement: a wins/losses list (not a chart -- the unit is a
+// specific question, and reading the question IS the payload). Gold plus for
+// newly cited, muted minus for no longer cited, engine chips per row.
+function renderQuestionMovement(qs: NonNullable<ReportFacts["questions"]>, note?: string): string {
+  const row = (e: { q: string; engines: string[] }, dir: "win" | "loss", i: number) => `
+    <div class="qm-row ${dir}" style="--i:${i}">
+      <span class="qm-mark">${dir === "win" ? "+" : "&minus;"}</span>
+      <span class="qm-q">&ldquo;${esc(e.q)}&rdquo;</span>
+      <span class="qm-eng">${e.engines.map((x) => `<span class="qm-chip">${esc(x)}</span>`).join("")}</span>
+    </div>`;
+  const appeared = (qs.appeared || []).filter((e) => e && typeof e.q === "string" && Array.isArray(e.engines));
+  const disappeared = (qs.disappeared || []).filter((e) => e && typeof e.q === "string" && Array.isArray(e.engines));
+  if (!appeared.length && !disappeared.length) return "";
+  const groups: string[] = [];
+  if (appeared.length) groups.push(`<div class="qm-h win">Newly cited</div>${appeared.map((e, i) => row(e, "win", i)).join("")}`);
+  if (disappeared.length) groups.push(`<div class="qm-h loss">No longer cited</div>${disappeared.map((e, i) => row(e, "loss", appeared.length + i)).join("")}`);
+  const cap = `Each line is one real question we ask the AI tools every month, and the tools where your citation status flipped since last month. A plus means a tool that ignored you now cites you for that question. A minus means the reverse. These flips show up before the totals move.`;
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Questions won and lost</h3><div class="nr-bars">${groups.join("")}</div>${chartText(cap, note)}</section>`;
 }
 
 /** The two text layers under a chart: the customer-specific analyst read
@@ -281,12 +302,19 @@ export function renderCharts(factsJson: string | null): string {
     blocks.push(chartBlock("The specific sites AI pulls from", bars, cap, notes.topSources));
   }
 
+  // 5. Question-level movement (wins/losses since the prior window). Only
+  // present when both windows had runs; a baseline report never shows it.
+  if (f.questions && typeof f.questions === "object") {
+    const qm = renderQuestionMovement(f.questions, notes.questions);
+    if (qm) blocks.push(qm);
+  }
+
   if (!blocks.length) return "";
   const heading = f.period_label ? `By the numbers &middot; ${esc(f.period_label)}` : "By the numbers";
   return `<div class="nrcharts"><div class="nr-h">${heading}</div>${blocks.join("")}</div>`;
 }
 
-function shell(title: string, inner: string): string {
+export function shell(title: string, inner: string): string {
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8">
@@ -345,6 +373,21 @@ function shell(title: string, inner: string): string {
   .nr-read { font-size:14.5px; color:#d6d1c4; margin:14px 0 0; line-height:1.6;
              padding:10px 14px; border-left:2px solid #9c8a4e; background:rgba(156,138,78,.07); border-radius:0 6px 6px 0; }
   .nr-read strong { color:#d4c596; }
+  /* Questions won and lost */
+  .qm-h { font-size:11px; letter-spacing:.14em; text-transform:uppercase; margin:14px 0 6px; }
+  .qm-h.win { color:#d4c596; }
+  .qm-h.loss { color:#8a857a; }
+  .qm-row { display:flex; align-items:baseline; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.05); }
+  .qm-row:last-child { border-bottom:0; }
+  .qm-mark { font-weight:700; width:14px; flex:0 0 auto; text-align:center; }
+  .qm-row.win .qm-mark { color:#d4c596; }
+  .qm-row.loss .qm-mark { color:#6f6a5e; }
+  .qm-q { flex:1 1 auto; font-size:14.5px; color:#d6d1c4; }
+  .qm-row.loss .qm-q { color:#a29d91; }
+  .qm-eng { flex:0 0 auto; display:flex; gap:6px; flex-wrap:wrap; justify-content:flex-end; }
+  .qm-chip { font-size:11px; color:#b7b1a3; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.08); border-radius:99px; padding:2px 9px; white-space:nowrap; }
+  .qm-row.win .qm-chip { color:#d4c596; border-color:rgba(212,197,150,.25); background:rgba(156,138,78,.10); }
+  @media (max-width:560px){ .qm-row{flex-wrap:wrap} .qm-eng{justify-content:flex-start; padding-left:24px} }
   @media (max-width:560px){ .nr-row{ grid-template-columns:92px 1fr 70px; gap:8px; } .nr-lab{ font-size:12px; } }
   @media (prefers-reduced-motion:reduce){ .nr-fill{ transition:none; transform:scaleX(1); } .nr-val{ transition:none; opacity:1; } }
   /* dumbbell (per-engine movement) */

@@ -16,6 +16,9 @@ function fakeEnv(snap: any, cust: any, prior: any) {
                 if (/monthly_memos/.test(sql)) return prior;
                 return null;
               },
+              async all() {
+                return { results: [] }; // no runs: question movement stays absent
+              },
             };
           },
         };

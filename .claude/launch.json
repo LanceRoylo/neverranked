@@ -20,6 +20,12 @@
       "port": 8788
     },
     {
+      "name": "report-preview",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["--yes", "serve", "/private/tmp/claude-501/-Users-lanceroylo-Desktop-neverranked/f759a8ce-ba84-4a11-81b2-7c4c9208e878/scratchpad/report-preview", "-l", "8790"],
+      "port": 8790
+    },
+    {
       "name": "hello-momentum",
       "runtimeExecutable": "npx",
       "runtimeArgs": ["--yes", "serve", "/Users/lanceroylo/Desktop/hello-momentum-site", "-l", "4321"],
