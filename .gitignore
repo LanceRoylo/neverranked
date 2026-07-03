@@ -39,3 +39,6 @@ INSURANCE-APPLICATION-PREP.md
 # Secrets live in the Cloudflare Worker secret only, never in this public repo.
 MONTAIC-HANDOFF.md
 MONTAIC-INTEGRATION-ANSWERS.md
+
+# Customer/prospect drafts — never publish to this public repo
+outreach-drafts/
