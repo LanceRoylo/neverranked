@@ -12,6 +12,8 @@
 // leaves the report narrative-only, never blocks delivery.
 
 import type { Env } from "../types";
+// .ts extension so the node test runner (strip-types) resolves it too; esbuild is fine with it.
+import { writeAnalystNotes, type AnalystNotes } from "./report-notes.ts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function monthLabel(monthKey: string): string {
@@ -41,6 +43,8 @@ export interface ReportFacts {
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
+  /** Per-chart "The read this month" analyst commentary (frozen with the numbers). */
+  notes?: AnalystNotes;
 }
 
 /** Derive the report's chart facts from the customer's latest snapshot + the
@@ -115,6 +119,15 @@ export async function emitReportFacts(env: Env, slug: string, monthKey: string):
   try {
     const facts = await buildReportFacts(env, slug, monthKey);
     if (!facts || !facts.engines.length) return false;
+
+    // Analyst notes ("The read this month") — generated from the frozen facts
+    // and frozen alongside them. Best-effort: {} on any failure, and the
+    // number check inside drops any note that mentions an unmeasured figure.
+    const cust = await env.DB.prepare(
+      `SELECT name, category_label FROM customers WHERE client_slug = ?`,
+    ).bind(slug).first<{ name: string; category_label: string | null }>();
+    const notes = await writeAnalystNotes(env, facts, { name: cust?.name || "You", category_label: cust?.category_label });
+    if (Object.keys(notes).length) facts.notes = notes;
     await env.DB.prepare(
       `UPDATE monthly_memos SET facts_json = ?, updated_at = ? WHERE client_slug = ? AND month_key = ?`,
     ).bind(JSON.stringify(facts), Math.floor(Date.now() / 1000), slug, monthKey).run();
