@@ -1385,7 +1385,7 @@ body.agency-mode #agency-cta-card{display:block !important}
           <input type="email" id="gate-email-input" placeholder="you@company.com" autocomplete="email">
           <button type="button" id="gate-email-btn">Show me every fix</button>
         </div>
-        <div class="email-gate-privacy">One report, sent once. No drip sequence.</div>
+        <div class="email-gate-privacy">Your report now, plus two short follow-ups over the next week. Nothing after that. We never sell or share your email.</div>
       </div>
     </div>
 
