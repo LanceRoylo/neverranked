@@ -66,3 +66,21 @@ test("buildReportFacts: baseline (no prior report) leaves engines without prev",
   assert.equal(facts!.engines[0].prev, undefined);
   assert.equal(facts!.prior_label, undefined);
 });
+
+test("buildReportFacts refuses a legacy-shape snapshot (no share_pct) -> null", async () => {
+  const legacy = {
+    engines_breakdown: JSON.stringify({ google_ai_overview: { queries: 10, citations: 2 } }),
+    top_competitors: JSON.stringify([{ name: "X", count: 5 }]),
+  };
+  assert.equal(await buildReportFacts(fakeEnv(legacy, { name: "X" }, null), "x", "2026-07"), null);
+});
+
+test("buildReportFacts refuses a snapshot newer than the report month -> null", async () => {
+  const snap = {
+    engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+    top_competitors: "{}",
+    week_start: Math.floor(Date.UTC(2026, 8, 1) / 1000), // Sep 1, 2026
+  };
+  // Report labeled July but the only snapshot is from September: fail closed.
+  assert.equal(await buildReportFacts(fakeEnv(snap, { name: "X" }, null), "x", "2026-07"), null);
+});

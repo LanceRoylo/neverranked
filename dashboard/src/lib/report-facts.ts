@@ -14,6 +14,7 @@
 import type { Env } from "../types";
 // .ts extension so the node test runner (strip-types) resolves it too; esbuild is fine with it.
 import { writeAnalystNotes, type AnalystNotes } from "./report-notes.ts";
+import { isReadoutShapeSnapshot } from "./snapshot-shape.ts";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function monthLabel(monthKey: string): string {
@@ -54,26 +55,38 @@ export interface ReportFacts {
   notes?: AnalystNotes;
 }
 
-/** Per-question, per-engine cited-at-all flips between the prior and current
- *  30-day windows. Requires runs in BOTH windows (a baseline month has no
- *  prior window, so this returns undefined and the section never renders). */
-async function buildQuestionMovement(env: Env, slug: string): Promise<ReportFacts["questions"]> {
-  const DAY = 86400;
-  const nowTs = Math.floor(Date.now() / 1000);
-  const curStart = nowTs - 30 * DAY;
-  const priorStart = nowTs - 60 * DAY;
+/** [start, end) epoch seconds for a 'YYYY-MM' month, plus the prior month's
+ *  start. Date.UTC normalizes month under/overflow (Jan -> prior December). */
+function monthBounds(monthKey: string): { start: number; end: number; priorStart: number } | null {
+  const [y, m] = monthKey.split("-").map(Number);
+  if (!y || !m || m < 1 || m > 12) return null;
+  return {
+    start: Math.floor(Date.UTC(y, m - 1, 1) / 1000),
+    end: Math.floor(Date.UTC(y, m, 1) / 1000),
+    priorStart: Math.floor(Date.UTC(y, m - 2, 1) / 1000),
+  };
+}
+
+/** Per-question, per-engine cited-at-all flips between the report's month and
+ *  the month before it. Windows are anchored to monthKey (NOT Date.now()) so a
+ *  late-emitted or backfilled report reflects the month it is labeled. Requires
+ *  runs in BOTH windows (a baseline month has no prior window, so this returns
+ *  undefined and the section never renders). */
+async function buildQuestionMovement(env: Env, slug: string, monthKey: string): Promise<ReportFacts["questions"]> {
+  const b = monthBounds(monthKey);
+  if (!b) return undefined;
   const runs = await env.DB.prepare(
     `SELECT cr.engine, cr.client_cited, cr.run_at, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
-      WHERE ck.client_slug = ? AND cr.run_at >= ?`,
-  ).bind(slug, priorStart).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
+  ).bind(slug, b.priorStart, b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
 
   // key = question \u0000 engine -> cited-at-all per window
   const cur = new Map<string, boolean>(), pri = new Map<string, boolean>();
   let curCount = 0, priCount = 0;
   for (const r of runs.results) {
     const key = `${r.keyword}\u0000${r.engine}`;
-    const m = r.run_at >= curStart ? (curCount++, cur) : (priCount++, pri);
+    const m = r.run_at >= b.start ? (curCount++, cur) : (priCount++, pri);
     m.set(key, (m.get(key) || false) || r.client_cited === 1);
   }
   if (!curCount || !priCount) return undefined; // baseline month: nothing to compare
@@ -97,10 +110,28 @@ async function buildQuestionMovement(env: Env, slug: string): Promise<ReportFact
  *  prior delivered report's facts (for per-engine deltas). null if no snapshot. */
 export async function buildReportFacts(env: Env, slug: string, monthKey: string): Promise<ReportFacts | null> {
   const snap = await env.DB.prepare(
-    `SELECT engines_breakdown, top_competitors FROM citation_snapshots
+    `SELECT engines_breakdown, top_competitors, week_start FROM citation_snapshots
        WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
-  ).bind(slug).first<{ engines_breakdown: string; top_competitors: string }>();
+  ).bind(slug).first<{ engines_breakdown: string; top_competitors: string; week_start: number }>();
   if (!snap) return null;
+
+  // Refuse a legacy-shape (weekly auto-writer) snapshot: its engines_breakdown
+  // has no share_pct, so every chart would freeze all-zero into a delivered,
+  // immutable report. Match the fail-closed guard the cockpit/memo readers use.
+  if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) {
+    console.log(`[report-facts] legacy-shape snapshot for ${slug}/${monthKey}; skipping facts (report stays narrative-only)`);
+    return null;
+  }
+
+  // Refuse a snapshot that is NEWER than the report's month. citation_snapshots
+  // holds only the latest month (it is overwritten), so emitting/backfilling an
+  // older report late would otherwise freeze a newer month's numbers under an
+  // older label. Fail closed: narrative-only rather than mislabeled data.
+  const mb = monthBounds(monthKey);
+  if (mb && typeof snap.week_start === "number" && snap.week_start >= mb.end) {
+    console.log(`[report-facts] latest snapshot for ${slug} is newer than report month ${monthKey}; skipping facts to avoid wrong-month data`);
+    return null;
+  }
 
   let eb: Record<string, { share_pct?: number }> = {};
   let tc: {
@@ -152,7 +183,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
 
   // Question-level appeared/disappeared (defensive: absent on any failure).
   let questions: ReportFacts["questions"];
-  try { questions = await buildQuestionMovement(env, slug); } catch { questions = undefined; }
+  try { questions = await buildQuestionMovement(env, slug, monthKey); } catch { questions = undefined; }
 
   return {
     period_label: monthLabel(monthKey),
@@ -168,6 +199,15 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
 /** Build the facts and store them on the report row. Best-effort; never throws. */
 export async function emitReportFacts(env: Env, slug: string, monthKey: string): Promise<boolean> {
   try {
+    // Immutability: a delivered report's frozen facts are never rewritten.
+    // Skip early so undeliver/redeliver, backfills, or a generation race can't
+    // silently change numbers a customer already received (and so we don't burn
+    // an LLM call regenerating notes for a report that is already final).
+    const existing = await env.DB.prepare(
+      `SELECT delivered_at, facts_json FROM monthly_memos WHERE client_slug = ? AND month_key = ?`,
+    ).bind(slug, monthKey).first<{ delivered_at: number | null; facts_json: string | null }>();
+    if (existing && existing.delivered_at != null && existing.facts_json != null) return false;
+
     const facts = await buildReportFacts(env, slug, monthKey);
     if (!facts || !facts.engines.length) return false;
 
@@ -179,8 +219,11 @@ export async function emitReportFacts(env: Env, slug: string, monthKey: string):
     ).bind(slug).first<{ name: string; category_label: string | null }>();
     const notes = await writeAnalystNotes(env, facts, { name: cust?.name || "You", category_label: cust?.category_label });
     if (Object.keys(notes).length) facts.notes = notes;
+    // Race backstop: the WHERE clause refuses to overwrite a row that became
+    // delivered-with-facts between the check above and here.
     await env.DB.prepare(
-      `UPDATE monthly_memos SET facts_json = ?, updated_at = ? WHERE client_slug = ? AND month_key = ?`,
+      `UPDATE monthly_memos SET facts_json = ?, updated_at = ?
+        WHERE client_slug = ? AND month_key = ? AND (delivered_at IS NULL OR facts_json IS NULL)`,
     ).bind(JSON.stringify(facts), Math.floor(Date.now() / 1000), slug, monthKey).run();
     return true;
   } catch (e) {
