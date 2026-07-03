@@ -582,7 +582,7 @@ export async function handlePlanView(request: Request, env: Env, slug: string): 
   const inner = `${nav}
     <div class="meta">The plan${setOn ? ` &middot; set ${esc(setOn)}` : ""} &middot; fixed at kickoff</div>
     <div class="body">${renderReportMarkdown(row.plan_markdown)}</div>
-    <div class="foot">This plan was written before the work began and does not change. Each monthly report opens by grading the month against it. That is the point: you always know what we said to expect, and whether it happened.</div>`;
+    <div class="foot">This plan is written down and does not change. Each monthly report opens against it, so you always know what we said to expect and whether it happened.</div>`;
 
   return new Response(shell(`The plan · ${row.name}`, inner), {
     status: 200,
