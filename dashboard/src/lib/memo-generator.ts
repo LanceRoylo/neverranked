@@ -100,6 +100,13 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   // and engine count ("18 questions", "7 AI tools").
   add(inp.by_question.length);
   add(inp.by_engine.length);
+  // The frozen engagement plan is a human-authored, approved artifact, so its
+  // numbers are trustworthy. When the memo grades against the plan (section 0),
+  // it may cite them -- add them so a legitimate "the plan set a 48% target"
+  // reference is not falsely flagged as a fabrication and block the memo.
+  if (inp.plan_markdown) {
+    for (const t of inp.plan_markdown.match(/\d+(?:\.\d+)?/g) ?? []) s.add(t);
+  }
   return s;
 }
 
