@@ -116,6 +116,42 @@ test("renderCharts: dumbbell for engine movement, bars for venue, stacked bar fo
   assert.match(html, /leg-item own/);
 });
 
+test("renderCharts: citation grid renders cells, per-row count, and question legend", () => {
+  const facts = JSON.stringify({
+    grid: {
+      engines: ["Perplexity", "Claude"],
+      questions: ["best luau on Oahu", "best boutique hotel", "quiet hotel Waikiki"],
+      cells: [
+        [1, 0, -1],    // Perplexity: cited q1, missed q2, did not answer q3
+        [0.5, 0, 1],   // Claude: split q1, missed q2, cited q3
+      ],
+    },
+  });
+  const html = renderCharts(facts);
+  assert.match(html, /Where the seven tools put you, question by question/);
+  assert.match(html, /class="cg-svg"/);
+  // row labels present
+  assert.match(html, /Perplexity/);
+  assert.match(html, /Claude/);
+  // a "not answered" cell renders the faint hollow marker, not a heat cell
+  assert.match(html, /cg-na/);
+  // a strong (>=50%) cell carries the ring class
+  assert.match(html, /cg-strong/);
+  // per-row count: Perplexity won 1 of the 2 it answered
+  assert.match(html, /1<tspan class="cg-count-den">\/2<\/tspan>/);
+  // numbered legend maps columns back to questions
+  assert.match(html, /class="cg-legend"/);
+  assert.match(html, /best boutique hotel/);
+  // caption present
+  assert.match(html, /How to read this/);
+});
+
+test("renderCharts: grid is fail-closed on malformed shape", () => {
+  assert.equal(renderCharts(JSON.stringify({ grid: { engines: ["A"], questions: ["q1", "q2", "q3"], cells: [[1, 0, 1]] } })), ""); // <2 engines
+  assert.equal(renderCharts(JSON.stringify({ grid: { engines: ["A", "B"], questions: ["q1", "q2"], cells: [[1, 0], [0, 1]] } })), ""); // <3 questions
+  assert.equal(renderCharts(JSON.stringify({ grid: { engines: ["A", "B"], questions: ["q1", "q2", "q3"], cells: [[1, 0, 1]] } })), ""); // cells len != engines len
+});
+
 test("renderCharts: engine baseline (no prev) falls back to bars, not a dumbbell", () => {
   const html = renderCharts(JSON.stringify({ engines: [{ name: "Claude", pct: 14 }, { name: "ChatGPT search", pct: 7 }] }));
   assert.match(html, /Where each AI tool cites you/);

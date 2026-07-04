@@ -143,9 +143,11 @@ interface ReportFacts {
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
+  // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
+  grid?: { engines?: string[]; questions?: string[]; cells?: number[][] };
   // Frozen per-chart analyst commentary ("The read this month"), written at
   // report generation from the same frozen numbers. Absent = mechanics-only.
-  notes?: { engines?: string; venue?: string; sources?: string; topSources?: string; questions?: string };
+  notes?: { engines?: string; venue?: string; sources?: string; topSources?: string; questions?: string; grid?: string };
 }
 
 // Question-level movement: a wins/losses list (not a chart -- the unit is a
@@ -166,6 +168,86 @@ function renderQuestionMovement(qs: NonNullable<ReportFacts["questions"]>, note?
   if (disappeared.length) groups.push(`<div class="qm-h loss">No longer cited</div>${disappeared.map((e, i) => row(e, "loss", appeared.length + i)).join("")}`);
   const cap = `Each line is one real question we ask the AI tools every month, and the tools where your citation status flipped since last month. A plus means a tool that ignored you now cites you for that question. A minus means the reverse. These flips show up before the totals move.`;
   return `<section class="nr-chart"><h3 class="nr-ctitle">Questions won and lost</h3><div class="nr-bars">${groups.join("")}</div>${chartText(cap, note)}</section>`;
+}
+
+// Per-engine x per-question citation grid — the finest-grain instrument in the
+// readout. Rows are the AI tools (canonical 5+2 order), columns are the tracked
+// questions (numbered, with a legend beneath). A cell's gold intensity is the
+// share of the month's runs where that tool cited you on that question; a dark
+// cell is "answered, never named you"; an absent cell is "that tool did not
+// answer that question this month" (no run, no claim). Built only from
+// citation_runs.client_cited, so there is nothing here to get factually wrong.
+// Static SVG (the report is a frozen, printable artifact): the data-alive feel
+// comes from the staggered reveal + emphasized endpoints, degrading to a clean
+// still frame in print and reduced-motion.
+function renderCitationGrid(
+  grid: NonNullable<ReportFacts["grid"]>,
+  note?: string,
+): string {
+  const engines = Array.isArray(grid.engines) ? grid.engines.filter((e) => typeof e === "string") : [];
+  const questions = Array.isArray(grid.questions) ? grid.questions.filter((q) => typeof q === "string") : [];
+  const cells = Array.isArray(grid.cells) ? grid.cells : [];
+  if (engines.length < 2 || questions.length < 3 || cells.length !== engines.length) return "";
+
+  const CELL = 24, GAP = 3, GUT = 84, TOP = 22, RIGHT = 52;
+  const step = CELL + GAP;
+  const W = GUT + questions.length * step - GAP + RIGHT;
+  const H = TOP + engines.length * step - GAP;
+
+  const clamp01 = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0);
+  // Column numbers along the top.
+  let head = "";
+  for (let c = 0; c < questions.length; c++) {
+    const x = GUT + c * step + CELL / 2;
+    head += `<text x="${x}" y="${TOP - 9}" class="cg-colnum">${c + 1}</text>`;
+  }
+
+  let rows = "";
+  engines.forEach((eng, r) => {
+    const y = TOP + r * step;
+    rows += `<text x="${GUT - 12}" y="${y + CELL / 2 + 4}" class="cg-rowlab">${esc(eng)}</text>`;
+    const row = Array.isArray(cells[r]) ? cells[r] : [];
+    let hit = 0, answered = 0;
+    for (let c = 0; c < questions.length; c++) {
+      const x = GUT + c * step;
+      const v = typeof row[c] === "number" ? row[c] : -1;
+      const di = (r * questions.length + c); // stagger index
+      if (v < 0) {
+        // Not answered this month: a faint hollow marker, no claim.
+        rows += `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-cell cg-na" style="--d:${di}"/>`;
+        continue;
+      }
+      answered++;
+      const s = clamp01(v);
+      if (s >= 0.5) hit++;
+      // Continuous heat: dark base with gold laid over at share intensity, floored
+      // so any citation is visibly gold. Cited (>=50% of runs) gets a ring.
+      const op = (0.12 + s * 0.88).toFixed(3);
+      const strong = s >= 0.5 ? " cg-strong" : "";
+      const title = `${esc(eng)} — cited you on ${Math.round(s * 100)}% of this month's runs for question ${c + 1}`;
+      rows += `<g class="cg-cell${strong}" style="--d:${di}"><title>${title}</title>`
+        + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-base"/>`
+        + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-heat" style="opacity:${op}"/></g>`;
+    }
+    // Per-row count on the right rail.
+    const cx = GUT + questions.length * step - GAP + 12;
+    rows += `<text x="${cx}" y="${y + CELL / 2 + 4}" class="cg-count">${hit}<tspan class="cg-count-den">/${answered}</tspan></text>`;
+  });
+
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Citation grid: each AI tool by each tracked question, gold where the tool cited you this month.">`
+    + `<g class="cg-heads">${head}</g>${rows}</svg>`;
+
+  // Numbered legend maps each column back to its question.
+  const legend = questions
+    .map((q, i) => `<li class="cg-leg"><span class="cg-leg-n">${i + 1}</span><span class="cg-leg-q">${esc(q)}</span></li>`)
+    .join("");
+
+  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. A gold square means that tool named you for that question, and brighter means it named you on more of the month's daily checks. A dark square means it answered but never named you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you won a citation.`;
+
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where the seven tools put you, question by question</h3>`
+    + `<div class="cg-scroll">${svg}</div>`
+    + `<ol class="cg-legend">${legend}</ol>`
+    + chartText(cap, note) + `</section>`;
 }
 
 /** The two text layers under a chart: the customer-specific analyst read
@@ -275,6 +357,13 @@ export function renderCharts(factsJson: string | null): string {
     const bars = vrows.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of citations in your category` })).join("");
     const cap = `Of every mention the AI tools made of a business in your category, this is who got named. Your bar is highlighted.`;
     blocks.push(chartBlock("Who AI names in your category", bars, cap, notes.venue));
+  }
+
+  // 2b. Per-engine x per-question citation grid (finest grain; the readout's
+  // instrument centerpiece). Only when the month had enough real runs.
+  if (f.grid && typeof f.grid === "object" && Array.isArray(f.grid.cells) && f.grid.cells.length) {
+    const g = renderCitationGrid(f.grid as NonNullable<ReportFacts["grid"]>, notes.grid);
+    if (g) blocks.push(g);
   }
 
   // 3. Where the answers come from (source types) -- a 100% stacked bar (part-to-whole).
@@ -429,6 +518,27 @@ export function shell(title: string, inner: string): string {
   .leg-sw { width:10px; height:10px; border-radius:2px; flex:none; }
   .leg-pct { color:#8a857a; } .leg-item.own { color:#e8e8ea; } .leg-item.own .leg-pct { color:#d4c596; }
   @media (prefers-reduced-motion:reduce){ .dumb-line{ transition:none; transform:translateY(-50%) scaleX(1); } .dumb-dot{ transition:none; transform:translate(-50%,-50%) scale(1); } .stack-bar{ transition:none; transform:scaleX(1); } .leg-item{ transition:none; opacity:1; } }
+  /* citation grid (per-engine x per-question instrument) */
+  .cg-scroll { overflow-x:auto; margin:4px 0 14px; padding-bottom:4px; }
+  .cg-svg { display:block; max-width:100%; height:auto; min-width:340px; }
+  .cg-colnum { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:9px; fill:#6f6a60; text-anchor:middle; }
+  .cg-rowlab { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; fill:#b7b1a3; text-anchor:end; letter-spacing:.02em; }
+  .cg-count { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; fill:#d4c596; text-anchor:start; font-variant-numeric:tabular-nums; }
+  .cg-count-den { fill:#6f6a60; }
+  .cg-base { fill:#1b1915; }
+  .cg-na { fill:none; stroke:#2a2720; stroke-width:1; stroke-dasharray:2 3; }
+  .cg-heat { fill:#d4c596; }
+  /* Each cell blooms in on reveal: dark base first, gold heat + endpoint ring
+     laid over, staggered along the reading order. Cited cells (>=50%) carry a
+     ring so citation reads without relying on hue alone. */
+  .cg-cell { opacity:0; transition:opacity .5s cubic-bezier(.22,1,.36,1); transition-delay:calc(500ms + var(--d) * 14ms); }
+  .nr-chart.in .cg-cell { opacity:1; }
+  .cg-strong .cg-base { stroke:#e8c767; stroke-width:1.5; }
+  .cg-legend { list-style:none; margin:8px 0 0; padding:0; display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:2px 18px; }
+  .cg-leg { display:flex; gap:8px; font-size:12.5px; color:#c9c4b8; line-height:1.5; align-items:baseline; }
+  .cg-leg-n { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:11px; color:#9c8a4e; min-width:16px; text-align:right; flex:none; font-variant-numeric:tabular-nums; }
+  .cg-leg-q { color:#b7b1a3; }
+  @media (prefers-reduced-motion:reduce){ .cg-cell{ transition:none; opacity:1; } }
   /* Print: the forwardable artifact. Black on white, charts intact, chrome gone. */
   @media print {
     body { background:#fff; color:#111; }
@@ -448,6 +558,13 @@ export function shell(title: string, inner: string): string {
     .nr-chart, .nr-read, .qm-row { opacity:1 !important; transform:none !important; }
     .nr-val, .leg-item { opacity:1 !important; color:#111; }
     .nr-track { background:#e8e5da; }
+    /* citation grid in print: cells forced visible, gold heat preserved, labels darkened */
+    .cg-cell { opacity:1 !important; transition:none !important; }
+    .cg-base { fill:#efece2; } .cg-strong .cg-base { stroke:#7a6a35; }
+    .cg-heat { fill:#9c8a4e; } .cg-na { stroke:#c9c4b8; }
+    .cg-rowlab, .cg-leg-q { fill:#222; color:#222; }
+    .cg-colnum { fill:#555; } .cg-count { fill:#7a6a35; } .cg-count-den { fill:#888; }
+    .cg-leg-n { color:#7a6a35; }
     .body a { color:#111; text-decoration:underline; }
   }
 </style></head><body><div class="wrap">${inner}</div>

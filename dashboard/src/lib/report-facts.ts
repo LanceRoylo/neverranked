@@ -51,9 +51,35 @@ export interface ReportFacts {
     appeared: Array<{ q: string; engines: string[] }>;
     disappeared: Array<{ q: string; engines: string[] }>;
   };
+  /** Per-engine x per-question citation grid for the report month. The finest
+   *  grain we hold: for each tracked question and each AI tool, the share of the
+   *  month's runs in which the customer was cited. Built ONLY from
+   *  citation_runs.client_cited (the same trusted source as `questions`), so no
+   *  competitor-name matching and nothing to get factually wrong. Absent when
+   *  the month has too little data to be worth showing. */
+  grid?: {
+    engines: string[];          // row labels, canonical 5+2 order, only tools that ran
+    questions: string[];        // column labels (tracked keywords), stable order
+    /** cells[engineIdx][questionIdx]: fraction 0..1 of that tool's runs on that
+     *  question where the customer was cited, or -1 if the tool never answered
+     *  that question this month (no run = no claim). */
+    cells: number[][];
+  };
   /** Per-chart "The read this month" analyst commentary (frozen with the numbers). */
   notes?: AnalystNotes;
 }
+
+// citation_runs.engine holds raw keys; map to the canonical 5+2 display order.
+// Five citation-grade web-searching tools, then the two model-knowledge tools.
+const GRID_ENGINE_ORDER: Array<{ key: string; label: string }> = [
+  { key: "perplexity", label: "Perplexity" },
+  { key: "openai", label: "ChatGPT" },
+  { key: "gemini", label: "Gemini" },
+  { key: "bing", label: "Copilot" },
+  { key: "google_aio", label: "Google AIO" },
+  { key: "anthropic", label: "Claude" },
+  { key: "gemma", label: "Gemma" },
+];
 
 /** [start, end) epoch seconds for a 'YYYY-MM' month, plus the prior month's
  *  start. Date.UTC normalizes month under/overflow (Jan -> prior December). */
@@ -104,6 +130,54 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string): 
       .sort((a, b) => b.engines.length - a.engines.length).slice(0, 6);
   const out = { appeared: pack(appeared), disappeared: pack(disappeared) };
   return out.appeared.length || out.disappeared.length ? out : undefined;
+}
+
+/** Per-engine x per-question citation grid for the report month. Reads the
+ *  same citation_runs source as buildQuestionMovement (client_cited only), so
+ *  it carries no competitor-name-matching risk and can never freeze a wrong
+ *  competitive claim into an immutable report. Fail-closed: returns undefined
+ *  unless there is enough real data to be worth a grid (>=2 tools and >=3
+ *  questions that actually ran this month). */
+async function buildCitationGrid(env: Env, slug: string, monthKey: string): Promise<ReportFacts["grid"]> {
+  const b = monthBounds(monthKey);
+  if (!b) return undefined;
+  const runs = await env.DB.prepare(
+    `SELECT cr.engine, cr.client_cited, ck.keyword
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
+  ).bind(slug, b.start, b.end).all<{ engine: string; client_cited: number; keyword: string }>();
+  if (!runs.results.length) return undefined;
+
+  // tally[engineKey][keyword] = { cited, total }
+  const tally = new Map<string, Map<string, { cited: number; total: number }>>();
+  const questionSet = new Set<string>();
+  for (const r of runs.results) {
+    if (typeof r.engine !== "string" || typeof r.keyword !== "string") continue;
+    questionSet.add(r.keyword);
+    let byQ = tally.get(r.engine);
+    if (!byQ) { byQ = new Map(); tally.set(r.engine, byQ); }
+    const cell = byQ.get(r.keyword) ?? { cited: 0, total: 0 };
+    cell.total++;
+    if (r.client_cited === 1) cell.cited++;
+    byQ.set(r.keyword, cell);
+  }
+
+  // Rows: canonical 5+2 order, only tools that actually ran this month.
+  const engineRows = GRID_ENGINE_ORDER.filter((e) => tally.has(e.key));
+  // Columns: keywords in a stable order (sorted) so the grid is deterministic.
+  const questions = [...questionSet].sort();
+  if (engineRows.length < 2 || questions.length < 3) return undefined; // too thin to be worth it
+
+  const cells = engineRows.map((e) => {
+    const byQ = tally.get(e.key)!;
+    return questions.map((q) => {
+      const cell = byQ.get(q);
+      if (!cell || cell.total === 0) return -1; // tool never answered this question this month
+      return cell.cited / cell.total;
+    });
+  });
+
+  return { engines: engineRows.map((e) => e.label), questions, cells };
 }
 
 /** Derive the report's chart facts from the customer's latest snapshot + the
@@ -185,6 +259,10 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   let questions: ReportFacts["questions"];
   try { questions = await buildQuestionMovement(env, slug, monthKey); } catch { questions = undefined; }
 
+  // Per-engine x per-question citation grid (defensive: absent on any failure).
+  let grid: ReportFacts["grid"];
+  try { grid = await buildCitationGrid(env, slug, monthKey); } catch { grid = undefined; }
+
   return {
     period_label: monthLabel(monthKey),
     prior_label: priorLabel,
@@ -193,6 +271,7 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     sources,
     topSources,
     ...(questions ? { questions } : {}),
+    ...(grid ? { grid } : {}),
   };
 }
 

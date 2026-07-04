@@ -3,7 +3,9 @@ import assert from "node:assert";
 import { buildReportFacts } from "../src/lib/report-facts.ts";
 
 // Fake env whose first() returns the right row per query (by SQL shape).
-function fakeEnv(snap: any, cust: any, prior: any) {
+// gridRuns (optional) are returned ONLY for the citation-grid query (its SELECT
+// omits cr.run_at); the question-movement query gets [] so it stays absent.
+function fakeEnv(snap: any, cust: any, prior: any, gridRuns: any[] = []) {
   return {
     DB: {
       prepare(sql: string) {
@@ -17,7 +19,10 @@ function fakeEnv(snap: any, cust: any, prior: any) {
                 return null;
               },
               async all() {
-                return { results: [] }; // no runs: question movement stays absent
+                // buildQuestionMovement selects "cr.run_at, ck.keyword"; the grid
+                // query does not. Route run rows to the grid query only.
+                if (/cr\.run_at, ck\.keyword/.test(sql)) return { results: [] };
+                return { results: gridRuns };
               },
             };
           },
@@ -73,6 +78,55 @@ test("buildReportFacts refuses a legacy-shape snapshot (no share_pct) -> null", 
     top_competitors: JSON.stringify([{ name: "X", count: 5 }]),
   };
   assert.equal(await buildReportFacts(fakeEnv(legacy, { name: "X" }, null), "x", "2026-07"), null);
+});
+
+const okSnap = {
+  engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+  top_competitors: "{}",
+};
+
+test("buildCitationGrid: aggregates client_cited per engine x question, canonical order", async () => {
+  const runs = [
+    // perplexity: q1 cited 2/2, q2 0/2, q3 never answered
+    { engine: "perplexity", client_cited: 1, keyword: "q1" },
+    { engine: "perplexity", client_cited: 1, keyword: "q1" },
+    { engine: "perplexity", client_cited: 0, keyword: "q2" },
+    { engine: "perplexity", client_cited: 0, keyword: "q2" },
+    // anthropic (Claude): q1 1/2, q2 0/1, q3 2/2
+    { engine: "anthropic", client_cited: 1, keyword: "q1" },
+    { engine: "anthropic", client_cited: 0, keyword: "q1" },
+    { engine: "anthropic", client_cited: 0, keyword: "q2" },
+    { engine: "anthropic", client_cited: 1, keyword: "q3" },
+    { engine: "anthropic", client_cited: 1, keyword: "q3" },
+  ];
+  const facts = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, runs), "x", "2026-07");
+  const grid = facts!.grid!;
+  assert.ok(grid, "grid present");
+  // Canonical 5+2 order: perplexity before anthropic.
+  assert.deepEqual(grid.engines, ["Perplexity", "Claude"]);
+  assert.deepEqual(grid.questions, ["q1", "q2", "q3"]); // sorted, stable
+  // perplexity row: q1=1, q2=0, q3=-1 (never answered -> no claim)
+  assert.deepEqual(grid.cells[0], [1, 0, -1]);
+  // claude row: q1=0.5, q2=0, q3=1
+  assert.deepEqual(grid.cells[1], [0.5, 0, 1]);
+});
+
+test("buildCitationGrid: fail-closed below 2 engines or 3 questions", async () => {
+  // Only one engine -> no grid.
+  const oneEngine = [
+    { engine: "perplexity", client_cited: 1, keyword: "q1" },
+    { engine: "perplexity", client_cited: 1, keyword: "q2" },
+    { engine: "perplexity", client_cited: 1, keyword: "q3" },
+  ];
+  const f1 = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, oneEngine), "x", "2026-07");
+  assert.equal(f1!.grid, undefined);
+  // Two engines but only two questions -> no grid.
+  const twoQ = [
+    { engine: "perplexity", client_cited: 1, keyword: "q1" },
+    { engine: "anthropic", client_cited: 1, keyword: "q2" },
+  ];
+  const f2 = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, twoQ), "x", "2026-07");
+  assert.equal(f2!.grid, undefined);
 });
 
 test("buildReportFacts refuses a snapshot newer than the report month -> null", async () => {
