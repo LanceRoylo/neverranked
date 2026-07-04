@@ -65,6 +65,13 @@ interface TrendPoint {
   cohortAvg: number;
 }
 
+interface CitationMap {
+  engines: Array<{ id: string; label: string }>;   // left column, canonical 5+2, only measured tools
+  businesses: Array<{ id: string; label: string; you?: boolean; share: number }>; // right column, you + top competitors
+  edges: Array<{ e: string; b: string }>;           // engine id -> business id (that tool named that business)
+  windowLabel: string;                              // e.g. "the last 30 days"
+}
+
 interface CustomerViewData {
   slug: string;
   customerName: string;
@@ -88,6 +95,13 @@ interface CustomerViewData {
   cohortTop10: CohortRow[];
   // Trend (last 8 weeks)
   trend: TrendPoint[];
+  // Bipartite citation map: which AI tools name which businesses. Nodes come
+  // from validated snapshot data (you + the top cohort competitors, sized by
+  // share). Edges are the honest part: a you-edge is drawn from that engine's
+  // measured client-citation; a competitor-edge is drawn ONLY when that engine's
+  // answers named that competitor by its canonical cohort name (strict match,
+  // unmatched extractions dropped). Absent when a customer has too little data.
+  citationMap?: CitationMap;
   // Optional display overrides for share-based (D1) customers. Defaults below
   // preserve the original count-based Hamada fixture rendering.
   metricUnit?: string;          // "" = counts (default) | "%" = citation share
@@ -181,6 +195,34 @@ const HAMADA_DATA: CustomerViewData = {
     { weekIso: "2wk ago", yourMentions: 3, cohortAvg: 6 },
     { weekIso: "this wk", yourMentions: 4, cohortAvg: 6 },
   ],
+  // Illustrative map for the layout fixture (same status as every other number
+  // in HAMADA_DATA). Real customers get this built from measured runs.
+  citationMap: {
+    windowLabel: "the last 30 days",
+    engines: [
+      { id: "perplexity", label: "Perplexity" },
+      { id: "openai", label: "ChatGPT" },
+      { id: "gemini", label: "Gemini" },
+      { id: "bing", label: "Copilot" },
+      { id: "google_aio", label: "Google AIO" },
+      { id: "anthropic", label: "Claude" },
+      { id: "gemma", label: "Gemma" },
+    ],
+    businesses: [
+      { id: "c0", label: "First Hawaiian Advisors", share: 24 },
+      { id: "c1", label: "Morgan Stanley Hawaii", share: 19 },
+      { id: "you", label: "Hamada Financial Group", you: true, share: 8 },
+      { id: "c2", label: "Masuda Lehrman Wealth", share: 17 },
+      { id: "c3", label: "Financial Pacific Hawaii", share: 12 },
+    ],
+    edges: [
+      { e: "perplexity", b: "c0" }, { e: "perplexity", b: "c1" }, { e: "perplexity", b: "you" },
+      { e: "openai", b: "c0" }, { e: "openai", b: "c2" },
+      { e: "gemini", b: "c1" }, { e: "gemini", b: "you" },
+      { e: "google_aio", b: "c0" }, { e: "google_aio", b: "c2" }, { e: "google_aio", b: "you" },
+      { e: "anthropic", b: "c0" }, { e: "anthropic", b: "c1" },
+    ],
+  },
 };
 
 /**
@@ -210,6 +252,98 @@ const TOOL_SHORT: Record<string, string> = {
   "ChatGPT search": "ChatGPT", "Perplexity": "Perplexity", "Gemini grounded": "Gemini",
   "Google AI Overviews": "Google AIO", "Microsoft Copilot": "MS Copilot", "Claude": "Claude", "Gemma": "Gemma",
 };
+
+// citation_runs.engine raw keys -> canonical 5+2 display order + cockpit label.
+const MAP_ENGINE_ORDER: Array<{ key: string; label: string }> = [
+  { key: "perplexity", label: "Perplexity" },
+  { key: "openai", label: "ChatGPT" },
+  { key: "gemini", label: "Gemini" },
+  { key: "bing", label: "Copilot" },
+  { key: "google_aio", label: "Google AIO" },
+  { key: "anthropic", label: "Claude" },
+  { key: "gemma", label: "Gemma" },
+];
+
+// Generic tokens that carry no identity — stripped before matching an extracted
+// competitor name to a canonical cohort label, so "Masuda Lehrman Wealth" and a
+// tool saying "Masuda Lehrman" still match while "Hawaii Financial" alone never
+// matches two different firms.
+const MAP_GENERIC_TOKENS = new Set<string>([
+  "the", "and", "of", "a", "llc", "inc", "co", "corp", "group", "hawaii", "hawaiian",
+  "wealth", "financial", "finance", "advisors", "advisor", "management", "mgmt",
+  "capital", "partners", "planning", "bank", "trust", "services", "associates",
+  "company", "holdings", "investments", "investment", "wealthcare",
+]);
+function mapNorm(s: string): string { return String(s).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim(); }
+function mapDistinctive(label: string): string[] {
+  return mapNorm(label).split(" ").filter((t) => t && !MAP_GENERIC_TOKENS.has(t));
+}
+
+/** Build the bipartite citation-map edges from the last 30 days of runs. YOU
+ *  edges come from measured client_cited; competitor edges are drawn ONLY when
+ *  an engine's answers named that competitor by its canonical cohort name at
+ *  least twice (strict, canonical-only, unmatched free-text dropped), so a
+ *  stray LLM extraction can never invent an edge. Returns edges keyed by raw
+ *  engine key + a set of engine keys that actually ran. */
+async function buildCitationMapEdges(
+  env: Env,
+  slug: string,
+  competitorNodes: Array<{ id: string; label: string; domain: string }>,
+): Promise<{ edges: Array<{ e: string; b: string }>; ranEngines: Set<string> } | null> {
+  const THIRTY_DAYS = 30 * 24 * 3600;
+  const since = Math.floor(Date.now() / 1000) - THIRTY_DAYS;
+  const runs = await env.DB.prepare(
+    `SELECT cr.engine, cr.client_cited, cr.competitors_mentioned, ck.keyword
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ?`,
+  ).bind(slug, since).all<{ engine: string; client_cited: number; competitors_mentioned: string | null; keyword: string }>();
+  if (!runs.results.length) return null;
+
+  // Precompute each competitor's distinctive token set + domain root.
+  const matchers = competitorNodes.map((c) => ({
+    id: c.id,
+    tokens: mapDistinctive(c.label),
+    root: mapNorm(c.domain.split(".")[0] || ""),
+  }));
+
+  // Per engine: questions where you were cited, and per-competitor questions
+  // where it was named. Count DISTINCT questions so recurrence means breadth.
+  const youQ = new Map<string, Set<string>>();          // engine -> set(keyword)
+  const compQ = new Map<string, Map<string, Set<string>>>(); // engine -> compId -> set(keyword)
+  const ranEngines = new Set<string>();
+
+  for (const r of runs.results) {
+    if (typeof r.engine !== "string") continue;
+    ranEngines.add(r.engine);
+    if (r.client_cited === 1) {
+      (youQ.get(r.engine) ?? youQ.set(r.engine, new Set()).get(r.engine)!).add(r.keyword);
+    }
+    if (!r.competitors_mentioned) continue;
+    let names: string[] = [];
+    try { const arr = JSON.parse(r.competitors_mentioned); if (Array.isArray(arr)) names = arr.map((x) => mapNorm(String(x))); } catch { /* skip */ }
+    if (!names.length) continue;
+    for (const m of matchers) {
+      const hit = names.some((nm) => {
+        if (m.tokens.length && m.tokens.every((t) => nm.split(" ").includes(t))) return true;
+        if (m.root && m.root.length >= 4 && nm.split(" ").includes(m.root)) return true;
+        return false;
+      });
+      if (hit) {
+        let byComp = compQ.get(r.engine);
+        if (!byComp) { byComp = new Map(); compQ.set(r.engine, byComp); }
+        (byComp.get(m.id) ?? byComp.set(m.id, new Set()).get(m.id)!).add(r.keyword);
+      }
+    }
+  }
+
+  const edges: Array<{ e: string; b: string }> = [];
+  for (const key of ranEngines) {
+    if ((youQ.get(key)?.size ?? 0) >= 2) edges.push({ e: key, b: "you" });
+    const byComp = compQ.get(key);
+    if (byComp) for (const [compId, qs] of byComp) if (qs.size >= 2) edges.push({ e: key, b: compId });
+  }
+  return { edges, ranEngines };
+}
 
 async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | null> {
   const cust = await env.DB.prepare(
@@ -300,9 +434,41 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
       : `You appear on all 7 engines. `) +
     `From next month, this section shows what moved against this baseline.`;
 
+  // Bipartite citation map. Nodes: you + up to 4 top competitors (validated
+  // snapshot shares). Edges: measured from the last 30 days of runs (you-edges
+  // from client_cited, competitor-edges canonical-strict). Fail-closed: no map
+  // unless >=2 tools ran and at least one edge was drawn.
+  let citationMap: CitationMap | undefined;
+  try {
+    const topComp = [...competitors]
+      .sort((a, b) => b.venue_share_pct - a.venue_share_pct)
+      .slice(0, 4)
+      .map((c, i) => ({ id: `c${i}`, label: c.label || c.domain, domain: c.domain, share: c.venue_share_pct }));
+    const mapEdges = await buildCitationMapEdges(env, slug, topComp);
+    if (mapEdges && mapEdges.ranEngines.size >= 2 && mapEdges.edges.length) {
+      // CitationMap engines are keyed by `id` (raw engine key), matching the
+      // edge `e` values and the renderer's index. MAP_ENGINE_ORDER uses `key`.
+      const engines = MAP_ENGINE_ORDER
+        .filter((e) => mapEdges.ranEngines.has(e.key))
+        .map((e) => ({ id: e.key, label: e.label }));
+      const businesses = [
+        { id: "you", label: cust.name, you: true, share: ownShare },
+        ...topComp.map((c) => ({ id: c.id, label: c.label, share: c.share })),
+      ];
+      // Only keep edges whose business node + engine node are actually shown.
+      const shownB = new Set(businesses.map((b) => b.id));
+      const shownE = new Set(engines.map((e) => e.id));
+      const edges = mapEdges.edges.filter((x) => shownB.has(x.b) && shownE.has(x.e));
+      if (engines.length >= 2 && edges.length) {
+        citationMap = { engines, businesses, edges, windowLabel: "the last 30 days" };
+      }
+    }
+  } catch { citationMap = undefined; }
+
   return {
     slug,
     customerName: cust.name,
+    citationMap,
     category: cust.category_label || cust.category,
     lastMeasuredAgo: measuredAgo,
     nextMemoDate: nextMemoDate(),
@@ -389,6 +555,99 @@ function deltaText(n: number, suffix = "vs 7 days ago"): { className: string; te
   if (n > 0) return { className: "up", text: `+${n} ${suffix}` };
   if (n < 0) return { className: "down", text: `${n} ${suffix}` };
   return { className: "flat", text: `unchanged ${suffix}` };
+}
+
+// Bipartite citation map for the cockpit: which AI tools name which businesses.
+// Server-rendered SVG; a small inline script draws the edges on scroll-in and
+// tilts the map toward the pointer (both disabled under reduced-motion). Named
+// (this is the customer's own 1:1 surface). Returns "" when no map data.
+function renderCockpitMap(map: CitationMap | undefined): string {
+  if (!map || !Array.isArray(map.engines) || !Array.isArray(map.businesses) || !Array.isArray(map.edges)) return "";
+  const engines = map.engines.filter((e) => e && typeof e.id === "string" && typeof e.label === "string");
+  const businesses = map.businesses.filter((b) => b && typeof b.id === "string" && typeof b.label === "string");
+  if (engines.length < 2 || businesses.length < 2) return "";
+
+  const W = 860, EX = 160, BX = 500;
+  const eStep = engines.length > 1 ? 360 / (engines.length - 1) : 0;
+  const eY = engines.map((_, i) => 60 + i * eStep);
+  const H = Math.max(engines.length, businesses.length) * 0 + 460;
+  const bStep = businesses.length > 1 ? 340 / (businesses.length - 1) : 0;
+  const bY = businesses.map((_, i) => 78 + i * bStep);
+  const maxShare = Math.max(1, ...businesses.map((b) => Number(b.share) || 0));
+  const bR = (s: number) => 10 + (Number(s) || 0) / maxShare * 12;
+
+  const eIdx: Record<string, number> = {}; engines.forEach((e, i) => (eIdx[e.id] = i));
+  const bIdx: Record<string, number> = {}; businesses.forEach((b, i) => (bIdx[b.id] = i));
+
+  // Edges (validated: only between shown nodes). you-edges gold, others dim.
+  const edgePaths = map.edges
+    .filter((x) => x && eIdx[x.e] !== undefined && bIdx[x.b] !== undefined)
+    .map((x) => {
+      const ey = eY[eIdx[x.e]], bi = bIdx[x.b], by = bY[bi];
+      const r = bR(Number(businesses[bi].share) || 0);
+      const x1 = EX + 8, x2 = BX - r, mx = (x1 + x2) / 2;
+      const you = businesses[bi].you ? " cm2-edge-you" : "";
+      return `<path class="cm2-edge${you}" d="M${x1} ${ey} C ${mx} ${ey}, ${mx} ${by}, ${x2} ${by}"/>`;
+    }).join("");
+
+  const engineNodes = engines.map((e, i) =>
+    `<circle class="cm2-en" cx="${EX}" cy="${eY[i]}" r="7"/>`
+    + `<text class="cm2-elabel" x="${EX - 16}" y="${eY[i] + 4}" text-anchor="end">${esc(e.label)}</text>`
+  ).join("");
+
+  const bizNodes = businesses.map((b, i) => {
+    const r = bR(Number(b.share) || 0);
+    const cls = b.you ? "cm2-bn cm2-bn-you" : "cm2-bn";
+    const lcls = b.you ? "cm2-blabel cm2-blabel-you" : "cm2-blabel";
+    const share = Number.isFinite(Number(b.share)) ? `${Math.round(Number(b.share))}%` : "";
+    return `<circle class="${cls}" cx="${BX}" cy="${bY[i]}" r="${r}"/>`
+      + `<text class="${lcls}" x="${BX + r + 12}" y="${bY[i] + (b.you ? -1 : 4)}">${esc(b.label)}</text>`
+      + (b.you ? "" : `<text class="cm2-bshare" x="${BX + r + 12}" y="${bY[i] + 13}">${share} of citations</text>`);
+  }).join("");
+
+  const youEdges = map.edges.filter((x) => businesses[bIdx[x.b]]?.you).length;
+  const answered = engines.length;
+
+  return `
+    <div class="section cm2-section">
+      <h2 class="section-label">Who AI names in your category</h2>
+      <p class="cm2-lead">Every AI tool builds its own answer. This is which of them named you, and who they named instead, across ${esc(map.windowLabel)}.</p>
+      <div class="cm2-stage">
+        <svg id="cm2-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Citation map: AI tools on the left, businesses they named on the right.">
+          <text class="cm2-colcap" x="${EX}" y="28" text-anchor="middle">The seven AI tools</text>
+          <text class="cm2-colcap" x="${BX}" y="28" text-anchor="middle">Who they name</text>
+          <g id="cm2-edges">${edgePaths}</g>
+          <g>${engineNodes}${bizNodes}</g>
+        </svg>
+      </div>
+      <p class="cm2-verdict"><strong>${youEdges} of ${answered}</strong> AI tools name you in your category. The gold lines are yours; each line is a tool whose answers cited you across ${esc(map.windowLabel)}.</p>
+    </div>
+    <script>
+    (function(){
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+      var svg = document.getElementById('cm2-svg'); if(!svg) return;
+      var paths = svg.querySelectorAll('.cm2-edge');
+      function draw(){
+        paths.forEach(function(p, i){
+          var len = p.getTotalLength();
+          p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+          p.style.transition = 'stroke-dashoffset .9s cubic-bezier(.22,1,.36,1) ' + (60 + i*45) + 'ms';
+          requestAnimationFrame(function(){ requestAnimationFrame(function(){ p.style.strokeDashoffset = 0; }); });
+        });
+      }
+      if(reduce){ /* leave edges fully drawn */ }
+      else if('IntersectionObserver' in window){
+        var done = false;
+        var io = new IntersectionObserver(function(es){ es.forEach(function(en){ if(en.isIntersecting && !done){ done = true; draw(); io.disconnect(); } }); }, { threshold: 0.2 });
+        io.observe(svg);
+        var stage = svg.parentNode;
+        if(window.matchMedia && window.matchMedia('(hover:hover)').matches){
+          stage.addEventListener('pointermove', function(ev){ var r=stage.getBoundingClientRect(); var dx=(ev.clientX-r.left)/r.width-0.5, dy=(ev.clientY-r.top)/r.height-0.5; svg.style.transform='perspective(1400px) rotateY('+(dx*4)+'deg) rotateX('+(-dy*3)+'deg)'; });
+          stage.addEventListener('pointerleave', function(){ svg.style.transform='perspective(1400px) rotateY(0) rotateX(0)'; });
+        }
+      } else { draw(); }
+    })();
+    </script>`;
 }
 
 export function renderCustomerView(d: CustomerViewData): string {
@@ -681,6 +940,28 @@ export function renderCustomerView(d: CustomerViewData): string {
   @media (max-width: 460px) {
     .tool-grid { grid-template-columns: repeat(3, 1fr); }
   }
+  /* Citation map (bipartite instrument) */
+  .cm2-lead { color: #b7b1a3; font-size: 15px; margin: 0 0 16px; max-width: 64ch; }
+  .cm2-stage { position: relative; border: 1px solid #23211c; border-radius: 14px; padding: 8px;
+    background: linear-gradient(180deg, rgba(255,255,255,.015), rgba(0,0,0,.16)); overflow-x: auto; overflow-y: hidden; }
+  .cm2-stage::after { content:""; position:absolute; inset:0; pointer-events:none;
+    background: radial-gradient(420px 240px at 78% 50%, rgba(156,138,78,.08), transparent 70%); }
+  /* min-width keeps labels legible; on narrow screens the stage scrolls
+     horizontally rather than shrinking the type to nothing. */
+  #cm2-svg { display: block; width: 100%; min-width: 600px; height: auto; transition: transform .5s cubic-bezier(.22,1,.36,1); will-change: transform; }
+  .cm2-colcap { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10px; letter-spacing: .16em; text-transform: uppercase; fill: #9c8a4e; }
+  .cm2-elabel { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; fill: #b7b1a3; }
+  .cm2-blabel { font-family: Georgia, "Times New Roman", serif; font-size: 15px; fill: #d8d3c6; }
+  .cm2-blabel-you { fill: #e8c767; }
+  .cm2-bshare { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 10.5px; fill: #7f7a6e; }
+  .cm2-en { fill: #1c1a12; stroke: #4a4636; stroke-width: 1.5; }
+  .cm2-bn { fill: #211d13; stroke: #4a4636; stroke-width: 1.5; }
+  .cm2-bn-you { fill: rgba(212,197,150,.14); stroke: #d4c596; stroke-width: 2; }
+  .cm2-edge { fill: none; stroke: #4a4636; stroke-width: 1.4; opacity: .55; }
+  .cm2-edge-you { stroke: #e8c767; stroke-width: 2.4; opacity: 1; }
+  .cm2-verdict { color: #c9c4b8; font-size: 14.5px; margin: 16px 2px 0; line-height: 1.6; }
+  .cm2-verdict strong { color: #e8c767; font-weight: 400; }
+  @media (prefers-reduced-motion: reduce) { #cm2-svg { transition: none; transform: none !important; } }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
   }
@@ -774,6 +1055,10 @@ export function renderCustomerView(d: CustomerViewData): string {
         This dashboard shows you what changed and where the gaps are. Your next monthly memo arrives <strong>${esc(d.nextMemoDate)}</strong> and turns these signals into your prioritized punch list: what to ship first, what to skip this month, what the cohort movement actually means for your business.
       </div>
     </div>
+
+    <!-- Citation map (un-numbered hero): who each AI tool names. Only renders
+         when the customer has enough measured runs; absent otherwise. -->
+    ${renderCockpitMap(d.citationMap)}
 
     <!-- Section 4: Cohort table -->
     <div class="section">

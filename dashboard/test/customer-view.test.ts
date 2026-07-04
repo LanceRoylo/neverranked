@@ -50,6 +50,87 @@ test("loadCustomerView returns null for unknown slug", async () => {
   assert.equal(data, null);
 });
 
+test("Hamada fixture carries a citation map (renders the instrument)", async () => {
+  const data = await loadCustomerView(envStub, "hamada-financial-group");
+  assert.ok(data!.citationMap, "expected a citationMap on the fixture");
+  assert.equal(data!.citationMap!.engines.length, 7);
+  const you = data!.citationMap!.businesses.find((b) => b.you);
+  assert.ok(you && you.label === "Hamada Financial Group");
+});
+
+// Env stub that serves a readout-shape snapshot + a set of citation_runs, so
+// buildFromD1 exercises the real citation-map join (buildCitationMapEdges).
+function d1Env(snapshot: any, runs: any[]) {
+  return {
+    DB: {
+      prepare(sql: string) {
+        return {
+          bind() {
+            return {
+              async first() {
+                if (/FROM customers/.test(sql)) return { name: "Test Wealth", category: "wm", category_label: "Wealth" };
+                if (/citation_snapshots/.test(sql)) return snapshot;
+                return null;
+              },
+              async all() { return { results: runs }; }, // the runs query
+            };
+          },
+        };
+      },
+    },
+  } as any;
+}
+
+const READOUT_SNAP = {
+  week_start: Math.floor(Date.UTC(2026, 5, 1) / 1000),
+  created_at: Math.floor(Date.UTC(2026, 5, 1) / 1000),
+  total_queries: 18,
+  client_citations: 4,
+  engines_breakdown: JSON.stringify({ Perplexity: { share_pct: 20 }, "ChatGPT search": { share_pct: 8 }, Claude: { share_pct: 3 } }),
+  top_competitors: JSON.stringify({
+    htc_venue_share_pct: 10, htc_engines_count: 2,
+    competitors: [
+      { domain: "masudalehrman.com", label: "Masuda Lehrman Wealth", venue_share_pct: 30, engines_count: 3 },
+      { domain: "fhb.com", label: "First Hawaiian Advisors", venue_share_pct: 25, engines_count: 4 },
+    ],
+  }),
+};
+
+test("citation map join: strict canonical match, threshold, and drops unmatched names", async () => {
+  const runs = [
+    // perplexity: cites you on q1,q2 (you-edge >=2); names Masuda on q1,q3 (comp-edge >=2)
+    { engine: "perplexity", client_cited: 1, competitors_mentioned: '["Masuda Lehrman"]', keyword: "q1" },
+    { engine: "perplexity", client_cited: 1, competitors_mentioned: null, keyword: "q2" },
+    { engine: "perplexity", client_cited: 0, competitors_mentioned: '["Masuda Lehrman Wealth Management"]', keyword: "q3" },
+    // openai: names Masuda on q1,q2 (comp-edge); never cites you (no you-edge)
+    { engine: "openai", client_cited: 0, competitors_mentioned: '["Masuda Lehrman Wealth"]', keyword: "q1" },
+    { engine: "openai", client_cited: 0, competitors_mentioned: '["Masuda Lehrman"]', keyword: "q2" },
+    // gemini: cites you once (below threshold), and names an UNLISTED firm (must be dropped)
+    { engine: "gemini", client_cited: 1, competitors_mentioned: '["Some Unlisted Advisory Group"]', keyword: "q1" },
+  ];
+  const data = await loadCustomerView(d1Env(READOUT_SNAP, runs), "test-wealth");
+  const map = data!.citationMap!;
+  assert.ok(map, "expected a citation map");
+  // Three engines ran; canonical order keeps perplexity, openai, gemini.
+  assert.deepEqual(map.engines.map((e) => e.id), ["perplexity", "openai", "gemini"]);
+  // Businesses: you + top competitors by share (masuda=c0, fhb=c1). No invented node.
+  assert.ok(map.businesses.some((b) => b.you));
+  assert.ok(!map.businesses.some((b) => /unlisted/i.test(b.label)), "must not invent a node for an unmatched name");
+  // Edges: perplexity->you (2 qs), perplexity->c0 (2 qs), openai->c0 (2 qs).
+  const has = (e: string, b: string) => map.edges.some((x) => x.e === e && x.b === b);
+  assert.ok(has("perplexity", "you"), "perplexity you-edge (cited on 2 questions)");
+  assert.ok(has("perplexity", "c0"), "perplexity->Masuda (named on 2 questions)");
+  assert.ok(has("openai", "c0"), "openai->Masuda (named on 2 questions)");
+  // gemini cited you only once -> NO you-edge; unlisted firm -> NO edge at all.
+  assert.ok(!has("gemini", "you"), "single citation is below the 2-question threshold");
+  assert.equal(map.edges.filter((x) => x.e === "gemini").length, 0, "gemini draws no edge");
+});
+
+test("citation map join: fail-closed with no runs (no map)", async () => {
+  const data = await loadCustomerView(d1Env(READOUT_SNAP, []), "test-wealth");
+  assert.equal(data!.citationMap, undefined);
+});
+
 test("loadCustomerView Hamada data has all 7 AI tools in perTool", async () => {
   const data = await loadCustomerView(envStub, "hamada-financial-group");
   assert.equal(data!.perTool.length, 7, "expected exactly 7 AI tools");
