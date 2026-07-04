@@ -78,6 +78,7 @@ async function listAllKvKeys(
 
 import { buildReport, buildReportFollowingSnippets, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
 import { agentReadinessCheck, llmsTxtCheck } from "./scoring-ports";
+import { isPublicHttpUrl } from "./url-safety";
 
 // ---------- HTML UI ----------
 
@@ -3052,6 +3053,7 @@ export default {
         parsed = new URL(targetUrl);
         if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
       } catch { return Response.json({ error: "Invalid URL. Include https://." }, { status: 400, headers: corsHeaders }); }
+      if (!isPublicHttpUrl(targetUrl)) return Response.json({ error: "That address can't be scanned." }, { status: 400, headers: corsHeaders });
 
       let html: string;
       try {
@@ -3214,6 +3216,9 @@ export default {
         if (!["http:", "https:"].includes(parsed.protocol)) throw new Error();
       } catch {
         return Response.json({ error: "Invalid URL. Please include https://." }, { status: 400, headers: corsHeaders });
+      }
+      if (!isPublicHttpUrl(targetUrl)) {
+        return Response.json({ error: "That address can't be scanned." }, { status: 400, headers: corsHeaders });
       }
 
       // Fetch target

@@ -13,13 +13,20 @@
  * root attribution only.
  */
 
+import { isPublicHttpUrl } from "./url-safety";
+
 const NR_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) NeverRanked-Bot/1.0 (+https://neverranked.com/bot)";
 
 const ATTRIBUTION = "Powered by NeverRanked. https://neverranked.com";
 
 // 10s fetch timeout, matching the worker's /api/check + /api/schema-score routes.
+// SSRF guard: every probe target (page URL, llms.txt links, agent-action
+// endpoints) flows through here, so refusing non-public hosts in one place
+// keeps the reachability checks from being an oracle for internal addresses.
+// Callers already treat a throw as "unreachable", which is the right outcome.
 async function fetchWithTimeout(input: string, init: RequestInit & { timeoutMs?: number } = {}): Promise<Response> {
+  if (!isPublicHttpUrl(input)) throw new Error("refused non-public URL");
   const { timeoutMs = 10_000, ...rest } = init;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
