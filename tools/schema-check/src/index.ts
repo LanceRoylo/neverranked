@@ -1337,7 +1337,7 @@ body.agency-mode #agency-cta-card{display:block !important}
 
   <section class="hero">
     <h1>See what AI tools can read from <em>your site</em>.</h1>
-    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what 7 AI tools pull from your pages, what they miss, and why it matters. Free. No signup.</p>
+    <p class="sub">When someone asks ChatGPT or Google's AI to recommend a business like yours, can they even read your site? Paste your URL and see what AI tools can and cannot read from your pages, what they miss, and why it matters. Free. No signup.</p>
     <div class="input-area">
       <label for="url-input" class="sr-only">Your website URL</label>
       <input type="url" id="url-input" placeholder="https://example.com" autocomplete="url" spellcheck="false">
@@ -1605,10 +1605,10 @@ body.agency-mode #agency-cta-card{display:block !important}
       var benchW = Math.max(4, Math.min(100, bandBenchP75));
       gradeSection.innerHTML =
         '<div class="grade-band-domain">'+escHtml(scannedDisplay)+'</div>'+
-        '<div class="grade-band-headline">Your site is in the '+
-          '<strong>'+(inTopHalf ? 'top half' : 'bottom half')+'</strong>'+
+        '<div class="grade-band-headline">Your site scores '+
+          '<strong>'+(inTopHalf ? 'above the midpoint' : 'below the midpoint')+'</strong>'+
         '</div>'+
-        '<div class="grade-band-sub">of sites we have audited. Enter your email below to see your exact score, your grade, and the full breakdown.</div>'+
+        '<div class="grade-band-sub">of our 0-100 AI-readability scale. Enter your email below to see your exact score, your grade, and the full breakdown.</div>'+
         '<div class="grade-band-compare">'+
           '<div class="gbc-bar"><div class="gbc-label">You</div><div class="gbc-track"><div class="gbc-fill gbc-you" data-w="'+youW+'"></div></div></div>'+
           '<div class="gbc-bar"><div class="gbc-label">Top quartile audited</div><div class="gbc-track"><div class="gbc-fill gbc-bench" data-w="'+benchW+'"></div></div></div>'+
