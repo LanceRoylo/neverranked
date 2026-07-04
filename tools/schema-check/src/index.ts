@@ -494,22 +494,39 @@ body::before{
   align-items:center;justify-content:center;
   width:140px;height:140px;
   border-radius:50%;
-  border:2px solid var(--gold);
   margin-bottom:16px;
   position:relative;
 }
+/* The score ring: a real gauge that sweeps to the AI-ready score. The arc
+   length IS the score, so the ring reads the number before the eye reaches
+   the digits. Track is a faint full circle; the gold arc draws over it. */
+.grade-ring{
+  position:absolute;inset:0;width:100%;height:100%;
+  transform:rotate(-90deg); /* start the sweep at 12 o'clock */
+}
+.grade-ring circle{fill:none;stroke-width:6;}
+.grade-ring .gr-track{stroke:rgba(212,197,150,.13);}
+.grade-ring .gr-arc{
+  stroke:var(--gold);
+  stroke-linecap:round;
+  /* dasharray + offset set inline per score; the sweep is animated in JS so
+     it can sync with the count-up and respect reduced-motion. */
+  transition:stroke-dashoffset 1s cubic-bezier(.22,1,.36,1);
+}
+.grade-circle.grade-c .gr-arc,.grade-circle.grade-d .gr-arc,.grade-circle.grade-f .gr-arc{
+  stroke:var(--text-faint);
+}
 .grade-circle .letter{
   font-family:var(--serif);
-  font-size:72px;
+  font-size:64px;
   font-weight:400;
   color:var(--gold);
+  position:relative;z-index:1;
 }
 .grade-circle.grade-c .letter,.grade-circle.grade-d .letter,.grade-circle.grade-f .letter{
   color:var(--text-faint);
 }
-.grade-circle.grade-c,.grade-circle.grade-d,.grade-circle.grade-f{
-  border-color:var(--text-faint);
-}
+@media (prefers-reduced-motion:reduce){ .grade-ring .gr-arc{transition:none;} }
 .aeo-score{
   font-family:var(--label);
   text-transform:uppercase;
@@ -1581,8 +1598,15 @@ body.agency-mode #agency-cta-card{display:block !important}
     }
     // Build the full grade markup once; how it's rendered depends on
     // gateLevel below.
+    // r=54 ring (viewBox 120): circumference 2*pi*54 = 339.292. The arc is
+    // drawn fully then hidden by an offset; animateGradeRing() sweeps it to the
+    // score. data-score carries the target so the reveal can find it.
     var fullGradeHtml =
-      '<div class="grade-circle '+gradeClass+'">'+
+      '<div class="grade-circle '+gradeClass+'" data-score="'+data.aeo_score+'">'+
+        '<svg class="grade-ring" viewBox="0 0 120 120" aria-hidden="true">'+
+          '<circle class="gr-track" cx="60" cy="60" r="54"></circle>'+
+          '<circle class="gr-arc" cx="60" cy="60" r="54" stroke-dasharray="339.292" stroke-dashoffset="339.292"></circle>'+
+        '</svg>'+
         '<span class="letter">'+data.grade+'</span>'+
       '</div>'+
       '<div class="aeo-score">AI-ready score: <span>'+data.aeo_score+'</span>/100</div>'+
@@ -1631,6 +1655,7 @@ body.agency-mode #agency-cta-card{display:block !important}
       // (schema coverage, technical signals, red flags, fixes).
       gradeSection.innerHTML = fullGradeHtml;
       if (insight) insight.innerHTML = insightText;
+      animateGradeRing(gradeSection);
     }
 
     // Schema coverage — aggregated to a coverage summary, no named
@@ -2095,6 +2120,33 @@ body.agency-mode #agency-cta-card{display:block !important}
     } catch (e) {}
   }
 
+  // Sweep the score ring to its target arc length. Circumference of the r=54
+  // ring is 2*pi*54 = 339.292; the arc offset is the empty remainder, so the
+  // drawn length equals the score. Jumps straight to target under reduced
+  // motion. Safe to call whenever a .grade-circle enters the DOM.
+  function animateGradeRing(root){
+    if(!root) return;
+    var circle = root.querySelector('.grade-circle');
+    var arc = root.querySelector('.gr-arc');
+    if(!circle || !arc) return;
+    var C = 339.292;
+    var score = Number(circle.getAttribute('data-score')) || 0;
+    if(score < 0) score = 0; if(score > 100) score = 100;
+    var target = C * (1 - score / 100);
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    if(reduce || !window.requestAnimationFrame){
+      arc.style.transition = 'none';
+      arc.style.strokeDashoffset = String(target);
+      return;
+    }
+    // Start empty (markup already sets offset = C), then sweep on the next
+    // frames so the CSS transition on .gr-arc fires.
+    arc.style.strokeDashoffset = String(C);
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){
+      arc.style.strokeDashoffset = String(target);
+    }); });
+  }
+
   function revealGatedDetails(){
     if(gatedDetails) gatedDetails.style.display = 'block';
     if(emailGateEl) emailGateEl.style.display = 'none';
@@ -2132,6 +2184,9 @@ body.agency-mode #agency-cta-card{display:block !important}
             requestAnimationFrame(step);
           }
         }
+        // Sweep the score ring in sync with the count-up (or jump under
+        // reduced-motion). Kept in one helper so the mild path animates too.
+        animateGradeRing(gs);
       }
       var insightEl = document.getElementById('grade-insight');
       if(insightEl) insightEl.innerHTML = lastReportData._insightText || '';
