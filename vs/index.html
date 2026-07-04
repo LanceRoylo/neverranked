@@ -25,6 +25,15 @@
   strong { color: #e8e8ea; font-weight: 600; }
   blockquote { border-left: 2px solid #d4c596; padding: 0 0 0 22px; margin: 22px 0; font-style: italic; font-size: 16px; color: #e8e8ea; }
   table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  /* The comparison table is the argument; on a phone its 3 prose columns
+     crushed to one-word lines. Wrap it so it scrolls instead of collapsing
+     (same pattern as /methodology/ and the teardown template). */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; min-width: 560px; }
+  @media (max-width: 640px) {
+    main { padding: 0 18px; }
+    .table-wrap table { font-size: 13px; }
+  }
   th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #4a4740; vertical-align: top; }
   td { padding: 10px 14px 10px 0; border-bottom: 1px solid #211e18; vertical-align: top; }
   td.us { color: #e8e8ea; }
@@ -64,6 +73,7 @@
 
     <p>Each of these is checked against the dashboard-style products' publicly-documented behavior as of May 2026. Where one of them offers something we don't, we name it under <a href="/methodology/">/methodology/</a>.</p>
 
+    <div class="table-wrap">
     <table>
       <thead>
         <tr><th></th><th>NeverRanked</th><th>Dashboard-style tools (typical)</th></tr>
@@ -126,6 +136,7 @@
         </tr>
       </tbody>
     </table>
+    </div>
 
     <h2>When to pick each one</h2>
 
