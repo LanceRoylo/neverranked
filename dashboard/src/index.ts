@@ -3785,6 +3785,18 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     reqLog.finish(response, { user_id: _user_id_for_log });
     const decorated = new Response(response.body, response);
     decorated.headers.set("X-Request-Id", reqLog.id);
+    // Security headers on EVERY response. This app serves auth cookies, so it
+    // had no business shipping without them. HSTS/nosniff/Referrer are safe
+    // universally; X-Frame-Options + a minimal CSP (frame-ancestors/base-uri)
+    // stop clickjacking + base-tag hijacking without restricting the app's
+    // inline scripts/styles (a full script-src CSP needs nonces -> follow-up).
+    decorated.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    decorated.headers.set("X-Content-Type-Options", "nosniff");
+    decorated.headers.set("X-Frame-Options", "DENY");
+    decorated.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+    if (!decorated.headers.has("Content-Security-Policy")) {
+      decorated.headers.set("Content-Security-Policy", "frame-ancestors 'none'; base-uri 'self'");
+    }
     return decorated;
   },
 
