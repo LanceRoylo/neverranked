@@ -2448,6 +2448,10 @@ export default {
       const { handleGrantAccess } = await import("./routes/admin-access");
       return handleGrantAccess(user, env, url);
     }
+    if (path === "/admin/grant-access" && method === "POST" && user.role === "admin") {
+      const { handleGrantAccessPost } = await import("./routes/admin-access");
+      return handleGrantAccessPost(request, user, env);
+    }
     // Monthly memo review + approval surface.
     if (path === "/admin/memos" && method === "GET" && user.role === "admin") {
       const { handleMemoInbox } = await import("./routes/admin-memos");
