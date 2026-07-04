@@ -72,11 +72,18 @@ export async function createAlertIfFresh(env: Env, alert: AlertInput): Promise<b
   const since = now - windowHours * 3600;
 
   if (windowHours > 0) {
+    // Dedupe against UNREAD alerts only (matches this function's documented
+    // contract). Without "read_at IS NULL", the daily age-out sweep (which
+    // marks alerts read at 3d/14d) leaves a still-in-window READ alert that
+    // suppresses a new one, so a persistent problem (monthly_refresh_overdue,
+    // engine_degraded) enters a multi-day blind window: aged-out yet unable
+    // to re-fire. There is an index on (read_at, created_at) for this.
     const existing = await env.DB.prepare(
       `SELECT id FROM admin_alerts
          WHERE client_slug = ?
            AND type = ?
            AND created_at > ?
+           AND read_at IS NULL
          LIMIT 1`
     ).bind(alert.clientSlug, alert.type, since).first<{ id: number }>();
     if (existing) return false;

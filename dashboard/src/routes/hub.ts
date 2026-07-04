@@ -237,9 +237,10 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
   // freshness YELLOW, so measurement that silently stopped is still caught
   // rather than sitting green off old data.
   try {
-    const payingCount = (await env.DB.prepare(
-      "SELECT COUNT(*) as n FROM customers WHERE status IN ('active','pilot')"
-    ).first<{ n: number }>())?.n ?? 0;
+    const paying = (await env.DB.prepare(
+      "SELECT client_slug, signed_at FROM customers WHERE status IN ('active','pilot')"
+    ).all<{ client_slug: string; signed_at: number | null }>()).results;
+    const payingCount = paying.length;
 
     const rows = (await env.DB.prepare(
       `SELECT cs.client_slug, cs.week_start, cs.engines_breakdown, cs.top_competitors, cs.total_queries
@@ -262,17 +263,46 @@ export async function handleHub(user: User, env: Env): Promise<Response> {
       }
     }
 
+    // A paying customer with NO snapshot row at all never appears in `rows`, so
+    // it would otherwise be invisible and the tile could green while that
+    // customer's cockpit is empty. Detect the missing ones; past the 4-day
+    // onboarding grace (same as the cron watchdog) that is customer-facing RED.
+    const haveSnap = new Set(rows.map((r) => r.client_slug));
+    const GRACE = 4 * SECONDS_PER_DAY;
+    const missingPastGrace: string[] = [];
+    const missingInGrace: string[] = [];
+    for (const c of paying) {
+      if (haveSnap.has(c.client_slug)) continue;
+      if (typeof c.signed_at === "number" && (now - c.signed_at) > GRACE) {
+        missingPastGrace.push(c.client_slug);
+        incidents.push({
+          title: `Customer "${c.client_slug}" has no snapshot`,
+          fix: `URGENT, customer-facing. Paying customer "${c.client_slug}" has NO citation_snapshots row, so their cockpit (/c/${c.client_slug}/), monthly memo, and Atlas have no data to show. They signed more than 4 days ago (past onboarding grace). Fix: run the onboarding bridge / measurement for ${c.client_slug} so a readout-shape snapshot exists.`,
+        });
+      } else {
+        missingInGrace.push(c.client_slug);
+      }
+    }
+
+    const redSlugs = [...broken, ...missingPastGrace];
+    const yellowSlugs = [...stale, ...missingInGrace];
     let status: Status;
     let value: string;
     let detail: string;
     if (payingCount === 0) {
       status = "unknown"; value = "—"; detail = "no paying customers onboarded yet";
-    } else if (rows.length === 0) {
-      status = "unknown"; value = "—"; detail = `${payingCount} customer(s), no snapshots generated yet`;
-    } else if (broken.length > 0) {
-      status = "red"; value = `${broken.length} broken`; detail = `${broken.join(", ")} rendering zeros`;
-    } else if (stale.length > 0) {
-      status = "yellow"; value = `${stale.length} stale`; detail = `${stale.join(", ")} have an old or empty latest snapshot`;
+    } else if (redSlugs.length > 0) {
+      status = "red"; value = `${redSlugs.length} broken`;
+      detail = [
+        broken.length ? `${broken.join(", ")} rendering zeros` : "",
+        missingPastGrace.length ? `${missingPastGrace.join(", ")} have no snapshot` : "",
+      ].filter(Boolean).join("; ");
+    } else if (yellowSlugs.length > 0) {
+      status = "yellow"; value = `${yellowSlugs.length} pending`;
+      detail = [
+        stale.length ? `${stale.join(", ")} stale/empty` : "",
+        missingInGrace.length ? `${missingInGrace.join(", ")} onboarding (snapshot pending)` : "",
+      ].filter(Boolean).join("; ");
     } else {
       status = "green"; value = `${rows.length} clean`; detail = "every cockpit reading fresh, real data";
     }
