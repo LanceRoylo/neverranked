@@ -72,7 +72,7 @@ export interface MemoDraftResult {
 }
 
 // Build the allowed-number set from inputs for the fabrication guard.
-function allowedNumberSet(inp: MemoInputs): Set<string> {
+export function allowedNumberSet(inp: MemoInputs): Set<string> {
   const s = new Set<string>();
   const add = (n: number) => {
     s.add(String(n));
@@ -95,31 +95,46 @@ function allowedNumberSet(inp: MemoInputs): Set<string> {
   for (const qn of inp.by_question) { add(qn.current_pct); add(qn.prior_pct); add(Math.abs(qn.delta_pp)); add(qn.current_runs); }
   for (const st of inp.offsite.source_types) add(st.share_pct);
   for (const h of inp.offsite.hosts) add(h.share_pct);
+  // Structural constants the memo may legitimately state, so they verify
+  // without leaning on the small-int safety net: the measured question count
+  // and engine count ("18 questions", "7 AI tools").
+  add(inp.by_question.length);
+  add(inp.by_engine.length);
   return s;
 }
 
-// Numbers that are always safe regardless of data: small counts/ordinals,
-// 7 engines, day-of-month and years for dates.
-function isSafeNumber(tok: string): boolean {
+// Bare numbers that are safe regardless of data: genuinely small counts and
+// ordinals (0-12), and years for dates. NOTE: this exemption is deliberately
+// narrow and is NEVER applied to a number stated as a percentage or a
+// points/pp delta -- those are data claims and must trace to the measured set
+// (see findUnverifiedNumbers). The old 0-31 band let a fabricated small count
+// or (with the adjacency gap) a fabricated percentage slip through.
+export function isSafeNumber(tok: string): boolean {
   const n = Number(tok);
   if (Number.isNaN(n)) return false;
-  if (Number.isInteger(n) && n >= 0 && n <= 31) return true; // ordinals, days, small counts
+  if (Number.isInteger(n) && n >= 0 && n <= 12) return true; // small counts, ordinals
   if (Number.isInteger(n) && n >= 2024 && n <= 2030) return true; // years
   return false;
 }
 
 // Extract numeric tokens from the draft and flag any specific number that
 // is neither in the allowed set nor trivially safe.
-function findUnverifiedNumbers(body: string, allowed: Set<string>): string[] {
+export function findUnverifiedNumbers(body: string, allowed: Set<string>): string[] {
   // Strip thousands separators so "2,346" reads as one number, not "2"
   // and "346". Without this, every comma-formatted figure trips a false
   // positive on its tail segment.
   const normalized = body.replace(/(\d),(\d{3})\b/g, "$1$2");
-  const tokens = normalized.match(/\d+(?:\.\d+)?/g) ?? [];
+  const re = /\d+(?:\.\d+)?/g;
   const bad = new Set<string>();
-  for (const t of tokens) {
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(normalized)) !== null) {
+    const t = m[0];
     if (allowed.has(t)) continue;
-    if (isSafeNumber(t)) continue;
+    // A number stated as a percentage or a points/pp delta is a DATA CLAIM: it
+    // must be a measured value, so the small-int exemption does not apply.
+    const after = normalized.slice(m.index + t.length, m.index + t.length + 9);
+    const isDataClaim = /^\s*(%|percent|point|pp\b|percentage)/i.test(after);
+    if (!isDataClaim && isSafeNumber(t)) continue;
     bad.add(t);
   }
   return Array.from(bad);
