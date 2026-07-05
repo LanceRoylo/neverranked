@@ -88,7 +88,20 @@ export default {
       });
     }
 
-    // No custom handling: serve the static asset (or the SPA fallback).
-    return env.ASSETS.fetch(request);
+    // Serve the static asset (or the 404 fallback). Force HTML pages to
+    // revalidate on every request so a deploy is visible immediately instead of
+    // sitting behind a 5-minute edge + browser cache (max-age=300 was the
+    // default, which made every marketing change take up to 5 min to appear and
+    // linger in visitors' browsers). "no-cache" still allows an efficient 304
+    // when nothing changed; only genuinely new HTML is re-sent. Inlined CSS/JS
+    // ride inside the HTML, so this covers the pages that actually change.
+    const res = await env.ASSETS.fetch(request);
+    const ct = res.headers.get("content-type") || "";
+    if (ct.includes("text/html")) {
+      const headers = new Headers(res.headers);
+      headers.set("cache-control", "no-cache, must-revalidate");
+      return new Response(res.body, { status: res.status, statusText: res.statusText, headers });
+    }
+    return res;
   },
 };
