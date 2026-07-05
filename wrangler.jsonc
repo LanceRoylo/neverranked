@@ -9,7 +9,14 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "html_handling": "auto-trailing-slash"
+    "html_handling": "auto-trailing-slash",
+    // Run worker.js on EVERY request (not just non-asset paths). Without this,
+    // Cloudflare serves matching static assets directly and bypasses the worker,
+    // so worker.js's HTML no-cache header rewrite never ran -- the homepage kept
+    // the assets-default max-age=300 and deploys took 5 min to appear + lingered
+    // in browsers. With the worker in front, HTML gets no-cache and deploys are
+    // immediate.
+    "run_worker_first": true
   },
   "routes": [
     { "pattern": "neverranked.com/*", "zone_name": "neverranked.com" },
