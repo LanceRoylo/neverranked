@@ -1212,13 +1212,23 @@
       // Fully resolved still frame, chips still work with no motion.
       started = true; select(0, false);
     } else if ('IntersectionObserver' in window){
+      // Draw the lines fresh each time the map scrolls WELL into view -- not
+      // when a sliver first peeks in at the bottom -- so the visitor actually
+      // watches them being drawn. The bottom rootMargin holds the trigger until
+      // the map has risen into the middle of the screen. When it scrolls away we
+      // clear the lines so the next arrival draws again from nothing.
       var io = new IntersectionObserver(function(entries){
-        entries.forEach(function(en){
-          if (en.isIntersecting && !started){
-            started = true; select(0, true); startAuto(); io.disconnect();
-          }
-        });
-      }, { threshold: 0.15 });
+        var en = entries[0]; if (!en) return;
+        if (en.isIntersecting){
+          started = true;
+          select(current, true);
+          if (!userDrove) startAuto();
+        } else {
+          stopAuto();
+          while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
+          gEdges.classList.remove('flowing');
+        }
+      }, { threshold: 0.1, rootMargin: '0px 0px -45% 0px' });
       io.observe(stage);
     } else {
       started = true; select(0, true); startAuto();
