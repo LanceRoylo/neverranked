@@ -1066,19 +1066,32 @@
           gEdges.appendChild(p);
           // Flow overlay (same path): the streaming current, fades in after draw.
           gEdges.appendChild(el('path', { d: dStr, 'class':'cmap-flow' + (isYou ? ' you' : '') }));
-          if (animate && !reduce){
-            var len = p.getTotalLength();
-            p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
-            // Draw each line left-to-right (tool -> business) at a roughly
-            // constant "pen speed", so a longer line naturally takes longer,
-            // plus a small per-line speed jitter so they don't move in lockstep.
-            // Staggered starts (also jittered) keep it feeling hand-drawn.
-            var dur = Math.max(1150, Math.min(2050, len / 0.34));
-            dur = Math.round(dur * (0.88 + Math.random() * 0.24));   // +/-12% speed
-            var delay = Math.round(90 + order * 125 + Math.random() * 60);
-            p.style.transition = 'stroke-dashoffset ' + dur + 'ms cubic-bezier(0.22,1,0.32,1) ' + delay + 'ms';
-            requestAnimationFrame(function(){ requestAnimationFrame(function(){ p.style.strokeDashoffset = 0; }); });
-            if (delay + dur > maxEnd) maxEnd = delay + dur;
+          if (animate && p.animate){
+            // Use the Web Animations API rather than a CSS transition + double
+            // requestAnimationFrame: that older trick silently no-ops on mobile
+            // Safari for freshly-inserted SVG nodes, which made every line just
+            // pop in at once. element.animate() draws reliably everywhere.
+            if (reduce){
+              // Reduced-motion: no drawing/movement, just a gentle staggered
+              // fade so the lines still arrive one by one instead of popping.
+              var target = isYou ? 1 : 0.55;
+              p.style.opacity = 0;
+              p.animate([{ opacity: 0 }, { opacity: target }],
+                { duration: 480, delay: 60 + order * 95, easing: 'ease-out', fill: 'forwards' });
+              if (60 + order * 95 + 480 > maxEnd) maxEnd = 60 + order * 95 + 480;
+            } else {
+              // Draw left-to-right (tool -> business) at a roughly constant pen
+              // speed -> longer lines take longer -> plus a small per-line speed
+              // and start-time jitter so they feel hand-drawn, not in lockstep.
+              var len = p.getTotalLength() || 320;
+              p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
+              var dur = Math.max(1150, Math.min(2050, len / 0.34));
+              dur = Math.round(dur * (0.88 + Math.random() * 0.24));   // +/-12% speed
+              var delay = Math.round(90 + order * 125 + Math.random() * 60);
+              p.animate([{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+                { duration: dur, delay: delay, easing: 'cubic-bezier(0.22,1,0.32,1)', fill: 'forwards' });
+              if (delay + dur > maxEnd) maxEnd = delay + dur;
+            }
             order++;
           }
         });
@@ -1208,15 +1221,15 @@
       else if (mobileMq.addListener) mobileMq.addListener(mqHandler);
     }
 
-    if (reduce){
-      // Fully resolved still frame, chips still work with no motion.
-      started = true; select(0, false);
-    } else if ('IntersectionObserver' in window){
-      // Draw the lines fresh each time the map scrolls WELL into view -- not
+    if ('IntersectionObserver' in window){
+      // Reveal the lines fresh each time the map scrolls WELL into view -- not
       // when a sliver first peeks in at the bottom -- so the visitor actually
-      // watches them being drawn. The bottom rootMargin holds the trigger until
-      // the map has risen into the middle of the screen. When it scrolls away we
-      // clear the lines so the next arrival draws again from nothing.
+      // watches them arrive. The bottom rootMargin holds the trigger until the
+      // map has risen into the middle of the screen. When it scrolls away we
+      // clear the lines so the next arrival plays again from nothing. This path
+      // runs for reduced-motion too (render does a gentle fade there, and
+      // startAuto no-ops), so reduced-motion still gets a staggered reveal
+      // instead of an instant pop.
       var io = new IntersectionObserver(function(entries){
         var en = entries[0]; if (!en) return;
         if (en.isIntersecting){
