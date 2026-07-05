@@ -301,7 +301,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
     rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
   });
   if (rows.length < 2) return;
-  var max = Math.max.apply(null, rows.map(function(r){ return r.pct; }).concat([1]));
+  var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
   var host = mount.querySelector('.pv-rows');
   var fills = [], vals = [];
   rows.forEach(function(r){
@@ -390,7 +390,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
     rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
   });
   if (rows.length < 2) return;
-  var max = Math.max.apply(null, rows.map(function(r){ return r.pct; }).concat([1]));
+  var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
   var host = mount.querySelector('.pv-rows');
   var fills = [], vals = [];
   rows.forEach(function(r){

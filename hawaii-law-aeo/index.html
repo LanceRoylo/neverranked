@@ -109,7 +109,7 @@
     rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
   });
   if (rows.length < 2) return;
-  var max = Math.max.apply(null, rows.map(function(r){ return r.pct; }).concat([1]));
+  var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
   var host = mount.querySelector('.pv-rows');
   var fills = [], vals = [];
   rows.forEach(function(r){
