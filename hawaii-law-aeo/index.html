@@ -109,6 +109,9 @@
     rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
   });
   if (rows.length < 2) return;
+  // No row emphasized (a ranking, not a "you" table) -> render them all as the
+  // gold ranking rather than muted; a single-emphasis table keeps the contrast.
+  if (!rows.some(function(r){ return r.hl; })) rows.forEach(function(r){ r.hl = true; });
   var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
   var host = mount.querySelector('.pv-rows');
   var fills = [], vals = [];
