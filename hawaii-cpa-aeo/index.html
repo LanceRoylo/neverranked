@@ -72,6 +72,79 @@
         <tr><td class="us">Hawaii CPA firms</td><td class="num us"><strong>39%</strong></td><td class="num us"><strong>1%</strong></td><td class="num us"><strong>2%</strong></td></tr>
       </tbody>
     </table>
+
+<div class="pv-bars" aria-hidden="true">
+  <div class="pv-rows"></div>
+</div>
+<style>
+  .pv-bars { margin: 20px 0 26px; }
+  .pv-row { display: grid; grid-template-columns: minmax(120px, 240px) 1fr 48px; align-items: center; gap: 12px; margin: 9px 0; }
+  .pv-name { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12px; color: #8a857a; letter-spacing: .01em; line-height: 1.35; }
+  .pv-row.hl .pv-name { color: #e8e8ea; }
+  .pv-track { height: 16px; background: #17150f; border-radius: 4px; overflow: hidden; }
+  .pv-fill { height: 100%; border-radius: 4px; background: #4a4636; transform: scaleX(0); transform-origin: left center; }
+  .pv-row.hl .pv-fill { background: linear-gradient(90deg, #9c8a4e, #d4c596); }
+  .pv-val { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12.5px; color: #8a857a; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; }
+  .pv-row.hl .pv-val { color: #d4c596; }
+  @media (max-width: 560px){ .pv-row { grid-template-columns: 104px 1fr 40px; gap: 8px; } .pv-name { font-size: 11px; } }
+</style>
+<script>
+(function(){
+  var mount = document.currentScript.previousElementSibling;
+  while (mount && !(mount.classList && mount.classList.contains('pv-bars'))) mount = mount.previousElementSibling;
+  if (!mount) return;
+  var el = mount, table = null;
+  while ((el = el.previousElementSibling)) {
+    if (el.tagName === 'TABLE') { table = el; break; }
+    var t = el.querySelector && el.querySelector('table'); if (t) { table = t; break; }
+  }
+  if (!table) return;
+  var rows = [];
+  table.querySelectorAll('tbody tr').forEach(function(tr){
+    var cells = tr.querySelectorAll('td'); if (cells.length < 2) return;
+    var label = cells[0].textContent.trim();
+    var pct = null, strong = false;
+    for (var i = 1; i < cells.length; i++){
+      var m = cells[i].textContent.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (m){ pct = parseFloat(m[1]); strong = !!cells[i].querySelector('strong'); break; }
+    }
+    if (pct === null) return;
+    var hl = cells[0].classList.contains('us') || tr.classList.contains('you');
+    rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
+  });
+  if (rows.length < 2) return;
+  var max = Math.max.apply(null, rows.map(function(r){ return r.pct; }).concat([1]));
+  var host = mount.querySelector('.pv-rows');
+  var fills = [], vals = [];
+  rows.forEach(function(r){
+    var row = document.createElement('div'); row.className = 'pv-row' + (r.hl ? ' hl' : '');
+    row.innerHTML = '<div class="pv-name">' + r.label + '</div>'
+      + '<div class="pv-track"><div class="pv-fill"></div></div>'
+      + '<div class="pv-val">' + r.raw + '</div>';
+    host.appendChild(row);
+    fills.push({ el: row.querySelector('.pv-fill'), s: Math.max(0.02, r.pct / max) });
+    vals.push(row.querySelector('.pv-val'));
+  });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function play(){
+    fills.forEach(function(f, i){
+      if (!f.el.animate){ f.el.style.transform = 'scaleX(' + f.s + ')'; vals[i].style.opacity = 1; return; }
+      if (reduce){
+        f.el.style.transform = 'scaleX(' + f.s + ')';
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:400, delay:60+i*80, fill:'forwards' });
+      } else {
+        f.el.animate([{ transform:'scaleX(0)' }, { transform:'scaleX(' + f.s + ')' }],
+          { duration:1050, delay:120 + i*130, easing:'cubic-bezier(0.16,1,0.3,1)', fill:'forwards' });
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:500, delay:420 + i*130, fill:'forwards' });
+      }
+    });
+  }
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ play(); io.disconnect(); } }); }, { threshold:0.3 });
+    io.observe(mount);
+  } else { play(); }
+})();
+</script>
     <p>Hawaii CPA firms tie with law firms on firm-owned citation share (both 39%). The divergence is in the training-data row. Hawaii law firms have decades of editorial coverage (Chambers, BestLawyers, named-attorney bylines) feeding the training-data engines. Hawaii CPA firms do not have an equivalent editorial layer. CPA work is more transactional, less likely to surface in profile pieces, less likely to generate named-partner press coverage. The training-data engines reflect that. The full <a href="/teardowns/cpa-hawaii/">Hawaii CPA teardown</a> covers the 41-firm cohort, the 5,809 citations captured, and the two-axis framework that explains the divergence.</p>
 
     <h2>What this means for an operator</h2>
