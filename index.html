@@ -1049,7 +1049,7 @@
       clearTimeout(flowTimer);
       gEdges.classList.remove('flowing');
       while (gEdges.firstChild) gEdges.removeChild(gEdges.firstChild);
-      var order = 0;
+      var order = 0, maxEnd = 0;
       ENGINES.forEach(function(e, i){
         var d = Q.e[e.id];
         var lit = d.st === 1 && d.edges.length > 0;
@@ -1069,11 +1069,16 @@
           if (animate && !reduce){
             var len = p.getTotalLength();
             p.style.strokeDasharray = len; p.style.strokeDashoffset = len;
-            // Slow, elegant reach: each line draws from the tool toward the
-            // business over ~1.5s, well staggered so they arrive one after
-            // another in a graceful cascade rather than all at once.
-            p.style.transition = 'stroke-dashoffset 1500ms cubic-bezier(0.16,1,0.3,1) ' + (90 + order * 135) + 'ms';
+            // Draw each line left-to-right (tool -> business) at a roughly
+            // constant "pen speed", so a longer line naturally takes longer,
+            // plus a small per-line speed jitter so they don't move in lockstep.
+            // Staggered starts (also jittered) keep it feeling hand-drawn.
+            var dur = Math.max(1150, Math.min(2050, len / 0.34));
+            dur = Math.round(dur * (0.88 + Math.random() * 0.24));   // +/-12% speed
+            var delay = Math.round(90 + order * 125 + Math.random() * 60);
+            p.style.transition = 'stroke-dashoffset ' + dur + 'ms cubic-bezier(0.22,1,0.32,1) ' + delay + 'ms';
             requestAnimationFrame(function(){ requestAnimationFrame(function(){ p.style.strokeDashoffset = 0; }); });
+            if (delay + dur > maxEnd) maxEnd = delay + dur;
             order++;
           }
         });
@@ -1081,7 +1086,7 @@
       // Start the continuous flow once the lines have finished drawing in (or
       // immediately when we render without the draw-in animation).
       if (!reduce) {
-        var wait = animate ? (90 + order * 135 + 1400) : 0;
+        var wait = animate ? (maxEnd + 350) : 0;
         flowTimer = setTimeout(function(){ gEdges.classList.add('flowing'); }, wait);
       }
 
