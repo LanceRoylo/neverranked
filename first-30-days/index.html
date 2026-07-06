@@ -29,6 +29,21 @@
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
   .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
   .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+
+  /* ---- Timeline rail (data-alive: dots light + gold rail fills as you scroll) ---- */
+  .timeline { position: relative; padding-left: 40px; margin-top: 10px; }
+  .timeline::before { content: ""; position: absolute; left: 8px; top: 54px; bottom: 22px; width: 2px; background: #26241f; }
+  .timeline-fill { position: absolute; left: 8px; top: 54px; width: 2px; height: 0; background: linear-gradient(#d4c596, #9c8a4e); }
+  .timeline > h2 { position: relative; }
+  .timeline > h2::before { content: ""; position: absolute; left: -37px; top: 0.72em; width: 14px; height: 14px; border-radius: 50%; background: #0b0b0c; border: 2px solid #4a4740; transform: translateY(-50%); transition: border-color .45s ease, box-shadow .45s ease; }
+  .timeline > h2.in::before { border-color: #d4c596; box-shadow: 0 0 0 4px rgba(212,197,150,.10); }
+  .timeline .phase { position: relative; }
+  .timeline .phase::before { content: ""; position: absolute; left: -34px; top: 27px; width: 9px; height: 9px; border-radius: 50%; background: #0b0b0c; border: 2px solid #4a4740; transition: border-color .5s ease, background .5s ease, box-shadow .5s ease; }
+  .timeline .phase.in::before { border-color: #d4c596; background: #d4c596; box-shadow: 0 0 0 4px rgba(212,197,150,.12); }
+  .timeline > h2, .timeline .phase { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+  .timeline > h2.in, .timeline .phase.in { opacity: 1; transform: none; }
+  @media (max-width: 560px){ .timeline { padding-left: 30px; } .timeline > h2::before { left: -28px; } .timeline .phase::before { left: -25px; } }
+  @media (prefers-reduced-motion: reduce){ .timeline > h2, .timeline .phase { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
 <body>
@@ -41,6 +56,8 @@
       The kickoff is three weeks of active measurement plus the surrounding setup and delivery. This page covers the full month from signing through the first delivered research memo.
     </div>
 
+    <div class="timeline">
+      <div class="timeline-fill" aria-hidden="true"></div>
     <h2>Phase 1: Signing and setup (Days 1-3)</h2>
 
     <div class="phase">
@@ -140,6 +157,7 @@
       <p>You can cancel the ongoing engagement at the end of any month, no claw-back.</p>
       <p class="who">Your side: read the monthly memo &middot; ~20 minutes. Our side: automated measurement + Lance &middot; ~3-4 hours per month per category.</p>
     </div>
+    </div>
 
     <div class="rule"></div>
 
@@ -172,5 +190,28 @@
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
   </main>
+<script>
+(function(){
+  var tl = document.querySelector('.timeline'); if (!tl) return;
+  var fill = tl.querySelector('.timeline-fill');
+  var items = tl.querySelectorAll('h2, .phase');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) e.target.classList.add('in'); }); }, { threshold: 0.12, rootMargin: '0px 0px -12% 0px' });
+    items.forEach(function(i){ io.observe(i); });
+  } else { items.forEach(function(i){ i.classList.add('in'); }); }
+  // Gold rail fills to the viewport centre as the reader moves down the month.
+  function updateFill(){
+    if (!fill) return;
+    var r = tl.getBoundingClientRect();
+    var start = r.top + 54, end = r.bottom - 22, total = end - start;
+    var target = (window.innerHeight * 0.5) - start;
+    fill.style.height = Math.max(0, Math.min(total, target)) + 'px';
+  }
+  updateFill();
+  window.addEventListener('scroll', updateFill, { passive: true });
+  window.addEventListener('resize', updateFill);
+})();
+</script>
 </body>
 </html>
