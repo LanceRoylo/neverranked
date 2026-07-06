@@ -40,6 +40,25 @@
   .rule { width: 60px; height: 1px; background: #4a4740; margin: 48px 0; }
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
   .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+
+  /* vs comparison: frame the NeverRanked column as the answer + reveal rows */
+  .vs-hl thead th:nth-child(2){ color:#0b0b0c; background:#d4c596; font-weight:600; padding:10px 12px; border-radius:5px 5px 0 0; }
+  .vs-hl td.us{ background:rgba(212,197,150,.06); border-left:2px solid rgba(212,197,150,.5); border-right:2px solid rgba(212,197,150,.5); padding-left:12px; padding-right:12px; }
+  .vs-hl tbody tr:last-child td.us{ border-bottom:2px solid rgba(212,197,150,.5); border-radius:0 0 5px 5px; }
+  .vs-hl tbody tr{ opacity:0; transform:translateY(10px); transition:opacity .6s cubic-bezier(.22,1,.36,1), transform .6s cubic-bezier(.22,1,.36,1); }
+  .vs-hl.in tbody tr{ opacity:1; transform:none; }
+  .vs-hl.in tbody tr:nth-child(1){transition-delay:0.04s}
+  .vs-hl.in tbody tr:nth-child(2){transition-delay:0.09s}
+  .vs-hl.in tbody tr:nth-child(3){transition-delay:0.14s}
+  .vs-hl.in tbody tr:nth-child(4){transition-delay:0.19s}
+  .vs-hl.in tbody tr:nth-child(5){transition-delay:0.24s}
+  .vs-hl.in tbody tr:nth-child(6){transition-delay:0.29s}
+  .vs-hl.in tbody tr:nth-child(7){transition-delay:0.34s}
+  .vs-hl.in tbody tr:nth-child(8){transition-delay:0.39s}
+  .vs-hl.in tbody tr:nth-child(9){transition-delay:0.44s}
+  .vs-hl.in tbody tr:nth-child(10){transition-delay:0.49s}
+  .vs-hl.in tbody tr:nth-child(11){transition-delay:0.54s}
+  @media (prefers-reduced-motion:reduce){ .vs-hl tbody tr{ opacity:1; transform:none; transition:none; } }
 </style>
 </head>
 <body>
@@ -74,7 +93,7 @@
     <p>Each of these is checked against the dashboard-style products' publicly-documented behavior as of May 2026. Where one of them offers something we don't, we name it under <a href="/methodology/">/methodology/</a>.</p>
 
     <div class="table-wrap">
-    <table>
+    <table class="vs-hl">
       <thead>
         <tr><th></th><th>NeverRanked</th><th>Dashboard-style tools (typical)</th></tr>
       </thead>
@@ -180,5 +199,14 @@
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
   </main>
+<script>
+(function(){
+  var t = document.querySelector('.vs-hl'); if (!t) return;
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ t.classList.add('in'); io.disconnect(); } }); }, { threshold: 0.18 });
+    io.observe(t);
+  } else { t.classList.add('in'); }
+})();
+</script>
 </body>
 </html>
