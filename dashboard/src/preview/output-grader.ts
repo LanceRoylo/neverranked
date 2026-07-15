@@ -61,26 +61,52 @@ ABOUT THE COMPANY
   FACTUAL violation.
 
 ABOUT WHAT WE MEASURE
-- Seven AI surfaces, every day. Five citation-grade engines that
+- Seven AI surfaces, measured in repeated runs across the month
+  (never claim "daily" or "every day" measurement — that is a
+  retired overclaim). Five citation-grade engines that
   search the live web (Perplexity, ChatGPT search, Gemini grounded,
   Microsoft Copilot via Bing, Google AI Overviews). Two
   model-knowledge engines that answer from training data
   (Claude, Gemma).
-- The "seven engines" claim must be paired with the 5+2 split. A
-  bare "we cover seven engines" without the citation / model-
-  knowledge distinction is a FACTUAL violation.
+- The 5+2 split is required ONLY when the artifact CLAIMS full or
+  "seven engine" coverage (for example "we cover seven engines", "all
+  seven AI engines"). Naming one or two engines by name to illustrate
+  (for example "ChatGPT or Perplexity") is normal, is NOT a violation,
+  and does NOT require the split. Only a coverage or count claim that
+  omits the citation-grade vs model-knowledge distinction is a FACTUAL
+  violation.
+
+ABOUT CATEGORY-LEVEL CLAIMS
+- A QUALITATIVE pattern statement with NO number (for example "a
+  business's own site is rarely what the AI engines cite, independent
+  third-party pages carry the citations instead") is PERMITTED and does
+  NOT require a source. It describes the general finding, not a figure.
+- A QUANTITATIVE category statistic (a specific percentage or count,
+  for example "under 5 percent") is PERMITTED when attributed to a
+  published NeverRanked teardown or methodology (a
+  neverranked.com/teardowns or neverranked.com/methodology URL, or
+  wording like "our published measurement"), and is a FACTUAL violation
+  only when stated as a BARE number with no source.
+- Any PROSPECT-SPECIFIC figure (the recipient's own score or grade)
+  not present in GROUND TRUTH remains a FACTUAL violation.
 
 ABOUT WHAT WE DELIVER
 - A forensic readout: per query, per engine, per competitor, per
   source type.
 - A prepped punch list ordered by impact, written for the
   customer's team or agency to execute.
-- Daily measurement. Monthly delta memo on ongoing engagements.
+- Measurement in repeated runs across the month against the locked
+  baseline (climate, not weather — NOT "daily measurement", which is
+  a retired overclaim). Monthly delta memo on ongoing engagements.
 
 ABOUT PRICING
 - $4,500 kickoff per category. One time.
 - $1,500 per month per category, ongoing.
 - Per category, not per client. No bundled tiers.
+- The cold-outreach wedge is a no-cost 5-query pilot on ONE
+  category, offered before any paid engagement. The free pilot is
+  canonical and is NOT a pricing violation. It is the entry point
+  to the paid engagement above, not a separate product or discount.
 - Forbidden: any reference to "Pulse", "Signal", "Amplify",
   "Enterprise", "$497", "$2,000/mo", "$750 audit", "audit credit",
   or any prior tier/pricing/credit-flow language.
@@ -121,6 +147,16 @@ ABOUT THE NAMED CUSTOMER REFERENCE
 - HTC is a CAPABILITY example ("we find things normal scans
   miss"), never a CAUSATION example.
 
+ABOUT APPROVED PROOF (these PASS, they are NOT violations)
+- The pre-registered prediction. Before measuring, NeverRanked
+  committed a public timestamped forecast that the AI engines would
+  cite local businesses' own sites below a threshold (for example
+  Claude under 5 percent for Honolulu AC companies), and the later
+  measurement matched. This is a forecast of AI behavior that HELD.
+  It is NOT a claim that NeverRanked caused any citation outcome, and
+  presenting it (with a teardown or neverranked.com/claims URL) is
+  PERMITTED. Do not flag it as causal.
+
 ABOUT THE PROSPECT
 - Any AEO score, grade, red-flag count, or competitive position
   attributed to the PROSPECT's own site must come from GROUND
@@ -136,8 +172,16 @@ OVERALL FORBIDDEN CLAIMS
   auto-deploy as an active product.
 - The phrase "We DEPLOY THE FIX" or any variant claiming we do
   the execution work.
-- Reference to an agency reseller / wholesale / white-label
-  partner program.
+- FORBIDDEN: the RETIRED agency wholesale-tier program (the
+  "$800/mo per-client Signal slot" reseller tiers, and "founding
+  partner" / "agency partner program" framings tied to it), or a
+  white-labeled customer-facing DASHBOARD the client logs into
+  under the agency's brand.
+- PERMITTED, not a violation: the current model where the agency
+  resells the research ENGAGEMENT to its own client with its own
+  markup, keeping the client relationship and execution retainer.
+  Phrases like "resell into your accounts", "your markup on top",
+  "you execute, we diagnose" are on-model and must PASS.
 
 RECEIPT PHRASING DISCIPLINE (observational only)
 Locked 2026-05-22 per the AI-visibility receipts legal risk
@@ -183,7 +227,7 @@ Grade three axes. ALL three must pass for verdict "pass".
 
 2. VOICE — Reads as written by a real human in the NeverRanked / Hello Momentum house voice. Fail on: em dashes; semicolons in marketing prose; AI-tell phrases ("delve", "in today's fast-paced", "elevate", "robust", "comprehensive", "seamless", "leverage", "unlock", "in conclusion", "feel free to"); three-adjective lists; formulaic openers ("Welcome to", "Nestled in", "Hidden gem", "Rare opportunity").
 
-3. OVERALL — Coherent, on-offer, safe to send. Fail if it is internally contradictory, empty, promises citation lift, or makes any promise NeverRanked cannot keep under the research-engagement positioning.
+3. OVERALL — Coherent, on-offer, safe to send. Fail if it is internally contradictory, empty, promises citation lift, or makes any promise NeverRanked cannot keep under the research-engagement positioning. Do NOT fail for personalization, template feel, a missing company-name mention in the body, or "could be clearer" wording. Polish and personalization are out of scope for this safety grader. Fail only on safety, coherence, and promises.
 
 Return STRICT JSON, no prose, no markdown fences:
 {
