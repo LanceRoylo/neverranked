@@ -172,6 +172,13 @@
   .reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
   .reveal.in { opacity: 1; transform: translateY(0); }
 
+  /* Correction slip. Reads as an errata note in the record, not as a
+     legal disclaimer: terracotta rule (the same hue the map uses for
+     absence), mono label, quieter than body copy but not hidden. */
+  .retract-note { border-left: 2px solid var(--terra); background: linear-gradient(90deg, color-mix(in oklab, var(--terra) 5%, transparent), transparent 60%); border-radius: 0 8px 8px 0; padding: 18px 22px; margin: 30px 0 8px; }
+  .retract-note p { font-size: 14px; color: var(--dim); margin: 0; line-height: 1.7; }
+  .retract-note strong { color: var(--terra); font-weight: 560; }
+
   /* WordsPullUp — slide-up entrance on the H1 + select headlines. */
   .wpu-word {
     display: inline-block;
@@ -879,23 +886,25 @@
     </div>
   </section>
 
-  <!-- Named customer case study (HTC, permission granted) -->
+  <!-- Named customer capability example (HTC, permission granted).
+       SCOPE IS SET BY OUR OWN RETRACTION: Hawaii Theatre may be used as a
+       named reference "only as a capability example: the kinds of gaps a
+       forensic measurement engagement surfaces that a standard SEO scan
+       misses." The 45-to-95 score lift and the 14-of-19 Perplexity claim
+       are RETRACTED and must never appear on a public surface again. The
+       old "we never touched their site" line was also false for this
+       engagement -- the snippet was deployed on it, which is precisely
+       what the retraction disavows. Do not reintroduce either. -->
   <section class="section panel">
     <div class="inner wide reveal">
-      <div class="sec-label"><span class="n">Case study</span>A named customer, a named result</div>
-      <h2>Hawaii Theatre Center went from barely cited to the answer.</h2>
-      <p>Hawaii Theatre Center, the 1922 landmark in downtown Honolulu, agreed to be named. We measured them against a 19-question buyer set, handed their team a forensic memo of where the AI engines named them and where they did not, and they shipped the fixes. We never touched their site.</p>
-      <div style="display:flex; gap:16px; flex-wrap:wrap; margin:26px 0 10px;">
-        <div style="flex:1; min-width:220px; border:1px solid var(--line); border-left:2px solid var(--gold); border-radius:6px; padding:22px 24px; background:var(--panel-2);">
-          <div style="font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim); margin-bottom:10px;">AEO score, in 10 days</div>
-          <div style="font-size:36px; color:var(--gold); line-height:1.05; font-variant-numeric:tabular-nums;">45 &rarr; 95</div>
-        </div>
-        <div style="flex:1; min-width:220px; border:1px solid var(--line); border-left:2px solid var(--gold); border-radius:6px; padding:22px 24px; background:var(--panel-2);">
-          <div style="font-family:var(--mono); font-size:11px; letter-spacing:0.14em; text-transform:uppercase; color:var(--dim); margin-bottom:10px;">Perplexity, of 19 questions</div>
-          <div style="font-size:36px; color:var(--gold); line-height:1.05; font-variant-numeric:tabular-nums;">5 &rarr; 14</div>
-        </div>
+      <div class="sec-label"><span class="n">Case study</span>A named customer, and what we actually found</div>
+      <h2>The AI was not wrong about Hawaii Theatre. It was reading a profile last touched in 1999.</h2>
+      <p class="lead">Hawaii Theatre Center, the 1922 landmark in downtown Honolulu, agreed to be named. We measured what the AI engines said about them against a 19-question buyer set. The interesting part was never a score. It was where the answers were coming from.</p>
+      <p>A Charity Navigator profile that had not been updated since 2023. A Better Business Bureau listing last touched in 1999. No presence at all on Bing Business Profile, which is the index Microsoft Copilot answers from. Authority backlinks pointing to the wrong places. We handed their team the memo and collaborated on the meta description rewrites, and their team shipped the work.</p>
+      <p>None of that is exotic. All of it is invisible to a standard SEO scan, because a standard SEO scan looks at your website, and none of those things are your website. That is the whole point. An AI answer is assembled from everyone else's account of you, and for a beloved 1922 theatre, part of that account was a quarter century out of date.</p>
+      <div class="retract-note">
+        <p><strong>What we used to say here, and why we do not anymore.</strong> This page once claimed that engagement moved an AEO score from 45 to 95 in ten days and lifted Perplexity citations to 14 of 19 questions. Both numbers were real measurements. The causal link to our work was not, so we tested it against our own domain, failed our own pre-registered criteria, pulled the product, and retracted both claims. The diagnostic findings above are what survived, because they are what actually happened. <a href="/retraction/">The full accounting, including the test that killed our own thesis &rarr;</a></p>
       </div>
-      <p style="font-size:14px; color:var(--dim);">The execution was theirs. The measurement, before and after, was ours. Because we never touch the property, there was nothing we could have done to flatter the number.</p>
       <p style="margin-top:28px;"><a class="cta" href="https://check.neverranked.com/">See what AI sees on your site &rarr;</a></p>
     </div>
   </section>
@@ -1707,7 +1716,7 @@
         </details>
         <details class="obj">
           <summary class="obj-q">What does success look like, and how fast?</summary>
-          <p class="obj-a">By day thirty you have the baseline and the punch list: where AI names you, where it names competitors instead, and the fixes ordered by impact. From there the work is your team&rsquo;s, and we measure whether it moves every month, with drift alerts when a competitor shifts. We do not hand you a vanity timeline. We hand you observable movement. Hawaii Theatre Center went 45 to 95 in ten days once their team shipped the list, before and after both measured by us. You will always know whether it is working, in dated numbers on the public record.</p>
+          <p class="obj-a">By day thirty you have the baseline and the punch list: where AI names you, where it names competitors instead, and the fixes ordered by impact. From there the work is your team&rsquo;s, and we measure whether it moves every month, with drift alerts when a competitor shifts. We do not hand you a vanity timeline. We hand you observable movement. You will always know whether it is working, in dated numbers on the public record.</p>
         </details>
         <details class="obj">
           <summary class="obj-q">Why spend this on AI visibility instead of more ads or local marketing?</summary>
