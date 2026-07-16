@@ -31,6 +31,7 @@ on:
       - 'first-look/**'
       - 'for-agencies/**'
       - 'for-hospitality/**'
+      - 'for-real-estate/**'
       - 'fonts/**'
       - 'methodology/**'
       - 'pitch/**'

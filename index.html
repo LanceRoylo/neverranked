@@ -314,7 +314,7 @@
   @media (max-width: 680px) { .keeper { grid-template-columns: 1fr; } }
 
   /* ═══ Verticals — who we measure for ═══ */
-  .verticals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 28px 0 4px; }
+  .verticals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 28px 0 4px; }
   .vertical-card { display: block; padding: 26px 24px 22px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; text-decoration: none; color: inherit; transition: transform 220ms var(--ease-out), border-color 220ms ease, box-shadow 260ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset; }
   @media (hover: hover) { .vertical-card:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--gold) 45%, transparent); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -16px rgba(0,0,0,0.5); } .vertical-card:hover .vc-arrow { transform: translateX(3px); color: var(--gold-bright); } }
   .vertical-card:active { transform: scale(0.99); }
@@ -921,6 +921,12 @@
           <p class="vc-line">Your next guest asks AI before they ever see your rate.</p>
           <p class="vc-sub">Measured proof from one of the most contested hotel markets in the world, built for a property anywhere.</p>
           <span class="vc-arrow">For hospitality &rarr;</span>
+        </a>
+        <a class="vertical-card" href="/for-real-estate/">
+          <div class="vc-cat">Real estate</div>
+          <p class="vc-line">It is not your website. It is your category.</p>
+          <p class="vc-sub">The most aggregator-captured market we have measured, and the cross-category data that proves the number is structural.</p>
+          <span class="vc-arrow">For real estate &rarr;</span>
         </a>
         <a class="vertical-card" href="/for-agencies/">
           <div class="vc-cat">Agencies</div>
