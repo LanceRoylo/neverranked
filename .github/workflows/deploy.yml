@@ -30,6 +30,8 @@ on:
       - 'first-30-days/**'
       - 'first-look/**'
       - 'for-agencies/**'
+      - 'for-hospitality/**'
+      - 'fonts/**'
       - 'methodology/**'
       - 'pitch/**'
       - 'privacy/**'

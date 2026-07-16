@@ -55,6 +55,15 @@ DIRS=(
   first-30-days
   first-look
   for-agencies
+  # Vertical entry pages. for-hospitality is the flagship template the other
+  # verticals are cloned from; it is linked from the homepage markets rail.
+  for-hospitality
+  # Self-hosted variable fonts (Fraunces/Inter/JetBrains Mono) for the 2026-07
+  # "Scorekeeper" design system. Every page's @font-face points at /fonts/*.woff2
+  # with a ROOT-ABSOLUTE url so check-internal-links.mjs actually validates it
+  # (that checker skips relative links, so a bare "fonts/x.woff2" would 404 in
+  # production silently and drop the whole site to the Georgia fallback).
+  fonts
   methodology
   pitch
   privacy
