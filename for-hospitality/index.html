@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>AI citation measurement for hotels and resorts -- NeverRanked</title>
+<meta name="description" content="We counted 5,775 AI citations across a 13-hotel cohort and seven AI surfaces. Hotel-owned websites were 17 percent of them. NeverRanked measures where AI sends your next guest. We never touch your site.">
+<link rel="canonical" href="https://neverranked.com/for-hospitality/">
+<link rel="preload" href="/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* ═══════════════════════════════════════════════════════════════════
+     FOR HOSPITALITY — the flagship vertical page.
+     Inherits the "Scorekeeper" system from the homepage (same tokens,
+     same faces, same instrument register). The named idea here is the
+     OTA wall and the door in it: hotels already fund a direct-booking
+     fight, and AI is that same fight on a surface they cannot see.
+     Device: the citation wall. 100 blocks, one per percent, real data
+     from teardown 11 (2026-06-21). No number on this page is modelled.
+
+     Anonymization follows the published teardown rule: individual
+     properties are never named (non-customers), while OTAs, editorial
+     and aggregators ARE nameable because they are public infrastructure
+     rather than cohort businesses. Every OTA reference here is a count
+     on a date, never a characterization.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/fonts/fraunces-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/fonts/fraunces-italic-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: italic; font-display: swap;
+  }
+  @font-face {
+    font-family: "Inter";
+    src: url("/fonts/inter-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "JetBrains Mono";
+    src: url("/fonts/jetbrains-mono-var.woff2") format("woff2");
+    font-weight: 100 800; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    color-scheme: dark;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+    /* hex fallbacks first, OKLCH refinement after */
+    --bg: #121009;        --bg: oklch(0.145 0.012 85);
+    --bg-deep: #0d0b07;   --bg-deep: oklch(0.125 0.011 85);
+    --panel: #17140c;     --panel: oklch(0.165 0.014 87);
+    --panel-2: #1c1810;   --panel-2: oklch(0.185 0.016 88);
+    --line: #2e2a1f;      --line: oklch(0.27 0.02 88);
+    --line-soft: #221f16; --line-soft: oklch(0.215 0.016 88);
+    --gold: #cdb87f;      --gold: oklch(0.79 0.085 92);
+    --gold-bright: #edd58a; --gold-bright: oklch(0.875 0.1 94);
+    --gold-deep: #8f7c46; --gold-deep: oklch(0.585 0.075 90);
+    --text: #f0ece1;      --text: oklch(0.945 0.012 90);
+    --soft: #b9b2a0;      --soft: oklch(0.77 0.02 90);
+    --dim: #877f6c;       --dim: oklch(0.60 0.025 90);
+    --terra: #c98b74;     --terra: oklch(0.70 0.075 45);
+    --ink-on-gold: #171204;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); overflow-x: clip; }
+  body {
+    font-family: var(--sans);
+    font-size: 16.5px;
+    color: var(--soft);
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    position: relative;
+  }
+  body::after {
+    content: "";
+    position: fixed; inset: 0; z-index: 2000; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: color-mix(in oklab, var(--gold) 45%, transparent); transition: color 160ms ease, text-decoration-color 160ms ease; }
+  @media (hover: hover) { a:hover { color: var(--gold-bright); text-decoration-color: var(--gold-bright); } }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; border-radius: 2px; }
+  ::selection { background: color-mix(in oklab, var(--gold) 30%, transparent); color: var(--text); }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0; }
+
+  /* Nav */
+  .nav { position: sticky; top: 0; z-index: 40; background: color-mix(in oklab, var(--bg) 78%, transparent); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1); border-bottom: 1px solid var(--line-soft); }
+  .nav-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px 32px; }
+  .wordmark { font-family: var(--serif); font-size: 19px; font-weight: 560; letter-spacing: -0.012em; color: var(--text); text-decoration: none; }
+  .wordmark em { font-style: normal; color: var(--gold); }
+  .nav-links { display: flex; gap: 26px; }
+  .nav-links a { font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); text-decoration: none; transition: color 160ms var(--ease-out); }
+  @media (hover: hover) { .nav-links a:hover { color: var(--gold-bright); } }
+  .nav-cta { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 10px 16px; border-radius: 6px; transition: filter 160ms ease, transform 160ms var(--ease-out), box-shadow 240ms var(--ease-out); box-shadow: 0 0 0 0 rgba(237,213,138,0); }
+  .nav-cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .nav-cta:hover { filter: brightness(1.06); box-shadow: 0 4px 18px 0 color-mix(in oklab, var(--gold) 28%, transparent); } }
+
+  /* Sections */
+  .section { padding: clamp(76px, 10vw, 118px) 0; position: relative; }
+  .section.panel { background: linear-gradient(180deg, var(--panel) 0%, var(--bg-deep) 100%); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .inner { max-width: 660px; margin: 0 auto; padding: 0 32px; }
+  .inner.wide { max-width: 920px; }
+  .inner.wide > p { max-width: 720px; }
+  .sec-label { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin: 0 0 30px; }
+  .sec-label .n { color: var(--gold); }
+  .sec-label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  h2 { font-family: var(--serif); font-size: clamp(27px, 3.4vw, 38px); font-weight: 420; color: var(--text); margin: 0 0 18px; letter-spacing: -0.015em; line-height: 1.16; text-wrap: balance; font-variant-numeric: lining-nums; }
+  h3 { font-family: var(--serif); font-size: 19px; font-weight: 450; color: var(--text); margin: 0 0 8px; letter-spacing: -0.008em; }
+  p { font-size: 16.5px; color: var(--soft); margin: 0 0 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  .lead { font-size: clamp(18px, 1.55vw, 20.5px); color: var(--text); line-height: 1.55; font-weight: 380; letter-spacing: -0.004em; }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* Hero */
+  .hero { padding: clamp(84px, 11vw, 138px) 0 clamp(64px, 8vw, 96px); position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -20% -10% auto -10%; height: 130%; pointer-events: none;
+    background:
+      radial-gradient(900px 520px at 18% 8%, color-mix(in oklab, var(--gold) 7%, transparent), transparent 68%),
+      radial-gradient(720px 480px at 88% 30%, color-mix(in oklab, var(--terra) 4%, transparent), transparent 70%);
+  }
+  .hero .inner { max-width: 860px; position: relative; }
+  .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; font-weight: 440; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0 0 30px; }
+  .kicker::before { content: ""; width: 26px; height: 1px; background: var(--gold-deep); }
+  .hero h1 { font-family: var(--serif); font-size: clamp(38px, 5.6vw, 60px); font-weight: 400; line-height: 1.08; letter-spacing: -0.024em; margin: 0 0 30px; color: var(--text); text-wrap: balance; font-variant-numeric: lining-nums; }
+  .hero .turn { font-family: var(--serif); font-style: italic; font-weight: 420; font-size: clamp(19px, 2vw, 23px); color: var(--gold); line-height: 1.52; letter-spacing: -0.004em; margin: 0 0 38px; max-width: 46em; }
+
+  /* CTA */
+  .cta { display: inline-block; font-family: var(--mono); font-size: 12.5px; font-weight: 560; letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 17px 32px; border-radius: 8px; transition: transform 160ms var(--ease-out), filter 200ms ease, box-shadow 280ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 0 0 0 rgba(237,213,138,0); }
+  .cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .cta:hover { filter: brightness(1.05); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 28px 0 color-mix(in oklab, var(--gold) 30%, transparent); } }
+  .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 18px; line-height: 1.7; }
+
+  /* ═══ THE CITATION WALL ═══
+     The page's instrument. 100 blocks, each one percent of where 5,775
+     measured citations actually pointed. The proportions are the data:
+     74 independent web, 17 hotel-owned, 9 everything else. Grouped, not
+     scattered, so the gold reads as what it is -- a narrow band in a
+     wall. Coloured by :nth-child so the markup stays honest and empty. */
+  .wall-stage {
+    position: relative; border: 1px solid var(--line); border-radius: 18px; padding: clamp(18px, 3vw, 30px);
+    background:
+      radial-gradient(1px 1px at 50% 50%, color-mix(in oklab, var(--text) 7%, transparent) 1px, transparent 1px) 0 0 / 26px 26px,
+      linear-gradient(180deg, var(--panel-2), var(--bg-deep));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset, 0 24px 60px -20px rgba(0,0,0,0.5);
+    overflow: hidden; margin-top: 30px;
+  }
+  .wall-stage::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(0,0,0,0.3) 100%);
+  }
+  .wall-cap { font-family: var(--mono); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold-deep); margin-bottom: 16px; }
+  .wall { display: grid; grid-template-columns: repeat(10, 1fr); gap: clamp(3px, 0.6vw, 6px); position: relative; z-index: 1; }
+  .wall i { display: block; aspect-ratio: 1; border-radius: 2px; background: #262012; box-shadow: 0 0 0 1px rgba(255,255,255,0.02) inset; }
+  .wall i:nth-child(-n+74) { background: #262012; }
+  .wall i:nth-child(n+75):nth-child(-n+91) { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); box-shadow: 0 0 12px -2px color-mix(in oklab, var(--gold) 45%, transparent); }
+  .wall i:nth-child(n+92) { background: #4a4436; }
+  .wall-legend { display: flex; flex-wrap: wrap; gap: 8px 26px; margin-top: 20px; position: relative; z-index: 1; }
+  .wall-legend div { display: flex; align-items: center; gap: 9px; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.03em; color: var(--dim); }
+  .wall-legend b { color: var(--soft); font-weight: 500; }
+  .wall-legend span { width: 11px; height: 11px; border-radius: 2px; flex: none; }
+  .sw-wall { background: #262012; box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset; }
+  .sw-you { background: linear-gradient(180deg, var(--gold-bright), var(--gold)); }
+  .sw-other { background: #4a4436; }
+  .fig-note { font-family: var(--mono); font-size: 11.5px; line-height: 1.7; color: var(--dim); letter-spacing: 0.02em; margin-top: 22px; }
+
+  /* Verdict block */
+  .verdict { display: flex; align-items: baseline; gap: 22px; margin: 34px 0 8px; flex-wrap: wrap; }
+  .verdict .big { font-family: var(--serif); font-size: clamp(54px, 7vw, 84px); font-weight: 400; line-height: 0.9; color: var(--gold); letter-spacing: -0.03em; font-variant-numeric: lining-nums; }
+  .verdict .of { font-family: var(--serif); font-size: 26px; color: var(--dim); }
+  .verdict .say { flex: 1; min-width: 260px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 26px 0 0; border: 1px solid var(--line-soft); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 480px; }
+  th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-deep); text-align: left; font-weight: 420; padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  th.r, td.r { text-align: right; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); color: var(--soft); font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  td.name { color: var(--text); }
+  td.pct { font-family: var(--mono); font-size: 13.5px; color: var(--gold); }
+  td.pct.low { color: var(--terra); }
+
+  /* Boundary side-by-side */
+  .keeper { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 34px 0 24px; }
+  .keeper-col { border: 1px solid var(--line-soft); border-radius: 14px; padding: 24px 26px; background: linear-gradient(180deg, var(--panel), var(--bg-deep)); }
+  .keeper-us { border-color: color-mix(in oklab, var(--gold) 32%, transparent); background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 5%, var(--panel)), var(--bg-deep)); }
+  .keeper-col h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 16px; font-weight: 440; }
+  .keeper-us h3 { color: var(--gold); }
+  .keeper-col ul { list-style: none; margin: 0; padding: 0; }
+  .keeper-col li { font-size: 14.5px; color: var(--soft); padding: 10px 0; border-bottom: 1px solid var(--line-soft); line-height: 1.5; }
+  .keeper-col li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  /* Engagement rows */
+  .rows { margin-top: 28px; border-top: 1px solid var(--line-soft); }
+  .row { display: grid; grid-template-columns: 190px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--line-soft); }
+  .row .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-deep); padding-top: 3px; }
+  .row .v { font-size: 15.5px; color: var(--soft); }
+  .row .v b { color: var(--text); }
+
+  .close { text-align: center; }
+  .close h2 { font-size: clamp(30px, 4vw, 46px); max-width: 16em; margin: 0 auto 18px; }
+  .footer { padding: 44px 32px 60px; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; color: var(--dim); border-top: 1px solid var(--line-soft); line-height: 2; }
+
+  @media (max-width: 680px) {
+    .nav-links { display: none; }
+    .nav-inner { padding: 13px 20px; }
+    .nav-cta { padding: 9px 13px; font-size: 10px; white-space: nowrap; }
+    .inner { padding: 0 22px; }
+    .section { padding: 64px 0; }
+    .keeper { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="wordmark" href="/">Never<em>Ranked</em></a>
+      <div class="nav-links">
+        <a href="/methodology/">Methodology</a>
+        <a href="/teardowns/hotels-hawaii/">The hotel teardown</a>
+        <a href="/for-agencies/">For agencies</a>
+      </div>
+      <a class="nav-cta" href="https://check.neverranked.com/">Free AI check</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="inner">
+      <div class="kicker reveal">For hotels and resorts</div>
+      <h1 class="reveal" style="transition-delay:.08s">We counted 5,775 AI citations for a hotel market. Hotel websites were 17 percent of them.</h1>
+      <p class="turn reveal" style="transition-delay:.18s">The other 74 percent went to the OTAs and the travel press. Same guest, same question, someone else's answer. This is the direct booking fight you already fund, on a surface nobody has been measuring.</p>
+      <p class="reveal" style="transition-delay:.28s"><a class="cta" href="https://check.neverranked.com/">See what AI sees on your property &rarr;</a></p>
+      <div class="reveal cta-note" style="transition-delay:.36s">13-hotel cohort &middot; 18 hash-locked questions &middot; 7 AI surfaces, 5 citation-grade &middot; measured June 21, 2026 &middot; <a href="/teardowns/hotels-hawaii/">the full teardown</a></div>
+    </div>
+  </header>
+
+  <!-- THE WALL -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The measurement</span>Where 5,775 citations actually pointed</div>
+      <h2>Every block is one percent of the answer.</h2>
+      <p class="lead">We asked seven AI surfaces the eighteen questions a hotel shopper actually asks, three times each, across the three runs that clear our pattern-readiness rule. Five of those surfaces search the live web, which is where most guests already are. Two answer from model memory. Then we counted every source the answers named. This is the result, at one block per percent.</p>
+
+      <div class="wall-stage">
+        <div class="wall-cap">Source of citation &middot; 13-hotel cohort &middot; 2026-06-21</div>
+        <div class="wall" role="img" aria-label="A 100-block grid showing where 5,775 AI citations pointed: 74 blocks for independent web sources including OTAs and travel editorial, 17 blocks for hotel-owned websites, and 9 blocks for review directories, social, Reddit, YouTube and Wikipedia combined.">
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+          <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="wall-legend">
+          <div><span class="sw-wall"></span><b>74%</b>&nbsp;independent web: OTAs, editorial, directories</div>
+          <div><span class="sw-you"></span><b>17%</b>&nbsp;hotel-owned websites</div>
+          <div><span class="sw-other"></span><b>9%</b>&nbsp;reviews, social, Reddit, YouTube, Wikipedia</div>
+        </div>
+      </div>
+
+      <p class="fig-note">Real measurement, not a mockup. 5,775 citations counted across 7 AI tools (5 that search the live web, 2 that answer from model memory) and a 13-hotel cohort (7 independent, 6 chain), 18 questions locked at hash 45ed5eee before the first run, 3 repetitions per question per tool, 3 usable runs dated June 21, 2026. This is a published teardown of a market, a dated photograph of one category. A property under engagement is measured differently: the same locked panel is re-run repeatedly against its frozen baseline, because one reading is a data point and the pattern is the product. Hotels are anonymized here, the way every non-customer is on our public pages. OTAs and editorial platforms are named because they are public infrastructure, not businesses in the cohort. Counts and distributions are public at <a href="/claims/">/claims/</a>.</p>
+
+      <p style="margin-top:26px;">For most of the answer, the citation goes to a platform rather than a property. The 17 percent is the share a direct booking strategy is competing for. When a guest lands on an OTA instead of your site, the booking can still happen. The commission goes with it.</p>
+    </div>
+  </section>
+
+  <!-- THE DOOR -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The opening</span>What the wall does not tell you</div>
+      <h2>The wall has a door in it, and the independents are the ones going through.</h2>
+      <p class="lead">Among the hotels the AI surfaces did name, the independents out-cited the chains, 493 citations to 457. The single most-cited hotel in the cohort was an independent boutique on Maui, ahead of every chain in the set.</p>
+      <p>So the contest is not boutique against chain. It is hotel against platform, and the independents that break through are winning their half of it. A big brand budget does not buy the citation. Being the most citable source on the question does.</p>
+
+      <div class="verdict">
+        <div class="big">493</div>
+        <div class="of">to 457</div>
+        <div class="say"><p style="margin:0;">Independent hotels out-cited chain hotels across the measured cohort. Being cited is not a function of brand size, which is exactly why it is worth measuring rather than assuming.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHICH SURFACE -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The spread</span>One number cannot hold this</div>
+      <h2>Your visibility is not one number. It is seven, and they disagree violently.</h2>
+      <p class="lead">The same eighteen questions, the same day, the same cohort. The share of citations going to hotel-owned websites ranged from 47 percent down to zero, depending only on which tool the guest happened to open.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>AI surface</th><th class="r">Hotel-owned share</th><th class="r">Third-party share</th><th class="r">Mentions</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="name">Claude <span style="color:var(--dim)">(model memory)</span></td><td class="r pct">47%</td><td class="r">53%</td><td class="r">583</td></tr>
+            <tr><td class="name">Gemma <span style="color:var(--dim)">(model memory)</span></td><td class="r pct">42%</td><td class="r">58%</td><td class="r">395</td></tr>
+            <tr><td class="name">ChatGPT search</td><td class="r pct">30%</td><td class="r">70%</td><td class="r">722</td></tr>
+            <tr><td class="name">Google AI Overviews</td><td class="r pct">20%</td><td class="r">67%</td><td class="r">111</td></tr>
+            <tr><td class="name">Gemini grounded</td><td class="r pct low">12%</td><td class="r">86%</td><td class="r">1,702</td></tr>
+            <tr><td class="name">Perplexity</td><td class="r pct low">6%</td><td class="r">80%</td><td class="r">1,452</td></tr>
+            <tr><td class="name">Microsoft Copilot <span style="color:var(--dim)">(Bing)</span></td><td class="r pct low">0%</td><td class="r">95%</td><td class="r">810</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:26px;">Read the bottom of that table again. On the five surfaces that search the live web, where most guests already are, hotel websites carried between zero and 30 percent of the citations. On the two that answer from model memory, they carried more than 40. A property can look healthy on one surface and be absent on another, on the same question, on the same day. That is the reason a single-engine tool cannot tell you where you stand, and the reason we run all seven.</p>
+    </div>
+  </section>
+
+  <!-- SOURCE MARKETS -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">Source markets</span>The question is asked in more than one language</div>
+      <h2>A Tokyo guest and a Chicago guest are not asking the same question.</h2>
+      <p class="lead">Hotels sell into source markets. The AI surfaces answer each of those markets in its own language, from its own sources, with its own set of names. Measuring the English-language question tells you nothing about the Japanese-language one.</p>
+      <p>Each additional market panel measures the same category the way that market actually asks it. It runs as its own line and carries no second kickoff, because it reuses the competitor cohort the first kickoff already built. Same discipline, a different room of the same house.</p>
+    </div>
+  </section>
+
+  <!-- THE BOUNDARY -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The boundary</span>Why an independent count is worth anything</div>
+      <h2>We do not touch your website, and we do not take a commission on your bookings.</h2>
+      <p class="lead">You already benchmark your comp set on rate and on occupancy, and you trust those numbers precisely because the party reporting them does not operate your hotel. This is that same discipline, on the surface where the booking decision now starts.</p>
+
+      <div class="keeper">
+        <div class="keeper-col">
+          <h3>An optimization vendor</h3>
+          <ul>
+            <li>Edits your pages, your schema, and your profiles</li>
+            <li>Needs write access to the property's website</li>
+            <li>Reports the results of its own changes</li>
+            <li>Quotes the lift it expects to produce</li>
+          </ul>
+        </div>
+        <div class="keeper-col keeper-us">
+          <h3>The scorekeeper</h3>
+          <ul>
+            <li>Never touches your website, systems, or accounts</li>
+            <li>Observes the seven AI surfaces from the outside</li>
+            <li>Reports what they cite, either way the number lands</li>
+            <li>Promises the measurement, never the outcome</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>The questions are committed to a public timestamp before we measure. The method is documented in full at <a href="/methodology/">/methodology/</a>, every published number is dated and tied to the run that produced it, and your team or your agency executes the punch list. We never grade our own work.</p>
+    </div>
+  </section>
+
+  <!-- THE ENGAGEMENT -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The engagement</span>What a property actually gets</div>
+      <h2>A locked baseline, then the same questions asked again, run after run.</h2>
+      <div class="rows">
+        <div class="row"><div class="k">Kickoff</div><div class="v"><b>$4,500, one time.</b> The researched question panel for your category, locked by hash before the first run. Competitor cohort discovery. Baseline measurement across all seven surfaces, the baseline memo, and the prepared punch list.</div></div>
+        <div class="row"><div class="k">Then</div><div class="v"><b>$1,500 per month, per category.</b> Repeated runs against the frozen baseline, a monthly research memo, the prioritized punch list, and the readiness cross-map. Three month initial term, month to month after that.</div></div>
+        <div class="row"><div class="k">Extra panels</div><div class="v"><b>$1,500 per month each, no second kickoff.</b> An additional source market or a second category, reusing the competitor cohort the kickoff established.</div></div>
+        <div class="row"><div class="k">The boundary</div><div class="v">Measurement and analysis only. Your team or your agency executes. Fees are for the research and are not contingent on any citation, ranking, or revenue outcome.</div></div>
+      </div>
+      <p class="cta-note" style="margin-top:22px;">Hawaii is where the method was proven, in one of the most aggregator-captured hotel markets there is. The method itself is geography blind. Lock the questions your guests ask, run the surfaces, count the names. It reads the same from Waikiki as it does from Napa, Charleston, or Kyoto.</p>
+    </div>
+  </section>
+
+  <!-- CLOSE -->
+  <section class="section panel">
+    <div class="inner close reveal">
+      <h2>Find out whether AI names your property, before your competitor does.</h2>
+      <p class="lead" style="max-width:34em; margin:0 auto 30px;">Paste your URL and see in seconds what the seven AI tools can read from your site. Free, no signup.</p>
+      <p><a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a></p>
+      <p class="cta-note">Prefer a hand-built diagnostic of your category and comp set? Email <a href="mailto:Lance@hi.neverranked.com?subject=Measuring%20my%20property">Lance@hi.neverranked.com</a>.</p>
+    </div>
+  </section>
+
+  <div class="footer">
+    NeverRanked &middot; measured from Honolulu &middot; founder-led, bootstrapped &middot; &copy; 2026 Never Ranked LLC<br>
+    <a href="/methodology/">methodology</a> &middot; <a href="/claims/">claims record</a> &middot; <a href="/teardowns/hotels-hawaii/">the hotel teardown</a> &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a> &middot; <a href="/takedowns/">takedowns &amp; opt-out</a>
+  </div>
+
+  <script>
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var els = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      els.forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    els.forEach(function(el){ io.observe(el); });
+  })();
+  </script>
+
+</body>
+</html>

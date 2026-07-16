@@ -29,6 +29,21 @@
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
   .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
   .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+
+  /* ---- Timeline rail (data-alive: dots light + gold rail fills as you scroll) ---- */
+  .timeline { position: relative; padding-left: 40px; margin-top: 10px; }
+  .timeline::before { content: ""; position: absolute; left: 8px; top: 54px; bottom: 22px; width: 2px; background: #26241f; }
+  .timeline-fill { position: absolute; left: 8px; top: 54px; width: 2px; height: 0; background: linear-gradient(#d4c596, #9c8a4e); }
+  .timeline > h2 { position: relative; }
+  .timeline > h2::before { content: ""; position: absolute; left: -37px; top: 0.72em; width: 14px; height: 14px; border-radius: 50%; background: #0b0b0c; border: 2px solid #4a4740; transform: translateY(-50%); transition: border-color .45s ease, box-shadow .45s ease; }
+  .timeline > h2.in::before { border-color: #d4c596; box-shadow: 0 0 0 4px rgba(212,197,150,.10); }
+  .timeline .phase { position: relative; }
+  .timeline .phase::before { content: ""; position: absolute; left: -34px; top: 27px; width: 9px; height: 9px; border-radius: 50%; background: #0b0b0c; border: 2px solid #4a4740; transition: border-color .5s ease, background .5s ease, box-shadow .5s ease; }
+  .timeline .phase.in::before { border-color: #d4c596; background: #d4c596; box-shadow: 0 0 0 4px rgba(212,197,150,.12); }
+  .timeline > h2, .timeline .phase { opacity: 0; transform: translateY(14px); transition: opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1); }
+  .timeline > h2.in, .timeline .phase.in { opacity: 1; transform: none; }
+  @media (max-width: 560px){ .timeline { padding-left: 30px; } .timeline > h2::before { left: -28px; } .timeline .phase::before { left: -25px; } }
+  @media (prefers-reduced-motion: reduce){ .timeline > h2, .timeline .phase { opacity: 1; transform: none; transition: none; } }
 </style>
 </head>
 <body>
@@ -41,6 +56,8 @@
       The kickoff is three weeks of active measurement plus the surrounding setup and delivery. This page covers the full month from signing through the first delivered research memo.
     </div>
 
+    <div class="timeline">
+      <div class="timeline-fill" aria-hidden="true"></div>
     <h2>Phase 1: Signing and setup (Days 1-3)</h2>
 
     <div class="phase">
@@ -62,24 +79,24 @@
 
     <div class="phase">
       <div class="day">Day 4</div>
-      <h3>First daily measurement run</h3>
-      <p>Daily measurement begins. Each of the locked queries runs once per day on each of the seven AI surfaces we measure: Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews (the five citation-grade engines) plus Claude and Gemma (the two model-knowledge engines).</p>
-      <p>You receive a one-line confirmation email each day for the first week (then weekly thereafter, unless you opt out) saying the run completed with the OK rate. No memo content yet. The first week is establishing baseline.</p>
+      <h3>First baseline measurement run</h3>
+      <p>Baseline measurement begins. Each of the locked queries runs in repeated full passes on each of the seven AI surfaces we measure: Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews (the five citation-grade engines) plus Claude and Gemma (the two model-knowledge engines).</p>
+      <p>You receive a one-line confirmation email after each run (unless you opt out) saying the run completed with the OK rate. No memo content yet. The early runs are establishing baseline.</p>
       <p class="who">Your side: nothing required. Our side: scheduled cron + monitoring.</p>
     </div>
 
     <div class="phase">
       <div class="day">Day 7</div>
       <h3>First-week status (optional check-in)</h3>
-      <p>Five days of data captured. If anything looks structurally surprising (a competitor we did not include is dominating the cohort, the query set is producing answers that suggest a wording problem, an engine is rate-limiting), Lance flags it now rather than waiting for the memo.</p>
+      <p>The first runs are captured. If anything looks structurally surprising (a competitor we did not include is dominating the cohort, the query set is producing answers that suggest a wording problem, an engine is rate-limiting), Lance flags it now rather than waiting for the memo.</p>
       <p>Most engagements skip this check-in. It exists for the edge cases.</p>
       <p class="who">Your side: read a one-paragraph status email if it comes &middot; 2 minutes. Our side: Lance &middot; review the early data.</p>
     </div>
 
     <div class="phase">
       <div class="day">Days 8-21</div>
-      <h3>Continued daily measurement</h3>
-      <p>Same rhythm. Three weeks of data is the minimum cohort size for the pattern-readiness rule to hold (see <a href="/methodology/">/methodology/</a>). Each additional day adds to the signal-vs-noise resolution and the recurring-host classifier output.</p>
+      <h3>Continued baseline measurement</h3>
+      <p>Same rhythm. Three clean runs is the minimum for the pattern-readiness rule to hold (see <a href="/methodology/">/methodology/</a>). Each additional run adds to the signal-vs-noise resolution and the recurring-host classifier output.</p>
       <p>Behind the scenes during this window: classification of every cited URL into the nine source-type buckets, competitive cohort tracking against the named competitors, per-engine behavior tracking, anomaly detection if any engine shifts its citation behavior mid-window.</p>
       <p class="who">Your side: nothing required. Our side: automated runs + monitoring + analysis prep.</p>
     </div>
@@ -134,11 +151,12 @@
 
     <div class="phase">
       <div class="day">Day 31+</div>
-      <h3>Continued daily measurement, monthly delta memo</h3>
-      <p>If you opted into the ongoing engagement at scoping, the $1,500/month retainer takes over. Daily measurement continues on the locked query set. A monthly delta memo arrives on the same calendar day each month, reporting what moved, what did not, and any punch list refreshes based on the new data.</p>
+      <h3>Continued measurement, monthly delta memo</h3>
+      <p>If you opted into the ongoing engagement at scoping, the $1,500/month retainer takes over. Measurement continues each month on the locked query set. A monthly delta memo arrives on the same calendar day each month, reporting what moved, what did not, and any punch list refreshes based on the new data.</p>
       <p>The first delta memo lands roughly 30 days after the kickoff memo. The format is lighter than the kickoff memo: focused on the deltas, with the full punch list status table appended.</p>
       <p>You can cancel the ongoing engagement at the end of any month, no claw-back.</p>
       <p class="who">Your side: read the monthly memo &middot; ~20 minutes. Our side: automated measurement + Lance &middot; ~3-4 hours per month per category.</p>
+    </div>
     </div>
 
     <div class="rule"></div>
@@ -172,5 +190,28 @@
 
     <div class="footer">NeverRanked &middot; Honolulu &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
   </main>
+<script>
+(function(){
+  var tl = document.querySelector('.timeline'); if (!tl) return;
+  var fill = tl.querySelector('.timeline-fill');
+  var items = tl.querySelectorAll('h2, .phase');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting) e.target.classList.add('in'); }); }, { threshold: 0.12, rootMargin: '0px 0px -12% 0px' });
+    items.forEach(function(i){ io.observe(i); });
+  } else { items.forEach(function(i){ i.classList.add('in'); }); }
+  // Gold rail fills to the viewport centre as the reader moves down the month.
+  function updateFill(){
+    if (!fill) return;
+    var r = tl.getBoundingClientRect();
+    var start = r.top + 54, end = r.bottom - 22, total = end - start;
+    var target = (window.innerHeight * 0.5) - start;
+    fill.style.height = Math.max(0, Math.min(total, target)) + 'px';
+  }
+  updateFill();
+  window.addEventListener('scroll', updateFill, { passive: true });
+  window.addEventListener('resize', updateFill);
+})();
+</script>
 </body>
 </html>

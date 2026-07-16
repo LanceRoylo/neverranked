@@ -137,6 +137,82 @@
       </tbody>
     </table>
     </div>
+
+<div class="pv-bars" aria-hidden="true">
+  <div class="pv-rows"></div>
+</div>
+<style>
+  .pv-bars { margin: 20px 0 26px; }
+  .pv-row { display: grid; grid-template-columns: minmax(120px, 240px) 1fr 48px; align-items: center; gap: 12px; margin: 9px 0; }
+  .pv-name { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12px; color: #8a857a; letter-spacing: .01em; line-height: 1.35; }
+  .pv-row.hl .pv-name { color: #e8e8ea; }
+  .pv-track { height: 16px; background: #17150f; border-radius: 4px; overflow: hidden; }
+  .pv-fill { height: 100%; border-radius: 4px; background: #4a4636; transform: scaleX(0); transform-origin: left center; }
+  .pv-row.hl .pv-fill { background: linear-gradient(90deg, #9c8a4e, #d4c596); }
+  .pv-val { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12.5px; color: #8a857a; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; }
+  .pv-row.hl .pv-val { color: #d4c596; }
+  @media (max-width: 560px){ .pv-row { grid-template-columns: 104px 1fr 40px; gap: 8px; } .pv-name { font-size: 11px; } }
+</style>
+<script>
+(function(){
+  var mount = document.currentScript.previousElementSibling;
+  while (mount && !(mount.classList && mount.classList.contains('pv-bars'))) mount = mount.previousElementSibling;
+  if (!mount) return;
+  var el = mount, table = null;
+  while ((el = el.previousElementSibling)) {
+    if (el.tagName === 'TABLE') { table = el; break; }
+    var t = el.querySelector && el.querySelector('table'); if (t) { table = t; break; }
+  }
+  if (!table) return;
+  var rows = [];
+  table.querySelectorAll('tbody tr').forEach(function(tr){
+    var cells = tr.querySelectorAll('td'); if (cells.length < 2) return;
+    var label = cells[0].textContent.trim();
+    var pct = null, strong = false;
+    for (var i = 1; i < cells.length; i++){
+      var m = cells[i].textContent.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (m){ pct = parseFloat(m[1]); strong = !!cells[i].querySelector('strong'); break; }
+    }
+    if (pct === null) return;
+    var hl = cells[0].classList.contains('us') || tr.classList.contains('you');
+    rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
+  });
+  if (rows.length < 2) return;
+  // No row emphasized (a ranking, not a "you" table) -> render them all as the
+  // gold ranking rather than muted; a single-emphasis table keeps the contrast.
+  if (!rows.some(function(r){ return r.hl; })) rows.forEach(function(r){ r.hl = true; });
+  var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
+  var host = mount.querySelector('.pv-rows');
+  var fills = [], vals = [];
+  rows.forEach(function(r){
+    var row = document.createElement('div'); row.className = 'pv-row' + (r.hl ? ' hl' : '');
+    row.innerHTML = '<div class="pv-name">' + r.label + '</div>'
+      + '<div class="pv-track"><div class="pv-fill"></div></div>'
+      + '<div class="pv-val">' + r.raw + '</div>';
+    host.appendChild(row);
+    fills.push({ el: row.querySelector('.pv-fill'), s: Math.max(0.02, r.pct / max) });
+    vals.push(row.querySelector('.pv-val'));
+  });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function play(){
+    fills.forEach(function(f, i){
+      if (!f.el.animate){ f.el.style.transform = 'scaleX(' + f.s + ')'; vals[i].style.opacity = 1; return; }
+      if (reduce){
+        f.el.style.transform = 'scaleX(' + f.s + ')';
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:400, delay:60+i*80, fill:'forwards' });
+      } else {
+        f.el.animate([{ transform:'scaleX(0)' }, { transform:'scaleX(' + f.s + ')' }],
+          { duration:1050, delay:120 + i*130, easing:'cubic-bezier(0.16,1,0.3,1)', fill:'forwards' });
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:500, delay:420 + i*130, fill:'forwards' });
+      }
+    });
+  }
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ play(); io.disconnect(); } }); }, { threshold:0.3 });
+    io.observe(mount);
+  } else { play(); }
+})();
+</script>
     <p>40 percentage points separate the top (51%, where Hawaii banking and Honolulu med spas tie) from Hawaii hotels at the bottom (11%). The bottom of this table is a different kind of bottom than the rest. Where Nashville CPA at 31% still puts a third of its citations on firm-owned sites, Hawaii hotels get only 11% and Honolulu real estate 14%, because the aggregators (Booking and Expedia for hotels, Zillow and Realtor.com for real estate) and the ranking and review platforms have so thoroughly captured those categories that the web-searching engines treat them as the answer. Those two are the most aggregator-dominated categories in the set, where the own-site axis is low not because the businesses have weak sites but because a few platforms own the demand. Banking still leads the way it did in the first measurement: two decades of product pages make a bank&rsquo;s own website the canonical source AI reaches for. The most informative comparison is the CPA category across geographies. Hawaii CPA (45%) and Austin CPA (47%) land within two points of each other, so on the web-searching surface the category gradient is largely geography-independent. But Nashville CPA sits well below both at 31%. So the web axis is mostly category-driven with real geo variation layered on top, the same shape the training-data axis shows with Gemma. One market does not fully predict the next, even inside a single category.</p>
 
     <h2 id="why-banking">Why banking leads both axes: two decades of canonical product pages</h2>
@@ -167,6 +243,91 @@
       </tbody>
     </table>
     </div>
+
+<!-- Paired-bar instrument. Reads the PRECEDING table (label + TWO percentage
+     columns) and renders two bars per row so a divergence between the two series
+     is visible. Series names come from the table's own <th> cells. Drift-proof
+     (reads the table's cells; table stays the source + fallback). Absolute
+     scaling. Activates only when >=2 rows carry two percentages. -->
+<div class="pv-duo" aria-hidden="true">
+  <div class="pd-legend"></div>
+  <div class="pd-rows"></div>
+</div>
+<style>
+  .pv-duo { margin: 20px 0 26px; }
+  .pd-legend { display: flex; gap: 20px; margin-bottom: 16px; font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 11px; letter-spacing: .04em; color: #8a857a; }
+  .pd-legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .pd-dot { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .pd-dot.a { background: #e8c767; } .pd-dot.b { background: #c98b74; }
+  .pd-row { display: grid; grid-template-columns: minmax(116px, 200px) 1fr; align-items: center; gap: 14px; margin: 13px 0; }
+  .pd-name { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12px; color: #c9c4b8; letter-spacing: .01em; line-height: 1.35; }
+  .pd-pair { display: flex; flex-direction: column; gap: 5px; }
+  .pd-barline { display: grid; grid-template-columns: 1fr 38px; gap: 9px; align-items: center; }
+  .pd-track { position: relative; height: 13px; background: #17150f; border-radius: 3px; overflow: hidden; }
+  .pd-fill { position: absolute; top: 0; left: 0; bottom: 0; width: 100%; transform: scaleX(0); transform-origin: left center; border-radius: 3px; }
+  .pd-fill.a { background: linear-gradient(90deg, #b89a4a, #e8c767); }
+  .pd-fill.b { background: linear-gradient(90deg, #a05f47, #c98b74); }
+  .pd-val { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 10.5px; color: #c9c4b8; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; }
+  @media (max-width: 560px){ .pd-row { grid-template-columns: 92px 1fr; gap: 10px; } .pd-name { font-size: 11px; } }
+</style>
+<script>
+(function(){
+  var mount = document.currentScript.previousElementSibling;
+  while (mount && !(mount.classList && mount.classList.contains('pv-duo'))) mount = mount.previousElementSibling;
+  if (!mount) return;
+  var el = mount, table = null;
+  while ((el = el.previousElementSibling)) {
+    if (el.tagName === 'TABLE') { table = el; break; }
+    var t = el.querySelector && el.querySelector('table'); if (t) { table = t; break; }
+  }
+  if (!table) return;
+  function pctOf(cell){ if(!cell) return null; var m = cell.textContent.match(/(\d+(?:\.\d+)?)\s*%/); return m ? parseFloat(m[1]) : null; }
+  var ths = table.querySelectorAll('thead th');
+  var seriesA = ths[1] ? ths[1].textContent.replace(/own-site share/i,'').trim() : 'A';
+  var seriesB = ths[2] ? ths[2].textContent.replace(/own-site share/i,'').trim() : 'B';
+  var rows = [];
+  table.querySelectorAll('tbody tr').forEach(function(tr){
+    var cells = tr.querySelectorAll('td'); if (cells.length < 3) return;
+    var a = pctOf(cells[1]), b = pctOf(cells[2]);
+    if (a === null || b === null) return;
+    rows.push({ label: cells[0].textContent.trim(), a: a, b: b, aRaw: cells[1].textContent.trim(), bRaw: cells[2].textContent.trim() });
+  });
+  if (rows.length < 2) return;
+  mount.querySelector('.pd-legend').innerHTML =
+    '<span><span class="pd-dot a"></span>' + seriesA + '</span><span><span class="pd-dot b"></span>' + seriesB + '</span>';
+  var host = mount.querySelector('.pd-rows');
+  var fills = [], vals = [];
+  rows.forEach(function(r){
+    var row = document.createElement('div'); row.className = 'pd-row';
+    row.innerHTML = '<div class="pd-name">' + r.label + '</div>'
+      + '<div class="pd-pair">'
+      +   '<div class="pd-barline"><div class="pd-track"><div class="pd-fill a"></div></div><span class="pd-val">' + r.aRaw + '</span></div>'
+      +   '<div class="pd-barline"><div class="pd-track"><div class="pd-fill b"></div></div><span class="pd-val">' + r.bRaw + '</span></div>'
+      + '</div>';
+    host.appendChild(row);
+    var ff = row.querySelectorAll('.pd-fill'), vv = row.querySelectorAll('.pd-val');
+    fills.push({ el: ff[0], s: Math.max(0.02, r.a/100) }, { el: ff[1], s: Math.max(0.02, r.b/100) });
+    vals.push(vv[0], vv[1]);
+  });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function play(){
+    fills.forEach(function(f, i){
+      if (!f.el.animate){ f.el.style.transform = 'scaleX(' + f.s + ')'; vals[i].style.opacity = 1; return; }
+      if (reduce){ f.el.style.transform = 'scaleX(' + f.s + ')'; vals[i].animate([{opacity:0},{opacity:1}],{duration:400,delay:60+i*45,fill:'forwards'}); }
+      else {
+        f.el.animate([{ transform:'scaleX(0)' }, { transform:'scaleX(' + f.s + ')' }],
+          { duration:1000, delay:100 + i*70, easing:'cubic-bezier(0.16,1,0.3,1)', fill:'forwards' });
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:450, delay:360 + i*70, fill:'forwards' });
+      }
+    });
+  }
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ play(); io.disconnect(); } }); }, { threshold:0.25 });
+    io.observe(mount);
+  } else { play(); }
+})();
+</script>
+
     <p style="font-style:italic;color:#e8e8ea;border-left:2px solid #4a3d18;padding-left:18px">The cleanest test of two axes: Hawaii hotels rank dead last on web-search (11%) and near the top on training data (Claude 47%). The same category, opposite answers, depending on which surface you ask.</p>
     <p>The training-data picture is not the same picture as the web-searching one. Hawaii banks sit at the top of both. Hawaii CPA firms sit mid-table on the web-searching surface (45%) but collapse to 1% / 2% on the training-data surface, the lowest of any measurement by a wide margin. Hawaii law firms are the reverse: near the bottom on web-searching (35%) yet near the top of the training-data table. Honolulu real estate and Hawaii hotels are the most extreme reversals of all. Real estate sits near the bottom of the web-searching axis (14%) yet runs higher on training data (Claude 18%, Gemma 20%). Hawaii hotels go further still: dead last on web-searching (11%) yet Claude 47% and Gemma 42%, the widest inversion in the set, where the training-data engines cite hotels four times as often as the live-search engines do. The two axes do not move together, and the travel categories are the clearest proof of it.</p>
     <p>The three CPA geographies are the most informative observations in this teardown. Same category, same query shape (geo-swapped), same methodology. Claude behaves almost identically across all three (Hawaii 1%, Austin 0%, Nashville 3%), so its training-data collapse on local CPA firms is geo-invariant. Gemma does not. It runs 2% in Hawaii, 7% in Nashville, and 23% in Austin. Austin&rsquo;s spike does not replicate in Nashville, but Nashville sits clearly above Hawaii, so Gemma&rsquo;s local-firm citation is a geo-dependent continuum, not a fixed behavior. The practical consequence: for one of the two training-data engines, a measurement in one market tells you little about another. You have to measure each geography.</p>
@@ -211,6 +372,82 @@
       </tbody>
     </table>
     </div>
+
+<div class="pv-bars" aria-hidden="true">
+  <div class="pv-rows"></div>
+</div>
+<style>
+  .pv-bars { margin: 20px 0 26px; }
+  .pv-row { display: grid; grid-template-columns: minmax(120px, 240px) 1fr 48px; align-items: center; gap: 12px; margin: 9px 0; }
+  .pv-name { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12px; color: #8a857a; letter-spacing: .01em; line-height: 1.35; }
+  .pv-row.hl .pv-name { color: #e8e8ea; }
+  .pv-track { height: 16px; background: #17150f; border-radius: 4px; overflow: hidden; }
+  .pv-fill { height: 100%; border-radius: 4px; background: #4a4636; transform: scaleX(0); transform-origin: left center; }
+  .pv-row.hl .pv-fill { background: linear-gradient(90deg, #9c8a4e, #d4c596); }
+  .pv-val { font-family: ui-monospace,"SF Mono",Menlo,monospace; font-size: 12.5px; color: #8a857a; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; }
+  .pv-row.hl .pv-val { color: #d4c596; }
+  @media (max-width: 560px){ .pv-row { grid-template-columns: 104px 1fr 40px; gap: 8px; } .pv-name { font-size: 11px; } }
+</style>
+<script>
+(function(){
+  var mount = document.currentScript.previousElementSibling;
+  while (mount && !(mount.classList && mount.classList.contains('pv-bars'))) mount = mount.previousElementSibling;
+  if (!mount) return;
+  var el = mount, table = null;
+  while ((el = el.previousElementSibling)) {
+    if (el.tagName === 'TABLE') { table = el; break; }
+    var t = el.querySelector && el.querySelector('table'); if (t) { table = t; break; }
+  }
+  if (!table) return;
+  var rows = [];
+  table.querySelectorAll('tbody tr').forEach(function(tr){
+    var cells = tr.querySelectorAll('td'); if (cells.length < 2) return;
+    var label = cells[0].textContent.trim();
+    var pct = null, strong = false;
+    for (var i = 1; i < cells.length; i++){
+      var m = cells[i].textContent.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (m){ pct = parseFloat(m[1]); strong = !!cells[i].querySelector('strong'); break; }
+    }
+    if (pct === null) return;
+    var hl = cells[0].classList.contains('us') || tr.classList.contains('you');
+    rows.push({ label: label, pct: pct, hl: hl, raw: (cells[1] ? cells[1].textContent.trim() : pct + '%') });
+  });
+  if (rows.length < 2) return;
+  // No row emphasized (a ranking, not a "you" table) -> render them all as the
+  // gold ranking rather than muted; a single-emphasis table keeps the contrast.
+  if (!rows.some(function(r){ return r.hl; })) rows.forEach(function(r){ r.hl = true; });
+  var max = 100; // absolute scale: a bar width IS its percentage (forensic, no exaggeration)
+  var host = mount.querySelector('.pv-rows');
+  var fills = [], vals = [];
+  rows.forEach(function(r){
+    var row = document.createElement('div'); row.className = 'pv-row' + (r.hl ? ' hl' : '');
+    row.innerHTML = '<div class="pv-name">' + r.label + '</div>'
+      + '<div class="pv-track"><div class="pv-fill"></div></div>'
+      + '<div class="pv-val">' + r.raw + '</div>';
+    host.appendChild(row);
+    fills.push({ el: row.querySelector('.pv-fill'), s: Math.max(0.02, r.pct / max) });
+    vals.push(row.querySelector('.pv-val'));
+  });
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  function play(){
+    fills.forEach(function(f, i){
+      if (!f.el.animate){ f.el.style.transform = 'scaleX(' + f.s + ')'; vals[i].style.opacity = 1; return; }
+      if (reduce){
+        f.el.style.transform = 'scaleX(' + f.s + ')';
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:400, delay:60+i*80, fill:'forwards' });
+      } else {
+        f.el.animate([{ transform:'scaleX(0)' }, { transform:'scaleX(' + f.s + ')' }],
+          { duration:1050, delay:120 + i*130, easing:'cubic-bezier(0.16,1,0.3,1)', fill:'forwards' });
+        vals[i].animate([{opacity:0},{opacity:1}], { duration:500, delay:420 + i*130, fill:'forwards' });
+      }
+    });
+  }
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (e.isIntersecting){ play(); io.disconnect(); } }); }, { threshold:0.3 });
+    io.observe(mount);
+  } else { play(); }
+})();
+</script>
     <p>This means: a buyer who asks Microsoft Copilot for a business recommendation in any of these categories or geographies gets pointed at third-party content (publications, Wikipedia, directories), almost never at the businesses&rsquo; own websites. Every business in every category we measured shares this gap. The Austin and Nashville data points confirm the pattern is not Hawaii-specific.</p>
     <p>The first-mover read: whichever firm shows up first in Bing&rsquo;s organic search results for these queries gets the Copilot answer mostly to itself, because every competitor is also invisible there. The gap is open, and it does not appear to be a category-specific or geo-specific problem. It is a Microsoft Copilot pattern across local-service queries.</p>
 

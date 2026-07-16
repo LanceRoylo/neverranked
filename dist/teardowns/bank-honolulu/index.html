@@ -6,9 +6,9 @@
   per day, 3 usable runs (pattern-readiness cleared). Refresh
   cadence is monthly or on customer request.
 
-  Subject brand: anonymized in this public artifact. Cohort
-  named in full. The dashboard-style tool comparison section
-  is placeholdered — to be added when a free AEO Report is
+  Subject brand and cohort: anonymized in this public artifact.
+  The dashboard-style tool comparison section
+  is placeholdered, to be added when a free AEO Report is
   pulled for the same subject.
 -->
 <html lang="en">
@@ -76,7 +76,7 @@
   <main>
     <div class="meta-top">NeverRanked &middot; Teardown 01 &middot; Hawaii consumer banking</div>
     <h1>The 75-point engine spread that no single-engine tool can see.</h1>
-    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 23-bank Hawaii consumer banking cohort, 18 hash-locked queries, 3 usable runs, 5,153 citations captured. Pattern-readiness cleared. Subject brand anonymized, cohort named.</p>
+    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 23-bank Hawaii consumer banking cohort, 18 hash-locked queries, 3 usable runs, 5,153 citations captured. Pattern-readiness cleared. Subject brand and cohort anonymized.</p>
 
     <div class="notice">
       <strong>The headline finding in one sentence:</strong> for the same Hawaii consumer banking queries, the same banks, the same day, five AI engines cite bank-owned websites 60-75% of the time, while Microsoft Copilot (via Bing) cites them 0% of the time. The 75-percentage-point engine spread is invisible to any tool that measures fewer engines.
@@ -85,7 +85,7 @@
     <nav class="toc" aria-label="Sections">
       <div class="toc-label">What&rsquo;s in this teardown</div>
       <ol>
-        <li><a href="#the-cohort-named">The cohort (named)</a></li>
+        <li><a href="#the-cohort-named">The cohort (anonymized)</a></li>
         <li><a href="#methodology-summary">Methodology summary</a></li>
         <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
         <li><a href="#per-engine-breakdown-the-75-percentage-point-spread">Per-engine breakdown &middot; the 75-percentage-point spread</a></li>
@@ -99,10 +99,8 @@
       </ol>
     </nav>
 
-    <h2 id="the-cohort-named">The cohort (named)</h2>
-    <p>21 Hawaii financial institutions AI engines cite for consumer banking queries in this category. Naming the cohort is honest. These are all publicly competing brands, and the methodology demonstration value comes from the pattern across the group, not from singling any one out.</p>
-    <p><strong>Major banks:</strong> Bank of Hawaii (boh.com), First Hawaiian Bank (fhb.com, locations.fhb.com), American Savings Bank (asbhawaii.com), Central Pacific Bank (centralpacificbank.com, cpb.bank), Hawaii National Bank (hawaiinational.bank, ebanking.hawaiinational.com), Territorial Savings (territorialsavings.com, territorialsavings.net).</p>
-    <p><strong>Credit unions:</strong> Hawaii USA FCU (hawaiiusafcu.com), Hawaii State FCU (hawaiistatefcu.org, hawaiistatefcu.com), HFS FCU (hfsfcu.org), Pearl Hawaii FCU (pearlhawaii.com), University of Hawaii FCU (uhfcu.com), Hawaii Community FCU (hicommfcu.com), Hawaii FCU (hawaiifcu.org), Big Island FCU (bigislandfcu.com), CU Hawaii (cuhawaii.com), Hawaiian Financial FCU (hificu.com), HLE FCU (hlefcu.com).</p>
+    <h2 id="the-cohort-named">The cohort (anonymized)</h2>
+    <p>The category cohort is the Hawaii financial institutions AI engines cite for consumer banking queries: a set of major banks and credit unions. Individual institutions are anonymized in this public teardown (banks labeled Bank A onward, credit unions CU A onward, ranked by mentions). Categories, counts, source-type distributions, and named third-party platforms are public. Individual institution names are not. The methodology demonstration value comes from the pattern across the group, not from singling any one out.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
     <p>7 AI surfaces measured, all on the same day, all on the same query set:</p>
@@ -167,7 +165,7 @@
       <li><strong>Google AI Overviews is the only engine that surfaces Reddit (7%) and social (4%)</strong> for banking queries. Editorial guidance on those surfaces won't help with AIO presence. User-generated content can.</li>
       <li><strong>Reddit, Wikipedia, YouTube, social, and review-directory citations are essentially absent from the other six engines</strong> for this category. Banking is not a forum-driven category in AI answers. (Compare to consumer electronics or software categories, where Reddit shows up at 15-30% in AI Overviews and Perplexity.)</li>
       <li><strong>Claude and Gemma (model-knowledge engines) cite the major Hawaii banks by name with no web search at all.</strong> 72% and 70% competitor share respectively, just from training data. That means even before any AI search happens, these banks have measurable model-knowledge presence. No comparison tool measures this layer.</li>
-      <li><strong>ChatGPT search surfaces location-specific URLs heavily.</strong> The host <code>locations.fhb.com</code> alone accounts for 54 of OpenAI's 60 First Hawaiian Bank citations. OpenAI strongly favors specific branch/location pages over brand home pages for "best bank in [neighborhood]" queries. Actionable optimization finding.</li>
+      <li><strong>ChatGPT search surfaces location-specific URLs heavily.</strong> For one major bank, a single location-specific subdomain alone accounts for 54 of OpenAI's 60 citations of that bank. OpenAI strongly favors specific branch/location pages over brand home pages for "best bank in [neighborhood]" queries. Actionable optimization finding.</li>
     </ul>
 
     <h2 id="top-cited-brands-mentions-across-engines">Top cited brands &middot; mentions across engines</h2>
@@ -176,7 +174,7 @@
     <table>
       <thead>
         <tr>
-          <th>Brand-host</th>
+          <th>Institution (anonymized)</th>
           <th class="num">Mentions</th>
           <th class="num">Q1 lead</th>
           <th class="num">Q2 early</th>
@@ -186,20 +184,20 @@
         </tr>
       </thead>
       <tbody>
-        <tr><td>boh.com (Bank of Hawaii)</td><td class="num">612</td><td class="num">265</td><td class="num">219</td><td class="num">95</td><td class="num">33</td><td>lead-heavy</td></tr>
-        <tr><td>fhb.com (First Hawaiian Bank)</td><td class="num">584</td><td class="num">144</td><td class="num">259</td><td class="num">135</td><td class="num">46</td><td>lead-heavy</td></tr>
-        <tr><td>asbhawaii.com (American Savings Bank)</td><td class="num">463</td><td class="num">83</td><td class="num">149</td><td class="num">146</td><td class="num">85</td><td>early-heavy</td></tr>
-        <tr><td>cpb.bank (Central Pacific Bank)</td><td class="num">257</td><td class="num">71</td><td class="num">72</td><td class="num">62</td><td class="num">52</td><td>early-heavy</td></tr>
-        <tr><td>hawaiinational.bank (Hawaii National Bank)</td><td class="num">148</td><td class="num">17</td><td class="num">27</td><td class="num">79</td><td class="num">25</td><td>mid-heavy</td></tr>
-        <tr><td>hawaiiusafcu.com (Hawaii USA FCU)</td><td class="num">115</td><td class="num">20</td><td class="num">21</td><td class="num">60</td><td class="num">14</td><td>mid-heavy</td></tr>
-        <tr><td>hawaiistatefcu.com (Hawaii State FCU)</td><td class="num">96</td><td class="num">4</td><td class="num">18</td><td class="num">49</td><td class="num">25</td><td>mid-heavy</td></tr>
-        <tr><td>locations.fhb.com (FHB branch pages)</td><td class="num">76</td><td class="num">35</td><td class="num">22</td><td class="num">11</td><td class="num">8</td><td>lead-heavy</td></tr>
-        <tr><td>hfsfcu.org (HFS FCU)</td><td class="num">66</td><td class="num">18</td><td class="num">13</td><td class="num">26</td><td class="num">9</td><td>mid-heavy</td></tr>
-        <tr><td>pearlhawaii.com (Pearl Hawaii FCU)</td><td class="num">58</td><td class="num">19</td><td class="num">17</td><td class="num">12</td><td class="num">10</td><td>lead-leaning</td></tr>
+        <tr><td>Bank A</td><td class="num">612</td><td class="num">265</td><td class="num">219</td><td class="num">95</td><td class="num">33</td><td>lead-heavy</td></tr>
+        <tr><td>Bank B</td><td class="num">584</td><td class="num">144</td><td class="num">259</td><td class="num">135</td><td class="num">46</td><td>lead-heavy</td></tr>
+        <tr><td>Bank C</td><td class="num">463</td><td class="num">83</td><td class="num">149</td><td class="num">146</td><td class="num">85</td><td>early-heavy</td></tr>
+        <tr><td>Bank D</td><td class="num">257</td><td class="num">71</td><td class="num">72</td><td class="num">62</td><td class="num">52</td><td>early-heavy</td></tr>
+        <tr><td>Bank E</td><td class="num">148</td><td class="num">17</td><td class="num">27</td><td class="num">79</td><td class="num">25</td><td>mid-heavy</td></tr>
+        <tr><td>CU A</td><td class="num">115</td><td class="num">20</td><td class="num">21</td><td class="num">60</td><td class="num">14</td><td>mid-heavy</td></tr>
+        <tr><td>CU B</td><td class="num">96</td><td class="num">4</td><td class="num">18</td><td class="num">49</td><td class="num">25</td><td>mid-heavy</td></tr>
+        <tr><td>Bank B (branch pages)</td><td class="num">76</td><td class="num">35</td><td class="num">22</td><td class="num">11</td><td class="num">8</td><td>lead-heavy</td></tr>
+        <tr><td>CU C</td><td class="num">66</td><td class="num">18</td><td class="num">13</td><td class="num">26</td><td class="num">9</td><td>mid-heavy</td></tr>
+        <tr><td>CU D</td><td class="num">58</td><td class="num">19</td><td class="num">17</td><td class="num">12</td><td class="num">10</td><td>lead-leaning</td></tr>
       </tbody>
     </table>
     </div>
-    <p><strong>What the position-bias column reveals.</strong> Bank of Hawaii is "lead-heavy," with 79% of its 612 mentions in the early half of AI answers (Q1+Q2). That's the dominant AI-recommendation pattern. Hawaii National Bank, with notably less total visibility (148 mentions), is "mid-heavy," at 53% Q3 alone. Same engine, same query universe, fundamentally different competitive posture. Total mention count alone misses this. Position bias is the depth signal no comparison tool surfaces.</p>
+    <p><strong>What the position-bias column reveals.</strong> Bank A is "lead-heavy," with 79% of its 612 mentions in the early half of AI answers (Q1+Q2). That's the dominant AI-recommendation pattern. Bank E, with notably less total visibility (148 mentions), is "mid-heavy," at 53% Q3 alone. Same engine, same query universe, fundamentally different competitive posture. Total mention count alone misses this. Position bias is the depth signal no comparison tool surfaces.</p>
 
     <h2 id="true-third-party-citation-sources-the-actionable-list">True third-party citation sources (the actionable list)</h2>
     <p>After cohort classification, the third-party content AI cites for Hawaii consumer banking, ranked by recurring-host frequency across the 3-run dataset:</p>
@@ -228,7 +226,7 @@
     </div>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
-    <p>The cohort is named because these are publicly-competing brands appearing in any local "best Hawaii bank" comparison. Naming them collectively is honest. The teardown does not single out one bank as a "subject" of analysis on the public version, because publicly naming a specific brand alongside competitive findings creates trademark, trade-libel, and endorsement-implication exposure that does not exist for the cohort-level analysis above. The unredacted version (subject-named with the full per-brand competitive analysis) is available 1:1 to qualified prospects in conversation. Same anonymization pattern is used across NeverRanked's public artifacts.</p>
+    <p>Individual institutions are anonymized in this public teardown. These are publicly-competing brands appearing in any local "best Hawaii bank" comparison, but publicly naming a specific brand alongside competitive findings creates trademark, trade-libel, and endorsement-implication exposure that the cohort-level, anonymized analysis above does not. The unredacted version (subject-named with the full per-brand competitive analysis) is available 1:1 to qualified prospects in conversation. The same anonymization pattern is used across NeverRanked's public artifacts.</p>
 
     <h2 id="methodology-reproducibility">Methodology + reproducibility</h2>
     <p>Full methodology at <a href="/methodology/">/methodology/</a>. The method is documented end to end there: the measurement runner, the source-type classifier, the within-citation analyzer, and the aggregator, with the question sets hash-locked at <code>48b6c76f...</code> and every dated run posted to the <a href="/claims/">/claims/</a> ledger. Gemma is open-weight, so the model itself is independently inspectable.</p>
