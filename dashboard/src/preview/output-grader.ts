@@ -112,14 +112,26 @@ ABOUT WHAT WE DELIVER
   such in a technical/methodology context; the OFFER is the monthly
   memo, never "daily measurement" as a product.
 
+ABOUT THE FREE ENTRY POINTS (both real, both canonical, neither is a violation)
+- The instant self-serve check at check.neverranked.com. A visitor
+  pastes a URL and sees, in seconds, what the 7 AI tools can read
+  from that site. Free, no signup, automated. This is the primary
+  call-to-action across the site ("See what AI sees", "Run the AI
+  search check"). Referencing it, linking it, or describing it as an
+  instant free URL check is CORRECT and is NOT a violation.
+- The hand-built 1-page diagnostic. Email-requested, human-built:
+  5 real buyer questions run across the 7 tools for one category,
+  returned as a one-page snapshot showing which competitors AI names.
+  This is the "no-cost 5-query pilot on ONE category". One per business.
+- Both are free entry points to the paid engagement below, not separate
+  products and not discounts. The instant checker is automated; the
+  1-page diagnostic is hand-built. Do not conflate them, but neither is
+  ever a factual or pricing violation.
+
 ABOUT PRICING
 - $4,500 kickoff per category. One time.
 - $1,500 per month per category, ongoing.
 - Per category, not per client. No bundled tiers.
-- The cold-outreach wedge is a no-cost 5-query pilot on ONE
-  category, offered before any paid engagement. The free pilot is
-  canonical and is NOT a pricing violation. It is the entry point
-  to the paid engagement above, not a separate product or discount.
 - Forbidden: any reference to "Pulse", "Signal", "Amplify",
   "Enterprise", "$497", "$2,000/mo", "$750 audit", "audit credit",
   or any prior tier/pricing/credit-flow language.
