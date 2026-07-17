@@ -221,4 +221,18 @@ node "$ROOT/scripts/check-internal-links.mjs"
 echo ""
 node "$ROOT/scripts/check-claims.mjs"
 
+# ── Figure provenance on vertical pages (BLOCKING) ──────────────────────
+# Every figure a /for-*/ page prints must appear in a teardown that page
+# links to. teardown-drift.mjs above watches whether a teardown still matches
+# current tooling; nothing watched whether the MARKETING pages still match
+# their teardowns. Re-run teardown 11, let 17% become 19%, and the hospitality
+# page silently goes false while every other check stays green.
+#
+# Also catches hand-transcription: added 2026-07-16 after /for-hospitality/
+# was found printing a cohort split that existed only in an HTML comment in
+# the teardown source, never in the published page. True, but unverifiable by
+# a reader clicking through, which on this site is the same as unsourced.
+echo ""
+node "$ROOT/scripts/check-figures.mjs"
+
 echo "Build complete. Deploy with: npx wrangler deploy"
