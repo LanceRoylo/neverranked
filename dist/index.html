@@ -311,6 +311,23 @@
   .keeper-us li { color: var(--text); border-top-color: color-mix(in oklab, var(--gold) 14%, transparent); }
   .keeper-verdict { font-family: var(--serif); font-style: italic; font-size: clamp(19px, 2vw, 23px); font-weight: 420; color: var(--text); margin: 26px 0 6px; letter-spacing: -0.005em; }
   .keeper-verdict b { color: var(--gold-bright); font-weight: 480; }
+
+  /* The check-list. Reads as a list of verifiable facts, not a feature grid:
+     each item is something a reader can go and confirm, so the marker is a
+     hairline gold rule rather than a tick. A tick is a vendor asserting; a
+     rule is an entry in a record. */
+  .check-list { margin: 24px 0 0; }
+  .check-list ul { list-style: none; margin: 0; padding: 0; }
+  .check-list li {
+    position: relative; padding: 14px 0 14px 26px; border-bottom: 1px solid var(--line-soft);
+    font-size: 15.5px; color: var(--soft); line-height: 1.6;
+  }
+  .check-list li:last-child { border-bottom: 0; }
+  .check-list li::before {
+    content: ""; position: absolute; left: 0; top: 23px;
+    width: 13px; height: 1px; background: var(--gold-deep);
+  }
+  .check-list li b { color: var(--text); font-weight: 600; }
   @media (max-width: 680px) { .keeper { grid-template-columns: 1fr; } }
 
   /* ═══ Verticals — who we measure for ═══ */
@@ -852,6 +869,37 @@
       </div>
       <p class="keeper-verdict">You can hire either. <b>Only one can referee the other.</b></p>
       <p>The question set is committed to a public timestamp before we measure. The method is documented in full at <a href="/methodology/">/methodology/</a>, and every published number lives on a public claims record, dated and tied to the run that produced it. Your team executes, and we never grade our own work. <a href="/vs/">The structural comparison, tool by tool &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- The check.
+       LANHAM DISCIPLINE, load-bearing: every sentence here is a fact about
+       NeverRanked, never a claim about a competitor. The Corgi media policy
+       EXCLUDES Lanham Act false advertising, so an assertion that some other
+       vendor's number is wrong or unsubstantiated would be uninsured. It is
+       also unnecessary: "we never touch your site" is a checkable fact about
+       us that no vendor who ships work can also say. Let the reader do the
+       arithmetic. Do not name a competitor or characterize their claims here,
+       ever, no matter how tempting the quarter. -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The check</span>Who tells you whether it worked</div>
+      <h2>Hire whoever you like to do the work. Then ask who is going to tell you it worked.</h2>
+      <p class="lead">Most of the people who call us already have someone shipping the work: an in-house team, an agency, a platform running on autopilot. Good. We are not trying to replace them. We exist for the question that arrives ninety days later.</p>
+      <p>A vendor who ships the change and then reports the lift is not lying to you. It is simply the only party in the room with a reason for the number to move. That is not an accusation, it is arithmetic, and it is why auditors do not keep the books, and why a hotel trusts a comp-set index published by a company that does not operate hotels.</p>
+      <p>We are structurally incapable of returning you a flattering number, and you can check every piece of that yourself:</p>
+      <div class="check-list">
+        <ul>
+          <li><b>We never touch your website, your systems, or your accounts.</b> There is no work of ours for a number to flatter.</li>
+          <li><b>The questions are locked by hash before we look.</b> We cannot tune the test to the answer we want.</li>
+          <li><b>All seven surfaces, every run, with no cheaper tier that watches fewer.</b> We cannot quietly report the flattering subset.</li>
+          <li><b>Three runs, every cycle.</b> An AI answer moves between two askings of the same question, so one reading is not a result and we will not sell you one.</li>
+          <li><b>Every number we publish is dated and tied to the run that produced it,</b> on a record you can read and re-run against.</li>
+          <li><b>When we could not substantiate our own customer result, we tested it, failed our own pre-registered criteria, pulled the product inside a day, and retracted the numbers in public.</b></li>
+        </ul>
+      </div>
+      <p class="keeper-verdict" style="margin-top:26px;">The last one is the only one that counts. <b>The rest is what any vendor would say. The retraction is the receipt.</b></p>
+      <p style="margin-top:18px;">If the work is already underway and the number has not moved, that is worth knowing early. If it has moved, you should be able to prove it to a board with something other than the invoice of the company that did the work. <a href="/retraction/">Read the retraction first, then decide whether to believe our numbers &rarr;</a></p>
     </div>
   </section>
 
