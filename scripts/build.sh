@@ -235,4 +235,14 @@ node "$ROOT/scripts/check-claims.mjs"
 echo ""
 node "$ROOT/scripts/check-figures.mjs"
 
+# ── Lanham guard on the competitive copy (BLOCKING) ─────────────────────
+# The Corgi media policy EXCLUDES Lanham Act false advertising, so a claim
+# ABOUT a competitor's numbers is the one assertion on this site with no
+# insurance behind it. The "who checks the checker" argument is deliberately
+# built from facts about NeverRanked alone, because "we never touch your
+# site" is checkable and no vendor who ships the work can say it. This keeps
+# it that way when a future quarter makes naming someone feel tempting.
+echo ""
+node "$ROOT/scripts/check-lanham.mjs"
+
 echo "Build complete. Deploy with: npx wrangler deploy"
