@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<!-- Indexable on purpose. This was noindex until 2026-07-16, a leftover from the
+     containment era when named receipt pages were the risk. Those are gone; the
+     tag stayed, so robots.txt invited AI crawlers in and every page then told
+     them to forget what they read. Two of the seven surfaces we measure (Google
+     AI Overviews, Copilot via Bing) sit on indexes that obey noindex, so we were
+     instructing them not to cite us. Private 1:1 pages (/pitch/*, /first-look/*)
+     stay noindex and check-noindex.mjs enforces that. -->
+<meta name="robots" content="index, follow">
 <title>First 30 days -- NeverRanked</title>
 <meta name="description" content="What happens between signing a NeverRanked kickoff and receiving the first research memo. Day-by-day breakdown for customers and prospects.">
 <link rel="canonical" href="https://neverranked.com/first-30-days/">

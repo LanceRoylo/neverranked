@@ -104,26 +104,44 @@ const RULES = [
   },
   {
     id: "cadence-overclaim",
-    // WARN, not block, pending one unanswered question: does client-side
-    // capture actually run once per day right now? The canon says never claim
-    // "daily" (a retired overclaim), but commit 7f4a39f reads "correct
-    // standing-cadence overclaim to 1/day", which implies 1/day is the real
-    // cadence. Either the canon or /methodology/ is wrong, and that is a fact
-    // about the system, not a copy decision. Promote to "block" once settled.
+    // BLOCKING as of 2026-07-16, once the underlying question was actually
+    // answered by reading the code rather than guessing: capture genuinely IS
+    // daily. dashboard/src/cron.ts :: runDailyTasks dispatches one
+    // CitationKeywordWorkflow per client per keyword every day at 06:00 UTC.
     //
-    // Scoped to OUR cadence: a client's analyst logging in every day is
-    // legitimate copy and must not trip this.
-    severity: "warn",
-    // Kept in sync with CADENCE_PATTERNS in
-    // ../neverranked-outreach/lib/output-grader.js. The
-    // "daily measurement|capture|drift alerts" alternation was missing here
-    // and present there, so this gate reported 1 page when 8 carried the
-    // phrase (/vs/, /faq/, /methodology/, and five -aeo pages). Two copies of
-    // a rule in two repos WILL drift; that is precisely the failure this
-    // whole file exists to catch, so it is worth saying out loud: if you edit
-    // one, edit both.
-    re: /\b(?:we|neverranked)\b[^.\n]{0,50}\b(?:measure|watch|track|run|capture)[^.\n]{0,30}\b(?:daily|every\s+day)\b|\b(?:measured|tracked|watched|captured)\s+(?:daily|every\s+day)\b|\bcapture\s+is\s+daily\b|\b(?:seven|7)\s+AI\s+(?:surfaces?|tools?|engines?)\s*,?\s*(?:daily|every\s+day)\b|\b(?:daily|every\s+day)\s+(?:measurement|capture|drift\s+alerts?)\b/i,
-    why: 'possible retired cadence overclaim: canon says we measure in repeated runs against a frozen baseline, never "daily"',
+    // So the old rule was simply wrong. It banned the word outright and
+    // therefore flagged TRUE technical description on nine pages, /methodology/
+    // included, where the cadence is the literal subject. It stayed at "warn"
+    // for exactly that reason. A gate that fires on accurate copy teaches
+    // everyone to wave it through, and a waved-through gate catches nothing.
+    //
+    // The line now sits where it belongs: the retired overclaim is selling
+    // "daily" as the PRODUCT (daily monitoring, daily reports, tracked daily
+    // in your dashboard), because the deliverable is the monthly memo. One
+    // reading is weather. The month is climate. Describing the capture cadence
+    // technically is accurate and allowed, so /vs/ ("Daily measurement happens
+    // in the background") and /methodology/ ("every query once per engine per
+    // day") now pass, correctly, without a word being changed.
+    //
+    // KEEP IN SYNC with CADENCE_PATTERNS in
+    // ../neverranked-outreach/lib/output-grader.js. Edit one, edit both: these
+    // two drifted within hours last time, which is how this gate reported 1
+    // page when 9 carried the phrase.
+    // NARROW ON PURPOSE, and the narrowing was earned. A broader version of
+    // this rule fired twice on correct copy the first time it ran blocking:
+    //   - /takedowns/ "The contact above is monitored daily" — that is the
+    //     takedown INBOX, backing the 24-hour response promise. Not
+    //     measurement at all.
+    //   - /methodology/ "Automated daily drift alerts." — that sits in a
+    //     not-yet-built section DISCLOSING what we do not have.
+    // Both would have been blocked by a monitor|track + daily proximity rule.
+    // "Daily" is a word whose meaning is entirely context, which makes it a
+    // poor fit for a string matcher, so this only matches phrasings that
+    // cannot mean anything except selling it. Framing calls go to the LLM
+    // axis and to human review, where judgment belongs.
+    severity: "block",
+    re: /\b(?:daily|every\s+day)\s+monitoring\b|\b(?:you\s+(?:get|receive)|we\s+(?:give|send|deliver|hand)\s+you)\b[^.\n]{0,40}\b(?:daily|every\s+day)\b/i,
+    why: 'sells "daily" as the product. Capture IS daily and may be described technically, but the deliverable is the monthly memo — one reading is weather, the month is climate',
   },
 ];
 

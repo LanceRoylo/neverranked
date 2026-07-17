@@ -3,7 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<!-- Indexable on purpose. This was noindex until 2026-07-16, a leftover from the
+     containment era when named receipt pages were the risk. Those are gone; the
+     tag stayed, so robots.txt invited AI crawlers in and every page then told
+     them to forget what they read. Two of the seven surfaces we measure (Google
+     AI Overviews, Copilot via Bing) sit on indexes that obey noindex, so we were
+     instructing them not to cite us. Private 1:1 pages (/pitch/*, /first-look/*)
+     stay noindex and check-noindex.mjs enforces that. -->
+<meta name="robots" content="index, follow">
 <title>AI citation measurement for real estate brokerages -- NeverRanked</title>
 <meta name="description" content="We measured eleven categories the same way. In Honolulu real estate, 14 percent of AI citations point to a local firm's own site. In med spas it is 51. The difference is not the websites. NeverRanked measures where AI sends your next client. We never touch your site.">
 <link rel="canonical" href="https://neverranked.com/for-real-estate/">

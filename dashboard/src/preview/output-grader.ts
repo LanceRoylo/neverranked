@@ -61,9 +61,20 @@ ABOUT THE COMPANY
   FACTUAL violation.
 
 ABOUT WHAT WE MEASURE
-- Seven AI surfaces, measured in repeated runs across the month
-  (never claim "daily" or "every day" measurement — that is a
-  retired overclaim). Five citation-grade engines that
+- Seven AI surfaces, measured in repeated runs across the month.
+  CADENCE, and the distinction matters: capture genuinely IS daily.
+  The standing measurement dispatches one workflow per client per
+  keyword every day at 06:00 UTC. Saying so in a METHODOLOGY or
+  technical context is accurate and permitted.
+  What is retired is selling "daily" as the PRODUCT — "daily
+  measurement", "daily monitoring", "we watch it every day" as the
+  thing being bought. The deliverable is the monthly memo. One day's
+  reading is weather; the month is climate, and the climate is what
+  we sell. So: describe the capture as daily only where the technical
+  cadence is the subject, and describe the OFFER as repeated runs
+  against a frozen baseline with a monthly memo. Never lead an
+  artifact with "daily".
+  Five citation-grade engines that
   search the live web (Perplexity, ChatGPT search, Gemini grounded,
   Microsoft Copilot via Bing, Google AI Overviews). Two
   model-knowledge engines that answer from training data
@@ -96,8 +107,10 @@ ABOUT WHAT WE DELIVER
 - A prepped punch list ordered by impact, written for the
   customer's team or agency to execute.
 - Measurement in repeated runs across the month against the locked
-  baseline (climate, not weather — NOT "daily measurement", which is
-  a retired overclaim). Monthly delta memo on ongoing engagements.
+  baseline (climate, not weather). Monthly delta memo on ongoing
+  engagements. Capture is daily under the hood and may be stated as
+  such in a technical/methodology context; the OFFER is the monthly
+  memo, never "daily measurement" as a product.
 
 ABOUT PRICING
 - $4,500 kickoff per category. One time.
@@ -363,15 +376,33 @@ const RETIRED_SKU_PATTERNS = [
   { re: /\bdone-for-you\b/i, label: 'done-for-you execution (we measure only)' },
 ];
 
-// Our own measurement cadence may never be described as daily. Scoped to
-// OUR cadence specifically: a sentence about a CLIENT's analyst logging in
-// every day is legitimate and must not trip this.
+// Cadence. Rewritten 2026-07-16 after tracing the code: capture genuinely IS
+// daily. The dashboard dispatches one CitationKeywordWorkflow per client per
+// keyword every day at 06:00 UTC (dashboard/src/cron.ts :: runDailyTasks).
+//
+// The old rule banned the word outright and was therefore wrong: it flagged
+// TRUE technical description on nine pages, including /methodology/ where the
+// cadence is the actual subject. A rule that fires on accurate copy trains
+// everyone to wave the gate through, which is the failure mode that matters
+// more than the overclaim.
+//
+// So the line moved to where it belongs. The retired overclaim is selling
+// "daily" as the PRODUCT — daily monitoring, daily measurement, we watch it
+// every day — because the deliverable is the monthly memo. One reading is
+// weather. The month is climate. Describing the capture cadence in a technical
+// context is accurate and allowed.
+//
+// Still scoped away from a CLIENT's analyst logging in every day, which is
+// legitimate copy about someone else's behavior.
 const CADENCE_PATTERNS = [
-  /\b(?:we|neverranked)\b[^.\n]{0,50}\b(?:measure|watch|track|run|capture)[^.\n]{0,30}\b(?:daily|every\s+day)\b/i,
-  /\b(?:measured|tracked|watched|captured|monitored)\s+(?:daily|every\s+day)\b/i,
-  /\b(?:seven|7)\s+AI\s+(?:surfaces?|tools?|engines?)\s*,?\s*(?:daily|every\s+day)\b/i,
-  /\b(?:daily|every\s+day)\s+(?:measurement|capture|drift\s+alerts?)\b/i,
-  /\bcapture\s+is\s+daily\b/i,
+  // NARROW ON PURPOSE. A broader version fired on correct copy the first time
+  // it ran: "The contact above is monitored daily" (the takedown INBOX, backing
+  // the 24-hour promise) and "Automated daily drift alerts." (a not-yet-built
+  // section DISCLOSING what we lack). "Daily" means whatever its context means,
+  // which makes it a poor fit for a string matcher. Match only phrasings that
+  // cannot mean anything except selling it; framing goes to the LLM axis.
+  /\b(?:daily|every\s+day)\s+monitoring\b/i,
+  /\b(?:you\s+(?:get|receive)|we\s+(?:give|send|deliver|hand)\s+you)\b[^.\n]{0,40}\b(?:daily|every\s+day)\b/i,
 ];
 
 const EMOJI_RE = /[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}]/u;

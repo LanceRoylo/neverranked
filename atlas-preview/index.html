@@ -17,7 +17,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
+<!-- Indexable on purpose. This was noindex until 2026-07-16, a leftover from the
+     containment era when named receipt pages were the risk. Those are gone; the
+     tag stayed, so robots.txt invited AI crawlers in and every page then told
+     them to forget what they read. Two of the seven surfaces we measure (Google
+     AI Overviews, Copilot via Bing) sit on indexes that obey noindex, so we were
+     instructing them not to cite us. Private 1:1 pages (/pitch/*, /first-look/*)
+     stay noindex and check-noindex.mjs enforces that. -->
+<meta name="robots" content="index, follow">
 <title>Atlas preview. What asking the data feels like.</title>
 <meta name="description" content="A preview of the Atlas chat surface that ships with the NeverRanked customer dashboard. Atlas answers what the measurement shows. It refuses to tell you what to do. The boundary is the engagement.">
 <link rel="canonical" href="https://neverranked.com/atlas-preview/">

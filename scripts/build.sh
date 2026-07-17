@@ -145,13 +145,29 @@ for d in "${DIRS[@]}"; do
     # and on a fresh git checkout all mtimes match, so the default quick-check
     # would silently SKIP content-changed files and ship a stale dist. Checksum
     # is slower but correct; the tree is small.
-    rsync -a --checksum --delete \
+    #  og.html      — build-time TEMPLATE only. capture-og-pitch.mjs renders it
+    #                 locally into og.png; pages reference the .png and nothing
+    #                 references the .html. It was shipping anyway, carrying a
+    #                 named prospect ("Ellen", "Sean Levy", "Hamada Financial
+    #                 Group"...) on a live indexable URL with no robots tag,
+    #                 because a 1:1 pitch page's noindex lives in ITS index.html
+    #                 and never covered the sibling template. Found 2026-07-16
+    #                 by check-noindex.mjs the first time it ran. Excluding beats
+    #                 adding noindex: the page has no runtime purpose, and a URL
+    #                 that does not exist cannot be indexed by a crawler that
+    #                 ignores the tag.
+    # --delete-excluded, not just --delete: rsync's --exclude also PROTECTS a
+    # matching file already in the destination, so plain --delete leaves stale
+    # copies of newly-excluded files sitting in dist/ forever. Without this the
+    # og.html exclusion above silently does nothing to the eight already there.
+    rsync -a --checksum --delete --delete-excluded \
       --exclude='_data' \
       --exclude='_engagement*' \
       --exclude='_meta' \
       --exclude='.DS_Store' \
+      --exclude='og.html' \
       "$ROOT/$d/" "$DIST/$d/"
-    echo "  dir   $d/  (internal _data, _engagement, _meta excluded from deploy)"
+    echo "  dir   $d/  (internal _data, _engagement, _meta, og.html templates excluded from deploy)"
   else
     echo "  skip  $d/ (not in repo root)"
   fi
@@ -244,5 +260,17 @@ node "$ROOT/scripts/check-figures.mjs"
 # it that way when a future quarter makes naming someone feel tempting.
 echo ""
 node "$ROOT/scripts/check-lanham.mjs"
+
+# ── Private-page indexability (BLOCKING) ────────────────────────────────
+# The public marketing pages became indexable on 2026-07-16 (they had been
+# noindex since the containment era, which meant robots.txt welcomed AI
+# crawlers while every page told them to forget what they read). That flip
+# creates the opposite and worse risk: a PRIVATE page leaking into an index.
+# /pitch/* name real prospects and their competitors; /first-look/* is a
+# paying customer's unpublished diagnostic. One of those in Google is a
+# relationship incident, not a bug. Asymmetric on purpose: a public page
+# getting indexed is a marketing choice, a private one is a breach.
+echo ""
+node "$ROOT/scripts/check-noindex.mjs"
 
 echo "Build complete. Deploy with: npx wrangler deploy"
