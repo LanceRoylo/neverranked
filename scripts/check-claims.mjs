@@ -98,7 +98,15 @@ const RULES = [
     // Scoped to OUR cadence: a client's analyst logging in every day is
     // legitimate copy and must not trip this.
     severity: "warn",
-    re: /\b(?:we|neverranked)\b[^.\n]{0,50}\b(?:measure|watch|track|run|capture)[^.\n]{0,30}\b(?:daily|every\s+day)\b|\b(?:measured|tracked|watched|captured)\s+(?:daily|every\s+day)\b|\bcapture\s+is\s+daily\b|\b(?:seven|7)\s+AI\s+(?:surfaces?|tools?|engines?)\s*,?\s*(?:daily|every\s+day)\b/i,
+    // Kept in sync with CADENCE_PATTERNS in
+    // ../neverranked-outreach/lib/output-grader.js. The
+    // "daily measurement|capture|drift alerts" alternation was missing here
+    // and present there, so this gate reported 1 page when 8 carried the
+    // phrase (/vs/, /faq/, /methodology/, and five -aeo pages). Two copies of
+    // a rule in two repos WILL drift; that is precisely the failure this
+    // whole file exists to catch, so it is worth saying out loud: if you edit
+    // one, edit both.
+    re: /\b(?:we|neverranked)\b[^.\n]{0,50}\b(?:measure|watch|track|run|capture)[^.\n]{0,30}\b(?:daily|every\s+day)\b|\b(?:measured|tracked|watched|captured)\s+(?:daily|every\s+day)\b|\bcapture\s+is\s+daily\b|\b(?:seven|7)\s+AI\s+(?:surfaces?|tools?|engines?)\s*,?\s*(?:daily|every\s+day)\b|\b(?:daily|every\s+day)\s+(?:measurement|capture|drift\s+alerts?)\b/i,
     why: 'possible retired cadence overclaim: canon says we measure in repeated runs against a frozen baseline, never "daily"',
   },
 ];
