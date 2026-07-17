@@ -204,4 +204,21 @@ fi
 echo ""
 node "$ROOT/scripts/check-internal-links.mjs"
 
+# ── Retracted/retired claim integrity (BLOCKING) ────────────────────────
+# Fail the build if a shipped page carries a claim we publicly retracted or a
+# product we retired.
+#
+# Added 2026-07-16 after a sweep found the retracted Hawaii Theatre figures
+# ("45 to 95", "14 of 19") live on FIVE pages, including the first-look page
+# a customer's counsel was reading, while /retraction/ asserted "The site no
+# longer contradicts the retraction." A grader capable of catching this had
+# existed for weeks, wired to the cold-email path and never to the website.
+# The site had no gate at all.
+#
+# Costs nothing and calls no API: it is the deterministic half of
+# ../neverranked-outreach/lib/output-grader.js applied to shipped HTML, so it
+# runs in CI with no key. Strict liability only, never style.
+echo ""
+node "$ROOT/scripts/check-claims.mjs"
+
 echo "Build complete. Deploy with: npx wrangler deploy"
