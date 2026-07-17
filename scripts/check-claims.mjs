@@ -49,17 +49,33 @@ const DIST = join(ROOT, "dist");
 // rules whose underlying fact is still being settled. A gate that blocks on
 // an unanswered question just teaches people to bypass the gate.
 const RULES = [
+  // scanSource: also scan HTML COMMENTS, not just rendered text.
+  //
+  // Only the retracted-figure rules get this, and the reason is specific to
+  // this company. Comments are invisible to a human reader, which is why the
+  // other rules ignore them (an author note explaining a rule is not a
+  // published claim). But AI crawlers parse HTML comments, and NeverRanked's
+  // entire product is what AI reads about a business. Feeding a retracted
+  // number about ourselves into the corpus from our own source would be a
+  // uniquely stupid way to resurrect it.
+  //
+  // Caught exactly that on 2026-07-16, minutes after deploy: the warning
+  // comment on the homepage, written to stop anyone reintroducing "45-to-95",
+  // contained the digits. The rendered page was clean; the shipped bytes were
+  // not. View-source is also trivial for a journalist or a competitor.
   {
     id: "retracted-htc-score",
     severity: "block",
+    scanSource: true,
     re: /\b45\s*(?:->|→|to)\s*95\b|\b45-to-95\b/i,
-    why: 'the retracted Hawaii Theatre 45-to-95 score lift (retracted at /retraction/)',
+    why: 'the retracted Hawaii Theatre 45-to-95 score lift (retracted at /retraction/). Applies to HTML comments too: AI crawlers read them',
   },
   {
     id: "retracted-htc-perplexity",
     severity: "block",
+    scanSource: true,
     re: /\b5\s*(?:->|→)\s*14\b|\b14\s*(?:of|\/)\s*19\b/i,
-    why: 'the retracted Hawaii Theatre 14-of-19 Perplexity citation claim (retracted at /retraction/)',
+    why: 'the retracted Hawaii Theatre 14-of-19 Perplexity citation claim (retracted at /retraction/). Applies to HTML comments too: AI crawlers read them',
   },
   {
     id: "false-never-touched",
@@ -172,18 +188,26 @@ try {
 const hits = [];
 for (const f of files) {
   const rel = relative(DIST, f);
-  const text = toText(readFileSync(f, "utf8"));
+  const html = readFileSync(f, "utf8");
+  const text = toText(html);
+  // Comments, extracted separately so scanSource rules can see what a crawler
+  // sees. Pulled out explicitly rather than by loosening toText, because a
+  // comment can contain ">" and would shred a naive tag-strip.
+  const comments = decode((html.match(/<!--[\s\S]*?-->/g) || []).join(" ")).replace(/\s+/g, " ");
+
   for (const rule of RULES) {
     if (allowed(rel, rule.id)) continue;
-    const m = text.match(rule.re);
+    const haystack = rule.scanSource ? `${text} ${comments}` : text;
+    const m = haystack.match(rule.re);
     if (!m) continue;
-    const at = text.indexOf(m[0]);
+    const at = haystack.indexOf(m[0]);
+    const inComment = at >= text.length;
     hits.push({
       page: rel,
       rule: rule.id,
       severity: rule.severity,
-      why: rule.why,
-      quote: text.slice(Math.max(0, at - 55), at + m[0].length + 55).trim(),
+      why: rule.why + (inComment ? " — found in an HTML COMMENT: invisible to a reader, visible to a crawler and to view-source" : ""),
+      quote: haystack.slice(Math.max(0, at - 55), at + m[0].length + 55).trim(),
     });
   }
 }
