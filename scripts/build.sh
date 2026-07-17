@@ -273,4 +273,16 @@ node "$ROOT/scripts/check-lanham.mjs"
 echo ""
 node "$ROOT/scripts/check-noindex.mjs"
 
+# ── Bright line #1: no cohort business named on an indexed page (BLOCKING) ──
+# The containment doc lists this first: "Naming any non-customer competitor on
+# a publicly-indexed page." It was on the honor system until 2026-07-17, and
+# the honor system lost: /hawaii-bank-aeo/ named six real Hawaii banks —
+# including an active pitch target — and the 2026-07-16 noindex flip made that
+# page crawlable for the first time. Worse, it published a roster for a
+# teardown that reports per-bank figures as "Bank A / Bank B", collapsing a
+# 23-bank anonymity set to a named handful. Anonymized data plus a published
+# roster is not anonymized.
+echo ""
+node "$ROOT/scripts/check-named.mjs"
+
 echo "Build complete. Deploy with: npx wrangler deploy"
