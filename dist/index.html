@@ -339,6 +339,10 @@
 
   /* ═══ Verticals — who we measure for ═══ */
   .verticals { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin: 28px 0 4px; }
+  /* Five cards in a two-column grid orphans the last one. "Your category"
+     becomes a full-width closing strip instead: it is the catch-all, so
+     reading order (specific verticals, then the open door) improves too. */
+  .vertical-card.wide { grid-column: 1 / -1; }
   .vertical-card { display: block; padding: 26px 24px 22px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); border: 1px solid var(--line); border-radius: 14px; text-decoration: none; color: inherit; transition: transform 220ms var(--ease-out), border-color 220ms ease, box-shadow 260ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset; }
   @media (hover: hover) { .vertical-card:hover { transform: translateY(-3px); border-color: color-mix(in oklab, var(--gold) 45%, transparent); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 40px -16px rgba(0,0,0,0.5); } .vertical-card:hover .vc-arrow { transform: translateX(3px); color: var(--gold-bright); } }
   .vertical-card:active { transform: scale(0.99); }
@@ -995,13 +999,19 @@
           <p class="vc-sub">The most aggregator-captured market we have measured, and the cross-category data that proves the number is structural.</p>
           <span class="vc-arrow">For real estate &rarr;</span>
         </a>
+        <a class="vertical-card" href="/for-hvac/">
+          <div class="vc-cat">HVAC &amp; home services</div>
+          <p class="vc-line">The forecast we dated before the data. It held.</p>
+          <p class="vc-sub">One of the few local categories where the citation is still up for grabs, measured to a pre-registered standard.</p>
+          <span class="vc-arrow">For home services &rarr;</span>
+        </a>
         <a class="vertical-card" href="/for-agencies/">
           <div class="vc-cat">Agencies</div>
           <p class="vc-line">We measure. You execute. The client stays yours.</p>
           <p class="vc-sub">An independent measurement layer upstream of your team, resold into your accounts with your markup on top.</p>
           <span class="vc-arrow">For agencies &rarr;</span>
         </a>
-        <a class="vertical-card" href="mailto:Lance@hi.neverranked.com?subject=Measure%20my%20category">
+        <a class="vertical-card wide" href="mailto:Lance@hi.neverranked.com?subject=Measure%20my%20category">
           <div class="vc-cat">Your category</div>
           <p class="vc-line">Ten cohorts measured so far. Yours can be next.</p>
           <p class="vc-sub">Venues, tours and experiences, weddings, clubs, local services. If your buyers research before they buy, it can be measured.</p>

@@ -61,6 +61,7 @@ DIRS=(
   # vertical page with no measured finding is just an assertion.
   for-hospitality
   for-real-estate
+  for-hvac
   # Self-hosted variable fonts (Fraunces/Inter/JetBrains Mono) for the 2026-07
   # "Scorekeeper" design system. Every page's @font-face points at /fonts/*.woff2
   # with a ROOT-ABSOLUTE url so check-internal-links.mjs actually validates it

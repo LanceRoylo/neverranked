@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>AI citation measurement for HVAC and home services -- NeverRanked</title>
+<meta name="description" content="Two days before measuring Honolulu HVAC, we committed a forecast to the record: Claude would cite AC companies' own sites under 5 percent of the time. It measured 2. NeverRanked measures where AI sends your next customer. We never touch your site.">
+<link rel="canonical" href="https://neverranked.com/for-hvac/">
+<link rel="preload" href="/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  /* ═══════════════════════════════════════════════════════════════════
+     FOR HVAC / HOME SERVICES — vertical page 3.
+     Inherits the "Scorekeeper" system. The named idea is THE CALLED
+     SHOT: the one forecast in this category written down before the
+     data existed, with its own kill criteria, that held. Hotels got the
+     citation wall (composition), real estate got the category spectrum
+     (comparison). HVAC gets the prediction ledger (before/after), which
+     is the strongest proof device this practice owns and cannot be
+     faked after the fact.
+
+     The commercial story is deliberately DIFFERENT from the other two
+     verticals: hotels and real estate are wall categories (own-site 11%
+     and 14%). HVAC is an open field — 40% own-site on the live-web
+     engines, directories only 7%, no dominant national brand. The pitch
+     is not "you are behind a wall", it is "your category is winnable
+     and here is the proof we measure it honestly".
+
+     Every figure is from published teardown 09 (2026-06-11, hash
+     86b2b18e) or the cross-category teardown, both linked. Cohort firms
+     stay anonymized. Angi / HomeAdvisor / Home Depot are named only in
+     the excluded-by-rule framing the teardown itself uses.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/fonts/fraunces-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "Fraunces";
+    src: url("/fonts/fraunces-italic-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: italic; font-display: swap;
+  }
+  @font-face {
+    font-family: "Inter";
+    src: url("/fonts/inter-var.woff2") format("woff2");
+    font-weight: 100 900; font-style: normal; font-display: swap;
+  }
+  @font-face {
+    font-family: "JetBrains Mono";
+    src: url("/fonts/jetbrains-mono-var.woff2") format("woff2");
+    font-weight: 100 800; font-style: normal; font-display: swap;
+  }
+
+  :root {
+    color-scheme: dark;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+
+    --bg: #121009;        --bg: oklch(0.145 0.012 85);
+    --bg-deep: #0d0b07;   --bg-deep: oklch(0.125 0.011 85);
+    --panel: #17140c;     --panel: oklch(0.165 0.014 87);
+    --panel-2: #1c1810;   --panel-2: oklch(0.185 0.016 88);
+    --line: #2e2a1f;      --line: oklch(0.27 0.02 88);
+    --line-soft: #221f16; --line-soft: oklch(0.215 0.016 88);
+    --gold: #cdb87f;      --gold: oklch(0.79 0.085 92);
+    --gold-bright: #edd58a; --gold-bright: oklch(0.875 0.1 94);
+    --gold-deep: #8f7c46; --gold-deep: oklch(0.585 0.075 90);
+    --text: #f0ece1;      --text: oklch(0.945 0.012 90);
+    --soft: #b9b2a0;      --soft: oklch(0.77 0.02 90);
+    --dim: #877f6c;       --dim: oklch(0.60 0.025 90);
+    --terra: #c98b74;     --terra: oklch(0.70 0.075 45);
+    --ink-on-gold: #171204;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); overflow-x: clip; }
+  body {
+    font-family: var(--sans); font-size: 16.5px; color: var(--soft); line-height: 1.65;
+    -webkit-font-smoothing: antialiased; font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    position: relative;
+  }
+  body::after {
+    content: ""; position: fixed; inset: 0; z-index: 2000; pointer-events: none; opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+  }
+  a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; text-decoration-color: color-mix(in oklab, var(--gold) 45%, transparent); transition: color 160ms ease, text-decoration-color 160ms ease; }
+  @media (hover: hover) { a:hover { color: var(--gold-bright); text-decoration-color: var(--gold-bright); } }
+  :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 2px; border-radius: 2px; }
+  ::selection { background: color-mix(in oklab, var(--gold) 30%, transparent); color: var(--text); }
+
+  .nav { position: sticky; top: 0; z-index: 40; background: color-mix(in oklab, var(--bg) 78%, transparent); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1); border-bottom: 1px solid var(--line-soft); }
+  .nav-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px 32px; }
+  .wordmark { font-family: var(--serif); font-size: 19px; font-weight: 560; letter-spacing: -0.012em; color: var(--text); text-decoration: none; }
+  .wordmark em { font-style: normal; color: var(--gold); }
+  .nav-links { display: flex; gap: 26px; }
+  .nav-links a { font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.14em; text-transform: uppercase; color: var(--soft); text-decoration: none; transition: color 160ms var(--ease-out); }
+  @media (hover: hover) { .nav-links a:hover { color: var(--gold-bright); } }
+  .nav-cta { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 10px 16px; border-radius: 6px; transition: filter 160ms ease, transform 160ms var(--ease-out), box-shadow 240ms var(--ease-out); box-shadow: 0 0 0 0 rgba(237,213,138,0); }
+  .nav-cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .nav-cta:hover { filter: brightness(1.06); box-shadow: 0 4px 18px 0 color-mix(in oklab, var(--gold) 28%, transparent); } }
+
+  .section { padding: clamp(76px, 10vw, 118px) 0; position: relative; }
+  .section.panel { background: linear-gradient(180deg, var(--panel) 0%, var(--bg-deep) 100%); border-top: 1px solid var(--line-soft); border-bottom: 1px solid var(--line-soft); }
+  .inner { max-width: 660px; margin: 0 auto; padding: 0 32px; }
+  .inner.wide { max-width: 920px; }
+  .inner.wide > p { max-width: 720px; }
+  .sec-label { display: flex; align-items: center; gap: 14px; font-family: var(--mono); font-size: 11px; font-weight: 420; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); margin: 0 0 30px; }
+  .sec-label .n { color: var(--gold); }
+  .sec-label::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, var(--line), transparent); }
+  h2 { font-family: var(--serif); font-size: clamp(27px, 3.4vw, 38px); font-weight: 420; color: var(--text); margin: 0 0 18px; letter-spacing: -0.015em; line-height: 1.16; text-wrap: balance; font-variant-numeric: lining-nums; }
+  h3 { font-family: var(--serif); font-size: 19px; font-weight: 450; color: var(--text); margin: 0 0 8px; letter-spacing: -0.008em; }
+  p { font-size: 16.5px; color: var(--soft); margin: 0 0 16px; }
+  strong { color: var(--text); font-weight: 600; }
+  .lead { font-size: clamp(18px, 1.55vw, 20.5px); color: var(--text); line-height: 1.55; font-weight: 380; letter-spacing: -0.004em; }
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 700ms var(--ease-out), transform 700ms var(--ease-out); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  .hero { padding: clamp(84px, 11vw, 138px) 0 clamp(64px, 8vw, 96px); position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; inset: -20% -10% auto -10%; height: 130%; pointer-events: none;
+    background:
+      radial-gradient(900px 520px at 18% 8%, color-mix(in oklab, var(--gold) 7%, transparent), transparent 68%),
+      radial-gradient(720px 480px at 88% 30%, color-mix(in oklab, var(--terra) 4%, transparent), transparent 70%);
+  }
+  .hero .inner { max-width: 860px; position: relative; }
+  .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; font-weight: 440; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0 0 30px; }
+  .kicker::before { content: ""; width: 26px; height: 1px; background: var(--gold-deep); }
+  .hero h1 { font-family: var(--serif); font-size: clamp(38px, 5.6vw, 60px); font-weight: 400; line-height: 1.08; letter-spacing: -0.024em; margin: 0 0 30px; color: var(--text); text-wrap: balance; font-variant-numeric: lining-nums; }
+  .hero .turn { font-family: var(--serif); font-style: italic; font-weight: 420; font-size: clamp(19px, 2vw, 23px); color: var(--gold); line-height: 1.52; letter-spacing: -0.004em; margin: 0 0 38px; max-width: 46em; }
+
+  .cta { display: inline-block; font-family: var(--mono); font-size: 12.5px; font-weight: 560; letter-spacing: 0.11em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 17px 32px; border-radius: 8px; transition: transform 160ms var(--ease-out), filter 200ms ease, box-shadow 280ms var(--ease-out); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 0 0 0 rgba(237,213,138,0); }
+  .cta:active { transform: scale(0.97); }
+  @media (hover: hover) { .cta:hover { filter: brightness(1.05); box-shadow: 0 1px 0 rgba(255,255,255,0.25) inset, 0 6px 28px 0 color-mix(in oklab, var(--gold) 30%, transparent); } }
+  .cta-note { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--dim); margin-top: 18px; line-height: 1.7; }
+
+  /* ═══ THE CALLED SHOT ═══
+     The device. A prediction ledger: two dated entries on one stage.
+     Left entry is what was committed to the record on 2026-06-09,
+     before any HVAC data existed, including the falsifiers. Right entry
+     is what the measurement returned on 2026-06-11. The pairing IS the
+     argument: a forecast with kill criteria, dated before the data,
+     that held. No competitor can reconstruct this after the fact,
+     which is the entire point of showing the dates. */
+  .shot-stage {
+    position: relative; border: 1px solid var(--line); border-radius: 18px; padding: clamp(20px, 3vw, 32px);
+    background:
+      radial-gradient(1px 1px at 50% 50%, color-mix(in oklab, var(--text) 7%, transparent) 1px, transparent 1px) 0 0 / 26px 26px,
+      linear-gradient(180deg, var(--panel-2), var(--bg-deep));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.035) inset, 0 24px 60px -20px rgba(0,0,0,0.5);
+    overflow: hidden; margin-top: 30px;
+  }
+  .shot-stage::after {
+    content: ""; position: absolute; inset: 0; pointer-events: none;
+    background: radial-gradient(140% 120% at 50% 50%, transparent 55%, rgba(0,0,0,0.3) 100%);
+  }
+  .shot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(16px, 2.4vw, 28px); position: relative; z-index: 1; }
+  .shot-col { border: 1px solid var(--line-soft); border-radius: 12px; background: color-mix(in oklab, var(--bg) 55%, transparent); padding: 22px 24px; }
+  .shot-col.result { border-color: color-mix(in oklab, var(--gold) 30%, transparent); }
+  .shot-date { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold-deep); margin-bottom: 4px; }
+  .shot-col.result .shot-date { color: var(--gold); }
+  .shot-when { font-family: var(--serif); font-size: 22px; color: var(--text); font-variant-numeric: lining-nums; margin-bottom: 16px; }
+  .shot-row { padding: 13px 0; border-top: 1px solid var(--line-soft); font-size: 14.5px; line-height: 1.55; }
+  .shot-row b { color: var(--text); font-weight: 600; }
+  .shot-num { font-family: var(--serif); font-size: clamp(30px, 3.4vw, 42px); color: var(--text); line-height: 1.1; font-variant-numeric: lining-nums; display: block; margin-top: 2px; }
+  .shot-col.result .shot-num { color: var(--gold-bright); }
+  .shot-row.falsifier { color: var(--dim); }
+  .shot-row.falsifier .tag { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--terra); }
+  .shot-held {
+    display: inline-block; font-family: var(--mono); font-size: 11px; font-weight: 560; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--gold-bright);
+    border: 1.5px solid color-mix(in oklab, var(--gold) 55%, transparent); border-radius: 4px;
+    padding: 6px 12px; transform: rotate(-2deg); margin-top: 14px;
+  }
+  .shot-foot { font-family: var(--mono); font-size: 11.5px; line-height: 1.7; color: var(--dim); letter-spacing: 0.02em; margin-top: 20px; position: relative; z-index: 1; }
+  .fig-note { font-family: var(--mono); font-size: 11.5px; line-height: 1.7; color: var(--dim); letter-spacing: 0.02em; margin-top: 22px; }
+
+  /* Tables */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 26px 0 0; border: 1px solid var(--line-soft); border-radius: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 480px; }
+  th { font-family: var(--mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-deep); text-align: left; font-weight: 420; padding: 13px 16px; border-bottom: 1px solid var(--line); background: var(--panel); }
+  th.r, td.r { text-align: right; }
+  td { padding: 12px 16px; border-bottom: 1px solid var(--line-soft); color: var(--soft); font-variant-numeric: tabular-nums; }
+  tr:last-child td { border-bottom: 0; }
+  td.name { color: var(--text); }
+  td.pct { font-family: var(--mono); font-size: 13.5px; color: var(--gold); }
+  td.pct.low { color: var(--terra); }
+
+  .keeper { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 34px 0 24px; }
+  .keeper-col { border: 1px solid var(--line-soft); border-radius: 14px; padding: 24px 26px; background: linear-gradient(180deg, var(--panel), var(--bg-deep)); }
+  .keeper-us { border-color: color-mix(in oklab, var(--gold) 32%, transparent); background: linear-gradient(180deg, color-mix(in oklab, var(--gold) 5%, var(--panel)), var(--bg-deep)); }
+  .keeper-col h3 { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 16px; font-weight: 440; }
+  .keeper-us h3 { color: var(--gold); }
+  .keeper-col ul { list-style: none; margin: 0; padding: 0; }
+  .keeper-col li { font-size: 14.5px; color: var(--soft); padding: 10px 0; border-bottom: 1px solid var(--line-soft); line-height: 1.5; }
+  .keeper-col li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  .rows { margin-top: 28px; border-top: 1px solid var(--line-soft); }
+  .row { display: grid; grid-template-columns: 190px 1fr; gap: 24px; padding: 20px 0; border-bottom: 1px solid var(--line-soft); }
+  .row .k { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold-deep); padding-top: 3px; }
+  .row .v { font-size: 15.5px; color: var(--soft); }
+  .row .v b { color: var(--text); }
+
+  .agency-note { max-width: 920px; margin: 4px auto 0; padding: 0 32px; }
+  .agency-note a { display: block; border: 1px solid var(--line); border-left: 2px solid var(--gold); border-radius: 4px; background: var(--panel); padding: 13px 18px; color: var(--dim); text-decoration: none; font-size: 14px; line-height: 1.55; }
+  .agency-note strong { color: var(--text); font-weight: 600; }
+  .agency-note span { color: var(--gold); white-space: nowrap; }
+
+  .close { text-align: center; }
+  .close h2 { font-size: clamp(30px, 4vw, 46px); max-width: 16em; margin: 0 auto 18px; }
+  .footer { padding: 44px 32px 60px; text-align: center; font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.06em; color: var(--dim); border-top: 1px solid var(--line-soft); line-height: 2; }
+
+  @media (max-width: 680px) {
+    .nav-links { display: none; }
+    .nav-inner { padding: 13px 20px; }
+    .nav-cta { padding: 9px 13px; font-size: 10px; white-space: nowrap; }
+    .inner { padding: 0 22px; }
+    .section { padding: 64px 0; }
+    .keeper { grid-template-columns: 1fr; }
+    .shot-grid { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 1fr; gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="wordmark" href="/">Never<em>Ranked</em></a>
+      <div class="nav-links">
+        <a href="/methodology/">Methodology</a>
+        <a href="/teardowns/hvac-honolulu/">The HVAC teardown</a>
+        <a href="/for-agencies/">For agencies</a>
+      </div>
+      <a class="nav-cta" href="https://check.neverranked.com/">Free AI check</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <header class="hero">
+    <div class="inner">
+      <div class="kicker reveal">For HVAC and home services</div>
+      <h1 class="reveal" style="transition-delay:.08s">We wrote down what AI would do to this category two days before we measured it.</h1>
+      <p class="turn reveal" style="transition-delay:.18s">Committed to the record on June 9: Claude would cite AC companies' own websites under 5 percent of the time, and the web-searching engines would clear 35. Measured on June 11: 2 percent, and 47. The ways the forecast could fail were written down too. That is the standard your category gets measured to.</p>
+      <p class="reveal" style="transition-delay:.28s"><a class="cta" href="https://check.neverranked.com/">See what AI sees on your site &rarr;</a></p>
+      <div class="reveal cta-note" style="transition-delay:.36s">12-firm Honolulu cohort &middot; 18 hash-locked questions &middot; 6,218 citations &middot; runs finalized June 11, 2026 &middot; <a href="/teardowns/hvac-honolulu/">the full teardown</a></div>
+    </div>
+  </header>
+
+  <!-- THE CALLED SHOT -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The called shot</span>A forecast with a way to be wrong</div>
+      <h2>Most measurement is a story told after the data. This one was dated before it.</h2>
+      <p class="lead">Anyone can explain a number once it exists. A forecast committed to the record before the first run, with its own kill criteria attached, is a different kind of evidence. Here is the one we made for this category, and what the measurement returned.</p>
+
+      <div class="shot-stage">
+        <div class="shot-grid">
+          <div class="shot-col">
+            <div class="shot-date">Registered &middot; before any HVAC data existed</div>
+            <div class="shot-when">June 9, 2026</div>
+            <div class="shot-row">
+              <b>Claude, own-site citation share</b><br>
+              predicted under
+              <span class="shot-num">5%</span>
+            </div>
+            <div class="shot-row">
+              <b>Web-searching engines, same questions</b><br>
+              predicted at or above
+              <span class="shot-num">35%</span>
+            </div>
+            <div class="shot-row falsifier">
+              <span class="tag">Falsifiers, on the record</span><br>
+              Claude at 10% or higher, or the web engines below 35%, and the forecast fails. Written down with the prediction, so there was a real way to be wrong.
+            </div>
+          </div>
+          <div class="shot-col result">
+            <div class="shot-date">Measured &middot; 3 clean runs, 6,218 citations</div>
+            <div class="shot-when">June 11, 2026</div>
+            <div class="shot-row">
+              <b>Claude, own-site citation share</b><br>
+              measured at
+              <span class="shot-num">2%</span>
+            </div>
+            <div class="shot-row">
+              <b>Four AI-answer web engines, pooled</b><br>
+              measured at
+              <span class="shot-num">47%</span>
+            </div>
+            <div class="shot-row">
+              <span class="shot-held">Forecast held &middot; neither falsifier triggered</span>
+            </div>
+          </div>
+        </div>
+        <p class="shot-foot">The prediction was committed to a timestamped record on June 9, 2026, before a single HVAC query had run. The reasoning, also on the record: home services is an editorially thin local trade, so individual AC companies barely exist in Claude's training data. HVAC is the third unrelated category where that collapse held, after CPA firms across three geographies and med spas. Full account in <a href="/teardowns/hvac-honolulu/">teardown 09</a>.</p>
+      </div>
+
+      <p style="margin-top:26px;">Why this matters to an AC company deciding whether to believe any vendor's numbers: a measurement practice that publishes dated forecasts with kill criteria cannot quietly move the goalposts when the data lands. You are not being asked to trust a story. You are being shown a prediction that was allowed to fail, and did not.</p>
+    </div>
+  </section>
+
+  <!-- THE OPEN FIELD -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The open field</span>What makes this category different</div>
+      <h2>Hotels and real estate sit behind an aggregator wall. Your category is still up for grabs.</h2>
+      <p class="lead">In the markets we measured, Hawaii hotels hold 11 percent of their own citations and Honolulu real estate firms hold 14, because the portals and booking sites own the answer. Honolulu HVAC is different: on the five web-searching engines, AC companies' own websites carry 40 percent of the citations.</p>
+      <p>Review directories drew only 7 percent of mentions in this category, and the cohort was built with Angi, HomeAdvisor, and Home Depot excluded by rule, the way the teardown documents. There is no dominant national brand sitting on the answer. When a Honolulu buyer asks AI about AC repair or installation, the citations mostly land on actual AC companies' own sites or on editorial content, which means the citation is genuinely contested. Somebody in your market is going to hold it.</p>
+      <p>That is the practical difference between this page and our <a href="/for-hospitality/">hotels</a> and <a href="/for-real-estate/">real estate</a> pages: those categories are fighting a wall. Yours is a race. Cross-market comparison at <a href="/teardowns/cross-category/">the cross-category teardown</a>.</p>
+    </div>
+  </section>
+
+  <!-- THE SPLIT -->
+  <section class="section panel">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The split</span>Same questions, opposite answers</div>
+      <h2>Two thirds of ChatGPT search citations went to AC companies' own sites. On Copilot, none did.</h2>
+      <p class="lead">The same eighteen questions, the same days, the same twelve firms, across seven AI surfaces: five that search the live web and two that answer from model memory. The share of citations reaching an AC company's own site ran from 66 percent down to zero depending only on which tool the buyer opened.</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>AI surface</th><th class="r">AC-company-owned share</th><th class="r">Third-party share</th><th class="r">Mentions</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="name">ChatGPT search</td><td class="r pct">66%</td><td class="r">34%</td><td class="r">935</td></tr>
+            <tr><td class="name">Gemma <span style="color:var(--dim)">(model memory)</span></td><td class="r pct">63%</td><td class="r">38%</td><td class="r">432</td></tr>
+            <tr><td class="name">Gemini grounded</td><td class="r pct">45%</td><td class="r">53%</td><td class="r">1,674</td></tr>
+            <tr><td class="name">Google AI Overviews</td><td class="r pct">45%</td><td class="r">43%</td><td class="r">302</td></tr>
+            <tr><td class="name">Perplexity</td><td class="r pct">38%</td><td class="r">59%</td><td class="r">1,477</td></tr>
+            <tr><td class="name">Claude <span style="color:var(--dim)">(model memory)</span></td><td class="r pct low">2%</td><td class="r">98%</td><td class="r">606</td></tr>
+            <tr><td class="name">Microsoft Copilot <span style="color:var(--dim)">(Bing)</span></td><td class="r pct low">0%</td><td class="r">91%</td><td class="r">792</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p style="margin-top:26px;">Two readings worth taking seriously. Copilot cited an AC company's own site 0 percent of the time across 792 mentions, so nobody in the cohort holds that surface today. The teardown calls it the first-mover opening, and it is sitting there unclaimed. And Claude's 2 percent against Gemma's 63 on identical questions means even the two model-memory engines disagree completely. A company can be the answer on one surface and absent on the next, which is the reason a single-engine tool cannot tell you where you stand, and the reason we run all seven.</p>
+    </div>
+  </section>
+
+  <!-- THE BOUNDARY -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The boundary</span>Why an independent count is worth anything</div>
+      <h2>We never touch your website, and we never grade our own work.</h2>
+      <p class="lead">Home services marketing is crowded with vendors who do the work and then report their own results. We are the other thing: the count that stays honest because we have no work in the race.</p>
+
+      <div class="keeper">
+        <div class="keeper-col">
+          <h3>An optimization vendor</h3>
+          <ul>
+            <li>Edits your pages, your schema, and your profiles</li>
+            <li>Needs write access to your site and listings</li>
+            <li>Reports the results of its own changes</li>
+            <li>Quotes the lift it expects to produce</li>
+          </ul>
+        </div>
+        <div class="keeper-col keeper-us">
+          <h3>The scorekeeper</h3>
+          <ul>
+            <li>Never touches your website, systems, or accounts</li>
+            <li>Observes the seven AI surfaces from the outside</li>
+            <li>Reports what they cite, either way the number lands</li>
+            <li>Promises the measurement, never the outcome</li>
+          </ul>
+        </div>
+      </div>
+
+      <p>The questions are locked by hash before we look, the method is documented in full at <a href="/methodology/">/methodology/</a>, and every published number is dated and tied to the run that produced it on the <a href="/claims/">claims record</a>. Your team or your marketing partner executes the punch list. The called shot above is what that discipline looks like when it is real.</p>
+    </div>
+  </section>
+
+  <!-- Agency path -->
+  <div class="agency-note reveal">
+    <a href="/for-agencies/">
+      <strong>Run a home-services marketing agency?</strong> This is the largest agency-served local vertical there is, and we sit upstream of your team. We measure, you execute, you keep the client. <span>For agencies &rarr;</span>
+    </a>
+  </div>
+
+  <!-- THE ENGAGEMENT -->
+  <section class="section">
+    <div class="inner wide reveal">
+      <div class="sec-label"><span class="n">The engagement</span>What an AC company actually gets</div>
+      <h2>A locked baseline, then the same questions asked again, run after run.</h2>
+      <div class="rows">
+        <div class="row"><div class="k">Kickoff</div><div class="v"><b>$4,500, one time.</b> The researched question panel for your service area, locked by hash before the first run. Competitor cohort discovery. Baseline measurement across all seven surfaces, the baseline memo, and the prepared punch list.</div></div>
+        <div class="row"><div class="k">Then</div><div class="v"><b>$1,500 per month, per category.</b> Repeated runs against the frozen baseline, a monthly research memo, the prioritized punch list, and the readiness cross-map. Three month initial term, month to month after that.</div></div>
+        <div class="row"><div class="k">Extra panels</div><div class="v"><b>$1,500 per month each, no second kickoff.</b> A second service line or a second market, reusing the competitor cohort the kickoff established.</div></div>
+        <div class="row"><div class="k">The boundary</div><div class="v">Measurement and analysis only. Your team or your agency executes. Fees are for the research and are not contingent on any citation, ranking, or revenue outcome.</div></div>
+      </div>
+      <p class="cta-note" style="margin-top:22px;">Honolulu is where this cohort was measured. The method itself is geography blind. Lock the questions your buyers ask, run the surfaces, count the names. It reads the same from Oahu as it does from Phoenix, Dallas, or Tampa.</p>
+    </div>
+  </section>
+
+  <!-- CLOSE -->
+  <section class="section panel">
+    <div class="inner close reveal">
+      <h2>Find out which surfaces name you and which ones have never heard of you.</h2>
+      <p class="lead" style="max-width:34em; margin:0 auto 30px;">Paste your URL and see in seconds what the seven AI tools can read from your site. Free, no signup.</p>
+      <p><a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a></p>
+      <p class="cta-note">Prefer a hand-built diagnostic of your market and comp set? Email <a href="mailto:Lance@hi.neverranked.com?subject=Measuring%20my%20HVAC%20market">Lance@hi.neverranked.com</a>.</p>
+    </div>
+  </section>
+
+  <div class="footer">
+    NeverRanked &middot; measured from Honolulu &middot; founder-led, bootstrapped &middot; &copy; 2026 Never Ranked LLC<br>
+    <a href="/methodology/">methodology</a> &middot; <a href="/claims/">claims record</a> &middot; <a href="/teardowns/hvac-honolulu/">the HVAC teardown</a> &middot; <a href="/terms/">terms</a> &middot; <a href="/privacy/">privacy</a> &middot; <a href="/takedowns/">takedowns &amp; opt-out</a>
+  </div>
+
+  <script>
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var els = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      els.forEach(function(el){ el.classList.add('in'); });
+      return;
+    }
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, { rootMargin: '0px 0px -12% 0px', threshold: 0.08 });
+    els.forEach(function(el){ io.observe(el); });
+  })();
+  </script>
+
+</body>
+</html>
