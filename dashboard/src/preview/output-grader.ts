@@ -349,7 +349,16 @@ const RETIRED_SKU_PATTERNS = [
   { re: /\$2,?000\s*\/\s*mo/i, label: 'retired SKU price $2,000/mo' },
   { re: /\$750\s+audit/i, label: 'retired $750 audit SKU' },
   { re: /\baudit\s+credit\b/i, label: 'retired audit-credit offer' },
-  { re: /\b(?:javascript\s+)?snippet\b/i, label: 'the retired snippet product' },
+  // The canon forbids the snippet "as an active product", NOT every mention
+  // of the word. A bare /snippet/ match was too broad and fired on the
+  // homepage's own retraction disclosure ("Our snippet was deployed on their
+  // site during that engagement, and it did move the score we were
+  // measuring") — the single most important sentence on the site, and the
+  // one place the word MUST appear. /retraction/ uses it throughout for the
+  // same reason: you cannot retract a product without naming it.
+  // So: match the OFFER and the CAUSAL claim, not the history.
+  { re: /\b(?:paste|install|deploy|add|drop|ship)\s+(?:our|the|this|a)\s+(?:javascript\s+)?snippet\b/i, label: 'offering the retired snippet product' },
+  { re: /\b(?:our|the)\s+snippet\s+(?:makes|drives|earns|improves|boosts|will|gets)\b/i, label: 'claiming the retired snippet causes citations' },
   { re: /\bschema\s+auto-?deploy/i, label: 'the retired schema auto-deploy product' },
   { re: /\bdone-for-you\b/i, label: 'done-for-you execution (we measure only)' },
 ];
