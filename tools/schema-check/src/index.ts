@@ -570,6 +570,15 @@ body.agency-mode #dashboard-preview{
 }
 body.agency-mode #agency-cta-card{display:block !important}
 
+/* Channel mode: the recipient is an AGENCY OWNER who clicked our own cold
+   email (utm_campaign=agency-cold), not an agency's client. Opposite of
+   agency-mode: we keep the scan, the grade, AND our pricing visible (their
+   cost basis for the resale margin), and add one reseller card at the top of
+   the CTA section that reframes the self-scan as the wedge they run on their
+   clients, routing to /for-agencies. Distinct from ref_name agency-mode. */
+#channel-cta-card{display:none}
+body.channel-mode #channel-cta-card{display:block}
+
 /* section labels */
 .section-label{
   display:flex;align-items:center;gap:14px;
@@ -1467,6 +1476,19 @@ body.agency-mode #agency-cta-card{display:block !important}
 
     <!-- CTA -->
     <div class="cta-section">
+      <!-- Channel-mode card: shown only when utm_campaign=agency-cold (an
+           agency owner clicked OUR cold email). Reframes the self-scan as the
+           wedge they resell to their own clients and routes to /for-agencies
+           (which carries the margin calculator). Hidden by default; the
+           body.channel-mode class reveals it. Distinct from ref_name
+           agency-mode, which white-labels this page for an agency's client. -->
+      <div id="channel-cta-card" style="max-width:640px;margin:0 auto 8px;padding:28px 30px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-left:2px solid var(--gold);border-radius:4px">
+        <div style="font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:10px;color:var(--gold);margin-bottom:12px">§ You run an agency</div>
+        <h3 style="font-family:var(--serif);font-size:24px;font-style:italic;line-height:1.25;margin:0 0 14px;color:var(--text)">The check you just ran is the one you run on your clients.</h3>
+        <p style="font-size:14px;color:var(--text-faint);line-height:1.7;margin:0 0 20px">White-labeled to your shop, it is the wedge you put in front of any prospect. The measurement behind it is the layer no agency builds in-house at these margins. You resell the engagement at your markup, your team executes the punch list, and your client keeps you as the expert. We stay upstream, and we never contact your clients.</p>
+        <a href="https://neverranked.com/for-agencies/" style="display:inline-block;padding:12px 28px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:500;text-decoration:none;border-radius:2px">See how the agency channel works &rarr;</a>
+        <p style="margin:16px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">Your cost is the list rate below. What you charge your client is yours.</p>
+      </div>
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
       <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
 
@@ -2382,6 +2404,22 @@ body.agency-mode #agency-cta-card{display:block !important}
     // Never let agency-mode setup block the core Run Check flow
     if (typeof console !== 'undefined' && console.warn) {
       console.warn('Agency mode setup failed:', e);
+    }
+  }
+
+  // Channel mode: the visitor is an AGENCY OWNER who clicked OUR cold email
+  // (utm_campaign=agency-cold), not an agency's prospect. Reveal the reseller
+  // card that reframes their own self-scan as the wedge they run on clients,
+  // routing to /for-agencies. Suppressed when ref_name agency-mode is active
+  // (that is the agency's client, a different audience). Wrapped in try/catch
+  // so it can never block the core Run Check flow.
+  try {
+    if (_utm.utm_campaign === 'agency-cold' && !_agency) {
+      document.body.classList.add('channel-mode');
+    }
+  } catch (e) {
+    if (typeof console !== 'undefined' && console.warn) {
+      console.warn('Channel mode setup failed:', e);
     }
   }
 
