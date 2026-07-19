@@ -6,9 +6,25 @@
 # plus the deploy step prunes pitch/blog/etc out of dist so there are
 # no old assets to match. A `/* /index.html 200` rule here is INVALID
 # (Cloudflare rejects it as an infinite loop, code 10021) — do not
-# re-add it. /check and all marketing routes are intentionally down.
-# Instrument (app.neverranked.com) is a separate Worker, unaffected.
-# Restore: revert this + index.html + wrangler.jsonc, normal build.
+# re-add it. The 2026-05-19 holder is gone (site rebuilt); specific
+# path rules below are live. Instrument (app.neverranked.com) is a
+# separate Worker, unaffected.
+
+# ---------------------------------------------------------------------
+# Cold-email CTA redirect (restored 2026-07-18).
+#
+# WHY: every outreach email links to the 2-label apex /check on purpose.
+# The 3-label check.neverranked.com trips SpamAssassin URI_TRY_3LD
+# (~2 spam pts, the biggest measured content deduction, mail-tester
+# 7/10), so the email cannot link there directly. This 302 forwards the
+# apex /check to the scanner. Cloudflare passes the incoming query to a
+# destination that has none, so ?url=<domain>&utm_* arrives intact and
+# the recipient lands on the scanner pre-loaded with their own domain.
+#
+# This rule was dropped in the 2026-05-19 rebuild and not restored,
+# while both generators kept emitting /check links, so every outreach
+# link 404'd. Specific path rule, not the forbidden /* catch-all.
+/check   https://check.neverranked.com/   302
 
 # ---------------------------------------------------------------------
 # Auth-link reputation redirect (added 2026-06-01).
