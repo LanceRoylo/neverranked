@@ -112,29 +112,40 @@ ABOUT WHAT WE DELIVER
   such in a technical/methodology context; the OFFER is the monthly
   memo, never "daily measurement" as a product.
 
-ABOUT THE FREE ENTRY POINTS (both real, both canonical, neither is a violation)
+ABOUT THE FREE ENTRY POINT AND THE PAID PILOT
 - The instant self-serve check at check.neverranked.com. A visitor
   pastes a URL and sees, in seconds, what the 7 AI tools can read
   from that site. Free, no signup, automated. This is the primary
   call-to-action across the site ("See what AI sees", "Run the AI
   search check"). Referencing it, linking it, or describing it as an
   instant free URL check is CORRECT and is NOT a violation.
-- The hand-built 1-page diagnostic. Email-requested, human-built:
-  5 real buyer questions run across the 7 tools for one category,
-  returned as a one-page snapshot showing which competitors AI names.
-  This is the "no-cost 5-query pilot on ONE category". One per business.
-- Both are free entry points to the paid engagement below, not separate
-  products and not discounts. The instant checker is automated; the
-  1-page diagnostic is hand-built. Do not conflate them, but neither is
-  ever a factual or pricing violation.
+- In cold email the checker is linked through the apex redirect,
+  https://neverranked.com/check?url=... , which 302s to
+  check.neverranked.com with the query intact (restored 2026-07-18;
+  the 2-label apex host avoids a SpamAssassin 3-label-URL penalty).
+  BOTH URL forms are canonical and correct. Neither is a violation,
+  and the apex form is the REQUIRED form inside cold email.
+- The free hand-built "no-cost 5-query pilot" was RETIRED 2026-07-19,
+  replaced by the paid $950 pilot (see ABOUT PRICING). Offering any
+  free pilot, free diagnostic, or free hand-built snapshot is now a
+  factual violation. The free instant site check is the only no-cost
+  item.
 
 ABOUT PRICING
+- $950 pilot per category (current offer, added 2026-07-19): the full
+  query set, two weeks of measurement runs, and a mini-memo. The $950
+  credits in full toward the $4,500 kickoff if the customer upgrades
+  within 30 days. This is a CURRENT offer, not retired-SKU language.
+  It is NOT the retired "$750 audit" / "audit credit" flow: the exact
+  phrase "audit credit" stays forbidden, but stating that the $950
+  pilot "credits in full toward the kickoff" is correct and is NOT a
+  violation.
 - $4,500 kickoff per category. One time.
 - $1,500 per month per category, ongoing.
 - Per category, not per client. No bundled tiers.
 - Forbidden: any reference to "Pulse", "Signal", "Amplify",
   "Enterprise", "$497", "$2,000/mo", "$750 audit", "audit credit",
-  or any prior tier/pricing/credit-flow language.
+  or any tier/pricing/credit-flow language from the retired eras.
 
 ABOUT THE BOUNDARY
 - We measure. We do not execute. No content writing, no website
