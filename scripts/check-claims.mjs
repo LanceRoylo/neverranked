@@ -103,6 +103,18 @@ const RULES = [
     why: "a retired product presented as active (we measure only, we never execute)",
   },
   {
+    // The free hand-built 1-page diagnostic (5 real questions, one per
+    // business) was retired 2026-07-19 and replaced by the paid $950 pilot.
+    // The free INSTANT check (check.neverranked.com) is the only no-cost item
+    // and is deliberately NOT matched. Bare "diagnostic" is legitimate and not
+    // matched either (e.g. "the measurement and diagnostic layer" on
+    // /for-agencies/) — only the retired-offer phrasings are.
+    id: "retired-free-diagnostic",
+    severity: "block",
+    re: /\bfree\s+(?:1-page\s+|one-page\s+|hand-built\s+)?diagnostic\b|\bhand-built\s+(?:1-page\s+|one-page\s+)?diagnostic\b|\b(?:1-page|one-page)\s+diagnostic\b|\bfive\s+real\s+(?:buyer\s+|customer\s+)?questions\b|Free%20diagnostic/i,
+    why: "the free hand-built 1-page diagnostic, retired 2026-07-19 and replaced by the $950 pilot; the free instant check is the only no-cost item",
+  },
+  {
     id: "cadence-overclaim",
     // BLOCKING as of 2026-07-16, once the underlying question was actually
     // answered by reading the code rather than guessing: capture genuinely IS
