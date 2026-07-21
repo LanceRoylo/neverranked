@@ -280,11 +280,19 @@ Grade three axes. ALL three must pass for verdict "pass".
    - Any reference to a snippet, JavaScript injection, schema auto-deploy, or "done-for-you" execution as an active product.
    - A specific prospect figure CONTRADICTS GROUND TRUTH, or a specific prospect figure is asserted when GROUND TRUTH is empty.
 
+   NOT a violation (do not fail for this): an interrogative hook that ASKS
+   whether an engine names or cites the prospect ("Does Perplexity name
+   [Company]?"). A question asserts nothing and predicts nothing; it is the
+   standing question the engagement exists to answer, and it is the tested
+   subject pattern. Fail citation-outcome language only when the artifact
+   ASSERTS or clearly implies an already-measured or promised outcome for
+   this prospect.
+
    Do NOT check for the 5+2 engine split, retracted figures, retired SKUs, cadence wording, or punctuation. Those are verified deterministically in code against the COMPLETE artifact before you run, and they have already passed. Reporting them again produces a false positive, because the proof may live in a passage you cannot see.
 
 2. VOICE — Reads as written by a real human, not generated. Judgement only: does a passage read as machine-written boilerplate rather than a person talking? Mechanical checks (punctuation, banned vocabulary) are handled deterministically in code BEFORE you run, so do not hunt for specific words or punctuation marks. If nothing genuinely reads as machine-written, VOICE passes. An artifact with no voice problem is the normal case.
 
-3. OVERALL — Coherent, on-offer, safe to ship. Fail if it is internally contradictory, empty, promises citation lift, or makes any promise NeverRanked cannot keep under the research-engagement positioning. Do NOT fail for personalization, template feel, artifact type, length, or "could be clearer" wording. Polish is out of scope. Fail only on safety, coherence, and promises.
+3. OVERALL — Coherent, on-offer, safe to ship. Fail if it is internally contradictory, empty, promises citation lift, or makes any promise NeverRanked cannot keep under the research-engagement positioning. An interrogative subject hook asking whether an engine names or cites the prospect is a QUESTION, not a promise or prediction — do not fail for it. Do NOT fail for personalization, template feel, artifact type, length, or "could be clearer" wording. Polish is out of scope. Fail only on safety, coherence, and promises.
 
 EVIDENCE RULE — this is strict and non-negotiable. Every issue you report MUST include a "quote" field containing text copied VERBATIM from the artifact, character for character. Do not paraphrase, do not reconstruct from memory, do not normalize punctuation. If you cannot copy an exact substring proving the issue, you may not report the issue. Any issue whose quote does not appear in the artifact is discarded automatically and counts as a grader error. When unsure, report nothing: a missed nitpick is cheap, a fabricated finding is not.
 
@@ -566,6 +574,16 @@ function verifyIssues(issues, artifactText) {
     const quote = isObj ? String(it.quote || '') : '';
     const reason = isObj ? String(it.reason || it.issue || '') : String(it);
     const axis = isObj ? String(it.axis || '') : '';
+    // Deterministic-owned topics: the code layer owns the 5+2 engine-split
+    // check completely and has ALREADY passed the full artifact before the
+    // LLM runs, so any LLM issue about the split is a false positive by
+    // design (observed 2026-07-20: the LLM failed a compliant email FOR
+    // including the required split, inverting the rule, despite an explicit
+    // instruction not to re-check it). Enforce the contract in code.
+    if (/\b5\s*\+\s*2\b|\bengine\s+split\b|\bsplit\s+(?:statement|sentence|rule)\b/i.test(reason)) {
+      rejected.push({ reason, why: 'deterministic-owned topic (5+2 split) — LLM re-check discarded per contract' });
+      continue;
+    }
     if (!quote.trim()) { rejected.push({ reason, why: 'no quote supplied' }); continue; }
     if (!hay.includes(normalizeForMatch(quote))) { rejected.push({ reason, quote, why: 'quote not found in artifact' }); continue; }
     kept.push({ axis, quote, reason, text: `${axis ? axis.toUpperCase() + ': ' : ''}${reason} — quoted: "${quote.slice(0, 90)}"` });
