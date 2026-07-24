@@ -1,78 +1,50 @@
-# Proof Point: What This Work Looks Like Shipped
+# Proof Point: How We Measure
 
-The audit you just read is theoretical until you see what
-happens when the recommendations actually get deployed. Here is
-the most recent example from our portfolio.
+<!--
+  REWRITTEN 2026-07-24. The prior version of this file told the retracted
+  Hawaii Theatre before/after story (score movement + citation counts) and
+  showcased the hosted injection snippet. Both are retired: the numbers are
+  publicly retracted (see /retraction) and NeverRanked is measurement-only.
+  Do not restore the old copy. HTC may be referenced as a capability
+  example (what we measure and how), never as an outcome claim.
+-->
 
-## Hawaii Theatre
+The audit you just read is a snapshot. What matters is whether the numbers
+in it can be trusted, and that is the part of this work we hold to a
+higher standard than anyone else in this space.
 
-A historic Honolulu performing arts venue. Open since 1922.
-Eighty to a hundred thousand patrons a year. By traditional SEO
-standards the website was fine. Real content, real photos,
-working booking flows.
+## How the measurement works
 
-By AI search standards, the venue was invisible.
+Hawaii Theatre, a historic Honolulu performing arts venue, was the first
+category we instrumented end to end. Every month we run the same frozen
+query set against seven AI engines, five that search the live web and two
+that answer from model knowledge, in repeated runs spread through the
+month. Each run records which businesses each engine actually cited, per
+query, with the raw responses kept on disk. The result is a per-engine
+citation share for the venue and its competitor cohort that can be
+recomputed from the raw data by anyone who asks.
 
-When we ran the initial AEO scan, Hawaii Theatre scored **45
-out of 100. Grade D.** They had zero AI citations across the
-queries that matter for their category. The structural gaps
-were textbook: no PerformingArtsTheater schema, no WebSite
-SearchAction, no AggregateRating embedded (despite a 4.6
-average across hundreds of Google reviews), no FAQPage, no
-BreadcrumbList anywhere, and zero Event schemas on a page
-listing 35 live shows.
+## Why you will not see a before-and-after headline here
 
-## What we shipped, in ten days
+Early on we told a before-and-after story about this work. We retracted it
+publicly, because when we tested our own claim we could not separate the
+effect of the changes from ordinary movement in the engines themselves.
+The full account is at neverranked.com/retraction.
 
-Five schema categories, all delivered through NeverRanked's
-one-line injection snippet. No engineering work on Hawaii
-Theatre's site. No CMS changes. No broken design.
+That retraction is now the standard this audit is built on. When we
+measure your category:
 
-- **Foundation schemas (Day 1):** PerformingArtsTheater across
-  every page, WebSite with SearchAction, AggregateRating
-  embedded in the venue block.
-- **Event schemas (Day 2):** 31 individual Event entities
-  generated from the live upcoming-events page. Daily refresh
-  cron activated -- every morning at 6am UTC the system
-  rescrapes the page and rewrites the schema set. Shows that
-  drop off deactivate. New shows get picked up within 24 hours.
-- **Page-level schemas (Day 4):** FAQPage with 8 grounded Q&A
-  pairs from real homepage content. BreadcrumbList across 24
-  site sections.
-
-## The result
-
-- AEO score moved from **45 (Grade D) to 95 (Grade A)** in
-  ten days.
-- On the first weekly citation log run after deployment,
-  **Perplexity named Hawaii Theatre on 14 of 19 tracked
-  queries.**
-
-No content campaign. No press push. No paid media. No
-backlinks. The structured-data layer was the gap. Once the
-facts were in a format AI engines could parse, retrieval
-started inside the first weekly run.
+- The query set and competitor cohort are frozen before the first run.
+- Engines that cannot have seen any recent site change serve as a control,
+  so engine drift does not get dressed up as results.
+- Any prediction about what a change will do is written down and dated
+  before the change ships, not after the numbers come in.
+- If the numbers move and we cannot tell why, we say so.
 
 ## What this means for your audit
 
-The work above is replicable. The schema categories listed in
-your roadmap are the same shape (adapted to your vertical) that
-Hawaii Theatre's deployment used. The measurement framework
-(the Citation Tape, our standing AI-citation tracker covering
-seven engines including the only open-weight model, Gemma) is
-the same instrument running against your domain when you sign
-on as a tracked client.
-
-The Hawaii Theatre case study, with the full schema list and
-the citation tracking output, is at
-[neverranked.com/case-studies/hawaii-theatre](https://neverranked.com/case-studies/hawaii-theatre/).
-The CEO of Hawaii Theatre Center approved use of the name and
-the before/after data in conversations like this one.
-
-If you want to see the same arc on your site, the next step is
-the same as it was for Hawaii Theatre: pick the schema package
-that fits your vertical (your roadmap above is the starting
-point), ship it via the snippet, and measure citation share
-weekly from there.
-</parameter>
-</invoke>
+The gaps listed in your roadmap are real observations from your site and
+your category. Acting on them is your team's call and your team's work.
+What we bring is the measurement discipline above, applied monthly, so
+whatever you choose to do, you will know what the engines actually said
+before and after, and you will never have to take our word for it.
