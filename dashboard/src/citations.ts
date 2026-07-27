@@ -1687,6 +1687,70 @@ export interface CitationDigestData {
   totalKeywords: number;
 }
 
+// citation_snapshots stores TWO shapes in these JSON columns, and the digest
+// reader below assumed one of them.
+//
+//   legacy weekly writer : top_competitors  = [{name, count}]
+//                          keyword_breakdown = [{keyword, cited}]
+//   readout writer       : top_competitors  = {htc_venue_share_pct,
+//                            competitors:[{domain,label,citations,...}], ...}
+//                          keyword_breakdown = {questions_with_owned,
+//                            total_questions}
+//
+// (see lib/snapshot-shape.ts isReadoutShapeSnapshot for the same distinction)
+//
+// Objects have no .slice or .filter. From 2026-07-02, the day
+// hawaii-theatre's first readout-shape snapshot landed, every weekly digest
+// for that client died on "TypeError: topCompetitors.slice is not a
+// function", six retries deep, every Monday. keyword_breakdown would have
+// thrown one line later for the same reason. 25 of 40 workflow instances
+// errored while dispatchWeeklyDeliveries reported 8/8 success.
+//
+// Normalize both shapes rather than merely guarding against one, so readout
+// clients get a real digest instead of an empty one. Anything unrecognized
+// degrades to empty rather than throwing: a thin digest is recoverable, a
+// crashed workflow sends nothing at all.
+
+function parseJsonSafe(raw: unknown): unknown {
+  try {
+    return JSON.parse(String(raw ?? ""));
+  } catch {
+    return null;
+  }
+}
+
+export function normalizeTopCompetitors(raw: unknown): { name: string; count: number }[] {
+  const parsed = parseJsonSafe(raw);
+  const list: unknown[] = Array.isArray(parsed)
+    ? parsed
+    : Array.isArray((parsed as { competitors?: unknown } | null)?.competitors)
+      ? ((parsed as { competitors: unknown[] }).competitors)
+      : [];
+  return list
+    .map((entry) => {
+      const o = (entry ?? {}) as Record<string, unknown>;
+      const name = String(o.name ?? o.label ?? o.domain ?? "").trim();
+      const count = Number(o.count ?? o.citations ?? 0);
+      return { name, count: Number.isFinite(count) ? count : 0 };
+    })
+    .filter((c) => c.name !== "");
+}
+
+export function normalizeKeywordCounts(raw: unknown): { won: number; lost: number; total: number } {
+  const parsed = parseJsonSafe(raw);
+  if (Array.isArray(parsed)) {
+    const won = parsed.filter((k) => Boolean((k as { cited?: unknown } | null)?.cited)).length;
+    return { won, lost: parsed.length - won, total: parsed.length };
+  }
+  const o = (parsed ?? {}) as Record<string, unknown>;
+  const total = Number(o.total_questions ?? 0);
+  const won = Number(o.questions_with_owned ?? 0);
+  if (Number.isFinite(total) && total > 0 && Number.isFinite(won)) {
+    return { won, lost: Math.max(0, total - won), total };
+  }
+  return { won: 0, lost: 0, total: 0 };
+}
+
 export async function getCitationDigestData(
   clientSlug: string,
   env: Env
@@ -1709,20 +1773,16 @@ export async function getCitationDigestData(
   const latest = snapshots[0];
   const previous = snapshots.length > 1 ? snapshots[1] : null;
 
-  const topCompetitors: { name: string; count: number }[] = JSON.parse(
-    latest.top_competitors
-  );
-  const breakdown: { keyword: string; cited: boolean }[] = JSON.parse(
-    latest.keyword_breakdown
-  );
+  const topCompetitors = normalizeTopCompetitors(latest.top_competitors);
+  const keywords = normalizeKeywordCounts(latest.keyword_breakdown);
 
   return {
     citationShare: latest.citation_share,
     previousShare: previous ? previous.citation_share : null,
     topCompetitors: topCompetitors.slice(0, 5),
-    keywordsWon: breakdown.filter((k) => k.cited).length,
-    keywordsLost: breakdown.filter((k) => !k.cited).length,
-    totalKeywords: breakdown.length,
+    keywordsWon: keywords.won,
+    keywordsLost: keywords.lost,
+    totalKeywords: keywords.total,
   };
 }
 

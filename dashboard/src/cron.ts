@@ -104,21 +104,53 @@ export async function dispatchWeeklyDeliveries(
     digestErrors++;
     console.log(`[delivery] failed to enumerate digest users: ${e instanceof Error ? e.message : String(e)}`);
   }
-  // Fail loud: success ONLY if every opted-in user was dispatched with
-  // zero errors. Anything less is failure/partial so the heartbeat and
-  // cron_runs surface it the same day instead of an 8-day window hiding it.
+  // SEND_DIGEST_WORKFLOW.create() proves only that the job was ENQUEUED.
+  // Everything that can actually fail -- gathering per-user data, building
+  // the template, the QA preflight, the Resend call -- happens inside
+  // SendDigestWorkflow, where this function cannot see it.
+  //
+  // Reporting the enqueue count as if it were a delivery count is what hid
+  // a 77-day outage: from 2026-05-11 this row read "dispatched=8/8
+  // errors=0" every single Monday while email_delivery_log recorded 51
+  // consecutive digest failures and 25 of 40 workflow instances errored.
+  // The heartbeat then read this row and pronounced the digest healthy.
+  //
+  // Two changes. Say what is actually known ("enqueued"), and reconcile the
+  // PREVIOUS cycle's real outcome from email_delivery_log -- the table that
+  // told the truth the whole time. A cycle where nothing was delivered is a
+  // failure no matter how cleanly it enqueued.
+  let priorDelivered = 0;
+  let priorFailed = 0;
+  try {
+    const prior = await env.DB.prepare(
+      `SELECT
+         SUM(CASE WHEN status = 'queued' THEN 1 ELSE 0 END) AS delivered,
+         SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
+       FROM email_delivery_log
+       WHERE type = 'digest' AND created_at > unixepoch() - 8*86400`
+    ).first<{ delivered: number | null; failed: number | null }>();
+    priorDelivered = prior?.delivered ?? 0;
+    priorFailed = prior?.failed ?? 0;
+  } catch (e) {
+    console.log(`[delivery] prior-cycle reconcile failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  const enqueueClean = digestErrors === 0 && digestDispatched === digestTotal;
+  // No delivery in the last 8 days while users are opted in means the
+  // pipeline is broken downstream of us, even if every enqueue succeeded.
+  const deliveryDead = digestTotal > 0 && priorDelivered === 0;
   const digestStatus =
-    digestErrors === 0 && digestDispatched === digestTotal
-      ? "success"
-      : digestDispatched === 0
-        ? "failure"
+    deliveryDead || digestDispatched === 0
+      ? "failure"
+      : enqueueClean && priorFailed === 0
+        ? "success"
         : "partial";
   await logCronRun(
     env,
     "digest_dispatch",
     digestStatus,
     Date.now() - started,
-    `dispatched=${digestDispatched}/${digestTotal} errors=${digestErrors}`
+    `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last8d delivered=${priorDelivered} failed=${priorFailed}`
   );
   console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors})`);
 
