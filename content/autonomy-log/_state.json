@@ -1,0 +1,75 @@
+{
+  "updated": "2026-07-27T23:37:48.483Z",
+  "checks": {
+    "citation_runs": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "scan_results": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "email_log/digest": {
+      "status": "STALE",
+      "since": "2026-07-27",
+      "lastAlerted": "2026-07-27"
+    },
+    "gsc_snapshots": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "roadmap_items": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "admin_alerts": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "email_log/all": {
+      "status": "STALE",
+      "since": "2026-07-27",
+      "lastAlerted": "2026-07-27"
+    },
+    "keyword-completion": {
+      "status": "FAIL",
+      "since": "2026-07-27",
+      "lastAlerted": "2026-07-27"
+    },
+    "engine-coverage": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "digest-dispatch-result": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "gsc-coverage-per-client": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "marketing-site": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "state-of-aeo-latest": {
+      "status": "FAIL",
+      "since": "2026-07-27",
+      "lastAlerted": "2026-07-27"
+    },
+    "mcp-npm-package": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    }
+  }
+}
