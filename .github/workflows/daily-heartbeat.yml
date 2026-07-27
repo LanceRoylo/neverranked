@@ -39,6 +39,13 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # Email escalation. Without these two the heartbeat still runs and
+          # still logs, but it can only reach GitHub issues -- which is the
+          # channel that swallowed 79 consecutive alerts through 2026-07-27.
+          # The script reports "NOT SENT" loudly in its log when they are
+          # absent, so a missing secret cannot masquerade as a quiet day.
+          OPS_NOTIFY_URL: ${{ secrets.OPS_NOTIFY_URL }}
+          MEASUREMENT_TOKEN: ${{ secrets.MEASUREMENT_TOKEN }}
         run: |
           set +e
           node scripts/heartbeat.mjs --log-to-file > /tmp/heartbeat.txt 2>&1

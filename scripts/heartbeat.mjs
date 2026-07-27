@@ -499,6 +499,149 @@ if (args.json) {
 }
 
 // -----------------------------------------------------------------
+// Transition-based notification.
+//
+// Why: this heartbeat ran correctly for 79 consecutive days and
+// escalated by opening a GitHub issue. On 2026-07-27 there were 79
+// open heartbeat issues and zero closed. Detection was never the
+// problem. The hop from detection to a human was, and it was the
+// only broken link. A guard that refuses silently is not a guard,
+// it is a silent failure with extra steps -- which is the exact
+// class of bug this script was written in May to catch.
+//
+// Alerts fire on TRANSITION, not on daily state, so steady green is
+// silent and a NEW failure is loud. A check that stays red is
+// re-raised every REALERT_AFTER_DAYS so a permanent red cannot go
+// quiet again the way state-of-aeo did for 67 days.
+//
+// State lives beside the markdown logs in content/autonomy-log/,
+// which the daily workflow already commits, so no new storage is
+// introduced and every transition is auditable in git history.
+//
+// Gated on --log-to-file because that is the CI path where state
+// persists. A local run must never mark a failure as "already
+// alerted" and rob CI of the notification.
+// -----------------------------------------------------------------
+
+const REALERT_AFTER_DAYS = 7;
+let notifyOutcome = 'not attempted';
+
+if (args.logToFile) {
+  const STATE_FILE = resolve(REPO_ROOT, 'content/autonomy-log/_state.json');
+  const notifyUrl = process.env.OPS_NOTIFY_URL || '';
+  const notifyToken = process.env.MEASUREMENT_TOKEN || '';
+  const today = new Date().toISOString().slice(0, 10);
+  const daysBetween = (a, b) => Math.floor((Date.parse(a) - Date.parse(b)) / 86400000);
+
+  let prevChecks = {};
+  if (existsSync(STATE_FILE)) {
+    try {
+      prevChecks = (JSON.parse(readFileSync(STATE_FILE, 'utf8')) || {}).checks || {};
+    } catch {
+      prevChecks = {}; // malformed state -> treat every red as new, never crash
+    }
+  }
+
+  const newlyRed = [];
+  const recovered = [];
+  const staleRed = [];
+  const nextChecks = {};
+
+  for (const r of [...results, ...invariantResults, ...httpResults]) {
+    const was = prevChecks[r.name];
+    const wasRed = !!was && was.status !== 'OK';
+    // Staleness checks carry ageSec/maxAgeSec rather than a detail string.
+    // Without this branch they render as a bare "STALE", which tells the
+    // reader nothing and is precisely the kind of uninformative alert that
+    // gets ignored.
+    const detail = String(
+      r.detail ||
+        r.error ||
+        (r.ageSec != null
+          ? `last seen ${fmtAge(r.ageSec)} (${r.cadence}, max ${fmtMaxAge(r.maxAgeSec)})`
+          : r.status || ''),
+    ).slice(0, 200);
+
+    if (r.status === 'OK') {
+      if (wasRed) recovered.push({ name: r.name, since: was.since || 'unknown' });
+      nextChecks[r.name] = { status: 'OK', since: null, lastAlerted: null };
+      continue;
+    }
+
+    const since = wasRed && was.since ? was.since : today;
+    const lastAlerted = wasRed ? was.lastAlerted || null : null;
+    const entry = { name: r.name, status: r.status, detail, since, ageDays: daysBetween(today, since) };
+    if (!wasRed) newlyRed.push(entry);
+    else if (!lastAlerted || daysBetween(today, lastAlerted) >= REALERT_AFTER_DAYS) staleRed.push(entry);
+    nextChecks[r.name] = { status: r.status, since, lastAlerted };
+  }
+
+  const alerting = [...newlyRed, ...staleRed];
+  const shouldNotify = alerting.length > 0 || recovered.length > 0;
+
+  if (!shouldNotify) {
+    notifyOutcome = 'no transition (silent by design)';
+  } else if (!notifyUrl || !notifyToken) {
+    // Loud on purpose. A missing notify config is itself the failure
+    // this whole block exists to prevent, so it must never read as OK.
+    notifyOutcome = 'NOT SENT -- OPS_NOTIFY_URL or MEASUREMENT_TOKEN missing';
+  } else {
+    const subjectBits = [];
+    if (newlyRed.length) subjectBits.push(`${newlyRed.length} new`);
+    if (staleRed.length) subjectBits.push(`${staleRed.length} still red`);
+    if (recovered.length) subjectBits.push(`${recovered.length} recovered`);
+    const subject = `NeverRanked heartbeat: ${subjectBits.join(', ')}`;
+
+    const body = [];
+    if (newlyRed.length) {
+      body.push('NEW FAILURES (first seen today):');
+      for (const e of newlyRed) body.push(`  - ${e.name} [${e.status}] ${e.detail}`);
+      body.push('');
+    }
+    if (staleRed.length) {
+      body.push(`STILL FAILING (re-raised every ${REALERT_AFTER_DAYS}d so it cannot go quiet):`);
+      for (const e of staleRed) body.push(`  - ${e.name} [${e.status}] red for ${e.ageDays}d since ${e.since}: ${e.detail}`);
+      body.push('');
+    }
+    if (recovered.length) {
+      body.push('RECOVERED:');
+      for (const e of recovered) body.push(`  - ${e.name} (was red since ${e.since})`);
+      body.push('');
+    }
+    body.push(`Full log: content/autonomy-log/${today}.md`);
+
+    try {
+      const res = await fetch(notifyUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-measurement-token': notifyToken },
+        body: JSON.stringify({ subject, body: body.join('\n') }),
+      });
+      if (res.ok) {
+        notifyOutcome = `sent (${subjectBits.join(', ')})`;
+        // Only stamp lastAlerted on a CONFIRMED send. If delivery failed,
+        // the next run must try again rather than assume Lance was told.
+        for (const e of alerting) nextChecks[e.name].lastAlerted = today;
+      } else {
+        notifyOutcome = `NOT SENT -- HTTP ${res.status}`;
+      }
+    } catch (e) {
+      notifyOutcome = `NOT SENT -- ${e instanceof Error ? e.message : String(e)}`;
+    }
+  }
+
+  try {
+    mkdirSync(resolve(REPO_ROOT, 'content/autonomy-log'), { recursive: true });
+    writeFileSync(
+      STATE_FILE,
+      JSON.stringify({ updated: new Date().toISOString(), checks: nextChecks }, null, 2) + '\n',
+      'utf8',
+    );
+  } catch (e) {
+    notifyOutcome += ` | state write failed: ${e instanceof Error ? e.message : String(e)}`;
+  }
+}
+
+// -----------------------------------------------------------------
 // Optional: write a dated summary into content/autonomy-log/ so the
 // system health signal is discoverable from git history. Each day
 // produces one markdown file. If a file for today already exists,
@@ -519,6 +662,7 @@ if (args.logToFile) {
 
   const lines = [];
   lines.push(`Status: ${allOk ? 'HEALTHY' : `${stale.length + failedInvariants.length} ISSUE${stale.length + failedInvariants.length === 1 ? '' : 'S'}`}`);
+  lines.push(`Notification: ${notifyOutcome}`);
   lines.push(``);
   lines.push(`### Staleness`);
   lines.push(``);
