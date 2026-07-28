@@ -18,8 +18,9 @@ on:
   workflow_dispatch:
 
 permissions:
+  # issues: write dropped 2026-07-27 with the issue-opening step. This
+  # workflow now only needs to commit the autonomy log.
   contents: write
-  issues: write
 
 jobs:
   heartbeat:
@@ -72,57 +73,21 @@ jobs:
             git push
           fi
 
-      - name: Open issue if stale automations detected
-        if: steps.heartbeat.outputs.exit_code != '0'
-        uses: actions/github-script@v9
-        env:
-          REPORT: ${{ steps.heartbeat.outputs.report }}
-        with:
-          script: |
-            const report = process.env.REPORT || '(no report captured)';
-            const today = new Date().toISOString().slice(0, 10);
-            const title = `Heartbeat: stale automations detected ${today}`;
-
-            // Look for an open heartbeat issue from today already to
-            // avoid spamming on multiple manual runs.
-            const existing = await github.rest.issues.listForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              state: 'open',
-              labels: 'autonomy-heartbeat',
-              per_page: 50,
-            });
-            const todayIssue = existing.data.find(i => i.title === title);
-
-            const body = [
-              "The daily autonomy heartbeat detected one or more stale automations.",
-              "",
-              "```",
-              report,
-              "```",
-              "",
-              "See `content/handoff-questions/autonomy-audit-2026-05-09.md` for the",
-              "broader autonomy audit and recommended fixes.",
-              "",
-              "Re-run the heartbeat manually to verify after a fix lands:",
-              "Actions -> Daily autonomy heartbeat -> Run workflow.",
-            ].join("\n");
-
-            if (todayIssue) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: todayIssue.number,
-                body: `Re-checked at ${new Date().toISOString()}:\n\n\`\`\`\n${report}\n\`\`\``,
-              });
-              console.log(`Updated existing issue #${todayIssue.number}`);
-            } else {
-              const created = await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title,
-                body,
-                labels: ['autonomy-heartbeat'],
-              });
-              console.log(`Opened issue #${created.data.number}`);
-            }
+      # ISSUE-OPENING STEP REMOVED 2026-07-27.
+      #
+      # This step opened a GitHub issue on every red run. By 2026-07-27
+      # there were 79 open heartbeat issues, one per day since 2026-05-10,
+      # and zero had ever been closed or read. Real failures went unseen
+      # for 67 days (a dead HTTP check) and 77 days (the customer digest)
+      # while this loyally filed report after report into a channel nobody
+      # opens.
+      #
+      # Detection was never the problem. The channel was. Escalation now
+      # goes to email, on TRANSITION rather than daily state, through the
+      # measurement watchdog's proven /measurement/notify path, and the
+      # script writes a Notification: line into the autonomy log so the
+      # delivery itself is auditable. See scripts/heartbeat.mjs.
+      #
+      # A third channel nobody reads would add noise, not safety. The
+      # git-tracked autonomy log under content/autonomy-log/ remains the
+      # durable record, and it is committed by the step above.

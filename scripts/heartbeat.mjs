@@ -101,8 +101,20 @@ const CHECKS = [
   },
   {
     name: 'email_log/digest',
-    description: 'Weekly customer digest fanout (Monday SEND_DIGEST_WORKFLOW)',
-    sql: `SELECT MAX(created_at) as latest FROM email_log WHERE type='digest'`,
+    description: 'Weekly customer digest actually DELIVERED (Monday SEND_DIGEST_WORKFLOW)',
+    // Repointed 2026-07-27 from email_log to email_delivery_log, and
+    // narrowed to status='queued'. The digest path logs via
+    // logEmailDelivery() into email_delivery_log; email_log is the older
+    // table that now only receives magic_link and onboarding_drip. More
+    // importantly, counting ANY digest row would count the 51 failures
+    // recorded since 2026-05-11 as evidence the digest works. Only a
+    // handoff Resend accepted counts.
+    //
+    // This check is a TRUE positive today and is expected to stay red
+    // until the digest sends again. It is the one red that should not be
+    // silenced: three real Hawaii Theatre recipients have had nothing
+    // since 2026-05-11.
+    sql: `SELECT MAX(created_at) as latest FROM email_delivery_log WHERE type='digest' AND status='queued'`,
     maxAgeSec: 8 * 86400,
     cadence: 'weekly',
   },
@@ -127,13 +139,20 @@ const CHECKS = [
     maxAgeSec: 8 * 86400, // weekly is the minimum we expect
     cadence: 'weekly',
   },
-  {
-    name: 'email_log/all',
-    description: 'Any email send (auth, digest, drip, alerts)',
-    sql: `SELECT MAX(created_at) as latest FROM email_log`,
-    maxAgeSec: 36 * 3600,
-    cadence: 'daily',
-  },
+  // RETIRED 2026-07-27: email_log/all.
+  //
+  // It asserted "some email was sent in the last 36 hours" as a proxy for
+  // "the email system is alive". But the dominant contributor to that
+  // table is magic_link, which only writes when Lance logs in. On
+  // 2026-07-27 it read STALE at 20 days for exactly that reason: he had
+  // not logged in since 2026-07-07. A monitor that goes red because the
+  // founder was busy is measuring the founder, not the automation.
+  //
+  // The real signal it was reaching for is now covered better and in two
+  // places. email_log/digest above watches actual accepted deliveries, and
+  // the heartbeat's own alert path is a live Resend canary: if Resend
+  // stops accepting mail, the notification fails and writes NOT SENT into
+  // the git-tracked autonomy log rather than passing silently.
 ];
 
 // -----------------------------------------------------------------
@@ -149,8 +168,26 @@ const CHECKS = [
 const INVARIANTS = [
   {
     name: 'keyword-completion',
-    description: 'Every active keyword should have at least one citation_run in the last 8 days',
+    description: 'Every active keyword older than the grace window should have a citation_run in the last 8 days',
     run: () => {
+      // The 48h grace window is load-bearing, not a fudge factor.
+      //
+      // The keyword auto-expander runs AFTER the measurement job on the
+      // same Monday morning: on 2026-07-27 the run was 06:01:08 and three
+      // new and-scene keywords were created 06:08:18, seven minutes later.
+      // Identical pattern on 2026-07-20 (created 06:07:17; those keywords
+      // now carry 46-65 runs each). A keyword born minutes after a run
+      // legitimately has zero runs until the next one.
+      //
+      // Without the grace window this check reported and-scene 10/13 (77%)
+      // and failed the 80% threshold every Monday, recovering every
+      // Tuesday. Harmless while nobody read the output. Now that failures
+      // email on transition, it would have produced a "1 new failure"
+      // message every Monday and a "1 recovered" every Tuesday, in
+      // perpetuity, which is how an alert channel becomes noise and then
+      // becomes ignored. That is the failure mode this whole heartbeat
+      // exists to prevent, so the check has to be right about what counts
+      // as broken.
       const rows = runD1(`
         SELECT k.client_slug,
                COUNT(DISTINCT k.id) as active_kw,
@@ -158,6 +195,7 @@ const INVARIANTS = [
         FROM citation_keywords k
         LEFT JOIN citation_runs r ON r.keyword_id = k.id
         WHERE k.active = 1
+          AND k.created_at < unixepoch() - 2*86400
         GROUP BY k.client_slug
         HAVING active_kw > 0
       `);
@@ -314,25 +352,21 @@ const HTTP_CHECKS = [
     url: 'https://neverranked.com/',
     expectStatus: 200,
   },
-  {
-    name: 'state-of-aeo-latest',
-    description: 'state-of-aeo/latest.json fresh and parseable',
-    url: 'https://neverranked.com/state-of-aeo/latest.json',
-    expectStatus: 200,
-    validate: async (res) => {
-      try {
-        const json = await res.json();
-        if (!json.url || !json.headline) return { ok: false, detail: 'malformed payload' };
-        // Accept up to 14 days old; weekly cadence + grace.
-        const generated = new Date(json.generated);
-        const ageDays = (Date.now() - generated.getTime()) / 86400000;
-        if (ageDays > 14) return { ok: false, detail: `${Math.round(ageDays)}d old (max 14d)` };
-        return { ok: true, detail: `${json.slug}, ${Math.round(ageDays)}d old` };
-      } catch (e) {
-        return { ok: false, detail: `parse failed: ${e.message}` };
-      }
-    },
-  },
+  // REMOVED 2026-07-27: state-of-aeo-latest.
+  //
+  // It reported FAIL every day from 2026-05-21, 67 consecutive days, and it
+  // was right that the URL 404s. But the URL 404s on purpose: the
+  // State of AEO web surface was retired 2026-07-01 with a 301 map to
+  // /teardowns/ (see _redirects and the pruned DIRS list in
+  // scripts/build.sh). Verified 2026-07-27 that /state-of-aeo/ and the
+  // dated permalinks all 301 correctly and land 200, so no visitor is
+  // broken. Only latest.json 404s, and the only thing that ever requested
+  // it was this check plus the digest block, both now retired.
+  //
+  // Keeping a check on a deliberately-retired surface is worse than
+  // useless. It is what made this monitor red every single day of its
+  // life, and a monitor that is always red trains the operator to ignore
+  // it -- which is precisely how 79 real alerts went unread.
   {
     name: 'mcp-npm-package',
     description: '@neverranked/mcp present in npm registry',

@@ -14,7 +14,7 @@ import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type Digest
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
 import { getCitationDigestData, type CitationDigestData } from "./citations";
-import { getLatestStateOfAeo, type StateOfAeoLatest } from "./state-of-aeo";
+import { type StateOfAeoLatest } from "./state-of-aeo";
 import { detectSnippet } from "./snippet-detector";
 import { sendSnippetNudgeDay7, sendSnippetNudgeDay14, sendSnippetDay21Reframe, sendSnippetPauseCheckIn, sendSnippetDriftAlert, sendRoadmapStallNudge } from "./agency-emails";
 import { getAgency, resolveAgencyForEmail } from "./agency";
@@ -206,11 +206,14 @@ export async function sendWeeklyDigests(
   let sent = 0;
   let failed = 0;
 
-  // Fetch the latest State of AEO summary once per fanout. Each user's
-  // digest reuses the same payload, and the Cache API in
-  // getLatestStateOfAeo guards against duplicate origin fetches when
-  // SendDigestWorkflow scopes the call to one user per invocation.
-  const stateOfAeo = await getLatestStateOfAeo();
+  // State of AEO is retired (surface pruned 2026-07-01, generator dead
+  // since 2026-05-11, schedule disabled 2026-07-27). The fetch degraded
+  // gracefully to null by design, which is why nobody noticed the block
+  // had silently vanished from every digest since May. Passing null
+  // explicitly rather than fetching a URL known to 404 on every Monday
+  // fanout: the honest state is "there is no industry block", not "the
+  // industry block failed to load again".
+  const stateOfAeo = null;
 
   for (const user of users) {
     // Admin sees all domains, clients see their own

@@ -6,16 +6,24 @@ name: Weekly State of AEO
 #
 # Manual run: Actions tab -> Weekly State of AEO -> Run workflow.
 
+# SCHEDULE DISABLED 2026-07-27. State of AEO is retired.
+#
+# The web surface was pruned 2026-07-01 with a 301 map to /teardowns/
+# (see _redirects and the DIRS list in scripts/build.sh). This workflow
+# kept running weekly anyway and had not succeeded since 2026-05-11:
+# 11 of its last 13 runs failed on "wrangler d1 execute failed" with an
+# oversized result set. So for 26 days it spent CI minutes and Anthropic
+# API calls every Monday to generate a report for a surface that no
+# longer exists, and then failed.
+#
+# The digest block that consumed state-of-aeo/latest.json is removed in
+# the same change, so nothing reads the output any more.
+#
+# Kept as workflow_dispatch rather than deleted: the generator and the
+# report archive are the only record of how these were produced, and
+# un-retiring is a content decision someone may revisit. Running it by
+# hand will still fail until the D1 result-size bug is fixed.
 on:
-  schedule:
-    # 04:00 UTC Mondays = Sunday 6pm HST.
-    # Lands ~2 hours before the dashboard 06:00 UTC Monday cron that
-    # fans out the weekly customer digest, so the digest fetches
-    # state-of-aeo/latest.json with the freshest report. The deploy
-    # workflow auto-publishes the regenerated pages on push, which
-    # takes ~1 minute, leaving ~119 minutes of headroom before the
-    # digest reads it.
-    - cron: '0 4 * * 1'
   workflow_dispatch:
 
 permissions:
