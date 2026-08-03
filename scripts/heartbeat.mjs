@@ -213,19 +213,39 @@ const INVARIANTS = [
   },
   {
     name: 'engine-coverage',
-    description: 'Every active citation engine should have runs in the last 8 days',
+    description: 'Every active citation engine should have USABLE runs (non-empty responses) in the last 8 days',
     run: () => {
+      // "Usable" is the load-bearing word. The OpenAI account ran out
+      // of credits on 2026-07-24 and the worker kept writing rows with
+      // empty response_text for nine days -- 330 of them -- while this
+      // check counted rows and reported "7 engines active". A row is
+      // evidence a call was attempted; only a response is evidence the
+      // engine measured anything. Same disease as digest-dispatch's
+      // old "dispatched=8/8": activity mistaken for outcome. The
+      // 5-char floor matches the diagnostic that found the dead rows;
+      // no genuine engine answer is shorter.
       const rows = runD1(`
-        SELECT engine, COUNT(*) as runs
+        SELECT engine,
+               COUNT(*) as runs,
+               SUM(CASE WHEN LENGTH(COALESCE(response_text,'')) >= 5 THEN 1 ELSE 0 END) as usable
         FROM citation_runs
         WHERE run_at > unixepoch() - 8*86400
         GROUP BY engine
       `);
       const expected = ['perplexity', 'openai', 'gemini', 'anthropic'];
-      const seen = new Set(rows.map(r => r.engine));
-      const missing = expected.filter(e => !seen.has(e));
-      if (missing.length === 0) return { pass: true, detail: `${rows.length} engines active` };
-      return { pass: false, detail: `missing engines: ${missing.join(', ')}` };
+      const usableBy = new Map(rows.map(r => [r.engine, Number(r.usable) || 0]));
+      const dead = expected.filter(e => (usableBy.get(e) ?? 0) === 0);
+      // An engine writing rows but zero usable responses is the worst
+      // case: it looks alive to every row-count query. Name it as such.
+      const zombie = dead.filter(e => (rows.find(r => r.engine === e)?.runs ?? 0) > 0);
+      if (dead.length === 0) {
+        const live = rows.filter(r => Number(r.usable) > 0).length;
+        return { pass: true, detail: `${live} engines returning usable responses` };
+      }
+      const parts = dead.map(e => zombie.includes(e)
+        ? `${e} (writing rows but every response empty -- dead key or spent quota)`
+        : `${e} (no runs at all)`);
+      return { pass: false, detail: parts.join(', ') };
     },
   },
   {

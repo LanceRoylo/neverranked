@@ -634,6 +634,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       const runPerplexity = async () => {
         if (!env.PERPLEXITY_API_KEY) return;
         const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
+        // Skip-on-empty: an API failure must not become a row. See the
+        // runOpenAI comment below for the 2026-07-24 incident.
+        if (r.text.length === 0 && r.urls.length === 0) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -658,6 +661,14 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       const runOpenAI = async () => {
         if (!env.OPENAI_API_KEY) return;
         const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
+        // Skip persistence when the API returned nothing. queryOpenAI
+        // maps every HTTP failure to {text:"", urls:[]}, so without
+        // this guard a dead engine keeps writing rows that read as
+        // measurements: when the OpenAI account ran out of credits on
+        // 2026-07-24, this runner wrote 330 empty rows over nine days
+        // while the heartbeat counted rows and reported the engine
+        // active. Same guard runGemini has carried all along.
+        if (r.text.length === 0 && r.urls.length === 0) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -712,6 +723,11 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       const runAnthropic = async () => {
         if (!env.ANTHROPIC_API_KEY) return;
         const r = await queryClaude(kw.keyword, env.ANTHROPIC_API_KEY);
+        // Skip-on-empty, entities variant for training-mode engines.
+        // The single-keyword path's runAnthropic has carried this since
+        // the 2026-05-11 incident (53/53 empty rows); this path never
+        // got it.
+        if (r.text.length === 0 && r.entities.length === 0) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -799,6 +815,10 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       const runGemma = async () => {
         if (!env.TOGETHER_API_KEY) return;
         const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+        // Skip-on-empty, entities variant. Together drops ~12% of gemma
+        // calls on network errors (measured July 2026); a drop is not a
+        // measurement.
+        if (r.text.length === 0 && r.entities.length === 0) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -1185,6 +1205,7 @@ export async function runOneKeywordCitations(
   const runPerplexity = async () => {
     if (!env.PERPLEXITY_API_KEY) return;
     const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
+    if (r.text.length === 0 && r.urls.length === 0) return; // failure, not a measurement
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1198,6 +1219,9 @@ export async function runOneKeywordCitations(
   const runOpenAI = async () => {
     if (!env.OPENAI_API_KEY) return;
     const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
+    // This runner produced the 330 empty rows of 2026-07-25..08-02
+    // (OpenAI credits exhausted; every failure mapped to empty-but-ok).
+    if (r.text.length === 0 && r.urls.length === 0) return;
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
