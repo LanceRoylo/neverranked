@@ -40,7 +40,12 @@ function prettySource(key: string): string {
 export interface ReportFacts {
   period_label: string;
   prior_label?: string;
-  engines: Array<{ name: string; pct: number; prev?: number }>;
+  // noCohortSignal: the engine returned citations but NOT ONE went to any
+  // venue in the cohort -- not the customer, not a single competitor. That
+  // is an engine-level absence, not a visibility failure, and must never
+  // render as a plain 0% the customer might try to fix. Absent on
+  // snapshots written before 2026-08-03, which render as before.
+  engines: Array<{ name: string; pct: number; prev?: number; noCohortSignal?: boolean }>;
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
@@ -237,8 +242,15 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   }
 
   const engines = Object.entries(eb).map(([name, v]) => {
-    const row: { name: string; pct: number; prev?: number } = { name, pct: n(v?.share_pct) };
+    const row: { name: string; pct: number; prev?: number; noCohortSignal?: boolean } = { name, pct: n(v?.share_pct) };
     if (priorEngines.has(name)) row.prev = priorEngines.get(name);
+    // Only assert this when the bridge actually measured it. An older
+    // snapshot without cohort_citations stays silent rather than guessing.
+    const cc = (v as { cohort_citations?: number } | undefined)?.cohort_citations;
+    const tot = (v as { total?: number } | undefined)?.total;
+    if (typeof cc === "number" && cc === 0 && typeof tot === "number" && tot > 0) {
+      row.noCohortSignal = true;
+    }
     return row;
   });
 

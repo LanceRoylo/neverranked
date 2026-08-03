@@ -133,7 +133,7 @@ async function loadDeliveredReports(env: Env, slug: string): Promise<ReportRow[]
 // the interpretation layer is the point. Fully defensive: bad/absent facts_json
 // renders nothing (the report stays narrative-only).
 
-interface ChartEngine { name: string; pct: number; prev?: number | null; }
+interface ChartEngine { name: string; pct: number; prev?: number | null; noCohortSignal?: boolean; }
 interface ChartRow { label: string; pct: number; you?: boolean; own?: boolean; }
 interface ReportFacts {
   period_label?: string;
@@ -289,9 +289,16 @@ function chartBlock(title: string, bars: string, caption: string, note?: string)
 // Two dots per engine (prior + current) on a track, connected by a direction-
 // colored line, so the MOVEMENT is the visual, not a footnote pill.
 function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): string {
-  const maxV = Math.max(...engines.map((e) => Math.max(num(e.pct), num(e.prev))), 1);
+  // An engine where NOBODY in the cohort appeared is not a score. Pull it
+  // out of the chart entirely and disclose it underneath. July 2026:
+  // Microsoft Copilot returned 794 citations, none to any Honolulu venue,
+  // customer or competitor. Charted as "0%" that reads as a failure the
+  // customer caused and can fix, which is false on both counts.
+  const scored = engines.filter((e) => !e.noCohortSignal);
+  const disclosed = engines.filter((e) => e.noCohortSignal);
+  const maxV = Math.max(...scored.map((e) => Math.max(num(e.pct), num(e.prev))), 1);
   const posOf = (v: number) => 4 + (num(v) / maxV) * 92; // inset [4%,96%] so dots never clip
-  const rows = [...engines].sort((a, b) => num(b.pct) - num(a.pct)).map((e, i) => {
+  const rows = [...scored].sort((a, b) => num(b.pct) - num(a.pct)).map((e, i) => {
     const cur = num(e.pct), prev = num(e.prev);
     const pc = posOf(cur), pp = posOf(prev);
     const lo = Math.min(pc, pp), span = Math.abs(pc - pp);
@@ -308,7 +315,11 @@ function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): s
     </div>`;
   }).join("");
   const cap = `Each AI tool shows two dots. The hollow dot is ${prior} and the gold dot is this month. When the gold dot sits to the right of the hollow one, that tool cites you more than it did. To the left means less. The line is the size of the move.`;
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool cites you</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}</section>`;
+  const names = disclosed.map((e) => e.name);
+  const excluded = names.length
+    ? `<p class="nr-note">${esc(names.length === 1 ? names[0] : names.join(" and "))} ${names.length === 1 ? "is" : "are"} left out of this chart on purpose. ${names.length === 1 ? "It returned" : "They returned"} plenty of sources this month, but not one of them was any venue in your category, yours or a competitor's. That points at how ${names.length === 1 ? "that tool" : "those tools"} sourced answers this month rather than at anything on your side, so scoring it as a zero would be misleading.</p>`
+    : "";
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where each AI tool cites you</h3><div class="nr-bars">${rows}</div>${chartText(cap, note)}${excluded}</section>`;
 }
 
 // 100% stacked bar for the source-type composition (part-to-whole). One bar

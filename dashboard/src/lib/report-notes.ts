@@ -90,7 +90,7 @@ Voice rules, all hard:
 
 You receive the frozen chart data as JSON. Reply with STRICT JSON only, no markdown fences, exactly this shape:
 {"engines":"...","venue":"...","sources":"...","topSources":"...","questions":"..."}
-- engines: the per-AI-tool citation share (and the month-over-month move when prior values exist). Name the move that matters most and any dip worth watching.
+- engines: the per-AI-tool citation share (and the month-over-month move when prior values exist). Name the move that matters most and any dip worth watching. CRITICAL: an engine carrying "noCohortSignal": true returned sources this month but cited NO venue in the category at all, neither the customer nor any competitor. It is excluded from the chart. Never describe it as the customer being absent, losing ground, or scoring zero, and never attribute it to anything the customer did or failed to do. Either ignore it or state plainly that no venue in the category appeared on that tool this month.
 - venue: where the customer ranks among named competitors in their category.
 - sources: what the source-type composition (independent web vs their own site etc.) means for where to invest effort.
 - topSources: what the specific named domains imply about where to be present and accurate.
