@@ -31,6 +31,13 @@ export interface MemoInputs {
     prior_share_pct: number;
     delta_pp: number;
     current_runs: number;
+    // True when the engine returned citations but named NO venue in the
+    // category at all -- not the customer, not a single competitor. A 0%
+    // here is an engine-level absence, not a visibility failure, and the
+    // memo must never diagnose it as something the customer can fix.
+    // Absent on the run-based path and on snapshots written before
+    // 2026-08-03, which behave exactly as they did before this existed.
+    no_cohort_signal?: boolean;
   }>;
   by_question: Array<{
     keyword: string;
@@ -184,7 +191,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
 
   const parseSnap = (row?: { engines_breakdown: string; top_competitors: string }) => {
     if (!row) return null;
-    let eb: Record<string, { citations: number; total: number; share_pct: number }> = {};
+    let eb: Record<string, { citations: number; total: number; share_pct: number; cohort_citations?: number }> = {};
     let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }>; source_types?: Record<string, { citations?: number; share_pct?: number }>; offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }> } = {};
     try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
     try { tc = JSON.parse(row.top_competitors) ?? {}; } catch { /* keep empty */ }
@@ -203,12 +210,17 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
 
     by_engine = Object.entries(curSnap.eb).map(([engine, e]) => {
       const ps = priSnap && priSnap.eb[engine] ? (priSnap.eb[engine].share_pct ?? 0) : null;
+      // Only assert absence when the bridge actually measured it. An older
+      // snapshot without cohort_citations stays silent rather than guessing.
+      const cc = e.cohort_citations;
+      const dark = typeof cc === "number" && cc === 0 && (e.total ?? 0) > 0;
       return {
         engine,
         current_share_pct: e.share_pct ?? 0,
         prior_share_pct: ps ?? (e.share_pct ?? 0),
         delta_pp: ps === null ? 0 : +((e.share_pct ?? 0) - ps).toFixed(1),
         current_runs: e.total ?? 0,
+        ...(dark ? { no_cohort_signal: true } : {}),
       };
     }).sort((a, b) => b.current_share_pct - a.current_share_pct);
 
