@@ -314,12 +314,19 @@ export async function vetMemoBody(
   slug: string,
   body: string,
   now: Date,
-): Promise<{ unverifiedNumbers: string[]; toneViolations: string[] }> {
+  factsJson?: string | null,
+): Promise<{ unverifiedNumbers: string[]; toneViolations: string[]; claimIssues: string[] }> {
   const inputs = await gatherMemoInputs(env, slug, now);
   const tone = checkHumanTone(body, "customer-email");
   const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
   const unverifiedNumbers = findUnverifiedNumbers(body, allowedNumberSet(inputs));
-  return { unverifiedNumbers, toneViolations };
+  // Claim checking: the number guard proves a figure EXISTS in the data; this
+  // proves the prose describes it TRUTHFULLY. Three false comparisons reached
+  // a delivered draft on 2026-08-03 with every number legitimate. Absent
+  // facts => no checks, so nothing changes for a memo without frozen data.
+  const { checkClaims, formatClaimIssues } = await import("./claim-check");
+  const claimIssues = formatClaimIssues(checkClaims(body, factsJson));
+  return { unverifiedNumbers, toneViolations, claimIssues };
 }
 
 // Generates drafts for every active/pilot customer. Returns a per-customer

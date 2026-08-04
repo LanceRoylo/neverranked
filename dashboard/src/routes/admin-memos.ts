@@ -145,12 +145,12 @@ export async function handleMemoSave(id: number, request: Request, user: User, e
     const override = String(form.get("override") || "") === "1";
     if (!override) {
       const memo = await env.DB.prepare(
-        `SELECT client_slug FROM monthly_memos WHERE id=?`
-      ).bind(id).first<{ client_slug: string }>();
+        `SELECT client_slug, facts_json FROM monthly_memos WHERE id=?`
+      ).bind(id).first<{ client_slug: string; facts_json: string | null }>();
       if (memo) {
         const { vetMemoBody } = await import("../lib/memo-generator");
-        const vet = await vetMemoBody(env, memo.client_slug, body, new Date());
-        if (vet.unverifiedNumbers.length || vet.toneViolations.length) {
+        const vet = await vetMemoBody(env, memo.client_slug, body, new Date(), memo.facts_json);
+        if (vet.unverifiedNumbers.length || vet.toneViolations.length || vet.claimIssues.length) {
           // Persist the edits as a draft (don't lose them), then block.
           await env.DB.prepare(
             `UPDATE monthly_memos SET title=?, body_markdown=?, updated_at=unixepoch() WHERE id=?`
@@ -222,12 +222,17 @@ function renderDeliveryBlocked(
   id: number,
   title: string,
   body: string,
-  vet: { unverifiedNumbers: string[]; toneViolations: string[] },
+  vet: { unverifiedNumbers: string[]; toneViolations: string[]; claimIssues?: string[] },
   user: User,
 ): Response {
   const items: string[] = [];
   if (vet.unverifiedNumbers.length) items.push(`<li><strong>Unverified numbers</strong> (not found in the measured data): <span style="color:#e8c767">${esc(vet.unverifiedNumbers.join(", "))}</span></li>`);
   if (vet.toneViolations.length) items.push(`<li><strong>Tone / phrasing blocks</strong>: <span style="color:#e8a0a0">${esc(vet.toneViolations.join(", "))}</span></li>`);
+  // Claim issues get one line each with the offending sentence quoted, because
+  // unlike a bare number these are only actionable if you can see the sentence.
+  for (const c of vet.claimIssues || []) {
+    items.push(`<li><strong>Says something the data does not</strong>: <span style="color:#e8a0a0">${esc(c)}</span></li>`);
+  }
   const inner = `
     <p style="margin-bottom:4px"><a href="/admin/memos/${id}" style="color:var(--dim)">&larr; Back to the memo</a></p>
     <h1 style="font-weight:400;color:#e8a0a0">Delivery blocked</h1>
