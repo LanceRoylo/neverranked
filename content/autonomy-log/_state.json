@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-04T14:32:53.881Z",
+  "updated": "2026-08-05T14:25:36.399Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -40,6 +40,11 @@
       "status": "OK",
       "since": null,
       "lastAlerted": null
+    },
+    "nightly-prep": {
+      "status": "FAIL",
+      "since": "2026-08-05",
+      "lastAlerted": "2026-08-05"
     },
     "digest-dispatch-result": {
       "status": "FAIL",
