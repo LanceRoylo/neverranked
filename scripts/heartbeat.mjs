@@ -249,6 +249,41 @@ const INVARIANTS = [
     },
   },
   {
+    // Nightly outreach prep (outreach worker, 02:00 HST weekdays) acquires
+    // prospects, finds emails, and writes + grades copy. It never sends.
+    // Without this check it is exactly the failure the 2026-07-27 dig was
+    // about: a background job whose silence looks identical to a quiet
+    // week. An empty review queue every morning is indistinguishable from
+    // a dead cron unless something watches.
+    //
+    // Skipped entirely when prep is off, so turning it off is not a red.
+    name: 'nightly-prep',
+    description: 'Nightly outreach prep must have run recently and left drafts to review',
+    run: () => {
+      const cfgRow = runD1(`SELECT config_json FROM outreach_config WHERE id = 1`)[0];
+      let cfg = {};
+      try { cfg = JSON.parse(cfgRow?.config_json || '{}'); } catch { /* treat as off */ }
+      if (!cfg.nightly_prep_enabled) return { pass: true, detail: 'nightly prep is off' };
+      const row = runD1(`
+        SELECT status, detail, ran_at,
+               CAST((unixepoch() - ran_at) / 86400 AS INT) AS age_days
+        FROM cron_runs
+        WHERE task_name = 'nightly-prep'
+        ORDER BY ran_at DESC
+        LIMIT 1
+      `)[0];
+      if (!row) return { pass: false, detail: 'nightly prep is enabled but has never run' };
+      // Weekday job: a healthy latest run is <= 4 days old (covers a long weekend).
+      if (row.age_days > 4) {
+        return { pass: false, detail: `last prep run was ${row.age_days}d ago (${row.detail || 'no detail'})` };
+      }
+      if (row.status !== 'success') {
+        return { pass: false, detail: `last prep run left nothing to review: ${row.detail || 'no detail'}` };
+      }
+      return { pass: true, detail: `${row.age_days}d ago, ${row.detail || 'ok'}` };
+    },
+  },
+  {
     // Reads the authoritative cron_runs row written by
     // dispatchWeeklyDeliveries(), NOT an 8-day email_log window. The old
     // window-based check could be masked for a full week by a single
