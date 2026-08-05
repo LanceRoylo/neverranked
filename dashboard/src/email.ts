@@ -285,7 +285,7 @@ export async function sendFreeWeeklyDigestEmail(
   const dashboardUrl = "https://app.neverranked.com/free";
   const stateOfAeoUrl = "https://neverranked.com/state-of-aeo/";
   const unsubUrl = `https://app.neverranked.com/free/unsubscribe?token=${d.unsubToken}`;
-  const upgradeUrl = "https://neverranked.com/pricing";
+  const upgradeUrl = "https://neverranked.com/#pricing";
 
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Free weekly digest for ${d.email} (${d.domain}): score=${d.score}, trend=${trendBlock}`);
@@ -373,7 +373,7 @@ export async function sendFreeScoreDropAlertEmail(
 ): Promise<boolean> {
   const drop = d.prevScore - d.currScore;
   const dashboardUrl = "https://app.neverranked.com/free";
-  const upgradeUrl = "https://neverranked.com/pricing";
+  const upgradeUrl = "https://neverranked.com/#pricing";
   const unsubUrl = `https://app.neverranked.com/free/unsubscribe?token=${d.unsubToken}`;
 
   const bandLabel = d.bandCrossing
@@ -400,7 +400,7 @@ export async function sendFreeScoreDropAlertEmail(
         from: "NeverRanked <scores@neverranked.com>",
         to: [d.email],
         subject: `Score alert: ${d.prevScore} → ${d.currScore} for ${d.domain}`,
-        text: `Your AEO score for ${d.domain} dropped ${drop} points this week.\n\n${d.prevScore} → ${d.currScore}\n${bandLabel}\n\nFree shows the alert. Pulse subscribers get the diagnosis: which schema changed, which engine stopped citing, which competitor moved.\n\nDashboard: ${dashboardUrl}\nUpgrade to Pulse: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`,
+        text: `Your AEO score for ${d.domain} dropped ${drop} points this week.\n\n${d.prevScore} → ${d.currScore}\n${bandLabel}\n\nFree shows the alert. Monitor subscribers get the diagnosis: which schema changed, which engine stopped citing, which competitor moved.\n\nDashboard: ${dashboardUrl}\nUpgrade to Monitor: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`,
         html: `
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:520px;margin:0 auto;padding:40px 20px">
             <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
@@ -417,7 +417,7 @@ export async function sendFreeScoreDropAlertEmail(
             <div style="background:#fafafa;padding:24px;border-radius:6px;margin:24px 0">
               <p style="margin:0 0 8px;font-family:Georgia,serif;font-style:italic;font-size:16px">Pulse subscribers get the diagnosis, not just the alert.</p>
               <p style="margin:0 0 12px;font-size:13px;color:#555">Which schema changed, which engine stopped citing, which competitor moved. Free shows the alert. Pulse shows the cause and the fix.</p>
-              <a href="${upgradeUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">See Pulse &rarr;</a>
+              <a href="${upgradeUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">See Monitor &rarr;</a>
             </div>
             <a href="${dashboardUrl}" style="display:inline-block;padding:12px 24px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:12px;text-decoration:none;letter-spacing:.05em">Open dashboard</a>
             <p style="margin:32px 0 0;font-size:11px;color:#888">

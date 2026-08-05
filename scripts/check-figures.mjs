@@ -56,10 +56,13 @@ const toText = (html) =>
 
 // Figures that are ours to assert and need no teardown behind them:
 // engagement pricing, the reseller arithmetic derived from it on
-// /for-agencies/ ($500/mo spread x 12 = $6,000/yr, x 3 categories =
-// $18,000/yr), the GET rate, and calendar years.
-// 950 = the pilot price (added 2026-07-19, credits toward the kickoff).
-const OWN_FIGURES = new Set(["4,500", "1,500", "2,000", "4.712", "500", "6,000", "18,000", "950"]);
+// /for-agencies/, the GET rate, and calendar years.
+// Two-tier ladder (2026-08-03): 199 Monitor/mo, 750 Audit/mo, 950
+// baseline month, 9,950 first-year Audit all-in ($950 + $750 x 12).
+// Historical prices (4,500 / 1,500 / 2,000) stay listed so pages that
+// RECORD the old card as history (retraction, content archives) still
+// pass; check-claims separately blocks selling anything retired.
+const OWN_FIGURES = new Set(["4,500", "1,500", "2,000", "4.712", "500", "6,000", "18,000", "950", "199", "750", "9,950", "1,250", "15,000", "45,000"]);
 const isYear = (n) => /^(19|20)\d\d$/.test(n.replace(/,/g, ""));
 
 // Figures a page COMPUTES from published source figures rather than quoting.

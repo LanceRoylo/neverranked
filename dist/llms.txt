@@ -9,7 +9,7 @@
 
 ## What we actually do now
 
-- Daily measurement across seven AI tools: five citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews) and two model-knowledge tools (Claude, Gemma).
+- Repeated measurement runs across seven AI tools: five citation-grade tools that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot via Bing, Google AI Overviews) and two model-knowledge tools (Claude, Gemma).
 - Per question, per AI tool, per competitor, per source type. The output is a forensic research memo, not a dashboard.
 - The deliverable: a prepped punch list for the customer's team to execute. We do not make the changes ourselves. The boundary is structural.
 
@@ -56,8 +56,8 @@
 
 ## Pricing
 
-- $4,500 kickoff per category. One time. Includes the 18-question set design, three weeks of daily measurement across 7 AI tools, competitive cohort analysis, source-type analysis, the research memo, and the prepped punch list.
-- $1,500 per month per category, ongoing. Continued daily measurement, monthly memo, drift monitoring, punch list refreshes.
+- $950 baseline month per category. One time. Includes the 18-question set design, repeated full measurement runs across 7 AI tools, competitive cohort analysis, source-type analysis, the research memo, and the prepped punch list.
+- $750 per month per category, ongoing. Continued measurement through the month, monthly memo, drift monitoring, punch list refreshes.
 - Per category, not per client. A research practice, not a SaaS subscription.
 
 ## Operational discipline
