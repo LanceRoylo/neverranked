@@ -1,0 +1,247 @@
+<!doctype html>
+<!--
+  Agency-US teardown 11. Published 2026-08-05.
+  7-AI-tool measurement on national marketing and SEO agencies.
+  23-agency cohort, 18 hash-locked questions, 3 reps per question per run,
+  3 usable runs (2026-08-05 to 2026-08-06, pattern-readiness cleared per
+  MOAT.md rule 5). 8,833 classified citations.
+
+  FIRST NON-HAWAII, NON-LOCAL-SERVICES CATEGORY. Every prior teardown
+  measured a Hawaii local services market. This one is national and B2B,
+  and it functions as an out-of-sample test of the cross-category claims.
+
+  A fourth run was fired and EXCLUDED: it completed 46-47 of 54 calls per
+  engine and the aggregate completeness gate rejected it. Partial runs are
+  not small complete runs, because engines fail unevenly.
+
+  Cohort kept anonymized at the agency level. None of the 23 agencies are
+  paying NeverRanked customers and the non-customer anonymization rule
+  applies. Categories, counts, and source-type distributions are public.
+  Individual agency names are not.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Teardown 11: we took the pattern off the island and it held</title>
+<meta name="description" content="23 national marketing agencies measured across 7 AI tools, 18 hash-locked questions, 3 usable runs, 8,833 citations. A Copilot range derived entirely from Hawaii local services predicted a national B2B category months later.">
+<link rel="canonical" href="https://neverranked.com/teardowns/agency-us/">
+<meta property="og:title" content="Teardown 11: the first category outside Hawaii, and the patterns held">
+<meta property="og:description" content="23 national agencies, 7 AI tools, 8,833 citations. Copilot came in at 2%, inside a range derived from ten Hawaii categories.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #4a4740; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #211e18; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #4a4740; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  .toc { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; font-size: 14px; line-height: 1.6; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; }
+  @media (max-width: 640px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 18px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table { white-space: nowrap; font-size: 13px; }
+    td.num, th.num { padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Teardown 11 &middot; National marketing agencies</div>
+    <h1>We took the pattern off the island. It held.</h1>
+    <p class="sub">23-agency national cohort, 18 hash-locked questions, 3 usable runs on 2026-08-05 and 2026-08-06, 8,833 classified citations. Figures generated from the aggregate tooling. Individual agencies anonymized. Counts and distributions named.</p>
+
+    <div class="notice">
+      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured Hawaii local services, and across every one of them Microsoft Copilot cited businesses&rsquo; own websites between 0% and 2% of the time. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>2%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
+    </div>
+
+    <nav class="toc" aria-label="Sections">
+      <div class="toc-label">What&rsquo;s in this teardown</div>
+      <ol>
+        <li><a href="#why-this-category">Why this category matters as a measurement subject</a></li>
+        <li><a href="#methodology-summary">Methodology summary</a></li>
+        <li><a href="#source-type-distribution">Source-type distribution (cohort-wide)</a></li>
+        <li><a href="#per-ai-tool-breakdown">Per-AI-tool breakdown</a></li>
+        <li><a href="#the-prediction">The prediction that held</a></li>
+        <li><a href="#residual-bucket">What &ldquo;independent web&rdquo; is, and what it is not</a></li>
+        <li><a href="#top-recurring">Top recurring agencies (anonymized)</a></li>
+        <li><a href="#does-not-prove">What this teardown does and does not prove</a></li>
+        <li><a href="#why-anonymized">Why this is anonymized</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="why-this-category">Why this category matters as a measurement subject</h2>
+    <p>Every teardown before this one measured a Hawaii local services market. Dentists, med spas, HVAC, real estate, banking, wealth management, law, CPA firms. A reasonable objection to the whole body of work is that Hawaii is small, the cohorts are local, and the patterns might be an artifact of measuring an island economy.</p>
+    <p>National marketing and SEO agencies are the cleanest available test of that objection. They are not geographically bounded, they sell to businesses rather than consumers, they are unusually good at their own search marketing, and they are the category most likely to have already optimized for AI answers. If the cross-category patterns were a Hawaii artifact, this is where they should break.</p>
+    <p>They did not break.</p>
+
+    <h2 id="methodology-summary">Methodology summary</h2>
+    <ul>
+      <li><strong>Cohort:</strong> 23 national marketing and SEO agency domains, surfaced from the citations of a discovery run and hard-audited to exclude directories, ranking sites, and SaaS vendors.</li>
+      <li><strong>Questions:</strong> 18, locked by hash <code>8732c92d</code>, written as the questions a business owner actually asks when looking for an agency rather than as brand queries.</li>
+      <li><strong>Tools:</strong> 7. Five that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews) and two that answer from training data (Claude, Gemma).</li>
+      <li><strong>Repetition:</strong> 3 reps per question per tool per run, 378 calls per run.</li>
+      <li><strong>Runs:</strong> 3 usable, on 2026-08-05 and 2026-08-06. A fourth run was fired and excluded because it completed only 46 to 47 of 54 calls per engine. Partial runs are not small complete runs, because engines fail unevenly and the missing calls concentrate.</li>
+      <li><strong>Geography:</strong> none. The question set is deliberately geo-free, which is what makes the result comparable across the 127 markets the cohort spans.</li>
+    </ul>
+
+    <h2 id="source-type-distribution">Source-type distribution (cohort-wide)</h2>
+    <p>All 8,833 classified citations across 3 runs, 7 tools, and 18 questions.</p>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Source type</th><th class="num">% of citations</th><th class="num">Count</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Independent web (see the section below on what this bucket is)</td><td class="num"><strong>77%</strong></td><td class="num">6,791</td></tr>
+        <tr><td class="us">Competitor (agency-owned websites in the cohort)</td><td class="num"><strong>12%</strong></td><td class="num">1,055</td></tr>
+        <tr><td>YouTube</td><td class="num">4%</td><td class="num">316</td></tr>
+        <tr><td>Reddit</td><td class="num">3%</td><td class="num">278</td></tr>
+        <tr><td>Social</td><td class="num">2%</td><td class="num">207</td></tr>
+        <tr><td>Review directories</td><td class="num">1%</td><td class="num">97</td></tr>
+        <tr><td>Forum</td><td class="num">1%</td><td class="num">45</td></tr>
+        <tr><td>Wikipedia</td><td class="num">0%</td><td class="num">44</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>For comparison, the published Honolulu real estate teardown records 15% own-firm sites and 77% independent web. Agencies come in at 12% and 77%. The most aggregator-dominated local category we have measured and the national B2B category look close to identical.</p>
+
+    <h2 id="per-ai-tool-breakdown">Per-AI-tool breakdown</h2>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>AI tool</th><th class="num">Agency-site share</th><th class="num">Independent-web share</th><th class="num">Total citations</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="us">Gemma (training data)</td><td class="num"><strong>39%</strong></td><td class="num">61%</td><td class="num">489</td></tr>
+        <tr><td class="us">Gemini grounded</td><td class="num"><strong>16%</strong></td><td class="num">81%</td><td class="num">1,717</td></tr>
+        <tr><td class="us">Perplexity</td><td class="num"><strong>14%</strong></td><td class="num">68%</td><td class="num">3,184</td></tr>
+        <tr><td class="us">Google AI Overviews</td><td class="num"><strong>9%</strong></td><td class="num">63%</td><td class="num">975</td></tr>
+        <tr><td class="us">Claude (training data)</td><td class="num"><strong>3%</strong></td><td class="num">97%</td><td class="num">569</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>2%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
+        <tr><td class="us">ChatGPT search</td><td class="num"><strong>1%</strong></td><td class="num">98%</td><td class="num">1,117</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>The spread between the most and least agency-citing tool is roughly thirtyfold, on identical questions in the same week. This is the same shape the <a href="/teardowns/cross-category/">cross-category teardown</a> documents across nine Hawaii categories, and it is the reason a visibility number taken from one tool is a measurement of that tool rather than of the business.</p>
+
+    <h2 id="the-prediction">The prediction that held</h2>
+    <div class="callout">
+      <h3>Copilot, ten Hawaii categories, then one national B2B category</h3>
+      <p>The cross-category teardown states that Microsoft Copilot cites businesses&rsquo; own websites &ldquo;0% to 2% of the time in every measurement.&rdquo; That range was derived entirely from Hawaii local services: banking 0%, wealth management 0%, dental 0%, med spas 0%, HVAC 0%, real estate 0%, law 1%, CPA 2%, plus Austin CPA at 0% and a Nashville CPA control at 1%.</p>
+      <p>National marketing agencies, measured months later, in a different country-wide market, in a business category rather than a consumer one, came in at <strong>2%</strong>.</p>
+    </div>
+    <p>A published range predicting an out-of-sample category is worth more than any single number in this teardown. It is the difference between a collection of observations and something that generalizes.</p>
+    <p>It also carries a practical consequence. Copilot points at almost nobody&rsquo;s own website in any category we have measured, which means the slot is decided by whatever ranks first in Bing organic rather than by anything on the business&rsquo;s own site.</p>
+
+    <h2 id="residual-bucket">What &ldquo;independent web&rdquo; is, and what it is not</h2>
+    <p>This section exists because we got it wrong internally before publishing, and the correction is more useful than pretending we did not.</p>
+    <p><strong>Independent web is a residual bucket.</strong> The classifier sorts a citation into it when the host is not an agency in the cohort, not a review directory, not YouTube, Reddit, Wikipedia, a forum, or a social network. It is deliberately vague, because distinguishing a major publication from a personal blog is not honestly knowable from a hostname alone.</p>
+    <p>It is <strong>not</strong> a measure of how often AI cites agency websites. In this run its largest members are:</p>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Host</th><th class="num">Citations</th><th>What it is</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>google.com</td><td class="num">591</td><td>a search engine</td></tr>
+        <tr><td>semrush.com</td><td class="num">145</td><td>an SEO software vendor</td></tr>
+        <tr><td>merriam-webster.com</td><td class="num">117</td><td>a dictionary</td></tr>
+        <tr><td>dictionary.cambridge.org</td><td class="num">97</td><td>a dictionary</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Anyone reading 77% as &ldquo;agency websites get cited 77% of the time&rdquo; would be reading two dictionaries and a search engine into that number. The defensible figure for agency-owned websites is the competitor row, <strong>12%</strong>.</p>
+
+    <h2 id="top-recurring">Top recurring agencies (anonymized)</h2>
+    <p>The 5 cohort agencies AI cited most often across the 18 questions and 7 tools, by total citations across the 3 runs:</p>
+    <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Agency (anonymized)</th><th class="num">Total citations</th><th class="num">Questions cited on</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Agency A</td><td class="num">101</td><td class="num">8/18</td></tr>
+        <tr><td>Agency B</td><td class="num">83</td><td class="num">12/18</td></tr>
+        <tr><td>Agency C</td><td class="num">72</td><td class="num">6/18</td></tr>
+        <tr><td>Agency D</td><td class="num">68</td><td class="num">9/18</td></tr>
+        <tr><td>Agency E</td><td class="num">68</td><td class="num">8/18</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><strong>Nobody owns this category.</strong> The most-cited agency website in the entire run holds 101 of 8,833 citations, which is 1%. The top five combined reach 4.4%. No agency was cited on more than 12 of the 18 questions, so there is no equivalent of the long-established brokerage that the training-data engines have learned in real estate. Fragmentation cuts both ways: nobody has locked the category up, and being cited once does not mean much.</p>
+
+    <h2 id="does-not-prove">What this teardown does and does not prove</h2>
+    <p>What it supports:</p>
+    <ul>
+      <li>The Copilot 0% to 2% own-site pattern, previously derived only from Hawaii local services, held in a national B2B category measured months later.</li>
+      <li>Agency-owned websites take 12% of citations in their own category, against 15% for local firms in Honolulu real estate. The categories behave alike.</li>
+      <li>The category is fragmented. The most-cited agency holds 1% of all citations, and no agency appears on more than 12 of 18 questions.</li>
+      <li>The per-tool spread runs from 1% to 39% on identical questions in the same week, consistent across all 3 runs.</li>
+    </ul>
+    <p>What it does not support:</p>
+    <ul>
+      <li>That agencies are worse or better at AI visibility than the clients they serve. The numbers are close, and this measurement was not designed to rank the two against each other.</li>
+      <li>That AI behavior on these questions stays stable over months. Models refresh training data and search indices on schedules outside our control. Re-measurement is the only honest answer.</li>
+      <li>That changing an agency&rsquo;s site or its third-party presence would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments against named sites with control for confounds. Different scope.</li>
+      <li>Anything about what is inside the 77% independent web bucket beyond the hosts named above. It is a residual, and we do not characterize it.</li>
+    </ul>
+
+    <h2 id="why-anonymized">Why this is anonymized</h2>
+    <p>None of the 23 agencies in this cohort are paying NeverRanked customers. The non-customer anonymization rule applies: counts, distributions, and per-AI-tool numbers are public. Individual agency names are not. The pattern is what is informative on a public surface. An agency that becomes a customer gets a 1:1 deliverable that names every agency in the cohort, names the questions it is missing on, and ranks the closable conditions. That deliverable is private to the customer.</p>
+
+    <div class="cta-row">
+      <a class="primary" href="https://check.neverranked.com/">Run the free check</a>
+      <a href="/teardowns/cross-category/">Cross-category teardown</a>
+      <a href="/methodology/">How we measure</a>
+    </div>
+
+    <div class="disclosure-block">
+      <p><strong>Measurement window:</strong> 3 usable runs on 2026-08-05 and 2026-08-06. A fourth run was excluded by the aggregate completeness gate at 46 to 47 of 54 calls per engine. Figures generated from the aggregate tooling. Pattern-readiness rule of 3 runs cleared. Refresh cadence is monthly or on customer request.</p>
+      <p><strong>Substantiation:</strong> question set locked by hash <code>8732c92d...</code>, documented method at <a href="/methodology/">/methodology/</a>, named AI tools on named dates with the dated runs on the <a href="/claims/">/claims/</a> ledger. Gemma is open-weight, so the model itself is independently inspectable.</p>
+      <p><strong>Anonymization:</strong> the 23-agency cohort is kept anonymized at the agency level per the non-customer rule. Counts, distributions, and category-level source surfaces are public. Individual agency names are not.</p>
+      <p><strong>Removal:</strong> any agency in this cohort can be removed on request. Email <a href="mailto:takedown@neverranked.com">takedown@neverranked.com</a> and it comes down within 24 hours.</p>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Honolulu &middot; Lance Roylo &middot; <a href="mailto:Lance@hi.neverranked.com">Lance@hi.neverranked.com</a></div>
+  </main>
+</body>
+</html>
