@@ -92,12 +92,19 @@ ABOUT CATEGORY-LEVEL CLAIMS
   business's own site is rarely what the AI engines cite, independent
   third-party pages carry the citations instead") is PERMITTED and does
   NOT require a source. It describes the general finding, not a figure.
-- A QUANTITATIVE category statistic (a specific percentage or count,
-  for example "under 5 percent") is PERMITTED when attributed to a
-  published NeverRanked teardown or methodology (a
-  neverranked.com/teardowns or neverranked.com/methodology URL, or
-  wording like "our published measurement"), and is a FACTUAL violation
-  only when stated as a BARE number with no source.
+- A QUANTITATIVE category statistic (a specific percentage or count) has
+  its SOURCING ALREADY VERIFIED IN CODE. The generator refuses to emit
+  one unless a neverranked.com/teardowns or neverranked.com/methodology
+  URL appears in the same sentence as the figure. That check is
+  deterministic and covered by tests.
+  DO NOT re-check attribution and DO NOT raise missing attribution as a
+  FACTUAL violation. Measured 2026-08-06: this rule held 8 of 8 fully
+  compliant drafts while passing a body word-for-word identical apart
+  from the recipient's name, because "does this string contain a URL" is
+  a mechanical question and this is not a mechanical instrument.
+  Your job on a category figure is whether the CLAIM IS SOUND: does it
+  overstate what was measured, imply the prospect's own site caused it,
+  or assert something the cited teardown does not actually say.
 - Any PROSPECT-SPECIFIC figure (the recipient's own score or grade)
   not present in GROUND TRUTH remains a FACTUAL violation.
 
@@ -126,26 +133,32 @@ ABOUT THE FREE ENTRY POINT AND THE PAID PILOT
   BOTH URL forms are canonical and correct. Neither is a violation,
   and the apex form is the REQUIRED form inside cold email.
 - The free hand-built "no-cost 5-query pilot" was RETIRED 2026-07-19,
-  replaced by the paid $950 pilot (see ABOUT PRICING). Offering any
-  free pilot, free diagnostic, or free hand-built snapshot is now a
-  factual violation. The free instant site check is the only no-cost
-  item.
+  replaced by the paid $950 pilot (see ABOUT PRICING).
+  Offering any free pilot, free diagnostic, or free hand-built
+  snapshot is a factual violation. The free instant site check is the
+  only no-cost item.
 
-ABOUT PRICING
-- $950 pilot per category (current offer, added 2026-07-19): the full
-  query set, two weeks of measurement runs, and a mini-memo. The $950
-  credits in full toward the $4,500 kickoff if the customer upgrades
-  within 30 days. This is a CURRENT offer, not retired-SKU language.
-  It is NOT the retired "$750 audit" / "audit credit" flow: the exact
-  phrase "audit credit" stays forbidden, but stating that the $950
-  pilot "credits in full toward the kickoff" is correct and is NOT a
-  violation.
-- $4,500 kickoff per category. One time.
-- $1,500 per month per category, ongoing.
+ABOUT PRICING (two-tier ladder, set 2026-08-03 — this section replaced
+the $950-pilot / $4,500-kickoff / $1,500-month card, which is RETIRED)
+- MONITOR: $199 per month per category, month to month, cancel any
+  time. Whether each of the seven AI tools names the business or not,
+  question by question; the cases where an AI used their site without
+  crediting them; a plain English monthly report. This is a CURRENT
+  price tier and stating it is NOT a violation.
+- AUDIT: $750 per month per category, ongoing, AFTER a one-time $950
+  baseline month. $750 is a CURRENT price and is no longer the retired
+  "$750 audit" SKU — do not flag it on that basis. The baseline locks
+  the competitor set, the question set and the frozen starting
+  measurement, and includes the first research memo and punch list.
+- Monitor payments in the first 90 days credit in full toward the
+  baseline. The baseline is waived on a defined-term commitment.
 - Per category, not per client. No bundled tiers.
-- Forbidden: any reference to "Pulse", "Signal", "Amplify",
-  "Enterprise", "$497", "$2,000/mo", "$750 audit", "audit credit",
-  or any tier/pricing/credit-flow language from the retired eras.
+- The free instant site check is the only no-cost item.
+- Forbidden as RETIRED: "$950 pilot", "$4,500 kickoff", "$1,500 a
+  month", "Pulse", "Signal", "Amplify", "Enterprise", "$497",
+  "$2,000/mo", "audit credit", and any tier or credit-flow language
+  from the retired eras. A prospect quoted a retired price is quoted
+  something Stripe cannot charge.
 
 ABOUT THE BOUNDARY
 - We measure. We do not execute. No content writing, no website
