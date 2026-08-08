@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-07T13:19:34.177Z",
+  "updated": "2026-08-08T13:03:28.943Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -17,9 +17,9 @@
       "lastAlerted": "2026-08-03"
     },
     "gsc_snapshots": {
-      "status": "OK",
-      "since": null,
-      "lastAlerted": null
+      "status": "STALE",
+      "since": "2026-08-08",
+      "lastAlerted": "2026-08-08"
     },
     "roadmap_items": {
       "status": "OK",
