@@ -121,8 +121,24 @@ const CHECKS = [
   {
     name: 'gsc_snapshots',
     description: 'Google Search Console pull (Monday WeeklyExtrasWorkflow.gsc-pull)',
+    // MEASURES date_end, NOT created_at: how fresh the DATA is, not when the
+    // job last ran. That is the right thing to measure and it is why the
+    // threshold cannot be 8 days.
+    //
+    // Google Search Console reports lag 2-3 days behind real time, so the
+    // freshest date_end this pull can ever produce is already 2-3 days old on
+    // the Monday it lands. It then ages another 7 before the next run. Worst
+    // case is 3 + 7 = 10 days on a completely healthy system.
+    //
+    // At 8 days it fired 2026-08-08 against a job that had run correctly on
+    // Monday 2026-08-03 and pulled everything Google had (through 07-31).
+    // A guard that alarms every Friday on correct behaviour stops being read,
+    // and then it cannot report the week something is actually wrong.
+    //
+    // 12 days clears the healthy worst case with two days to spare and still
+    // catches a genuinely missed Monday, which would reach 17.
     sql: `SELECT CAST(strftime('%s', MAX(date_end)) AS INTEGER) as latest FROM gsc_snapshots`,
-    maxAgeSec: 8 * 86400,
+    maxAgeSec: 12 * 86400,
     cadence: 'weekly',
   },
   {
