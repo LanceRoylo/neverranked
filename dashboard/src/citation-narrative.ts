@@ -182,7 +182,7 @@ function buildSummary(
       );
     } else if (aeo.aeoScore >= 50 && aeo.aeoScore < 70 && share === 0) {
       parts.push(
-        "Your AEO readiness score of " + aeo.aeoScore + "/100 is moderate. The technical foundation is partially there but has gaps. " + (aeo.redFlagCount > 0 ? "Resolving the " + aeo.redFlagCount + " remaining red flag" + (aeo.redFlagCount !== 1 ? "s" : "") + " and expanding schema coverage from " + aeo.schemaCount + " type" + (aeo.schemaCount !== 1 ? "s" : "") + " would strengthen the signals AI engines rely on." : "Expanding schema coverage and content depth would strengthen the signals AI engines need to cite your business.")
+        "Your AEO readiness score of " + aeo.aeoScore + "/100 is moderate. The technical foundation is partially there but has gaps. " + (aeo.redFlagCount > 0 ? "The scan ranks the " + aeo.redFlagCount + " remaining red flag" + (aeo.redFlagCount !== 1 ? "s" : "") + " and schema coverage (currently " + aeo.schemaCount + " type" + (aeo.schemaCount !== 1 ? "s" : "") + ") as the widest gaps." : "The scan ranks schema coverage and content depth as the widest gaps.")
       );
     }
   }

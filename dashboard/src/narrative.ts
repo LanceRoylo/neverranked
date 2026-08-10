@@ -106,13 +106,13 @@ function buildSummary(
       );
     } else {
       parts.push(
-        `Only ${presentSchemas.length} schema ${presentSchemas.length === 1 ? "type was" : "types were"} detected. Adding ${joinList(missingSchemas)} would strengthen AI engine visibility.`
+        `Only ${presentSchemas.length} schema ${presentSchemas.length === 1 ? "type was" : "types were"} detected. The scan lists ${joinList(missingSchemas)} as the widest gaps.`
       );
     }
   } else if (presentSchemas.length > 0) {
-    parts.push(`All tracked schema types are present, which is a strong foundation for AI discovery.`);
+    parts.push(`All tracked schema types are present.`);
   } else {
-    parts.push(`No structured data was detected. Schema markup is the single biggest lever for AEO improvement.`);
+    parts.push(`No structured data was detected. Schema coverage is the largest component of the readiness score.`);
   }
 
   // Red flags line
@@ -134,7 +134,7 @@ function buildSummary(
     const quickWins = getQuickWins(redFlags, missingSchemas, badSignals);
     if (quickWins.length > 0) {
       const winsText = quickWins.slice(0, 2).join(" and ");
-      parts.push(`Biggest opportunity: ${winsText}.`);
+      parts.push(`Start with ${winsText}.`);
     }
   }
 
@@ -299,11 +299,17 @@ function joinList(items: string[]): string {
 }
 
 function simplifyFlag(flag: string): string {
-  // Trim common prefixes and make more conversational
-  return flag
+  // Scanner flags arrive as "fact -- consequence" ("No og:image tag --
+  // social sharing and AI previews will lack visual context"). In digest
+  // prose the consequence clause reads as an em dash (house style forbids
+  // them) and pads the sentence, so keep the factual clause only. The
+  // digest grader held the 2026-08-10 test send over exactly these dashes.
+  const factOnly = flag.split(" -- ")[0].split(" — ")[0];
+  return factOnly
     .replace(/^Missing\s+/i, "missing ")
     .replace(/^No\s+/i, "no ")
-    .replace(/^Low\s+/i, "low ");
+    .replace(/^Low\s+/i, "low ")
+    .trim();
 }
 
 function flagsMatch(a: string, b: string): boolean {
