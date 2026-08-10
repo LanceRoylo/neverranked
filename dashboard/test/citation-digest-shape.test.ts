@@ -70,3 +70,47 @@ test("questions_with_owned above total never yields a negative lost count", () =
     { won: 25, lost: 0, total: 18 },
   );
 });
+
+// ── Vocabulary discipline (added 2026-08-10) ────────────────────────────
+//
+// The digest grader held EVERY weekly digest from 2026-08-02 onward, and
+// it was right each time: keywordsWon is COVERAGE (queries where the
+// client is cited at all, a stock) and keywordsLost is simply
+// total-minus-won, yet the prose rendered them as weekly flows ("earned
+// 18 new AI citations this week", "lost 5 citations this week") beside a
+// share figure with a different denominator. "18 of 18" next to "8%"
+// with one word for both reads as a contradiction because, as written,
+// it was one. Delivered digests: zero, for three months.
+//
+// Source-level assertion, same pattern as the outreach canon tests: the
+// false flow-language must not reappear anywhere in the digest builders.
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = fileURLToPath(new URL(".", import.meta.url));
+
+test("digest prose never renders coverage counts as weekly gained/lost flows", () => {
+  const src = readFileSync(join(HERE, "..", "src", "email.ts"), "utf8");
+  const falseFlow = /(gained|earned|lost) \$\{[^}]*keywords(Won|Lost)[^}]*\}[^`]{0,40}(citation|this week)/i;
+  const m = src.match(falseFlow);
+  assert.equal(
+    m,
+    null,
+    `email.ts renders a coverage stock as a weekly flow again: "${m?.[0]}". ` +
+      "keywordsWon/Lost are cited/uncited counts RIGHT NOW, not deltas — " +
+      "label them as coverage or the grader will (correctly) hold every digest.",
+  );
+});
+
+test("the citation card labels both denominators", () => {
+  const src = readFileSync(join(HERE, "..", "src", "email.ts"), "utf8");
+  assert.ok(
+    /of every citation across all tracked queries/.test(src),
+    "the share figure lost its denominator caption",
+  );
+  assert.ok(
+    /Coverage: appears in answers for/.test(src),
+    "the coverage line lost its label — a bare 'Cited in N of M' beside a share % is the exact ambiguity the grader holds",
+  );
+});

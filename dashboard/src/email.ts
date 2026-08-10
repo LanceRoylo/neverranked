@@ -686,16 +686,20 @@ function buildSubjectSingle(d: DigestData, citationData?: Map<string, CitationDi
   if (cd && cd.previousShare !== null) {
     const shareDiff = (cd.citationShare - cd.previousShare) * 100;
     const currPct = Math.round(cd.citationShare * 100);
+    // VOCABULARY DISCIPLINE (the reason the digest grader held every
+    // digest for weeks, 2026-08-10 dig): keywordsWon is COVERAGE — the
+    // count of tracked queries where the client is cited AT ALL right
+    // now, a stock. keywordsLost is simply total minus won, the UNCITED
+    // count. Neither is a week-over-week flow, so "gained/lost N
+    // citations this week" was always a false label, and rendering
+    // coverage (18 of 18) beside share (8%) with one word for both read
+    // as a contradiction — because as written, it was one.
     if (shareDiff >= 3) {
       return `${d.domain}: citation share up ${Math.round(shareDiff)} pts to ${currPct}%`;
     } else if (shareDiff <= -3) {
       return `${d.domain}: citation share down ${Math.round(Math.abs(shareDiff))} pts to ${currPct}%`;
-    } else if (cd.keywordsWon > 0 && cd.keywordsLost === 0) {
-      return `${d.domain}: gained ${cd.keywordsWon} new citation${cd.keywordsWon === 1 ? "" : "s"} this week`;
-    } else if (cd.keywordsLost > 0 && cd.keywordsWon === 0) {
-      return `${d.domain}: lost ${cd.keywordsLost} citation${cd.keywordsLost === 1 ? "" : "s"} this week`;
-    } else if (cd.keywordsWon > 0 || cd.keywordsLost > 0) {
-      return `${d.domain}: ${cd.keywordsWon} citation${cd.keywordsWon === 1 ? "" : "s"} gained, ${cd.keywordsLost} lost this week`;
+    } else if (cd.totalKeywords > 0) {
+      return `${d.domain}: cited on ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries, ${currPct}% share`;
     }
     return `${d.domain}: citation share held at ${currPct}% this week`;
   }
@@ -722,18 +726,22 @@ function buildSubjectSingle(d: DigestData, citationData?: Map<string, CitationDi
 // the generic count subject.
 function buildSubjectMulti(digests: DigestData[], citationData?: Map<string, CitationDigestData>): string {
   if (citationData && citationData.size > 0) {
-    let gainedTotal = 0;
-    let lostTotal = 0;
+    // Coverage is a stock, not a flow — sum cited/tracked across
+    // domains and say exactly that. "N gained, M lost" summed coverage
+    // counts as if they were weekly deltas, which is how one subject
+    // line contradicted the body it introduced.
+    let citedTotal = 0;
+    let trackedTotal = 0;
     let movers = 0;
     for (const d of digests) {
       const cd = citationData.get(d.clientSlug);
       if (!cd) continue;
-      gainedTotal += cd.keywordsWon;
-      lostTotal += cd.keywordsLost;
+      citedTotal += cd.keywordsWon;
+      trackedTotal += cd.totalKeywords;
       if (cd.previousShare !== null && Math.abs(cd.citationShare - cd.previousShare) > 0.02) movers++;
     }
-    if (movers >= Math.ceil(digests.length / 2) && (gainedTotal > 0 || lostTotal > 0)) {
-      return `Weekly citation report -- ${gainedTotal} gained, ${lostTotal} lost across ${digests.length} domains`;
+    if (movers >= Math.ceil(digests.length / 2) && trackedTotal > 0) {
+      return `Weekly citation report -- cited on ${citedTotal} of ${trackedTotal} tracked queries across ${digests.length} domains`;
     }
   }
   return `Weekly AEO Report -- ${digests.length} domains scanned`;
@@ -2091,8 +2099,14 @@ function buildCitationBlock(cd: CitationDigestData): string {
           <div style="font-family:'Courier New',monospace;font-size:36px;color:#fbf8ef;letter-spacing:-1px">
             ${sharePct}<span style="font-size:16px;color:#888888">%</span>${deltaHtml}
           </div>
-          <div style="font-family:Georgia,serif;font-size:13px;color:#888888;margin-top:4px;margin-bottom:16px">
-            Cited in ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries
+          <div style="font-family:Georgia,serif;font-size:12px;color:#888888;margin-top:2px">
+            of every citation across all tracked queries
+          </div>
+          <div style="font-family:Georgia,serif;font-size:13px;color:#b0b0a8;margin-top:10px;margin-bottom:4px">
+            Coverage: appears in answers for ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries
+          </div>
+          <div style="font-family:Georgia,serif;font-size:11px;color:#777770;margin-bottom:16px">
+            These measure different things. Coverage counts a query once if you appear at all; share weighs every citation in every answer, so both can be true at once.
           </div>
 
           ${cd.topCompetitors.length > 0 ? `
@@ -2242,11 +2256,15 @@ function buildDigestLeadHtml(
     if (cd && cd.previousShare !== null) {
       const shareDiff = Math.round((cd.citationShare - cd.previousShare) * 100);
       const currPct = Math.round(cd.citationShare * 100);
+      // Same vocabulary discipline as the subject: coverage (cited on N
+      // of M queries, a stock) and share (% of all citations, weighted)
+      // are DIFFERENT metrics with different denominators. Named apart,
+      // "18 of 18" beside "8%" is information; renamed as one word,
+      // it is the contradiction the digest grader held every week.
       if (shareDiff >= 3) lead = `${d.domain}'s citation share climbed ${shareDiff} points to ${currPct}% this week. AI engines are naming you more often.`;
-      else if (shareDiff <= -3) lead = `${d.domain}'s citation share slipped ${Math.abs(shareDiff)} points to ${currPct}% this week. The work below is aimed at reversing it.`;
-      else if (cd.keywordsWon > 0 && cd.keywordsLost === 0) lead = `${d.domain} earned ${cd.keywordsWon} new AI citation${cd.keywordsWon === 1 ? "" : "s"} this week and lost none.`;
-      else if (cd.keywordsLost > 0 && cd.keywordsWon === 0) lead = `${d.domain} lost ${cd.keywordsLost} AI citation${cd.keywordsLost === 1 ? "" : "s"} this week. The roadmap below targets the cause.`;
-      else lead = `${d.domain}'s citation share held at ${currPct}% this week across ${cd.totalKeywords} tracked queries.`;
+      else if (shareDiff <= -3) lead = `${d.domain}'s citation share slipped ${Math.abs(shareDiff)} points to ${currPct}% this week. Being cited on a query and owning its citations are different things; the work below targets the share.`;
+      else if (cd.totalKeywords > 0) lead = `${d.domain} is cited on ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries this week, and takes ${currPct}% of all citations across those answers. Coverage counts appearing at all; share weighs every citation in every answer.`;
+      else lead = `${d.domain}'s citation share held at ${currPct}% this week.`;
     } else if (cd) {
       lead = `First citation read for ${d.domain}. ${Math.round(cd.citationShare * 100)}% share across ${cd.totalKeywords} tracked queries. This is your baseline.`;
     } else {
@@ -2256,17 +2274,18 @@ function buildDigestLeadHtml(
       else lead = `${d.domain}'s AEO score is ${d.latest.aeo_score}/100. The roadmap below is how it moves.`;
     }
   } else {
-    let gained = 0;
-    let lost = 0;
+    // Coverage summed across domains, stated as the stock it is.
+    let citedTotal = 0;
+    let trackedTotal = 0;
     for (const d of digests) {
       const cd = citationData?.get(d.clientSlug);
-      if (cd) { gained += cd.keywordsWon; lost += cd.keywordsLost; }
+      if (cd) { citedTotal += cd.keywordsWon; trackedTotal += cd.totalKeywords; }
     }
-    if (gained > 0 || lost > 0) {
-      lead = `Across ${digests.length} domains this week, ${gained} AI citation${gained === 1 ? "" : "s"} gained and ${lost} lost. Domain detail below.`;
+    if (trackedTotal > 0) {
+      lead = `Across ${digests.length} domains this week: cited on ${citedTotal} of ${trackedTotal} tracked queries. Per-domain detail below.`;
     } else {
       const top = [...digests].sort((a, b) => b.latest.aeo_score - a.latest.aeo_score)[0];
-      lead = `${digests.length} domains scanned. ${top.domain} leads at ${top.latest.aeo_score}/100. Each domain and its roadmap are below.`;
+      lead = `${digests.length} domains scanned. ${top.domain} leads at ${top.latest.aeo_score}/100 on the AEO readiness check. Each domain and its roadmap are below.`;
     }
   }
 
