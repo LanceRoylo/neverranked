@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-10T13:24:49.255Z",
+  "updated": "2026-08-11T13:22:03.555Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -57,6 +57,11 @@
       "lastAlerted": null
     },
     "marketing-site": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
+    "app-dashboard": {
       "status": "OK",
       "since": null,
       "lastAlerted": null
