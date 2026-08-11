@@ -44,7 +44,12 @@ export async function sendViaResend(
     console.log("[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed a Resend send (no email dispatched)");
     return new Response(JSON.stringify({ id: "paused-suppressed", paused: true }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      // The marker lets callers log 'suppressed' instead of 'queued'.
+      // Without it, a suppressed digest test on 2026-08-10 logged as
+      // 'queued' and turned the digest-staleness heartbeat GREEN with
+      // zero emails delivered — a monitoring check silenced by a send
+      // that never happened.
+      headers: { "Content-Type": "application/json", "x-email-suppressed": "1" },
     });
   }
   if (opts.internal && emailGloballyPaused(env)) {
@@ -89,7 +94,7 @@ export async function logEmailDelivery(
   opts: {
     email: string;
     type: string;
-    status: "queued" | "failed";
+    status: "queued" | "failed" | "suppressed";
     statusCode?: number | null;
     errorMessage?: string | null;
     agencyId?: number | null;
@@ -668,6 +673,11 @@ export async function sendDigestEmail(
       return false;
     }
 
+    if (res.headers.get("x-email-suppressed") === "1") {
+      console.log(`Digest to ${to} passed the grader; EMAIL_GLOBAL_PAUSE suppressed delivery`);
+      await logEmailDelivery(env, { email: to, type: "digest", status: "suppressed", statusCode: res.status, errorMessage: "grader passed; EMAIL_GLOBAL_PAUSE suppressed delivery", agencyId: agency?.id });
+      return true;
+    }
     console.log(`Digest sent to ${to}`);
     await logEmailDelivery(env, { email: to, type: "digest", status: "queued", statusCode: res.status, agencyId: agency?.id });
     return true;
