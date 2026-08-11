@@ -224,16 +224,24 @@ export async function sendEmailViaResend(
   env: Env,
   input: EmailPreflightInput & { reply_to?: string },
   options: { blocking?: boolean } = {},
-): Promise<{ ok: boolean; status: number; resend_id?: string; body?: unknown; error?: string }> {
+): Promise<{ ok: boolean; status: number; suppressed?: boolean; resend_id?: string; body?: unknown; error?: string }> {
   // Preflight first. Throws QAPreflightError if red and blocking.
   await preflightEmail(env, input, options);
 
   // Global email kill switch. Inline (not imported from ./email) to
   // avoid a circular dependency -- email.ts already imports this module.
   // Synthetic success so callers neither retry nor raise alerts.
+  //
+  // `suppressed` exists because ok:true alone cannot be trusted as
+  // evidence of delivery. Callers that RECORD an outcome -- a delivery
+  // row, a cron detail -- must branch on it, or they write "sent" about
+  // an email that was never mailed. The paid digest did exactly that on
+  // 2026-08-10 and greened the heartbeat whose only job is proving
+  // clients got mail. resend_id was already a discriminator, but no
+  // caller checked a magic string, so make it a named field.
   if ((env as { EMAIL_GLOBAL_PAUSE?: string }).EMAIL_GLOBAL_PAUSE === "1") {
     console.log(`[email-pause] EMAIL_GLOBAL_PAUSE=1 -- suppressed preflight send "${input.subject}"`);
-    return { ok: true, status: 200, resend_id: "paused-suppressed" };
+    return { ok: true, status: 200, suppressed: true, resend_id: "paused-suppressed" };
   }
 
   const apiKey = (env as { RESEND_API_KEY?: string }).RESEND_API_KEY;

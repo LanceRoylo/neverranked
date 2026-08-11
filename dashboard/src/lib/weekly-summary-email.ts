@@ -225,7 +225,7 @@ function composeEmail(data: SummaryData): { subject: string; body: string } {
  * Send the weekly summary email. Wired into cron.ts for Monday 7am Pacific.
  * Uses sendEmailViaResend for QA preflight + safe send.
  */
-export async function sendWeeklySummaryEmail(env: Env): Promise<{ sent: boolean; error?: string; subject?: string }> {
+export async function sendWeeklySummaryEmail(env: Env): Promise<{ sent: boolean; suppressed?: boolean; error?: string; subject?: string }> {
   try {
     const data = await gatherData(env);
     const { subject, body } = composeEmail(data);
@@ -241,6 +241,13 @@ export async function sendWeeklySummaryEmail(env: Env): Promise<{ sent: boolean;
 
     if (!result.ok) {
       return { sent: false, error: result.error ?? `Resend returned ${result.status}` };
+    }
+    // Suppressed is NOT a failure -- the job ran correctly and the pause
+    // did its job -- but reporting it as a plain send means the cron
+    // record says an email arrived that never left. Caller decides how
+    // to phrase it; this function's only duty is to not lie.
+    if (result.suppressed) {
+      return { sent: true, suppressed: true, subject };
     }
     return { sent: true, subject };
   } catch (e) {

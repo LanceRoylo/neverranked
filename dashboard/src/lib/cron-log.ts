@@ -68,11 +68,17 @@ export async function withCronLogging<T>(
   env: Env,
   taskName: string,
   fn: () => Promise<T>,
+  // Optional: turn the job's own result into the detail column. A bare
+  // "success" row cannot distinguish a job that delivered from one that
+  // ran perfectly and delivered nothing (EMAIL_GLOBAL_PAUSE, an empty
+  // work queue). The status stays honest either way; this is how the row
+  // says WHICH kind of success it was.
+  detail?: (result: T) => string | undefined,
 ): Promise<T> {
   const started = Date.now();
   try {
     const result = await fn();
-    await logCronRun(env, taskName, "success", Date.now() - started);
+    await logCronRun(env, taskName, "success", Date.now() - started, detail?.(result));
     return result;
   } catch (e) {
     await logCronRun(

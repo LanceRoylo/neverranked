@@ -267,6 +267,23 @@ export async function sendFreeMagicLinkEmail(
 // Free-tier weekly digest + score-drop alert
 // ---------------------------------------------------------------------------
 
+/**
+ * Delivery-log type for the free-tier weekly digest.
+ *
+ * Split off from 'digest' on 2026-08-10. Free-tier sends were writing
+ * rows indistinguishable from paid client digests, and two things read
+ * type='digest' as evidence about CLIENT delivery: the Monday
+ * digest_dispatch reconcile in cron.ts and the email_log/digest
+ * heartbeat, whose own description names the paid Monday
+ * SEND_DIGEST_WORKFLOW. One funnel-top signup could have greened a
+ * monitor that exists to prove paying clients got their reports.
+ *
+ * Free-tier delivery still deserves watching. It needs its own check
+ * against this type, not a borrowed one that answers a different
+ * question.
+ */
+const FREE_DIGEST_LOG_TYPE = "free_digest";
+
 interface FreeDigestData {
   email: string;
   domain: string;
@@ -346,20 +363,26 @@ export async function sendFreeWeeklyDigestEmail(
     if (!result.ok) {
       const errBody = result.error ?? `status ${result.status}`;
       console.log(`Free digest to ${d.email} failed: ${errBody}`);
-      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", statusCode: result.status, errorMessage: errBody });
+      await logEmailDelivery(env, { email: d.email, type: FREE_DIGEST_LOG_TYPE, status: "failed", statusCode: result.status, errorMessage: errBody });
       return false;
     }
 
-    await logEmailDelivery(env, { email: d.email, type: "digest", status: "queued", statusCode: result.status });
+    if (result.suppressed) {
+      console.log(`Free digest to ${d.email} was suppressed by EMAIL_GLOBAL_PAUSE (not delivered)`);
+      await logEmailDelivery(env, { email: d.email, type: FREE_DIGEST_LOG_TYPE, status: "suppressed", statusCode: result.status, errorMessage: "EMAIL_GLOBAL_PAUSE suppressed delivery" });
+      return true;
+    }
+
+    await logEmailDelivery(env, { email: d.email, type: FREE_DIGEST_LOG_TYPE, status: "queued", statusCode: result.status });
     return true;
   } catch (err) {
     if (err instanceof QAPreflightError) {
       console.log(`Free digest BLOCKED by QA preflight for ${d.email}: ${err.audit.reasoning}`);
-      await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", errorMessage: `QA preflight blocked: ${err.audit.reasoning}` });
+      await logEmailDelivery(env, { email: d.email, type: FREE_DIGEST_LOG_TYPE, status: "failed", errorMessage: `QA preflight blocked: ${err.audit.reasoning}` });
       return false;
     }
     console.error(`Free digest to ${d.email} error:`, err);
-    await logEmailDelivery(env, { email: d.email, type: "digest", status: "failed", errorMessage: String(err) });
+    await logEmailDelivery(env, { email: d.email, type: FREE_DIGEST_LOG_TYPE, status: "failed", errorMessage: String(err) });
     return false;
   }
 }

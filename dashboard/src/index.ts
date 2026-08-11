@@ -3876,11 +3876,15 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
           withCronLogging(env, "weekly_summary_email", async () => {
             const { sendWeeklySummaryEmail } = await import("./lib/weekly-summary-email");
             const r = await sendWeeklySummaryEmail(env);
-            console.log(`[cron 06:30] weekly_summary_email: sent=${r.sent} ${r.error ?? ""}`);
+            console.log(`[cron 06:30] weekly_summary_email: sent=${r.sent}${r.suppressed ? " (suppressed by EMAIL_GLOBAL_PAUSE)" : ""} ${r.error ?? ""}`);
             if (!r.sent) {
               throw new Error(r.error ?? "weekly_summary_email returned sent=false");
             }
-          }).catch((e) => {
+            return r;
+          }, (r) => r.suppressed
+            ? "composed and passed preflight; EMAIL_GLOBAL_PAUSE suppressed delivery"
+            : "delivered",
+          ).catch((e) => {
             console.log(`[cron 06:30] weekly_summary_email failed: ${e instanceof Error ? e.message : e}`);
           })
         );
