@@ -594,6 +594,14 @@ export async function sendDigestEmail(
   eventsByClient?: Map<string, DigestEvent[]>,
   nviByClient?: Map<string, DigestNviReport>,
   actionsByClient?: Map<string, DigestActionsSection>,
+  // Delivery-log type. Admin test sends pass "digest_test" so they stay
+  // out of the two places that read type='digest' as evidence about
+  // CLIENT delivery: the Monday digest_dispatch reconcile in cron.ts and
+  // the email_log/digest heartbeat check. Three grader iterations from
+  // the admin tool on 2026-08-10 landed in the reconcile's failure count
+  // as if clients had been failed, and a passing test send would have
+  // greened a monitor whose whole job is to prove clients got mail.
+  logType: "digest" | "digest_test" = "digest",
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -627,7 +635,7 @@ export async function sendDigestEmail(
   const graderBypass = (env as { DIGEST_GRADER_BYPASS?: string }).DIGEST_GRADER_BYPASS === "1";
   if (graderBypass) {
     console.log(`[digest] grader BYPASSED for ${to} (DIGEST_GRADER_BYPASS=1)`);
-    await logEmailDelivery(env, { email: to, type: "digest", status: "queued", statusCode: 200, errorMessage: "grader-bypassed", agencyId: agency?.id });
+    await logEmailDelivery(env, { email: to, type: logType, status: "queued", statusCode: 200, errorMessage: "grader-bypassed", agencyId: agency?.id });
   } else try {
     const { gradeDigest, htmlToPlaintext } = await import("./digest-grader");
     const grade = await gradeDigest(env, htmlToPlaintext(emailHtml));
@@ -649,12 +657,12 @@ export async function sendDigestEmail(
       } catch {
         // Inbox is non-critical
       }
-      await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
+      await logEmailDelivery(env, { email: to, type: logType, status: "failed", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
       return false;
     }
   } catch (e) {
     console.log(`[digest] grader crashed for ${to}: ${e}`);
-    await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: `grader crash: ${String(e)}`, agencyId: agency?.id });
+    await logEmailDelivery(env, { email: to, type: logType, status: "failed", errorMessage: `grader crash: ${String(e)}`, agencyId: agency?.id });
     return false;
   }
 
@@ -676,21 +684,21 @@ export async function sendDigestEmail(
     if (!res.ok) {
       const err = await res.text();
       console.log(`Digest to ${to} failed: ${res.status} ${err}`);
-      await logEmailDelivery(env, { email: to, type: "digest", status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
+      await logEmailDelivery(env, { email: to, type: logType, status: "failed", statusCode: res.status, errorMessage: err, agencyId: agency?.id });
       return false;
     }
 
     if (res.headers.get("x-email-suppressed") === "1") {
       console.log(`Digest to ${to} passed the grader; EMAIL_GLOBAL_PAUSE suppressed delivery`);
-      await logEmailDelivery(env, { email: to, type: "digest", status: "suppressed", statusCode: res.status, errorMessage: "grader passed; EMAIL_GLOBAL_PAUSE suppressed delivery", agencyId: agency?.id });
+      await logEmailDelivery(env, { email: to, type: logType, status: "suppressed", statusCode: res.status, errorMessage: "grader passed; EMAIL_GLOBAL_PAUSE suppressed delivery", agencyId: agency?.id });
       return true;
     }
     console.log(`Digest sent to ${to}`);
-    await logEmailDelivery(env, { email: to, type: "digest", status: "queued", statusCode: res.status, agencyId: agency?.id });
+    await logEmailDelivery(env, { email: to, type: logType, status: "queued", statusCode: res.status, agencyId: agency?.id });
     return true;
   } catch (e) {
     console.log(`Digest to ${to} error: ${e}`);
-    await logEmailDelivery(env, { email: to, type: "digest", status: "failed", errorMessage: String(e), agencyId: agency?.id });
+    await logEmailDelivery(env, { email: to, type: logType, status: "failed", errorMessage: String(e), agencyId: agency?.id });
     return false;
   }
 }

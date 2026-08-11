@@ -56,6 +56,51 @@ function randomHex(bytes: number): string {
   return Array.from(buf, (b) => b.toString(16).padStart(2, "0")).join("");
 }
 
+/** What actually happened to the test digest, read from the row the send
+ *  path just wrote. The boolean alone cannot tell a grader hold from a
+ *  Resend refusal, and cannot tell a real delivery from one the global
+ *  pause swallowed. */
+async function describeDigestOutcome(
+  env: Env,
+  recipient: string,
+  ok: boolean,
+  sampleDomain: string,
+): Promise<string> {
+  let row: { status: string; error_message: string | null } | null = null;
+  try {
+    row = await env.DB.prepare(
+      `SELECT status, error_message
+         FROM email_delivery_log
+        WHERE email = ? AND type = 'digest_test'
+        ORDER BY id DESC LIMIT 1`,
+    ).bind(recipient).first<{ status: string; error_message: string | null }>();
+  } catch {
+    // Fall through to the generic wording below.
+  }
+
+  const detail = (row?.error_message || "").trim();
+  if (row?.status === "suppressed") {
+    return `Digest passed the grader. EMAIL_GLOBAL_PAUSE is on, so nothing was mailed. Lift the pause to deliver.`;
+  }
+  if (row?.status === "queued") {
+    return detail === "grader-bypassed"
+      ? `Digest sent using ${sampleDomain} as sample. Grader was BYPASSED (DIGEST_GRADER_BYPASS=1).`
+      : `Digest sent using ${sampleDomain} as sample.`;
+  }
+  if (row?.status === "failed" && detail.startsWith("held by grader")) {
+    return `Held by the quality grader, not mailed. ${detail.replace(/^held by grader:\s*/i, "")}`;
+  }
+  if (row?.status === "failed" && detail.startsWith("grader crash")) {
+    return `The grader crashed, so the digest was held fail-closed. ${detail}`;
+  }
+  if (row?.status === "failed") {
+    return `Resend rejected the send.${detail ? ` ${detail.slice(0, 300)}` : ""}`;
+  }
+  return ok
+    ? `Digest sent using ${sampleDomain} as sample.`
+    : `Send did not complete and no delivery row was found. Check the Worker logs.`;
+}
+
 // ---------------------------------------------------------------------------
 // GET /admin/email-test
 // ---------------------------------------------------------------------------
@@ -205,8 +250,20 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
           latest: sample,
           previous: null,
         }];
-        const ok = await sendDigestEmail(recipient, user.name, digests, env, undefined, undefined, undefined, undefined, agency);
-        outcome = { ok, note: ok ? `Digest sent using ${sample.domain} as sample.` : "Resend rejected the send." };
+        const ok = await sendDigestEmail(
+          recipient, user.name, digests, env,
+          undefined, undefined, undefined, undefined, agency,
+          undefined, undefined, undefined, undefined,
+          "digest_test",
+        );
+        // A false return here has three very different causes -- the
+        // grader held the copy, the grader crashed, or Resend refused --
+        // and reporting all of them as "Resend rejected the send" sent
+        // this session chasing an email-infrastructure problem that did
+        // not exist. The delivery log already recorded which one it was,
+        // so read it back rather than infer. Same for the true return:
+        // with EMAIL_GLOBAL_PAUSE on, "sent" is a lie.
+        outcome = { ok, note: await describeDigestOutcome(env, recipient, ok, sample.domain) };
         break;
       }
 

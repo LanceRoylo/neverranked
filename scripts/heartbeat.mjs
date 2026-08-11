@@ -439,6 +439,33 @@ const HTTP_CHECKS = [
   // life, and a monitor that is always red trains the operator to ignore
   // it -- which is precisely how 79 real alerts went unread.
   {
+    // ADDED 2026-08-10. Between the BetterStack cancellation and this
+    // check, NOTHING watched app.neverranked.com -- the surface that
+    // serves every client readout, the login and the review console.
+    // The /health-public endpoint has existed the whole time for exactly
+    // this purpose and had no caller. A guard with no notification path
+    // is not shipped.
+    //
+    // Deliberately asserts the BODY, not just the status. The Worker can
+    // return 200 while D1 is unreachable behind it, and a readout with no
+    // data is the failure that actually costs a client.
+    name: 'app-dashboard',
+    description: 'app.neverranked.com reachable and D1 responding',
+    url: 'https://app.neverranked.com/health-public',
+    expectStatus: 200,
+    validate: async (res) => {
+      try {
+        const json = await res.json();
+        if (json.ok !== true) {
+          return { ok: false, detail: `health-public reports ok=${JSON.stringify(json.ok)} (${JSON.stringify(json).slice(0, 120)})` };
+        }
+        return { ok: true, detail: 'worker + D1 healthy' };
+      } catch (e) {
+        return { ok: false, detail: `health-public returned unparseable body: ${e.message}` };
+      }
+    },
+  },
+  {
     name: 'mcp-npm-package',
     description: '@neverranked/mcp present in npm registry',
     url: 'https://registry.npmjs.org/@neverranked/mcp',
