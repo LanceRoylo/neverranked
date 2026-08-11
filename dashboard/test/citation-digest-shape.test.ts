@@ -103,15 +103,19 @@ test("digest prose never renders coverage counts as weekly gained/lost flows", (
   );
 });
 
-test("the citation card labels both denominators", () => {
+test("the digest labels both denominators (v2)", () => {
+  // The v2 numbers block states each figure once with its label, plus one
+  // definition line so share and coverage can never read as one metric.
+  // If either anchor disappears, the denominator ambiguity the grader
+  // held for three months is back.
   const src = readFileSync(join(HERE, "..", "src", "email.ts"), "utf8");
   assert.ok(
-    /of every citation across all tracked queries/.test(src),
-    "the share figure lost its denominator caption",
+    /share of all citations/.test(src),
+    "the share figure lost its denominator label",
   );
   assert.ok(
-    /Coverage: appears in answers for/.test(src),
-    "the coverage line lost its label — a bare 'Cited in N of M' beside a share % is the exact ambiguity the grader holds",
+    /Share weighs every citation across all tracked queries\. Coverage counts a query once/.test(src),
+    "the share-vs-coverage definition line is gone",
   );
 });
 

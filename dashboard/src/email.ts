@@ -4,6 +4,7 @@
  * Magic link auth emails + weekly AEO digest emails.
  */
 
+import { weekReport, digestSubject, type ClientWeek, type WeekReport } from "./digest-verdict";
 import type { Agency, Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
@@ -602,11 +603,17 @@ export async function sendDigestEmail(
   if (digests.length === 0) return false;
 
   const brand = brandFor(agency);
-  const subject = digests.length === 1
-    ? buildSubjectSingle(digests[0], citationData)
-    : buildSubjectMulti(digests, citationData);
+  // Digest v2 (2026-08-10): verdict-led. One pure module decides the
+  // subject, the verdict and what counts as movement, so the inbox row,
+  // the lead sentence and the body cannot disagree with each other.
+  // stateOfAeo is accepted for signature compatibility but the retired
+  // industry block no longer renders.
+  void stateOfAeo;
+  const weeks = toClientWeeks(digests, citationData, gscData, roadmapData, eventsByClient, actionsByClient);
+  const reports = weeks.map(weekReport);
+  const subject = digestSubject(reports);
 
-  const emailHtml = buildDigestHtml(userName, digests, citationData, gscData, roadmapData, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient, actionsByClient);
+  const emailHtml = buildDigestHtmlV2(userName, reports, weeks, actionsByClient, nviByClient, unsubToken, agency);
 
   // Quality grader: final gate before send. Checks voice (no AI-tells,
   // HM voice rules) and substance (real signal, not formulaic filler).
@@ -688,74 +695,10 @@ export async function sendDigestEmail(
   }
 }
 
-function buildSubjectSingle(d: DigestData, citationData?: Map<string, CitationDigestData>): string {
-  // Prefer citation-share movement as the headline when available. It's
-  // the more meaningful signal for Signal-tier clients — AEO score is
-  // the input; citation share is the outcome that drives revenue.
-  const cd = citationData?.get(d.clientSlug);
-  if (cd && cd.previousShare !== null) {
-    const shareDiff = (cd.citationShare - cd.previousShare) * 100;
-    const currPct = Math.round(cd.citationShare * 100);
-    // VOCABULARY DISCIPLINE (the reason the digest grader held every
-    // digest for weeks, 2026-08-10 dig): keywordsWon is COVERAGE — the
-    // count of tracked queries where the client is cited AT ALL right
-    // now, a stock. keywordsLost is simply total minus won, the UNCITED
-    // count. Neither is a week-over-week flow, so "gained/lost N
-    // citations this week" was always a false label, and rendering
-    // coverage (18 of 18) beside share (8%) with one word for both read
-    // as a contradiction — because as written, it was one.
-    if (shareDiff >= 3) {
-      return `${d.domain}: citation share up ${Math.round(shareDiff)} pts to ${currPct}%`;
-    } else if (shareDiff <= -3) {
-      return `${d.domain}: citation share down ${Math.round(Math.abs(shareDiff))} pts to ${currPct}%`;
-    } else if (cd.totalKeywords > 0) {
-      return `${d.domain}: cited on ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries, ${currPct}% share`;
-    }
-    return `${d.domain}: citation share held at ${currPct}% this week`;
-  }
-  if (cd) {
-    const currPct = Math.round(cd.citationShare * 100);
-    return `${d.domain}: first citation read, ${currPct}% share across ${cd.totalKeywords} tracked queries`;
-  }
-
-  // Fallback: AEO score framing when no citation data is available.
-  const diff = d.previous && !d.previous.error
-    ? d.latest.aeo_score - d.previous.aeo_score
-    : null;
-
-  if (diff !== null && diff > 0) {
-    return `${d.domain}: AEO score up ${diff} pts (${d.latest.aeo_score}/100)`;
-  } else if (diff !== null && diff < 0) {
-    return `${d.domain}: AEO score dropped ${Math.abs(diff)} pts (${d.latest.aeo_score}/100)`;
-  }
-  return `${d.domain}: AEO score ${d.latest.aeo_score}/100`;
-}
 
 // Subject builder for multi-domain digests. Surfaces aggregate movement
 // across domains if citation data is present, otherwise falls back to
 // the generic count subject.
-function buildSubjectMulti(digests: DigestData[], citationData?: Map<string, CitationDigestData>): string {
-  if (citationData && citationData.size > 0) {
-    // Coverage is a stock, not a flow — sum cited/tracked across
-    // domains and say exactly that. "N gained, M lost" summed coverage
-    // counts as if they were weekly deltas, which is how one subject
-    // line contradicted the body it introduced.
-    let citedTotal = 0;
-    let trackedTotal = 0;
-    let movers = 0;
-    for (const d of digests) {
-      const cd = citationData.get(d.clientSlug);
-      if (!cd) continue;
-      citedTotal += cd.keywordsWon;
-      trackedTotal += cd.totalKeywords;
-      if (cd.previousShare !== null && Math.abs(cd.citationShare - cd.previousShare) > 0.02) movers++;
-    }
-    if (movers >= Math.ceil(digests.length / 2) && trackedTotal > 0) {
-      return `Weekly citation report -- cited on ${citedTotal} of ${trackedTotal} tracked queries across ${digests.length} domains`;
-    }
-  }
-  return `Weekly AEO Report -- ${digests.length} domains scanned`;
-}
 
 // ---------------------------------------------------------------------------
 // Score regression alerts
@@ -2077,117 +2020,7 @@ function escEmail(s: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function buildCitationBlock(cd: CitationDigestData): string {
-  const sharePct = (cd.citationShare * 100).toFixed(0);
-  const prevPct = cd.previousShare !== null ? (cd.previousShare * 100).toFixed(0) : null;
 
-  let deltaHtml = "";
-  if (prevPct !== null) {
-    const diff = Number(sharePct) - Number(prevPct);
-    if (diff > 0) {
-      deltaHtml = `<span style="color:#27ae60;font-size:13px;margin-left:8px">+${diff} pts</span>`;
-    } else if (diff < 0) {
-      deltaHtml = `<span style="color:#c0392b;font-size:13px;margin-left:8px">${diff} pts</span>`;
-    } else {
-      deltaHtml = `<span style="color:#888888;font-size:13px;margin-left:8px">no change</span>`;
-    }
-  }
-
-  const competitorRows = cd.topCompetitors.slice(0, 3).map(c =>
-    `<div style="padding:6px 0;border-bottom:1px solid #2a2a2a;font-size:13px;color:#b0b0a8;display:flex;justify-content:space-between">
-      <span>${escEmail(c.name)}</span>
-      <span style="color:#888888">${c.count} mentions</span>
-    </div>`
-  ).join("");
-
-  return `
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
-      <tr>
-        <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">AI Citation Share</div>
-
-          <div style="font-family:'Courier New',monospace;font-size:36px;color:#fbf8ef;letter-spacing:-1px">
-            ${sharePct}<span style="font-size:16px;color:#888888">%</span>${deltaHtml}
-          </div>
-          <div style="font-family:Georgia,serif;font-size:12px;color:#888888;margin-top:2px">
-            of every citation across all tracked queries
-          </div>
-          <div style="font-family:Georgia,serif;font-size:13px;color:#b0b0a8;margin-top:10px;margin-bottom:4px">
-            Coverage: appears in answers for ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries
-          </div>
-          <div style="font-family:Georgia,serif;font-size:11px;color:#777770;margin-bottom:16px">
-            These measure different things. Coverage counts a query once if you appear at all; share weighs every citation in every answer, so both can be true at once.
-          </div>
-
-          ${cd.topCompetitors.length > 0 ? `
-          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:8px;margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">Top competitors</div>
-          ${competitorRows}
-          ` : ""}
-        </td>
-      </tr>
-    </table>
-  `;
-}
-
-function buildGscBlock(gsc: GscDigestData): string {
-  let clicksDelta = "";
-  if (gsc.prevClicks !== null) {
-    const diff = gsc.clicks - gsc.prevClicks;
-    if (diff > 0) clicksDelta = '<span style="color:#27ae60;font-size:13px;margin-left:8px">+' + diff + '</span>';
-    else if (diff < 0) clicksDelta = '<span style="color:#c0392b;font-size:13px;margin-left:8px">' + diff + '</span>';
-  }
-
-  let impDelta = "";
-  if (gsc.prevImpressions !== null) {
-    const diff = gsc.impressions - gsc.prevImpressions;
-    if (diff > 0) impDelta = '<span style="color:#27ae60;font-size:13px;margin-left:8px">+' + diff.toLocaleString() + '</span>';
-    else if (diff < 0) impDelta = '<span style="color:#c0392b;font-size:13px;margin-left:8px">' + diff.toLocaleString() + '</span>';
-  }
-
-  return `
-    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
-      <tr>
-        <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-          <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#e8c767;margin-bottom:16px">Google Search Performance</div>
-          <div style="font-family:Georgia,serif;font-size:12px;color:#555555;margin-bottom:16px">${escEmail(gsc.dateRange)}</div>
-
-          <table width="100%" cellpadding="0" cellspacing="0" border="0">
-            <tr>
-              <td width="50%" style="vertical-align:top">
-                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Clicks</div>
-                <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef">${gsc.clicks.toLocaleString()}${clicksDelta}</div>
-              </td>
-              <td width="50%" style="vertical-align:top">
-                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Impressions</div>
-                <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef">${gsc.impressions.toLocaleString()}${impDelta}</div>
-              </td>
-            </tr>
-          </table>
-
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:16px">
-            <tr>
-              <td width="50%" style="vertical-align:top">
-                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">CTR</div>
-                <div style="font-family:'Courier New',monospace;font-size:18px;color:#fbf8ef">${(gsc.ctr * 100).toFixed(1)}%</div>
-              </td>
-              <td width="50%" style="vertical-align:top">
-                <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Avg Position</div>
-                <div style="font-family:'Courier New',monospace;font-size:18px;color:#fbf8ef">${gsc.position.toFixed(1)}</div>
-              </td>
-            </tr>
-          </table>
-
-          ${gsc.topQuery ? `
-          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #2a2a2a">
-            <div style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888;margin-bottom:4px">Top query</div>
-            <div style="font-family:Georgia,serif;font-size:14px;color:#b0b0a8;font-style:italic">${escEmail(gsc.topQuery)}</div>
-          </div>
-          ` : ""}
-        </td>
-      </tr>
-    </table>
-  `;
-}
 
 function buildRoadmapBlock(rd: RoadmapDigestData): string {
   const pct = rd.total > 0 ? Math.round((rd.done / rd.total) * 100) : 0;
@@ -2248,373 +2081,229 @@ function buildRoadmapBlock(rd: RoadmapDigestData): string {
 // citation share (the outcome that drives revenue) over AEO score (the
 // input). The number is the message -- no preamble, no filler. Voice
 // rules: no em dash, no semicolon in client copy.
-function buildDigestLeadHtml(
-  userName: string | null,
+
+// ---------------------------------------------------------------------------
+// Digest v2 (2026-08-10): one verdict, then receipts.
+//
+// Structure kills the contradiction class the grader held for three
+// months: each number appears exactly once, movement only above
+// thresholds, quiet weeks say quiet. Verdict logic lives in
+// digest-verdict.ts (pure, tested); this renders it. Visuals stay in the
+// established NR language (Georgia + Courier, gold on near-black) so the
+// digest is recognizably the same hand as the teardowns and the site.
+// ---------------------------------------------------------------------------
+
+/** Assemble the verdict module's inputs from the existing digest maps. */
+export function toClientWeeks(
   digests: DigestData[],
   citationData?: Map<string, CitationDigestData>,
-  scanDate?: string,
-): string {
-  const first = userName ? userName.split(" ")[0] : null;
-  const nameLine = first
-    ? `<div style="font-family:Georgia,serif;font-size:16px;color:#fbf8ef;margin-bottom:8px">${escEmail(first)},</div>`
-    : "";
-
-  let lead: string;
-  if (digests.length === 1) {
-    const d = digests[0];
+  gscData?: Map<string, GscDigestData>,
+  roadmapData?: Map<string, RoadmapDigestData>,
+  eventsByClient?: Map<string, DigestEvent[]>,
+  actionsByClient?: Map<string, DigestActionsSection>,
+): ClientWeek[] {
+  return digests.map((d) => {
     const cd = citationData?.get(d.clientSlug);
-    if (cd && cd.previousShare !== null) {
-      const shareDiff = Math.round((cd.citationShare - cd.previousShare) * 100);
-      const currPct = Math.round(cd.citationShare * 100);
-      // Same vocabulary discipline as the subject: coverage (cited on N
-      // of M queries, a stock) and share (% of all citations, weighted)
-      // are DIFFERENT metrics with different denominators. Named apart,
-      // "18 of 18" beside "8%" is information; renamed as one word,
-      // it is the contradiction the digest grader held every week.
-      if (shareDiff >= 3) lead = `${d.domain}'s citation share climbed ${shareDiff} points to ${currPct}% this week. AI engines are naming you more often.`;
-      else if (shareDiff <= -3) lead = `${d.domain}'s citation share slipped ${Math.abs(shareDiff)} points to ${currPct}% this week. Being cited on a query and owning its citations are different things; the work below targets the share.`;
-      else if (cd.totalKeywords > 0) lead = `${d.domain} is cited on ${cd.keywordsWon} of ${cd.totalKeywords} tracked queries this week, and takes ${currPct}% of all citations across those answers. Coverage counts appearing at all; share weighs every citation in every answer.`;
-      else lead = `${d.domain}'s citation share held at ${currPct}% this week.`;
-    } else if (cd) {
-      lead = `First citation read for ${d.domain}. ${Math.round(cd.citationShare * 100)}% share across ${cd.totalKeywords} tracked queries. This is your baseline.`;
-    } else {
-      const diff = d.previous && !d.previous.error ? d.latest.aeo_score - d.previous.aeo_score : null;
-      if (diff !== null && diff > 0) lead = `${d.domain}'s AEO score rose ${diff} points to ${d.latest.aeo_score}/100 this week.`;
-      else if (diff !== null && diff < 0) lead = `${d.domain}'s AEO score fell ${Math.abs(diff)} points to ${d.latest.aeo_score}/100 this week. The roadmap below targets the gap.`;
-      else lead = `${d.domain}'s AEO score is ${d.latest.aeo_score}/100. The roadmap below is how it moves.`;
-    }
-  } else {
-    // Coverage summed across domains, stated as the stock it is.
-    let citedTotal = 0;
-    let trackedTotal = 0;
-    for (const d of digests) {
-      const cd = citationData?.get(d.clientSlug);
-      if (cd) { citedTotal += cd.keywordsWon; trackedTotal += cd.totalKeywords; }
-    }
-    if (trackedTotal > 0) {
-      lead = `Across ${digests.length} domains this week: cited on ${citedTotal} of ${trackedTotal} tracked queries. Per-domain detail below.`;
-    } else {
-      const top = [...digests].sort((a, b) => b.latest.aeo_score - a.latest.aeo_score)[0];
-      lead = `${digests.length} domains scanned. ${top.domain} leads at ${top.latest.aeo_score}/100 on the AEO readiness check. Each domain and its roadmap are below.`;
-    }
+    const gd = gscData?.get(d.clientSlug);
+    const rd = roadmapData?.get(d.clientSlug);
+    const evs = eventsByClient?.get(d.clientSlug) || [];
+    const acts = actionsByClient?.get(d.clientSlug);
+    return {
+      domain: d.domain,
+      clientSlug: d.clientSlug,
+      score: d.latest.aeo_score,
+      scorePrev: d.previous && !d.previous.error ? d.previous.aeo_score : null,
+      share: cd ? cd.citationShare : null,
+      sharePrev: cd && cd.previousShare !== null ? cd.previousShare : null,
+      coverageWon: cd ? cd.keywordsWon : null,
+      coverageTotal: cd ? cd.totalKeywords : null,
+      clicks: gd ? gd.clicks : null,
+      clicksPrev: gd && gd.prevClicks !== null ? gd.prevClicks : null,
+      shippedThisWeek: rd ? rd.recentlyCompleted.slice(0, 3) : [],
+      events: evs.map((e) => ({ severity: e.severity, title: e.title })),
+      actionsPending: acts ? acts.total_pending : 0,
+    };
+  });
+}
+
+const V2_BG = "#0f0f0e";
+const V2_PANEL = "#171716";
+const V2_TEXT = "#fbf8ef";
+const V2_SOFT = "#b0b0a8";
+const V2_DIM = "#767670";
+const V2_GOLD = "#e8c767";
+const V2_UP = "#5fbf7f";
+const V2_DOWN = "#d07a6a";
+
+function v2Caption(label: string): string {
+  return `<div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${V2_DIM};margin:0 0 12px">${escEmail(label)}</div>`;
+}
+
+function v2NumbersRow(c: ClientWeek, multi: boolean): string {
+  const cell = (big: string, label: string, sub: string | null): string =>
+    `<td style="padding:0 18px 0 0;vertical-align:top">
+       <div style="font-family:'Courier New',monospace;font-size:22px;color:${V2_TEXT};letter-spacing:-0.5px">${big}</div>
+       <div style="font-family:Georgia,serif;font-size:11px;color:${V2_DIM};margin-top:2px">${escEmail(label)}</div>
+       ${sub ? `<div style="font-family:'Courier New',monospace;font-size:11px;color:${V2_SOFT};margin-top:2px">${escEmail(sub)}</div>` : ""}
+     </td>`;
+
+  const cells: string[] = [];
+  cells.push(cell(
+    `${c.score}<span style="font-size:12px;color:${V2_DIM}">/100</span>`,
+    "readiness score",
+    c.scorePrev !== null && c.scorePrev !== c.score ? `was ${c.scorePrev}` : null,
+  ));
+  if (c.share !== null) {
+    cells.push(cell(
+      `${Math.round(c.share * 100)}<span style="font-size:12px;color:${V2_DIM}">%</span>`,
+      "share of all citations",
+      c.sharePrev !== null && Math.round(c.sharePrev * 100) !== Math.round(c.share * 100)
+        ? `was ${Math.round(c.sharePrev * 100)}%` : null,
+    ));
+  }
+  if (c.coverageWon !== null && c.coverageTotal !== null && c.coverageTotal > 0) {
+    cells.push(cell(
+      `${c.coverageWon}<span style="font-size:12px;color:${V2_DIM}">/${c.coverageTotal}</span>`,
+      "queries cited on",
+      null,
+    ));
+  }
+  if (c.clicks !== null) {
+    cells.push(cell(
+      String(c.clicks),
+      "search clicks",
+      c.clicksPrev !== null && c.clicksPrev !== c.clicks ? `was ${c.clicksPrev}` : null,
+    ));
   }
 
-  const meta = scanDate
-    ? `<div style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#555555;margin-top:10px">Scan ${escEmail(scanDate)}</div>`
-    : "";
-
-  return `${nameLine}<div style="font-family:Georgia,serif;font-size:15px;color:#cfcabd;line-height:1.6">${escEmail(lead)}</div>${meta}`;
+  return `
+    ${multi ? `<div style="font-family:Georgia,serif;font-size:13px;color:${V2_SOFT};margin:0 0 8px">${escEmail(c.domain)}</div>` : ""}
+    <table cellpadding="0" cellspacing="0" border="0"><tr>${cells.join("")}</tr></table>`;
 }
 
-function buildDigestHtml(userName: string | null, digests: DigestData[], citationData?: Map<string, CitationDigestData>, gscData?: Map<string, GscDigestData>, roadmapData?: Map<string, RoadmapDigestData>, unsubToken?: string, agency?: Agency | null, stateOfAeo?: StateOfAeoLatest | null, eventsByClient?: Map<string, DigestEvent[]>, nviByClient?: Map<string, DigestNviReport>, actionsByClient?: Map<string, DigestActionsSection>): string {
+export function buildDigestHtmlV2(
+  userName: string | null,
+  reports: WeekReport[],
+  weeks: ClientWeek[],
+  actionsByClient?: Map<string, DigestActionsSection>,
+  nviByClient?: Map<string, DigestNviReport>,
+  unsubToken?: string,
+  agency?: Agency | null,
+): string {
   const brand = brandFor(agency);
-  const headerCellHtml = brand.logo
-    ? `<td><img src="${brand.logo}" alt="${escEmail(brand.name)}" style="max-height:28px;max-width:200px"></td>`
-    : `<td style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>`;
-  const ctaColor = brand.color;
-  const footerLine = agency
-    ? `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">Never Ranked</a>`
-    : `Powered by <a href="https://neverranked.com" style="color:#bfa04d;text-decoration:none">NeverRanked</a>`;
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  const multi = reports.length > 1;
+  const first = userName ? userName.split(" ")[0] : null;
 
-  const domainBlocks = digests.map(d => {
-    const narrative = generateNarrative(d.domain, d.latest, d.previous);
-    const diff = d.previous && !d.previous.error
-      ? d.latest.aeo_score - d.previous.aeo_score
-      : null;
+  // THE VERDICT. One sentence that is the email. Multi-domain sends lead
+  // with the roll-up and keep per-domain verdicts inside each section.
+  const overallVerdict = multi
+    ? (() => {
+        const movedCount = reports.filter((r) => r.moved.length > 0).length;
+        return movedCount === 0
+          ? `All ${reports.length} domains quiet this week. Nothing needs you.`
+          : `Movement on ${movedCount} of ${reports.length} domains this week.`;
+      })()
+    : reports[0].verdict;
 
-    const gradeColor = d.latest.grade === "A" ? "#27ae60"
-      : d.latest.grade === "B" ? "#e8c767"
-      : d.latest.grade === "C" ? "#e67e22"
-      : "#c0392b";
+  const movedGlyph = (dir: string): string =>
+    dir === "up"
+      ? `<span style="color:${V2_UP}">&#9650;</span>`
+      : dir === "down"
+        ? `<span style="color:${V2_DOWN}">&#9660;</span>`
+        : `<span style="color:${V2_GOLD}">&#9679;</span>`;
 
-    let deltaText = "";
-    let deltaColor = "#888888";
-    if (diff !== null) {
-      if (diff > 0) { deltaText = `+${diff} pts`; deltaColor = "#27ae60"; }
-      else if (diff < 0) { deltaText = `${diff} pts`; deltaColor = "#c0392b"; }
-      else { deltaText = "no change"; deltaColor = "#888888"; }
-    }
+  const sectionFor = (r: WeekReport, c: ClientWeek): string => {
+    const acts = actionsByClient?.get(r.clientSlug);
+    const nvi = nviByClient?.get(r.clientSlug);
 
-    const topAction = narrative.actions[0] || null;
+    // The verdict already carries moved[0], so the list holds the REST.
+    // Repeating the lead verbatim two inches below itself fails the
+    // Remove-a-Word test and pads the exact reading Greg gives this.
+    const restMoved = r.moved.slice(1);
+    const movedHtml = restMoved.length
+      ? `<div style="margin:0 0 28px">
+           ${v2Caption("Also moved")}
+           ${restMoved.map((m) => `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_TEXT};line-height:1.6;margin:0 0 6px">${movedGlyph(m.direction)}&nbsp; ${escEmail(m.text)}</div>`).join("")}
+         </div>`
+      : "";
 
+    const needsHtml = acts && acts.total_pending > 0
+      ? `<div style="margin:0 0 28px">
+           ${v2Caption("Needs you")}
+           ${acts.items.slice(0, 3).map((a) => `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_TEXT};line-height:1.6;margin:0 0 6px">${escEmail((a as { title?: string; label?: string }).title || (a as { label?: string }).label || "Pending item")}</div>`).join("")}
+           <a href="https://app.neverranked.com/actions/${encodeURIComponent(r.clientSlug)}" style="display:inline-block;margin-top:8px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;color:${V2_GOLD};text-decoration:underline;text-underline-offset:3px">OPEN THE LIST</a>
+         </div>`
+      : "";
+
+    const nviHtml = nvi
+      ? `<div style="font-family:Georgia,serif;font-size:13px;color:${V2_SOFT};margin:0 0 28px">This month's full visibility report is ready. <a href="https://app.neverranked.com/c/${encodeURIComponent(r.clientSlug)}/readouts" style="color:${V2_GOLD};text-decoration:underline;text-underline-offset:3px">Read it here</a>.</div>`
+      : "";
+
+    const multiVerdict = multi
+      ? `<div style="font-family:Georgia,serif;font-style:italic;font-size:17px;color:${V2_TEXT};line-height:1.5;margin:0 0 20px">${escEmail(r.verdict)}</div>`
+      : "";
+
+    return `${multiVerdict}${movedHtml}${needsHtml}${nviHtml}`;
+  };
+
+  const sections = reports.map((r, i) => {
+    const c = weeks[i];
+    const body = sectionFor(r, c);
     return `
-      <!-- Domain block -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:32px">
-        <tr>
-          <td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
-            <!-- Domain name -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;padding-bottom:16px">${escEmail(d.domain)}</td>
-              </tr>
-            </table>
-
-            <!-- Score row -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:16px">
-              <tr>
-                <td width="60" style="vertical-align:middle">
-                  <div style="width:52px;height:52px;border-radius:50%;border:2px solid ${gradeColor};text-align:center;line-height:52px;font-family:Georgia,serif;font-size:28px;font-style:italic;color:${gradeColor}">${d.latest.grade}</div>
-                </td>
-                <td style="vertical-align:middle;padding-left:16px">
-                  <div style="font-family:'Courier New',monospace;font-size:28px;color:#fbf8ef;letter-spacing:-1px">${d.latest.aeo_score}<span style="font-size:14px;color:#888888">/100</span></div>
-                  ${deltaText ? `<div style="font-size:13px;color:${deltaColor};margin-top:2px">${deltaText}</div>` : ""}
-                </td>
-              </tr>
-            </table>
-
-            <!-- Summary -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:${topAction ? '16' : '0'}px">
-              <tr>
-                <td style="font-family:Georgia,serif;font-size:14px;line-height:1.7;color:#b0b0a8;padding:16px;background:#171717;border-radius:4px">
-                  ${escEmail(narrative.summary)}
-                </td>
-              </tr>
-            </table>
-
-            ${topAction ? `
-            <!-- Top action -->
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td style="padding:12px 16px;border-left:3px solid ${topAction.impact === 'high' ? '#c0392b' : topAction.impact === 'medium' ? '#e8c767' : '#888888'};font-size:13px;color:#b0b0a8;font-family:Georgia,serif">
-                  <span style="font-family:'Courier New',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;color:#888888">Next step: </span><br>
-                  <span style="color:#fbf8ef">${escEmail(topAction.action)}</span>
-                </td>
-              </tr>
-            </table>
-            ` : ""}
-          </td>
-        </tr>
-      </table>
-    `;
+      <div style="${multi && i > 0 ? `border-top:1px solid #262624;padding-top:28px;` : ""}margin:0 0 4px">
+        ${body}
+      </div>`;
   }).join("");
 
+  // THE NUMBERS. Each figure once, denominators labeled, one line of
+  // definition so share and coverage can never read as one metric.
+  const numbers = `
+    <div style="margin:8px 0 0;padding:24px;background:${V2_PANEL};border-radius:4px">
+      ${v2Caption("The numbers")}
+      ${weeks.map((c) => `<div style="margin:0 0 ${multi ? "18px" : "0"}">${v2NumbersRow(c, multi)}</div>`).join("")}
+      <div style="font-family:Georgia,serif;font-size:11px;color:${V2_DIM};margin-top:16px;line-height:1.5">Share weighs every citation across all tracked queries. Coverage counts a query once if the site appears at all. Both can be true at once.</div>
+    </div>`;
+
   return `
-<!doctype html>
+<!DOCTYPE html>
 <html>
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Weekly AEO Digest</title>
-</head>
-<body style="margin:0;padding:0;background:#121212;font-family:Georgia,serif">
+<body style="margin:0;padding:0;background:${V2_BG}">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${V2_BG}">
+    <tr><td align="center" style="padding:36px 16px">
+      <table width="560" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;width:100%">
 
-<!-- Wrapper -->
-<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#121212">
-  <tr>
-    <td align="center" style="padding:32px 16px">
+        <tr><td style="padding:0 0 28px">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td style="font-family:Georgia,serif;font-size:16px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>
+            <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${V2_DIM}">Scan &middot; ${escEmail(scanDate)}</td>
+          </tr></table>
+        </td></tr>
 
-      <!-- Container -->
-      <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px">
+        <tr><td style="padding:0 0 24px">
+          ${first ? `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_SOFT};margin:0 0 14px">${escEmail(first)},</div>` : ""}
+          <div style="font-family:Georgia,serif;font-style:italic;font-size:${multi ? "20" : "22"}px;color:${V2_TEXT};line-height:1.45">${escEmail(overallVerdict)}</div>
+        </td></tr>
 
-        <!-- Header -->
-        <tr>
-          <td style="padding-bottom:32px;border-bottom:1px solid #2a2a2a">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                ${headerCellHtml}
-                <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:#888888">Weekly Digest</td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+        <tr><td>${sections}</td></tr>
 
-        <!-- Greeting -->
-        <tr>
-          <td style="padding:32px 0 24px">
-            ${buildDigestLeadHtml(userName, digests, citationData, scanDate)}
-          </td>
-        </tr>
+        <tr><td>${numbers}</td></tr>
 
-        <!-- This week's highlights: events that used to fire their own
-             dedicated emails (citation gained / lost, grade up,
-             snippet detected, regression, phase complete, etc.) now
-             roll up into one section per digest. Respects the inbox. -->
-        ${(() => {
-          if (!eventsByClient || eventsByClient.size === 0) return "";
-          const slugsSeen = new Set<string>();
-          const sections: string[] = [];
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const evs = eventsByClient.get(d.clientSlug);
-            if (!evs || evs.length === 0) continue;
-            const items = evs.slice(0, 8).map((e) => {
-              const accent = e.severity === "win" ? "#7fc99a" : e.severity === "concern" ? "#dc6c6c" : "#bfa04d";
-              return `<tr><td style="padding:10px 0;border-bottom:1px solid #2a2620">
-                <div style="font-family:Georgia,serif;font-size:14px;color:#fbf8ef;margin-bottom:4px"><span style="display:inline-block;width:8px;height:8px;background:${accent};border-radius:50%;margin-right:8px;vertical-align:middle"></span>${escEmail(e.title)}</div>
-                ${e.body ? `<div style="font-family:Georgia,serif;font-size:13px;color:#888;margin-left:16px;line-height:1.5">${escEmail(e.body)}</div>` : ""}
-              </td></tr>`;
-            }).join("");
-            sections.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:8px 0 20px">
-              <tr><td style="padding:0 0 8px"><div style="font-family:monospace;font-size:11px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d">${escEmail(d.domain)} this week</div></td></tr>
-              ${items}
-            </table>`);
-          }
-          return sections.length > 0 ? `<tr><td style="padding-bottom:8px">${sections.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- Things to do section. Surfaces pending FAQ proposals and
-             unfinished walkthroughs (Bing for Business setup, etc.)
-             for each client domain. Renders only when at least one
-             action has a pending state. CTA links straight into the
-             /actions/<slug> surface where the work happens. -->
-        ${(() => {
-          if (!actionsByClient || actionsByClient.size === 0) return "";
-          const slugsSeen = new Set<string>();
-          const blocks: string[] = [];
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const section = actionsByClient.get(d.clientSlug);
-            if (!section || section.items.length === 0) continue;
-            const rows = section.items.map((it) => `<tr><td style="padding:11px 0;border-bottom:1px solid #2a2620">
-                <div style="font-family:Georgia,serif;font-size:14px;color:#fbf8ef;margin-bottom:4px">${escEmail(it.title)}</div>
-                <div style="font-family:Georgia,serif;font-size:13px;color:#bfa04d;margin-bottom:8px;line-height:1.4">${escEmail(it.status_label)}</div>
-                <a href="${escEmail(it.cta_url)}" style="display:inline-block;font-family:monospace;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:#bfa04d;text-decoration:none;border:1px solid #bfa04d;padding:6px 12px;border-radius:3px">Open task &rarr;</a>
-              </td></tr>`).join("");
-            blocks.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0 8px;border:1px solid #2a2620;border-radius:4px;background:#1c1812">
-              <tr><td style="padding:16px 22px 6px">
-                <div style="font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d;margin-bottom:6px">Things to do for ${escEmail(d.domain)}</div>
-              </td></tr>
-              <tr><td style="padding:0 22px 16px"><table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">${rows}</table></td></tr>
-            </table>`);
-          }
-          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- Monthly NVI report section. Auto-included in the next
-             weekly digest when a fresh report has been generated and
-             approved. Replaces the standalone monthly NVI email so
-             clients hear from us through one channel. -->
-        ${(() => {
-          if (!nviByClient || nviByClient.size === 0) return "";
-          const slugsSeen = new Set<string>();
-          const blocks: string[] = [];
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const n = nviByClient.get(d.clientSlug);
-            if (!n) continue;
-            const delta = n.prev_score !== null ? n.ai_presence_score - n.prev_score : null;
-            const deltaColor = delta === null ? "#888" : delta > 0 ? "#7fc99a" : delta < 0 ? "#dc6c6c" : "#888";
-            const deltaLabel = delta === null ? "first report" : delta > 0 ? `+${delta} pts vs prior` : delta < 0 ? `${delta} pts vs prior` : "flat vs prior";
-            const reportUrl = n.pdf_url || `https://app.neverranked.com/admin/nvi/preview/${n.id}`;
-            blocks.push(`<table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin:18px 0 8px;border:1px solid #2a2620;border-radius:4px;background:#1c1812">
-              <tr><td style="padding:18px 22px">
-                <div style="font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:#bfa04d;margin-bottom:8px">${escEmail(d.domain)} · ${escEmail(n.reporting_period)} NVI report</div>
-                <div style="font-family:Georgia,serif;font-size:24px;color:#fbf8ef;margin-bottom:6px">AI Presence Score ${n.ai_presence_score}/100 <span style="font-size:13px;color:${deltaColor};margin-left:6px">${deltaLabel}</span></div>
-                <div style="font-family:Georgia,serif;font-size:13px;color:#888;line-height:1.6;margin-bottom:12px">${escEmail((n.insight || "").slice(0, 320))}</div>
-                ${n.action ? `<div style="font-family:Georgia,serif;font-size:13px;color:#bfa04d;line-height:1.6;margin-bottom:14px"><strong style="color:#fbf8ef">Recommended action:</strong> ${escEmail(n.action.slice(0, 320))}</div>` : ""}
-                <a href="${escEmail(reportUrl)}" style="display:inline-block;padding:8px 16px;background:#bfa04d;color:#1a1814;text-decoration:none;font-family:monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;border-radius:3px">View full report</a>
-              </td></tr>
-            </table>`);
-          }
-          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- Domain blocks -->
-        <tr>
-          <td>
-            ${domainBlocks}
-          </td>
-        </tr>
-
-        <!-- Citation share blocks -->
-        ${(() => {
-          if (!citationData || citationData.size === 0) return "";
-          const blocks: string[] = [];
-          const slugsSeen = new Set<string>();
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const cd = citationData.get(d.clientSlug);
-            if (cd) blocks.push(buildCitationBlock(cd));
-          }
-          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- Google Search Console blocks -->
-        ${(() => {
-          if (!gscData || gscData.size === 0) return "";
-          const blocks: string[] = [];
-          const slugsSeen = new Set<string>();
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const gd = gscData.get(d.clientSlug);
-            // Suppress a wall of zeros. GSC with no clicks AND no
-            // impressions is data without signal -- the grader holds it
-            // as an empty section, correctly. Show it only once there's
-            // something to report.
-            if (gd && (gd.clicks > 0 || gd.impressions > 0)) blocks.push(buildGscBlock(gd));
-          }
-          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- Roadmap progress blocks -->
-        ${(() => {
-          if (!roadmapData || roadmapData.size === 0) return "";
-          const blocks: string[] = [];
-          const slugsSeen = new Set<string>();
-          for (const d of digests) {
-            if (slugsSeen.has(d.clientSlug)) continue;
-            slugsSeen.add(d.clientSlug);
-            const rd = roadmapData.get(d.clientSlug);
-            // A roadmap with items but zero motion (0 done, 0 in
-            // progress, nothing completed, no gap activity) renders as
-            // an empty shell -- "0/0, 0%, empty bar". The grader holds
-            // that as filler. Show it only when there's real progress
-            // or pending work to report.
-            const rdHasSignal = rd && rd.total > 0 && (
-              rd.done > 0 ||
-              rd.inProgress > 0 ||
-              rd.recentlyCompleted.length > 0 ||
-              (rd.gapResolved !== undefined && rd.gapResolved.length > 0) ||
-              (rd.newGapItems !== undefined && rd.newGapItems.length > 0)
-            );
-            if (rd && rdHasSignal) blocks.push(buildRoadmapBlock(rd));
-          }
-          return blocks.length > 0 ? `<tr><td>${blocks.join("")}</td></tr>` : "";
-        })()}
-
-        <!-- State of AEO industry block (skipped on white-label sends) -->
-        ${(() => {
-          if (!stateOfAeo || agency) return "";
-          const block = buildStateOfAeoBlock(stateOfAeo);
-          return block ? `<tr><td>${block}</td></tr>` : "";
-        })()}
-
-        <!-- CTA -->
-        <tr>
-          <td align="center" style="padding:16px 0 32px">
-            <a href="https://app.neverranked.com" style="display:inline-block;padding:14px 32px;background:${ctaColor};color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">View dashboard</a>
-          </td>
-        </tr>
-
-        <!-- Footer -->
-        <tr>
-          <td style="padding:24px 0;border-top:1px solid #2a2a2a">
-            <table width="100%" cellpadding="0" cellspacing="0" border="0">
-              <tr>
-                <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
-                  ${footerLine}<br>
-                  Next scan lands Monday. Full method: neverranked.com/methodology.${unsubToken ? `<br><a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:#555555;text-decoration:underline">Unsubscribe from weekly digests</a>` : ""}
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+        <tr><td style="padding:28px 0 0">
+          <div style="font-family:Georgia,serif;font-size:12px;color:${V2_DIM};line-height:1.7">
+            Next scan lands Monday. Method: <a href="https://neverranked.com/methodology" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">neverranked.com/methodology</a> &middot; <a href="https://app.neverranked.com" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">Dashboard</a><br>
+            ${agency ? `Powered by Never Ranked` : `Never Ranked &middot; Honolulu`}${unsubToken ? ` &middot; <a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:${V2_DIM};text-decoration:underline">Unsubscribe</a>` : ""}
+          </div>
+        </td></tr>
 
       </table>
-    </td>
-  </tr>
-</table>
-
+    </td></tr>
+  </table>
 </body>
-</html>
-  `.trim();
+</html>`;
 }
+
+
 
 // ---------------------------------------------------------------------------
 // 2FA state-change notifications
