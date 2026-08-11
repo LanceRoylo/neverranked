@@ -2589,7 +2589,7 @@ function buildDigestHtml(userName: string | null, digests: DigestData[], citatio
               <tr>
                 <td style="font-family:'Courier New',monospace;font-size:10px;color:#555555;line-height:1.6">
                   ${footerLine}<br>
-                  Scans run weekly. Scores reflect AI search engine readiness.${unsubToken ? `<br><a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:#555555;text-decoration:underline">Unsubscribe from weekly digests</a>` : ""}
+                  Next scan lands Monday. Full method: neverranked.com/methodology.${unsubToken ? `<br><a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:#555555;text-decoration:underline">Unsubscribe from weekly digests</a>` : ""}
                 </td>
               </tr>
             </table>

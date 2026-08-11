@@ -106,7 +106,7 @@ function buildSummary(
       );
     } else {
       parts.push(
-        `Only ${presentSchemas.length} schema ${presentSchemas.length === 1 ? "type was" : "types were"} detected. The scan lists ${joinList(missingSchemas)} as the widest gaps.`
+        `${presentSchemas.length} of ${presentSchemas.length + missingSchemas.length} tracked schema types ${presentSchemas.length === 1 ? "is" : "are"} present. The scan ranks ${joinList(missingSchemas.slice(0, 2))} as the widest gaps${missingSchemas.length > 2 ? ` (${missingSchemas.length - 2} more tracked types are also missing)` : ""}.`
       );
     }
   } else if (presentSchemas.length > 0) {
