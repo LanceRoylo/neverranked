@@ -114,3 +114,28 @@ test("the citation card labels both denominators", () => {
     "the coverage line lost its label — a bare 'Cited in N of M' beside a share % is the exact ambiguity the grader holds",
   );
 });
+
+// ── The grader must read what the recipient renders ─────────────────────
+import { htmlToPlaintext } from "../src/digest-grader";
+
+test("template comments never reach the graded text", () => {
+  // Round-4 hold (2026-08-10): a developer comment containing
+  // "/actions/<slug> surface where the work happens" leaked its tail into
+  // the plaintext because the naive tag regex ate the comment only up to
+  // the first ">" inside it. The grader quoted a broken sentence no
+  // recipient ever saw.
+  const html = `<div>Scan August 11, 2026</div><!-- CTA links into the /actions/<slug> surface where the work happens. --><h2>Next section</h2>`;
+  const text = htmlToPlaintext(html);
+  assert.ok(!text.includes("where the work happens"), "comment text leaked into graded plaintext");
+  assert.ok(!text.includes("-->"), "comment delimiter leaked");
+});
+
+test("block boundaries survive as line breaks so structure is gradable", () => {
+  // Collapsing all whitespace flattened the whole email into one line,
+  // and a grader handed one unbroken line reads 'unstructured data dump'
+  // regardless of how the email renders.
+  const html = `<p>First paragraph.</p><p>Second paragraph.</p><div>Third block.</div>`;
+  const text = htmlToPlaintext(html);
+  assert.ok(text.includes("\n"), "no line structure at all");
+  assert.match(text, /First paragraph\.\s*\n/, "paragraph boundary lost");
+});

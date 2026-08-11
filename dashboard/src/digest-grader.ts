@@ -133,9 +133,26 @@ Return JSON only.`;
  * three entities the renderer emits.
  */
 export function htmlToPlaintext(html: string): string {
+  // The grader judges THIS text, so it must read like what a mail client
+  // renders. Two bugs here held the 2026-08-10 test sends:
+  //
+  // 1. HTML comments were not stripped, and the naive tag regex eats a
+  //    comment only up to the first ">" inside it. A template comment
+  //    containing "/actions/<slug> surface where the work happens" leaked
+  //    the orphan "surface where the work happens. -->" into the graded
+  //    text, and the grader (rightly) called the result grammatically
+  //    broken. No recipient ever saw it.
+  // 2. Collapsing ALL whitespace to single spaces flattened the entire
+  //    email into one endless line. A grader handed one unbroken line of
+  //    captions and sentences reads "unstructured data dump" no matter
+  //    how the email actually renders. Block boundaries become newlines
+  //    so the graded text has the paragraphs the recipient sees.
   return html
+    .replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
     .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|td|tr|table|h[1-6]|li|section)>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
     .replace(/&nbsp;/g, " ")
     .replace(/&amp;/g, "&")
@@ -143,6 +160,8 @@ export function htmlToPlaintext(html: string): string {
     .replace(/&#39;/g, "'")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
-    .replace(/\s+/g, " ")
+    .replace(/[ \t]+/g, " ")
+    .replace(/ ?\n ?/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
