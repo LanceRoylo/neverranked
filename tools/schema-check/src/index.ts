@@ -76,7 +76,7 @@ async function listAllKvKeys(
 
 // ---------- Shared analysis logic (packages/aeo-analyzer) ----------
 
-import { buildReport, buildReportFollowingSnippets, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
+import { buildReport, buildReportFollowingSnippets, reportReadNothing, gradeSchema, gradeBucket } from "../../../packages/aeo-analyzer/src";
 import { agentReadinessCheck, llmsTxtCheck } from "./scoring-ports";
 import { isPublicHttpUrl } from "./url-safety";
 
@@ -3350,6 +3350,27 @@ export default {
       // on their own snippet-installed sites see a falsely low score
       // (a raw HTML scrape can't see client-side-injected schema).
       const report = await buildReportFollowingSnippets(targetUrl, html);
+
+      // AN EMPTY READ IS NOT A ZERO. Some hosts serve an empty 200 to
+      // Workers egress IPs (bot protection; found 2026-08-13 when the
+      // outreach pipeline wrote "scores 0/100" about sites that render
+      // fine in a browser — fifoagency.com graded 0 here and 60/C an
+      // hour later). A fetched page with content can never score 0, so
+      // all-empty signals mean the fetch failed and the honest answer
+      // is the same 422 a 403 gets, not a grade F. This also fixes the
+      // verify links already sitting in sent cold email: a recipient
+      // re-running their scan now sees this error instead of a false 0.
+      if (reportReadNothing(report)) {
+        return Response.json(
+          {
+            error:
+              "The site responded but sent our scanner an empty page — no title, headings, text, or structured data. " +
+              "This usually means a firewall or bot filter serves automated requests a blank response. " +
+              "We don't score what we can't read. Worth knowing: if it blanks our scanner, check whether it does the same to GPTBot, ClaudeBot, and PerplexityBot.",
+          },
+          { status: 422, headers: corsHeaders }
+        );
+      }
 
       // Crawlability gate. The analyzer scores schema, llms.txt, and authority
       // signals but never gates on whether crawlers are even allowed in. A page

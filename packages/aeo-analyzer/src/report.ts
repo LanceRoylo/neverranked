@@ -15,6 +15,32 @@ import { calculateAeoScore, calculateGrade } from "./score";
 import { generateTechnicalSignals, CRITICAL_SCHEMAS } from "./signals";
 import { hasSchemaType, getUnknownTypes } from "./hierarchy";
 
+/**
+ * Did the scanner actually READ anything?
+ *
+ * 2026-08-13: several prospect hosts serve an empty 200 to
+ * Cloudflare-Workers egress IPs (bot protection, sometimes persistent,
+ * sometimes intermittent). The analyzer scored those empty documents
+ * 0/100 grade F, and the outreach pipeline wrote "your own site scores
+ * 0/100" into 53 pending cold emails as fact about sites that render
+ * fine in a browser. A fetched page with content can never score 0 — a
+ * title alone earns points — so all-empty signals mean the fetch
+ * failed, not that the site is empty.
+ *
+ * Callers that PUBLISH a score (the /api/check endpoint, and therefore
+ * the outreach scans, the MCP tool, and the public /check page) must
+ * refuse to score when this is true, the same way they refuse a 403.
+ */
+export function reportReadNothing(report: Report): boolean {
+  const s = report.signals;
+  return (
+    s.word_count === 0 &&
+    !s.title &&
+    s.h1_count === 0 &&
+    s.jsonld_block_count === 0
+  );
+}
+
 export function buildReport(url: string, html: string): Report {
   let domain: string;
   try {

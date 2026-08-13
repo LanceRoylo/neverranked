@@ -31,7 +31,7 @@ export {
 } from "./hierarchy";
 
 // Full report builder
-export { buildReport, buildReportFollowingSnippets } from "./report";
+export { buildReport, buildReportFollowingSnippets, reportReadNothing } from "./report";
 
 // Schema completeness grader (Phase 6B: shared between dashboard +
 // public schema-check Worker)
