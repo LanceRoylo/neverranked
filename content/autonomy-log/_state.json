@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-15T12:51:34.131Z",
+  "updated": "2026-08-16T12:52:45.491Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -52,9 +52,9 @@
       "lastAlerted": "2026-08-10"
     },
     "gsc-coverage-per-client": {
-      "status": "OK",
-      "since": null,
-      "lastAlerted": null
+      "status": "FAIL",
+      "since": "2026-08-16",
+      "lastAlerted": "2026-08-16"
     },
     "marketing-site": {
       "status": "OK",
