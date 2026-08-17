@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-16T12:52:45.491Z",
+  "updated": "2026-08-17T12:57:24.080Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -14,7 +14,7 @@
     "email_log/digest": {
       "status": "STALE",
       "since": "2026-07-27",
-      "lastAlerted": "2026-08-10"
+      "lastAlerted": "2026-08-17"
     },
     "gsc_snapshots": {
       "status": "OK",
@@ -49,12 +49,12 @@
     "digest-dispatch-result": {
       "status": "FAIL",
       "since": "2026-08-03",
-      "lastAlerted": "2026-08-10"
+      "lastAlerted": "2026-08-17"
     },
     "gsc-coverage-per-client": {
-      "status": "FAIL",
-      "since": "2026-08-16",
-      "lastAlerted": "2026-08-16"
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
     },
     "marketing-site": {
       "status": "OK",
