@@ -2199,7 +2199,14 @@ function v2NumbersRow(c: ClientWeek, multi: boolean): string {
       null,
     ));
   }
-  if (c.clicks !== null) {
+  // A bare "0 search clicks" beside citation figures reads as an
+  // abandoned metric rather than a finding, which is exactly how the
+  // grader described it on 2026-08-16. Print it when there is something
+  // to say: real clicks, or a genuine fall from a nonzero week. A
+  // standing zero with no prior is silence, and silence is honest.
+  const clicksWorthShowing =
+    c.clicks !== null && (c.clicks > 0 || (c.clicksPrev !== null && c.clicksPrev > 0));
+  if (clicksWorthShowing) {
     cells.push(cell(
       String(c.clicks),
       "search clicks",
@@ -2262,6 +2269,7 @@ export function buildDigestHtmlV2(
     const needsHtml = acts && acts.total_pending > 0
       ? `<div style="margin:0 0 28px">
            ${v2Caption("Needs you")}
+           <div style="font-family:Georgia,serif;font-size:13px;color:${V2_SOFT};line-height:1.5;margin:0 0 8px">${acts.total_pending} open item${acts.total_pending === 1 ? "" : "s"} from your action list, carried forward until they are done. Not findings from this week's scan.</div>
            ${acts.items.slice(0, 3).map((a) => `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_TEXT};line-height:1.6;margin:0 0 6px">${escEmail((a as { title?: string; label?: string }).title || (a as { label?: string }).label || "Pending item")}</div>`).join("")}
            <a href="https://app.neverranked.com/actions/${encodeURIComponent(r.clientSlug)}" style="display:inline-block;margin-top:8px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;color:${V2_GOLD};text-decoration:underline;text-underline-offset:3px">OPEN THE LIST</a>
          </div>`

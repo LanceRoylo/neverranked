@@ -357,12 +357,55 @@ export async function sendWeeklyDigests(
         cadenceSkipSlugs.add(d.clientSlug);
         continue;
       }
+      // SCREEN BEFORE RENDERING. getPendingEvents returns everything
+      // undelivered with no time bound, which was fine while delivery
+      // worked and catastrophic after a blackout: the first automated v2
+      // dispatch (2026-08-16) dumped a three-month backlog, 7 to 84 days
+      // old, into five digests as though it were this week's news. The
+      // grader held all five and was right on every count.
+      //
+      // A stale fact printed beside current numbers reads as the product
+      // contradicting itself: "citations dropped to zero" from June next
+      // to today's 18/18 coverage. Screening drops those, drops events
+      // naming a domain outside this client's cohort (a real May misfile
+      // put neverranked.com at the top of Montaic's section), and keeps
+      // only the newest statement of each kind per domain.
+      //
+      // Dropped events are EXPIRED, not left pending. Leaving them would
+      // rebuild the same backlog for next week.
       const bundle = await getPendingEvents(env, d.clientSlug);
       if (bundle.events.length > 0) {
-        eventsByClient.set(d.clientSlug, bundle.events.map((e) => ({
-          kind: e.kind, severity: e.severity, title: e.title, body: e.body, occurred_at: e.occurred_at,
-        })));
-        for (const ev of bundle.events) eventIdsToMark.push(ev.id);
+        const { screenEvents } = await import("./event-hygiene");
+        const cohort = (
+          await env.DB.prepare(
+            `SELECT domain FROM domains WHERE client_slug = ? AND active = 1`,
+          ).bind(d.clientSlug).all<{ domain: string }>()
+        ).results.map((r) => r.domain);
+
+        const { keep, drop } = screenEvents(bundle.events, cohort, nowEpoch);
+
+        if (drop.length > 0) {
+          console.log(
+            `[digest] ${d.clientSlug}: dropped ${drop.length} event(s) — ` +
+              drop.map((x) => `#${x.event.id} ${x.why}`).join("; "),
+          );
+          // Expire in place. delivered_in_digest_id = 0 means "resolved,
+          // never sent", which keeps the row for forensics while making
+          // it invisible to every future pending query.
+          const expired = drop.map((x) => x.event.id).filter((id): id is number => typeof id === "number");
+          if (expired.length > 0) {
+            await env.DB.prepare(
+              `UPDATE client_events SET delivered_in_digest_id = 0 WHERE id IN (${expired.map(() => "?").join(",")})`,
+            ).bind(...expired).run();
+          }
+        }
+
+        if (keep.length > 0) {
+          eventsByClient.set(d.clientSlug, keep.map((e) => ({
+            kind: e.kind, severity: e.severity, title: e.title, body: e.body ?? null, occurred_at: e.occurred_at,
+          })));
+          for (const ev of keep) if (typeof ev.id === "number") eventIdsToMark.push(ev.id);
+        }
       }
       // NVI: pull the latest approved-but-unsent report for this client.
       // Hold-back logic (score dropped > 15 pts) lives inside the helper
