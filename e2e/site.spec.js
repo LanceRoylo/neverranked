@@ -9,7 +9,7 @@ const CHECK = process.env.CHECK_URL || "https://check.neverranked.com";
 // Console-noise we don't care about (analytics, favicons, third-party cookies).
 const IGNORE = /favicon|third-party cookie|analytics|gtag|plausible|net::ERR_/i;
 
-test("homepage: loads with no console errors, calculator computes", async ({ page }) => {
+test("homepage: loads with no console errors, and shows a price", async ({ page }) => {
   const errors = [];
   page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
   page.on("pageerror", (e) => errors.push(String(e)));
@@ -18,7 +18,29 @@ test("homepage: loads with no console errors, calculator computes", async ({ pag
   await expect(page).toHaveTitle(/.+/);
   await expect(page.locator("h1").first()).toBeVisible();
 
-  // The ROI/value calculator must be present and recompute on vertical change.
+  // A visitor must be able to see a price and reach the pricing page without
+  // scrolling the whole argument. Before 2026-08-18 neither was true: the
+  // nav had no pricing link and the first price sat 79% down the page.
+  await expect(page.locator('.nav-links a[href="/pricing/"]')).toBeVisible();
+  await expect(page.locator(".hero-price-line")).toContainText("$199");
+
+  const real = errors.filter((e) => !IGNORE.test(e));
+  expect(real, "console errors:\n" + real.join("\n")).toEqual([]);
+});
+
+test("pricing: the three tiers render and the calculator computes", async ({ page }) => {
+  const errors = [];
+  page.on("console", (m) => { if (m.type() === "error") errors.push(m.text()); });
+  page.on("pageerror", (e) => errors.push(String(e)));
+
+  await page.goto(SITE + "/pricing/", { waitUntil: "load" });
+  await expect(page.locator(".tier")).toHaveCount(3);
+  await expect(page.getByText("$199", { exact: false }).first()).toBeVisible();
+  await expect(page.getByText("$750", { exact: false }).first()).toBeVisible();
+
+  // The value calculator moved here from the homepage on 2026-08-18. It must
+  // still recompute on a vertical change, which is the only part of it that
+  // can silently break.
   const industry = page.locator("#roi-industry");
   await expect(industry).toBeVisible();
   const amount = page.locator("#roi-amount");

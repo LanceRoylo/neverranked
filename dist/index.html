@@ -36,8 +36,7 @@
     "@type": "PostalAddress",
     "addressLocality": "Honolulu",
     "addressRegion": "HI",
-    "addressCountry": "US"
-  },
+    "addressCountry": "US",
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "sales",
@@ -697,33 +696,6 @@
   @media (max-width: 640px) { .shift-stats { grid-template-columns: repeat(2, 1fr); } .shift-stat .num { font-size: 27px; } }
 
   /* What one customer is worth (ROI) */
-  .roi-wrap { border: 1px solid var(--line); border-radius: 16px; background: linear-gradient(180deg, var(--panel-2), var(--panel)); box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 20px 48px -20px rgba(0,0,0,0.45); padding: 32px 30px 30px; margin-top: 10px; }
-  .roi-pick { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 8px; }
-  .roi-pick label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--dim); }
-  .roi-pick select { background: var(--bg-deep); border: 1px solid var(--line); color: var(--text); font-family: var(--sans); font-size: 15.5px; padding: 12px 14px; border-radius: 9px; cursor: pointer; min-width: 230px; }
-  .roi-pick select:hover { border-color: var(--gold-deep); }
-  .roi-pick select:focus { border-color: var(--gold); outline: none; }
-  .roi-out { margin-top: 28px; }
-  .roi-lead { font-size: 16.5px; color: var(--soft); margin: 0 0 4px; }
-  .roi-value { font-family: var(--serif); font-size: clamp(44px, 5.4vw, 60px); font-weight: 380; line-height: 1.05; color: var(--gold-bright); letter-spacing: -0.02em; margin: 2px 0 18px; font-variant-numeric: lining-nums; }
-  .roi-months { font-size: 18.5px; color: var(--text); margin: 0 0 24px; }
-  .roi-months b { color: var(--gold); font-weight: 500; }
-  .roi-bars { display: flex; flex-direction: column; gap: 12px; margin: 0 0 24px; }
-  .roi-bar { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 14px; }
-  .roi-bar .nm { font-family: var(--mono); font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); text-align: right; }
-  .roi-bar .track { height: 10px; background: var(--bg-deep); border-radius: 6px; overflow: hidden; }
-  .roi-bar .fill { height: 100%; border-radius: 6px; transition: width 620ms var(--ease-out); }
-  .roi-bar.you .fill { background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
-  .roi-bar.cost .fill { background: #55503c; }
-  .roi-bar .amt { font-family: var(--mono); font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
-  .roi-basis { font-size: 13.5px; color: var(--dim); margin: 0 0 18px; line-height: 1.6; }
-  .roi-honest { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.02em; color: var(--dim); border-left: 2px solid var(--line); padding-left: 14px; margin: 0 0 22px; line-height: 1.75; }
-  .roi-adjust { font-family: var(--mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--soft); background: none; border: none; cursor: pointer; padding: 0; text-decoration: underline; text-underline-offset: 3px; }
-  .roi-custom { display: none; margin: 14px 0 0; align-items: center; gap: 10px; font-size: 15px; color: var(--soft); }
-  .roi-custom.show { display: flex; flex-wrap: wrap; }
-  .roi-custom input { background: var(--bg-deep); border: 1px solid var(--line); color: var(--text); font-family: var(--mono); font-size: 15px; padding: 10px 12px; border-radius: 8px; width: 130px; }
-  .roi-custom input:focus { border-color: var(--gold); outline: none; }
-  @media (max-width: 560px) { .roi-value { font-size: 42px; } .roi-bar { grid-template-columns: 92px 1fr auto; } }
 
   /* The moving target — live standings */
   .rvs{ background: linear-gradient(180deg, var(--panel-2), var(--panel)); border:1px solid var(--line); border-radius:16px; box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 18px 44px -18px rgba(0,0,0,0.45); padding:22px 24px 18px; max-width:700px; margin:30px 0 8px; }
@@ -1707,7 +1679,7 @@
   <!-- What one customer is worth -->
   <section class="section" id="worth">
     <div class="inner reveal">
-      <div class="sec-label"><span class="n">MATH</span>What being found is worth</div>
+      <div class="sec-label"><span class="n">MATH</span>Why this is happening now</div>
       <div class="shift">
         <p class="shift-lead">AI is becoming the front door, fast.</p>
         <div class="shift-stats">
@@ -1718,54 +1690,10 @@
         </div>
         <p class="shift-src">Sources: Google, OpenAI, Pew Research.</p>
       </div>
-      <h2>What is one new customer worth to you?</h2>
-      <p>NeverRanked is $199 a month per category to monitor, or $750 a month after a one-time $950 baseline to audit. A handful of new customers a year covers the whole cost. Every new customer beyond that covers the cost several times over. Pick your category.</p>
-      <div class="roi-wrap">
-        <div class="roi-pick">
-          <label for="roi-industry">Your category</label>
-          <select id="roi-industry" aria-label="Choose your industry">
-            <option value="pi-law">Personal Injury Law</option>
-            <option value="financial">Financial Advisory</option>
-            <option value="family-law">Family Law</option>
-            <option value="dentist">Dental Practice</option>
-            <option value="realestate">Real Estate</option>
-            <option value="roofing">Roofing</option>
-            <option value="medspa">Med Spa / Aesthetics</option>
-            <option value="hvac">HVAC</option>
-            <option value="chiro">Chiropractic / PT</option>
-            <option value="restaurant">Restaurant</option>
-            <option value="hotel">Hotel / Boutique Hotel</option>
-          </select>
-          <button type="button" class="roi-adjust" id="roi-toggle">Adjust the numbers</button>
-        </div>
-        <div class="roi-custom" id="roi-custom">
-          <span>Your average customer is worth $</span>
-          <input type="number" id="roi-customval" inputmode="numeric" placeholder="15000" min="0">
-        </div>
-        <div class="roi-out" id="roi-out">
-          <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
-          <div class="roi-value" id="roi-amount">$15,000</div>
-          <p class="roi-months" id="roi-breakeven">It takes <b>2 new cases</b> to cover a full year of NeverRanked. Every case after that is found money you would not have had.</p>
-          <div class="roi-bars">
-            <div class="roi-bar you">
-              <span class="nm">One customer is worth</span>
-              <span class="track"><span class="fill" id="roi-fill-you" style="width:67%"></span></span>
-              <span class="amt" id="roi-amt-you">$15,000</span>
-            </div>
-            <div class="roi-bar cost">
-              <span class="nm">A year of NeverRanked</span>
-              <span class="track"><span class="fill" id="roi-fill-cost" style="width:100%"></span></span>
-              <span class="amt">$9,950</span>
-            </div>
-          </div>
-          <p class="roi-basis" id="roi-basis">Based on avg settlement of $40,000 to $55,000 with a 33% contingency fee.</p>
-          <p class="roi-honest">We measure and diagnose. We do not promise customers, and AEO is an early space with no guaranteed result. This shows what one customer is worth to you, not a return we are promising. Being named by AI for the questions buyers ask is how you get found in the first place.</p>
-        </div>
-      </div>
     </div>
   </section>
 
-  <!-- Mid-page CTA: after the ROI desire-peak, before the principal close -->
+  <!-- Mid-page CTA, before the principal close -->
   <section class="section panel close">
     <div class="inner reveal">
       <h2>Start with the question that started this.</h2>
@@ -2070,77 +1998,5 @@
     })();
   </script>
 
-<script>
-  // "What one customer is worth" calculator. National-average customer
-  // values by vertical; compares against $750/mo. Honest framing: shows
-  // the value of one customer, not a promised return.
-  (function () {
-    var COST_YEAR = 9950; // $950 baseline + $750 x 12 = first-year all-in (Audit)
-    var DATA = {
-      'pi-law':     { value: 15000, unit: 'case',    basis: 'Average settlement of $40,000 to $55,000 at a 33% contingency fee.' },
-      financial:    { value: 40000, unit: 'client',  basis: 'Average client lifetime value over a roughly 10-year relationship at 1% AUM on a $400K portfolio.' },
-      'family-law': { value: 11000, unit: 'case',    basis: 'Average case value for divorce and custody matters.' },
-      dentist:      { value: 10000, unit: 'patient', basis: 'Average patient lifetime value over a 5 to 7 year relationship, including procedures and referrals.' },
-      realestate:   { value: 10000, unit: 'deal',    basis: 'Average commission per transaction on a $400K home at 2.5%.' },
-      roofing:      { value: 15000, unit: 'job',     basis: 'Average residential roof replacement.' },
-      medspa:       { value: 5000,  unit: 'client',  basis: 'Average client lifetime value across treatments with repeat visits over 2 to 3 years.' },
-      hvac:         { value: 5000,  unit: 'job',     basis: 'Average job value including installs and major repairs. Lifetime value with maintenance contracts runs higher.' },
-      chiro:        { value: 4000,  unit: 'patient', basis: 'Average annual patient value with regular visits.' },
-      restaurant:   { value: 2000,  unit: 'regular', basis: 'One loyal regular spending about $35 a week for a year.' },
-      hotel:        { value: 2500,  unit: 'booking', basis: 'Average value of one direct booking: a multi-night Hawaii stay (about 4 to 5 nights), with no 15 to 25 percent OTA commission skimmed off the top.' }
-    };
-
-    var sel = document.getElementById('roi-industry');
-    if (!sel) return;
-    var elAmount = document.getElementById('roi-amount');
-    var elUnit = document.getElementById('roi-unit');
-    var elBreak = document.getElementById('roi-breakeven');
-    var elBasis = document.getElementById('roi-basis');
-    var elAmtYou = document.getElementById('roi-amt-you');
-    var elFillYou = document.getElementById('roi-fill-you');
-    var elFillCost = document.getElementById('roi-fill-cost');
-    var toggle = document.getElementById('roi-toggle');
-    var custom = document.getElementById('roi-custom');
-    var customVal = document.getElementById('roi-customval');
-
-    function money(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
-
-    function breakevenSentence(n, unit) {
-      var plural = unit + 's';
-      if (n <= 1) {
-        return 'It takes <b>a single new ' + unit + '</b> to cover a full year of NeverRanked, and then some. Every ' + unit + ' after that is found money you would not have had.';
-      }
-      return 'It takes <b>' + n + ' new ' + plural + '</b> to cover a full year of NeverRanked. Every ' + unit + ' after that is found money you would not have had.';
-    }
-
-    function render() {
-      var d = DATA[sel.value] || DATA['pi-law'];
-      var usingCustom = custom.classList.contains('show') && customVal.value && Number(customVal.value) > 0;
-      var value = usingCustom ? Number(customVal.value) : d.value;
-      var n = Math.max(1, Math.ceil(COST_YEAR / value));
-
-      elUnit.textContent = d.unit;
-      elAmount.textContent = money(value);
-      elAmtYou.textContent = money(value);
-      elBreak.innerHTML = breakevenSentence(n, d.unit);
-      elBasis.textContent = usingCustom ? 'Using your own number.' : d.basis;
-
-      // Both bars scaled to the larger of one customer vs a year of cost,
-      // so you see at a glance how few customers cover the year.
-      var max = Math.max(value, COST_YEAR);
-      elFillYou.style.width = Math.max(3, (value / max) * 100).toFixed(1) + '%';
-      elFillCost.style.width = Math.max(3, (COST_YEAR / max) * 100).toFixed(1) + '%';
-    }
-
-    sel.addEventListener('change', render);
-    customVal.addEventListener('input', render);
-    toggle.addEventListener('click', function () {
-      custom.classList.toggle('show');
-      toggle.textContent = custom.classList.contains('show') ? 'Use category averages' : 'Adjust the numbers';
-      render();
-    });
-    render();
-  })();
-</script>
 </body>
 </html>
