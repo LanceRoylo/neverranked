@@ -48,6 +48,9 @@ FILES=(
 DIRS=(
   .well-known
   about
+  # /pricing added 2026-08-18. Was a 301 to the homepage anchor; it is now a
+  # real page and the destination every check-tool CTA points at.
+  pricing
   atlas-preview
   claims
   example-engagement

@@ -36,6 +36,7 @@ on:
       - 'fonts/**'
       - 'methodology/**'
       - 'pitch/**'
+      - 'pricing/**'
       - 'privacy/**'
       - 'retraction/**'
       - 'schemas/**'

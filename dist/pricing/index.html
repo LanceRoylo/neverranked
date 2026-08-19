@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Pricing &middot; NeverRanked</title>
+<meta name="description" content="What it costs to know whether AI answer engines name your business. Monitor is $199 a month per category. Audit is $750 a month per category after a $950 baseline month. The check is free.">
+<link rel="canonical" href="https://neverranked.com/pricing/">
+<meta property="og:title" content="Pricing &middot; NeverRanked">
+<meta property="og:description" content="Monitor $199 a month per category. Audit $750 a month after a $950 baseline. The check is free.">
+<meta property="og:url" content="https://neverranked.com/pricing/">
+<meta property="og:image" content="https://neverranked.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  @font-face { font-family: "Fraunces"; src: url("/fonts/fraunces-var.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: "Fraunces"; src: url("/fonts/fraunces-italic-var.woff2") format("woff2"); font-weight: 100 900; font-style: italic; font-display: swap; }
+  @font-face { font-family: "Inter"; src: url("/fonts/inter-var.woff2") format("woff2"); font-weight: 100 900; font-style: normal; font-display: swap; }
+  @font-face { font-family: "JetBrains Mono"; src: url("/fonts/jetbrains-mono-var.woff2") format("woff2"); font-weight: 100 800; font-style: normal; font-display: swap; }
+
+  :root {
+    color-scheme: dark;
+    --serif: "Fraunces", Georgia, "Times New Roman", serif;
+    --sans: "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+    --bg: #12100b;           --bg: oklch(0.145 0.012 85);
+    --bg-deep: #0d0b07;      --bg-deep: oklch(0.125 0.011 85);
+    --panel: #17140c;        --panel: oklch(0.165 0.014 87);
+    --panel-2: #1c1810;      --panel-2: oklch(0.185 0.016 88);
+    --line: #2e2a1f;         --line: oklch(0.27 0.02 88);
+    --line-soft: #221f16;    --line-soft: oklch(0.215 0.016 88);
+    --gold: #cdb87f;         --gold: oklch(0.79 0.085 92);
+    --gold-bright: #edd58a;  --gold-bright: oklch(0.875 0.1 94);
+    --gold-deep: #8f7c46;    --gold-deep: oklch(0.585 0.075 90);
+    --text: #f0ece1;         --text: oklch(0.945 0.012 90);
+    --soft: #b9b2a0;         --soft: oklch(0.77 0.02 90);
+    --dim: #877f6c;          --dim: oklch(0.60 0.025 90);
+    --ink-on-gold: #171204;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  html, body { margin: 0; padding: 0; background: var(--bg); }
+  body { font-family: var(--sans); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+  /* Nav, matched to the homepage so the two pages read as one site */
+  .nav { position: sticky; top: 0; z-index: 40; background: color-mix(in oklab, var(--bg) 78%, transparent); backdrop-filter: blur(16px) saturate(1.1); -webkit-backdrop-filter: blur(16px) saturate(1.1); border-bottom: 1px solid var(--line-soft); }
+  .nav-inner { max-width: 1120px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; padding: 15px 32px; gap: 18px; }
+  .wordmark { font-family: var(--serif); font-size: 19px; font-weight: 560; letter-spacing: -0.012em; color: var(--text); text-decoration: none; }
+  .wordmark em { font-style: normal; color: var(--gold); }
+  .nav-links { display: flex; gap: 26px; }
+  .nav-links a { font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--soft); text-decoration: none; }
+  .nav-links a:hover { color: var(--gold); }
+  .nav-links a[aria-current] { color: var(--gold); }
+  .nav-cta { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; color: var(--ink-on-gold); text-decoration: none; background: linear-gradient(180deg, var(--gold-bright), var(--gold)); border: 0; padding: 10px 16px; border-radius: 6px; white-space: nowrap; transition: filter 160ms ease; }
+  .nav-cta:hover { filter: brightness(1.06); }
+
+  main { max-width: 1120px; margin: 0 auto; padding: 0 32px 120px; }
+
+  .hero { padding: 74px 0 8px; max-width: 720px; }
+  .eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--dim); margin: 0 0 18px; }
+  h1 { font-family: var(--serif); font-size: clamp(34px, 5vw + 1rem, 52px); font-weight: 520; line-height: 1.1; letter-spacing: -0.018em; margin: 0 0 18px; text-wrap: balance; }
+  .lede { font-size: 18px; line-height: 1.65; color: var(--soft); margin: 0; max-width: 60ch; }
+
+  /* Tiers */
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin: 52px 0 0; align-items: start; }
+  .tier { background: var(--panel); border: 1px solid var(--line-soft); border-radius: 10px; padding: 28px 26px; display: flex; flex-direction: column; height: 100%; }
+  .tier.is-featured { background: var(--panel-2); border-color: var(--gold-deep); box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 18%, transparent); }
+  .tier-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+  .tier-name { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin: 0; }
+  .badge { font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-on-gold); background: var(--gold); border-radius: 3px; padding: 3px 7px; white-space: nowrap; }
+  .price { font-family: var(--serif); font-size: 42px; font-weight: 500; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; margin: 0; }
+  .price .per { font-family: var(--sans); font-size: 15px; font-weight: 400; color: var(--dim); letter-spacing: 0; }
+  .price-note { font-family: var(--mono); font-size: 11px; color: var(--dim); line-height: 1.5; margin: 10px 0 0; min-height: 2.6em; }
+  .tier-line { font-size: 15px; line-height: 1.6; color: var(--text); margin: 20px 0 0; padding-top: 20px; border-top: 1px solid var(--line-soft); }
+  ul.feat { list-style: none; margin: 16px 0 0; padding: 0; }
+  ul.feat li { font-size: 14px; line-height: 1.55; color: var(--soft); padding: 0 0 0 20px; margin-bottom: 9px; position: relative; }
+  ul.feat li::before { content: ""; position: absolute; left: 0; top: 8px; width: 7px; height: 1px; background: var(--gold-deep); }
+  .fineprint { font-size: 12.5px; line-height: 1.6; color: var(--dim); margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--line-soft); }
+  .tier-cta { margin-top: auto; padding-top: 24px; }
+  .btn { display: block; text-align: center; font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.13em; text-transform: uppercase; text-decoration: none; padding: 13px 18px; border-radius: 6px; transition: filter 160ms ease, background 160ms ease, color 160ms ease; }
+  .btn-primary { color: var(--ink-on-gold); background: linear-gradient(180deg, var(--gold-bright), var(--gold)); }
+  .btn-primary:hover { filter: brightness(1.06); }
+  .btn-ghost { color: var(--gold); border: 1px solid var(--gold-deep); }
+  .btn-ghost:hover { background: color-mix(in oklab, var(--gold) 12%, transparent); }
+  .cta-sub { font-family: var(--mono); font-size: 10.5px; color: var(--dim); text-align: center; margin: 10px 0 0; line-height: 1.5; }
+
+  .rule { width: 60px; height: 1px; background: var(--gold-deep); margin: 76px 0; }
+  h2 { font-family: var(--serif); font-size: clamp(24px, 2.2vw + 1rem, 32px); font-weight: 520; letter-spacing: -0.012em; line-height: 1.2; margin: 0 0 14px; text-wrap: balance; }
+  .section { max-width: 720px; }
+  .section p { font-size: 16px; line-height: 1.7; color: var(--soft); margin: 0 0 16px; }
+  .section p strong { color: var(--text); font-weight: 600; }
+  .section a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  .faq { max-width: 760px; }
+  .qa { border-top: 1px solid var(--line-soft); padding: 24px 0; }
+  .qa:last-child { border-bottom: 1px solid var(--line-soft); }
+  .qa h3 { font-family: var(--serif); font-size: 19px; font-weight: 520; margin: 0 0 10px; letter-spacing: -0.008em; }
+  .qa p { font-size: 15px; line-height: 1.7; color: var(--soft); margin: 0 0 12px; }
+  .qa p:last-child { margin-bottom: 0; }
+  .qa a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  .confession { background: var(--panel); border: 1px solid var(--line-soft); border-left: 2px solid var(--gold-deep); border-radius: 8px; padding: 26px 28px; max-width: 720px; }
+  .confession p { font-size: 15.5px; line-height: 1.7; color: var(--soft); margin: 0 0 12px; }
+  .confession p:last-child { margin-bottom: 0; }
+  .confession strong { color: var(--text); font-weight: 600; }
+  .confession a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  footer.site { border-top: 1px solid var(--line-soft); margin-top: 96px; padding: 32px 0 0; }
+  footer.site .f-inner { display: flex; flex-wrap: wrap; gap: 22px; justify-content: space-between; font-family: var(--mono); font-size: 11px; color: var(--dim); letter-spacing: 0.06em; }
+  footer.site a { color: var(--dim); text-decoration: none; }
+  footer.site a:hover { color: var(--gold); }
+
+  a:focus-visible, .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 4px; }
+
+  @media (max-width: 900px) {
+    .tiers { grid-template-columns: 1fr; gap: 16px; }
+    .price-note { min-height: 0; }
+    .nav-links { display: none; }
+  }
+  @media (max-width: 600px) {
+    main { padding: 0 20px 80px; }
+    .nav-inner { padding: 13px 20px; }
+    .hero { padding: 48px 0 0; }
+    .rule { margin: 56px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner">
+    <a class="wordmark" href="/">Never<em>Ranked</em></a>
+    <nav class="nav-links">
+      <a href="/methodology/">Methodology</a>
+      <a href="/pricing/" aria-current="page">Pricing</a>
+      <a href="/for-agencies/">For agencies</a>
+      <a href="/security/">Security</a>
+    </nav>
+    <a class="nav-cta" href="https://check.neverranked.com/">Free AI check</a>
+  </div>
+</header>
+
+<main>
+
+  <section class="hero">
+    <p class="eyebrow">Pricing</p>
+    <h1>What it costs to know where you stand.</h1>
+    <p class="lede">Priced per category, because a category is what an AI answer engine actually ranks. Start with the free check. Move up only when the decision in front of you needs the evidence.</p>
+  </section>
+
+  <section class="tiers">
+
+    <!-- FREE CHECK -->
+    <article class="tier">
+      <div class="tier-head"><p class="tier-name">Free check</p></div>
+      <p class="price">Free</p>
+      <p class="price-note">No account. About a minute.</p>
+      <p class="tier-line">What AI tools can read from your own site.</p>
+      <ul class="feat">
+        <li>Readiness score out of 100</li>
+        <li>Which structured-data signals are missing</li>
+        <li>What to fix first, in order</li>
+        <li>Emailed report you can forward</li>
+      </ul>
+      <p class="fineprint">This reads your site. It does not tell you what AI says about your category. That is what the paid tiers measure.</p>
+      <div class="tier-cta">
+        <a class="btn btn-ghost" href="https://check.neverranked.com/">Run the check</a>
+      </div>
+    </article>
+
+    <!-- MONITOR -->
+    <article class="tier is-featured">
+      <div class="tier-head"><p class="tier-name">Monitor</p><span class="badge">Start here</span></div>
+      <p class="price">$199<span class="per"> /mo</span></p>
+      <p class="price-note">Per category. Month to month, cancel anytime.</p>
+      <p class="tier-line">Whether AI names you, and who it names instead.</p>
+      <ul class="feat">
+        <li>Named or not named across 7 AI surfaces</li>
+        <li>Which competitors are named in your place</li>
+        <li>Cited-without-credit flags</li>
+        <li>Readiness score, tracked month over month</li>
+        <li>Plain-English monthly report</li>
+      </ul>
+      <p class="fineprint">Presence is reported as a yes or a no, never as a percentage. A sample this size cannot defend a percentage, so we do not sell you one. Your first 90 days of Monitor credit in full toward the Audit baseline.</p>
+      <div class="tier-cta">
+        <!-- CTA STATE: pre-bind. Flip this single anchor to the Stripe
+             Payment Link once E&O is bound and Stripe payouts point at the
+             Never Ranked LLC account. Nothing else on the page changes. -->
+        <a class="btn btn-primary" href="mailto:lance@hi.neverranked.com?subject=Start%20Monitor&body=The%20category%20I%20want%20measured%3A%20%5Bfor%20example%2C%20boutique%20hotels%20in%20Honolulu%5D%0A%0AMy%20website%3A%20">Start Monitor</a>
+        <p class="cta-sub">Same-day setup. You get the first reading inside a month.</p>
+      </div>
+    </article>
+
+    <!-- AUDIT -->
+    <article class="tier">
+      <div class="tier-head"><p class="tier-name">Audit</p></div>
+      <p class="price">$750<span class="per"> /mo</span></p>
+      <p class="price-note">Per category, after a $950 baseline month.</p>
+      <p class="tier-line">For teams who have to prove it to someone else.</p>
+      <ul class="feat">
+        <li>Everything in Monitor</li>
+        <li>Locked competitor set, fixed before the first run</li>
+        <li>Thresholds pre-registered, so the bar cannot move later</li>
+        <li>Three full measurement passes a month</li>
+        <li>Written readout with the reasoning shown</li>
+        <li>Prioritized off-site punch list</li>
+        <li>Factual errors corrected within 10 business days</li>
+      </ul>
+      <p class="fineprint">The baseline month is what makes every later number comparable. It is waived on a defined-term commitment.</p>
+      <div class="tier-cta">
+        <a class="btn btn-ghost" href="mailto:lance@hi.neverranked.com?subject=Scope%20an%20Audit&body=The%20category%20I%20need%20measured%3A%20%0A%0AWho%20the%20readout%20has%20to%20convince%3A%20">Scope an Audit</a>
+        <p class="cta-sub">A short call to fix the query set and the competitor list.</p>
+      </div>
+    </article>
+
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="section">
+    <h2>Why the price is per category</h2>
+    <p>An AI answer engine does not rank a company. It answers a question. <strong>"Best boutique hotel in Waikiki"</strong> and <strong>"where to stay near the convention center"</strong> are different questions with different winners, and a business can be named in one and absent from the other.</p>
+    <p>A category is the set of questions a real buyer would ask to end up choosing someone like you. We fix that set at the start, then measure the same questions every run, so a change in the results is a change in the world rather than a change in what we asked. An agency running four client categories pays for four. <a href="/for-agencies/">See the reseller math</a>.</p>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="faq">
+    <h2>The questions people actually ask</h2>
+
+    <div class="qa">
+      <h3>Can I cancel?</h3>
+      <p>Monitor is month to month. Cancel whenever you like and it stops at the end of the period you have paid for. There is no notice period and no exit fee. The Audit baseline month is the one exception, because it is the run that everything afterward is compared against. Full terms are on the <a href="/terms/">terms page</a>.</p>
+    </div>
+
+    <div class="qa">
+      <h3>Why binary instead of a percentage?</h3>
+      <p>Because a percentage from a small sample looks precise and is not. Monitor runs enough to tell you reliably whether you were named, and reporting that as "cited in 62% of queries" would dress up a thin sample as a measurement.</p>
+      <p>Audit runs three full passes a month, which is what it takes to say something quantitative and defend it. That difference is the honest reason the two tiers are priced apart.</p>
+    </div>
+
+    <div class="qa">
+      <h3>Do you touch my website?</h3>
+      <p>No, and this is not a limitation we are apologizing for. We measure and we hand you the list. Your team or your agency executes it. A vendor who does the work and then grades the work is not a measurement.</p>
+    </div>
+
+    <div class="qa">
+      <h3>What does the 90-day credit mean?</h3>
+      <p>If you start on Monitor and move up to Audit within 90 days, everything you paid on Monitor comes off the $950 baseline. Starting small costs you nothing if you later decide you need the full instrument.</p>
+    </div>
+
+    <div class="qa">
+      <h3>Will you promise my citations go up?</h3>
+      <p>No. We measure what the engines cite. We do not claim that any particular change causes an engine to cite you, because we have not proven that and neither has anyone else selling it. What you get is an accurate picture and a prioritized list, on a schedule.</p>
+    </div>
+
+    <div class="qa">
+      <h3>Who is behind it?</h3>
+      <p>You work with the principal. There is no account team between you and the person running the measurement. <a href="/methodology/">The full methodology is published</a>, including the engines, the query-set discipline, and how sources get classified.</p>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <section class="section">
+    <h2>One reason to trust the numbers</h2>
+    <div class="confession">
+      <p><strong>We retracted our own headline result rather than let a weak claim stand.</strong> The first figures this company published were real measurements taken without a control, which meant they could not support the conclusion we drew from them. Nobody made us withdraw them.</p>
+      <p>An instrument is only worth what it refuses to say. <a href="/retraction/">Read the retraction</a>.</p>
+    </div>
+  </section>
+
+  <footer class="site">
+    <div class="f-inner">
+      <span>NeverRanked &middot; Honolulu</span>
+      <span>
+        <a href="/methodology/">Methodology</a> &nbsp;
+        <a href="/retraction/">Retraction</a> &nbsp;
+        <a href="/security/">Security</a> &nbsp;
+        <a href="/terms/">Terms</a> &nbsp;
+        <a href="/privacy/">Privacy</a>
+      </span>
+    </div>
+  </footer>
+
+</main>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  "name": "NeverRanked",
+  "url": "https://neverranked.com",
+  "description": "Independent measurement of which businesses AI answer engines cite for a category.",
+  "areaServed": "US",
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Measurement tiers",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "name": "Monitor",
+        "description": "Whether AI names you and who is named instead, across 7 AI surfaces, reported monthly. Priced per category.",
+        "price": "199",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "199",
+          "priceCurrency": "USD",
+          "billingIncrement": 1,
+          "unitCode": "MON"
+        },
+        "availability": "https://schema.org/InStock",
+        "url": "https://neverranked.com/pricing/"
+      },
+      {
+        "@type": "Offer",
+        "name": "Audit",
+        "description": "Pre-registered thresholds, locked competitor set, three full measurement passes a month, and a written readout. Priced per category, after a one-time 950 USD baseline month.",
+        "price": "750",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "750",
+          "priceCurrency": "USD",
+          "billingIncrement": 1,
+          "unitCode": "MON"
+        },
+        "availability": "https://schema.org/InStock",
+        "url": "https://neverranked.com/pricing/"
+      }
+    ]
+  }
+}
+</script>
+
+</body>
+</html>

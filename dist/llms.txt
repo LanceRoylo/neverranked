@@ -56,6 +56,8 @@
 
 ## Pricing
 
+Full detail: https://neverranked.com/pricing/
+
 - Monitor: $199 per month per category, month to month. Whether each of the seven AI tools names the business or not, question by question, the cases where an AI used the business's site without crediting it, and a plain English monthly report. No percentages from single runs, because one run cannot support one honestly.
 - Audit: $750 per month per category, ongoing, after a one-time $950 baseline month. The baseline locks the competitor set, the question set, and the frozen starting measurement, and includes the first research memo and prepped punch list. Ongoing months: repeated full measurement runs, the monthly research memo, drift monitoring, punch list refreshes.
 - Per category, not per client. A research practice, not a SaaS subscription.
