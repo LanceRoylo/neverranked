@@ -2020,10 +2020,11 @@ body.channel-mode #channel-cta-card{display:block}
     var ctaSignal = document.getElementById('cta-signal');
     var ctaAmplify = document.getElementById('cta-amplify');
     var ctaPreview = document.getElementById('cta-preview');
-    // Retired checkout links removed 2026-06-22. The on-page CTAs are mailto
-    // links (Scope a kickoff / free diagnostic) and must NOT be overwritten
-    // with dead app.neverranked.com/checkout/* URLs (that was silently
-    // pointing "Scope a kickoff" at a dead self-serve checkout).
+    // Retired checkout links removed 2026-06-22, and the retired offers
+    // they pointed at removed 2026-08-18. The on-page CTAs now link to
+    // neverranked.com/pricing and must NOT be overwritten with dead
+    // app.neverranked.com/checkout/* URLs. If a self-serve checkout comes
+    // back, it belongs on the pricing page, not wired in from here.
 
     // Reset email capture (guarded — the email-form element was removed from
     // the HTML when we killed the duplicate capture section; these null-safe
