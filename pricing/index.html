@@ -227,8 +227,15 @@
         <!-- CTA STATE: pre-bind. The Stripe Payment Link already exists:
              https://buy.stripe.com/dRm28qby65nT207dZze3e00
              (NeverRanked Monitor, $199/mo, created 2026-08-18. Collects
-             customer name, business name, category to measure, and website,
-             so a payment arrives fulfillable rather than as a mystery.)
+             customer name, business name, website, and the field labelled
+             "What you do and where, e.g. dentist in Honolulu", so a payment
+             arrives fulfillable rather than as a mystery.
+
+             That label deliberately avoids the word "category". The concept
+             is explained on this page, but a buyer two clicks into checkout
+             has left that explanation behind, and "category" invites them to
+             type their own business name, which is the one answer that tells
+             us nothing. Keep the plain-language phrasing.)
 
              TO GO LIVE, swap the href below for that URL. Two conditions
              must BOTH be true first, and neither is a formality:
