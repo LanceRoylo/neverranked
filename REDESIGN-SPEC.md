@@ -198,9 +198,16 @@ Commit: "Every funnel exit lands on the ladder".
 
 ## Phase 4 — QA, analytics, ship
 
-- Cloudflare Web Analytics beacon on all site pages (cookieless). LANCE:
-  enable in CF dashboard for neverranked.com to get the token (2 min).
-  Build proceeds with a TODO-token placeholder if not ready; do not block.
+- Cloudflare Web Analytics: ALREADY DONE, verified 2026-08-18. Do not add
+  a beacon token and do not edit pages for it. neverranked.com has been on
+  Web Analytics "Automatic setup" for four months (the site is proxied
+  through Cloudflare, so the beacon is injected at the edge). Confirmed
+  live by seeing /pricing/ already in the URL breakdown hours after it
+  shipped, alongside the homepage, check.neverranked.com and /security/.
+  NOTE: a second, redundant neverranked.com entry exists on "JS Snippet
+  installation" from three months ago with 0 views, because the snippet was
+  never installed. Harmless, but it makes the site list read as though
+  analytics were broken. Lance's call whether to remove it.
 - Success metrics (defined before ship, HM principle 13): hero check CTR,
   /pricing reach rate, pricing CTA clicks (Monitor vs Audit), post-scan
   Monitor CTR. Judge the redesign on these in 30 days.
