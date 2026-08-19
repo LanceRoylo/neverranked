@@ -1,0 +1,25 @@
+-- undo-premature-prince-onboard.sql
+--
+-- WHY THIS EXISTS. On 2026-08-18 Claude ran onboard-prince-waikiki.sh
+-- against live D1 by mistake, while checking that a path change had worked.
+-- The intent was a syntax check; `-n` was appended expecting a dry-run flag.
+-- The script has no such flag, so bash treated it as a positional argument
+-- and ran every step. The script's own header says to run it only after
+-- Prince has signed AND insurance is bound. Neither was true.
+--
+-- What it wrote that is FALSE and must go:
+--   customers.status    = 'active'   (Prince has not signed)
+--   customers.signed_at = 2026-08-19 (there is no signature)
+--
+-- What it wrote that is HARMLESS and stays:
+--   the June baseline measurement bridged into live D1. That data is real,
+--   was already captured on 2026-06-26, and bind day would load it anyway.
+--   measurement_registry.active is still 0, so nothing is scheduled to run.
+--
+-- Deleting the whole row rather than correcting the two fields, because the
+-- onboarding script uses INSERT OR IGNORE: a surviving row would be skipped
+-- on the real bind day and quietly keep whatever wrong values it had. A clean
+-- delete lets bind day create it correctly. plan_markdown lives on this row
+-- and is re-seeded by the same script, so it is not lost.
+
+DELETE FROM customers WHERE client_slug = 'prince-waikiki';
