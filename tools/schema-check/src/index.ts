@@ -160,7 +160,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 7 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. $4,500 to set up, $1,500/month ongoing."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 7 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
           }
         }
       ]
@@ -1378,7 +1378,7 @@ body.channel-mode #channel-cta-card{display:block}
       <span style="opacity:.4">&middot;</span>
       <span>every number public</span>
       <span style="opacity:.4">&middot;</span>
-      <a href="https://neverranked.com/#pricing" id="hero-pricing-link" class="tap-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">See pricing &rarr;</a>
+      <a href="https://neverranked.com/pricing" id="hero-pricing-link" class="tap-link" style="color:var(--gold);text-decoration:none;border-bottom:1px solid var(--gold-dim)">See pricing &rarr;</a>
     </div>
   </section>
 
@@ -1468,7 +1468,7 @@ body.channel-mode #channel-cta-card{display:block}
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and four others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
-          <a href="mailto:Lance@hi.neverranked.com?subject=Scope%20a%20kickoff" id="cta-preview" class="btn-ghost-link" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Scope a kickoff</a>
+          <a href="https://neverranked.com/pricing" id="cta-preview" class="btn-ghost-link" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Monitor this monthly</a>
           <a href="https://neverranked.com/methodology/" style="font-family:var(--mono);font-size:11px;color:var(--gold);border-bottom:1px solid var(--gold-dim);padding-bottom:2px;text-decoration:none;transition:border-color .3s">or read the full methodology</a>
         </div>
       </div>
@@ -1487,7 +1487,7 @@ body.channel-mode #channel-cta-card{display:block}
         <h3 style="font-family:var(--serif);font-size:24px;font-style:italic;line-height:1.25;margin:0 0 14px;color:var(--text)">The check you just ran is the one you run on your clients.</h3>
         <p style="font-size:14px;color:var(--text-faint);line-height:1.7;margin:0 0 20px">White-labeled to your shop, it is the wedge you put in front of any prospect. The measurement behind it is the layer no agency builds in-house at these margins. You resell the engagement at your markup, your team executes the punch list, and your client keeps you as the expert. We stay upstream, and we never contact your clients.</p>
         <a href="https://cal.com/neverranked/scope-call" style="display:inline-block;padding:12px 28px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:500;text-decoration:none;border-radius:2px">Grab 15 minutes with Lance &rarr;</a>
-        <p style="margin:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">15 minutes, one client category, and I'll show you the resell math. Or <a href="https://neverranked.com/for-agencies/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);text-decoration:none">see the channel and margin math &rarr;</a> first. The first step is a $950 pilot on one client category, credited in full toward the $4,500 kickoff within 30 days. Your cost is the list rate below. What you charge your client is yours.</p>
+        <p style="margin:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">15 minutes, one client category, and I'll show you the resell math. Or <a href="https://neverranked.com/for-agencies/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);text-decoration:none">see the channel and margin math &rarr;</a> first. The first step is one client category on Monitor at $199 a month, and those payments credit in full toward the audit baseline inside 90 days. Your cost is the list rate below. What you charge your client is yours.</p>
       </div>
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
       <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
@@ -1495,7 +1495,7 @@ body.channel-mode #channel-cta-card{display:block}
       <div class="social-proof">
         <span><span class="sp-num">7</span> AI tools</span>
         <span><span class="sp-num">18</span> real questions per category</span>
-        <span><span class="sp-num">3-week</span> setup</span>
+        <span><span class="sp-num">3</span> full passes per month</span>
       </div>
 
       <!-- Agency-mode CTA: single "Book a call with [agency]" card that
@@ -1508,20 +1508,20 @@ body.channel-mode #channel-cta-card{display:block}
         <div id="agency-cta-contact" style="margin-top:14px;font-family:var(--mono);font-size:11px;color:var(--text-faint)"></div>
       </div>
 
-      <div id="cta-pricing-intro" style="text-align:center;margin:24px 0 4px;font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--text-faint)">When you are ready, what an engagement costs</div>
+      <div id="cta-pricing-intro" style="text-align:center;margin:24px 0 4px;font-family:var(--label);text-transform:uppercase;letter-spacing:.16em;font-size:11px;color:var(--text-faint)">What it costs to keep watching</div>
       <div class="cta-pricing" id="cta-pricing" style="display:flex;gap:16px;justify-content:center;margin:14px 0 28px;flex-wrap:wrap">
         <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:180px;max-width:280px">
-          <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Kickoff</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$4,500</div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, one time<br>Forensic memo + punch list</div>
+          <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Monitor</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$199<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, month to month<br>Named or not named across 7 AI surfaces</div>
         </div>
         <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:180px;max-width:280px">
-          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Retainer</div>
-          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$1,500<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category ongoing<br>Daily measurement + delta memo</div>
+          <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Audit</div>
+          <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$750<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, after a $950 baseline month<br>Pre-registered method, written readout</div>
         </div>
       </div>
-      <div style="text-align:center;margin-top:12px"><a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20inquiry" class="tap-link" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">Email Lance to scope &rarr;</a></div>
+      <div style="text-align:center;margin-top:12px"><a href="https://neverranked.com/pricing" class="tap-link" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">See what is included &rarr;</a></div>
 
       <div class="cta-features">
         <span>7-engine measurement</span>
@@ -1684,7 +1684,7 @@ body.channel-mode #channel-cta-card{display:block}
     // schemas. Naming the specific schemas the visitor is missing
     // (LocalBusiness, FAQPage, Organization, etc.) gives away the
     // proprietary fix list. We show the SIZE of the gap, not the gap.
-    // The full named breakdown lives in the paid 1-page diagnostic.
+    // The full named breakdown lives in the emailed report.
     schemaGrid.innerHTML='';
     var schemaTotal = data.schema_coverage.length;
     var schemaPresent = data.schema_coverage.filter(function(s){return s.present;}).length;
@@ -1701,7 +1701,7 @@ body.channel-mode #channel-cta-card{display:block}
       '<div class="schema-summary-bar"><div class="schema-summary-fill" style="width:'+schemaPct+'%"></div></div>'+
       '<div class="schema-summary-sub">'+
         (schemaMissing > 0
-          ? schemaMissing+' signals are missing or incomplete. The free 1-page diagnostic names which ones and the order to fix them.'
+          ? schemaMissing+' signals are missing or incomplete. The full report below names which ones and the order to fix them.'
           : 'Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.')+
       '</div>';
     schemaGrid.appendChild(schemaSummary);
@@ -1738,7 +1738,7 @@ body.channel-mode #channel-cta-card{display:block}
     // teaser (above the gate) already shows 2 named flags as the carrot;
     // post-gate we tighten back to count-only because the visitor is now
     // a captured lead, not a conversion target. The full list lives in
-    // the paid 1-page diagnostic.
+    // the emailed report.
     flagsList.innerHTML='';
     if(data.red_flags.length>0){
       flagsLabel.style.display='flex';
@@ -1750,7 +1750,7 @@ body.channel-mode #channel-cta-card{display:block}
           (data.red_flags.length === 1
             ? 'specific issue flagged on your site as a signal AI engines treat as a trust-and-clarity problem.'
             : 'specific issues flagged on your site as signals AI engines treat as trust-and-clarity problems.')+
-          ' The named breakdown is part of the free 1-page diagnostic.'+
+          ' The named breakdown is in the full report.'+
         '</div>';
       flagsList.appendChild(flagSummary);
     }else{
@@ -1840,7 +1840,7 @@ body.channel-mode #channel-cta-card{display:block}
     // /templates/, and ship the work themselves without ever paying.
     // The funnel discipline now (locked 2026-05-28):
     //   1. This automated check shows the SHAPE of the gap (counts).
-    //   2. The free 1-page diagnostic shows CITATION REALITY (which
+    //   2. Monitor shows CITATION REALITY (which
     //      competitor firms AI names in their category, whether they
     //      appear). NOT a fix list.
     //   3. The paid engagement names the fixes (per-query playbook +
@@ -1862,7 +1862,7 @@ body.channel-mode #channel-cta-card{display:block}
     // Honest framing of the three-step funnel (locked 2026-05-28):
     //   1. This automated check shows the SHAPE of the gap on the
     //      visitor's own site (signal coverage, technical issues).
-    //   2. The free 1-page diagnostic shows the CITATION REALITY
+    //   2. Monitor shows the CITATION REALITY
     //      (which competitor firms AI names in their category,
     //      whether they appear, where in the answer). It does NOT
     //      name fixes; that would collapse the funnel and damage
@@ -1870,18 +1870,16 @@ body.channel-mode #channel-cta-card{display:block}
     //   3. The paid engagement names the specific fixes via the
     //      per-query playbook + research memo + punch list.
     // The earlier version of this copy promised fix-naming in the
-    // free diagnostic, which over-claimed what the diagnostic does.
+    // free diagnostic, retired 2026-07-19 and replaced by Monitor.
     ctaCard.innerHTML =
       '<div class="qw-cta-headline">See whether AI is naming you in your category right now.</div>'+
       '<div class="qw-cta-body">'+
-        'This automated check shows the size of the gap on your own site. The free 1-page diagnostic, hand-built by Lance for your site, runs 5 real buyer questions for your category across all 7 AI tools and shows you '+
-        '<strong>which competitor firms AI is currently naming</strong>, whether your firm appears in those answers, and where. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.'+
+        'This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 7 AI tools every month and shows '+
+        '<strong>which competitors are being named</strong>, whether you appear in those answers, and what changed since last month.'+
       '</div>'+
       '<div class="qw-cta-actions">'+
-        '<a class="qw-cta-button" href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic&body=URL%20I%20scanned%3A%20'+
-        encodeURIComponent(data.url || data.domain || '')+
-        '%0A%0AMy%20business%20category%3A%20%5Bplease%20describe%5D">Get the free 1-page diagnostic &rarr;</a>'+
-        '<div class="qw-cta-note">One per business. Replies within 24 hours.</div>'+
+        '<a class="qw-cta-button" href="https://neverranked.com/pricing">See what monitoring costs &rarr;</a>'+
+        '<div class="qw-cta-note">$199 a month per category. Month to month.</div>'+
       '</div>';
     qwGrid.appendChild(ctaCard);
 
@@ -2588,8 +2586,8 @@ function buildReportEmail(report: any): string {
   // of this email enumerated every named schema (LocalBusiness, FAQPage,
   // Organization, etc.) and every specific red-flag description, which
   // gave away the proprietary fix list for free. Now we surface the
-  // SHAPE of the gap (counts) and drive to the paid 1-page diagnostic
-  // for the named breakdown.
+  // SHAPE of the gap (counts) and drive to Monitor for the ongoing
+  // category picture.
   const schemaCoverage = report.schema_coverage || [];
   const schemaTotal = schemaCoverage.length;
   const schemaPresent = schemaCoverage.filter((s: any) => s.present).length;
@@ -2603,7 +2601,7 @@ function buildReportEmail(report: any): string {
         <div style="height:6px;background:#2a2a2a;border-radius:3px;overflow:hidden;margin-bottom:14px"><div style="height:100%;width:${schemaPct}%;background:#e8c767;border-radius:3px"></div></div>
         <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.6">
           ${schemaMissing > 0
-            ? `${schemaMissing} signals are missing or incomplete. The free 1-page diagnostic names which ones and the order to fix them.`
+            ? `${schemaMissing} signals are missing or incomplete. The full report names which ones and the order to fix them.`
             : `Strong coverage. The next layer of work is whether AI tools are actually citing you, which only the full measurement can answer.`}
         </div>
       </td>
@@ -2614,7 +2612,7 @@ function buildReportEmail(report: any): string {
   const flagRows = flagsCount > 0 ? `
     <div style="padding:18px 22px;background:#1c1c1c;border-left:3px solid #c0392b;border-radius:4px;font-family:'Courier New',monospace;color:#b0b0a8;line-height:1.6">
       <span style="font-family:Georgia,serif;font-size:28px;color:#e8c767;display:inline-block;vertical-align:middle;margin-right:14px">${flagsCount}</span>
-      <span style="font-size:12px;vertical-align:middle">${flagsCount === 1 ? 'specific issue flagged' : 'specific issues flagged'} on your site as ${flagsCount === 1 ? 'a signal AI engines treat' : 'signals AI engines treat'} as ${flagsCount === 1 ? 'a trust-and-clarity problem' : 'trust-and-clarity problems'}. The named breakdown is part of the free 1-page diagnostic.</span>
+      <span style="font-size:12px;vertical-align:middle">${flagsCount === 1 ? 'specific issue flagged' : 'specific issues flagged'} on your site as ${flagsCount === 1 ? 'a signal AI engines treat' : 'signals AI engines treat'} as ${flagsCount === 1 ? 'a trust-and-clarity problem' : 'trust-and-clarity problems'}. The named breakdown is in the full report.</span>
     </div>
   ` : "";
 
@@ -2661,9 +2659,9 @@ function buildReportEmail(report: any): string {
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">See whether AI is naming you in your category right now.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check shows the size of the gap on your own site. The free 1-page diagnostic, hand-built for your site, runs 5 real buyer questions for your category across all 7 AI tools and shows you which competitor firms AI is currently naming, whether your firm appears in those answers, and where. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
-    <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(report.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">Get the free 1-page diagnostic</a>
-    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">One per business. Replies within 24 hours.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 7 AI tools every month and shows which competitors are being named, whether you appear in those answers, and what changed since last month. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
+    <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">See what monitoring costs</a>
+    <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">$199 a month per category. Month to month.</div>
   </td></tr>
 
   <!-- Footer -->
@@ -2884,9 +2882,9 @@ function buildDripDay3Email(scan: { domain: string; score: number; grade: string
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">See where your competitors actually score.</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">NeverRanked clients get side-by-side competitor benchmarks, weekly scans, regression alerts, and a prioritized punch list you or your agency execute. Real domains. Real scores.</div>
-    <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
+    <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring, $199 a month</a>
     <div style="margin-top:12px">
-      <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or start with a free 1-page diagnostic for your category</a>
+      <a href="mailto:Lance@hi.neverranked.com?subject=Audit%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or scope a full audit, $750 a month after a $950 baseline</a>
     </div>
   </td></tr>
 
@@ -2948,12 +2946,12 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px">
     <div style="font-family:Georgia,serif;font-size:18px;font-style:italic;color:#fbf8ef;margin-bottom:12px">Stop checking manually.</div>
     <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:20px">
-      NeverRanked tracks what AI says about your business every week. You see who’s being recommended instead of you, what changed, and exactly what to do next.
+      NeverRanked tracks what AI says about your business every month. You see whether you are named, who is named instead of you, what changed, and exactly what to do next.
     </div>
 
     <table width="100%" cellpadding="0" cellspacing="0" border="0">
       <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Weekly AI checks</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8635; Monthly AI checks</td>
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9670; Clear list of what to fix</td>
       </tr>
       <tr>
@@ -2961,16 +2959,16 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Who AI recommends instead</td>
       </tr>
       <tr>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Weekly email summary</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Monthly email summary</td>
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#8599; Shareable reports</td>
       </tr>
     </table>
 
     <div style="text-align:center;margin-top:20px">
-      <a href="mailto:Lance@hi.neverranked.com?subject=Research%20engagement%20-%20${encodeURIComponent(scan.domain)}" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Email Lance. $4,500 kickoff + $1,500/mo</a>
+      <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px">Start monitoring, $199 a month</a>
     </div>
     <div style="text-align:center;margin-top:12px">
-      <a href="mailto:Lance@hi.neverranked.com?subject=Free%201-page%20diagnostic%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or start with a free 1-page diagnostic for your category</a>
+      <a href="mailto:Lance@hi.neverranked.com?subject=Audit%20-%20${encodeURIComponent(scan.domain)}" style="font-family:'Courier New',monospace;font-size:11px;color:#bfa04d;text-decoration:none">Or scope a full audit, $750 a month after a $950 baseline</a>
     </div>
   </td></tr>
 

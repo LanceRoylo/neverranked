@@ -33,7 +33,7 @@
  * added or lifted, both lists change together.
  */
 
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -95,6 +95,23 @@ const RULES = [
     // were only ever our SKUs.
     re: /\$497\s*\/\s*mo|\$750\s+audit|\baudit\s+credit\b/i,
     why: "a retired SKU from the pre-retraction product line",
+  },
+  {
+    // THE RETIRED ENGAGEMENT CARD. Superseded 2026-08-03 by the two-tier
+    // ladder. Found still live on 2026-08-18 in the check tool: its FAQ
+    // JSON-LD, its on-page price cards, and BOTH of its post-scan emails,
+    // which had been mailing "$4,500 kickoff + $1,500/mo" to every person
+    // who ran a free scan for six weeks after the price changed. The site
+    // was clean because check-claims only ever walked dist/; the check
+    // tool is a separate Worker and nothing looked at it.
+    //
+    // Matches the two figures only when they are PRICED (a dollar sign, or
+    // a /mo suffix), so pages that record the old card as dated history
+    // still read naturally while any attempt to SELL it is blocked.
+    id: "retired-engagement-card",
+    severity: "block",
+    re: /\$4,500|\$1,500\s*(?:<[^>]*>)?\s*\/\s*mo|\$1,500\s*(?:a|per)\s+month|kickoff\s*\+\s*\$1,500/i,
+    why: "the $4,500 kickoff / $1,500 per month card, retired 2026-08-03 and replaced by the two-tier ladder (Monitor $199, Audit $750 after a $950 baseline)",
   },
   {
     id: "retired-product",
@@ -206,6 +223,13 @@ function walk(dir, out = []) {
   return out;
 }
 
+// Surfaces that ship to real people but are NOT built into dist/. The check
+// tool is a Cloudflare Worker whose source carries the whole page plus two
+// post-scan emails as template literals, so a retired price in here reaches
+// an inbox without ever touching a page this script used to scan. That gap
+// is how the retired card kept selling for six weeks after 2026-08-03.
+const EXTRA_SOURCES = [join(ROOT, "tools", "schema-check", "src", "index.ts")];
+
 // ── Run ────────────────────────────────────────────────────────────────
 let files;
 try {
@@ -214,10 +238,14 @@ try {
   console.error("check-claims: dist/ not found — run scripts/build.sh first.");
   process.exit(1);
 }
+for (const extra of EXTRA_SOURCES) {
+  if (existsSync(extra)) files.push(extra);
+  else console.warn(`check-claims: expected source not found, skipping ${extra}`);
+}
 
 const hits = [];
 for (const f of files) {
-  const rel = relative(DIST, f);
+  const rel = f.startsWith(DIST) ? relative(DIST, f) : relative(ROOT, f);
   const html = readFileSync(f, "utf8");
   const text = toText(html);
   // Comments, extracted separately so scanSource rules can see what a crawler
