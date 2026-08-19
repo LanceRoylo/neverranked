@@ -479,6 +479,9 @@
   }
   .hero-form button:hover { filter: brightness(1.06); }
   .hero-form button:active { transform: scale(0.97); }
+  .hero-price-line { font-family: var(--mono); font-size: 12px; letter-spacing: 0.03em; color: var(--soft); margin: 14px 0 0; line-height: 1.6; }
+  .hero-price-line strong { color: var(--text); font-weight: 600; }
+  .hero-price-line a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
   .hero-form-note {
     font-family: var(--mono); font-size: 12px; letter-spacing: 0.02em;
     color: var(--dim); margin: 0 0 34px; max-width: 560px; line-height: 1.7;
@@ -758,6 +761,7 @@
       <a class="wordmark" href="/">Never<em>Ranked</em></a>
       <nav class="nav-links">
         <a href="/methodology/">Methodology</a>
+        <a href="/pricing/">Pricing</a>
         <a href="/for-agencies/">For agencies</a>
         <a href="/security/">Security</a>
       </nav>
@@ -791,6 +795,9 @@
         <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
         <button type="submit">See what AI sees &rarr;</button>
       </form>
+      <div class="hero-price-line reveal" style="transition-delay:.27s">
+        From <strong>$199 a month</strong> per category, month to month. <a href="/pricing/">See what it costs</a>.
+      </div>
       <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows whether the seven AI tools can even read your site, the first thing that decides whether they can name you at all.</div>
 
       <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
@@ -1670,7 +1677,7 @@
       <div class="sec-label"><span class="n">06</span>Pricing</div>
       <h2>Per category, not per client.</h2>
       <p>No bundled tiers, no per-seat math.</p>
-      <p>Two ways in. Monitor tells you where you stand. Audit proves whether anything moved. The calculator below runs your category against the audit price.</p>
+      <p>Two ways in. Monitor tells you where you stand. Audit proves whether anything moved.</p>
       <div class="prices">
         <div class="price price-secondary">
           <div class="amt">$199</div>
@@ -1691,8 +1698,8 @@
       </div>
       <p>Start with the free instant check. Paste your URL and see in seconds what the seven AI tools can read from your site. The full engagement is the other half of the picture. It runs 18 real customer questions per category across all seven surfaces, measures throughout the month, builds a cohort baseline that makes the numbers mean something, and hands you a clear list of what to fix.</p>
       <p style="margin-top:26px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
-        <a class="cta" href="https://check.neverranked.com/">Run the free check &rarr;</a>
-        <a class="hero-secondary" href="https://cal.com/neverranked/scope-call" style="margin-top:0;">Or book 15 minutes with Lance &rarr;</a>
+        <a class="cta" href="/pricing/">See what is included &rarr;</a>
+        <a class="hero-secondary" href="https://check.neverranked.com/" style="margin-top:0;">Or run the free check first &rarr;</a>
       </p>
     </div>
   </section>
