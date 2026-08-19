@@ -216,7 +216,11 @@ p a:hover,ul a:hover{opacity:.8}
   a[href^="mailto:"]:after,a[href^="/"]:after,a[href^="#"]:after{content:""}
 }
 </style>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "cfc5d11f50244e72860ad4b246489601"}'></script>
+<!-- No analytics beacon here on purpose. Cloudflare Web Analytics is on
+     "automatic setup" for this zone and injects the beacon at the edge for
+     browser requests, so every page is already counted. A hardcoded snippet
+     used to sit here as well, which made this page report itself twice, into
+     two separate Web Analytics site entries. Removed 2026-08-18. -->
 </head>
 <body>
 <div class="grain"></div>
