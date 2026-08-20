@@ -293,6 +293,20 @@ Grade three axes. ALL three must pass for verdict "pass".
    - Any reference to a snippet, JavaScript injection, schema auto-deploy, or "done-for-you" execution as an active product.
    - A specific prospect figure CONTRADICTS GROUND TRUTH, or a specific prospect figure is asserted when GROUND TRUTH is empty.
 
+   NOT a violation (do not fail for this): the artifact naming only SOME of
+   the red flags listed in GROUND TRUTH. Naming a subset is correct and
+   expected. The generator is shown at most three flags while GROUND TRUTH
+   carries the complete scan, so demanding full coverage grades the writer on
+   flags it was never given, and a cold email reciting nine findings is bad
+   copy anyway. Do not fail an artifact for omitting a flag, and do not treat
+   "lists only 3 of the 9" as a defect.
+   What DOES remain a violation, and these are the ones to look for:
+     - a red flag that is NOT in GROUND TRUTH (invented)
+     - a figure that CONTRADICTS GROUND TRUTH (for example "52 images missing
+       alt text" when GROUND TRUTH says "1 of 53")
+     - a stated TOTAL that is false ("two gaps" when the scan found nine).
+       "Two of the gaps" is accurate and exactly as short.
+
    NOT a violation (do not fail for this): an interrogative hook that ASKS
    whether an engine names or cites the prospect ("Does Perplexity name
    [Company]?"). A question asserts nothing and predicts nothing; it is the
