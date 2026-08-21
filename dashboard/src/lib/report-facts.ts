@@ -83,6 +83,9 @@ export interface ReportFacts {
 // grid (HTC's delivered August 2026 report has six).
 const GRID_ENGINE_ORDER = ENGINE_ORDER;
 
+/** Raw citation_runs.engine key -> the label customers see. */
+const ENGINE_LABEL_BY_KEY = new Map(ENGINE_ORDER.map((e) => [e.key, e.label]));
+
 /** [start, end) epoch seconds for a 'YYYY-MM' month, plus the prior month's
  *  start. Date.UTC normalizes month under/overflow (Jan -> prior December). */
 function monthBounds(monthKey: string): { start: number; end: number; priorStart: number } | null {
@@ -124,8 +127,16 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string): 
     if (!cur.has(key)) continue; // engine not measured this window: not a flip
     const [q, engine] = key.split("\u0000");
     const is = cur.get(key)!;
-    if (is && !was) (appeared.get(q) ?? appeared.set(q, []).get(q)!).push(engine);
-    else if (!is && was) (disappeared.get(q) ?? disappeared.set(q, []).get(q)!).push(engine);
+    // Label, not raw key. citation_runs.engine holds "bing" and
+    // "google_ai_overview"; the grid beside these chips renders "Copilot" and
+    // "Google AIO" off the same rows, so emitting the raw key put two
+    // vocabularies for one tool in a single customer-facing report.
+    // Unknown keys pass through rather than vanish: ENGINE_ORDER is tested
+    // against the runner's own INSERTs, so an unmapped key means a new engine
+    // nobody registered, and that should be visible, not silently dropped.
+    const eng = ENGINE_LABEL_BY_KEY.get(engine) ?? engine;
+    if (is && !was) (appeared.get(q) ?? appeared.set(q, []).get(q)!).push(eng);
+    else if (!is && was) (disappeared.get(q) ?? disappeared.set(q, []).get(q)!).push(eng);
   }
   const pack = (m: Map<string, string[]>) =>
     [...m.entries()].map(([q, engines]) => ({ q, engines: engines.sort() }))

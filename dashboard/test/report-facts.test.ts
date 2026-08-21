@@ -256,3 +256,32 @@ test("an undelivered report still gets its facts written", async () => {
   assert.equal(updates.length, 1);
   assert.match(updates[0], /delivered_at IS NULL/, "the race backstop must match the early skip");
 });
+
+test("question-movement chips carry engine LABELS, not raw keys", async () => {
+  // citation_runs.engine holds "bing"; the grid in the same report renders
+  // "Copilot" from those very rows. A readout must not say both.
+  const prior = Math.floor(Date.UTC(2026, 6, 15) / 1000); // July
+  const curr = Math.floor(Date.UTC(2026, 7, 15) / 1000);  // August
+  const runs = [
+    { engine: "bing", client_cited: 0, run_at: prior, keyword: "waikiki hotels" },
+    { engine: "bing", client_cited: 1, run_at: curr, keyword: "waikiki hotels" },
+  ];
+  const env: any = {
+    DB: {
+      prepare(sql: string) {
+        return { bind() { return {
+          async first() {
+            if (/citation_snapshots/.test(sql)) return deliverableSnap;
+            if (/FROM customers/.test(sql)) return { name: "X" };
+            return null;
+          },
+          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+        }; } };
+      },
+    },
+  };
+  const facts = await buildReportFacts(env, "x", "2026-08");
+  const chips = facts?.questions?.appeared?.flatMap((a: any) => a.engines) ?? [];
+  assert.ok(chips.includes("Copilot"), `expected the label, got ${JSON.stringify(chips)}`);
+  assert.ok(!chips.includes("bing"), "raw key must not reach a customer-facing chip");
+});
