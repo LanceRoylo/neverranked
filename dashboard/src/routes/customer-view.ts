@@ -32,6 +32,7 @@ import type { Env } from "../types";
 import { getUser } from "../auth";
 import { redirect, esc } from "../render";
 import { isReadoutShapeSnapshot } from "../lib/snapshot-shape";
+import { ENGINE_ORDER } from "../lib/engine-order";
 
 // ── Data shape (returned by loadCustomerView) ─────────────────────
 
@@ -254,15 +255,12 @@ const TOOL_SHORT: Record<string, string> = {
 };
 
 // citation_runs.engine raw keys -> canonical 5+2 display order + cockpit label.
-const MAP_ENGINE_ORDER: Array<{ key: string; label: string }> = [
-  { key: "perplexity", label: "Perplexity" },
-  { key: "openai", label: "ChatGPT" },
-  { key: "gemini", label: "Gemini" },
-  { key: "bing", label: "Copilot" },
-  { key: "google_aio", label: "Google AIO" },
-  { key: "anthropic", label: "Claude" },
-  { key: "gemma", label: "Gemma" },
-];
+// Shared with the readout grid via lib/engine-order.ts. Kept in one place
+// because the duplicate copies drifted from the writer: `google_aio` here
+// never matched the runner's `google_ai_overview`, so the citation map
+// dropped the Google AIO node and, at the edge filter below, every edge
+// attached to it.
+const MAP_ENGINE_ORDER = ENGINE_ORDER;
 
 // Generic tokens that carry no identity — stripped before matching an extracted
 // competitor name to a canonical cohort label, so "Masuda Lehrman Wealth" and a

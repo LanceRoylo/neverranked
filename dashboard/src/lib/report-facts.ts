@@ -15,6 +15,7 @@ import type { Env } from "../types";
 // .ts extension so the node test runner (strip-types) resolves it too; esbuild is fine with it.
 import { writeAnalystNotes, type AnalystNotes } from "./report-notes.ts";
 import { isReadoutShapeSnapshot } from "./snapshot-shape.ts";
+import { ENGINE_ORDER } from "./engine-order";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 function monthLabel(monthKey: string): string {
@@ -75,16 +76,12 @@ export interface ReportFacts {
 }
 
 // citation_runs.engine holds raw keys; map to the canonical 5+2 display order.
-// Five citation-grade web-searching tools, then the two model-knowledge tools.
-const GRID_ENGINE_ORDER: Array<{ key: string; label: string }> = [
-  { key: "perplexity", label: "Perplexity" },
-  { key: "openai", label: "ChatGPT" },
-  { key: "gemini", label: "Gemini" },
-  { key: "bing", label: "Copilot" },
-  { key: "google_aio", label: "Google AIO" },
-  { key: "anthropic", label: "Claude" },
-  { key: "gemma", label: "Gemma" },
-];
+// The list lives in lib/engine-order.ts because it was previously duplicated
+// here and in routes/customer-view.ts, and the two copies drifted from the
+// writer: both spelled Google AI Overviews `google_aio` while the runner
+// inserts `google_ai_overview`, so the engine silently vanished from this
+// grid (HTC's delivered August 2026 report has six).
+const GRID_ENGINE_ORDER = ENGINE_ORDER;
 
 /** [start, end) epoch seconds for a 'YYYY-MM' month, plus the prior month's
  *  start. Date.UTC normalizes month under/overflow (Jan -> prior December). */
@@ -189,9 +186,9 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string): Prom
  *  prior delivered report's facts (for per-engine deltas). null if no snapshot. */
 export async function buildReportFacts(env: Env, slug: string, monthKey: string): Promise<ReportFacts | null> {
   const snap = await env.DB.prepare(
-    `SELECT engines_breakdown, top_competitors, week_start FROM citation_snapshots
+    `SELECT engines_breakdown, top_competitors, week_start, measured_at FROM citation_snapshots
        WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
-  ).bind(slug).first<{ engines_breakdown: string; top_competitors: string; week_start: number }>();
+  ).bind(slug).first<{ engines_breakdown: string; top_competitors: string; week_start: number; measured_at: number | null }>();
   if (!snap) return null;
 
   // Refuse a legacy-shape (weekly auto-writer) snapshot: its engines_breakdown
@@ -209,6 +206,33 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   const mb = monthBounds(monthKey);
   if (mb && typeof snap.week_start === "number" && snap.week_start >= mb.end) {
     console.log(`[report-facts] latest snapshot for ${slug} is newer than report month ${monthKey}; skipping facts to avoid wrong-month data`);
+    return null;
+  }
+
+  // Refuse a snapshot whose MEASUREMENT is too old for the report's month.
+  //
+  // monthKey is the DELIVERY month, not the data month -- memo-generator.ts
+  // instructs the model to "Title the memo and its opening H2 by the DELIVERY
+  // month. Do not date it by the month the data falls in." So data always
+  // predates its label by design, and a same-month rule would fail closed on
+  // every correct report (HTC's August report carries data measured July 31).
+  //
+  // The real failure is degree, not kind: one month back is the cadence,
+  // three months back is a stale snapshot wearing a fresh date. The bound is
+  // therefore the start of the month BEFORE the delivery month.
+  //
+  // week_start cannot answer this. Every writer stamps it with the Monday of
+  // the week it RAN (citations.ts:1010, :1486, bridge-to-d1.mjs:188), so
+  // prince-waikiki's June 26 measurement carries week_start 2026-08-17. The
+  // measurement date lives in measured_at (migration 0106).
+  //
+  // NULL measured_at means the row cannot prove when it was measured, which
+  // is not a reason to trust it. Fail closed, same as every guard above.
+  if (mb && (typeof snap.measured_at !== "number" || snap.measured_at < mb.priorStart)) {
+    const seen = typeof snap.measured_at === "number"
+      ? new Date(snap.measured_at * 1000).toISOString().slice(0, 10)
+      : "unknown";
+    console.log(`[report-facts] snapshot for ${slug} was measured ${seen}, too stale for report month ${monthKey}; skipping facts (report stays narrative-only)`);
     return null;
   }
 

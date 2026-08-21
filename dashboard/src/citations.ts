@@ -1016,9 +1016,12 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
     // dryrun->D1 bridge. Skip the legacy snapshot write so it can't clobber it.
     const forensicManaged = await isForensicManaged(env, clientSlug);
     if (!forensicManaged) await env.DB.prepare(
+      // measured_at: this writer aggregates the runs it just inserted, so the
+      // measurement date is `now`. week_start is the Monday of the RUN week
+      // and has never been a measurement date -- see migration 0106.
       `INSERT INTO citation_snapshots
-       (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+       (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at, measured_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT(client_slug, week_start) DO UPDATE SET
          total_queries = excluded.total_queries,
          client_citations = excluded.client_citations,
@@ -1026,7 +1029,8 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
          top_competitors = excluded.top_competitors,
          keyword_breakdown = excluded.keyword_breakdown,
          engines_breakdown = excluded.engines_breakdown,
-         created_at = excluded.created_at`
+         created_at = excluded.created_at,
+         measured_at = excluded.measured_at`
     )
       .bind(
         clientSlug,
@@ -1037,6 +1041,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         JSON.stringify(topCompetitors),
         JSON.stringify(keywordBreakdown),
         JSON.stringify(enginesBreakdown),
+        now,
         now
       )
       .run();
@@ -1492,9 +1497,12 @@ export async function buildClientSnapshot(
   const weekStart = Math.floor(mondayDate.getTime() / 1000);
 
   await env.DB.prepare(
+    // measured_at: this writer aggregates the runs it just inserted, so the
+    // measurement date is `now`. week_start is the Monday of the RUN week
+    // and has never been a measurement date -- see migration 0106.
     `INSERT INTO citation_snapshots
-     (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+     (client_slug, week_start, total_queries, client_citations, citation_share, top_competitors, keyword_breakdown, engines_breakdown, created_at, measured_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(client_slug, week_start) DO UPDATE SET
        total_queries = excluded.total_queries,
        client_citations = excluded.client_citations,
@@ -1502,7 +1510,8 @@ export async function buildClientSnapshot(
        top_competitors = excluded.top_competitors,
        keyword_breakdown = excluded.keyword_breakdown,
        engines_breakdown = excluded.engines_breakdown,
-       created_at = excluded.created_at`
+       created_at = excluded.created_at,
+       measured_at = excluded.measured_at`
   ).bind(
     clientSlug,
     weekStart,
@@ -1512,6 +1521,7 @@ export async function buildClientSnapshot(
     JSON.stringify(topCompetitors),
     JSON.stringify(keywordBreakdown),
     JSON.stringify(enginesBreakdown),
+    now,
     now
   ).run();
 

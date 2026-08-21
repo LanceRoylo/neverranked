@@ -41,6 +41,9 @@ test("buildReportFacts derives all four chart datasets from snapshot + prior fac
       source_types: { independent_web: { share_pct: 69 }, owned: { share_pct: 9 } },
       offsite_hosts: [{ host: "gohawaii.com", share_pct: 3 }],
     }),
+    // Measured inside the delivery month. Real reports carry data from the
+    // delivery month or the one before it; the guard fails closed past that.
+    measured_at: Math.floor(Date.UTC(2026, 6, 15) / 1000), // Jul 15, 2026
   };
   const prior = { month_key: "2026-06", facts_json: JSON.stringify({ engines: [{ name: "Claude", pct: 14 }, { name: "Microsoft Copilot", pct: 0 }] }) };
   const facts = await buildReportFacts(fakeEnv(snap, { name: "Hawaii Theatre Center" }, prior), "hawaii-theatre", "2026-07");
@@ -66,7 +69,11 @@ test("buildReportFacts returns null with no snapshot", async () => {
 });
 
 test("buildReportFacts: baseline (no prior report) leaves engines without prev", async () => {
-  const snap = { engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }), top_competitors: "{}" };
+  const snap = {
+    engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+    top_competitors: "{}",
+    measured_at: Math.floor(Date.UTC(2026, 5, 15) / 1000), // Jun 15, 2026
+  };
   const facts = await buildReportFacts(fakeEnv(snap, { name: "X" }, null), "x", "2026-06");
   assert.equal(facts!.engines[0].prev, undefined);
   assert.equal(facts!.prior_label, undefined);
@@ -83,6 +90,7 @@ test("buildReportFacts refuses a legacy-shape snapshot (no share_pct) -> null", 
 const okSnap = {
   engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
   top_competitors: "{}",
+  measured_at: Math.floor(Date.UTC(2026, 6, 15) / 1000), // Jul 15, 2026
 };
 
 test("buildCitationGrid: aggregates client_cited per engine x question, canonical order", async () => {
@@ -137,4 +145,54 @@ test("buildReportFacts refuses a snapshot newer than the report month -> null", 
   };
   // Report labeled July but the only snapshot is from September: fail closed.
   assert.equal(await buildReportFacts(fakeEnv(snap, { name: "X" }, null), "x", "2026-07"), null);
+});
+
+// --- measurement staleness (migration 0106 / measured_at) -------------------
+//
+// monthKey is the DELIVERY month. memo-generator.ts tells the model to title
+// the memo by the delivery month and explicitly NOT by the month the data
+// falls in, so correct reports always carry data older than their label.
+// Any guard here has to separate "one month back, as the cadence intends"
+// from "a stale snapshot wearing a fresh date".
+
+const staleSnapBase = {
+  engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+  top_competitors: "{}",
+};
+
+test("refuses a snapshot measured months before the delivery month -> null", async () => {
+  // The prince-waikiki shape: measured 2026-06-26, first readout ships
+  // September. week_start said 2026-08-17 (the bridge stamped its own run
+  // date), so the newer-than guard saw nothing wrong. Only measured_at does.
+  const snap = {
+    ...staleSnapBase,
+    week_start: Math.floor(Date.UTC(2026, 7, 17) / 1000), // Aug 17 -- looks current
+    measured_at: Math.floor(Date.UTC(2026, 5, 26) / 1000), // Jun 26 -- the truth
+  };
+  assert.equal(
+    await buildReportFacts(fakeEnv(snap, { name: "Prince Waikiki" }, null), "prince-waikiki", "2026-09"),
+    null,
+  );
+});
+
+test("ACCEPTS data from the month before the delivery month", async () => {
+  // The hawaii-theatre shape: August report, measured July 31. This is the
+  // cadence working, not a defect. A same-month rule would fail closed here
+  // and take every correct report down with it -- this test exists to stop
+  // that fix from being written.
+  const snap = {
+    ...staleSnapBase,
+    week_start: Math.floor(Date.UTC(2026, 6, 27) / 1000),
+    measured_at: Math.floor(Date.UTC(2026, 6, 31) / 1000), // Jul 31, 2026
+  };
+  const facts = await buildReportFacts(fakeEnv(snap, { name: "Hawaii Theatre Center" }, null), "hawaii-theatre", "2026-08");
+  assert.ok(facts, "July data must still produce facts for an August report");
+  assert.equal(facts!.engines[0].name, "Claude");
+});
+
+test("refuses a snapshot that cannot prove when it was measured -> null", async () => {
+  // measured_at NULL means unknown, and unknown is not a reason to trust a
+  // row. Fail closed, matching every other guard in this function.
+  const snap = { ...staleSnapBase, week_start: Math.floor(Date.UTC(2026, 6, 27) / 1000), measured_at: null };
+  assert.equal(await buildReportFacts(fakeEnv(snap, { name: "X" }, null), "x", "2026-08"), null);
 });
