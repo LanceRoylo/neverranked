@@ -100,13 +100,36 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   // and engine count ("18 questions", "7 AI tools").
   add(inp.by_question.length);
   add(inp.by_engine.length);
-  // The frozen engagement plan is a human-authored, approved artifact, so its
-  // numbers are trustworthy. When the memo grades against the plan (section 0),
-  // it may cite them -- add them so a legitimate "the plan set a 48% target"
-  // reference is not falsely flagged as a fabrication and block the memo.
-  if (inp.plan_markdown) {
-    for (const t of inp.plan_markdown.match(/\d+(?:\.\d+)?/g) ?? []) s.add(t);
-  }
+  // The frozen engagement plan is a human-authored, approved artifact, so the
+  // memo may cite it when grading against the plan (section 0). But only the
+  // figures the plan states AS DATA earn that trust here.
+  //
+  // Harvesting every numeric token in the plan (what this did) whitelisted the
+  // plan's dates and cadence days as measured values, and because the
+  // allowed-set check below short-circuits BEFORE the percentage strictness, a
+  // plan reading "runs on the 1st, 11th and 21st" made a fabricated "11%"
+  // anywhere in the memo verify clean. The bypass widened with the plan.
+  if (inp.plan_markdown) for (const t of planDataNumbers(inp.plan_markdown)) s.add(t);
+  return s;
+}
+
+/** Numbers the plan states AS DATA -- written with %, "percent", "pp", or
+ *  "points". These may back a data claim in the memo ("the plan set a 48%
+ *  target"), which is the case the plan allowance exists to serve. */
+function planDataNumbers(plan: string): Set<string> {
+  const s = new Set<string>();
+  for (const m of plan.matchAll(/(\d+(?:\.\d+)?)\s*(?:%|percent|percentage|pp\b|points?\b)/gi)) s.add(m[1]);
+  return s;
+}
+
+/** Every other number in the plan: dates, cadence days, counts. The memo may
+ *  mention them in prose, but they must NEVER satisfy a percentage or points
+ *  claim -- the plan never asserted them as measurements. */
+export function planBareNumbers(inp: { plan_markdown?: string | null }): Set<string> {
+  if (!inp.plan_markdown) return new Set();
+  const data = planDataNumbers(inp.plan_markdown);
+  const s = new Set<string>();
+  for (const t of inp.plan_markdown.match(/\d+(?:\.\d+)?/g) ?? []) if (!data.has(t)) s.add(t);
   return s;
 }
 
@@ -126,7 +149,7 @@ export function isSafeNumber(tok: string): boolean {
 
 // Extract numeric tokens from the draft and flag any specific number that
 // is neither in the allowed set nor trivially safe.
-export function findUnverifiedNumbers(body: string, allowed: Set<string>): string[] {
+export function findUnverifiedNumbers(body: string, allowed: Set<string>, planBare: Set<string> = new Set()): string[] {
   // Strip thousands separators so "2,346" reads as one number, not "2"
   // and "346". Without this, every comma-formatted figure trips a false
   // positive on its tail segment.
@@ -138,10 +161,13 @@ export function findUnverifiedNumbers(body: string, allowed: Set<string>): strin
     const t = m[0];
     if (allowed.has(t)) continue;
     // A number stated as a percentage or a points/pp delta is a DATA CLAIM: it
-    // must be a measured value, so the small-int exemption does not apply.
+    // must be a measured value, so neither the small-int exemption nor the
+    // plan's non-data numbers can satisfy it.
     const after = normalized.slice(m.index + t.length, m.index + t.length + 9);
     const isDataClaim = /^\s*(%|percent|point|pp\b|percentage)/i.test(after);
-    if (!isDataClaim && isSafeNumber(t)) continue;
+    if (isDataClaim) { bad.add(t); continue; }
+    if (planBare.has(t)) continue; // plan date/cadence referenced in prose
+    if (isSafeNumber(t)) continue;
     bad.add(t);
   }
   return Array.from(bad);
@@ -248,7 +274,7 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
     // Quality gates.
     const tone = checkHumanTone(parsed.body_markdown, "customer-email");
     const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
-    const unverified = findUnverifiedNumbers(parsed.body_markdown, allowedNumberSet(inputs));
+    const unverified = findUnverifiedNumbers(parsed.body_markdown, allowedNumberSet(inputs), planBareNumbers(inputs));
 
     // Save as DRAFT (delivered_at NULL). Flag metadata is stored in the
     // title prefix is avoided; instead we return it for the review UI.
@@ -319,7 +345,7 @@ export async function vetMemoBody(
   const inputs = await gatherMemoInputs(env, slug, now);
   const tone = checkHumanTone(body, "customer-email");
   const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
-  const unverifiedNumbers = findUnverifiedNumbers(body, allowedNumberSet(inputs));
+  const unverifiedNumbers = findUnverifiedNumbers(body, allowedNumberSet(inputs), planBareNumbers(inputs));
   // Claim checking: the number guard proves a figure EXISTS in the data; this
   // proves the prose describes it TRUTHFULLY. Three false comparisons reached
   // a delivered draft on 2026-08-03 with every number legitimate. Absent

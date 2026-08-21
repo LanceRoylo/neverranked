@@ -39,3 +39,48 @@ test("findUnverifiedNumbers: 'top 10' does not false-positive (small count, not 
 test("findUnverifiedNumbers: a real delta stated as points passes", () => {
   assert.deepEqual(findUnverifiedNumbers("ChatGPT search rose 3 points this month.", allowed), []);
 });
+
+// --- the plan_markdown bypass ----------------------------------------------
+//
+// The frozen plan is human-authored and approved, so the memo may cite it when
+// grading against it. The old allowance harvested EVERY numeric token in the
+// plan into the allowed set, and the allowed check short-circuits before the
+// percentage strictness -- so a plan's cadence days silently licensed a
+// fabricated percentage anywhere in the memo.
+
+import { planBareNumbers } from "../src/lib/memo-generator.ts";
+
+const PLAN = "Measurement runs on the 1st, 11th and 21st. The plan sets a 48% citation-share target across 18 questions.";
+
+test("a plan's cadence day cannot license a fabricated percentage", () => {
+  // "11" appears in the plan only as a run date. A memo claiming 11% is
+  // asserting a measurement the plan never made.
+  const allowed = new Set<string>();
+  for (const t of PLAN.matchAll(/(\d+(?:\.\d+)?)\s*(?:%|percent|percentage|pp\b|points?\b)/gi)) allowed.add(t[1]);
+  const bad = findUnverifiedNumbers("Your share reached 11% this month.", allowed, planBareNumbers({ plan_markdown: PLAN }));
+  assert.ok(bad.includes("11"), `expected 11 to be flagged, got ${JSON.stringify(bad)}`);
+});
+
+test("a percentage the plan actually states still verifies", () => {
+  // The case the allowance exists for. 48 is written as "48%" in the plan.
+  const allowed = new Set<string>();
+  for (const t of PLAN.matchAll(/(\d+(?:\.\d+)?)\s*(?:%|percent|percentage|pp\b|points?\b)/gi)) allowed.add(t[1]);
+  assert.deepEqual(
+    findUnverifiedNumbers("The plan set a 48% target.", allowed, planBareNumbers({ plan_markdown: PLAN })),
+    [],
+  );
+});
+
+test("a plan date may still be mentioned in prose", () => {
+  // Not a data claim, so the plan's bare numbers remain quotable.
+  assert.deepEqual(
+    findUnverifiedNumbers("Runs land on the 21st.", new Set<string>(), planBareNumbers({ plan_markdown: PLAN })),
+    [],
+  );
+});
+
+test("planBareNumbers excludes figures the plan states as data", () => {
+  const bare = planBareNumbers({ plan_markdown: PLAN });
+  assert.ok(bare.has("11"), "cadence day is bare");
+  assert.ok(!bare.has("48"), "48 is stated as a percentage, so it is not bare");
+});
