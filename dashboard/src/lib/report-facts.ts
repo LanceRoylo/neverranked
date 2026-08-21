@@ -321,7 +321,13 @@ export async function emitReportFacts(env: Env, slug: string, monthKey: string):
     const existing = await env.DB.prepare(
       `SELECT delivered_at, facts_json FROM monthly_memos WHERE client_slug = ? AND month_key = ?`,
     ).bind(slug, monthKey).first<{ delivered_at: number | null; facts_json: string | null }>();
-    if (existing && existing.delivered_at != null && existing.facts_json != null) return false;
+    // Delivered is delivered. The old condition also required facts_json to be
+    // non-null, which let a DELIVERED narrative-only report acquire charts
+    // afterwards -- hawaii-theatre's August 2026 report was delivered
+    // 08-03 20:08 and had facts written 08-04 07:49, under a readout footer
+    // that promises the numbers do not change after delivery. A report gaining
+    // four charts overnight is exactly the change that footer rules out.
+    if (existing && existing.delivered_at != null) return false;
 
     const facts = await buildReportFacts(env, slug, monthKey);
     if (!facts || !facts.engines.length) return false;
@@ -334,11 +340,13 @@ export async function emitReportFacts(env: Env, slug: string, monthKey: string):
     ).bind(slug).first<{ name: string; category_label: string | null }>();
     const notes = await writeAnalystNotes(env, facts, { name: cust?.name || "You", category_label: cust?.category_label });
     if (Object.keys(notes).length) facts.notes = notes;
-    // Race backstop: the WHERE clause refuses to overwrite a row that became
-    // delivered-with-facts between the check above and here.
+    // Race backstop: refuses to write a row that was delivered between the
+    // check above and here. Must match that check exactly -- the old
+    // `(delivered_at IS NULL OR facts_json IS NULL)` was strictly weaker and
+    // was itself the hole, inviting the write it was meant to block.
     await env.DB.prepare(
       `UPDATE monthly_memos SET facts_json = ?, updated_at = ?
-        WHERE client_slug = ? AND month_key = ? AND (delivered_at IS NULL OR facts_json IS NULL)`,
+        WHERE client_slug = ? AND month_key = ? AND delivered_at IS NULL`,
     ).bind(JSON.stringify(facts), Math.floor(Date.now() / 1000), slug, monthKey).run();
     return true;
   } catch (e) {

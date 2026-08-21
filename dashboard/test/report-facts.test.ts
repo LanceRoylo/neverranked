@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert";
-import { buildReportFacts } from "../src/lib/report-facts.ts";
+import { buildReportFacts, emitReportFacts } from "../src/lib/report-facts.ts";
 
 // Fake env whose first() returns the right row per query (by SQL shape).
 // gridRuns (optional) are returned ONLY for the citation-grid query (its SELECT
@@ -195,4 +195,64 @@ test("refuses a snapshot that cannot prove when it was measured -> null", async 
   // row. Fail closed, matching every other guard in this function.
   const snap = { ...staleSnapBase, week_start: Math.floor(Date.UTC(2026, 6, 27) / 1000), measured_at: null };
   assert.equal(await buildReportFacts(fakeEnv(snap, { name: "X" }, null), "x", "2026-08"), null);
+});
+
+// --- delivery is final (emitReportFacts) ------------------------------------
+//
+// The readout footer promises the numbers do not change after delivery.
+// The old skip required delivered_at AND facts_json to be set, and the
+// UPDATE's WHERE said `(delivered_at IS NULL OR facts_json IS NULL)` -- so a
+// DELIVERED narrative-only report satisfied both and got charts written to it
+// after the customer had already received it. hawaii-theatre's August 2026
+// report: delivered 08-03 20:08, facts_json written 08-04 07:49.
+
+/** Fake env for emitReportFacts. Records every UPDATE it attempts. */
+function emitEnv(memoRow: any, snap: any, updates: string[]) {
+  return {
+    DB: {
+      prepare(sql: string) {
+        return {
+          bind(...args: any[]) {
+            return {
+              async first() {
+                if (/FROM monthly_memos/.test(sql) && /delivered_at, facts_json/.test(sql)) return memoRow;
+                if (/citation_snapshots/.test(sql)) return snap;
+                if (/FROM customers/.test(sql)) return { name: "Hawaii Theatre Center", category_label: null };
+                return null;
+              },
+              async all() { return { results: [] }; },
+              async run() {
+                if (/^UPDATE monthly_memos/.test(sql.trim())) updates.push(sql);
+                return { success: true };
+              },
+            };
+          },
+        };
+      },
+    },
+  } as any;
+}
+
+const deliverableSnap = {
+  engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+  top_competitors: "{}",
+  week_start: Math.floor(Date.UTC(2026, 6, 27) / 1000),
+  measured_at: Math.floor(Date.UTC(2026, 6, 31) / 1000), // Jul 31 -> valid for August
+};
+
+test("a DELIVERED narrative-only report never gains facts afterwards", async () => {
+  const updates: string[] = [];
+  const delivered = { delivered_at: Math.floor(Date.UTC(2026, 7, 3, 20, 8) / 1000), facts_json: null };
+  const ok = await emitReportFacts(emitEnv(delivered, deliverableSnap, updates), "hawaii-theatre", "2026-08");
+  assert.equal(ok, false, "must refuse to emit for a delivered report");
+  assert.deepEqual(updates, [], "must not attempt any UPDATE on a delivered report");
+});
+
+test("an undelivered report still gets its facts written", async () => {
+  const updates: string[] = [];
+  const undelivered = { delivered_at: null, facts_json: null };
+  const ok = await emitReportFacts(emitEnv(undelivered, deliverableSnap, updates), "hawaii-theatre", "2026-08");
+  assert.equal(ok, true, "an undelivered report must still be written");
+  assert.equal(updates.length, 1);
+  assert.match(updates[0], /delivered_at IS NULL/, "the race backstop must match the early skip");
 });
