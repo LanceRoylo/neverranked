@@ -28,7 +28,7 @@
 <meta name="description" content="23 national marketing agencies measured across 7 AI tools, 18 hash-locked questions, 3 usable runs, 8,833 citations. A Copilot range derived entirely from local service businesses predicted a national B2B category months later.">
 <link rel="canonical" href="https://neverranked.com/teardowns/agency-us/">
 <meta property="og:title" content="Teardown 11: the first category that is not a local service, and the pattern held">
-<meta property="og:description" content="23 national agencies, 7 AI tools, 8,833 citations. Copilot came in at 2%, inside a range derived from ten local service categories.">
+<meta property="og:description" content="23 national agencies, 7 AI tools, 8,833 citations. Copilot came in at 5%, above a range derived from ten local service categories and corrected on 22 August 2026.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -89,8 +89,16 @@
     <h1>The first category that is not a local service. Same answer.</h1>
     <p class="sub">23-agency national cohort, 18 hash-locked questions, 3 usable runs on 2026-08-05 and 2026-08-06, 8,833 classified citations. Figures generated from the aggregate tooling. Individual agencies anonymized. Counts and distributions named.</p>
 
+<div class="correction" style="border:1px solid #d8c9a8;background:#fbf7ee;padding:16px 18px;margin:18px 0;border-radius:6px">
+<p style="margin:0 0 10px"><strong>Correction, 22 August 2026.</strong> The Microsoft Copilot figure on this page was 2%. It is 5%. We found this in internal review and are recording it here rather than quietly changing the number.</p>
+<p style="margin:0 0 10px">Copilot is measured through a stated proxy: Bing's top five organic results plus any answer box, on the reasoning that Copilot answers from Bing's index. Those results include matches on single words from the question. For "best marketing agency", Bing returns a dictionary definition of the word "best", and those URLs were counted in the denominator. Removing dictionary and retailer matches leaves 395 citations in that channel rather than 782. The 18 agency own-site citations are unchanged, so the rate moves from 2% to 5%.</p>
+<p style="margin:0 0 10px">The correction raises the figure. The original understated how often agencies are cited, which is the direction that flattered our own argument, and that is the reason to be explicit about it.</p>
+<p style="margin:0">The ten earlier teardowns used the same proxy. Where they reported 0% the figure is unchanged, because a cleaner denominator cannot change a count of zero. Three reported non-zero figures: law at 1%, CPA at 2%, and a Nashville CPA control at 1%. Those would rise, and the underlying runs are no longer retained, so they should be read as lower bounds until re-measured. The filter used here is deliberately conservative, removing only dictionary sites and one retailer, so the corrected 5% is itself a lower bound.</p>
+<p style="margin:10px 0 0">The same 387 URLs sit inside the 8,833 total and the source-type distribution below. They are 4% of the total, so the cohort-wide shares move by less than a point and are left as published. Only the Copilot channel, where they are half the denominator, changes materially.</p>
+</div>
+
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Microsoft Copilot cited businesses&rsquo; own websites between 0% and 2% of the time. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>2%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
+      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Microsoft Copilot cited businesses&rsquo; own websites between 0% and 2% of the time, as measured before the correction noted above. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>5%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -156,7 +164,7 @@
         <tr><td class="us">Perplexity</td><td class="num"><strong>14%</strong></td><td class="num">68%</td><td class="num">3,184</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>9%</strong></td><td class="num">63%</td><td class="num">975</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>3%</strong></td><td class="num">97%</td><td class="num">569</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>2%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
+        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>5%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>1%</strong></td><td class="num">98%</td><td class="num">1,117</td></tr>
       </tbody>
     </table>
@@ -212,7 +220,7 @@
     <h2 id="does-not-prove">What this teardown does and does not prove</h2>
     <p>What it supports:</p>
     <ul>
-      <li>The Copilot 0% to 2% own-site pattern, previously derived only from local service businesses, held in a national B2B category measured months later.</li>
+      <li>Copilot cites agency websites rarely: 18 own-site citations out of 395 clean Copilot citations in a national B2B category. Whether that sits inside the 0% to 2% band derived from local service businesses can no longer be stated, because that band was computed on the uncorrected denominator and those runs are not retained. The cross-category comparison is pending re-measurement. See the correction above.</li>
       <li>Agency-owned websites take 12% of citations in their own category, against 15% for local firms in Honolulu real estate. The categories behave alike.</li>
       <li>The category is fragmented. The most-cited agency holds 1% of all citations, and no agency appears on more than 12 of 18 questions.</li>
       <li>The per-tool spread runs from 1% to 39% on identical questions in the same week, consistent across all 3 runs.</li>
