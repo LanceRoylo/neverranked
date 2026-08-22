@@ -24,14 +24,25 @@
 /** Raw citation_runs.engine keys, in canonical display order:
  *  five citation-grade web-searching tools, then the two model-knowledge
  *  tools. Keys MUST equal the literals the daily runner inserts. */
+// Order: four citation-grade AI engines that search the live web, two
+// model-knowledge engines, then the classic-search control LAST.
+//
+// RECLASSIFIED 2026-08-22: the `bing` channel is Bing organic top-5, which
+// is keyword search, not an answer engine -- it returns a pop song for
+// "where to stay in Waikiki". Labeling it "Copilot" presented search-index
+// noise as AI-answer behavior, and the public correction of 2026-08-22
+// (teardowns/agency-us) came out of exactly that. The DATA stays: classic
+// search alongside AI answers is the control that shows they are different
+// surfaces. Only the label and its position changed. The key stays `bing`
+// for series continuity.
 export const ENGINE_ORDER: ReadonlyArray<{ key: string; label: string }> = [
   { key: "perplexity", label: "Perplexity" },
   { key: "openai", label: "ChatGPT" },
   { key: "gemini", label: "Gemini" },
-  { key: "bing", label: "Copilot" },
   { key: "google_ai_overview", label: "Google AIO" },
   { key: "anthropic", label: "Claude" },
   { key: "gemma", label: "Gemma" },
+  { key: "bing", label: "Bing search (control)" },
 ];
 
 /** Convenience set for membership checks. */

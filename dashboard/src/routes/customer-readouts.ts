@@ -244,7 +244,7 @@ function renderCitationGrid(
 
   const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. A gold square means that tool named you for that question, and brighter means it named you on more of the month's daily checks. A dark square means it answered but never named you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you won a citation.`;
 
-  return `<section class="nr-chart"><h3 class="nr-ctitle">Where the seven tools put you, question by question</h3>`
+  return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`
     + `<ol class="cg-legend">${legend}</ol>`
     + chartText(cap, note) + `</section>`;

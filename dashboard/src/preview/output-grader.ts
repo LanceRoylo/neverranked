@@ -61,7 +61,7 @@ ABOUT THE COMPANY
   FACTUAL violation.
 
 ABOUT WHAT WE MEASURE
-- Seven AI surfaces, measured in repeated runs across the month.
+- Six AI tools, measured in repeated runs across the month.
   CADENCE, and the distinction matters: capture genuinely IS daily.
   The standing measurement dispatches one workflow per client per
   keyword every day at 06:00 UTC. Saying so in a METHODOLOGY or
@@ -74,16 +74,21 @@ ABOUT WHAT WE MEASURE
   cadence is the subject, and describe the OFFER as repeated runs
   against a frozen baseline with a monthly memo. Never lead an
   artifact with "daily".
-  Five citation-grade engines that
+  Four citation-grade engines that
   search the live web (Perplexity, ChatGPT search, Gemini grounded,
-  Microsoft Copilot via Bing, Google AI Overviews). Two
-  model-knowledge engines that answer from training data
-  (Claude, Gemma).
-- The 5+2 split is required ONLY when the artifact CLAIMS full or
-  "seven engine" coverage (for example "we cover seven engines", "all
-  seven AI engines"). Naming one or two engines by name to illustrate
-  (for example "ChatGPT or Perplexity") is normal, is NOT a violation,
-  and does NOT require the split. Only a coverage or count claim that
+  Google AI Overviews). Two model-knowledge engines that answer from
+  training data (Claude, Gemma). Bing classic search runs alongside
+  them as a CONTROL and is NOT an AI tool.
+  (Reclassified 2026-08-22. The Bing channel is keyword search, not an
+  answer engine, and "Microsoft Copilot" was retired as its name. An
+  artifact that says "seven tools", "seven engines", "five
+  citation-grade", or that calls Copilot a measured AI tool is making
+  a RETIRED claim: FACTUAL violation.)
+- The 4+2 split is required ONLY when the artifact CLAIMS full or
+  "six tool" coverage (for example "we cover six tools", "all six AI
+  tools"). Naming one or two engines by name to illustrate (for
+  example "ChatGPT or Perplexity") is normal, is NOT a violation, and
+  does NOT require the split. Only a coverage or count claim that
   omits the citation-grade vs model-knowledge distinction is a FACTUAL
   violation.
 
@@ -141,7 +146,7 @@ ABOUT THE FREE ENTRY POINT AND THE PAID PILOT
 ABOUT PRICING (two-tier ladder, set 2026-08-03 — this section replaced
 the $950-pilot / $4,500-kickoff / $1,500-month card, which is RETIRED)
 - MONITOR: $199 per month per category, month to month, cancel any
-  time. Whether each of the seven AI tools names the business or not,
+  time. Whether each of the six AI tools names the business or not,
   question by question; the cases where an AI used their site without
   crediting them; a plain English monthly report. This is a CURRENT
   price tier and stating it is NOT a violation.
@@ -487,12 +492,20 @@ function detectDeterministic(text) {
     const m = raw.match(re);
     if (m) { out.push({ axis: 'factual', issue: `retired cadence overclaim ${quote(m[0])} — we measure in repeated runs against a frozen baseline, never "daily" or "every day"` }); break; }
   }
-  // 5+2 split required only when full seven-engine coverage is claimed.
+  // Reclassified 2026-08-22: six AI tools (4+2), Bing organic is a control.
+  // "seven"/"five citation-grade"/Copilot-as-a-tool are retired claims.
   if (/\b(?:seven|7)\s+(?:AI\s+)?(?:engines?|surfaces?|tools?)\b/i.test(raw)) {
-    const hasSplit = /\bfive\b|\b5\b/i.test(raw) && /\btwo\b|\b2\b/i.test(raw) &&
+    out.push({ axis: 'factual', issue: 'claims seven-tool coverage, retired 2026-08-22: six AI tools (four citation-grade that search the live web, two model-knowledge), with Bing classic search as a control that is not an AI tool' });
+  }
+  if (/\bcopilot\b/i.test(raw)) {
+    out.push({ axis: 'factual', issue: 'names Copilot as a measured tool, retired 2026-08-22: the Bing channel is a classic-search control, not an AI answer engine' });
+  }
+  // 4+2 split required only when full six-tool coverage is claimed.
+  if (/\b(?:six|6)\s+(?:AI\s+)?(?:engines?|surfaces?|tools?)\b/i.test(raw)) {
+    const hasSplit = /\bfour\b|\b4\b/i.test(raw) && /\btwo\b|\b2\b/i.test(raw) &&
                      /(live web|web-?searching|search the live web)/i.test(raw) &&
                      /(training data|model memory|model-knowledge|model knowledge)/i.test(raw);
-    if (!hasSplit) out.push({ axis: 'factual', issue: 'claims seven-engine coverage without the required 5+2 split (five citation-grade engines that search the live web, two model-knowledge engines that answer from training data)' });
+    if (!hasSplit) out.push({ axis: 'factual', issue: 'claims six-tool coverage without the required 4+2 split (four citation-grade engines that search the live web, two model-knowledge engines that answer from training data)' });
   }
   if (raw.includes('—')) out.push({ axis: 'voice', issue: `em dash present ${quote(raw.slice(Math.max(0, raw.indexOf('—') - 30), raw.indexOf('—') + 30))}` });
   const semi = raw.indexOf(';');

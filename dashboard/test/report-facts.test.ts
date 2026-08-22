@@ -259,7 +259,7 @@ test("an undelivered report still gets its facts written", async () => {
 
 test("question-movement chips carry engine LABELS, not raw keys", async () => {
   // citation_runs.engine holds "bing"; the grid in the same report renders
-  // "Copilot" from those very rows. A readout must not say both.
+  // the canonical label from those very rows. A readout must not say both.
   const prior = Math.floor(Date.UTC(2026, 6, 15) / 1000); // July
   const curr = Math.floor(Date.UTC(2026, 7, 15) / 1000);  // August
   const runs = [
@@ -282,6 +282,6 @@ test("question-movement chips carry engine LABELS, not raw keys", async () => {
   };
   const facts = await buildReportFacts(env, "x", "2026-08");
   const chips = facts?.questions?.appeared?.flatMap((a: any) => a.engines) ?? [];
-  assert.ok(chips.includes("Copilot"), `expected the label, got ${JSON.stringify(chips)}`);
+  assert.ok(chips.includes("Bing search (control)"), `expected the canonical label, got ${JSON.stringify(chips)}`);
   assert.ok(!chips.includes("bing"), "raw key must not reach a customer-facing chip");
 });

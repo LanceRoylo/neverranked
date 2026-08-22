@@ -128,7 +128,7 @@ test("renderCharts: citation grid renders cells, per-row count, and question leg
     },
   });
   const html = renderCharts(facts);
-  assert.match(html, /Where the seven tools put you, question by question/);
+  assert.match(html, /Where the six AI tools and the search control put you, question by question/);
   assert.match(html, /class="cg-svg"/);
   // row labels present
   assert.match(html, /Perplexity/);
