@@ -43,6 +43,27 @@ NeverRanked MEASURES. It does not deploy to, or touch, client sites. Hosted
 schema injection was retired 2026-07-24. Nothing in this repo should reintroduce
 a write path to a client's site.
 
+## Figure scopes and engine taxonomy (2026-08-22 reclassification)
+
+The measurement is 7 surfaces: 4 citation-grade AI engines (Perplexity,
+ChatGPT search, Gemini grounded, Google AI Overviews) + 2 model-knowledge
+(Claude, Gemma) + 1 classic-search control (Bing organic top-5). Prose form:
+"six AI tools plus a Bing organic control — seven measured surfaces." The
+control is not an AI tool, does not "cite" or "answer" (it "returns"), and
+no copy may attribute behavior to Copilot: there is no Copilot data.
+
+Published percentages exist in TWO scopes and every figure must name its
+scope: pooled web-searching (banking 51, dental 43, law 35, hotels 11) vs
+all-surface (53, 44, 39, 17). Wealth is 47 in both. The reference table is
+in teardowns/cross-category/. Unlabeled figures are how the 2026-08 drift
+happened.
+
+All non-customer cohorts are anonymized, banking included ("named in full"
+applies only to 1:1 paid deliverables). scripts/check-claims.mjs blocks the
+retired claims and scans audits/, content/, reports/, linkedin/ and social/
+in addition to dist/ — it walks dist for site pages, so no fix is verified
+until rebuild.
+
 ## Client provisioning
 
 A client needs a `client_slug` plus a competitor cohort in `domains`, and an
