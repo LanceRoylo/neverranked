@@ -1,5 +1,14 @@
 # WINDOW HANDOFF — Pre-existing consistency pass, 2026-08-22
 
+> CLOSED 2026-08-22, VERIFIED PASS. All items fixed (commits f4d05ec,
+> 077a457, fecaabe, 72355be) and independently verified in the audit
+> window. The two-scope finding is settled by the in-repo cross-category
+> pooled table (web pool: banking 51, dental 43, law 35, hotels 11;
+> all-surface: 53, 44, 39, 17; wealth 47 in both) and recorded in
+> CLAUDE.md. Known-unverified residue, deliberately flagged: law-firm
+> per-run values (37% run 2, 38% run 3) were not independently checked
+> against run data, which is not retained in this repo.
+
 Follow-up to WINDOW-HANDOFF-2026-08-22-COPILOT-SWEEP-AUDIT.md (complete,
 verified 2026-08-22). These defects predate the Copilot sweep and were
 noticed in passing during that audit. They are a different disease:

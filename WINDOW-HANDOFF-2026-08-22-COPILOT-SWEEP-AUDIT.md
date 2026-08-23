@@ -1,5 +1,13 @@
 # WINDOW HANDOFF — Copilot-sweep damage audit, 2026-08-22
 
+> CLOSED 2026-08-22, VERIFIED PASS. All items fixed (commits 1d7f5b9,
+> 05e4d52, 5f3ee09, 16fa742, d842a1f, a62bae5) and independently verified
+> in the audit window: gate green on 124 pages with the new rules, greps
+> clean, og.pngs and LinkedIn assets visually confirmed re-rendered,
+> claims/ regenerated from its registry. Remaining human items: re-upload
+> the LinkedIn banner to the live page; update the GSC OAuth justification
+> in the Google console if it was ever submitted.
+
 Read-only audit of the public site after the 2026-08-22 scripted sweep
 (commits 78a636f, bd8db6a, c9e8941, 73a55b2). The sweep reclassified
 "Microsoft Copilot" -> "Bing search (control)", changed seven AI tools ->
