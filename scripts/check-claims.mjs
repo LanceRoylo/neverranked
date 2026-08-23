@@ -224,6 +224,28 @@ const RULES = [
     re: /owns? the Copilot answer|first-?mover/i,
     why: 'the Copilot first-mover claim. Retired 2026-08-22: it asserts that ranking on Bing organic causes Copilot citation, which we never measured, on a channel that is not Copilot',
   },
+  {
+    // Bare-name Copilot ATTRIBUTION. retired-copilot-as-tool catches the
+    // full product name; the 2026-08-22 audit found ~30 sentences
+    // asserting Copilot BEHAVIOR from our data under the bare name
+    // ("Copilot cites...", "the Copilot gap", "cited zero times by
+    // Copilot", "Bing/Copilot own-share", "excluding Copilot"). We have
+    // no Copilot data, so any behavioral attribution is unpublishable.
+    id: "retired-copilot-attribution",
+    severity: "block",
+    re: /\bCopilot(?:'|’)?s?\s+(?:cites?|cited|answers?|answered|pulls?|pulled|surfaces?|surfaced|tends?|tracks?|recognizes?|does\s+not\s+recognize|has\s+nothing)\b|\bthe\s+Copilot\s+(?:gap|opening|answer|result|row|pattern|read|lever)\b|\b(?:cited|surfaced|named)\s+(?:zero\s+times\s+)?by\s+Copilot\b|\bon\s+Copilot\b|\bBing\/Copilot\b|\bexcluding\s+Copilot\b/i,
+    why: 'attributes measured behavior to Copilot under the bare name. We have no Copilot data; the channel is Bing organic, published as "Bing search (control)"',
+  },
+  {
+    // Warn, not block, on purpose: /methodology/'s pooled-figure passage
+    // legitimately describes the five-surface pool with the control shown
+    // separately, and a gate that blocks the one page that words it
+    // correctly teaches everyone to bypass the gate.
+    id: "control-counted-as-engine",
+    severity: "warn",
+    re: /five web-searching|five live-web|five surfaces that search|five engines that search the live web/i,
+    why: 'counts the Bing control as a web-searching AI engine. It is four AI engines plus a control; if the five-surface pooled figure is the subject, label the pool explicitly',
+  },
 
 ];
 
@@ -245,6 +267,11 @@ const ALLOW = [
   // deliberate.
   { path: "content/meeting-evidence/mvnp-2026-05-18.html", rules: ["retired-copilot-first-mover"] },
   { path: "reports/state-of-agent-readiness/state-of-agent-readiness-2026-05.html", rules: ["retired-copilot-first-mover"] },
+  // A3 brings content/ into scope. This file's "all 7 engines (the six
+  // commercial APIs plus Gemma)" is the CORRECT dated historical form the
+  // 2026-08-22 handoff says to preserve. Allowlisted rather than weakening
+  // the rule or editing a dated artifact.
+  { path: "content/meeting-evidence/asb-2026-05-18.html", rules: ["retired-seven-tools"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
@@ -290,6 +317,16 @@ function walk(dir, out = []) {
 // is how the retired card kept selling for six weeks after 2026-08-03.
 const EXTRA_SOURCES = [join(ROOT, "tools", "schema-check", "src", "index.ts")];
 
+// Shipped surfaces NOT built into dist/: delivered client audits, outbound
+// comparison docs, meeting-evidence packets, report HTML, and the rendered
+// social/LinkedIn graphic sources. These reach real people as files or
+// rendered images without passing through dist/, which is how "Microsoft
+// Copilot" survived the 2026-08-22 sweep in three of them: the gate never
+// read them. (The regexes were fine -- toText collapses the line-broken
+// form before matching. Coverage was the gap.)
+const EXTRA_DIRS = ["audits", "content", "reports", "linkedin", "social"]
+  .map((d) => join(ROOT, d));
+
 // ── Run ────────────────────────────────────────────────────────────────
 let files;
 try {
@@ -301,6 +338,11 @@ try {
 for (const extra of EXTRA_SOURCES) {
   if (existsSync(extra)) files.push(extra);
   else console.warn(`check-claims: expected source not found, skipping ${extra}`);
+}
+
+for (const dir of EXTRA_DIRS) {
+  if (existsSync(dir)) walk(dir, files);
+  else console.warn(`check-claims: expected source dir not found, skipping ${dir}`);
 }
 
 const hits = [];
