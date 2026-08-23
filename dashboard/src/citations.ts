@@ -144,7 +144,7 @@ async function queryPerplexity(
 // ---------------------------------------------------------------------------
 
 /**
- * OpenAI query, web-grounded via gpt-4o-mini-search-preview.
+ * OpenAI query, web-grounded via gpt-5-search-api.
  *
  * Pre-2026-04-29 this function used `gpt-4o-mini` (LLM-only, training
  * data) which represented "what the model knows" -- not "what ChatGPT
@@ -171,7 +171,11 @@ async function queryOpenAI(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-4o-mini-search-preview",
+      // gpt-4o-mini-search-preview was deprecated by OpenAI (404 on every
+      // call by 2026-08-21). gpt-5-search-api verified 2026-08-22: same
+      // request shape, citations still arrive as message.annotations
+      // url_citation entries. Keep 1:1 with dryrun/engines.mjs.
+      model: "gpt-5-search-api",
       // Search-preview models include real-time web search by
       // default. No tools array needed; web_search_options is
       // the optional config.
