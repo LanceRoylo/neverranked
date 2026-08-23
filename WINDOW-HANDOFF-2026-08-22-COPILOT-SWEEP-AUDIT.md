@@ -728,15 +728,17 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
 - [ ] Fix claims-registry.mjs and regenerate claims/index.html.
 - [ ] Rebuild dist/ after all source edits; re-run all seven gates.
       check-claims walks dist only.
-- [ ] New check-claims rules worth adding:
-      1. Whitespace-tolerant retired-name pattern (Microsoft\s+Copilot) —
-         a line break inside the phrase defeated all four rules in three
-         live files.
-      2. Coverage for generated files (claims/) — either scan the registry
-         source or ensure regeneration precedes the gate.
-      3. Consider: count-vs-list check ("6 AI tools" within N chars of a
-         7-item enumeration) if cheap; the seven-under-six cover block
-         shipped in 15 files.
+- [ ] Patch check-claims.mjs BEFORE starting the copy fixes (detector
+      first). Full patch-ready snippets in the Appendix at the bottom of
+      this file. Diagnosis correction from the audit: the regexes were
+      never the problem — toText collapses the line-broken
+      "Microsoft\nCopilot" before matching. The gate missed those files
+      because audits/, content/, reports/, linkedin/, and social/ are NOT
+      built into dist/, and check-claims walks dist only. claims/ IS in
+      dist; it passed because bare "Bing/Copilot" matches no rule. So the
+      patch is (a) a bare-name Copilot ATTRIBUTION rule, (b) an EXTRA_DIRS
+      coverage extension, (c) an advisory warn rule for the control counted
+      as a web-searching engine.
 
 ## Verified clean — DO NOT "fix"
 
@@ -816,6 +818,93 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
     grep -rn --include='*.html' -iE "(five|5) (web-searching|live-web|surfaces that search)" . --exclude-dir=dist
     grep -rn --include='*.html' -iE "seven engines|seven-tool|7-tool" . --exclude-dir=dist
     grep -rn --include='*.html' -E "\(control\)('|&rsquo;)s|\(control\)/Bing|via Bing\." . --exclude-dir=dist
+
+## Appendix — check-claims.mjs patch (apply FIRST, then fix to green)
+
+Apply these before starting the copy fixes so "done" is machine-verified,
+per the sweep commit's own discipline. Expected immediate effect: the gate
+goes red on the Tier 4-8 files; you fix until it goes green.
+
+### A1. New rule — bare-name Copilot attribution (severity: block)
+
+Insert after the retired-copilot-first-mover rule, before the closing `];`
+of RULES. Literal alternations only — no variable-length gaps (see the
+backtracking note on retired-five-citation-grade).
+
+    {
+      // Bare-name Copilot ATTRIBUTION. retired-copilot-as-tool catches the
+      // full product name; the 2026-08-22 audit found ~30 sentences
+      // asserting Copilot BEHAVIOR from our data under the bare name
+      // ("Copilot cites...", "the Copilot gap", "cited zero times by
+      // Copilot", "Bing/Copilot own-share", "excluding Copilot"). We have
+      // no Copilot data, so any behavioral attribution is unpublishable.
+      id: "retired-copilot-attribution",
+      severity: "block",
+      re: /\bCopilot(?:'|’)?s?\s+(?:cites?|cited|answers?|answered|pulls?|pulled|surfaces?|surfaced|tends?|tracks?|recognizes?|does\s+not\s+recognize|has\s+nothing)\b|\bthe\s+Copilot\s+(?:gap|opening|answer|result|row|pattern|read|lever)\b|\b(?:cited|surfaced|named)\s+(?:zero\s+times\s+)?by\s+Copilot\b|\bon\s+Copilot\b|\bBing\/Copilot\b|\bexcluding\s+Copilot\b/i,
+      why: 'attributes measured behavior to Copilot under the bare name. We have no Copilot data; the channel is Bing organic, published as "Bing search (control)"',
+    },
+
+### A2. New rule — control counted as a web-searching engine (severity: warn)
+
+Warn, not block, on purpose: /methodology/'s pooled-figure passage
+legitimately describes the five-surface pool with the control shown
+separately, and a gate that blocks the one page that words it correctly
+teaches everyone to bypass the gate.
+
+    {
+      id: "control-counted-as-engine",
+      severity: "warn",
+      re: /five web-searching|five live-web|five surfaces that search|five engines that search the live web/i,
+      why: 'counts the Bing control as a web-searching AI engine. It is four AI engines plus a control; if the five-surface pooled figure is the subject, label the pool explicitly',
+    },
+
+### A3. Coverage — scan shipped surfaces that never enter dist/
+
+This is the actual fix for the "Microsoft Copilot" survivors. Add next to
+EXTRA_SOURCES:
+
+    // Shipped surfaces NOT built into dist/: delivered client audits,
+    // outbound comparison docs, meeting-evidence packets, report HTML, and
+    // the rendered social/LinkedIn graphic sources. These reach real people
+    // as files or rendered images without passing through dist/, which is
+    // how "Microsoft Copilot" survived the 2026-08-22 sweep in three of
+    // them: the gate never read them. (The regexes were fine — toText
+    // collapses the line-broken form before matching. Coverage was the gap.)
+    const EXTRA_DIRS = ["audits", "content", "reports", "linkedin", "social"]
+      .map((d) => join(ROOT, d));
+
+And in the Run section, after the EXTRA_SOURCES loop:
+
+    for (const dir of EXTRA_DIRS) {
+      if (existsSync(dir)) walk(dir, files);
+      else console.warn(`check-claims: expected source dir not found, skipping ${dir}`);
+    }
+
+The existing rel-path logic (`f.startsWith(DIST) ? ... : relative(ROOT, f)`)
+already produces ROOT-relative paths for these, matching how the ALLOW list
+names content/ files today.
+
+### A4. Expected new ALLOW entries (declare, don't widen patterns)
+
+- content/meeting-evidence/asb-2026-05-18.html for retired-seven-tools:
+  its line ~231 "all 7 engines (the six commercial APIs plus Gemma)" is the
+  CORRECT dated historical form this handoff says to preserve, and A3 puts
+  the file in scope. Allowlist it; do not weaken the rule.
+- If any other dated artifact trips a rule on prose this handoff marks
+  "NO CHANGE", allowlist that file+rule pair with a comment saying why,
+  rather than editing history or narrowing the pattern.
+- Do NOT allowlist anything in audits/ — the Microsoft Copilot hits there
+  are real work items (Tier 8), not history.
+
+### A5. Not built (considered, rejected)
+
+A count-vs-list consistency check ("6 AI tools" within N chars of a
+seven-item enumeration) was considered and rejected: HTML lists put
+arbitrary markup between count and items, so any workable proximity window
+either misses real breaks or fires on correct copy. That class stays with
+human review; the greps above cover the known instances.
+
+---
 
 Audit performed 2026-08-22 in a read-only session (five parallel readers +
 pattern sweep). Nothing in the tree was modified by the audit itself.
