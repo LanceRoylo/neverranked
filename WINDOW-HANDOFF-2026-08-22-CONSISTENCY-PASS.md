@@ -64,14 +64,14 @@ It is back (or was never fully swept) in two places:
 - Agency-US: "Teardown 11. Published 2026-08-05" (head comment :3, title
   :27, og:title :30) — renumber to 12.
 
-- [ ] teardowns/agency-us/index.html — :3 head comment, :27 title, :30
+- [x] teardowns/agency-us/index.html — :3 head comment, :27 title, :30
       og:title, plus any in-body "Teardown 11" self-references ->
       Teardown 12.
-- [ ] Sweep for external references: `grep -rn "eardown 11" --include='*.html'
+- [x] Sweep for external references: `grep -rn "eardown 11" --include='*.html'
       . --exclude-dir=dist` — cross-category :473 and :489 point "teardown
       11" at hotels (CORRECT, leave); anything pointing the number 11 at
       agency-us gets renumbered.
-- [ ] teardowns/index.html — confirm the catalog's ordering/numbering
+- [x] teardowns/index.html — confirm the catalog's ordering/numbering
       matches after the renumber.
 
 ## 3. Banking cohort count: 21 vs 23
@@ -81,12 +81,12 @@ distinct institutions — several banks run multiple domains. Both numbers
 are real; the drift is unlabeled scope. House formulation:
 "23-domain cohort (about 21 distinct institutions)".
 
-- [ ] teardowns/index.html:118 — "21-bank cohort" (fix together with
+- [x] teardowns/index.html:118 — "21-bank cohort" (fix together with
       item 1's edit on the same line).
-- [ ] index.html:1574 — "21-bank cohort." on the homepage teardown card ->
+- [x] index.html:1574 — "21-bank cohort." on the homepage teardown card ->
       "23-domain cohort" (or the full house formulation if it fits the
       card).
-- [ ] teardowns/bank-honolulu uses "23-bank cohort" (:5, :20, :79) — the
+- [x] teardowns/bank-honolulu uses "23-bank cohort" (:5, :20, :79) — the
       strictly true count is 23 DOMAINS / ~21 banks. Decide: either leave
       "23-bank" as shorthand everywhere and drop "21" from the site, or
       adopt the house formulation everywhere. Do not leave both bare

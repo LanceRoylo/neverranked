@@ -284,7 +284,7 @@ node "$ROOT/scripts/check-noindex.mjs"
 # including an active pitch target — and the 2026-07-16 noindex flip made that
 # page crawlable for the first time. Worse, it published a roster for a
 # teardown that reports per-bank figures as "Bank A / Bank B", collapsing a
-# 23-bank anonymity set to a named handful. Anonymized data plus a published
+# 23-domain anonymity set to a named handful. Anonymized data plus a published
 # roster is not anonymized.
 echo ""
 node "$ROOT/scripts/check-named.mjs"
