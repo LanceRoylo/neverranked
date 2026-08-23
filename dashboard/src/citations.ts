@@ -69,7 +69,10 @@ async function maybeAlert(
 // WorkflowInternalError + auto-retry that wrote duplicate rows on
 // instance de51674d-9ee4 on 2026-05-09).
 const RUNS_PER_KEYWORD = 1;
-const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/chat/completions";
+// 2026-08-22: migrated from /chat/completions (Sonar legacy, dies
+// 2026-09-27) to the Agent API. Same key, same host. See the
+// queryPerplexity comment for the two traps in this migration.
+const PERPLEXITY_ENDPOINT = "https://api.perplexity.ai/v1/agent";
 const OPENAI_ENDPOINT = "https://api.openai.com/v1/chat/completions";
 // gemini-2.5-flash works on billing-enabled projects; gemini-2.0-flash
 // has a "FreeTier limit=0" quota oddity that fails even when the
@@ -93,6 +96,65 @@ const GEMMA_MODEL = "google/gemma-4-31B-it";
 // Perplexity queries
 // ---------------------------------------------------------------------------
 
+/**
+ * Perplexity query via the Agent API, verified live 2026-08-22. The
+ * legacy /chat/completions surface retires 2026-09-27 (same failure
+ * class as the OpenAI search-preview deprecation of 2026-08-21, but
+ * pre-announced). Two traps in this migration:
+ *
+ * 1. Web search is NOT automatic on the Agent API, even for
+ *    perplexity/sonar. Without tools:[{type:"web_search"}] the call
+ *    returns 200 with prose and ZERO citations -- which would silently
+ *    turn this citation-grade engine into a model-knowledge engine.
+ *    The tool is load-bearing, not optional.
+ * 2. The legacy top-level `citations` array is gone. Cited sources now
+ *    arrive as an output[] item of type "search_results" whose
+ *    results[] are in the same source order the legacy array used, so
+ *    index-based prominence is preserved. Message annotations
+ *    (url_citation) came back EMPTY for sonar in live testing; we
+ *    still read them as a secondary source in case that changes.
+ *
+ * Strict mode: the Agent API 400s on any unknown field, so the legacy
+ * return_citations/max_tokens/messages fields must not leak back in.
+ * Keep 1:1 with dryrun/engines.mjs queryPerplexityOnce.
+ */
+type PerplexityAgentResponse = {
+  status?: string;
+  error?: { message?: string } | null;
+  output?: {
+    type: string;
+    results?: { url?: string }[];
+    content?: {
+      type: string;
+      text?: string;
+      annotations?: { type: string; url?: string; url_citation?: { url?: string } }[];
+    }[];
+  }[];
+};
+
+function parsePerplexityAgentOutput(data: PerplexityAgentResponse): { text: string; urls: string[] } {
+  let text = "";
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  const addUrl = (u?: string) => {
+    if (u && !seen.has(u)) { seen.add(u); urls.push(u); }
+  };
+  for (const item of data.output || []) {
+    if (item.type === "search_results") {
+      for (const r of item.results || []) addUrl(r.url);
+    } else if (item.type === "message") {
+      for (const part of item.content || []) {
+        if (part.type !== "output_text") continue;
+        text += part.text || "";
+        for (const a of part.annotations || []) {
+          if (a.type === "url_citation") addUrl(a.url || a.url_citation?.url);
+        }
+      }
+    }
+  }
+  return { text, urls };
+}
+
 async function queryPerplexity(
   keyword: string,
   apiKey: string
@@ -104,18 +166,13 @@ async function queryPerplexity(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "sonar",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are a helpful assistant. When recommending businesses or services, always include specific business names and their websites when available.",
-        },
-        { role: "user", content: keyword },
-      ],
-      return_citations: true,
+      model: "perplexity/sonar",
+      input: keyword,
+      instructions:
+        "You are a helpful assistant. When recommending businesses or services, always include specific business names and their websites when available.",
       temperature: 0.3,
-      max_tokens: 1024,
+      max_output_tokens: 1024,
+      tools: [{ type: "web_search" }],
     }),
   });
 
@@ -125,13 +182,16 @@ async function queryPerplexity(
     return { text: "", urls: [], entities: [] };
   }
 
-  const data = (await resp.json()) as {
-    choices: { message: { content: string } }[];
-    citations?: string[];
-  };
+  const data = (await resp.json()) as PerplexityAgentResponse;
 
-  const text = data.choices?.[0]?.message?.content || "";
-  const urls = data.citations || [];
+  if (data.status === "failed") {
+    // Server-side agent failure on an HTTP 200. Empty return; the
+    // skip-on-empty guards upstream keep it out of citation_runs.
+    console.log(`Perplexity agent failed for "${keyword}": ${data.error?.message || "no error message"}`);
+    return { text: "", urls: [], entities: [] };
+  }
+
+  const { text, urls } = parsePerplexityAgentOutput(data);
 
   // Extract entity names from the response text
   const entities = extractEntitiesFromText(text, urls);
