@@ -34,7 +34,7 @@
  */
 
 import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
@@ -272,6 +272,24 @@ const ALLOW = [
   // 2026-08-22 handoff says to preserve. Allowlisted rather than weakening
   // the rule or editing a dated artifact.
   { path: "content/meeting-evidence/asb-2026-05-18.html", rules: ["retired-seven-tools"] },
+  // Dated, delivered artefacts. A3 brought these into scope. Each names a
+  // then-current SKU or engine classification as a record of what was actually
+  // delivered on that date. Editing them would falsify a delivered document,
+  // so they are declared here rather than rewritten or pattern-narrowed.
+  // retracted-htc-* is allowlisted here on the /retraction/ principle: the file
+  // now carries a banner naming both retracted figures in order to void them,
+  // and a disclaimer has to name what it disclaims.
+  { path: "audits/asb-hawaii-2026-05/audit.html", rules: ["retired-sku", "retracted-htc-perplexity", "retracted-htc-score"] },
+  { path: "audits/bank-of-hawaii/audit.html", rules: ["retired-sku"] },
+  { path: "audits/central-pacific-bank/audit.html", rules: ["retired-sku"] },
+  { path: "audits/drake-real-estate-partners/audit.html", rules: ["retired-sku"] },
+  { path: "audits/emanate-wireless-inc/audit.html", rules: ["retired-sku"] },
+  { path: "audits/first-hawaiian-bank/audit.html", rules: ["retired-sku"] },
+  { path: "audits/mvnp-agency/audit.html", rules: ["retired-sku"] },
+  { path: "audits/ward-village/audit.html", rules: ["retired-sku"] },
+  { path: "content/audits/iq360-muckrack-comparison.html", rules: ["retired-sku", "retired-engagement-card"] },
+  { path: "content/meeting-evidence/asb-2026-05-18.html", rules: ["retired-copilot-as-tool"] },
+  { path: "content/meeting-evidence/mvnp-2026-05-18.html", rules: ["retired-engagement-card"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
@@ -327,6 +345,11 @@ const EXTRA_SOURCES = [join(ROOT, "tools", "schema-check", "src", "index.ts")];
 const EXTRA_DIRS = ["audits", "content", "reports", "linkedin", "social"]
   .map((d) => join(ROOT, d));
 
+// Captured third-party pages (competitor HTML saved as evidence during an
+// audit) are not our copy and must not be graded as our claims. Scanning
+// them made the gate report a competitor's pricing as our retired SKU.
+const isThirdPartyCapture = (f) => f.includes(`${sep}raw${sep}`);
+
 // ── Run ────────────────────────────────────────────────────────────────
 let files;
 try {
@@ -341,8 +364,13 @@ for (const extra of EXTRA_SOURCES) {
 }
 
 for (const dir of EXTRA_DIRS) {
-  if (existsSync(dir)) walk(dir, files);
-  else console.warn(`check-claims: expected source dir not found, skipping ${dir}`);
+  if (existsSync(dir)) {
+    const found = [];
+    walk(dir, found);
+    files.push(...found.filter((f) => !isThirdPartyCapture(f)));
+  } else {
+    console.warn(`check-claims: expected source dir not found, skipping ${dir}`);
+  }
 }
 
 const hits = [];

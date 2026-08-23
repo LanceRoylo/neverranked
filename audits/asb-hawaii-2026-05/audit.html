@@ -295,8 +295,8 @@
     </div>
     <div class="cover-meta-row">
       <div class="cover-meta-cell" style="flex: 1 1 100%;">
-        <strong>Six AI tools tracked</strong>
-        <div class="cover-meta-engines">ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Google AI Overviews &middot; Bing search (control) &middot; Gemma</div>
+        <strong>Six AI tools tracked, plus one control</strong>
+        <div class="cover-meta-engines">Gemma &middot; ChatGPT &middot; Perplexity &middot; Gemini &middot; Claude &middot; Google AI Overviews &middot; control: Bing search</div>
       </div>
     </div>
   </div>
@@ -938,8 +938,8 @@ Start with the Schema Review. The code blocks are pasteable. Then the Technical 
 banking buyers are running on AI engines today. The structural gap
 is not editorial. The site says the right things in the right tone
 on the right pages. What it is missing is the machine-readable layer
-that lets ChatGPT, Perplexity, Claude, Gemini, Bing search (control),
-Google AI Overviews, and Gemma extract those answers and cite them.</p>
+that lets ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews,
+and Gemma extract those answers and cite them.</p>
 <p>In keyword terms, ASB ranks because Google’s blue-link index reads
 the words on the page. ASB does not get cited by AI engines because
 those engines read structured data first, fall back to content
@@ -1114,7 +1114,7 @@ where you are going and which deployments moved you there.</p>
 <strong>Sample date:</strong> 2026-05-08
 <strong>Engine sampled in this audit:</strong> Claude (Anthropic) via direct API
 <strong>Prompt sample:</strong> 8 representative buyer-stage prompts from the Hawaii community banking corpus
-<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all six AI tools (ChatGPT, Perplexity, Claude, Gemini, Bing search (control), Google AI Overviews, and Gemma, Google’s open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.</p>
+<strong>Production scope:</strong> Signal-tier subscription queries the same prompt set across all six AI tools (ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, and Gemma, Google’s open-weight model) on a weekly cadence with statistical attribution. Gemma matters for regulated industries because its weights are public, so a compliance team can independently reproduce the citation numbers.</p>
 <hr />
 <h2 id="the-headline-number">The headline number</h2>
 <p><strong>ASB was cited in 8 of 8 sampled prompts. ASB was the first-cited bank in 1 of 8.</strong></p>
@@ -1314,7 +1314,7 @@ does not appear because ASB has not exposed it via Schema.org.</p>
 <h2 id="what-deploying-schema-does-to-this-picture">What deploying schema does to this picture</h2>
 <p>The schema deployments outlined in section 03 (Schema Review) and
 prioritized in section 07 (Roadmap) directly affect what Claude and
-the other six engines extract when they answer these prompts.</p>
+the other AI tools extract when they answer these prompts.</p>
 <p>Specifically:</p>
 <ul>
 <li><strong><code>FinancialService</code> schema with <code>description</code></strong> gives Claude a
@@ -1354,8 +1354,8 @@ post-deployment with statistical attribution at p&lt;0.05.</p>
 prompts. The production tracking layer that ships with the Signal-
 tier subscription replaces this with:</p>
 <ul>
-<li><strong>Six AI tools</strong> (ChatGPT, Perplexity, Claude, Gemini, Microsoft
-Copilot, Google AI Overviews, and Gemma, Google’s open-weight
+<li><strong>Six AI tools</strong> (ChatGPT, Perplexity, Claude, Gemini,
+Google AI Overviews, and Gemma, Google’s open-weight
 model) on the same prompt set every week. Gemma is the
 reproducibility anchor: its weights are public, so a compliance
 team can re-run the exact same queries and verify our numbers.</li>
@@ -2024,6 +2024,7 @@ pairs from real homepage content. BreadcrumbList across 24
 site sections.</li>
 </ul>
 <h2 id="the-result">The result</h2>
+<div class="notice" style="border-left:3px solid #b04a3a;padding:14px 18px;margin:18px 0"><strong>Retracted, 2026-08-22.</strong> The Hawaii Theatre figures below &mdash; the 45-to-95 AEO score movement and the 14-of-19 Perplexity result &mdash; were retracted. They rested on a causal reading the measurement did not support. They are reproduced here only because this is the archived copy of a delivered document, and may not be quoted as evidence. See <a href="/retraction/">/retraction/</a>.</div>
 <ul>
 <li>AEO score moved from <strong>45 (Grade D) to 95 (Grade A)</strong> in
 ten days.</li>

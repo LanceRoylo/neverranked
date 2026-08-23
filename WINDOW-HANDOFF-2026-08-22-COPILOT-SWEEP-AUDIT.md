@@ -622,7 +622,7 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
 ## TIER 8 — Reports, audits, content, social, missed surfaces
 
 ### claims/index.html — MISSED ENTIRELY (generated file)
-- [ ] Source is claims-registry.mjs (regenerate via
+- [x] Source is claims-registry.mjs (regenerate via
       dryrun/forensic/claims-ledger.mjs; do NOT hand-edit the HTML).
       Publicly indexed. Fix in the registry: "Bing/Copilot own-share" x7
       (:61, :81, :122, :134, :147, :160, :174) -> "Bing organic
@@ -630,75 +630,75 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
       live-web surfaces, incl the Bing control at 0%".
 
 ### linkedin/cover-source.html
-- [ ] :106 [MEANING] banner tagline "AI-native SEO for ChatGPT, Perplexity,
+- [x] :106 [MEANING] banner tagline "AI-native SEO for ChatGPT, Perplexity,
       Claude, Gemini, Bing search (control), Google AI Overviews, and
       Gemma." Drop the control from the positioning line entirely (six AI
       tools). RE-EXPORT the banner image after.
 
 ### reports/state-of-aeo-hawaii-2026/state-of-aeo-hawaii-2026.html
-- [ ] :218-220 [MEANING] "Bing search (control) is integrated into every
+- [x] :218-220 [MEANING] "Bing search (control) is integrated into every
       modern Office deployment ... answers questions inside Word, Excel,
       Outlook, and Teams" — a Copilot sentence now factually false. Delete
       bullet (or replace with a boundary statement about not measuring
       Microsoft's assistants).
-- [ ] :82-86 [MEANING] "the six AI engines that now answer most
+- [x] :82-86 [MEANING] "the six AI engines that now answer most
       informational queries: ChatGPT, Perplexity, Claude, Gemini, Bing
       search (control), and Google AI Overviews" — five AI engines + a
       control as six. -> five names, no control.
-- [ ] :222 [MEANING] "These six AI tools now collectively answer..." —
+- [x] :222 [MEANING] "These six AI tools now collectively answer..." —
       recount after the :218 bullet is removed; do not leave "six" over a
       five-item list.
-- [ ] :113 [WORDING] "before the six AI tools retrain" — Bing does not
+- [x] :113 [WORDING] "before the six AI tools retrain" — Bing does not
       retrain. -> "before the engines refresh their next index and
       training rounds."
 
 ### content/audits/iq360-muckrack-comparison.html (outbound agency pitch)
-- [ ] :183-185 [MEANING] "Six AI tools (ChatGPT, Perplexity, Claude,
+- [x] :183-185 [MEANING] "Six AI tools (ChatGPT, Perplexity, Claude,
       Gemini, Microsoft\nCopilot, Google AI Overviews, and Gemma..." —
       MISSED "Microsoft Copilot" (line break split the string), seven
       under six. Fix list + control clause.
-- [ ] :157-160 [WORDING] "daily seven-engine pulls (..., Bing search
+- [x] :157-160 [WORDING] "daily seven-engine pulls (..., Bing search
       (control), ...)" — nested parens; control called an engine while :73
       and :183 say six AI tools. -> "seven surfaces — six AI tools ... plus
       Bing organic top-5 as a control".
-- [ ] :279-333 dated "May 10 update" section — internally consistent,
+- [x] :279-333 dated "May 10 update" section — internally consistent,
       retrospective. NO CHANGE (optionally one parenthetical noting the
       later reclassification). Do not renumber historical counts.
 
 ### content/meeting-evidence/asb-2026-05-18.html (dated artifact, but math broken)
-- [ ] :107-111 [MEANING] "measures across six AI tools, anchored by Gemma
+- [x] :107-111 [MEANING] "measures across six AI tools, anchored by Gemma
       ... plus the six leading commercial APIs (..., Microsoft\nCopilot,
       ...)" — sweep broke the arithmetic (1+6=6) and "Microsoft Copilot"
       survived. :231 in the same file has the correct historical form
       ("all 7 engines"). Restore 7-surface arithmetic in historical voice.
 
 ### content/meeting-evidence/mvnp-2026-05-18.html (dated artifact)
-- [ ] :222-226 [WORDING] control described as one of six "commercial APIs".
+- [x] :222-226 [WORDING] control described as one of six "commercial APIs".
       -> five commercial AI APIs + Bing organic top-5 as control + Gemma.
       (The two "first-mover" uses at :182/:259 are ALLOWLISTED — leave.)
 
 ### content/strategy/gsc-brand-verification-prep.html
-- [ ] :133 [MEANING] paste-verbatim Google OAuth justification classifies
+- [x] :133 [MEANING] paste-verbatim Google OAuth justification classifies
       the control as an "AI search engine" and then distinguishes it from
       "traditional search" in the same clause. Remove control from the
       enumeration BEFORE this is ever submitted.
 
 ### audits/asb-hawaii-2026-05/audit.html (delivered client audit)
-- [ ] :1357-1358 [MEANING] "Six AI tools (ChatGPT, Perplexity, Claude,
+- [x] :1357-1358 [MEANING] "Six AI tools (ChatGPT, Perplexity, Claude,
       Gemini, Microsoft\nCopilot, Google AI Overviews, and Gemma..." —
       MISSED "Microsoft Copilot" (line-break split), seven under six.
-- [ ] :940-942 [MEANING] "lets ChatGPT, Perplexity, Claude, Gemini, Bing
+- [x] :940-942 [MEANING] "lets ChatGPT, Perplexity, Claude, Gemini, Bing
       search (control), Google AI Overviews, and Gemma extract those
       answers and cite them" — drop control from the list.
-- [ ] :1117 [WORDING] "all six AI tools (..., Bing search (control), ...,
+- [x] :1117 [WORDING] "all six AI tools (..., Bing search (control), ...,
       and Gemma...)" — seven under six, nested parens. Restructure.
-- [ ] :1316-1317 [WORDING] "what Claude and the other six engines extract
+- [x] :1316-1317 [WORDING] "what Claude and the other six engines extract
       when they answer these prompts" -> "Claude and the other AI tools".
-- [ ] :299 [WORDING] cover list order uniquely buries the control mid-list
+- [x] :299 [WORDING] cover list order uniquely buries the control mid-list
       (control sixth, Gemma last). Normalize: Gemma first, control last.
 
 ### Audit/report cover blocks — 15 files, same defect
-- [ ] "Six AI tools tracked" over a seven-item dot list ending "· Bing
+- [x] "Six AI tools tracked" over a seven-item dot list ending "· Bing
       search (control)": all eight audits/*/audit.html (:298-299), the
       four reports/ HTML files (:73-74), iq360-muckrack-comparison (:73-74),
       both content/meeting-evidence files (:73-74). -> "Six AI tools
@@ -707,28 +707,28 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
       delivered PDF — most-reproduced defect in the set.
 
 ### social/posts/2026-05-06-six-engines-broadcast/ (both hero-video files)
-- [ ] :185/:186 [MEANING] eyebrow "Six engines tracked weekly" over a wheel
+- [x] :185/:186 [MEANING] eyebrow "Six engines tracked weekly" over a wheel
       where one spoke is the control and Gemma is absent entirely.
       Preferred fix: swap the spoke to Gemma ("Google · open-weight"),
       rename data-engine="copilot" -> "gemma"; eyebrow "Six AI tools
       tracked weekly" becomes true. If control stays: eyebrow "Seven
       surfaces tracked weekly", sublabel "Bing · classic-search control".
-- [ ] :219-223 [WORDING] sublabel "Bing · web-grounded" is wrong
+- [x] :219-223 [WORDING] sublabel "Bing · web-grounded" is wrong
       terminology for organic results; label "Bing search (control)" is
       ~2.5x sibling label width in Playfair italic, text-anchor=end at
       x=125 — check left-edge overflow at render.
 
 ## Non-copy tasks (no HTML edit accomplishes these)
 
-- [ ] Re-render pitch/asb-hawaii/og.png and
+- [x] Re-render pitch/asb-hawaii/og.png and
       pitch/hamada-financial-group/og.png from corrected og.html (both
       last rendered 2026-05-10; previews still show "Seven Engines").
-- [ ] Re-export the LinkedIn banner from linkedin/cover-source.html after
+- [x] Re-export the LinkedIn banner from linkedin/cover-source.html after
       the :106 fix.
-- [ ] Fix claims-registry.mjs and regenerate claims/index.html.
-- [ ] Rebuild dist/ after all source edits; re-run all seven gates.
+- [x] Fix claims-registry.mjs and regenerate claims/index.html.
+- [x] Rebuild dist/ after all source edits; re-run all seven gates.
       check-claims walks dist only.
-- [ ] Patch check-claims.mjs BEFORE starting the copy fixes (detector
+- [x] Patch check-claims.mjs BEFORE starting the copy fixes (detector
       first). Full patch-ready snippets in the Appendix at the bottom of
       this file. Diagnosis correction from the audit: the regexes were
       never the problem — toText collapses the line-broken
