@@ -221,7 +221,7 @@ const RULES = [
     // the company had one paying client, which is the cheapest it gets.
     id: "retired-copilot-first-mover",
     severity: "block",
-    re: /owns? the Copilot answer|Copilot first-mover|first-mover opening|first-mover opportunity|first-mover advantage/i,
+    re: /owns? the Copilot answer|first-?mover/i,
     why: 'the Copilot first-mover claim. Retired 2026-08-22: it asserts that ranking on Bing organic causes Copilot citation, which we never measured, on a channel that is not Copilot',
   },
 
@@ -238,6 +238,13 @@ const RULES = [
 // effect"). A disclaimer has to name what it disclaims.
 const ALLOW = [
   { path: "retraction/index.html", rules: ["retracted-htc-score", "retracted-htc-perplexity"] },
+  // "first-mover" in its ordinary commercial sense, unrelated to the retired
+  // Copilot claim: vertical-exclusivity terms offered to the first agency to
+  // sign, and a market-window observation about agent readiness. Declared
+  // rather than exempted by a narrower pattern, so a new use has to be
+  // deliberate.
+  { path: "content/meeting-evidence/mvnp-2026-05-18.html", rules: ["retired-copilot-first-mover"] },
+  { path: "reports/state-of-agent-readiness/state-of-agent-readiness-2026-05.html", rules: ["retired-copilot-first-mover"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
