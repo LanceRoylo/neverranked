@@ -22,22 +22,22 @@ boutique hotel.
 
 It is back (or was never fully swept) in two places:
 
-- [ ] teardowns/index.html:118 — "21-bank cohort named in full." ->
+- [x] teardowns/index.html:118 — "21-bank cohort named in full." ->
       "23-domain cohort, anonymized." (also fixes item 3 here)
-- [ ] teardowns/cross-category/index.html:533 — "the Hawaii consumer
+- [x] teardowns/cross-category/index.html:533 — "the Hawaii consumer
       banking cohort is named in full in teardown 01 because that artifact
       already established public naming for the cohort." The whole
       rationale is false; teardown 01 names no bank. -> "every category's
       cohort is anonymized here, banking included, per the rule that
       non-customer businesses appear named only in 1:1 deliverables."
-- [ ] Re-check the full 2026-07-17 propagation list from the cross-category
+- [x] Re-check the full 2026-07-17 propagation list from the cross-category
       head comment for other regressions: /faq/, /results/, /teardowns/,
       /hawaii-bank-aeo/. Grep: `grep -rn "named in full" --include='*.html'
       . --exclude-dir=dist --exclude-dir=node_modules` and judge each hit.
       LEGITIMATE uses to leave alone: "named in full inside paid
       engagements" (index.html:1543 and siblings) — that is the customer
       promise, not the cohort claim.
-- [ ] Gate rule so this cannot regress a third time (this is its second
+- [x] Gate rule so this cannot regress a third time (this is its second
       appearance). Add to scripts/check-claims.mjs RULES:
 
         {

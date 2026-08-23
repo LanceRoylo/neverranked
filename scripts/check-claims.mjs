@@ -246,6 +246,27 @@ const RULES = [
     re: /five web-searching|five live-web|five surfaces that search|five engines that search the live web/i,
     why: 'counts the Bing control as a web-searching AI engine. It is four AI engines plus a control; if the five-surface pooled figure is the subject, label the pool explicitly',
   },
+  {
+    // The banking cohort was NEVER named in full. This exact claim was found
+    // false and corrected 2026-07-17 (see the head comment in
+    // teardowns/cross-category/index.html), then reappeared and was corrected
+    // again 2026-08-22. Anonymity claims are load-bearing: teardown 01
+    // publishes per-bank figures under Bank A/B labels, so a "named in full"
+    // assertion plus any roster collapses the anonymity set.
+    //
+    // Anchored to the COHORT IDENTIFIER (a count or the category) rather than
+    // the bare word "cohort". A dry run of the broader /cohort (?:is )?named
+    // in full/ form matched three legitimate uses -- the paid-engagement
+    // promise on hawaii-bank-aeo:175, the 1:1 deliverable note on the Hawaii
+    // Theatre pitch, and this file's own correction record. Allowlisting
+    // hawaii-bank-aeo would have blinded the gate on the public page most
+    // likely to regress this claim, so the pattern excludes those by shape
+    // instead. "named in full inside paid engagements" never matched.
+    id: "false-cohort-named-in-full",
+    severity: "block",
+    re: /(?:\d+-(?:bank|domain|firm|venue)|banking|consumer banking) cohort (?:is )?named in full/i,
+    why: 'claims a cohort is named in full. Every non-customer cohort is anonymized (teardown 01: "Subject brand and cohort anonymized"); this exact claim was corrected 2026-07-17 and regressed once already',
+  },
 
 ];
 
@@ -290,6 +311,9 @@ const ALLOW = [
   { path: "content/audits/iq360-muckrack-comparison.html", rules: ["retired-sku", "retired-engagement-card"] },
   { path: "content/meeting-evidence/asb-2026-05-18.html", rules: ["retired-copilot-as-tool"] },
   { path: "content/meeting-evidence/mvnp-2026-05-18.html", rules: ["retired-engagement-card"] },
+  // The head comment here quotes the false claim in order to record that it
+  // was found false and corrected. A correction has to name what it corrects.
+  { path: "teardowns/cross-category/index.html", rules: ["false-cohort-named-in-full"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
