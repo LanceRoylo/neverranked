@@ -97,16 +97,16 @@ are real; the drift is unlabeled scope. House formulation:
 The on-page table (teardowns/law-firm-hawaii:124-125) is the authoritative
 source: firm-owned 39%, third-party 58% (n=2,410). Against it:
 
-- [ ] :133 — "law firms now sit below all of them at 35%." If 35% is the
+- [x] :133 — "law firms now sit below all of them at 35%." If 35% is the
       five-surface web pool (the comparison list there — banking 51,
       wealth 47, dental 43, CPA 45 — reads like the web pool), LABEL it
       ("35% on the web-searching pool") so it stops contradicting the
       39% all-surface table two screens up. If it is not reconstructable
       from the runs, use the table's 39%.
-- [ ] :284 — "The 38%/59% firm-own / third-party split" vs table 39/58.
+- [x] :284 — "The 38%/59% firm-own / third-party split" vs table 39/58.
       One of these is a stale draft number. Verify against the run data;
       fix to match.
-- [ ] Top-5 share: 64% at law-firm :21, :24, :86 vs 66% at
+- [x] Top-5 share: 64% at law-firm :21, :24, :86 vs 66% at
       teardowns/index:132. The teardown (three consistent instances, with
       1,549/2,410 shown = 64.3%) wins; fix teardowns/index:132 -> 64%.
       Note :132's "roughly three times the next firm" vs :86 "three times
@@ -120,21 +120,21 @@ CROSS-page cases. For each, determine the scope of each figure from the
 run data before editing (D1 neverranked-app via the dashboard repo's
 emit scripts; the aggregates are not in this repo):
 
-- [ ] Banking own-site: 51% (hawaii-bank-aeo:58 "of mentions") vs 53%
+- [x] Banking own-site: 51% (hawaii-bank-aeo:58 "of mentions") vs 53%
       (comparison tables on hawaii-cpa-aeo:68, hawaii-law-aeo,
       hawaii-wealth-aeo, honolulu-dental-aeo). Likely 7-surface vs
       5-surface. Label both.
-- [ ] Law own-site: 35% (bank page's comparison) vs 39% (its own table) —
+- [x] Law own-site: 35% (bank page's comparison) vs 39% (its own table) —
       resolves with item 4.
-- [ ] Dental 43 vs 44, third-party 45 vs 42 across the same comparison
+- [x] Dental 43 vs 44, third-party 45 vs 42 across the same comparison
       tables.
-- [ ] Hotels: 17% (for-hospitality headline, 7-surface) vs 11%
+- [x] Hotels: 17% (for-hospitality headline, 7-surface) vs 11%
       (for-hvac:318 and cross-category:473, web-searching pool). for-hvac
       :318 now labels ITS OWN 40% but the neighboring "hotels hold 11
       percent / real estate 14" still reads as the same scope as
       hospitality's 17. Add the scope in-line: "hold 11 percent of the
       web-searching citations".
-- [ ] Measurement-count drift: "ten categories" (hawaii-bank-aeo:55),
+- [x] Measurement-count drift: "ten categories" (hawaii-bank-aeo:55),
       "Ten measurements" (for-agencies:73, :174, index.html hero), "Eleven
       hash-locked cohorts spanning nine categories" (for-real-estate:267),
       "eleven categories" (for-real-estate:15), "11 measurements: 9 Hawaii
