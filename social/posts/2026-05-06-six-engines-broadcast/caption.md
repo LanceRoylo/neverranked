@@ -126,3 +126,11 @@ the answers look like right now.
 Built this whole thing because I watched it happen to people I
 care about, and the SEO tools they were paying for could not
 even tell them.
+
+---
+
+Note, 2026-08-23: the rendered mp4/png pairs are the record of what was
+published on 2026-05-06 and are deliberately NOT re-exported. The source
+HTML was corrected on 2026-08-22 (Copilot spoke swapped to Gemma, eyebrow
+to "Six AI tools tracked weekly") so any FUTURE render starts correct.
+Same ruling as the other May posts: dated artifacts stay as history.
