@@ -350,270 +350,270 @@ exist, number mislabeled). [WORDING] = reads broken or machine-edited.
 ## TIER 6 — Vertical landing pages
 
 ### honolulu-dental-aeo/index.html
-- [ ] :51 [MEANING] h1 "The Bing search (control) opening. The insurance
+- [x] :51 [MEANING] h1 "The Bing search (control) opening. The insurance
       directory pattern." Retired "opening" + parenthetical in a headline;
       contradicts body (:148 "gap", :150 control framing). -> "The Bing
       organic gap. The insurance directory pattern."
-- [ ] :16 [MEANING] og:description "The Bing search (control) opening" ->
+- [x] :16 [MEANING] og:description "The Bing search (control) opening" ->
       "The Bing organic gap".
-- [ ] :55 [MEANING] "In our data, Copilot answers track Bing organic
+- [x] :55 [MEANING] "In our data, Copilot answers track Bing organic
       results, so the practices Copilot currently cites..." Delete/rewrite
       to control statement.
-- [ ] :149 [MEANING] "Copilot pulls from third-party content (83%)..." ->
+- [x] :149 [MEANING] "Copilot pulls from third-party content (83%)..." ->
       "The Bing organic top 5 is third-party content (83%)...".
-- [ ] :150 [MEANING] paragraph states control framing then contradicts it:
+- [x] :150 [MEANING] paragraph states control framing then contradicts it:
       "In our data, Copilot answers track Bing organic results..." Delete
       second half (tautology + false attribution).
-- [ ] :165 [MEANING] "the Bing organic results that Copilot answers track"
+- [x] :165 [MEANING] "the Bing organic results that Copilot answers track"
       -> "Bing organic visibility, tracked as a classic-search control".
-- [ ] :13 [WORDING] meta "Bing search (control) cites zero practice
+- [x] :13 [WORDING] meta "Bing search (control) cites zero practice
       websites" -> "Bing organic returns zero practice websites".
 
 ### hawaii-law-aeo/index.html
-- [ ] :56 [MEANING] "the Bing search (control) gap, where in our data
+- [x] :56 [MEANING] "the Bing search (control) gap, where in our data
       Copilot answers track Bing organic results, so firms ranking in Bing
       organic are the ones Copilot currently cites..." -> control + zero
       presence statement.
-- [ ] :150 [MEANING] "Copilot pulls from independent third-party content
+- [x] :150 [MEANING] "Copilot pulls from independent third-party content
       (81%...)" -> Bing organic top 5.
-- [ ] :151 [MEANING] whole paragraph circular once Copilot removed. Rewrite
+- [x] :151 [MEANING] whole paragraph circular once Copilot removed. Rewrite
       as plain control statement + boundary.
-- [ ] :167 [MEANING] "the Bing organic visibility that Copilot citations
+- [x] :167 [MEANING] "the Bing organic visibility that Copilot citations
       track in our data" -> control phrasing.
-- [ ] :170 [MEANING] "(Bing organic visibility, which Copilot citations
+- [x] :170 [MEANING] "(Bing organic visibility, which Copilot citations
       track in our data, and legal-directory presence)" + "two openings"
       vocabulary -> "two closable conditions".
-- [ ] :53 [WORDING] "Bing search (control) (which cites zero firm websites
+- [x] :53 [WORDING] "Bing search (control) (which cites zero firm websites
       cohort-wide)" — stacked parens + control-cites verb. -> "Bing
       organic, our classic-search control, which returns zero firm
       websites cohort-wide".
-- [ ] :166 [WORDING] "four citation-grade engines ... (..., Bing search
+- [x] :166 [WORDING] "four citation-grade engines ... (..., Bing search
       (control)/Bing, ...)" — five under four + "(control)/Bing" garble
       (was "Microsoft Copilot/Bing"). Restructure 4 + control.
-- [ ] :14, :17 [WORDING] meta/og "Bing search (control) cites zero firm
+- [x] :14, :17 [WORDING] meta/og "Bing search (control) cites zero firm
       websites." / "Bing search (control) is the cohort-wide gap." ->
       "Bing organic returns zero firm websites." / "the Bing organic gap".
 
 ### hawaii-bank-aeo/index.html
-- [ ] :58 [MEANING] "The second-highest [leverage AEO work] is in Bing
+- [x] :58 [MEANING] "The second-highest [leverage AEO work] is in Bing
       search (control), where bank-owned sites get cited 0%..." — control
       sold as AEO leverage; contradicts the boundary at :152. Reframe as a
       classic-search gap we report, not an AI-citation finding.
-- [ ] :152 [MEANING+WORDING] "Every Copilot mention went to third-party
+- [x] :152 [MEANING+WORDING] "Every Copilot mention went to third-party
       content..." -> "Every result captured in the control...". And the
       tautology "Whichever bank ranks first in Bing organic search ...
       would be the one classic search surfaces." Delete or replace with
       the zero-presence observation.
-- [ ] :149 [MEANING] "the spread between Bing search (control) (0%
+- [x] :149 [MEANING] "the spread between Bing search (control) (0%
       own-site) and the other web-searching AI tools" — control made an AI
       tool + stacked parens. -> "between the Bing organic control (0%
       own-site) and the web-searching AI tools".
-- [ ] :163 [WORDING] "plus a focused Bing search (control) push (the gap)"
+- [x] :163 [WORDING] "plus a focused Bing search (control) push (the gap)"
       -> "plus a focused Bing organic push".
-- [ ] :16 [WORDING] meta "6 AI tools (ChatGPT, Google AI, Perplexity, Bing
+- [x] :16 [WORDING] meta "6 AI tools (ChatGPT, Google AI, Perplexity, Bing
       search (control), Gemini, Claude, Gemma)" — seven under six. Drop
       control, append "plus Bing organic as a classic-search control".
-- [ ] :19 [WORDING] og "Bing search (control) cites 0%." -> "Bing organic
+- [x] :19 [WORDING] og "Bing search (control) cites 0%." -> "Bing organic
       returns 0%."
 
 ### hawaii-cpa-aeo/index.html
-- [ ] :155 [MEANING] "The Copilot read for Hawaii CPAs: in our data, the
+- [x] :155 [MEANING] "The Copilot read for Hawaii CPAs: in our data, the
       firm ranking first in Bing organic ... is the one Copilot tends to
       surface..." Retired claim + attribution. -> control read + boundary.
-- [ ] :17 [WORDING] meta — same seven-under-six list as bank :16. Same fix.
+- [x] :17 [WORDING] meta — same seven-under-six list as bank :16. Same fix.
 
 ### austin-cpa-aeo/index.html
-- [ ] :152 [WORDING] "Bing search (control)'s universal cohort-wide gap is
+- [x] :152 [WORDING] "Bing search (control)'s universal cohort-wide gap is
       the gap, same as every other category" — "the gap is the gap". ->
       "The Bing organic control sits at 0%, the same universal cohort-wide
       pattern as every other category we have measured."
-- [ ] :64-74 [WORDING] seven-row "Engine" table on a "6 AI tools" page,
+- [x] :64-74 [WORDING] seven-row "Engine" table on a "6 AI tools" page,
       control unmarked. Add note: "Six AI tools plus Bing organic, run as
       a classic-search control."
-- [ ] :58 [WORDING] stray unmatched </p> at end of the notice block. Remove.
+- [x] :58 [WORDING] stray unmatched </p> at end of the notice block. Remove.
 
 ### for-hvac/index.html
-- [ ] :328 [MEANING] h2 "On Copilot, none did." -> "In Bing organic, none
+- [x] :328 [MEANING] h2 "On Copilot, none did." -> "In Bing organic, none
       did."
-- [ ] :348 [MEANING] "Copilot cited an AC company's own site 0 percent ...
+- [x] :348 [MEANING] "Copilot cited an AC company's own site 0 percent ...
       so nobody in the cohort holds that surface today ... sitting there
       unclaimed ... the reason we run all seven." Attribution + first-mover
       pitch + unanchored seven. -> control statement + boundary + "all
       seven surfaces — six AI tools plus the Bing organic control."
-- [ ] :318 [WORDING] "on the five web-searching engines ... 40 percent" —
+- [x] :318 [WORDING] "on the five web-searching engines ... 40 percent" —
       eleven lines above "four that search the live web" (:329). Either
       use the four-engine 47% (already at :297) or label the five-surface
       scope explicitly.
-- [ ] :343 [WORDING] table cell "Bing search (control) (Bing)" — drop the
+- [x] :343 [WORDING] table cell "Bing search (control) (Bing)" — drop the
       dim "(Bing)" span.
 
 ### for-real-estate/index.html
-- [ ] :313 [MEANING] h2 "On Copilot, zero." -> "In Bing organic, zero."
-- [ ] :333 [MEANING] "while ChatGPT search sits at 1 and Copilot at 0" ->
+- [x] :313 [MEANING] h2 "On Copilot, zero." -> "In Bing organic, zero."
+- [x] :333 [MEANING] "while ChatGPT search sits at 1 and Copilot at 0" ->
       "and the Bing organic control at 0".
-- [ ] :287 [MEANING] "across all six AI tools the same cohort reads 15
+- [x] :287 [MEANING] "across all six AI tools the same cohort reads 15
       percent" — 15% is the SEVEN-surface figure (870/5,836); six-tool is
       17.2%. -> "across all seven measured surfaces". (The same line's
       earlier "five web-searching engines (... plus Bing organic as a
       control)" is CORRECT — model wording.)
-- [ ] :299 [MEANING] "Across 5,836 citations and six AI tools ... 77
+- [x] :299 [MEANING] "Across 5,836 citations and six AI tools ... 77
       percent ... Local firms held 15." Both are seven-surface figures. ->
       "seven measured surfaces" framing.
-- [ ] :328 [WORDING] table cell "(Bing)" span — drop.
+- [x] :328 [WORDING] table cell "(Bing)" span — drop.
 
 ### for-hospitality/index.html
-- [ ] :294 [MEANING] "5,775 citations counted across 6 AI tools (5 that
+- [x] :294 [MEANING] "5,775 citations counted across 6 AI tools (5 that
       search the live web, 2 ...)" — 5+2=7, and 5,775 + headline 17% are
       seven-surface figures incl. the control's 810. -> "across 7 measured
       surfaces (6 AI tools — 4 live-web, 2 model-knowledge — plus Bing
       organic control)".
-- [ ] :262 [MEANING] "6 AI tools, 5 citation-grade" -> "7 surfaces: 6 AI
+- [x] :262 [MEANING] "6 AI tools, 5 citation-grade" -> "7 surfaces: 6 AI
       tools (4 citation-grade) + Bing organic control".
-- [ ] :271 [MEANING] "We asked six AI tools ... Five of those surfaces
+- [x] :271 [MEANING] "We asked six AI tools ... Five of those surfaces
       search the live web" — fifth is the control. Restructure 4/2/+1.
-- [ ] :340 [MEANING+WORDING] "On the five surfaces that search the live
+- [x] :340 [MEANING+WORDING] "On the five surfaces that search the live
       web ... between zero and 30 percent" (the zero IS the control) "...
       the reason we run all seven." Split control out of the range; anchor
       the seven.
-- [ ] :335 [WORDING] table cell "(Bing)" span — drop.
+- [x] :335 [WORDING] table cell "(Bing)" span — drop.
 
 ## TIER 7 — Core pages
 
 ### methodology/index.html (fix FIRST in this tier — it is the audit page)
-- [ ] :77 [MEANING] "6 AI tools ... four that search the live web and cite
+- [x] :77 [MEANING] "6 AI tools ... four that search the live web and cite
       sources (ChatGPT, Google AI, Perplexity, Bing search (control),
       Gemini) and two ..." — four/five, six/seven, control "cites
       sources", nested parens. Restructure 4 + 2 + control.
-- [ ] :108-116 [MEANING] "Layer 1: Citation-grade engines (5)" / "Five of
+- [x] :108-116 [MEANING] "Layer 1: Citation-grade engines (5)" / "Five of
       them dominate the surface area today" with the Bing bullet inside.
       Only page left saying five citation-grade. -> "four citation-grade
       AI engines plus one control", Bing bullet under its own Control
       sub-label.
-- [ ] :117 [MEANING] "the API returns the AI-generated answer and the
+- [x] :117 [MEANING] "the API returns the AI-generated answer and the
       source URLs" asserted for all Layer-1 rows incl. Bing. Add: for the
       control we capture organic top-5 result URLs only; no generated
       answer exists.
-- [ ] :179 [WORDING] keep the 810 arithmetic; change label "on the
+- [x] :179 [WORDING] keep the 810 arithmetic; change label "on the
       citation-grade engines" -> "on the live-web surfaces".
-- [ ] :248/:256 OK as written (pooled five with control shown separately —
+- [x] :248/:256 OK as written (pooled five with control shown separately —
       the best substitution result on the site; use as model).
 
 ### results/index.html
-- [ ] :113 [MEANING] "6 AI tools per run. Five are citation-grade ...
+- [x] :113 [MEANING] "6 AI tools per run. Five are citation-grade ...
       (..., Bing search (control)/Bing, ...) and two are model-knowledge"
       — 5+2=7 under six + "(control)/Bing" garble. Restructure 4/2/+1.
 
 ### vs/index.html
-- [ ] :91-94 [MEANING] h2 "Why we measure six AI tools and not nine" /
+- [x] :91-94 [MEANING] h2 "Why we measure six AI tools and not nine" /
       body "We cover seven." / "The four citation-grade engines we cover
       (..., plus Bing organic as a control) ... invisible across those
       five" / ":94 The two we add beyond that" — six/seven/four/five
       tangle. Align on "seven surfaces" heading + 4/2/+1 body.
-- [ ] :93 [MEANING] Bing organic claimed as where "AI search behavior
+- [x] :93 [MEANING] Bing organic claimed as where "AI search behavior
       actually happens" — scope to the four citation-grade engines.
-- [ ] :115 [WORDING] cross-ref quotes a heading title that no longer
+- [x] :115 [WORDING] cross-ref quotes a heading title that no longer
       exists ("Why we measure seven and not nine"). Align with :91 fix.
       (This cell's 4+2+1=7 formulation is the house standard — keep.)
 
 ### example-engagement/index.html
-- [ ] :301 [MEANING] "in our data, the Honolulu med spa ranking first in
+- [x] :301 [MEANING] "in our data, the Honolulu med spa ranking first in
       Bing organic ... is the one Copilot tends to surface ... We name the
       condition." Retired claim + attribution + dangling stub. Rewrite as
       control statement + boundary.
-- [ ] :342-343 [MEANING] Priority 2 heading "Show up in Bing organic,
+- [x] :342-343 [MEANING] Priority 2 heading "Show up in Bing organic,
       where Bing search (control) pulls its answers" (circular) + body
       "Copilot cites med spas' own sites 0% ... the firm ranking first in
       Bing organic is the one Copilot tends to surface". A client
       punch-list priority justified by the retired claim. Retire or
       demote + relabel as control hygiene; renumber priorities.
-- [ ] :86-88 [MEANING] h4 "Engines measured (all 7 from day one)" then
+- [x] :86-88 [MEANING] h4 "Engines measured (all 7 from day one)" then
       "Four citation-grade engines: ... Bing search (control) via Bing,
       ..." — five under four, "via Bing" dangler, 4+2=6 vs "all 7".
       Restructure 4 / control / 2.
-- [ ] :81 [MEANING] "The five web-searching engines cite ... heavily
+- [x] :81 [MEANING] "The five web-searching engines cite ... heavily
       (...four figures...) ... Two engines are category-wide blind spots:
       Claude ... and Bing search (control) 0%." Self-refuting; control
       lumped with Claude as an "engine". -> four cite heavily; Claude is
       the AI blind spot; control at 0% is a Bing statement, not an AI one.
       (:297 says "top four" — align.)
-- [ ] :324 [MEANING] "across six of the six AI tools" — was six of seven;
+- [x] :324 [MEANING] "across six of the six AI tools" — was six of seven;
       contradicts :104 "6 of 7 measured surfaces" and the "Engines (of 7)"
       table. -> "six of the seven measured surfaces".
 
 ### about/index.html
-- [ ] :38 [MEANING] coherent 4+control+2 paragraph ending "We track all
+- [x] :38 [MEANING] coherent 4+control+2 paragraph ending "We track all
       seven across every category we run" with no set of seven
       established. -> "That is seven measured surfaces in total, six AI
       tools plus the control, and we run all seven..." (Keep retraction/
       :86, which shares the first three sentences, worded identically.)
 
 ### your-clicks-are-down/index.html
-- [ ] :61 [MEANING] control inserted into the list of tools "now answering
+- [x] :61 [MEANING] control inserted into the list of tools "now answering
       directly" — inverts the page's thesis (Bing organic is the
       blue-links surface). Remove from list.
-- [ ] :76 [MEANING] "Six AI tools ... in two groups: four citation-grade
+- [x] :76 [MEANING] "Six AI tools ... in two groups: four citation-grade
       ... (..., Bing search (control), ...) and two ..." — five under
       four, 6 vs 7, "two groups" now three. Restructure.
-- [ ] :93 [WORDING] "The Bing search (control) gap." as a teardown hook ->
+- [x] :93 [WORDING] "The Bing search (control) gap." as a teardown hook ->
       "Where directories beat practice websites." (or similar finding-led
       hook).
 
 ### first-30-days/index.html
-- [ ] :90 [WORDING] "six AI tools we measure: ..., plus Bing organic as a
+- [x] :90 [WORDING] "six AI tools we measure: ..., plus Bing organic as a
       control (the four citation-grade engines) plus Claude and Gemma" —
       seven as six, gloss on wrong item, plus...plus. Restructure.
 
 ### dashboard-preview/index.html
-- [ ] :287 [WORDING] tool-grid column "MS Copilot" -> "Bing (control)".
-- [ ] :325 [MEANING] "gained 4 mentions on Bing search (control) ...
+- [x] :287 [WORDING] tool-grid column "MS Copilot" -> "Bing (control)".
+- [x] :325 [MEANING] "gained 4 mentions on Bing search (control) ...
       Previously cited zero times by Copilot ... (Cohort-wide Copilot gap
       may be starting to close.)" — half-renamed; parenthetical treats
       control movement as AI evidence. Rewrite as control-surface
       movement only.
-- [ ] :359-371 [WORDING] column "AI tools" with /7 values -> "Surfaces".
+- [x] :359-371 [WORDING] column "AI tools" with /7 values -> "Surfaces".
 
 ### directories/index.html
-- [ ] :167 [WORDING] h3 "Bing Business Profile (Bing search (control)
+- [x] :167 [WORDING] h3 "Bing Business Profile (Bing search (control)
       lever)" — tautological (was "Microsoft Copilot lever"). ->
       "(control-surface hygiene)".
-- [ ] :172 [MEANING] "Primary AI engine pull: Bing search (control)
+- [x] :172 [MEANING] "Primary AI engine pull: Bing search (control)
       (almost exclusively, since Copilot answers using Bing organic +
       Bing Business data)" — half-replaced + control as AI engine pull.
-- [ ] :173 [MEANING] "The Bing organic and Bing Business gap is unchanged
+- [x] :173 [MEANING] "The Bing organic and Bing Business gap is unchanged
       because most competitors are not present." Non-sequitur where the
       first-mover framing was cut. -> control reading + boundary.
-- [ ] :184 [WORDING] "Bing search (control) surfaces 'open now' facts." ->
+- [x] :184 [WORDING] "Bing search (control) surfaces 'open now' facts." ->
       "Bing".
-- [ ] :110 [WORDING] TOC "The Bing organic gap." vs the :167 heading —
+- [x] :110 [WORDING] TOC "The Bing organic gap." vs the :167 heading —
       align after the :167 fix.
-- [ ] :400 [WORDING] control listed inside "Primary AI engine pull" list.
-- [ ] :167-204 [MEANING] structural: the whole Bing Business Profile
+- [x] :400 [WORDING] control listed inside "Primary AI engine pull" list.
+- [x] :167-204 [MEANING] structural: the whole Bing Business Profile
       playbook is premised on the retired lever. Add a boundary note at
       the top of the card or move it out of the AI-citation playbook set.
 
 ### takedowns/index.html
-- [ ] :45 [MEANING] "cited by AI answer engines (ChatGPT, Perplexity,
+- [x] :45 [MEANING] "cited by AI answer engines (ChatGPT, Perplexity,
       Gemini, Google AI Overviews, Bing search (control), Claude, Gemma)"
       — the legal/notice page classifies the control as an AI answer
       engine. -> six engines "measured alongside Bing organic as a non-AI
       control."
 
 ### schema-library/index.html
-- [ ] :194, :250, :294 [MEANING] per-engine notes carry a Bing row with
+- [x] :194, :250, :294 [MEANING] per-engine notes carry a Bing row with
       schema advice inherited from the Copilot framing (":194 Bing
       Business Profile is the more direct path"). Drop rows or prefix
       "Control surface, listed for completeness."
-- [ ] :98 [WORDING] "six AI tools" over seven enumerated surfaces below.
+- [x] :98 [WORDING] "six AI tools" over seven enumerated surfaces below.
 
 ### atlas-preview/index.html
-- [ ] :312 [MEANING — VERIFY FIRST] "37% across the four citation-grade
+- [x] :312 [MEANING — VERIFY FIRST] "37% across the four citation-grade
       engines" — if 37% was computed across five surfaces incl. the ~0%
       control, the relabel made it wrong (four-engine mean would be
       higher). Check source data; recompute or relabel. Add "The Bing
       control is also excluded from that figure."
 
 ### Low-severity count drift (batch to house formulation)
-- [ ] faq:42, faq:141, terms:44, security:74, pricing:219, pricing:408,
+- [x] faq:42, faq:141, terms:44, security:74, pricing:219, pricing:408,
       example-engagement:76/:102/:374, methodology:479 — "six AI tools"
       where seven surfaces run nearby. Converge on "six AI tools plus a
       Bing organic control — seven measured surfaces" where a 7-row table

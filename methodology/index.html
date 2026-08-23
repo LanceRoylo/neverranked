@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Methodology &middot; NeverRanked</title>
-<meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The six AI tools, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
+<meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The six AI tools plus a Bing organic control &mdash; seven measured surfaces, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
 <link rel="canonical" href="https://neverranked.com/methodology/">
 <style>
   :root {
@@ -74,7 +74,7 @@
     <p>The plain-English version, in five sentences:</p>
     <ul>
       <li>We figure out what your customers are actually asking AI tools in your category, then lock those questions so every run compares apples to apples.</li>
-      <li>We ask 6 AI tools the same questions in repeated runs across three weeks to build the baseline: four that search the live web and cite sources (ChatGPT, Google AI, Perplexity, Bing search (control), Gemini) and two that answer from training data alone (Claude, Gemma).</li>
+      <li>We ask 6 AI tools the same questions in repeated runs across three weeks to build the baseline: four that search the live web and cite sources (ChatGPT, Google AI, Perplexity, Gemini) and two that answer from training data alone (Claude, Gemma). Alongside them we run Bing organic as a classic-search control, for seven measured surfaces in total.</li>
       <li>We record who AI mentions for each question, who it doesn&rsquo;t, and where in the answer each name shows up.</li>
       <li>We hand you a clear list of what to fix, prioritized by what your competitors are observably doing differently.</li>
       <li>Then we keep measuring continuously, because AI answers shift constantly and a one-time audit ages out within a quarter.</li>
@@ -105,16 +105,19 @@
     <p>AI answer engines fall into two structurally different groups, and both groups can fail a brand independently. We measure both, in repeated runs, for every category we run.</p>
 
     <div class="layer">
-      <h3>Layer 1: Citation-grade engines (5)</h3>
-      <p>Engines that search the live web at query time and surface the sources they cite. Five of them dominate the surface area today:</p>
+      <h3>Layer 1: Citation-grade engines (4), plus one control</h3>
+      <p>Engines that search the live web at query time and surface the sources they cite. Four of them dominate the surface area today:</p>
       <ul>
         <li><strong>Perplexity</strong>, accessed via its API.</li>
         <li><strong>ChatGPT search</strong>, accessed via OpenAI's search-grade API.</li>
         <li><strong>Gemini grounded</strong>, accessed via the Gemini API with web grounding enabled.</li>
-        <li><strong>Bing search (control)</strong>, accessed via Bing's organic results through a search-data provider.</li>
         <li><strong>Google AI Overviews</strong>, accessed via a search-data provider's AI Overview feed.</li>
       </ul>
-      <p>For each query, on each engine, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer.</p>
+      <p><strong>Control (1).</strong> Not an AI answer engine:</p>
+      <ul>
+        <li><strong>Bing organic</strong>, top-5 results, accessed through a search-data provider. Classic keyword search, run as a control.</li>
+      </ul>
+      <p>For each query, on each of the four engines, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer. For the control there is no generated answer: we capture the organic top-5 result URLs only.</p>
     </div>
 
     <div class="layer">
@@ -176,7 +179,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 
     <h2 id="noise">Noise control</h2>
     <p>AI engines produce different answers to the same query on different runs, so we treat repetition as the signal test. In a measurement run, where a query is sampled three times per engine, a citation in one of three reps is a single-shot, two of three is a moderate signal, and all three is the strongest signal we report. The standing daily measurement applies the same logic across days. Aggregate frequencies over the baseline month are what the punch list is built against.</p>
-    <p>The mechanism: the measurement runs the full question set in repeated complete passes through the month, and that cadence continues past the baseline month. Across the baseline month, that is 18 × 3 × 5 × 3 = 810 citation captures per engagement on the citation-grade engines, plus the model-knowledge captures.</p>
+    <p>The mechanism: the measurement runs the full question set in repeated complete passes through the month, and that cadence continues past the baseline month. Across the baseline month, that is 18 × 3 × 5 × 3 = 810 citation captures per engagement on the live-web surfaces, plus the model-knowledge captures.</p>
 
     <h2 id="classifier">Source-type classifier</h2>
     <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier logic is documented here as part of the method. The buckets:</p>

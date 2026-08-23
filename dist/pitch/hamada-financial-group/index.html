@@ -43,6 +43,9 @@
   li { margin-bottom: 8px; }
   strong { color: #e8e8ea; font-weight: 600; }
   table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  /* Bing organic is a classic-search control, not an AI tool. Ruled off so the
+     table cannot be read as seven AI tools. */
+  .control-row td { border-top: 2px solid #3a3a40; color: #8f8f96; font-style: italic; }
   th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #4a4740; vertical-align: top; }
   td { padding: 10px 14px 10px 0; border-bottom: 1px solid #211e18; vertical-align: top; font-variant-numeric: tabular-nums; }
   td.num { text-align: right; padding-right: 24px; }
@@ -89,7 +92,7 @@
     </div>
 
     <h2>1. The headline finding</h2>
-    <p>We asked all 6 AI tools the kinds of questions a Hawaii wealth-management buyer would actually ask. Things like "best wealth manager in Hawaii," "fiduciary financial advisor Honolulu," "Hawaii wealth manager for business owner," and 15 similar. We ran each question across ChatGPT, Perplexity, Gemini, Bing search (control), Google AI Overviews, Claude, and Gemma.</p>
+    <p>We asked all 6 AI tools the kinds of questions a Hawaii wealth-management buyer would actually ask. Things like "best wealth manager in Hawaii," "fiduciary financial advisor Honolulu," "Hawaii wealth manager for business owner," and 15 similar. We ran each question across ChatGPT, Perplexity, Gemini, Google AI Overviews, Claude, and Gemma, plus Bing organic search as a control.</p>
     <p>Across that full 18-question set, Hamada Financial Group appears in <strong>8 mentions</strong>.</p>
     <p><strong>7 of those 8 mentions</strong> came from a single question: <em>"Hamada Financial vs Cadinha vs CKW."</em> That was the only question in the set that named Hamada by name.</p>
     <p><strong>On the other 17 questions,</strong> the ones where a buyer is searching for a Hawaii wealth manager without knowing your name yet, Hamada was not mentioned by any AI tool.</p>
@@ -98,13 +101,13 @@
     <h2>2. How each AI tool treated Hamada</h2>
     <p>The same 18 questions, broken out by which AI tool mentioned Hamada at all:</p>
     <table>
-      <thead><tr><th>AI tool</th><th class="num">Mentions</th><th>Notes</th></tr></thead>
+      <thead><tr><th>Surface</th><th class="num">Mentions</th><th>Notes</th></tr></thead>
       <tbody>
         <tr><td>Perplexity</td><td class="num">3</td><td>Only the named-comparison question</td></tr>
         <tr><td>Google AI Overviews</td><td class="num">3</td><td>Only the named-comparison question</td></tr>
         <tr><td>Gemini grounded</td><td class="num">2</td><td>Only the named-comparison question</td></tr>
         <tr><td>ChatGPT search</td><td class="num">0</td><td>Not mentioned on any question</td></tr>
-        <tr><td>Bing search (control)</td><td class="num">0</td><td>Not mentioned. This is true for every Hawaii wealth firm in our data (see Section 4).</td></tr>
+        <tr class="control-row"><td>Bing organic (control)</td><td class="num">0</td><td>Not returned in the top 5. This is true for every Hawaii wealth firm in our data (see Section 4).</td></tr>
         <tr><td>Claude</td><td class="num">0</td><td>Not in its training data</td></tr>
         <tr><td>Gemma</td><td class="num">0</td><td>Not in its training data</td></tr>
       </tbody>
@@ -118,7 +121,7 @@
           <th>Firm</th>
           <th class="num">Mentions</th>
           <th>Where in the answer</th>
-          <th class="num">AI tools</th>
+          <th class="num">Surfaces (of 7)</th>
         </tr>
       </thead>
       <tbody>
@@ -173,7 +176,7 @@
     <p>The pattern: when AI mentions Hamada at all, it is neutral, descriptive, and shows up early in the answer. Hamada&rsquo;s AI footprint is small but accurately described where it exists. The work to do is about volume, not fixing the way you are described.</p>
 
     <h2>6. What &ldquo;better&rdquo; looks like, observably</h2>
-    <p>NeverRanked does not promise that AI will start mentioning you more. We measure. But the data above tells you what the firms AI cites consistently are doing differently, and what would have to change for Hamada to share those conditions. Three concrete paths.</p>
+    <p>NeverRanked does not promise that AI will start mentioning you more. We measure. But the data above tells you what the firms AI cites consistently are doing differently, and what would have to change for Hamada to share those conditions. Two concrete paths.</p>
 
     <h3>Path 1. Show up on the open-ended questions</h3>
     <p><strong>Today:</strong> Hamada is mentioned on 0 of the 17 open-ended questions. <strong>What &ldquo;better&rdquo; looks like:</strong> Hamada is mentioned on 5 to 10 of those 17 within the next 60 to 90 days of consistent editorial work.</p>
@@ -195,17 +198,6 @@
       <li>Sustained named-founder content (op-eds, contributed articles, conference talks transcribed to web). The AI training-data layer compounds slowly. This is a 6 to 12 month signal, not a 30-day one.</li>
     </ul>
     <p><strong>What the engagement measures:</strong> Claude and Gemma mention count for Hamada quarter-over-quarter. This is the slowest signal but the most defensible once it forms.</p>
-
-    <h3>Path 3. Show up in Bing search (control) (the gap everyone has)</h3>
-    <p><strong>Today:</strong> Bing search (control) mentions zero Hawaii wealth-management firms in the data. Every firm in this category is invisible there. What the measurement shows: whichever firm shows up first in Bing search results for these questions would be the one classic search surfaces. Whether that changes what any AI answer engine cites is not something this measurement tested.</p>
-    <p><strong>What &ldquo;better&rdquo; looks like:</strong> Hamada appears in Bing search (control) for 3 to 5 of the 17 open-ended questions within 90 days, ahead of any other Hawaii wealth manager.</p>
-    <p><strong>What that requires:</strong></p>
-    <ul>
-      <li>Bing organic search visibility for the named questions. The current Bing top 5 for these questions is dominated by national publications (SmartAsset, Investopedia, Forbes), not Hawaii-specific firm content.</li>
-      <li>Hamada-authored or Hamada-cited content on those national publications, indexed by Bing, ranked in the top 5 for at least the most common questions.</li>
-      <li>What the measurement shows: this gap is open for every Hawaii wealth manager. Whether closing it changes what any AI answer engine cites is not something this measurement tested.</li>
-    </ul>
-    <p><strong>What the engagement measures:</strong> Hamada appearances on Bing search (control) per measurement window, broken out by question. We also catch the moment Bing starts ranking a Hamada-relevant URL in the top 5.</p>
 
     <div class="callout">
       <h3>The honest framing</h3>
