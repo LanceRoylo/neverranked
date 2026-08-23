@@ -148,15 +148,15 @@ emit scripts; the aggregates are not in this repo):
 
 ## 6. Small and mechanical
 
-- [ ] pitch/hawaii-theatre-center — brand-check denominators: :125 "both
+- [x] pitch/hawaii-theatre-center — brand-check denominators: :125 "both
       brand queries" (2 x 3 runs = 6 responses per engine) vs "all
       eighteen brand responses" and "fourteen of eighteen" nearby.
       Reconcile: 18 = 6 responses x 3 engines? State the arithmetic the
       way it was actually counted.
-- [ ] pricing/index.html:323-366 — section#worth closes without closing
+- [x] pricing/index.html:323-366 — section#worth closes without closing
       the .roi-out / .roi-wrap divs opened at :326 and :348. Balance the
       tags; verify layout in the browser after.
-- [ ] Four May social-post sources still carry "Copilot" in their engine
+- [x] Four May social-post sources still carry "Copilot" in their engine
       strips (social/posts/2026-05-11-43-vs-91-company,
       2026-05-11-aeo-score-confession, 2026-05-12-hawaii-theatre-45-to-95,
       2026-05-13-aeo-not-seo-carousel). DECISION MADE: dated artifacts of
