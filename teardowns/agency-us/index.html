@@ -25,10 +25,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 11: the first category that is not a local service, and the pattern held</title>
-<meta name="description" content="23 national marketing agencies measured across 6 AI tools, 18 hash-locked questions, 3 usable runs, 8,833 citations. A Copilot range derived entirely from local service businesses predicted a national B2B category months later.">
+<meta name="description" content="23 national marketing agencies measured across 6 AI tools plus a Bing organic control, 18 hash-locked questions, 3 usable runs, 8,833 citations. The control&rsquo;s own-site share, corrected to 5% on 22 August 2026.">
 <link rel="canonical" href="https://neverranked.com/teardowns/agency-us/">
 <meta property="og:title" content="Teardown 11: the first category that is not a local service, and the pattern held">
-<meta property="og:description" content="23 national agencies, 6 AI tools, 8,833 citations. Copilot came in at 5%, above a range derived from ten local service categories and corrected on 22 August 2026.">
+<meta property="og:description" content="23 national agencies, 6 AI tools plus a Bing organic control, 8,833 citations. The control came in at 5%, corrected on 22 August 2026. The cross-category comparison is pending re-measurement.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -91,14 +91,14 @@
 
 <div class="correction" style="border:1px solid #d8c9a8;background:#fbf7ee;padding:16px 18px;margin:18px 0;border-radius:6px">
 <p style="margin:0 0 10px"><strong>Correction, 22 August 2026.</strong> The Bing search (control) figure on this page was 2%. It is 5%. We found this in internal review and are recording it here rather than quietly changing the number.</p>
-<p style="margin:0 0 10px">Copilot is measured through a stated proxy: Bing's top five organic results plus any answer box, on the reasoning that Copilot answers from Bing's index. Those results include matches on single words from the question. For "best marketing agency", Bing returns a dictionary definition of the word "best", and those URLs were counted in the denominator. Removing dictionary and retailer matches leaves 395 citations in that channel rather than 782. The 18 agency own-site citations are unchanged, so the rate moves from 2% to 5%.</p>
+<p style="margin:0 0 10px">The control channel is Bing's top five organic results plus any answer box. Those results include matches on single words from the question. For "best marketing agency", Bing returns a dictionary definition of the word "best", and those URLs were counted in the denominator. Removing dictionary and retailer matches leaves 395 citations in that channel rather than 782. The 18 agency own-site citations are unchanged, so the rate moves from 2% to 5%.</p>
 <p style="margin:0 0 10px">The correction raises the figure. The original understated how often agencies are cited, which is the direction that flattered our own argument, and that is the reason to be explicit about it.</p>
 <p style="margin:0">The ten earlier teardowns used the same proxy. Where they reported 0% the figure is unchanged, because a cleaner denominator cannot change a count of zero. Three reported non-zero figures: law at 1%, CPA at 2%, and a Nashville CPA control at 1%. Those would rise, and the underlying runs are no longer retained, so they should be read as lower bounds until re-measured. The filter used here is deliberately conservative, removing only dictionary sites and one retailer, so the corrected 5% is itself a lower bound.</p>
-<p style="margin:10px 0 0">The same 387 URLs sit inside the 8,833 total and the source-type distribution below. They are 4% of the total, so the cohort-wide shares move by less than a point and are left as published. Only the Copilot channel, where they are half the denominator, changes materially.</p>
+<p style="margin:10px 0 0">The same 387 URLs sit inside the 8,833 total and the source-type distribution below. They are 4% of the total, so the cohort-wide shares move by less than a point and are left as published. Only the Bing organic control channel, where they are half the denominator, changes materially.</p>
 </div>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Bing search (control) cited businesses&rsquo; own websites between 0% and 2% of the time, as measured before the correction noted above. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>5%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
+      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Bing organic returned businesses&rsquo; own websites between 0% and 2% of the time, as measured before the correction noted above. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Bing organic returned agency websites <strong>5%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -125,7 +125,7 @@
     <ul>
       <li><strong>Cohort:</strong> 23 national marketing and SEO agency domains, surfaced from the citations of a discovery run and hard-audited to exclude directories, ranking sites, and SaaS vendors.</li>
       <li><strong>Questions:</strong> 18, locked by hash <code>8732c92d</code>, written as the questions a business owner actually asks when looking for an agency rather than as brand queries.</li>
-      <li><strong>Tools:</strong> 7. Four that search the live web (Perplexity, ChatGPT search, Gemini grounded, Bing search (control), Google AI Overviews) and two that answer from training data (Claude, Gemma).</li>
+      <li><strong>Surfaces:</strong> 7. Four that search the live web (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews), two that answer from training data (Claude, Gemma), and Bing organic as a classic-search control.</li>
       <li><strong>Repetition:</strong> 3 reps per question per tool per run, 378 calls per run.</li>
       <li><strong>Runs:</strong> 3 usable, on 2026-08-05 and 2026-08-06. A fourth run was fired and excluded because it completed only 46 to 47 of 54 calls per engine. Partial runs are not small complete runs, because engines fail unevenly and the missing calls concentrate.</li>
       <li><strong>Geography:</strong> none. The question set is deliberately geo-free, which is what makes the result comparable across the 127 markets the cohort spans.</li>
@@ -163,8 +163,8 @@
         <tr><td class="us">Gemini grounded</td><td class="num"><strong>16%</strong></td><td class="num">81%</td><td class="num">1,717</td></tr>
         <tr><td class="us">Perplexity</td><td class="num"><strong>14%</strong></td><td class="num">68%</td><td class="num">3,184</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>9%</strong></td><td class="num">63%</td><td class="num">975</td></tr>
+        <tr><td class="us">Bing organic (control)</td><td class="num"><strong>5%</strong></td><td class="num">87%</td><td class="num">395 (corrected)</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>3%</strong></td><td class="num">97%</td><td class="num">569</td></tr>
-        <tr><td class="us">Bing search (control)</td><td class="num"><strong>5%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>1%</strong></td><td class="num">98%</td><td class="num">1,117</td></tr>
       </tbody>
     </table>
@@ -173,12 +173,12 @@
 
     <h2 id="the-prediction">The prediction that held</h2>
     <div class="callout">
-      <h3>Copilot, ten Hawaii categories, then one national B2B category</h3>
-      <p>The cross-category teardown states that Bing search (control) cites businesses&rsquo; own websites &ldquo;0% to 2% of the time in every measurement.&rdquo; That range was derived entirely from local service businesses: banking 0%, wealth management 0%, dental 0%, med spas 0%, HVAC 0%, real estate 0%, law 1%, CPA 2%, plus Austin CPA at 0% and a Nashville CPA control at 1%.</p>
-      <p>National marketing agencies, measured months later, in a different country-wide market, in a business category rather than a consumer one, came in at <strong>2%</strong>.</p>
+      <h3>The Bing organic control, ten local-service categories, then one national B2B category</h3>
+      <p>The cross-category teardown states that Bing organic returns businesses&rsquo; own websites &ldquo;0% to 2% of the time in every measurement.&rdquo; That range was derived entirely from local service businesses: banking 0%, wealth management 0%, dental 0%, med spas 0%, HVAC 0%, real estate 0%, law 1%, CPA 2%, plus Austin CPA at 0% and a Nashville CPA control at 1%.</p>
+      <p>National marketing agencies, measured months later, in a different country-wide market, in a business category rather than a consumer one, came in at <strong>5%</strong> on the corrected denominator.</p>
     </div>
-    <p>A published range predicting an out-of-sample category is worth more than any single number in this teardown. It is the difference between a collection of observations and something that generalizes.</p>
-    <p>It also carries a practical consequence. Copilot points at almost nobody&rsquo;s own website in any category we have measured, which means the slot is decided by whatever ranks first in Bing organic rather than by anything on the business&rsquo;s own site.</p>
+    <p>Whether the published range holds for an out-of-sample category is the question this teardown was run to test. It cannot be answered from these figures: the band was computed on the uncorrected denominator and those runs are not retained, so the comparison is pending re-measurement. See the correction above.</p>
+    <p>It also carries a practical consequence. Bing&rsquo;s organic results point at almost nobody&rsquo;s own website in any category we have measured, so the condition is Bing organic visibility rather than anything on the business&rsquo;s own site. Whether changing that condition changes what any AI answer engine cites is not something this measurement tested.</p>
 
     <h2 id="residual-bucket">What &ldquo;independent web&rdquo; is, and what it is not</h2>
     <p>This section exists because we got it wrong internally before publishing, and the correction is more useful than pretending we did not.</p>
@@ -220,7 +220,7 @@
     <h2 id="does-not-prove">What this teardown does and does not prove</h2>
     <p>What it supports:</p>
     <ul>
-      <li>Copilot cites agency websites rarely: 18 own-site citations out of 395 clean Copilot citations in a national B2B category. Whether that sits inside the 0% to 2% band derived from local service businesses can no longer be stated, because that band was computed on the uncorrected denominator and those runs are not retained. The cross-category comparison is pending re-measurement. See the correction above.</li>
+      <li>Bing organic returns agency websites rarely: 18 own-site results out of 395 clean control results in a national B2B category. Whether that sits inside the 0% to 2% band derived from local service businesses can no longer be stated, because that band was computed on the uncorrected denominator and those runs are not retained. The cross-category comparison is pending re-measurement. See the correction above.</li>
       <li>Agency-owned websites take 12% of citations in their own category, against 15% for local firms in Honolulu real estate. The categories behave alike.</li>
       <li>The category is fragmented. The most-cited agency holds 1% of all citations, and no agency appears on more than 12 of 18 questions.</li>
       <li>The per-tool spread runs from 1% to 39% on identical questions in the same week, consistent across all 3 runs.</li>
