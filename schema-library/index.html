@@ -95,7 +95,7 @@
     </div>
 
     <div class="notice" style="border-left-color: #8a8a90;">
-      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across the categories we have measured and seven AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
+      <strong style="color: #8a8a90;">What is measured vs what is inferred.</strong> The schema blocks themselves are deployable as-is and validate against schema.org. The <em>per-engine notes</em> (e.g., "ChatGPT search quotes <code>acceptedAnswer.text</code> verbatim") are inferred from a combination of: (a) NeverRanked's measurement observations across the categories we have measured and six AI tools, (b) public documentation from each engine, and (c) generally-accepted AEO best-practice. They are not direct A/B-tested findings on the specific schema property. Treat per-engine notes as informed prior, not as published fact. If a note conflicts with what you observe in your own measurement, your measurement wins.
     </div>
 
     <div class="notice" style="border-left-color: #8a8a90;">
@@ -191,7 +191,7 @@
       <strong>ChatGPT search / Gemini grounded:</strong> read all properties. <code>name</code>, <code>address</code>, and <code>sameAs</code> drive the highest weight.<br>
       <strong>Perplexity:</strong> heavily uses <code>address</code> and <code>openingHoursSpecification</code> for local intent queries.<br>
       <strong>Google AI Overviews:</strong> prefers <code>geo</code> + <code>address</code> together, and cross-references with Google Business Profile.<br>
-      <strong>Microsoft Copilot (Bing):</strong> currently weak at extracting LocalBusiness schema. Bing Business Profile is the more direct path.<br>
+      <strong>Bing search (control):</strong> currently weak at extracting LocalBusiness schema. Bing Business Profile is the more direct path.<br>
       <strong>Claude / Gemma (training data):</strong> don't read live schema. LocalBusiness presence here matters only for future training data refreshes (months to years).
     </div>
 
@@ -247,7 +247,7 @@
       <strong>ChatGPT search:</strong> quotes <code>description</code> field verbatim more than any other engine. Write it as a self-contained answer.<br>
       <strong>Perplexity / Gemini grounded:</strong> use <code>serviceType</code> + <code>areaServed</code> as a combined ranking signal for long-tail queries.<br>
       <strong>Google AI Overviews:</strong> reads <code>offers</code> for budget queries. Missing pricing drops you from "best for the money" answer sets.<br>
-      <strong>Microsoft Copilot:</strong> reads Service schema lightly and relies more on body text patterns.
+      <strong>Bing search (control):</strong> reads Service schema lightly and relies more on body text patterns.
     </div>
 
     <h2 id="faqpage">FAQPage</h2>
@@ -291,7 +291,7 @@
       <strong>ChatGPT search:</strong> quotes <code>acceptedAnswer.text</code> directly in answers. This is the single highest-leverage schema for ChatGPT citation.<br>
       <strong>Perplexity:</strong> reads FAQPage but weights it lower than independent third-party content.<br>
       <strong>Google AI Overviews:</strong> heavily rewards FAQ schema and can surface individual Q&amp;A pairs as standalone answers.<br>
-      <strong>Microsoft Copilot:</strong> reads visible Q&amp;A patterns from body text more than the schema itself.<br>
+      <strong>Bing search (control):</strong> reads visible Q&amp;A patterns from body text more than the schema itself.<br>
       <strong>Claude / Gemma:</strong> training-data only. FAQ schema matters only for future training refresh.
     </div>
 

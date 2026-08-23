@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  Wealth-mgmt-Hawaii teardown 05. 7-AI-tool measurement on
+  Wealth-mgmt-Hawaii teardown 05. 6-AI-tool measurement on
   Hawaii wealth-management firms. 42-firm cohort, 18 hash-locked
   questions, 3 reps per question per run, 3 usable runs spanning
   2026-05-23 to 2026-05-25 (pattern-readiness cleared per
@@ -17,8 +17,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 05: What 7-AI-tool measurement reveals about Hawaii wealth management</title>
-<meta name="description" content="42 Hawaii wealth-management firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. AI routes wealth-management buyers through lead-gen middlemen before sending them to the firms themselves. Microsoft Copilot cites zero firm websites cohort-wide.">
+<title>Teardown 05: What 6-AI-tool measurement reveals about Hawaii wealth management</title>
+<meta name="description" content="42 Hawaii wealth-management firms measured across 6 AI tools, 18 hash-locked questions, 3 usable runs. AI routes wealth-management buyers through lead-gen middlemen before sending them to the firms themselves. Bing search (control) cites zero firm websites cohort-wide.">
 <link rel="canonical" href="https://neverranked.com/teardowns/wealth-mgmt-hawaii/">
 <meta property="og:title" content="Teardown 05: Hawaii wealth management in the AI-citation data">
 <meta property="og:description" content="42-firm cohort. AI routes buyers through lead-gen middlemen (SmartAsset, getwarmer) more than the firms themselves. The structural finding for the category.">
@@ -83,7 +83,7 @@
     <p class="sub">42-firm cohort, 18 hash-locked questions, 3 usable runs across 2026-05-23 to 2026-05-25. Pattern-readiness cleared. Individual firms anonymized. Counts, distributions, and named third-party platforms named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 42 Hawaii wealth-management firms and 7 AI tools, the top two non-firm sources AI cites are lead-gen platforms (SmartAsset and getwarmer.com, 432 mentions combined) rather than any individual firm. AI is structurally routing wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. For any Hawaii wealth firm, that platform layer is a measurable AEO surface most firms likely do not actively manage.
+      <strong>The headline finding in one sentence:</strong> across 42 Hawaii wealth-management firms and 6 AI tools, the top two non-firm sources AI cites are lead-gen platforms (SmartAsset and getwarmer.com, 432 mentions combined) rather than any individual firm. AI is structurally routing wealth-management buyers through matchmaker middlemen before sending them to the firms themselves. For any Hawaii wealth firm, that platform layer is a measurable AEO surface most firms likely do not actively manage.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -104,9 +104,9 @@
     <p>Hawaii wealth management is the relationship-end category in our cross-category teardown. A buyer choosing a wealth manager makes a high-trust, long-horizon decision based on the firm's principals, philosophy, and fit with the buyer's specific scenario (business owner, physician, inherited wealth, etc.). The category's AI-citation surface reflects that: a firm-owned share (47%) just below its third-party share (49%), less firm-dominated than commodity categories like banking. The third-party surface is where the closable competitive ground sits.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Hawaii wealth-management buyer would actually ask AI, locked at hash <code>ae13579a...</code> so every run compares apples to apples. The actual locked set is published at <a href="/methodology/#query-set">/methodology/#query-set</a> for review. 3 repetitions per question per AI tool. 3 usable runs spanning 2026-05-23 to 2026-05-25. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
@@ -114,7 +114,7 @@
     <p>Full methodology, the hash-locked question set, and the dated runs on the claims ledger are at <a href="/methodology/">/methodology/</a> and <a href="/claims/">/claims/</a>.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 42 firms and all 7 AI tools, AI pulled answers from these source types:</p>
+    <p>Across all 42 firms and all 6 AI tools, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -149,7 +149,7 @@
     </table>
     </div>
     <p>The structural finding is in the top two rows. SmartAsset (211 mentions) and getwarmer.com (221 mentions) are both lead-gen platforms whose business model is collecting buyer information and routing it to wealth advisors who pay for placement. Combined, they account for 432 of the 3,029 third-party mentions (14% of all non-firm citations). AI is using these platforms as primary sources when answering wealth-management questions for Hawaii.</p>
-    <p>For a wealth-management firm, this is a real structural fact about the category. If your firm is not represented on SmartAsset and getwarmer.com, you are missing a meaningful share of the AI-citation surface, even before considering Microsoft Copilot or any of the per-firm dynamics. This is also a different shape of surface than the categories below: dental does not have a SmartAsset equivalent. Banking does not have a getwarmer.com. Wealth has both because the lead-gen advisor-matchmaker model is a real economic layer in this vertical.</p>
+    <p>For a wealth-management firm, this is a real structural fact about the category. If your firm is not represented on SmartAsset and getwarmer.com, you are missing a meaningful share of the AI-citation surface, even before considering Bing search (control) or any of the per-firm dynamics. This is also a different shape of surface than the categories below: dental does not have a SmartAsset equivalent. Banking does not have a getwarmer.com. Wealth has both because the lead-gen advisor-matchmaker model is a real economic layer in this vertical.</p>
 
     <h2 id="per-ai-tool-breakdown-the-cohort-wide-copilot-gap">Per-AI-tool breakdown, the cohort-wide Copilot gap</h2>
     <div class="table-wrap">
@@ -164,7 +164,7 @@
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>55%</strong></td><td class="num">44%</td><td class="num">745</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>51%</strong></td><td class="num">45%</td><td class="num">811</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>38%</strong></td><td class="num">62%</td><td class="num">646</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">85%</td><td class="num">787</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">85%</td><td class="num">787</td></tr>
       </tbody>
     </table>
     </div>
@@ -250,16 +250,16 @@
       io.observe(mount);
     })();
     </script>
-    <p>Two rows worth flagging. Microsoft Copilot cites zero firm-owned websites across 787 mentions, the same cohort-wide gap we documented for dental and law. Whichever Hawaii wealth firm ranks first in Bing organic results for the buyer questions effectively owns the Copilot answer while every competitor is invisible there.</p>
+    <p>Two rows worth flagging. Bing search (control) cites zero firm-owned websites across 787 mentions, the same cohort-wide gap we documented for dental and law. Whichever Hawaii wealth firm ranks first in Bing organic results for the buyer questions would be the one classic search surfaces. Whether that changes what any AI answer engine cites is not something this measurement tested.</p>
     <p>The Claude row is worth a closer look. Claude answers from training data and cites firm-owned wealth websites 38% of the time, with the other 62% pulling from third-party content. That is moderate training-data presence: above dental (Claude 34%) and below law firms (Claude 51%, where named-partner editorial content runs deep). For a wealth firm asking "does Claude know my brand," the answer is "Claude names specific firms a fair amount, but still reaches for third-party context more often than not." Hawaii wealth firms sit mid-pack among the relationship-business cohorts in Claude's training data, not at the bottom.</p>
 
     <div class="callout">
       <h3>What this means for an individual firm</h3>
-      <p>If you are a Hawaii wealth firm: roughly half of the AI-citation surface for your category is off your own site. Within that off-site share, the largest single block lives on two lead-gen platforms (SmartAsset, getwarmer.com) that most firms probably do not actively manage. The rest is fragmented across category-specific publications, Wikipedia entries for named principals, and Google self-references. The Microsoft Copilot opening is open for every firm in the cohort simultaneously, gated on Bing organic visibility. Claude's training-data layer for Hawaii wealth is moderate, above dental and below law. It is not the bottleneck the lead-gen and Copilot gaps are.</p>
+      <p>If you are a Hawaii wealth firm: roughly half of the AI-citation surface for your category is off your own site. Within that off-site share, the largest single block lives on two lead-gen platforms (SmartAsset, getwarmer.com) that most firms probably do not actively manage. The rest is fragmented across category-specific publications, Wikipedia entries for named principals, and Google self-references. The Bing search (control) opening is open for every firm in the cohort simultaneously, gated on Bing organic visibility. Claude's training-data layer for Hawaii wealth is moderate, above dental and below law. It is not the bottleneck the lead-gen and Copilot gaps are.</p>
     </div>
 
     <h2 id="top-recurring-firms-anonymized">Top recurring firms (anonymized)</h2>
-    <p>The 5 firms AI cited most often across the 18 questions and 7 tools:</p>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 measured surfaces:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -281,7 +281,7 @@
     <ul>
       <li>The 42-firm cohort is a representative slice of Hawaii wealth-management firms AI tools actually cite for buyer-shaped questions.</li>
       <li>The 47%/49% firm-owned / third-party split holds across the three usable runs on the full cohort. Run-to-run noise is not driving the headline.</li>
-      <li>The Microsoft Copilot 0% firm-owned share is cohort-wide and consistent across all 3 measurement runs.</li>
+      <li>The Bing search (control) 0% firm-owned share is cohort-wide and consistent across all 3 measurement runs.</li>
       <li>SmartAsset and getwarmer.com are measurable AEO surfaces specific to this category that most Hawaii wealth firms likely do not actively manage.</li>
       <li>Claude's training-data presence for Hawaii wealth firms is structurally thinner than for adjacent relationship categories.</li>
     </ul>
@@ -289,7 +289,7 @@
     <ul>
       <li>That presence on SmartAsset or getwarmer.com would cause AI to cite a firm differently. We measured what AI cites. Causation requires pre-registered experiments. Different scope.</li>
       <li>That Claude's thin Hawaii-wealth training-data presence will close on any specific timeline. Training-data presence is the slowest signal we measure. It forms over years of editorial and brand authority work.</li>
-      <li>That the Microsoft Copilot first-mover opportunity is actually closable for any specific firm. The Bing organic ranking competition is outside what this measurement captures.</li>
+      <li>That the Bing search (control) gap is closable for any specific firm. The Bing organic ranking competition is outside what this measurement captures.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>

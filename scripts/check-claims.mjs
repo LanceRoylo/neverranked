@@ -172,6 +172,59 @@ const RULES = [
     re: /\b(?:daily|every\s+day)\s+monitoring\b|\b(?:you\s+(?:get|receive)|we\s+(?:give|send|deliver|hand)\s+you)\b[^.\n]{0,40}\b(?:daily|every\s+day)\b/i,
     why: 'sells "daily" as the product. Capture IS daily and may be described technically, but the deliverable is the monthly memo — one reading is weather, the month is climate',
   },
+
+  // ── Bing channel reclassification, 2026-08-22 ────────────────────────
+  //
+  // The channel labeled "Microsoft Copilot" is Bing organic top-5 via
+  // DataForSEO: keyword search, not an answer engine. It returned the pop
+  // song "Stay" for "where to stay in Waikiki", and about half its
+  // denominator across categories was dictionaries and bestbuy.com matching
+  // the word "best". Copilot's real citations (an ai_overview item on the
+  // same endpoint) are not retrievable for this account -- 14 live probes,
+  // zero hits.
+  //
+  // The DATA stays, as a classic-search control. These claims do not.
+  {
+    // Six AI tools now: four citation-grade + two model-knowledge, with
+    // Bing classic search as a control that is NOT an AI tool.
+    id: "retired-seven-tools",
+    severity: "block",
+    // "surfaces" is deliberately absent: seven channels genuinely WERE
+    // queried in the historical runs, and saying so is true. What is false
+    // is calling all seven AI tools, since one is a classic-search control.
+    re: /\b(?:seven|7)\s+AI\s+(?:tools?|engines?|surfaces?)\b|\b(?:seven|7)\s+(?:tools?|engines?)\b/i,
+    why: 'claims seven AI tools. Retired 2026-08-22: six AI tools (four citation-grade that search the live web, two model-knowledge), plus Bing classic search as a control',
+  },
+  {
+    id: "retired-five-citation-grade",
+    severity: "block",
+    // Literal alternation, no variable-length gaps: a {0,N} over a
+    // near-anything class backtracks catastrophically on HTML-stripped
+    // pages (this hung the checker on first write).
+    re: /five citation-grade|five that search the live web|five engines that search/i,
+    why: 'claims five citation-grade engines. Retired 2026-08-22: it is four (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews)',
+  },
+  {
+    // The observation "Bing's organic results name no firm in this cohort"
+    // is still TRUE and still publishable. Only the Copilot name, and the
+    // inference below, are retired.
+    id: "retired-copilot-as-tool",
+    severity: "block",
+    re: /\bMicrosoft Copilot\b|\bCopilot\s*\(Bing\)/i,
+    why: 'names Microsoft Copilot as a measured AI tool. Retired 2026-08-22: that channel is Bing organic, published as "Bing search (control)"',
+  },
+  {
+    // "Rank first on Bing organic and you own the Copilot answer" is a
+    // CAUSAL claim about an engine we do not measure, resting on the proxy
+    // this reclassification disproved. Same shape as 45-to-95: a real
+    // observation with an unmeasured causal story attached. Retired while
+    // the company had one paying client, which is the cheapest it gets.
+    id: "retired-copilot-first-mover",
+    severity: "block",
+    re: /owns? the Copilot answer|Copilot first-mover|first-mover opening|first-mover opportunity|first-mover advantage/i,
+    why: 'the Copilot first-mover claim. Retired 2026-08-22: it asserts that ranking on Bing organic causes Copilot citation, which we never measured, on a channel that is not Copilot',
+  },
+
 ];
 
 // ── Allowlist ──────────────────────────────────────────────────────────

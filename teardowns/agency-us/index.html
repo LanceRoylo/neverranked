@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Agency-US teardown 11. Published 2026-08-05.
-  7-AI-tool measurement on national marketing and SEO agencies.
+  6-AI-tool measurement on national marketing and SEO agencies.
   23-agency cohort, 18 hash-locked questions, 3 reps per question per run,
   3 usable runs (2026-08-05 to 2026-08-06, pattern-readiness cleared per
   MOAT.md rule 5). 8,833 classified citations.
@@ -25,10 +25,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 11: the first category that is not a local service, and the pattern held</title>
-<meta name="description" content="23 national marketing agencies measured across 7 AI tools, 18 hash-locked questions, 3 usable runs, 8,833 citations. A Copilot range derived entirely from local service businesses predicted a national B2B category months later.">
+<meta name="description" content="23 national marketing agencies measured across 6 AI tools, 18 hash-locked questions, 3 usable runs, 8,833 citations. A Copilot range derived entirely from local service businesses predicted a national B2B category months later.">
 <link rel="canonical" href="https://neverranked.com/teardowns/agency-us/">
 <meta property="og:title" content="Teardown 11: the first category that is not a local service, and the pattern held">
-<meta property="og:description" content="23 national agencies, 7 AI tools, 8,833 citations. Copilot came in at 5%, above a range derived from ten local service categories and corrected on 22 August 2026.">
+<meta property="og:description" content="23 national agencies, 6 AI tools, 8,833 citations. Copilot came in at 5%, above a range derived from ten local service categories and corrected on 22 August 2026.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -90,7 +90,7 @@
     <p class="sub">23-agency national cohort, 18 hash-locked questions, 3 usable runs on 2026-08-05 and 2026-08-06, 8,833 classified citations. Figures generated from the aggregate tooling. Individual agencies anonymized. Counts and distributions named.</p>
 
 <div class="correction" style="border:1px solid #d8c9a8;background:#fbf7ee;padding:16px 18px;margin:18px 0;border-radius:6px">
-<p style="margin:0 0 10px"><strong>Correction, 22 August 2026.</strong> The Microsoft Copilot figure on this page was 2%. It is 5%. We found this in internal review and are recording it here rather than quietly changing the number.</p>
+<p style="margin:0 0 10px"><strong>Correction, 22 August 2026.</strong> The Bing search (control) figure on this page was 2%. It is 5%. We found this in internal review and are recording it here rather than quietly changing the number.</p>
 <p style="margin:0 0 10px">Copilot is measured through a stated proxy: Bing's top five organic results plus any answer box, on the reasoning that Copilot answers from Bing's index. Those results include matches on single words from the question. For "best marketing agency", Bing returns a dictionary definition of the word "best", and those URLs were counted in the denominator. Removing dictionary and retailer matches leaves 395 citations in that channel rather than 782. The 18 agency own-site citations are unchanged, so the rate moves from 2% to 5%.</p>
 <p style="margin:0 0 10px">The correction raises the figure. The original understated how often agencies are cited, which is the direction that flattered our own argument, and that is the reason to be explicit about it.</p>
 <p style="margin:0">The ten earlier teardowns used the same proxy. Where they reported 0% the figure is unchanged, because a cleaner denominator cannot change a count of zero. Three reported non-zero figures: law at 1%, CPA at 2%, and a Nashville CPA control at 1%. Those would rise, and the underlying runs are no longer retained, so they should be read as lower bounds until re-measured. The filter used here is deliberately conservative, removing only dictionary sites and one retailer, so the corrected 5% is itself a lower bound.</p>
@@ -98,7 +98,7 @@
 </div>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Microsoft Copilot cited businesses&rsquo; own websites between 0% and 2% of the time, as measured before the correction noted above. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>5%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
+      <strong>The headline finding in one sentence:</strong> our ten previous teardowns all measured local service businesses, eight of them in Hawaii plus CPA firms in Austin and Nashville, and across every one of them Bing search (control) cited businesses&rsquo; own websites between 0% and 2% of the time, as measured before the correction noted above. Marketing agencies are national, B2B, and nothing like a dental practice, so we ran them as an out-of-sample test. Copilot cited agency websites <strong>5%</strong> of the time. The rest of the shape matched too: agency websites took 12% of citations against 77% independent web, close to Honolulu real estate at 15% and 77%. The category is not special, and that is the useful part.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -125,14 +125,14 @@
     <ul>
       <li><strong>Cohort:</strong> 23 national marketing and SEO agency domains, surfaced from the citations of a discovery run and hard-audited to exclude directories, ranking sites, and SaaS vendors.</li>
       <li><strong>Questions:</strong> 18, locked by hash <code>8732c92d</code>, written as the questions a business owner actually asks when looking for an agency rather than as brand queries.</li>
-      <li><strong>Tools:</strong> 7. Five that search the live web (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot, Google AI Overviews) and two that answer from training data (Claude, Gemma).</li>
+      <li><strong>Tools:</strong> 7. Four that search the live web (Perplexity, ChatGPT search, Gemini grounded, Bing search (control), Google AI Overviews) and two that answer from training data (Claude, Gemma).</li>
       <li><strong>Repetition:</strong> 3 reps per question per tool per run, 378 calls per run.</li>
       <li><strong>Runs:</strong> 3 usable, on 2026-08-05 and 2026-08-06. A fourth run was fired and excluded because it completed only 46 to 47 of 54 calls per engine. Partial runs are not small complete runs, because engines fail unevenly and the missing calls concentrate.</li>
       <li><strong>Geography:</strong> none. The question set is deliberately geo-free, which is what makes the result comparable across the 127 markets the cohort spans.</li>
     </ul>
 
     <h2 id="source-type-distribution">Source-type distribution (cohort-wide)</h2>
-    <p>All 8,833 classified citations across 3 runs, 7 tools, and 18 questions.</p>
+    <p>All 8,833 classified citations across 3 runs, 7 measured surfaces, and 18 questions.</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -164,7 +164,7 @@
         <tr><td class="us">Perplexity</td><td class="num"><strong>14%</strong></td><td class="num">68%</td><td class="num">3,184</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>9%</strong></td><td class="num">63%</td><td class="num">975</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>3%</strong></td><td class="num">97%</td><td class="num">569</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>5%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>5%</strong></td><td class="num">87%</td><td class="num">782</td></tr>
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>1%</strong></td><td class="num">98%</td><td class="num">1,117</td></tr>
       </tbody>
     </table>
@@ -174,7 +174,7 @@
     <h2 id="the-prediction">The prediction that held</h2>
     <div class="callout">
       <h3>Copilot, ten Hawaii categories, then one national B2B category</h3>
-      <p>The cross-category teardown states that Microsoft Copilot cites businesses&rsquo; own websites &ldquo;0% to 2% of the time in every measurement.&rdquo; That range was derived entirely from local service businesses: banking 0%, wealth management 0%, dental 0%, med spas 0%, HVAC 0%, real estate 0%, law 1%, CPA 2%, plus Austin CPA at 0% and a Nashville CPA control at 1%.</p>
+      <p>The cross-category teardown states that Bing search (control) cites businesses&rsquo; own websites &ldquo;0% to 2% of the time in every measurement.&rdquo; That range was derived entirely from local service businesses: banking 0%, wealth management 0%, dental 0%, med spas 0%, HVAC 0%, real estate 0%, law 1%, CPA 2%, plus Austin CPA at 0% and a Nashville CPA control at 1%.</p>
       <p>National marketing agencies, measured months later, in a different country-wide market, in a business category rather than a consumer one, came in at <strong>2%</strong>.</p>
     </div>
     <p>A published range predicting an out-of-sample category is worth more than any single number in this teardown. It is the difference between a collection of observations and something that generalizes.</p>
@@ -200,7 +200,7 @@
     <p>Anyone reading 77% as &ldquo;agency websites get cited 77% of the time&rdquo; would be reading two dictionaries and a search engine into that number. The defensible figure for agency-owned websites is the competitor row, <strong>12%</strong>.</p>
 
     <h2 id="top-recurring">Top recurring agencies (anonymized)</h2>
-    <p>The 5 cohort agencies AI cited most often across the 18 questions and 7 tools, by total citations across the 3 runs:</p>
+    <p>The 5 cohort agencies AI cited most often across the 18 questions and 7 measured surfaces, by total citations across the 3 runs:</p>
     <div class="table-wrap">
     <table>
       <thead>

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Methodology &middot; NeverRanked</title>
-<meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The seven engines, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
+<meta name="description" content="How NeverRanked measures what AI answer engines actually cite. The six AI tools, the query-set discipline, the source-type classifier, the pattern-readiness rule, and a working example from real data.">
 <link rel="canonical" href="https://neverranked.com/methodology/">
 <style>
   :root {
@@ -74,7 +74,7 @@
     <p>The plain-English version, in five sentences:</p>
     <ul>
       <li>We figure out what your customers are actually asking AI tools in your category, then lock those questions so every run compares apples to apples.</li>
-      <li>We ask 7 AI tools the same questions in repeated runs across three weeks to build the baseline: five that search the live web and cite sources (ChatGPT, Google AI, Perplexity, Microsoft Copilot, Gemini) and two that answer from training data alone (Claude, Gemma).</li>
+      <li>We ask 6 AI tools the same questions in repeated runs across three weeks to build the baseline: four that search the live web and cite sources (ChatGPT, Google AI, Perplexity, Bing search (control), Gemini) and two that answer from training data alone (Claude, Gemma).</li>
       <li>We record who AI mentions for each question, who it doesn&rsquo;t, and where in the answer each name shows up.</li>
       <li>We hand you a clear list of what to fix, prioritized by what your competitors are observably doing differently.</li>
       <li>Then we keep measuring continuously, because AI answers shift constantly and a one-time audit ages out within a quarter.</li>
@@ -111,7 +111,7 @@
         <li><strong>Perplexity</strong>, accessed via its API.</li>
         <li><strong>ChatGPT search</strong>, accessed via OpenAI's search-grade API.</li>
         <li><strong>Gemini grounded</strong>, accessed via the Gemini API with web grounding enabled.</li>
-        <li><strong>Microsoft Copilot</strong>, accessed via Bing's organic results through a search-data provider.</li>
+        <li><strong>Bing search (control)</strong>, accessed via Bing's organic results through a search-data provider.</li>
         <li><strong>Google AI Overviews</strong>, accessed via a search-data provider's AI Overview feed.</li>
       </ul>
       <p>For each query, on each engine, the API returns the AI-generated answer and the source URLs cited in it. We capture all three: the answer text, the cited URLs, and the timestamp of the capture. A brand is "cited" on a query if its domain appears in the URL list for that query's answer.</p>
@@ -168,7 +168,7 @@
 
     <p style="margin-top:22px">Hash-locking is not a claim, it is a printed artifact. Here is the actual line this runner emitted, identical across its 2026-05-24 and 2026-05-25 runs. The same hash on both runs is what makes the two measurement windows directly comparable. One note for anyone reproducing it: the named-comparison query (number 17) is shown anonymized in the list above, so this hash is taken over the locked real set, not the displayed text.</p>
     <pre>$ node dryrun/run-wealth-mgmt-hawaii.mjs
-queries: 18 &times; 3 reps &times; 7 engines = 378 calls
+queries: 18 &times; 3 reps &times; 7 measured surfaces = 378 calls
 query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 
 # re-run the next day, byte-identical hash, so the windows compare cleanly
@@ -244,9 +244,9 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 
     <div class="rule"></div>
     <h2 id="example">A working example from real data</h2>
-    <p>The first pattern-ready category in the aggregate was Honolulu med spas, measured in May 2026 against a 2-engine seed (OpenAI + Perplexity). The 7-engine methodology shipped shortly after, and full measurements have published across the categories we have measured (Hawaii categories plus the first cross-geo, Austin TX CPAs). The full ledger is at <a href="/claims/">/claims/</a>. The med-spa example below is preserved because it documents the source-type classifier&rsquo;s post-bug-fix accuracy verification (see 2026-05-23 note further down). For the current state of measured categories with 7 engines, see <a href="/teardowns/">the published teardowns</a> and <a href="/teardowns/cross-category/">the cross-category teardown</a>. The methodology demonstrated here is the same one that produced those teardowns. The data shape repeats with more engines and tighter cohort coverage.</p>
-    <p><strong>The current 7-engine read on the same category.</strong> From the published <a href="/teardowns/med-spa-honolulu/">med-spa teardown</a>, read across the <a href="/teardowns/cross-category/">cross-category table</a> (recomputed 2026-06-11). The five web-searching engines pool to just over half their citations on the cohort&rsquo;s own sites. Microsoft Copilot (Bing), shown separately below, is the outlier inside that group at essentially zero, so the pooled figure is carried by the other four. The two model-knowledge engines split hard.</p>
-    <p class="tbl-cap">Current 7-engine read &middot; Honolulu med spas &middot; recomputed 2026-06-11</p>
+    <p>The first pattern-ready category in the aggregate was Honolulu med spas, measured in May 2026 against a 2-engine seed (OpenAI + Perplexity). The 7-surface methodology shipped shortly after, and full measurements have published across the categories we have measured (Hawaii categories plus the first cross-geo, Austin TX CPAs). The full ledger is at <a href="/claims/">/claims/</a>. The med-spa example below is preserved because it documents the source-type classifier&rsquo;s post-bug-fix accuracy verification (see 2026-05-23 note further down). For the current state of measured categories with 7 measured surfaces, see <a href="/teardowns/">the published teardowns</a> and <a href="/teardowns/cross-category/">the cross-category teardown</a>. The methodology demonstrated here is the same one that produced those teardowns. The data shape repeats with more engines and tighter cohort coverage.</p>
+    <p><strong>The current 7-surface read on the same category.</strong> From the published <a href="/teardowns/med-spa-honolulu/">med-spa teardown</a>, read across the <a href="/teardowns/cross-category/">cross-category table</a> (recomputed 2026-06-11). The five web-searching engines pool to just over half their citations on the cohort&rsquo;s own sites. Bing search (control), shown separately below, is the outlier inside that group at essentially zero, so the pooled figure is carried by the other four. The two model-knowledge engines split hard.</p>
+    <p class="tbl-cap">Current 7-surface read &middot; Honolulu med spas &middot; recomputed 2026-06-11</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -256,7 +256,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
         <tr><td>Five web-searching engines (pooled)</td><td>51%</td></tr>
         <tr><td>Claude (model knowledge)</td><td>2%</td></tr>
         <tr><td>Gemma (model knowledge)</td><td>32%</td></tr>
-        <tr><td>Microsoft Copilot (Bing) alone</td><td>0%</td></tr>
+        <tr><td>Bing search (control) alone</td><td>0%</td></tr>
       </tbody>
     </table>
     </div>
@@ -476,12 +476,12 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
       <li><strong>Causation.</strong> We measure what AI cites. We do not pre-register tests against customer accounts to prove causation of changes. Monthly delta memos report what moved. Whether the punch list caused the movement is inference, not proof. Any vendor claiming proven causation in this category should be asked for the pre-registration file.</li>
       <li><strong>Automated daily drift alerts.</strong> Daily measurement ships now, and drift detection surfaces in the monthly delta memo as observation (see "Drift detection" section above). Automated daily alerts when a host's citation share moves more than a threshold are the obvious next layer and are not yet in the deliverable.</li>
       <li><strong>Cross-language coverage.</strong> English only. AI engines do answer in other languages but our query sets and classifier are English-shaped today.</li>
-      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> Standalone empirical teardowns are published at <a href="/teardowns/">/teardowns/</a> demonstrating the 7-AI-tool methodology across the categories we have measured (including Hawaii consumer banking, wealth management, dental, law firms, CPAs, plus the first cross-geo measurement on Austin TX CPAs). The cross-category teardown reads them against each other. The head-to-head comparison version, where the same subject is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
+      <li><strong>Side-by-side comparison with a dashboard-style tool's own report.</strong> Standalone empirical teardowns are published at <a href="/teardowns/">/teardowns/</a> demonstrating the 6-AI-tool methodology across the categories we have measured (including Hawaii consumer banking, wealth management, dental, law firms, CPAs, plus the first cross-geo measurement on Austin TX CPAs). The cross-category teardown reads them against each other. The head-to-head comparison version, where the same subject is measured by both NeverRanked and a dashboard-style tool, has not yet been pulled and added as a side-by-side. When a dashboard-tool report on the same subject is available, the teardown extends to include it.</li>
       <li><strong>Anything we don't have a confirmed engine API key for.</strong> Confirmed-alive coverage is reported per engine in every deliverable's methodology section.</li>
     </ul>
 
     <h2 id="reproducibility">Reproducibility</h2>
-    <p>The method is documented here in full, the question sets are locked by hash, and every published claim ties back to a dated run on the <a href="/claims/">/claims/</a> ledger. Gemma (one of the seven engines) is open-weight, so the Gemma model itself is independently inspectable. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
+    <p>The method is documented here in full, the question sets are locked by hash, and every published claim ties back to a dated run on the <a href="/claims/">/claims/</a> ledger. Gemma (one of the six AI tools) is open-weight, so the Gemma model itself is independently inspectable. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
     <p>To be precise about what an outsider can check without engaging us: the question-set hashes and dated runs on <a href="/claims/">/claims/</a> are public, the Gemma engine is open-weight and independently runnable, and the teardowns are frozen dated snapshots anyone can scrutinize. What an outsider cannot reproduce is a private cohort run, because that data lives in the customer's store. We name that boundary so reproducibility is not oversold.</p>
 
     <h2 id="public-artifacts">How public artifacts cite this methodology</h2>

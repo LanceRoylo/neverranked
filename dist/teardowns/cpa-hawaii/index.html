@@ -1,6 +1,6 @@
 <!doctype html>
 <!--
-  CPA-Hawaii teardown 06. 7-AI-tool measurement on Hawaii CPA firms.
+  CPA-Hawaii teardown 06. 6-AI-tool measurement on Hawaii CPA firms.
   41-firm cohort built in three passes (5 anchors, +15 from run #1
   surface, +8 from run #2 surface, +11 from run #3 surface, with
   2 anchor domain variants corrected).
@@ -18,8 +18,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 06: What 7-AI-tool measurement reveals about Hawaii CPA firms</title>
-<meta name="description" content="41 Hawaii CPA firms measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. Firm-owned share is 39%. The training-data engines (Claude, Gemma) don't know any Hawaii CPA firms by name. Microsoft Copilot is the cohort-wide gap.">
+<title>Teardown 06: What 6-AI-tool measurement reveals about Hawaii CPA firms</title>
+<meta name="description" content="41 Hawaii CPA firms measured across 6 AI tools, 18 hash-locked questions, 3 usable runs. Firm-owned share is 39%. The training-data engines (Claude, Gemma) don't know any Hawaii CPA firms by name. Bing search (control) is the cohort-wide gap.">
 <link rel="canonical" href="https://neverranked.com/teardowns/cpa-hawaii/">
 <meta property="og:title" content="Teardown 06: Hawaii CPA firms in the AI-citation data">
 <meta property="og:description" content="41-firm cohort. Training-data engines collapse to 1-2% firm-owned share. Web-searching engines reach 60%.">
@@ -84,7 +84,7 @@
     <p class="sub">41-firm cohort, 18 hash-locked questions, 3 usable runs on 2026-05-26. Pattern-readiness cleared. Individual firms anonymized. Counts and distributions named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 41 Hawaii CPA firms and 7 AI tools, firm-owned websites get 39% of all mentions, comparable to law firms. But the engine-level pattern is unique: OpenAI cites Hawaii CPA websites 60% of the time and Gemini 59%, while Claude and Gemma (the training-data engines) cite firm websites less than 2% of the time. For Hawaii CPAs, the training-data engines collapse to nearly zero. That collapse is not unique to CPAs: Claude also cites firm sites under 5% for Honolulu med spas, Honolulu HVAC, and Austin CPAs. What is distinctive here is how cleanly the four web-searching engines carry the category while both training-data engines fall away. The closable competitive ground sits inside the four web-searching engines (OpenAI, Gemini, Perplexity, Google AI Overviews). The training-data engines are a structural blind spot for the entire category, not a closable condition.
+      <strong>The headline finding in one sentence:</strong> across 41 Hawaii CPA firms and 6 AI tools, firm-owned websites get 39% of all mentions, comparable to law firms. But the engine-level pattern is unique: OpenAI cites Hawaii CPA websites 60% of the time and Gemini 59%, while Claude and Gemma (the training-data engines) cite firm websites less than 2% of the time. For Hawaii CPAs, the training-data engines collapse to nearly zero. That collapse is not unique to CPAs: Claude also cites firm sites under 5% for Honolulu med spas, Honolulu HVAC, and Austin CPAs. What is distinctive here is how cleanly the four web-searching engines carry the category while both training-data engines fall away. The closable competitive ground sits inside the four web-searching engines (OpenAI, Gemini, Perplexity, Google AI Overviews). The training-data engines are a structural blind spot for the entire category, not a closable condition.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -106,9 +106,9 @@
     <p>CPA Hawaii is one of the categories NeverRanked has measured to pattern-readiness. The cross-category teardown reads it against the others, and the most distinctive structural pattern that surfaces is the training-data blind spot named above.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Hawaii CPA buyer would actually ask AI, locked at hash <code>dc6ae677...</code> so every run compares apples to apples. 3 repetitions per question per AI tool. 3 usable runs on 2026-05-26 (run #1, #2, #3 fired in succession). Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
@@ -116,7 +116,7 @@
     <p>Full methodology, including the hash-locked question sets and the dated runs on the <a href="/claims/">claims ledger</a>, is documented at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 41 firms and all 7 AI tools, 5,809 total citations, AI pulled answers from these source types:</p>
+    <p>Across all 41 firms and all 6 AI tools, 5,809 total citations, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -145,7 +145,7 @@
         <tr><td class="us">Gemini grounded</td><td class="num"><strong>59%</strong></td><td class="num">41%</td><td class="num">1,533</td></tr>
         <tr><td class="us">Perplexity</td><td class="num"><strong>46%</strong></td><td class="num">54%</td><td class="num">1,081</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>45%</strong></td><td class="num">55%</td><td class="num">621</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">782</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">782</td></tr>
         <tr><td class="us">Gemma (training data)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">293</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>1%</strong></td><td class="num">99%</td><td class="num">601</td></tr>
       </tbody>
@@ -233,7 +233,7 @@
       io.observe(mount);
     })();
     </script>
-    <p>This per-engine table is the most distinctive finding in the data. The four web-searching engines (OpenAI, Gemini, Perplexity, Google AIO) all reach between 45% and 60% firm-owned share. The two training-data engines (Claude and Gemma) reach 1% and 2%. Microsoft Copilot sits at 2%, consistent with the cohort-wide Copilot pattern observed in dental, wealth, and law categories.</p>
+    <p>This per-engine table is the most distinctive finding in the data. The four web-searching engines (OpenAI, Gemini, Perplexity, Google AIO) all reach between 45% and 60% firm-owned share. The two training-data engines (Claude and Gemma) reach 1% and 2%. Bing search (control) sits at 2%, consistent with the cohort-wide Copilot pattern observed in dental, wealth, and law categories.</p>
     <p>For comparison: in the Hawaii law-firm teardown, Gemma was the highest own-share engine at 78% and Claude was second at 51%. In Honolulu dental, Gemma was the top own-share engine. In Hawaii consumer banking, Claude reached 71%. The training-data engines carry several categories this way (banking, law, wealth, dental), but they are not universal: for Honolulu med spas, Honolulu HVAC, and Austin CPAs the same engines collapse, as they do for Hawaii CPAs here.</p>
     <p>The structural reading is that Hawaii CPA firms have substantially less brand presence in the training-data corpora than the equivalent firms in adjacent professional-services categories. CPA work is more transactional, less editorially covered, and less likely to surface in the kind of broad-web content training-data engines memorize. A firm cannot close this gap by changing what is on its website. Closing it would require category-wide editorial coverage of Hawaii CPAs in the kind of sources training data ingests (national publications, professional-association editorial, academic-adjacent content), which is outside the scope of what any individual firm controls.</p>
 
@@ -243,7 +243,7 @@
     </div>
 
     <h2 id="top-recurring-firms-anonymized">Top recurring firms (anonymized)</h2>
-    <p>The 5 firms AI cited most often across the 18 questions and 7 tools.</p>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 measured surfaces.</p>
     <div class="table-wrap">
     <table>
       <thead>

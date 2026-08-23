@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   HVAC-Honolulu teardown 09. Published 2026-06-11.
-  7-AI-tool measurement on Honolulu / Oahu HVAC and AC-repair companies.
+  6-AI-tool measurement on Honolulu / Oahu HVAC and AC-repair companies.
   12-firm cohort, 18 hash-locked questions, 3 reps per question per run,
   3 clean usable runs (pattern-readiness cleared per MOAT.md rule 5).
   Numbers generated from the aggregate tooling (teardown-data.mjs) and
@@ -26,7 +26,7 @@
 <meta name="description" content="A pre-registered measurement. We committed a prediction to a timestamped private record before any data existed: Claude would cite Honolulu AC companies under 5% of the time. It landed at 2%, while the web-searching engines reached 38-66%. The third category where Claude's training-data collapse holds.">
 <link rel="canonical" href="https://neverranked.com/teardowns/hvac-honolulu/">
 <meta property="og:title" content="Teardown 09: The Claude collapse, predicted in writing before the data">
-<meta property="og:description" content="12 Honolulu AC companies, 7 AI tools. We forecast Claude under 5% before measuring. It came in at 2%. A pre-registered finding no marketing-driven shop can fake.">
+<meta property="og:description" content="12 Honolulu AC companies, 6 AI tools. We forecast Claude under 5% before measuring. It came in at 2%. A pre-registered finding no marketing-driven shop can fake.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -99,7 +99,7 @@
         <li><a href="#methodology-summary">Methodology summary</a></li>
         <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
         <li><a href="#per-ai-tool-breakdown">Per-AI-tool breakdown</a></li>
-        <li><a href="#the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</a></li>
+        <li><a href="#the-microsoft-copilot-first-mover-opening">The Bing search (control) gap</a></li>
         <li><a href="#top-recurring-ac-companies-anonymized">Top recurring AC companies (anonymized)</a></li>
         <li><a href="#what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</a></li>
         <li><a href="#why-this-is-anonymized">Why this is anonymized</a></li>
@@ -118,16 +118,16 @@
     <p>Home services is the largest agency-served local vertical there is. Whole marketing agencies do nothing but HVAC, plumbing, and roofing. The queries are pure commercial intent: buyers search by service (AC repair, AC installation, mini split), by area (Honolulu, Oahu, Waikiki), and by urgency (emergency AC repair). The field has no dominant national brand, so the AI-citation surface is genuinely contested. It is also a clean test of the training-data hypothesis: if editorially thin local trades collapse on Claude, HVAC should collapse. It did.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Honolulu AC buyer would actually ask AI, locked at hash <code>86b2b18e...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 clean usable runs, 6,218 citations total. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 12-firm cohort was built from the citations themselves: a first run with no cohort registered, then a cohort-coverage scan that surfaced every AC company AI cited 45 or more times across the runs. Directories (Angi, HomeAdvisor) and national retailers (Home Depot) were excluded by rule, so the cohort is AC companies only.</p>
     <p>Full documented methodology at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 12 AC companies and all 7 AI tools, AI pulled answers from these source types:</p>
+    <p>Across all 12 AC companies and all 6 AI tools, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -142,7 +142,7 @@
       </tbody>
     </table>
     </div>
-    <p>The 38% AC-company-owned share is pooled across all 7 tools, dragged down by the training-data engines. On the five web-searching engines alone, own-site share is 40%, and across the four AI-answer engines (excluding Copilot, which sits at 0%) it is 47%. Review directories are only 7% of mentions, so this is a firm-heavy field: AI mostly chooses between the AC companies&rsquo; own sites and editorial third-party content, not aggregators.</p>
+    <p>The 38% AC-company-owned share is pooled across all 7 measured surfaces, dragged down by the training-data engines. On the five web-searching engines alone, own-site share is 40%, and across the four AI-answer engines (excluding Copilot, which sits at 0%) it is 47%. Review directories are only 7% of mentions, so this is a firm-heavy field: AI mostly chooses between the AC companies&rsquo; own sites and editorial third-party content, not aggregators.</p>
 
     <h2 id="per-ai-tool-breakdown">Per-AI-tool breakdown</h2>
     <div class="table-wrap">
@@ -157,7 +157,7 @@
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>45%</strong></td><td class="num">43%</td><td class="num">302</td></tr>
         <tr><td class="us">Perplexity</td><td class="num"><strong>38%</strong></td><td class="num">59%</td><td class="num">1,477</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">606</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">91%</td><td class="num">792</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">91%</td><td class="num">792</td></tr>
       </tbody>
     </table>
     </div>
@@ -243,18 +243,18 @@
       io.observe(mount);
     })();
     </script>
-    <p>ChatGPT search cites AC companies&rsquo; own sites two-thirds of the time, the strongest web engine here. Gemma, a training-data engine, sits high at 63%. Then the bottom two rows are the blind spots: Claude at 2% and Microsoft Copilot at 0%. Note the split inside the training-data engines: Claude at 2% and Gemma at 63% is a 61-point gap on the exact same firms, the widest in the entire NeverRanked dataset.</p>
+    <p>ChatGPT search cites AC companies&rsquo; own sites two-thirds of the time, the strongest web engine here. Gemma, a training-data engine, sits high at 63%. Then the bottom two rows are the blind spots: Claude at 2% and Bing search (control) at 0%. Note the split inside the training-data engines: Claude at 2% and Gemma at 63% is a 61-point gap on the exact same firms, the widest in the entire NeverRanked dataset.</p>
 
     <div class="callout">
       <h3>The Claude collapse, now confirmed across three industries</h3>
       <p>Claude answers from training data, not live search. At 2% own-site share for Honolulu AC companies, it has effectively no memory of these firms. We measured the identical collapse for Hawaii CPA firms (Claude 1%, geo-invariant across three markets) and Honolulu med spas (Claude 2%). Accounting, aesthetics, home services: three unrelated industries, the same near-zero result. The collapse is not a quirk of one category. It is what happens to local-service businesses that generate little national editorial coverage. They barely exist in Claude&rsquo;s training data, so Claude barely cites them. And because we forecast this one before measuring it, the pattern is no longer three after-the-fact observations. It is a rule that made a risky prediction and the data agreed. For an AC company, the practical read is that Claude is a category-wide blind spot no single firm closes on a short timescale, so the addressable surface is the web-searching engines, where own-site work moves the number directly, plus Gemma (63%), which is reachable through sustained editorial presence over the training cycle.</p>
     </div>
 
-    <h2 id="the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</h2>
-    <p>Microsoft Copilot answers using Bing&rsquo;s organic search results. Across 792 mentions for Honolulu AC questions, zero went to any of the 12 firms&rsquo; own websites. The same cohort-wide gap shows up in every category we measure, because for these queries the current Bing top results are dominated by directories and editorial content, not individual firms&rsquo; sites. The opening is open for every AC company simultaneously: whichever Honolulu firm ranks first in Bing organic for the common queries (AC repair Honolulu, AC installation Honolulu, emergency AC repair) effectively owns the Copilot answer while every competitor is still invisible there. We name the condition. Whether changing it closes the citation is a measurement question we keep answering month over month.</p>
+    <h2 id="the-microsoft-copilot-first-mover-opening">The Bing search (control) gap</h2>
+    <p>Bing&rsquo;s organic search results are measured as a classic-search control. Across 792 mentions for Honolulu AC questions, zero went to any of the 12 firms&rsquo; own websites. The same cohort-wide gap shows up in every category we measure, because for these queries the current Bing top results are dominated by directories and editorial content, not individual firms&rsquo; sites. The opening is open for every AC company simultaneously: whichever Honolulu firm ranks first in Bing organic for the common queries (AC repair Honolulu, AC installation Honolulu, emergency AC repair) would be the one classic search surfaces. Whether that changes what any AI answer engine cites is not something this measurement tested. We name the condition. Whether changing it closes the citation is a measurement question we keep answering month over month.</p>
 
     <h2 id="top-recurring-ac-companies-anonymized">Top recurring AC companies (anonymized)</h2>
-    <p>The 5 AC companies AI cited most often across the 18 questions and 7 tools, by total mentions across the 3 runs:</p>
+    <p>The 5 AC companies AI cited most often across the 18 questions and 7 measured surfaces, by total mentions across the 3 runs:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -277,13 +277,13 @@
       <li>The 12-firm cohort is the set of Honolulu AC companies AI tools actually cite for buyer-shaped questions, surfaced from the citations rather than picked in advance.</li>
       <li>The web-searching engines cite AC-company-owned sites at 38% to 66%, with ChatGPT search highest.</li>
       <li>The Claude 2% collapse was pre-registered and confirmed, and it matches the CPA and med spa results, supporting a category-level (editorially thin local-service) reading rather than a one-off.</li>
-      <li>The Microsoft Copilot 0% own-site share is cohort-wide and consistent across all 3 runs.</li>
+      <li>The Bing search (control) 0% own-site share is cohort-wide and consistent across all 3 runs.</li>
     </ul>
     <p>What it does not yet support:</p>
     <ul>
       <li>That AI behavior on these questions stays stable over months. Models refresh training data and search indices on schedules outside our control. Re-measurement is the only honest answer.</li>
       <li>That changing an AC company&rsquo;s site or its third-party presence would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments against named firms with control for confounds. Different scope.</li>
-      <li>That the Microsoft Copilot first-mover opening is actually closable. The Bing organic ranking competition is its own beast this measurement does not measure.</li>
+      <li>That the Bing search (control) gap is actually closable. The Bing organic ranking competition is its own beast this measurement does not measure.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>

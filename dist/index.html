@@ -6,13 +6,13 @@
 <!-- Indexable on purpose. This was noindex until 2026-07-16, a leftover from the
      containment era when named receipt pages were the risk. Those are gone; the
      tag stayed, so robots.txt invited AI crawlers in and every page then told
-     them to forget what they read. Two of the seven surfaces we measure (Google
+     them to forget what they read. Two of the six AI tools we measure (Google
      AI Overviews, Copilot via Bing) sit on indexes that obey noindex, so we were
      instructing them not to cite us. Private 1:1 pages (/pitch/*, /first-look/*)
      stay noindex and check-noindex.mjs enforces that. -->
 <meta name="robots" content="index, follow">
 <title>NeverRanked: what AI answer engines cite for your category</title>
-<meta name="description" content="The independent measurement layer for AI search. We measure what seven AI surfaces actually cite for a business category, in repeated hash-locked runs, and hand your team the evidence and the punch list. We never touch your site.">
+<meta name="description" content="The independent measurement layer for AI search. We measure what six AI tools actually cite for a business category, in repeated hash-locked runs, and hand your team the evidence and the punch list. We never touch your site.">
 <link rel="canonical" href="https://neverranked.com/">
 <link rel="preload" href="/fonts/fraunces-var.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/inter-var.woff2" as="font" type="font/woff2" crossorigin>
@@ -22,7 +22,7 @@
   "@type": "Organization",
   "name": "NeverRanked",
   "url": "https://neverranked.com",
-  "description": "A founder-led forensic research practice that measures what AI answer engines cite for a business category across seven AI tools, then hands the team a prepped punch list. Evidence, not promises.",
+  "description": "A founder-led forensic research practice that measures what AI answer engines cite for a business category across six AI tools, then hands the team a prepped punch list. Evidence, not promises.",
   "founder": { "@type": "Person", "name": "Lance Roylo" },
   "email": "Lance@hi.neverranked.com",
   "areaServed": "US",
@@ -750,7 +750,7 @@
       <span class="sep">/</span>
       <span><b>378</b> prompts per run</span>
       <span class="sep hide-sm">/</span>
-      <span class="hide-sm">18 questions &times; 3 reps &times; 7 AI tools per run (5 citation-grade)</span>
+      <span class="hide-sm">18 questions &times; 3 reps &times; 6 AI tools per run (5 citation-grade)</span>
       <span class="sep">/</span>
       <span>measured in <b>repeated runs</b>, never one snapshot</span>
     </div>
@@ -762,7 +762,7 @@
       <div class="hero-copy">
       <div class="kicker reveal">The independent measurement layer for AI search</div>
       <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">When buyers ask AI to name the best in your category, someone gets named.</span></h1>
-      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Usually not you. Every other tool promises to make you visible, then quotes a lift it cannot control. We do the opposite. We measure who AI actually names across the seven tools your buyers use, then hand your team the evidence and the punch list. Not a promise. The receipts.</p>
+      <p class="turn reveal" id="hero-turn" style="transition-delay:.16s">Usually not you. Every other tool promises to make you visible, then quotes a lift it cannot control. We do the opposite. We measure who AI actually names across the six AI tools your buyers use, then hand your team the evidence and the punch list. Not a promise. The receipts.</p>
 
       <form class="hero-form reveal" id="hero-form" style="transition-delay:.24s">
         <input type="text" id="hero-url" placeholder="yourbusiness.com" autocomplete="url" autocapitalize="off" autocorrect="off" inputmode="url" spellcheck="false" required />
@@ -771,7 +771,7 @@
       <div class="hero-price-line reveal" style="transition-delay:.27s">
         From <strong>$199 a month</strong> per category, month to month. <a href="/pricing/">See what it costs</a>.
       </div>
-      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows whether the seven AI tools can even read your site, the first thing that decides whether they can name you at all.</div>
+      <div class="hero-form-note reveal" style="transition-delay:.30s">Free. No signup. Results in seconds. The instant check shows whether the six AI tools can even read your site, the first thing that decides whether they can name you at all.</div>
 
       <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
         Ten measurements on the public record, across ten cohorts in two states. Every number dated. Every question set hash-locked before we looked.
@@ -783,7 +783,7 @@
 
   <!-- 01 The blind spot: the live citation map.
        REAL DATA. Hawaii hotels cohort, three runs measured 2026-06-21
-       (18 locked questions x 7 AI tools x 3 reps per run = up to 9
+       (18 locked questions x 6 AI tools x 3 reps per run = up to 9
        samples per tool per question). CMAP_DATA below is generated by
        emit-map-json.mjs from the runs' raw.jsonl. Edge rule: a tool
        earns a line to a hotel when it names that hotel in at least
@@ -794,10 +794,10 @@
   <section class="section panel">
     <div class="inner cmap-inner reveal">
       <div class="sec-label"><span class="n">01</span>The blind spot</div>
-      <p class="lead">A Google search gives you ten links. An AI answer gives you three names, and nothing tells you when yours is not one of them. So here is a real market, measured. Seven AI tools, one Waikiki boutique hotel, and four questions its buyers actually ask.</p>
+      <p class="lead">A Google search gives you ten links. An AI answer gives you three names, and nothing tells you when yours is not one of them. So here is a real market, measured. Six AI tools, one Waikiki boutique hotel, and four questions its buyers actually ask.</p>
 
       <div class="cmap" id="cmap">
-        <p class="sr-only">An interactive map of a real measurement. Seven AI tools on the left, five Hawaii hotels on the right, anonymized. For the question "best hotel in Honolulu", every tool that answered named other hotels and none named the boutique hotel. For "best hotel in Waikiki", one tool of six named it. For "top boutique hotels in Hawaii" and "boutique hotel in Honolulu walking distance to the beach", four tools named it. Measured June 21, 2026.</p>
+        <p class="sr-only">An interactive map of a real measurement. Six AI tools on the left, five Hawaii hotels on the right, anonymized. For the question "best hotel in Honolulu", every tool that answered named other hotels and none named the boutique hotel. For "best hotel in Waikiki", one tool of six named it. For "top boutique hotels in Hawaii" and "boutique hotel in Honolulu walking distance to the beach", four tools named it. Measured June 21, 2026.</p>
 
         <div class="cmap-queries" role="tablist" aria-label="Buyer questions from the locked Hawaii hotels question set"></div>
 
@@ -825,7 +825,7 @@
           </div>
         </div>
 
-        <p class="cmap-foot">Real measurement, not a mockup. Hawaii hotels, measured June 21, 2026: 18 locked questions, 7 AI tools, 9 sampled answers per tool per question across three runs. Four questions and five of the measured hotels are shown. A line is drawn when a tool names a hotel in at least half of its samples. Google AI Overviews is scored on the answers it shows. Hotels are anonymized here, the way every non-customer is on our public pages. A customer&rsquo;s map ships fully named.</p>
+        <p class="cmap-foot">Real measurement, not a mockup. Hawaii hotels, measured June 21, 2026: 18 locked questions, 6 AI tools, 9 sampled answers per tool per question across three runs. Four questions and five of the measured hotels are shown. A line is drawn when a tool names a hotel in at least half of its samples. Google AI Overviews is scored on the answers it shows. Hotels are anonymized here, the way every non-customer is on our public pages. A customer&rsquo;s map ships fully named.</p>
       </div>
 
       <p class="cmap-followon">This hotel does not know any of this. Neither do its competitors. AI builds these answers from everyone else&rsquo;s account of a business, not from its own site. <a href="/teardowns/cross-category/#offsite">See where AI sources its answers &rarr;</a> or <a href="/teardowns/hotels-hawaii/">read the full Hawaii hotels teardown &rarr;</a></p>
@@ -852,7 +852,7 @@
           <h3>The scorekeeper</h3>
           <ul>
             <li>Never touches your website, your systems, or your accounts</li>
-            <li>Observes the seven AI surfaces from the outside</li>
+            <li>Observes the six AI tools from the outside</li>
             <li>Reports what they actually cite, either way the number lands</li>
             <li>Promises the measurement, never the outcome</li>
           </ul>
@@ -883,7 +883,7 @@
         <ul>
           <li><b>We never touch your website, your systems, or your accounts.</b> There is no work of ours for a number to flatter.</li>
           <li><b>The questions are locked by hash before we look.</b> We cannot tune the test to the answer we want.</li>
-          <li><b>All seven surfaces, every run, with no cheaper tier that watches fewer.</b> We cannot quietly report the flattering subset.</li>
+          <li><b>All six AI tools, every run, with no cheaper tier that watches fewer.</b> We cannot quietly report the flattering subset.</li>
           <li><b>Three runs, every cycle.</b> An AI answer moves between two askings of the same question, so one reading is not a result and we will not sell you one.</li>
           <li><b>Every number we publish is dated and tied to the run that produced it,</b> on a record you can read and re-run against.</li>
           <li><b>When we could not substantiate our own customer result, we tested it, failed our own pre-registered criteria, pulled the product inside a day, and retracted the numbers in public.</b></li>
@@ -905,7 +905,7 @@
   <section class="section">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">Finding</span>The result most vendors will never show you</div>
-      <p class="lead">We measure whether the AI engines name a business when buyers ask the category question. Ten measurements, three runs each, seven AI surfaces. On the engines that search the live web, where most buyers already are, AI names three to five businesses per question. Someone in your category is getting named. The first job is finding out whether it is you.</p>
+      <p class="lead">We measure whether the AI engines name a business when buyers ask the category question. Ten measurements, three runs each, six AI tools. On the engines that search the live web, where most buyers already are, AI names three to five businesses per question. Someone in your category is getting named. The first job is finding out whether it is you.</p>
       <p>Then there is the result the AEO industry would rather you did not see. The engines that answer from training data instead of searching the live web barely cite local businesses at all. Claude, on the same questions where web-searching engines reach 38 to 66 percent, collapses to near zero. You can look strong on one surface and be invisible on another, which is exactly why a single-engine tool cannot tell you where you actually stand.</p>
       <table style="width:100%;border-collapse:collapse;margin:26px 0 10px;font-family:var(--mono);font-size:13px;line-height:1.4;">
         <thead><tr>
@@ -950,7 +950,7 @@
       <div class="sec-label"><span class="n">Case study</span>A named customer, and what we actually found</div>
       <h2>The AI was not wrong about Hawaii Theatre. It was reading a profile last touched in 1999.</h2>
       <p class="lead">Hawaii Theatre Center, the 1922 landmark in downtown Honolulu, agreed to be named. We measured what the AI engines said about them against a 19-question buyer set. The interesting part was never a score. It was where the answers were coming from.</p>
-      <p>A Charity Navigator profile that had not been updated since 2023. A Better Business Bureau listing last touched in 1999. No presence at all on Bing Business Profile, which feeds the Bing results Microsoft Copilot answers from. Authority backlinks pointing to the wrong places. We handed their team the memo and collaborated on the meta description rewrites, and their team shipped the work.</p>
+      <p>A Charity Navigator profile that had not been updated since 2023. A Better Business Bureau listing last touched in 1999. No presence at all on Bing Business Profile, which feeds Bing&rsquo;s organic results. Authority backlinks pointing to the wrong places. We handed their team the memo and collaborated on the meta description rewrites, and their team shipped the work.</p>
       <p>None of that is exotic. All of it is invisible to a standard SEO scan, because a standard SEO scan looks at your website, and none of those things are your website. That is the whole point. An AI answer is assembled from everyone else's account of you, and for a beloved 1922 theatre, part of that account was a quarter century out of date.</p>
       <div class="retract-note">
         <p><strong>What we used to say here, and why we do not anymore.</strong> This page once presented a score lift and a Perplexity citation count from this engagement as evidence that our work caused them. Both were real measurements. The causal link was not, so we tested it against our own domain, failed our own pre-registered criteria, pulled the product inside a day, and retracted both claims. The diagnostic findings above are what survived, because they are what actually happened. The retracted figures themselves are quoted in exactly one place on this site now, on the accounting itself, so they can never be lifted from here and reused as proof.</p>
@@ -1010,7 +1010,7 @@
       { id:'ppx',  full:'Perplexity',          short:'Perplexity' },
       { id:'cgpt', full:'ChatGPT search',      short:'ChatGPT' },
       { id:'gem',  full:'Gemini grounded',     short:'Gemini' },
-      { id:'cop',  full:'Microsoft Copilot',   short:'Copilot' },
+      { id:'cop',  full:'Bing search (control)',   short:'Copilot' },
       { id:'aio',  full:'Google AI Overviews', short:'AI Overviews' },
       { id:'cla',  full:'Claude',              short:'Claude' },
       { id:'gma',  full:'Gemma',               short:'Gemma' }
@@ -1341,9 +1341,9 @@
       <h2>AI doesn&rsquo;t decide once.</h2>
       <p class="lead">The engines re-read the web constantly. What they cite for your category changes week to week. A competitor ships a page, an engine re-crawls, a new source surfaces, and the answer moves without anyone telling you. A one-time audit is a photograph of a river.</p>
 
-      <div class="rvs" role="img" aria-label="A live standings board showing a business climbing past competitors in AI-citation share month over month, measured across seven AI engines.">
+      <div class="rvs" role="img" aria-label="A live standings board showing a business climbing past competitors in AI-citation share month over month, measured across six AI tools.">
         <div class="rvs-top">
-          <div class="rvs-eyebrow"><span class="rvs-live"></span> Tracked across 7 AI engines, run after run</div>
+          <div class="rvs-eyebrow"><span class="rvs-live"></span> Tracked across 6 AI tools, run after run</div>
           <div class="rvs-month"><span class="rvs-month-v">Month 1</span></div>
         </div>
         <div class="rvs-engines"></div>
@@ -1400,7 +1400,7 @@
   <section class="section">
     <div class="inner wide reveal">
       <div class="sec-label"><span class="n">02</span>What we measure</div>
-      <h2>Seven AI surfaces, measured in repeated runs.</h2>
+      <h2>Six AI tools, measured in repeated runs.</h2>
       <p>NeverRanked measures what the AI answer engines cite for your category, split across two layers that fail in different ways.</p>
       <div class="engines">
         <div class="engine-group">
@@ -1409,7 +1409,7 @@
             <span class="chip grade">Perplexity</span>
             <span class="chip grade">ChatGPT search</span>
             <span class="chip grade">Gemini grounded</span>
-            <span class="chip grade">Microsoft Copilot</span>
+            <span class="chip grade">Bing search (control)</span>
             <span class="chip grade">Google AI Overviews</span>
           </div>
         </div>
@@ -1482,11 +1482,11 @@
         </div>
         <div class="point">
           <h3>Documented method</h3>
-          <p>The full measurement method is documented at /methodology/, against hash-locked question sets and dated runs on the public claims record. One of the seven engines, Gemma, is open-weight, so the model itself is independently inspectable.</p>
+          <p>The full measurement method is documented at /methodology/, against hash-locked question sets and dated runs on the public claims record. One of the six AI tools, Gemma, is open-weight, so the model itself is independently inspectable.</p>
         </div>
         <div class="point">
           <h3>Repeated runs, not one snapshot</h3>
-          <p>The same hash-locked questions, run after run across all seven surfaces. An AI answer can change between two askings of the same question, so a single snapshot is not measurement.</p>
+          <p>The same hash-locked questions, run after run across all six AI tools. An AI answer can change between two askings of the same question, so a single snapshot is not measurement.</p>
         </div>
         <div class="point">
           <h3>Nothing on your property</h3>
@@ -1512,7 +1512,7 @@
         <div class="flow-step">
           <div class="flow-num">Step 02</div>
           <h3>The baseline month</h3>
-          <p>Repeated runs across 7 AI tools, and the starting numbers frozen with the cohort and the question set. Nothing later can be measured until something is fixed in place first.</p>
+          <p>Repeated runs across 6 AI tools, and the starting numbers frozen with the cohort and the question set. Nothing later can be measured until something is fixed in place first.</p>
         </div>
         <div class="flow-step">
           <div class="flow-num">Step 03</div>
@@ -1540,7 +1540,7 @@
       <div class="sec-label"><span class="n">Proof</span>What a teardown looks like</div>
       <h2>Ten cohorts measured, on the public record.</h2>
       <p class="lead">Nine categories deep in one proving ground, one of the most contested visitor markets in the world, plus a cross-geo control in Austin that shows the patterns travel. The method is geography-blind: lock the questions, run the engines, count the names.</p>
-      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 7 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. Honolulu HVAC was the first finding we pre-registered: the prediction was committed to a public timestamp before the measurement ran. The Claude training-data collapse holds across three unrelated local-service industries, and the two newest teardowns, real estate and hotels, are where it inverts: AI hands the answer to the aggregators (Zillow, Booking), while the training-data engines cite the businesses more than the live-search engines do. In hotels, the boutiques AI names even out-cite the chains.</p>
+      <p>Every teardown is built from a hash-locked question set, 3 measurement runs, and the same 6 AI tools. Anonymized at the firm level for non-customers, named in full inside paid engagements. Honolulu HVAC was the first finding we pre-registered: the prediction was committed to a public timestamp before the measurement ran. The Claude training-data collapse holds across three unrelated local-service industries, and the two newest teardowns, real estate and hotels, are where it inverts: AI hands the answer to the aggregators (Zillow, Booking), while the training-data engines cite the businesses more than the live-search engines do. In hotels, the boutiques AI names even out-cite the chains.</p>
 
       <div style="margin: 22px 0 28px; padding: 20px 24px; background: var(--panel-2); border: 1px solid var(--line); border-left: 2px solid var(--gold); border-radius: 4px;">
         <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); margin-bottom: 10px;">The finding we called in advance &middot; pre-registered &middot; 2026-06-11</div>
@@ -1574,14 +1574,14 @@
         </a>
         <a class="td-card" href="/teardowns/dental-honolulu/">
           <div class="td-card-cat">Honolulu dental</div>
-          <div class="td-card-stat">44% own-site, the Copilot first-mover opening</div>
-          <p class="td-card-hook">46-practice cohort. Microsoft Copilot cites zero practice websites for the entire cohort. The first Honolulu practice that ranks first on Bing organic effectively owns the Copilot answer.</p>
+          <div class="td-card-stat">44% own-site, the Bing search gap</div>
+          <p class="td-card-hook">46-practice cohort. Bing search (control) cites zero practice websites for the entire cohort. The first Honolulu practice that ranks first on Bing organic would be the one classic search surfaces. Whether that changes what any AI answer engine cites is not something this measurement tested.</p>
           <div class="td-card-foot"><span>46 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
         <a class="td-card" href="/teardowns/law-firm-hawaii/">
           <div class="td-card-cat">Hawaii law firms</div>
           <div class="td-card-stat">Top 5 own 64% of all firm-owned mentions</div>
-          <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Microsoft Copilot.</p>
+          <p class="td-card-hook">33-firm cohort. The dominant firm gets roughly three times the citations of the second-tier firms. For any firm outside the top 5, the closable ground is the long tail and Bing search (control).</p>
           <div class="td-card-foot"><span>33 firms &middot; 3 runs</span><span class="td-card-arrow">Read &rarr;</span></div>
         </a>
         <a class="td-card" href="/teardowns/cpa-hawaii/">
@@ -1664,13 +1664,13 @@
           <div class="role">Audit</div>
         </div>
       </div>
-      <p><b>Monitor</b> is the meter. Every month, which of the seven tools name you and which do not, question by question, plus the answers built from your own site that never credit you. No setup, no call, cancel anytime. You will not find a precise-looking percentage in it, because one run a month cannot support one honestly.</p>
+      <p><b>Monitor</b> is the meter. Every month, which of the six AI tools name you and which do not, question by question, plus the answers built from your own site that never credit you. No setup, no call, cancel anytime. You will not find a precise-looking percentage in it, because one run a month cannot support one honestly.</p>
       <p><b>Audit</b> is the record. The baseline month freezes the competitor set, the question set, and the starting numbers, so later months have something real to be measured against. Then three full runs a month, thresholds agreed before the work starts, and the written research memo: where you stand, what moved and what did not, a punch list with the exact first click for each item, and what we are watching next.</p>
       <div class="scarcity">
         <b>Audit capacity is the principal&rsquo;s reading list</b>
         Every audit memo is checked against the measured data and read by the principal before it ships. That review is the product, and it does not scale like software, so audit capacity is finite and honest: when it is full, new audit engagements wait rather than getting a thinner read. Monitor has no such limit. It is the instrument on its own, and the instrument scales.
       </div>
-      <p>Start with the free instant check. Paste your URL and see in seconds what the seven AI tools can read from your site. The full engagement is the other half of the picture. It runs 18 real customer questions per category across all seven surfaces, measures throughout the month, builds a cohort baseline that makes the numbers mean something, and hands you a clear list of what to fix.</p>
+      <p>Start with the free instant check. Paste your URL and see in seconds what the six AI tools can read from your site. The full engagement is the other half of the picture. It runs 18 real customer questions per category across all six AI tools, measures throughout the month, builds a cohort baseline that makes the numbers mean something, and hands you a clear list of what to fix.</p>
       <p style="margin-top:26px;display:flex;gap:18px;flex-wrap:wrap;align-items:center;">
         <a class="cta" href="/pricing/">See what is included &rarr;</a>
         <a class="hero-secondary" href="https://check.neverranked.com/" style="margin-top:0;">Or run the free check first &rarr;</a>
@@ -1719,7 +1719,7 @@
       <div class="obj-list">
         <details class="obj">
           <summary class="obj-q">How is this different from SEO?</summary>
-          <p class="obj-a">SEO measures search engine ranking factors on your own site. We measure what AI tools actually cite when buyers ask category-shaped questions, across 7 surfaces. The deliverable is also different: SEO tools give you a dashboard to interpret yourself. We hand off an interpreted research memo plus a prepped punch list your team executes. See <a href="/vs/">/vs/</a> for the structural comparison.</p>
+          <p class="obj-a">SEO measures search engine ranking factors on your own site. We measure what AI tools actually cite when buyers ask category-shaped questions, across 7 measured surfaces. The deliverable is also different: SEO tools give you a dashboard to interpret yourself. We hand off an interpreted research memo plus a prepped punch list your team executes. See <a href="/vs/">/vs/</a> for the structural comparison.</p>
         </details>
         <details class="obj">
           <summary class="obj-q">What if my buyers do not use AI tools yet?</summary>
@@ -1743,7 +1743,7 @@
         </details>
         <details class="obj">
           <summary class="obj-q">Can I try before I commit?</summary>
-          <p class="obj-a">Yes, and it is free. The instant self-serve check at <a href="https://check.neverranked.com">check.neverranked.com</a> tells you in seconds what the seven AI tools can read from your site, no signup. When you want to go further, <a href="https://cal.com/neverranked/scope-call">book 15 minutes</a> and we scope one category together.</p>
+          <p class="obj-a">Yes, and it is free. The instant self-serve check at <a href="https://check.neverranked.com">check.neverranked.com</a> tells you in seconds what the six AI tools can read from your site, no signup. When you want to go further, <a href="https://cal.com/neverranked/scope-call">book 15 minutes</a> and we scope one category together.</p>
         </details>
       </div>
       <p class="obj-foot">More: <a href="/faq/">the full FAQ</a> covers cancellation, NDAs, agency channel, data handling, and what happens if a finding turns out to be wrong.</p>
@@ -1760,17 +1760,17 @@
         <a href="/teardowns/cross-category/">The cross-category teardown <span class="sub">&middot; 10 measurements, two axes plus the cross-geo split</span></a>
         <a href="/teardowns/hvac-honolulu/">Honolulu HVAC teardown <span class="sub">&middot; pre-registered: predicted Claude under 5%, it came in at 2%</span></a>
         <a href="/teardowns/bank-honolulu/">Hawaii consumer banking teardown <span class="sub">&middot; 21-bank cohort, the 75-point engine spread</span></a>
-        <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Copilot first-mover opening</span></a>
+        <a href="/teardowns/dental-honolulu/">Honolulu dental teardown <span class="sub">&middot; 46 practices, the Bing search gap</span></a>
         <a href="/teardowns/law-firm-hawaii/">Hawaii law firms teardown <span class="sub">&middot; 33 firms, top 5 own 64% of mentions</span></a>
         <a href="/teardowns/wealth-mgmt-hawaii/">Hawaii wealth management teardown <span class="sub">&middot; 42 firms, the lead-gen middleman pattern</span></a>
         <a href="/teardowns/cpa-hawaii/">Hawaii CPA firms teardown <span class="sub">&middot; 41 firms, the training-data engine collapse</span></a>
         <a href="/teardowns/cpa-austin/">Austin TX CPA firms teardown <span class="sub">&middot; 37 firms, the cross-geo split (first non-Hawaii)</span></a>
-        <a href="/hawaii-bank-aeo/">If you are a Hawaii bank <span class="sub">&middot; what 7 AI tools cite for consumer banking</span></a>
-        <a href="/hawaii-wealth-aeo/">If you are a Hawaii wealth firm <span class="sub">&middot; what 7 AI tools cite + the lead-gen pattern</span></a>
-        <a href="/honolulu-dental-aeo/">If you are a Honolulu dental practice <span class="sub">&middot; what 7 AI tools cite + the Copilot opening</span></a>
-        <a href="/hawaii-law-aeo/">If you are a Hawaii law firm <span class="sub">&middot; what 7 AI tools cite + the closable ground outside top 5</span></a>
-        <a href="/hawaii-cpa-aeo/">If you are a Hawaii CPA firm <span class="sub">&middot; what 7 AI tools cite + the training-data engine collapse</span></a>
-        <a href="/austin-cpa-aeo/">If you are an Austin TX CPA firm <span class="sub">&middot; what 7 AI tools cite + the Claude/Gemma cross-geo split</span></a>
+        <a href="/hawaii-bank-aeo/">If you are a Hawaii bank <span class="sub">&middot; what 6 AI tools cite for consumer banking</span></a>
+        <a href="/hawaii-wealth-aeo/">If you are a Hawaii wealth firm <span class="sub">&middot; what 6 AI tools cite + the lead-gen pattern</span></a>
+        <a href="/honolulu-dental-aeo/">If you are a Honolulu dental practice <span class="sub">&middot; what 6 AI tools cite + the Copilot opening</span></a>
+        <a href="/hawaii-law-aeo/">If you are a Hawaii law firm <span class="sub">&middot; what 6 AI tools cite + the closable ground outside top 5</span></a>
+        <a href="/hawaii-cpa-aeo/">If you are a Hawaii CPA firm <span class="sub">&middot; what 6 AI tools cite + the training-data engine collapse</span></a>
+        <a href="/austin-cpa-aeo/">If you are an Austin TX CPA firm <span class="sub">&middot; what 6 AI tools cite + the Claude/Gemma cross-geo split</span></a>
         <a href="/example-engagement/">What the baseline month produces <span class="sub">&middot; real example deliverable</span></a>
         <a href="/methodology/">How we measure <span class="sub">&middot; engines, classifier, working example</span></a>
         <a href="/schema-library/">Schema library <span class="sub">&middot; deployable JSON-LD blocks for AI citation</span></a>
@@ -1790,9 +1790,9 @@
   <section class="section panel close">
     <div class="inner reveal">
       <h2>We will not sell you a number. We will show you the one that is real.</h2>
-      <p style="max-width:520px;margin:0 auto 26px;">See where AI puts your business across the seven tools your buyers use.</p>
+      <p style="max-width:520px;margin:0 auto 26px;">See where AI puts your business across the six AI tools your buyers use.</p>
       <a class="cta" href="https://check.neverranked.com/">See what AI sees &rarr;</a>
-      <div class="cta-note">Paste your URL and see in seconds what the seven AI tools can read from your site. Free, no signup. Ready to go further? <a href="https://cal.com/neverranked/scope-call">Book 15 minutes with Lance</a>.</div>
+      <div class="cta-note">Paste your URL and see in seconds what the six AI tools can read from your site. Free, no signup. Ready to go further? <a href="https://cal.com/neverranked/scope-call">Book 15 minutes with Lance</a>.</div>
     </div>
   </section>
 
@@ -1911,7 +1911,7 @@
       var script = [
         {
           user: "How many mentions did I have last week vs the week before?",
-          atlas: "37 mentions across 7 AI tools last week. 41 the week before. Perplexity dropped from 14 to 11. Google AI Overviews held at 8. The other 5 tools were stable within noise."
+          atlas: "37 mentions across 6 AI tools last week. 41 the week before. Perplexity dropped from 14 to 11. Google AI Overviews held at 8. The other 5 tools were stable within noise."
         },
         {
           user: "What should I do about the Perplexity drop?",

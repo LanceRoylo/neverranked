@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Med-spa-Honolulu teardown 08. Published 2026-06-09.
-  7-AI-tool measurement on Honolulu / Oahu medical spas and aesthetics.
+  6-AI-tool measurement on Honolulu / Oahu medical spas and aesthetics.
   15-firm cohort, 18 hash-locked questions, 3 reps per question per run,
   3 usable runs (2026-06-09, pattern-readiness cleared per MOAT.md rule 5).
   Numbers generated from the aggregate tooling (teardown-data.mjs) and
@@ -18,10 +18,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
 <title>Teardown 08: Honolulu med spas in the AI-citation data</title>
-<meta name="description" content="15 Honolulu med spas measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. Web-searching engines cite med-spa websites 51-64% of the time, but Claude cites them just 2% and Microsoft Copilot 0%. The same training-data collapse we found for CPA firms.">
+<meta name="description" content="15 Honolulu med spas measured across 6 AI tools, 18 hash-locked questions, 3 usable runs. Web-searching engines cite med-spa websites 51-64% of the time, but Claude cites them just 2% and Bing search (control) 0%. The same training-data collapse we found for CPA firms.">
 <link rel="canonical" href="https://neverranked.com/teardowns/med-spa-honolulu/">
 <meta property="og:title" content="Teardown 08: Honolulu med spas, found on search and invisible on Claude">
-<meta property="og:description" content="15 Honolulu med spas, 7 AI tools. Strong on the web-searching engines, collapsed to 2% on Claude. The CPA training-data pattern, in a second vertical.">
+<meta property="og:description" content="15 Honolulu med spas, 6 AI tools. Strong on the web-searching engines, collapsed to 2% on Claude. The CPA training-data pattern, in a second vertical.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -83,7 +83,7 @@
     <p class="sub">15-firm Honolulu/Oahu med spa cohort, 18 hash-locked questions, 3 usable runs on 2026-06-09. Figures generated from the aggregate tooling. Individual firms anonymized. Counts and distributions named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 15 Honolulu med spas and 7 AI tools, the five web-searching engines cite the med spas&rsquo; own websites heavily (Gemini 64%, Perplexity 61%, ChatGPT 57%, Google AI Overviews 53%), but the training-data engine Claude cites them just 2%, and Microsoft Copilot cites them 0%. So the competitive game for a Honolulu med spa is on the web-searching engines, where own-site work pays off directly. Claude is a category-wide blind spot no single firm closes in the short term. This is the same training-data collapse we measured for CPA firms (Claude 1%), which means it is a local-service-business pattern, not a CPA quirk.
+      <strong>The headline finding in one sentence:</strong> across 15 Honolulu med spas and 6 AI tools, the five web-searching engines cite the med spas&rsquo; own websites heavily (Gemini 64%, Perplexity 61%, ChatGPT 57%, Google AI Overviews 53%), but the training-data engine Claude cites them just 2%, and Bing search (control) cites them 0%. So the competitive game for a Honolulu med spa is on the web-searching engines, where own-site work pays off directly. Claude is a category-wide blind spot no single firm closes in the short term. This is the same training-data collapse we measured for CPA firms (Claude 1%), which means it is a local-service-business pattern, not a CPA quirk.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -93,7 +93,7 @@
         <li><a href="#methodology-summary">Methodology summary</a></li>
         <li><a href="#source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</a></li>
         <li><a href="#per-ai-tool-breakdown">Per-AI-tool breakdown</a></li>
-        <li><a href="#the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</a></li>
+        <li><a href="#the-microsoft-copilot-first-mover-opening">The Bing search (control) gap</a></li>
         <li><a href="#top-recurring-med-spas-anonymized">Top recurring med spas (anonymized)</a></li>
         <li><a href="#what-this-teardown-does-and-does-not-prove">What this teardown does and does not prove</a></li>
         <li><a href="#why-this-is-anonymized">Why this is anonymized</a></li>
@@ -104,16 +104,16 @@
     <p>Med spa is a high-value local-services vertical. A single aesthetics patient is worth far more than one search click, and buyers search the way the queries name it: by service (Botox, filler, laser hair removal, CoolSculpting), by area (Honolulu, Waikiki, Oahu), and by trust signals (best, top-rated). The field has no dominant brand, so the AI-citation surface is genuinely contested. Med spas also tend to run marketing-forward websites, which is visible in the data: their own-site citation share on the web-searching engines (51% pooled) is the highest of any Hawaii category we have measured, tied with consumer banking.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Honolulu med spa buyer would actually ask AI, locked at hash <code>26851ed8...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs on 2026-06-09. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule. The 15-firm cohort was built from the citations themselves: the first run with no cohort registered, then a cohort-coverage scan that surfaced every firm AI cited 50 or more times across the runs.</p>
     <p>Full methodology, the hash-locked question sets, and the dated runs on the <a href="/claims/">/claims/</a> ledger are documented at <a href="/methodology/">/methodology/</a>.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 15 med spas and all 7 AI tools, AI pulled answers from these source types:</p>
+    <p>Across all 15 med spas and all 6 AI tools, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -144,7 +144,7 @@
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>53%</strong></td><td class="num">42%</td><td class="num">172</td></tr>
         <tr><td class="us">Gemma (training data)</td><td class="num"><strong>32%</strong></td><td class="num">68%</td><td class="num">307</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>2%</strong></td><td class="num">98%</td><td class="num">583</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">92%</td><td class="num">802</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">92%</td><td class="num">802</td></tr>
       </tbody>
     </table>
     </div>
@@ -230,18 +230,18 @@
       io.observe(mount);
     })();
     </script>
-    <p>Two rows decide the strategy. The web-searching engines (top four rows) cite med-spa websites 53-64% of the time, so on the surfaces where most AI discovery happens, a med spa&rsquo;s own site is doing more than half the work. The bottom two rows are the blind spots. Claude cites med spa websites 2% of the time, and Microsoft Copilot 0%.</p>
+    <p>Two rows decide the strategy. The web-searching engines (top four rows) cite med-spa websites 53-64% of the time, so on the surfaces where most AI discovery happens, a med spa&rsquo;s own site is doing more than half the work. The bottom two rows are the blind spots. Claude cites med spa websites 2% of the time, and Bing search (control) 0%.</p>
 
     <div class="callout">
       <h3>The Claude collapse, and why it generalizes</h3>
       <p>Claude answers from training data, not live search. At 2% own-site share for Honolulu med spas, it has effectively no memory of these firms. We measured the identical collapse for Hawaii CPA firms (Claude 1%) and Austin CPA firms (Claude 0%). Two unrelated local-service verticals, same near-zero result. That is the informative part: the training-data collapse is not specific to accountants. It is a property of how thinly local-service businesses are represented in the editorial content an AI model learns from. For a med spa, the practical read is that Claude is a category-wide blind spot no single firm closes on a short timescale, so the addressable surface is the web-searching engines, where own-site work moves the number directly, plus Gemma (32%), which is reachable through sustained editorial presence over the training cycle.</p>
     </div>
 
-    <h2 id="the-microsoft-copilot-first-mover-opening">The Microsoft Copilot first-mover opening</h2>
-    <p>Microsoft Copilot answers using Bing&rsquo;s organic search results. Across 802 mentions for Honolulu med spa questions, zero went to any of the 15 firms&rsquo; own websites. The same cohort-wide gap shows up in every category we measure, because for these queries the current Bing top results are dominated by directories and editorial content, not individual firms&rsquo; sites. The opening is open for every med spa simultaneously: whichever Honolulu med spa ranks first in Bing organic for the common queries (best med spa Honolulu, Botox Honolulu, laser hair removal Honolulu) effectively owns the Copilot answer while every competitor is still invisible there. We name the condition. Whether changing it closes the citation is a measurement question we keep answering month over month.</p>
+    <h2 id="the-microsoft-copilot-first-mover-opening">The Bing search (control) gap</h2>
+    <p>Bing&rsquo;s organic search results are measured as a classic-search control. Across 802 mentions for Honolulu med spa questions, zero went to any of the 15 firms&rsquo; own websites. The same cohort-wide gap shows up in every category we measure, because for these queries the current Bing top results are dominated by directories and editorial content, not individual firms&rsquo; sites. The opening is open for every med spa simultaneously: whichever Honolulu med spa ranks first in Bing organic for the common queries (best med spa Honolulu, Botox Honolulu, laser hair removal Honolulu) would be the one classic search surfaces. Whether that changes what any AI answer engine cites is not something this measurement tested. We name the condition. Whether changing it closes the citation is a measurement question we keep answering month over month.</p>
 
     <h2 id="top-recurring-med-spas-anonymized">Top recurring med spas (anonymized)</h2>
-    <p>The 5 med spas AI cited most often across the 18 questions and 7 tools, by total mentions across the 3 runs:</p>
+    <p>The 5 med spas AI cited most often across the 18 questions and 7 measured surfaces, by total mentions across the 3 runs:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -264,13 +264,13 @@
       <li>The 15-firm cohort is the set of Honolulu med spas AI tools actually cite for buyer-shaped questions, surfaced from the citations rather than picked in advance.</li>
       <li>Web-searching engines cite med-spa-owned sites heavily (53-64%), the strongest own-site position of any Hawaii category measured.</li>
       <li>The Claude 2% collapse is real and matches the CPA result, supporting a category-level (local-service) reading rather than a one-off.</li>
-      <li>The Microsoft Copilot 0% own-site share is cohort-wide and consistent across all 3 runs.</li>
+      <li>The Bing search (control) 0% own-site share is cohort-wide and consistent across all 3 runs.</li>
     </ul>
     <p>What it does not yet support:</p>
     <ul>
       <li>That AI behavior on these questions stays stable over months. Models refresh training data and search indices on schedules outside our control. Re-measurement is the only honest answer.</li>
       <li>That changing a med spa&rsquo;s site or its third-party presence would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments against named firms with control for confounds. Different scope.</li>
-      <li>That the Microsoft Copilot first-mover opening is actually closable. The Bing organic ranking competition is its own beast this measurement does not measure.</li>
+      <li>That the Bing search (control) gap is actually closable. The Bing organic ranking competition is its own beast this measurement does not measure.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>

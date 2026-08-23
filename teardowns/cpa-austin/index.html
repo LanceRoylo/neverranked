@@ -19,8 +19,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 07: What 7-AI-tool measurement reveals about Austin TX CPA firms (and what it means for the Hawaii CPA pattern)</title>
-<meta name="description" content="37 Austin CPA firms measured across 7 AI tools, 18 hash-locked questions, 3+ usable runs. Cross-geo test of the Hawaii CPA training-data engine collapse: Claude generalizes (0% Austin, 1% Hawaii), Gemma doesn't (23% Austin, 2% Hawaii).">
+<title>Teardown 07: What 6-AI-tool measurement reveals about Austin TX CPA firms (and what it means for the Hawaii CPA pattern)</title>
+<meta name="description" content="37 Austin CPA firms measured across 6 AI tools, 18 hash-locked questions, 3+ usable runs. Cross-geo test of the Hawaii CPA training-data engine collapse: Claude generalizes (0% Austin, 1% Hawaii), Gemma doesn't (23% Austin, 2% Hawaii).">
 <link rel="canonical" href="https://neverranked.com/teardowns/cpa-austin/">
 <meta property="og:title" content="Teardown 07: Austin CPA firms in the AI-citation data (cross-geo)">
 <meta property="og:description" content="37-firm Austin cohort. First non-Hawaii measured category. The Claude training-data collapse generalizes across geos. The Gemma collapse does not.">
@@ -85,7 +85,7 @@
     <p class="sub">37-firm Austin cohort, 18 hash-locked questions, 3+ usable runs on 2026-05-27. First non-Hawaii measured category, built to test whether the Hawaii CPA training-data engine collapse generalizes. It splits.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 37 Austin TX CPA firms and 7 AI tools, the same query shape that measured Hawaii CPA firms last week produces a split-result on the training-data engines. Claude cites Austin CPA firms 0% of the time (3 of 885 cites) and Hawaii CPA firms 1% of the time. The collapse generalizes across geographies. Gemma cites Austin CPA firms 23% of the time but Hawaii CPA firms only 2%. Gemma's coverage of CPA firms is geo-specific, not category-specific. Microsoft Copilot's 0% own-share holds in both geographies as the universal cohort-wide gap.
+      <strong>The headline finding in one sentence:</strong> across 37 Austin TX CPA firms and 6 AI tools, the same query shape that measured Hawaii CPA firms last week produces a split-result on the training-data engines. Claude cites Austin CPA firms 0% of the time (3 of 885 cites) and Hawaii CPA firms 1% of the time. The collapse generalizes across geographies. Gemma cites Austin CPA firms 23% of the time but Hawaii CPA firms only 2%. Gemma's coverage of CPA firms is geo-specific, not category-specific. Bing search (control)'s 0% own-share holds in both geographies as the universal cohort-wide gap.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -104,13 +104,13 @@
 
     <h2 id="why-this-measurement-existed">Why this measurement existed</h2>
     <p>The Hawaii CPA teardown (published 2026-05-26) surfaced what looked like a category-level pattern: training-data AI engines (Claude and Gemma) cite Hawaii CPA firms at near-zero rates (1% and 2% respectively), in contrast to the other categories we had measured at that point, where training-data engines were the highest own-share tier. The pattern was documented at low confidence because we had only measured Hawaii CPAs in that category.</p>
-    <p>The cross-geo question is direct: does the collapse generalize, or is it Hawaii-specific? Austin TX was chosen as the test bed because it is a comparable market (mid-size professional-services hub) with a direct structural analog (Texas Society of CPAs vs Hawaii Society of CPAs). Same question shape, geo-swapped from Hawaii/Honolulu to Austin. Same 7 AI engines, same 3 reps, same hash-locked discipline.</p>
+    <p>The cross-geo question is direct: does the collapse generalize, or is it Hawaii-specific? Austin TX was chosen as the test bed because it is a comparable market (mid-size professional-services hub) with a direct structural analog (Texas Society of CPAs vs Hawaii Society of CPAs). Same question shape, geo-swapped from Hawaii/Honolulu to Austin. Same 6 AI tools, same 3 reps, same hash-locked discipline.</p>
     <p>The result split the pattern into two findings, neither of which we could have surfaced from one geo alone.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions an Austin CPA buyer would actually ask AI, locked at hash <code>17fec069...</code>. The question set is structurally identical to the Hawaii CPA set (8 head + 10 long-tail) with geographic terms swapped (Hawaii/Honolulu/Bishop Street replaced with Austin/downtown Austin/Texas equivalents). 3 repetitions per question per AI tool. 3+ usable runs on 2026-05-27. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
@@ -118,7 +118,7 @@
     <p>Full methodology documented at <a href="/methodology/">/methodology/</a>. The question set is locked by hash and every run is dated on the <a href="/claims/">claims ledger</a>.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 37 firms and all 7 AI tools, 7,738 total citations, AI pulled answers from these source types:</p>
+    <p>Across all 37 firms and all 6 AI tools, 7,738 total citations, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -147,7 +147,7 @@
         <tr><td class="us">Gemini grounded</td><td class="num"><strong>61%</strong></td><td class="num">59%</td><td>Both geos high, similar</td></tr>
         <tr><td class="us">Google AI Overviews</td><td class="num"><strong>50%</strong></td><td class="num">45%</td><td>Both geos mid-high, similar</td></tr>
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>45%</strong></td><td class="num">60%</td><td>Both geos mid-high, Hawaii higher</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">2%</td><td>Universal cohort-wide gap holds</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">2%</td><td>Universal cohort-wide gap holds</td></tr>
         <tr><td class="us">Gemma (training data)</td><td class="num"><strong>23%</strong></td><td class="num">2%</td><td><strong>SPLIT: Austin 11x higher</strong></td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>0%</strong></td><td class="num">1%</td><td><strong>Collapse generalizes</strong></td></tr>
       </tbody>
@@ -243,11 +243,11 @@
 
     <div class="callout">
       <h3>What the split means for an Austin CPA firm</h3>
-      <p>For an Austin CPA firm specifically, the recommendation is materially different from the Hawaii CPA recommendation. Claude is the same kind of category-wide blind spot for Austin firms as it is for Hawaii firms. Do not invest in trying to move Claude's needle on a short timeline. Gemma already cites Austin firms in a way it does not cite Hawaii firms. Gemma's 23% own-share means sustained editorial presence on the web ingestible by Gemma's training cycle is a plausible lever for Austin CPA firms specifically. We measure what AI cites and do not promise a lift. The web-searching engines (Perplexity 61%, Gemini 61%, Google AIO 50%, OpenAI 45%) are the surface where firm-owned content already shows up most. Microsoft Copilot is the cohort-wide 0% gap that holds in every measured category.</p>
+      <p>For an Austin CPA firm specifically, the recommendation is materially different from the Hawaii CPA recommendation. Claude is the same kind of category-wide blind spot for Austin firms as it is for Hawaii firms. Do not invest in trying to move Claude's needle on a short timeline. Gemma already cites Austin firms in a way it does not cite Hawaii firms. Gemma's 23% own-share means sustained editorial presence on the web ingestible by Gemma's training cycle is a plausible lever for Austin CPA firms specifically. We measure what AI cites and do not promise a lift. The web-searching engines (Perplexity 61%, Gemini 61%, Google AIO 50%, OpenAI 45%) are the surface where firm-owned content already shows up most. Bing search (control) is the cohort-wide 0% gap that holds in every measured category.</p>
     </div>
 
     <h2 id="top-recurring-firms-anonymized">Top recurring firms (anonymized)</h2>
-    <p>The 5 firms AI cited most often across the 18 questions and 7 tools.</p>
+    <p>The 5 firms AI cited most often across the 18 questions and 7 measured surfaces.</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -289,7 +289,7 @@
       <li>The 40%/54% firm-own / third-party split is stable across the expanded cohort and 4 measurement windows.</li>
       <li>The Claude training-data collapse on CPA firms generalizes across two distinct geographies (Hawaii 1%, Austin 0%). Two-geo confidence is medium. A third geo measurement would strengthen or break the pattern.</li>
       <li>Gemma's CPA-firm coverage is geo-specific rather than category-specific (Hawaii 2%, Austin 23%). The original "training-data engine collapse" pattern from the Hawaii CPA teardown overstated the symmetry between Claude and Gemma. The cross-geo measurement corrected the overstatement.</li>
-      <li>Microsoft Copilot's 0% own-share holds in Austin as it does across every category we have measured. The pattern is universal across the measurement windows.</li>
+      <li>Bing search (control)'s 0% own-share holds in Austin as it does across every category we have measured. The pattern is universal across the measurement windows.</li>
       <li>The web-searching engines are the primary closable AEO surface for Austin CPA firms (40-61% own-share band depending on engine).</li>
     </ul>
     <p>What it does not yet support:</p>

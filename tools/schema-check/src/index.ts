@@ -160,7 +160,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 7 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 6 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
           }
         }
       ]
@@ -1374,7 +1374,7 @@ body.channel-mode #channel-cta-card{display:block}
     <div class="hero-trust" style="margin-top:18px;display:flex;gap:18px;flex-wrap:wrap;justify-content:center;align-items:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
       <span><strong style="color:var(--text)">10</strong> categories measured</span>
       <span style="opacity:.4">&middot;</span>
-      <span><strong style="color:var(--text)">7</strong> AI tools</span>
+      <span><strong style="color:var(--text)">6</strong> AI tools</span>
       <span style="opacity:.4">&middot;</span>
       <span>every number public</span>
       <span style="opacity:.4">&middot;</span>
@@ -1493,7 +1493,7 @@ body.channel-mode #channel-cta-card{display:block}
       <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
 
       <div class="social-proof">
-        <span><span class="sp-num">7</span> AI tools</span>
+        <span><span class="sp-num">6</span> AI tools</span>
         <span><span class="sp-num">18</span> real questions per category</span>
         <span><span class="sp-num">3</span> full passes per month</span>
       </div>
@@ -1513,7 +1513,7 @@ body.channel-mode #channel-cta-card{display:block}
         <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--gold-dim);border-radius:4px;flex:1;min-width:180px;max-width:280px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Monitor</div>
           <div style="font-family:var(--serif);font-size:28px;font-style:italic;color:var(--text)">$199<span style="font-size:14px;color:var(--text-faint)">/mo</span></div>
-          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, month to month<br>Named or not named across 7 AI surfaces</div>
+          <div style="font-family:var(--mono);font-size:10px;color:var(--text-faint);margin:8px 0 4px;line-height:1.5">Per category, month to month<br>Named or not named across 6 AI tools</div>
         </div>
         <div style="text-align:center;padding:20px 24px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px;flex:1;min-width:180px;max-width:280px">
           <div style="font-family:var(--serif);font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Audit</div>
@@ -1524,7 +1524,7 @@ body.channel-mode #channel-cta-card{display:block}
       <div style="text-align:center;margin-top:12px"><a href="https://neverranked.com/pricing" class="tap-link" style="font-family:var(--label);font-size:11px;color:var(--gold);text-transform:uppercase;letter-spacing:.14em;text-decoration:underline">See what is included &rarr;</a></div>
 
       <div class="cta-features">
-        <span>7-engine measurement</span>
+        <span>6-tool measurement, plus a search control</span>
         <span>Cohort competitor analysis</span>
         <span>Source-type classifier</span>
         <span>Position-in-answer depth</span>
@@ -1874,7 +1874,7 @@ body.channel-mode #channel-cta-card{display:block}
     ctaCard.innerHTML =
       '<div class="qw-cta-headline">See whether AI is naming you in your category right now.</div>'+
       '<div class="qw-cta-body">'+
-        'This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 7 AI tools every month and shows '+
+        'This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 6 AI tools every month and shows '+
         '<strong>which competitors are being named</strong>, whether you appear in those answers, and what changed since last month.'+
       '</div>'+
       '<div class="qw-cta-actions">'+
@@ -2660,7 +2660,7 @@ function buildReportEmail(report: any): string {
   <!-- CTA -->
   <tr><td style="padding:24px;background:#1c1c1c;border:1px solid #2a2a2a;border-radius:4px;text-align:center">
     <div style="font-family:Georgia,serif;font-size:20px;font-style:italic;color:#fbf8ef;margin-bottom:14px">See whether AI is naming you in your category right now.</div>
-    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 7 AI tools every month and shows which competitors are being named, whether you appear in those answers, and what changed since last month. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
+    <div style="font-family:'Courier New',monospace;font-size:12px;color:#888888;line-height:1.7;margin-bottom:22px">This automated check reads your own site. It does not show what AI actually says about your category. Monitor runs your category across all 6 AI tools every month and shows which competitors are being named, whether you appear in those answers, and what changed since last month. The named fix list, the per-query playbooks, and the monthly delta tracking ship with the paid engagement.</div>
     <a href="https://neverranked.com/pricing" style="display:inline-block;padding:14px 32px;background:#e8c767;color:#080808;font-family:'Courier New',monospace;font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;text-decoration:none;border-radius:2px;margin-bottom:10px">See what monitoring costs</a>
     <div style="font-family:'Courier New',monospace;font-size:10px;color:#555555;letter-spacing:.06em">$199 a month per category. Month to month.</div>
   </td></tr>

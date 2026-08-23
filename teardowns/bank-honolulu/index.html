@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Bank-Honolulu teardown — first published 2026-05-23.
-  7-engine cohort measurement on Hawaii consumer banking,
+  7-surface cohort measurement on Hawaii consumer banking,
   23-bank cohort, 18 hash-locked queries, 3 reps per query
   per day, 3 usable runs (pattern-readiness cleared). Refresh
   cadence is monthly or on customer request.
@@ -16,8 +16,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 01: What 7-engine measurement reveals about Hawaii consumer banking</title>
-<meta name="description" content="The first empirical teardown from NeverRanked's 7-engine AI-citation methodology. 23-bank Hawaii consumer banking cohort, 3 hash-locked runs, 5,153 citations. The 75-percentage-point engine spread no single-engine measurement detects.">
+<title>Teardown 01: What 7-surface measurement reveals about Hawaii consumer banking</title>
+<meta name="description" content="The first empirical teardown from NeverRanked's 7-surface AI-citation methodology. 23-bank Hawaii consumer banking cohort, 3 hash-locked runs, 5,153 citations. The 75-percentage-point engine spread no single-engine measurement detects.">
 <link rel="canonical" href="https://neverranked.com/teardowns/bank-honolulu/">
 <style>
   :root { color-scheme: dark; }
@@ -76,10 +76,10 @@
   <main>
     <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Teardown 01 &middot; Hawaii consumer banking</div>
     <h1>The 75-point engine spread that no single-engine tool can see.</h1>
-    <p class="sub">First empirical teardown from the 7-engine NeverRanked methodology. 23-bank Hawaii consumer banking cohort, 18 hash-locked queries, 3 usable runs, 5,153 citations captured. Pattern-readiness cleared. Subject brand and cohort anonymized.</p>
+    <p class="sub">First empirical teardown from the 7-surface NeverRanked methodology. 23-bank Hawaii consumer banking cohort, 18 hash-locked queries, 3 usable runs, 5,153 citations captured. Pattern-readiness cleared. Subject brand and cohort anonymized.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> for the same Hawaii consumer banking queries, the same banks, the same day, five AI engines cite bank-owned websites 60-75% of the time, while Microsoft Copilot (via Bing) cites them 0% of the time. The 75-percentage-point engine spread is invisible to any tool that measures fewer engines.
+      <strong>The headline finding in one sentence:</strong> for the same Hawaii consumer banking queries, the same banks, the same day, five AI engines cite bank-owned websites 60-75% of the time, while Bing search (control) (via Bing) cites them 0% of the time. The 75-percentage-point engine spread is invisible to any tool that measures fewer engines.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -103,9 +103,9 @@
     <p>The category cohort is the Hawaii financial institutions AI engines cite for consumer banking queries: a set of major banks and credit unions. Individual institutions are anonymized in this public teardown (banks labeled Bank A onward, credit unions CU A onward, ranked by mentions). Categories, counts, source-type distributions, and named third-party platforms are public. Individual institution names are not. The methodology demonstration value comes from the pattern across the group, not from singling any one out.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>7 AI surfaces measured, all on the same day, all on the same query set:</p>
+    <p>6 AI tools measured, all on the same day, all on the same query set:</p>
     <ul>
-      <li><strong>5 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic SERP, Google AI Overviews.</li>
+      <li><strong>4 citation-grade engines</strong> (search the web at query time): Perplexity, ChatGPT search, Gemini (grounded with live web search), Bing search (control) via Bing organic SERP, Google AI Overviews.</li>
       <li><strong>2 model-knowledge engines</strong> (answer from training data, no web search): Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 queries hash-locked at <code>48b6c76f...</code>. 3 repetitions per query per engine for noise control. 3 usable runs all on 2026-05-23, totaling 1,134 successful API calls and 862 cited-text rows scanned. Pattern-readiness rule of 3+ usable runs is cleared.</p>
@@ -148,15 +148,15 @@
         <tr><td>Gemma (model-knowledge)</td><td class="num">70%</td><td class="num">30%</td><td>&mdash;</td></tr>
         <tr><td>Google AI Overviews</td><td class="num">59%</td><td class="num">27%</td><td>Reddit 7%, social 4%, YouTube 2%, Wikipedia 1%, review_dir 1%</td></tr>
         <tr><td>Gemini grounded</td><td class="num">30%</td><td class="num">67%</td><td>Reddit 1%, Wikipedia 1%</td></tr>
-        <tr><td>Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">87%</td><td>Wikipedia 9%, review_dir 2%, social 1%, YouTube &lt;1%</td></tr>
+        <tr><td>Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">87%</td><td>Wikipedia 9%, review_dir 2%, social 1%, YouTube &lt;1%</td></tr>
       </tbody>
     </table>
     </div>
 
     <div class="callout">
       <h3>The non-obvious read</h3>
-      <p>Five AI engines (including both model-knowledge engines, Claude and Gemma, which answer from training data without searching the web) cite Hawaii bank-owned sites 60-75% of the time. Microsoft Copilot, powered by Bing's organic SERP, cites bank-owned sites 0% of the time, surfacing third-party editorial content (Wikipedia 8%, review directories 3%, news/independent web 88%) instead.</p>
-      <p>This is not a measurement error. Bing's SERP for these queries genuinely surfaces editorial and reference content above bank pages. A Hawaii bank with strong AI presence on five surfaces could still be invisible to a user who asks Microsoft Copilot, and the only way to know that is to measure all seven surfaces, in parallel, on the same queries.</p>
+      <p>Five AI engines (including both model-knowledge engines, Claude and Gemma, which answer from training data without searching the web) cite Hawaii bank-owned sites 60-75% of the time. Bing search (control), powered by Bing's organic SERP, cites bank-owned sites 0% of the time, surfacing third-party editorial content (Wikipedia 8%, review directories 3%, news/independent web 88%) instead.</p>
+      <p>This is not a measurement error. Bing's SERP for these queries genuinely surfaces editorial and reference content above bank pages. A Hawaii bank with strong AI presence on five surfaces could still be invisible to a user who asks Bing search (control), and the only way to know that is to measure all six AI tools, in parallel, on the same queries.</p>
       <p>That's the entire structural argument for measuring more than one engine. The data is the argument.</p>
     </div>
 
@@ -222,7 +222,7 @@
     <h2 id="what-this-teardown-does-not-yet-include">What this teardown does not yet include</h2>
     <div class="pending">
       <p><strong>Side-by-side comparison with a dashboard-style AI-citation tool's free AEO Report on the same subject.</strong> The original plan for this teardown was a head-to-head against another tool's published output for the same Hawaii bank. That comparison artifact has not been pulled yet. When it is, this teardown will be updated with the side-by-side and the differentiator analysis it produces.</p>
-      <p>In the meantime, the 7-engine measurement above stands on its own as a methodology demonstration. The headline finding (75-percentage-point Bing/Copilot gap) is independent of any vendor comparison. It's a structural finding about the AI-engine landscape itself, and a single-engine measurement methodology cannot detect it.</p>
+      <p>In the meantime, the 7-surface measurement above stands on its own as a methodology demonstration. The headline finding (75-percentage-point Bing/Copilot gap) is independent of any vendor comparison. It's a structural finding about the AI-engine landscape itself, and a single-engine measurement methodology cannot detect it.</p>
     </div>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
@@ -230,7 +230,7 @@
 
     <h2 id="methodology-reproducibility">Methodology + reproducibility</h2>
     <p>Full methodology at <a href="/methodology/">/methodology/</a>. The method is documented end to end there: the measurement runner, the source-type classifier, the within-citation analyzer, and the aggregator, with the question sets hash-locked at <code>48b6c76f...</code> and every dated run posted to the <a href="/claims/">/claims/</a> ledger. Gemma is open-weight, so the model itself is independently inspectable.</p>
-    <p>Raw data manifests for the 3 runs that produced this teardown are at <code>dryrun/out/2026-05-23T10-13-34Z/</code> (2-engine seed), <code>dryrun/out/2026-05-23T11-14-31Z/</code> (7-engine pass), and <code>dryrun/out/2026-05-23T21-42-59Z/</code> (third 7-engine pass clearing pattern-readiness). All three runs aggregate cleanly into the same query-set cohort.</p>
+    <p>Raw data manifests for the 3 runs that produced this teardown are at <code>dryrun/out/2026-05-23T10-13-34Z/</code> (2-engine seed), <code>dryrun/out/2026-05-23T11-14-31Z/</code> (7-surface pass), and <code>dryrun/out/2026-05-23T21-42-59Z/</code> (third 7-surface pass clearing pattern-readiness). All three runs aggregate cleanly into the same query-set cohort.</p>
 
     <h2 id="if-you-re-a-hawaii-financial-institution-evaluating-this-methodology">If you're a Hawaii financial institution evaluating this methodology</h2>
     <p>Email <a href="mailto:Lance@hi.neverranked.com?subject=Bank-Honolulu%20teardown%20-%20unredacted">Lance@hi.neverranked.com</a> for the unredacted version with the specific subject-bank's competitive position, or to scope a full audit on your own brand. Audits are a $950 baseline month per category, $750/month ongoing.</p>

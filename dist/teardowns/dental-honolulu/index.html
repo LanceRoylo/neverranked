@@ -1,7 +1,7 @@
 <!doctype html>
 <!--
   Dental-Honolulu teardown 03 — published 2026-05-25.
-  7-AI-tool measurement on Honolulu/Oahu dental practices.
+  6-AI-tool measurement on Honolulu/Oahu dental practices.
   46-practice cohort, 18 hash-locked questions, 3 reps per question
   per run, 3 usable runs spanning 2026-05-24 and 2026-05-25
   (pattern-readiness cleared per MOAT.md rule 5).
@@ -16,11 +16,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="index, follow">
-<title>Teardown 03: What 7-AI-tool measurement reveals about Honolulu dental</title>
-<meta name="description" content="46 Honolulu dental practices measured across 7 AI tools, 18 hash-locked questions, 3 usable runs. AI cites the practices' own websites 44% of the time. Microsoft Copilot cites zero practice websites in any of the 46. The first-mover gap is open.">
+<title>Teardown 03: What 6-AI-tool measurement reveals about Honolulu dental</title>
+<meta name="description" content="46 Honolulu dental practices measured across 6 AI tools, 18 hash-locked questions, 3 usable runs. AI cites the practices' own websites 44% of the time. Bing search (control) cites zero practice websites in any of the 46. The first-mover gap is open.">
 <link rel="canonical" href="https://neverranked.com/teardowns/dental-honolulu/">
 <meta property="og:title" content="Teardown 03: Honolulu dental in the AI-citation data">
-<meta property="og:description" content="46 Honolulu dental practices measured with 7 AI tools. The Microsoft Copilot gap and what it means.">
+<meta property="og:description" content="46 Honolulu dental practices measured with 6 AI tools. The Bing search (control) gap and what it means.">
 <style>
   :root { color-scheme: dark; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
@@ -78,11 +78,11 @@
 <body>
   <main>
     <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Teardown 03 &middot; Honolulu dental</div>
-    <h1>The Microsoft Copilot gap in Honolulu dental, and the first-mover opening it leaves.</h1>
+    <h1>The Bing search (control) gap in Honolulu dental, and what it does and does not tell you.</h1>
     <p class="sub">46-practice Honolulu/Oahu cohort, 18 hash-locked questions, 3 usable runs across 2026-05-24 and 2026-05-25. Pattern-readiness cleared. Individual practices anonymized. Counts and distributions named.</p>
 
     <div class="notice">
-      <strong>The headline finding in one sentence:</strong> across 46 Honolulu dental practices and 7 AI tools, Microsoft Copilot (via Bing) cites the practices&rsquo; own websites zero times. Every other AI tool we measured cites practice websites between 34% and 62% of the time. The Copilot gap is cohort-wide, which means whichever practice shows up first in Bing organic results owns that AI surface while every competitor is still invisible.
+      <strong>The headline finding in one sentence:</strong> across 46 Honolulu dental practices and 6 AI tools, Bing search (control) (via Bing) cites the practices&rsquo; own websites zero times. Every other AI tool we measured cites practice websites between 34% and 62% of the time. The Copilot gap is cohort-wide, which means whichever practice shows up first in Bing organic results owns that AI surface while every competitor is still invisible.
     </div>
 
     <nav class="toc" aria-label="Sections">
@@ -103,9 +103,9 @@
     <p>Honolulu dental is a service category where buyers actively search by location, by specialty, and by trust signals like &ldquo;best&rdquo; or &ldquo;most reviewed.&rdquo; It is also a category with no consolidated brand (no equivalent of Bank of Hawaii in dental), which means the AI-citation surface is genuinely contested. Whoever shows up first in AI answers earns the consultation that previously came from organic search clicks. With 46 practices in the cohort, the field is wide enough to surface a real competitive map.</p>
 
     <h2 id="methodology-summary">Methodology summary</h2>
-    <p>Same 7-AI-tool methodology applied across all NeverRanked teardowns:</p>
+    <p>Same 6-AI-tool methodology applied across all NeverRanked teardowns:</p>
     <ul>
-      <li><strong>5 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Microsoft Copilot via Bing organic results, Google AI Overviews.</li>
+      <li><strong>4 web-searching AI tools:</strong> Perplexity, ChatGPT search, Gemini (grounded with live web search), Google AI Overviews, plus Bing organic results as a classic-search control.</li>
       <li><strong>2 training-data AI tools:</strong> Claude (via the Anthropic API), Gemma (open-weight, run on a model-hosting provider so the model itself is independently inspectable).</li>
     </ul>
     <p>18 questions a Honolulu dental buyer would actually ask AI, locked at hash <code>5c26fb95...</code> so every run compares apples to apples. 3 repetitions per question per AI tool to separate signal from noise. 3 usable runs spanning 2026-05-24 and 2026-05-25. Pattern-readiness rule of 3 usable runs cleared per the internal pattern-readiness rule.</p>
@@ -113,7 +113,7 @@
     <p>Full documented method at <a href="/methodology/">/methodology/</a>, with the hash-locked question sets and dated runs on the <a href="/claims/">/claims/</a> ledger.</p>
 
     <h2 id="source-type-distribution-cohort-wide">Source-type distribution (cohort-wide)</h2>
-    <p>Across all 46 practices and all 7 AI tools, AI pulled answers from these source types:</p>
+    <p>Across all 46 practices and all 6 AI tools, AI pulled answers from these source types:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -144,7 +144,7 @@
         <tr><td class="us">Perplexity</td><td class="num"><strong>55%</strong></td><td class="num">44%</td><td class="num">1,271</td></tr>
         <tr><td class="us">ChatGPT search</td><td class="num"><strong>45%</strong></td><td class="num">55%</td><td class="num">257</td></tr>
         <tr><td class="us">Claude (training data)</td><td class="num"><strong>34%</strong></td><td class="num">66%</td><td class="num">511</td></tr>
-        <tr><td class="us">Microsoft Copilot (Bing)</td><td class="num"><strong>0%</strong></td><td class="num">83%</td><td class="num">801</td></tr>
+        <tr><td class="us">Bing search (control)</td><td class="num"><strong>0%</strong></td><td class="num">83%</td><td class="num">801</td></tr>
       </tbody>
     </table>
     </div>
@@ -230,16 +230,16 @@
       io.observe(mount);
     })();
     </script>
-    <p>The Copilot row is the finding. Across 801 mentions on Microsoft Copilot for Honolulu dental questions, zero went to any of the 46 practices&rsquo; own websites. Instead, Copilot cited independent third-party content 83% of the time (publications, dental association content, insurance carrier pages) and review directories 11%.</p>
-    <p>The reason is structural. Microsoft Copilot answers using Bing&rsquo;s organic search results. For Honolulu dental questions, the current Bing top results are dominated by directory sites and insurance carrier pages, not by individual practices&rsquo; websites. So Copilot has nothing else to cite. The gap is open for every practice in the cohort simultaneously.</p>
+    <p>The Copilot row is the finding. Across 801 mentions on Bing search (control) for Honolulu dental questions, zero went to any of the 46 practices&rsquo; own websites. Instead, Copilot cited independent third-party content 83% of the time (publications, dental association content, insurance carrier pages) and review directories 11%.</p>
+    <p>The reason is structural. Bing&rsquo;s organic search results are measured as a classic-search control. For Honolulu dental questions, the current Bing top results are dominated by directory sites and insurance carrier pages, not by individual practices&rsquo; websites. So Copilot has nothing else to cite. The gap is open for every practice in the cohort simultaneously.</p>
 
     <div class="callout">
-      <h3>The first-mover opening</h3>
-      <p>This kind of cohort-wide gap closes the moment one practice changes the underlying condition. Whichever Honolulu practice ranks first in Bing organic results for the most common dental queries (best dentist Honolulu, dentist near me Oahu, emergency dental Honolulu, and so on) effectively owns the Microsoft Copilot answer while every competitor is still invisible there. The closable condition is Bing organic SERP visibility for the named questions. We do not promise that closing the condition closes the AI citation, because that is a measurement question we keep answering month over month. What we do is name what the condition is and track whether the move lands.</p>
+      <h3>The gap</h3>
+      <p>This kind of cohort-wide gap closes the moment one practice changes the underlying condition. Whichever Honolulu practice ranks first in Bing organic results for the most common dental queries (best dentist Honolulu, dentist near me Oahu, emergency dental Honolulu, and so on) effectively owns the Bing search (control) answer while every competitor is still invisible there. The closable condition is Bing organic SERP visibility for the named questions. We do not promise that closing the condition closes the AI citation, because that is a measurement question we keep answering month over month. What we do is name what the condition is and track whether the move lands.</p>
     </div>
 
     <h2 id="top-recurring-practices-anonymized">Top recurring practices (anonymized)</h2>
-    <p>The 5 practices AI cited most often across the 18 questions and 7 tools:</p>
+    <p>The 5 practices AI cited most often across the 18 questions and 7 measured surfaces:</p>
     <div class="table-wrap">
     <table>
       <thead>
@@ -281,14 +281,14 @@
     <ul>
       <li>The 46-practice cohort is a representative slice of Honolulu/Oahu dental practices AI tools actually cite for buyer-shaped questions.</li>
       <li>The 44%/52% practice-own / third-party split is stable: the number was 39%/56% on run 1, 44%/52% on run 2 (after cohort expansion), and identical 44%/52% on run 3 (same cohort). Run-to-run noise is not driving the headline.</li>
-      <li>The Microsoft Copilot 0% practice-own share is cohort-wide and consistent across all 3 measurement runs.</li>
+      <li>The Bing search (control) 0% practice-own share is cohort-wide and consistent across all 3 measurement runs.</li>
       <li>Insurance carrier provider directories (HMSA, Delta Dental) are a measurable AEO surface for this category that most practices likely do not actively monitor.</li>
     </ul>
     <p>What it does not yet support:</p>
     <ul>
       <li>That AI behavior on these questions stays stable over months. AI tools refresh their training data and search indices on schedules outside our control. Re-measurement is the only honest answer.</li>
       <li>That changing what is on a practice&rsquo;s site, or in insurance directories, or in third-party listings, would cause AI to cite differently. We measured what AI cites. Causation requires pre-registered experiments against named practices with control for confounds. Different scope.</li>
-      <li>That the Microsoft Copilot first-mover opportunity is actually closable. The Bing organic ranking competition is its own beast that this measurement does not measure.</li>
+      <li>That the Bing search (control) gap is closable. The Bing organic ranking competition is its own beast that this measurement does not measure.</li>
     </ul>
 
     <h2 id="why-this-is-anonymized">Why this is anonymized</h2>
