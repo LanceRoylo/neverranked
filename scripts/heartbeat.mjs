@@ -334,7 +334,7 @@ const INVARIANTS = [
   },
   {
     name: 'gsc-coverage-per-client',
-    description: 'Every active client with gsc_property should have a snapshot in the last 8 days',
+    description: 'Every active client with gsc_property should have a snapshot in the last 12 days',
     run: () => {
       const rows = runD1(`
         SELECT g.client_slug,
@@ -346,7 +346,18 @@ const INVARIANTS = [
       // freshness across the slugs that have ever produced a snapshot.
       // A separate check would need to read the GSC connection table
       // to find clients that SHOULD have data but don't.
-      const cutoff = new Date(Date.now() - 8 * 86400 * 1000).toISOString().slice(0, 10);
+      // 12 days, not 8. The GSC job runs WEEKLY (Sundays ~06:06 UTC) and
+      // Search Console data always lags 3 days, so date_end ages from 3 days
+      // old right after a run to 10 just before the next one. An 8-day
+      // threshold therefore FAILS every week for the day or two before the
+      // Sunday run, then heals itself when the job fires -- verified
+      // 2026-08-23, which alerted at 02:53 on Aug-14 data and was fixed by
+      // the 20:06 run writing Aug-21. A monitor that cries wolf on schedule
+      // trains you to skim the emails that matter, which is how the
+      // 2026-08-21 engine outage stayed hidden for two days. 7-day cadence
+      // + 3-day lag + 2-day buffer. One genuinely missed week still trips
+      // it (data would be 17 days old).
+      const cutoff = new Date(Date.now() - 12 * 86400 * 1000).toISOString().slice(0, 10);
       const stale = rows.filter(r => r.latest_snapshot < cutoff);
       if (stale.length === 0 && rows.length > 0) {
         return { pass: true, detail: `${rows.length} clients all fresh` };
