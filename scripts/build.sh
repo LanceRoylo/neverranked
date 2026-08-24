@@ -275,6 +275,7 @@ node "$ROOT/scripts/check-lanham.mjs"
 # relationship incident, not a bug. Asymmetric on purpose: a public page
 # getting indexed is a marketing choice, a private one is a breach.
 echo ""
+node "$ROOT/scripts/check-scorer-drift.mjs"
 node "$ROOT/scripts/check-noindex.mjs"
 
 # ── Bright line #1: no cohort business named on an indexed page (BLOCKING) ──
