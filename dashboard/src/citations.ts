@@ -1653,7 +1653,7 @@ export async function buildClientSnapshot(
           : engineKey === "perplexity" ? "Perplexity"
           : engineKey === "google_ai_overview" ? "Google AI Overviews"
           : engineKey === "gemini" ? "Gemini"
-          : engineKey === "bing" ? "Microsoft Copilot"
+          : engineKey === "bing" ? "Bing (control)"
           : engineKey === "anthropic" ? "Claude"
           : engineKey || "an AI engine";
         const keyword = firstCited?.keyword || "your tracked keywords";

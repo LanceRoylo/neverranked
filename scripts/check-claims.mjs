@@ -317,6 +317,59 @@ const ALLOW = [
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
+// ── App-sweep debt, declared not hidden ────────────────────────────────
+// Bringing dashboard/src into scope on 2026-08-24 surfaced 35 files still
+// carrying pre-reclassification claims: "Microsoft Copilot" as a measured
+// tool, retired SKUs, seven-engine counts. The marketing site was swept on
+// 2026-08-22; the product clients log into never was.
+//
+// Fixing 35 files in one pass, eight days before a paying kickoff, is how
+// you introduce a worse bug than the one you set out to fix. So this is a
+// RATCHET, not an amnesty: every file below is a known debt that reports as
+// a warning, and any app file NOT on this list fails the build outright. The
+// list may only ever shrink. Delete a path the moment its file is clean.
+//
+// Prince-critical surfaces are deliberately absent -- they were fixed on
+// 2026-08-24 rather than declared: the cockpit, the Atlas system prompt, and
+// the engine display maps that render raw keys to clients.
+const APP_SWEEP_PENDING = new Set([
+  "dashboard/src/agency-emails.ts",
+  "dashboard/src/audit-delivery.ts",
+  "dashboard/src/audit-qa-agent.ts",
+  "dashboard/src/audit-template.ts",
+  "dashboard/src/auto-provision.ts",
+  "dashboard/src/client-actions/metrics.ts",
+  "dashboard/src/client-actions/registry.ts",
+  "dashboard/src/cron.ts",
+  "dashboard/src/digest-grader.ts",
+  "dashboard/src/email.ts",
+  "dashboard/src/getting-started.ts",
+  "dashboard/src/glossary.ts",
+  "dashboard/src/nurture-drip.ts",
+  "dashboard/src/nvi/template.ts",
+  "dashboard/src/preview/generator.ts",
+  "dashboard/src/preview/output-grader.ts",
+  "dashboard/src/referrer-tracking.ts",
+  "dashboard/src/routes/checkout.ts",
+  "dashboard/src/routes/citations.ts",
+  "dashboard/src/routes/competitors.ts",
+  "dashboard/src/routes/customer-view.ts",
+  "dashboard/src/routes/demo.ts",
+  "dashboard/src/routes/domain.ts",
+  "dashboard/src/routes/engine-status.ts",
+  "dashboard/src/routes/free-dashboard.ts",
+  "dashboard/src/routes/free-public-score.ts",
+  "dashboard/src/routes/home.ts",
+  "dashboard/src/routes/onboard-pulse.ts",
+  "dashboard/src/routes/reddit.ts",
+  "dashboard/src/routes/weekly.ts",
+  "dashboard/src/status.ts",
+]);
+
+function appSweepPending(relPath) {
+  return APP_SWEEP_PENDING.has(relPath);
+}
+
 function allowed(relPath, ruleId) {
   return ALLOW.some((a) => relPath === a.path && a.rules.includes(ruleId));
 }
@@ -347,7 +400,32 @@ function walk(dir, out = []) {
   for (const e of readdirSync(dir)) {
     const p = join(dir, e);
     if (statSync(p).isDirectory()) walk(p, out);
-    else if (e.endsWith(".html")) out.push(p);
+    else if (e.endsWith(".html") || e.endsWith(".ts")) out.push(p);
+  }
+  return out;
+}
+
+// Strip // and /* */ comments before matching TypeScript. Comments never reach
+// a client -- only string literals render -- and scanning them would flag the
+// very notes that explain a retirement (this file's own rule comments name
+// every retired claim on purpose). Quote-aware so a "//" inside a URL string
+// is not mistaken for a comment.
+function stripTsComments(src) {
+  let out = "";
+  let i = 0;
+  let quote = null;
+  while (i < src.length) {
+    const c = src[i];
+    const n = src[i + 1];
+    if (quote) {
+      if (c === "\\") { out += c + (n ?? ""); i += 2; continue; }
+      if (c === quote) quote = null;
+      out += c; i++; continue;
+    }
+    if (c === '"' || c === "'" || c === "`") { quote = c; out += c; i++; continue; }
+    if (c === "/" && n === "/") { while (i < src.length && src[i] !== "\n") i++; continue; }
+    if (c === "/" && n === "*") { i += 2; while (i < src.length && !(src[i] === "*" && src[i + 1] === "/")) i++; i += 2; out += " "; continue; }
+    out += c; i++;
   }
   return out;
 }
@@ -369,6 +447,14 @@ const EXTRA_SOURCES = [join(ROOT, "tools", "schema-check", "src", "index.ts")];
 const EXTRA_DIRS = ["audits", "content", "reports", "linkedin", "social"]
   .map((d) => join(ROOT, d));
 
+// The dashboard app: the product every CLIENT logs into. It was never in
+// scope, so the 2026-08-22 sweep cleaned the marketing site while the cockpit
+// kept serving retired Copilot claims to customers -- including a Bing-lever
+// causal claim that would have rendered on Prince Waikiki's first login
+// (found 2026-08-24, one week before his kickoff). Nothing here is built into
+// dist/; it renders at request time from TypeScript template literals.
+const APP_DIRS = [join(ROOT, "dashboard", "src")];
+
 // Captured third-party pages (competitor HTML saved as evidence during an
 // audit) are not our copy and must not be graded as our claims. Scanning
 // them made the gate report a competitor's pricing as our retired SKU.
@@ -387,6 +473,11 @@ for (const extra of EXTRA_SOURCES) {
   else console.warn(`check-claims: expected source not found, skipping ${extra}`);
 }
 
+for (const dir of APP_DIRS) {
+  if (existsSync(dir)) walk(dir, files);
+  else console.warn(`check-claims: expected app dir not found, skipping ${dir}`);
+}
+
 for (const dir of EXTRA_DIRS) {
   if (existsSync(dir)) {
     const found = [];
@@ -400,7 +491,8 @@ for (const dir of EXTRA_DIRS) {
 const hits = [];
 for (const f of files) {
   const rel = f.startsWith(DIST) ? relative(DIST, f) : relative(ROOT, f);
-  const html = readFileSync(f, "utf8");
+  const raw = readFileSync(f, "utf8");
+  const html = f.endsWith(".ts") ? stripTsComments(raw) : raw;
   const text = toText(html);
   // Comments, extracted separately so scanSource rules can see what a crawler
   // sees. Pulled out explicitly rather than by loosening toText, because a
@@ -414,10 +506,14 @@ for (const f of files) {
     if (!m) continue;
     const at = haystack.indexOf(m[0]);
     const inComment = at >= text.length;
+    // Declared app debt reports as a warning; anything NOT declared blocks.
+    // That is the ratchet: the list can only shrink, and a NEW retired claim
+    // in the client-facing app fails the build the day it is written.
+    const declaredDebt = appSweepPending(rel);
     hits.push({
       page: rel,
       rule: rule.id,
-      severity: rule.severity,
+      severity: declaredDebt ? "warn" : rule.severity,
       why: rule.why + (inComment ? " — found in an HTML COMMENT: invisible to a reader, visible to a crawler and to view-source" : ""),
       quote: haystack.slice(Math.max(0, at - 55), at + m[0].length + 55).trim(),
     });
@@ -436,6 +532,14 @@ const warnings = hits.filter((h) => h.severity === "warn");
 if (warnings.length) {
   console.error(`\n⚠ check-claims: ${warnings.length} advisory claim warning(s) (not blocking):\n`);
   warnings.forEach(show);
+}
+
+const pendingCount = hits.filter((h) => appSweepPending(h.page)).length;
+if (pendingCount) {
+  console.error(
+    `\n⚠ check-claims: ${pendingCount} finding(s) in ${APP_SWEEP_PENDING.size} declared app files ` +
+    `awaiting the client-app claims sweep. Declared, not hidden -- shrink APP_SWEEP_PENDING as files are cleaned.\n`
+  );
 }
 
 if (blocking.length) {

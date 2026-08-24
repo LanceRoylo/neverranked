@@ -2960,7 +2960,7 @@ export default {
 
       const ENGINE_LABEL: Record<string, string> = {
         openai: "ChatGPT", anthropic: "Claude", perplexity: "Perplexity",
-        gemini: "Gemini", google_ai_overview: "Google AIO", bing: "Microsoft Copilot",
+        gemini: "Gemini", google_ai_overview: "Google AIO", bing: "Bing (control)",
       };
 
       const total = rollup.total || 0;
