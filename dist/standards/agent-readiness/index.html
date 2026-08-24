@@ -3,27 +3,151 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Page retired -- NeverRanked</title>
+<meta name="robots" content="index, follow">
+<title>Agent readiness standard &middot; NeverRanked</title>
+<meta name="description" content="Whether an AI agent can actually transact with a site: book, apply, buy, contact. The Schema.org Action types that make it possible, how NeverRanked scores them, and what the score does not claim.">
+<link rel="canonical" href="https://neverranked.com/standards/agent-readiness/">
 <style>
-  :root { color-scheme: dark; }
+  :root {
+    color-scheme: dark;
+    --mono: ui-monospace, "SF Mono", Menlo, monospace;
+    --dim: #6a6a70;
+    --soft: #b9b9bd;
+  }
+  html { scroll-behavior: smooth; }
   html, body { margin: 0; padding: 0; background: #0b0b0c; }
-  body { min-height: 100vh; display: flex; align-items: center; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; }
-  main { max-width: 560px; padding: 40px 28px; line-height: 1.7; }
-  h1 { font-size: 28px; font-weight: 400; margin: 0 0 22px; text-align: center; }
-  p { font-size: 16px; color: #b9b9bd; margin: 0 0 18px; }
-  .rule { width: 40px; height: 1px; background: #4a4740; margin: 26px auto; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 64px 0 120px; }
+  main { max-width: 760px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 36px; font-style: italic; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 16px; font-weight: 400; color: #e8e8ea; margin: 26px 0 8px; letter-spacing: 0.005em; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #131316; border: 1px solid #2a2a2e; border-radius: 4px; padding: 16px; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; overflow-x: auto; margin: 16px 0; line-height: 1.5; }
+  table { width: 100%; border-collapse: collapse; margin: 18px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 10px 12px 10px 0; border-bottom: 1px solid #4a4740; }
+  td { padding: 8px 12px 8px 0; border-bottom: 1px solid #211e18; font-variant-numeric: tabular-nums; vertical-align: top; }
+  .layer { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 14px 0; }
+  .layer h3 { margin-top: 0; color: #d4c596; }
+  .rule { width: 60px; height: 1px; background: #4a4740; margin: 56px 0; }
   a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
-  .center { text-align: center; margin-top: 32px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 64px; letter-spacing: 0.04em; text-align: center; }
+  blockquote { border-left: 2px solid #d4c596; padding: 0 0 0 22px; margin: 22px 0; font-style: italic; font-size: 16px; color: #e8e8ea; }
+  .toc { border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0 8px; background: #0e0e10; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.6; columns: 2; column-gap: 36px; color: #b9b9bd; }
+  .toc li { margin-bottom: 4px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 18px 0; }
+  .table-wrap table { margin: 0; min-width: 480px; }
+  .tbl-cap { color: #6a6a70; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; margin: 22px 0 0; }
+  .eyebrow { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin: 48px 0 6px; }
+  .eyebrow + h2 { margin-top: 0; }
+  .cta-pill { display: inline-block; border: 1px solid #d4c596; color: #d4c596; padding: 14px 22px; border-radius: 4px; text-decoration: none; font-size: 15px; }
+  .cta-pill:hover { background: #d4c596; color: #0b0b0c; }
+  .offramp { text-align: center; margin: 32px 0; font-size: 15px; }
+  @media (max-width: 600px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 20px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table, th, td { font-size: 13px; }
+    pre { font-size: 12px; }
+  }
 </style>
 </head>
 <body>
   <main>
-    <h1>This page has been retired.</h1>
+    <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Agent readiness standard</div>
+    <h1>Whether an agent can actually do business with you.</h1>
+
+    <p class="lead">Through 2026 the dominant AI use case has been answering questions. The next one, already in motion, is agents performing tasks: booking the room, opening the account, requesting the quote. The agent is no longer reading your site for context. It is trying to use your site to do something.</p>
+
+    <p>Sites built to be cited are not automatically sites an agent can transact with. The signals are different. This page is the standard we measure against, published in full so anyone can reproduce it or argue with it.</p>
+
     <div class="rule"></div>
-    <p>The earlier content at this URL was published under a product premise we have since tested against our own domain and could not substantiate. We have stopped selling the product that premise was built on, and the content built around it does not belong on a public site we ask anyone to trust.</p>
-    <p>The measurement work continues, sharpened, across the AI answer engines that drive AI search today. The rest is being reworked, honestly, before we say more.</p>
-    <p class="center"><a href="/">Return to NeverRanked</a></p>
+
+    <h2>What this standard does not claim</h2>
+    <p>Deploying Action schema will not make an AI engine cite you more often. We tested a structured-data thesis against our own domain in May 2026, could not substantiate it, and <a href="/retraction/">retracted it publicly</a>. Nothing here revives it.</p>
+    <p>This measures one thing: whether the machine-readable instructions exist for an agent to complete a task on your site. That is a structural fact about your markup, not a prediction about traffic, bookings, or revenue. If a vendor tells you Action schema drives citations, ask them for the measurement.</p>
+
+    <h2>The four surfaces that matter</h2>
+    <p>Schema.org has had Action types for years. Almost nobody uses them. Four carry nearly all the consequence:</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Action</th><th>Surface</th><th>Who it matters for</th></tr></thead>
+      <tbody>
+        <tr><td><code>ReserveAction</code></td><td>Booking</td><td>Hotels, restaurants, clinics, tours, professional consultations</td></tr>
+        <tr><td><code>BuyAction</code> / <code>OrderAction</code></td><td>Commerce</td><td>Retail, ticketing, subscriptions, donations</td></tr>
+        <tr><td><code>ApplyAction</code></td><td>Application</td><td>Lending, account opening, admissions, hiring, government forms</td></tr>
+        <tr><td><code>ContactAction</code></td><td>Communication</td><td>Quote requests, advisor contact, support intake</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <h2>What a usable Action block answers</h2>
+    <ul>
+      <li><strong>What action?</strong> The <code>@type</code>.</li>
+      <li><strong>Who is the target?</strong> <code>target.url</code>, the real endpoint, not a landing page.</li>
+      <li><strong>What must the agent supply?</strong> <code>object</code>, <code>query-input</code>, <code>actionStatus</code> where it applies.</li>
+      <li><strong>What does success look like?</strong> <code>result</code>, the schema type the action produces: a <code>Reservation</code>, an <code>Order</code>.</li>
+    </ul>
+
+    <h2>How the score works</h2>
+    <p>Scored 0 to 100 against the baseline for your vertical. Recalibrated 24 August 2026 after a live audit showed the previous model rewarding markup nobody deployed on purpose.</p>
+    <div class="table-wrap">
+    <table>
+      <thead><tr><th>Component</th><th>Weight</th><th>What earns it</th></tr></thead>
+      <tbody>
+        <tr><td>Vertical coverage</td><td>60</td><td>Proportion of your vertical's required Actions that are present and deliberate</td></tr>
+        <tr><td>Validation</td><td>20</td><td>Those Actions naming a target, a name, and required inputs. Five points off per defect</td></tr>
+        <tr><td>Reachability</td><td>20</td><td>Their target URLs answering 2xx to a live request</td></tr>
+        <tr><td>Off-baseline Actions</td><td>10 max</td><td>Deliberate Actions your vertical does not require. Token credit, and only when coverage is zero</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p>Validation and reachability apply only to Actions that count toward your vertical. Quality cannot earn points where relevance earned none.</p>
+
+    <h2>What does not count</h2>
+    <p>A content management system emits Action markup for free. That is not a deployment, and crediting it manufactures a lead where none exists. Excluded:</p>
+    <ul>
+      <li>The site-search idiom, <code>SearchAction</code> pointed at <code>?s={search_term_string}</code>, which ships by default in WordPress and others.</li>
+      <li>Fragments carrying neither a name nor a target. Nobody configured those.</li>
+    </ul>
+    <p>A site whose only Actions are boilerplate scores zero, and reads as zero, because an agent can do nothing with it. In a hospitality cohort audited on 24 August 2026, this correction moved one hotel from 45 to 0. Both readings describe the same site. Only the second one is true.</p>
+
+    <h2>Why almost nobody is ready</h2>
+    <ul>
+      <li><strong>The schema is not the bottleneck.</strong> Most sites have not exposed the underlying action as a callable endpoint at all.</li>
+      <li><strong>The action belongs to somebody else.</strong> Booking runs through a third-party widget the site does not control, so the Action schema has nowhere honest to point.</li>
+      <li><strong>The action is behind authentication.</strong> Banking and healthcare need proof of identity, and delegated identity for agents is still immature.</li>
+    </ul>
+
+    <h2>What we refuse to ship</h2>
+    <ul>
+      <li>Action schema pointing at JavaScript-only endpoints. Agents cannot reliably execute arbitrary JavaScript. The target must answer a real HTTP request.</li>
+      <li>Reservation actions for a business with no real-time inventory. Pointing an agent at a call-you-back form is worse than no schema, because the agent reports failure.</li>
+      <li>Action schema wrapping a third-party widget the business does not control. That surface belongs to the widget, and we will not pretend otherwise.</li>
+      <li>Agent-facing claims for actions that do not work. If it fails for a person, exposing it to an agent is fraud.</li>
+    </ul>
+
+    <h2>Limits of the scan</h2>
+    <ul>
+      <li><strong>It reads the URL you give it.</strong> A booking Action usually lives on the booking page. Scanning a homepage alone will report a zero that is not there.</li>
+      <li><strong>Some sites refuse automated requests.</strong> A 403 is reported as unverifiable. It is never scored as a zero, because we do not know.</li>
+      <li><strong>Presence is not function.</strong> We check that the markup exists, validates, and that its target responds. We do not complete a transaction.</li>
+    </ul>
+
+    <div class="rule"></div>
+    <p class="lead">NeverRanked measures. We do not deploy to client sites, edit client markup, or manage client accounts. Acting on a finding is the client's decision and the client's work.</p>
+    <p><a href="/methodology/">Measurement methodology</a> &middot; <a href="/retraction/">What we retracted, and why</a></p>
   </main>
 </body>
 </html>

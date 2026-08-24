@@ -68,13 +68,30 @@ try {
   process.exit(1);
 }
 
+// Pages under a private prefix that are deliberately LIVE again. The
+// prefix rules are a safe default: a forgotten tombstone must never rank.
+// But "standards/" became a blanket ban when every page under it was a
+// tombstone, and a republished standard has to be indexable or it cannot
+// do its job -- a measurement we sell needs a public methodology anyone
+// can reproduce or argue with.
+//
+// Declared per page, never by loosening the prefix, so bringing one back
+// is a deliberate act with a reason attached.
+const REPUBLISHED = [
+  {
+    path: "standards/agent-readiness/index.html",
+    why: "Republished 2026-08-24 with recalibrated scoring. Swept up in the 2026-05-21 mass retirement of the schema-to-citation thesis, but it never made that claim: it measures whether an agent can transact, and the page states plainly that Action schema does not drive citations. Cited by the agent_readiness_check tool, so it must resolve and must rank.",
+  },
+];
+
 const leaks = [];
 let privateOk = 0;
 let publicIndexable = 0;
 
 for (const f of files) {
   const rel = relative(DIST, f);
-  const rule = MUST_BE_PRIVATE.find((r) => rel.startsWith(r.prefix));
+  const republished = REPUBLISHED.some((r) => r.path === rel);
+  const rule = republished ? undefined : MUST_BE_PRIVATE.find((r) => rel.startsWith(r.prefix));
   const html = readFileSync(f, "utf8");
   // Only a robots meta with noindex counts. An absent tag means indexable:
   // the default is index,follow, so silence is consent here.
