@@ -666,6 +666,38 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     : "";
 
   const delivered = new Date(r.delivered_at * 1000).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  // Readiness cross-map (Exhibit A deliverable). Reads the most recent scan
+  // per cohort domain. Absent scans render nothing rather than an empty
+  // table: a client should never see a deliverable frame with no content.
+  let crossMapHtml = "";
+  try {
+    const scans = (await env.DB.prepare(
+      `SELECT a.domain_id, a.score, a.grade, a.state, a.scanned_at,
+              d.domain, d.competitor_label, d.is_competitor
+         FROM agent_readiness_scans a
+         JOIN domains d ON d.id = a.domain_id
+        WHERE a.client_slug = ?
+          AND a.scanned_at = (SELECT MAX(scanned_at) FROM agent_readiness_scans WHERE client_slug = ?)
+        ORDER BY d.is_competitor, d.domain`,
+    ).bind(slug, slug).all()).results as Array<Record<string, unknown>>;
+    if (scans.length) {
+      const { renderReadinessCrossMap } = await import("../lib/readiness-crossmap");
+      crossMapHtml = renderReadinessCrossMap(
+        scans.map((x) => ({
+          domain: String(x.domain),
+          label: x.competitor_label ? String(x.competitor_label) : null,
+          isOwned: !Number(x.is_competitor),
+          score: x.score === null ? null : Number(x.score),
+          grade: x.grade ? String(x.grade) : null,
+          state: String(x.state),
+        })),
+        Number(scans[0].scanned_at),
+      );
+    }
+  } catch (e) {
+    console.log(`[readout] cross-map render skipped: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   const title = r.title || `${monthLabel(monthKey)} readout`;
 
   const inner = `
@@ -676,6 +708,7 @@ export async function handleReadoutView(request: Request, env: Env, slug: string
     <div class="meta">Report ${reportNo(idx)} &middot; ${esc(monthLabel(monthKey))} &middot; delivered ${esc(delivered)}</div>
     <h1 class="report-title">${esc(title)}</h1>
     ${renderCharts(r.facts_json)}
+    ${crossMapHtml}
     ${r.facts_json ? `<div class="nr-h">The record &middot; full readout</div>` : ""}
     <div class="body">${renderReportMarkdown(r.body_markdown)}</div>
     <div class="foot">This report is a frozen snapshot of what NeverRanked measured for ${esc(monthLabel(monthKey))}. Numbers do not change after delivery. Newer months appear as separate reports in the selector above.</div>`;
