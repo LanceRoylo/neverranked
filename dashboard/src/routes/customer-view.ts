@@ -558,6 +558,90 @@ function userCanView(user: { role?: string; client_slug?: string }, slug: string
 
 // ── Route handler ────────────────────────────────────────────────
 
+/**
+ * Render the baseline-in-progress cockpit for a live customer whose first
+ * complete reading has not landed yet. Returns null for anyone who is not a
+ * provisioned customer, so a bad slug still 404s.
+ *
+ * Progress comes from measurement_heartbeats.clean_runs_on_disk, which is
+ * what the laptop tick actually proved, rather than from anything this
+ * worker could assume.
+ */
+async function renderInProgressIfLive(env: Env, slug: string): Promise<string | null> {
+  try {
+    const cust = await env.DB.prepare(
+      "SELECT name, category_label FROM customers WHERE client_slug = ?",
+    ).bind(slug).first<{ name: string | null; category_label: string | null }>();
+    if (!cust) return null;
+
+    const reg = await env.DB.prepare(
+      "SELECT category, run_days, full_target FROM measurement_registry WHERE client_slug = ? AND active = 1",
+    ).bind(slug).first<{ category: string; run_days: string | null; full_target: number | null }>();
+    if (!reg) return null; // provisioned but not measuring yet: not this state
+
+    const monthKey = new Date().toISOString().slice(0, 7);
+    const hb = await env.DB.prepare(
+      `SELECT MAX(clean_runs_on_disk) AS done FROM measurement_heartbeats
+        WHERE category = ? AND month = ?`,
+    ).bind(reg.category, monthKey).first<{ done: number | null }>();
+
+    const kw = await env.DB.prepare(
+      "SELECT COUNT(*) AS n FROM citation_keywords WHERE client_slug = ?",
+    ).bind(slug).first<{ n: number }>();
+
+    let runDays: number[] = [];
+    try { runDays = JSON.parse(String(reg.run_days || "[]")) as number[]; } catch { runDays = []; }
+    const target = Number(reg.full_target ?? 3);
+    const done = Math.min(Number(hb?.done ?? 0), target);
+
+    const lastDay = runDays.length ? runDays[runDays.length - 1] : null;
+    const monthName = new Date().toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    const firstReading = lastDay ? `${monthName.split(" ")[0]} ${lastDay}` : null;
+
+    const { renderMeasurementInProgress } = await import("../lib/measurement-in-progress");
+    const panel = renderMeasurementInProgress({
+      slug,
+      customerName: cust.name || slug,
+      categoryLabel: cust.category_label,
+      questionCount: Number(kw?.n ?? 0),
+      runsDone: done,
+      runsTarget: target,
+      runDays,
+      monthLabel: monthName,
+      firstReadingLabel: firstReading,
+    });
+
+    return `<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>${esc(cust.name || slug)} &middot; NeverRanked</title>
+<style>
+ :root{color-scheme:dark}
+ body{margin:0;background:#0b0b0c;color:#e8e8ea;font-family:Georgia,"Times New Roman",serif;line-height:1.6}
+ main{max-width:760px;margin:0 auto;padding:48px 24px}
+ .meta-top{font-family:ui-monospace,Menlo,monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8a857a;margin-bottom:18px}
+ h1{font-size:30px;font-weight:400;margin:0 0 8px}
+ .sub{color:#b0aca4;margin:0 0 30px;font-style:italic}
+ .nr-chart{border:1px solid #26241e;border-radius:6px;padding:22px 24px;margin:0 0 22px;background:#131210}
+ .nr-ctitle{font-family:ui-monospace,Menlo,monospace;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:#c9a84c;margin:0 0 14px;font-weight:600}
+ .nr-cnote{color:#b0aca4;font-size:15px;margin:0 0 14px}
+ .nr-cnote strong{color:#e8e8ea}
+ a{color:#c9a84c;text-underline-offset:3px}
+ .mip-track{height:8px;background:#26241e;border-radius:999px;overflow:hidden;margin:6px 0 8px}
+ .mip-fill{height:100%;background:#c9a84c;transition:width .3s}
+ .mip-legend{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#8a857a;letter-spacing:.06em;margin-bottom:16px}
+</style></head><body><main>
+ <div class="meta-top">NeverRanked &middot; ${esc(cust.category_label || "measurement")}</div>
+ <h1>${esc(cust.name || slug)}</h1>
+ <p class="sub">Baseline month. Measurement is running.</p>
+ ${panel}
+</main></body></html>`;
+  } catch (e) {
+    console.log(`[cockpit] in-progress render failed for ${slug}: ${e instanceof Error ? e.message : String(e)}`);
+    return null;
+  }
+}
+
 export async function handleCustomerView(
   request: Request,
   env: Env,
@@ -571,7 +655,15 @@ export async function handleCustomerView(
   }
 
   const data = await loadCustomerView(env, slug);
-  if (!data) return new Response("Not found", { status: 404 });
+  if (!data) {
+    // A live customer with no snapshot yet is not a 404. Three runs spread
+    // across a month means roughly three weeks pass before there is anything
+    // to compare, and every paying client crosses that window. Answering it
+    // with "Not found" tells them the product is broken on day one.
+    const inProgress = await renderInProgressIfLive(env, slug);
+    if (inProgress) return new Response(inProgress, { headers: { "content-type": "text/html; charset=utf-8" } });
+    return new Response("Not found", { status: 404 });
+  }
 
   return new Response(renderCustomerView(data), {
     status: 200,
