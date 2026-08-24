@@ -42,7 +42,12 @@ export interface ReadinessRow {
 /** A single Action counts as boilerplate when nobody configured it. */
 function isBoilerplateAction(a: { type?: string; name?: string | null; target?: string | null }): boolean {
   if (a.type === "SearchAction" && /\{search_term_string\}/.test(String(a.target ?? ""))) return true;
-  if (!a.name && !a.target) return true;
+  // No target means no endpoint, so there is nothing for an agent to
+    // call. Keyed on target alone because name is normalised to
+    // '(unnamed)' upstream and is therefore always truthy -- the earlier
+    // 'no name AND no target' test could never fire, which let The Kahala
+    // keep an untargeted ReadAction and score 5 instead of 0.
+    if (!a.target) return true;
   return false;
 }
 

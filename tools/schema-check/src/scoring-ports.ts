@@ -413,7 +413,12 @@ export async function agentReadinessCheck(args: { url: string; vertical?: string
     // The schema.org/WordPress site-search idiom, emitted by CMSes for free.
     if (c.type === "SearchAction" && /\{search_term_string\}/.test(String(c.target ?? ""))) return true;
     // Neither named nor targeted: a fragment nobody configured.
-    if (!c.name && !c.target) return true;
+    // No target means no endpoint, so there is nothing for an agent to
+    // call. Keyed on target alone because name is normalised to
+    // '(unnamed)' upstream and is therefore always truthy -- the earlier
+    // 'no name AND no target' test could never fire, which let The Kahala
+    // keep an untargeted ReadAction and score 5 instead of 0.
+    if (!c.target) return true;
     return false;
   };
   const substantive = checked.filter((c) => !isBoilerplate(c));

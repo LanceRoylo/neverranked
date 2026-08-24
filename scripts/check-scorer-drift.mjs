@@ -35,7 +35,7 @@ const SIGNATURE = [
   /Math\.min\(10, substantive\.length \* 5\)/g,
   /20 - Math\.min\(20, totalIssues \* 5\)/g,
   /reachableCount \/ relevant\.length\) \* 20/g,
-  /!c\.name && !c\.target/g,
+  /if \(!c\.target\) return true;/g,
 ];
 
 function fingerprint(src) {
