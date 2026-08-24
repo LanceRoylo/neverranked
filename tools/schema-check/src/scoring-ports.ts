@@ -393,52 +393,77 @@ export async function agentReadinessCheck(args: { url: string; vertical?: string
   let score = 0;
   const findings: Array<{ ok: boolean; msg: string }> = [];
 
+  // ── Scoring, recalibrated 2026-08-24 ────────────────────────────────
+  // The previous model awarded 30 points -- its single largest block --
+  // for the mere PRESENCE of any Action, before relevance was considered.
+  // Verified against a live cohort: The Kahala scored 45/D on an unnamed
+  // ReadAction with a broken target plus the stock CMS SearchAction
+  // (?s={search_term_string}), while having neither ReserveAction nor
+  // ContactAction. Functionally it is identical to a site scoring 0 -- an
+  // agent can book neither -- but the table implied a competitor had moved.
+  // Handing a paying client a competitive claim manufactured out of
+  // WordPress defaults is exactly the kind of finding this company exists
+  // to not produce.
+  //
+  // The score now answers one question: can an agent perform the task that
+  // matters in THIS vertical? Boilerplate earns nothing, non-vertical
+  // Actions earn a token amount, and quality only modulates credit already
+  // earned by relevance.
+  const isBoilerplate = (c: (typeof checked)[number]): boolean => {
+    // The schema.org/WordPress site-search idiom, emitted by CMSes for free.
+    if (c.type === "SearchAction" && /\{search_term_string\}/.test(String(c.target ?? ""))) return true;
+    // Neither named nor targeted: a fragment nobody configured.
+    if (!c.name && !c.target) return true;
+    return false;
+  };
+  const substantive = checked.filter((c) => !isBoilerplate(c));
+  const boilerplateCount = checked.length - substantive.length;
+  const verticalHit = expected ? expected.filter((t) => substantive.some((c) => c.type === t)) : [];
+  const coverage = expected && expected.length > 0 ? verticalHit.length / expected.length : 0;
+
   if (checked.length === 0) {
     findings.push({ ok: false, msg: "No Action schemas detected — site is not agent-ready" });
+  } else if (substantive.length === 0) {
     findings.push({
       ok: false,
-      msg: "Most enterprise sites are at zero today. The first deployer in your vertical owns the agent layer for the next 12-18 months.",
+      msg: `${boilerplateCount} Action(s) detected, all CMS boilerplate (site-search or untargeted fragments). Nothing deliberately deployed, so an agent still cannot act.`,
     });
   } else {
-    score += 30;
-    const formats = [...new Set(checked.map((c) => c.format))];
+    const formats = [...new Set(substantive.map((c) => c.format))];
     findings.push({
       ok: true,
-      msg: `${checked.length} Action type(s) detected (${formats.join(" + ")}): ${[...presentTypes].join(", ")}`,
+      msg: `${substantive.length} deliberate Action type(s) (${formats.join(" + ")}): ${[...new Set(substantive.map((c) => c.type))].join(", ")}`,
     });
-
-    if (expected) {
-      const coverage = (expected.length - missing.length) / expected.length;
-      const vp = Math.round(coverage * 30);
-      score += vp;
-      if (missing.length === 0) {
-        findings.push({ ok: true, msg: `Full vertical baseline coverage (${vertical})` });
-      } else {
-        findings.push({
-          ok: false,
-          msg: `Vertical baseline incomplete (${vertical}). Missing: ${missing.join(", ")}`,
-        });
-      }
-    } else {
-      score += 15;
+    if (boilerplateCount > 0) {
+      findings.push({ ok: false, msg: `${boilerplateCount} further Action(s) ignored as CMS boilerplate` });
     }
 
-    const totalIssues = checked.reduce((sum, c) => sum + c.issues.length, 0);
-    const issuePenalty = Math.min(20, totalIssues * 5);
-    score += 20 - issuePenalty;
-    if (totalIssues === 0) {
-      findings.push({ ok: true, msg: "All Action schemas pass basic validation" });
+    if (expected && coverage === 0) {
+      // Deploys Actions, but none this vertical needs. Token credit only.
+      score += Math.min(10, substantive.length * 5);
+      findings.push({
+        ok: false,
+        msg: `No vertical-relevant Action for ${vertical}. Missing: ${missing.join(", ")}`,
+      });
     } else {
-      findings.push({ ok: false, msg: `${totalIssues} validation issue(s) across actions` });
+      score += Math.round(coverage * 60);
+      const relevant = expected ? substantive.filter((c) => expected.includes(c.type)) : substantive;
+      const totalIssues = relevant.reduce((sum, c) => sum + c.issues.length, 0);
+      score += Math.max(0, 20 - Math.min(20, totalIssues * 5));
+      const reachableCount = relevant.filter((c) => c.reachable && "ok" in c.reachable && c.reachable.ok).length;
+      score += relevant.length > 0 ? Math.round((reachableCount / relevant.length) * 20) : 0;
+      findings.push({
+        ok: missing.length === 0,
+        msg: missing.length === 0
+          ? `Full vertical baseline coverage (${vertical})`
+          : `Vertical baseline incomplete (${vertical}). Missing: ${missing.join(", ")}`,
+      });
+      if (totalIssues > 0) findings.push({ ok: false, msg: `${totalIssues} validation issue(s) on vertical-relevant actions` });
+      findings.push({
+        ok: reachableCount === relevant.length,
+        msg: `${reachableCount} of ${relevant.length} vertical action target URLs respond 2xx`,
+      });
     }
-
-    const reachableCount = checked.filter((c) => c.reachable && "ok" in c.reachable && c.reachable.ok).length;
-    const reachableScore = checked.length > 0 ? Math.round((reachableCount / checked.length) * 20) : 0;
-    score += reachableScore;
-    findings.push({
-      ok: reachableCount === checked.length,
-      msg: `${reachableCount} of ${checked.length} action target URLs respond 2xx`,
-    });
   }
 
   return {
