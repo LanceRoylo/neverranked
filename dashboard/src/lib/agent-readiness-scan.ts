@@ -26,7 +26,7 @@
  */
 import { agentReadinessCheck } from "../../../tools/schema-check/src/scoring-ports";
 
-export type ReadinessState = "deployed" | "boilerplate_only" | "verified_zero" | "unverifiable";
+export type ReadinessState = "deployed" | "off_baseline" | "boilerplate_only" | "verified_zero" | "unverifiable";
 
 export interface ReadinessRow {
   domain: string;
@@ -54,8 +54,17 @@ export async function scanDomainReadiness(url: string, vertical?: string): Promi
     };
     const actions = r.actions ?? [];
     const substantive = actions.filter((a) => !isBoilerplateAction(a));
+    // A score above zero does NOT mean the vertical's actions are deployed.
+    // Off-baseline Actions earn a token 10 max, so anything at or under 10
+    // has zero vertical coverage: real markup, none of it the kind that lets
+    // an agent do the thing this vertical exists to do. Vertical coverage
+    // starts at 60 x coverage, so the smallest real coverage scores 30.
+    // Calling a 5 "deployed" would tell a client a competitor had shipped
+    // booking when they had shipped something else entirely.
+    const score = r.score ?? 0;
     let state: ReadinessState;
-    if ((r.score ?? 0) > 0) state = "deployed";
+    if (score > 10) state = "deployed";
+    else if (score > 0) state = "off_baseline";
     else if (actions.length > 0 && substantive.length === 0) state = "boilerplate_only";
     else state = "verified_zero";
     return { url, score: r.score ?? 0, grade: r.grade ?? "F", state, error: null };

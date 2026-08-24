@@ -312,9 +312,17 @@ export default {
     // scan per active cohort domain, recording verified_zero /
     // boilerplate_only / unverifiable / deployed rather than flattening
     // everything that is not a deployment into "0".
-    if (path === "/admin/readiness-scan" && (method === "GET" || method === "POST")) {
+    // NOT under /admin/: that prefix is session-guarded upstream and 302s to
+    // login before this handler runs. Sits beside /audit-template, which is
+    // gated the same way and for the same reason.
+    if (path === "/readiness-scan" && (method === "GET" || method === "POST")) {
+      // Accepts ADMIN_SECRET or a dedicated READINESS_SCAN_TOKEN. The second
+      // exists so a scheduler (or an assistant running the monthly scan) can
+      // trigger this without being handed the key that opens every other
+      // admin route. Narrow credential for a narrow job; revoke it alone.
       const secret = url.searchParams.get("key");
-      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+      const ok = !!secret && (secret === (env as any).ADMIN_SECRET || secret === (env as any).READINESS_SCAN_TOKEN);
+      if (!ok) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401, headers: { "content-type": "application/json" },
         });
