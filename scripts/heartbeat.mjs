@@ -313,17 +313,28 @@ const INVARIANTS = [
     name: 'email-pause-active',
     description: 'No client email may be silently suppressed -- a pause must announce itself daily',
     run: () => {
+      // Reads the MOST RECENT attempt, not "any suppression in 8 days".
+      // The first version of this check used an 8-day window and so stayed
+      // red for a week after a CORRECT lift (observed 2026-08-24: pause
+      // lifted 18:56 UTC, check still failing on 06:15 rows from before
+      // it). An alarm that keeps firing after the fix is its own cry-wolf.
+      // The live question is only ever: was the last thing we tried to
+      // send suppressed?
       const row = runD1(`
-        SELECT COUNT(*) AS n,
-               MAX(date(created_at, 'unixepoch')) AS latest
+        SELECT status,
+               date(created_at, 'unixepoch') AS on_date,
+               CAST((unixepoch() - created_at) / 86400 AS INT) AS age_days
         FROM email_delivery_log
-        WHERE status = 'suppressed' AND created_at > unixepoch() - 8*86400
+        ORDER BY created_at DESC
+        LIMIT 1
       `)[0];
-      const n = row?.n || 0;
-      if (n === 0) return { pass: true, detail: 'no suppressed sends in 8d' };
+      if (!row) return { pass: true, detail: 'no send attempts logged yet' };
+      if (row.status !== 'suppressed') {
+        return { pass: true, detail: `latest attempt ${row.on_date} was '${row.status}' -- not suppressed, pause is off` };
+      }
       return {
         pass: false,
-        detail: `${n} email(s) suppressed in the last 8d (latest ${row.latest}) -- EMAIL_GLOBAL_PAUSE is ON. Clients are receiving nothing and every send is logging as success. Lift with: wrangler secret delete EMAIL_GLOBAL_PAUSE`,
+        detail: `latest send attempt (${row.on_date}, ${row.age_days}d ago) was SUPPRESSED -- EMAIL_GLOBAL_PAUSE is ON. Clients receive nothing and every send logs as success. Lift: cd dashboard && wrangler secret delete EMAIL_GLOBAL_PAUSE`,
       };
     },
   },
