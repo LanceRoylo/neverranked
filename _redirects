@@ -111,3 +111,20 @@
 /state-of-aeo/2026-05-11/                       /teardowns/                         301
 /state-of-aeo/hawaii-2026/                      /teardowns/cross-category/          301
 /your-clicks-are-down/                          /                                   301
+
+# ── Retired-standards URLs that ship inside signed client documents ──────
+# Found 2026-08-24. /standards/methodology serves the generic "Page retired"
+# holder from the 2026-05-21 sweep, while the live page has been at
+# /methodology since. That dead URL is printed in the FOOTER of Prince
+# Waikiki's signed engagement letter, their What To Expect, and their
+# Question Set, and it is returned as methodology_url by every aeo_scan
+# response. A client clicking the methodology link on their own contract --
+# exactly what an auditor's client clicks -- got a retirement notice.
+#
+# Redirecting fixes every already-delivered PDF retroactively, without
+# reissuing a single document.
+/standards/methodology/     /methodology/       301
+/standards/methodology      /methodology/       301
+/schemas/                   /schema-library/    301
+/schemas/compliance/        /schema-library/    301
+/schemas/llms-txt/          /schema-library/    301
