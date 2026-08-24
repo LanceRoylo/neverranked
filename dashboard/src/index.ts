@@ -303,6 +303,36 @@ export default {
       }
     }
 
+    // Readiness cross-map scan. ADMIN_SECRET-gated, same pattern as the
+    // audit-template route below: runnable by Lance or a scheduler without
+    // a dashboard session, not scrape-able.
+    //
+    // Exhibit A of the Prince Waikiki agreement lists a readiness cross-map
+    // among the Deliverables. This produces its data: one agent-readiness
+    // scan per active cohort domain, recording verified_zero /
+    // boilerplate_only / unverifiable / deployed rather than flattening
+    // everything that is not a deployment into "0".
+    if (path === "/admin/readiness-scan" && (method === "GET" || method === "POST")) {
+      const secret = url.searchParams.get("key");
+      if (!secret || secret !== (env as any).ADMIN_SECRET) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { "content-type": "application/json" },
+        });
+      }
+      const slug = url.searchParams.get("slug") || "";
+      const vertical = url.searchParams.get("vertical") || undefined;
+      if (!slug) {
+        return new Response(JSON.stringify({ error: "?slug= required" }), {
+          status: 400, headers: { "content-type": "application/json" },
+        });
+      }
+      const { scanCohortReadiness } = await import("./lib/agent-readiness-scan");
+      const rows = await scanCohortReadiness(env as any, slug, vertical);
+      return new Response(JSON.stringify({ ok: true, slug, vertical: vertical ?? null, scanned: rows.length, rows }, null, 2), {
+        headers: { "content-type": "application/json" },
+      });
+    }
+
     // $750 audit deliverable generator. Public route gated by
     // ADMIN_SECRET so Lance (or a deploy script) can hit it without
     // dashboard auth, but it's not scrape-able by random visitors.
