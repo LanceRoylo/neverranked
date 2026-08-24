@@ -12,6 +12,22 @@ import { sendViaResend } from "./email";
 
 const DAY_IN_SECONDS = 86400;
 
+// A drip email is only true inside its moment. "Your scan results are in"
+// at day 3 is useful; the same mail at day 129 is a lie about recency and
+// reads as a dead system waking up. EMAIL_GLOBAL_PAUSE (on since
+// 2026-05-18) held a backlog behind it: at 2026-08-23 the pending queue
+// was 99-129 days old and included a PAYING Hawaii Theatre contact who
+// would have received a beginner nurture mail, plus conversion mails
+// pitching a SKU retired on 2026-08-03. Lifting the pause would have
+// fired all of it at once.
+//
+// This is the same failure the digest pipeline already fixed by screening
+// before rendering (see cron.ts): a stale fact printed as current news.
+// Past the grace window the mail is marked handled and never sent, so the
+// backlog drains silently instead of detonating.
+const STALE_GRACE_DAYS = 14;
+
+
 interface DripUser {
   id: number;
   email: string;
@@ -45,7 +61,10 @@ export async function sendOnboardingDripEmails(env: Env): Promise<void> {
     const daysSinceStart = (now - user.onboarding_drip_start) / DAY_IN_SECONDS;
 
     // Day 3 email: scan results + quick win
-    if (!user.onboarding_drip_day3 && daysSinceStart >= 3) {
+    if (!user.onboarding_drip_day3 && daysSinceStart > 3 + STALE_GRACE_DAYS) {
+      await env.DB.prepare("UPDATE users SET onboarding_drip_day3 = ? WHERE id = ?").bind(now, user.id).run();
+      console.log(`[drip] onboarding day3 SKIPPED as stale for user ${user.id} (${Math.floor(daysSinceStart)}d old)`);
+    } else if (!user.onboarding_drip_day3 && daysSinceStart >= 3) {
       const scan = await getLatestScan(user, env);
       const ok = await sendEmail(
         user.email,
@@ -62,7 +81,10 @@ export async function sendOnboardingDripEmails(env: Env): Promise<void> {
     }
 
     // Day 7 email: roadmap or upsell
-    if (!user.onboarding_drip_day7 && daysSinceStart >= 7) {
+    if (!user.onboarding_drip_day7 && daysSinceStart > 7 + STALE_GRACE_DAYS) {
+      await env.DB.prepare("UPDATE users SET onboarding_drip_day7 = ? WHERE id = ?").bind(now, user.id).run();
+      console.log(`[drip] onboarding day7 SKIPPED as stale for user ${user.id} (${Math.floor(daysSinceStart)}d old)`);
+    } else if (!user.onboarding_drip_day7 && daysSinceStart >= 7) {
       const ok = await sendEmail(
         user.email,
         user.plan === "audit"

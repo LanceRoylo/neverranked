@@ -13,6 +13,22 @@ import type { Env } from "./types";
 
 const DAY_IN_SECONDS = 86400;
 
+// A drip email is only true inside its moment. "Your scan results are in"
+// at day 3 is useful; the same mail at day 129 is a lie about recency and
+// reads as a dead system waking up. EMAIL_GLOBAL_PAUSE (on since
+// 2026-05-18) held a backlog behind it: at 2026-08-23 the pending queue
+// was 99-129 days old and included a PAYING Hawaii Theatre contact who
+// would have received a beginner nurture mail, plus conversion mails
+// pitching a SKU retired on 2026-08-03. Lifting the pause would have
+// fired all of it at once.
+//
+// This is the same failure the digest pipeline already fixed by screening
+// before rendering (see cron.ts): a stale fact printed as current news.
+// Past the grace window the mail is marked handled and never sent, so the
+// backlog drains silently instead of detonating.
+const STALE_GRACE_DAYS = 14;
+
+
 interface NurtureUser {
   id: number;
   email: string;
@@ -52,8 +68,17 @@ export async function sendNurtureDripEmails(env: Env): Promise<void> {
   for (const user of users) {
     const daysSinceCreation = (now - user.created_at) / DAY_IN_SECONDS;
 
-    // Day 14: educational email (send to all users, paid or free)
-    if (!user.nurture_day14_sent && daysSinceCreation >= 14) {
+    // Day 14: educational email.
+    // Stale-skip first, then the paid guard the day-30 branch already had.
+    // Without it a paying client receives a beginner nurture mail -- exactly
+    // what was queued for a Hawaii Theatre contact on the amplify plan.
+    if (!user.nurture_day14_sent && daysSinceCreation > 14 + STALE_GRACE_DAYS) {
+      await env.DB.prepare("UPDATE users SET nurture_day14_sent = ? WHERE id = ?").bind(now, user.id).run();
+      console.log(`[drip] nurture day14 SKIPPED as stale for user ${user.id} (${Math.floor(daysSinceCreation)}d old)`);
+    } else if (!user.nurture_day14_sent && daysSinceCreation >= 14 && user.plan && user.plan !== "free") {
+      await env.DB.prepare("UPDATE users SET nurture_day14_sent = ? WHERE id = ?").bind(now, user.id).run();
+      console.log(`[drip] nurture day14 SKIPPED for paid user ${user.id}`);
+    } else if (!user.nurture_day14_sent && daysSinceCreation >= 14) {
       const ok = await sendEmail(
         user.email,
         "Your AEO score is a symptom, not the diagnosis",
@@ -69,7 +94,10 @@ export async function sendNurtureDripEmails(env: Env): Promise<void> {
     }
 
     // Day 30: conversion email (suppress if user already has a paid plan)
-    if (!user.nurture_day30_sent && daysSinceCreation >= 30) {
+    if (!user.nurture_day30_sent && daysSinceCreation > 30 + STALE_GRACE_DAYS) {
+      await env.DB.prepare("UPDATE users SET nurture_day30_sent = ? WHERE id = ?").bind(now, user.id).run();
+      console.log(`[drip] nurture day30 SKIPPED as stale for user ${user.id} (${Math.floor(daysSinceCreation)}d old)`);
+    } else if (!user.nurture_day30_sent && daysSinceCreation >= 30) {
       if (user.plan && user.plan !== "free") {
         // Already converted -- mark as sent to stop checking
         await env.DB.prepare(
