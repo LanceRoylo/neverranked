@@ -142,7 +142,7 @@ const HAMADA_DATA: CustomerViewData = {
     { tool: "Google AI Overviews", shortName: "Google AIO", count: 3 },
     { tool: "Gemini grounded", shortName: "Gemini", count: 2 },
     { tool: "ChatGPT search", shortName: "ChatGPT", count: 0 },
-    { tool: "Microsoft Copilot (Bing)", shortName: "MS Copilot", count: 0 },
+    { tool: "Bing search (control)", shortName: "Bing (control)", count: 0 },
     { tool: "Claude", shortName: "Claude", count: 0 },
     { tool: "Gemma", shortName: "Gemma", count: 0 },
   ],
@@ -165,12 +165,12 @@ const HAMADA_DATA: CustomerViewData = {
     {
       kind: "shift",
       whenLabel: "6 days ago",
-      text: 'Cohort competitor <strong>masudalehrman.com</strong> gained 4 mentions on Microsoft Copilot since last week. Previously cited zero times by Copilot for any firm in the cohort. (Cohort-wide Copilot gap may be starting to close.)',
+      text: 'Cohort competitor <strong>masudalehrman.com</strong> appeared 4 times in the Bing organic control since last week. No cohort firm had appeared there before.',
     },
   ],
   observableGaps: [
     { text: 'The question <strong>"best wealth manager in Hawaii"</strong> is currently empty for your firm. 6 of 42 cohort competitors appear there.' },
-    { text: "Your firm has zero mentions on Microsoft Copilot for any question in the set. Same is true for 38 of 42 cohort competitors (cohort-wide gap)." },
+    { text: "Bing organic returns your firm on no question in the set. Same is true for 38 of 42 cohort competitors, so the gap is cohort-wide. It is a classic-search control, reported separately from the AI engines." },
     { text: "Your firm has zero mentions in Claude or Gemma (training-data layer). 7 cohort competitors have non-zero presence in at least one." },
     { text: "SmartAsset profile not detected in any cited URL. 11 cohort competitors are cited via their SmartAsset profile at least once in the measurement window." },
   ],
@@ -204,7 +204,7 @@ const HAMADA_DATA: CustomerViewData = {
       { id: "perplexity", label: "Perplexity" },
       { id: "openai", label: "ChatGPT" },
       { id: "gemini", label: "Gemini" },
-      { id: "bing", label: "Copilot" },
+      { id: "bing", label: "Bing (control)" },
       { id: "google_aio", label: "Google AIO" },
       { id: "anthropic", label: "Claude" },
       { id: "gemma", label: "Gemma" },
@@ -251,7 +251,11 @@ export async function loadCustomerView(
 // metric the published readout uses), so the dashboard and the readout agree.
 const TOOL_SHORT: Record<string, string> = {
   "ChatGPT search": "ChatGPT", "Perplexity": "Perplexity", "Gemini grounded": "Gemini",
-  "Google AI Overviews": "Google AIO", "Microsoft Copilot": "MS Copilot", "Claude": "Claude", "Gemma": "Gemma",
+  "Google AI Overviews": "Google AIO", "Claude": "Claude", "Gemma": "Gemma",
+  // What snapshots actually key the control as. "Microsoft Copilot" was the
+  // pre-2026-08-22 name and never matched again after the reclassification,
+  // so the control fell through to its full raw label in the per-tool strip.
+  "Bing search (control)": "Bing (control)",
 };
 
 // citation_runs.engine raw keys -> canonical 5+2 display order + cockpit label.
@@ -350,9 +354,9 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   if (!cust) return null;
 
   const snap = await env.DB.prepare(
-    `SELECT week_start, created_at, total_queries, client_citations, engines_breakdown, top_competitors
+    `SELECT week_start, created_at, measured_at, total_queries, client_citations, engines_breakdown, top_competitors
        FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
-  ).bind(slug).first<{ week_start: number; created_at: number | null; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
+  ).bind(slug).first<{ week_start: number; created_at: number | null; measured_at: number | null; total_queries: number; client_citations: number; engines_breakdown: string; top_competitors: string }>();
   if (!snap) return null; // no measurement yet: fall through (404 or fixture)
 
   // Refuse a legacy-shape snapshot. The cockpit can only read the readout
@@ -392,21 +396,49 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   // (created_at = bridge time, week_start as fallback). Using
   // MAX(citation_runs.run_at) here would advance daily and falsely imply the
   // headline numbers moved today.
-  const snapTs = snap.created_at || snap.week_start;
+  // measured_at FIRST. created_at is when the BRIDGE ran and week_start is the
+  // Monday of that bridge, so both report our processing date as the client's
+  // measurement date. Prince's 2026-06-26 baseline, bridged at kickoff, would
+  // have read "Baseline measured 0 days ago" to a paying client looking at
+  // three-month-old numbers. measured_at is the research run's own start time:
+  // frozen per snapshot (so it cannot advance daily the way MAX(run_at) would)
+  // and true about when the data was actually captured.
+  const snapTs = snap.measured_at || snap.created_at || snap.week_start;
   const measuredAgo = snapTs ? agoLabel(snapTs) : "recently";
 
   // Observable gaps derived from the snapshot (honest, data-grounded).
   const gaps: ObservableGap[] = [];
-  const copilot = eb["Microsoft Copilot"];
-  const chatgpt = eb["ChatGPT search"];
-  if (copilot && copilot.share_pct === 0) gaps.push({ text: "Microsoft Copilot cites you on no question (0%). It builds from the Bing index, not your live pages, so verifying your site in Bing Webmaster Tools is the lever that opens it." });
-  if (chatgpt && chatgpt.share_pct > 0 && chatgpt.share_pct <= 8) gaps.push({ text: `ChatGPT search cites you on only ${chatgpt.share_pct}% of citations, your weakest web-search engine. It shares the Bing-index root with the Copilot gap, so the same fix moves both.` });
+  // Keyed on 'Bing search (control)', which is what snapshots actually
+  // contain. The old lookup was eb["Microsoft Copilot"] -- a key that has not
+  // existed since the 2026-08-22 reclassification, so this branch was dead
+  // code holding a retired claim, armed to go live the moment someone
+  // "fixed" the key. Its text asserted that Bing Webmaster Tools is "the
+  // lever that opens" a Copilot gap: the exact causal claim retired
+  // site-wide, about a channel we do not measure.
+  const control = eb["Bing search (control)"];
+  if (control && control.share_pct === 0) {
+    gaps.push({ text: "Bing organic returns your site on none of these questions. We run it as a classic-search control, not an AI engine, and report it separately. Whether ranking there changes what any AI engine cites is not something this measurement tested." });
+  }
+
+  // Weakest AI engine, COMPUTED. The old version hardcoded ChatGPT and called
+  // it "your weakest web-search engine" -- false for Prince Waikiki, whose
+  // ChatGPT sits at 7% while Perplexity is at 1%. It also pointed at "the
+  // Copilot gap", which never renders. A cockpit that names the wrong engine
+  // to a paying client is worse than saying nothing.
+  const AI_WEB_ENGINES = ["Perplexity", "ChatGPT search", "Gemini grounded", "Google AI Overviews"];
+  const weakest = AI_WEB_ENGINES
+    .map((k) => ({ k, v: eb[k] }))
+    .filter((e) => e.v && e.v.share_pct > 0 && e.v.share_pct <= 8)
+    .sort((a, b) => a.v.share_pct - b.v.share_pct)[0];
+  if (weakest) {
+    gaps.push({ text: `${weakest.k} cites you on ${weakest.v.share_pct}% of its citations, the thinnest of the four web-searching AI engines. Your monthly readout names which questions it is missing you on.` });
+  }
   // Fallback when no engine is at zero: say something true and useful, not a
   // jargon all-clear. The named per-question openings live in the readout.
   if (gaps.length === 0) {
     const citedCount = perTool.filter((t) => t.count > 0).length;
     const strongest = perTool[0];
-    gaps.push({ text: `You are cited on ${citedCount} of 7 engines${strongest ? `, strongest on ${strongest.shortName}` : ""}. No engine sits at zero, so your opening here is share, not presence, and your monthly readout ranks which questions to push first.` });
+    gaps.push({ text: `You are cited on ${citedCount} of 7 measured surfaces (six AI tools plus a Bing organic control)${strongest ? `, strongest on ${strongest.shortName}` : ""}. Nothing sits at zero, so your opening here is share, not presence, and your monthly readout ranks which questions to push first.` });
   }
 
   // Derived "so-what" facts for the at-a-glance narrative. These assemble one
