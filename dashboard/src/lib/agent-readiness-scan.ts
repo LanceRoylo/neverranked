@@ -113,3 +113,22 @@ export async function scanCohortReadiness(
   }
   return rows;
 }
+
+/**
+ * Map a customer's category label to an agent-readiness vertical.
+ * Unknown categories return undefined, which scores against the generic
+ * baseline rather than guessing a wrong one. A wrong vertical would report
+ * a client missing Actions their category never needed.
+ */
+export function verticalForCategory(label: string | null | undefined): string | undefined {
+  const t = (label || "").toLowerCase();
+  if (/hotel|resort|hospitality|lodging/.test(t)) return "hospitality";
+  if (/restaurant|dining|cafe/.test(t)) return "restaurants";
+  if (/theatre|theater|performing|venue|arts/.test(t)) return "performing-arts";
+  if (/bank|credit union|wealth|financial|advisor/.test(t)) return "financial-services";
+  if (/law|legal|cpa|account|agency|consult/.test(t)) return "professional-services";
+  if (/dental|dentist|medical|health|clinic|med spa/.test(t)) return "healthcare";
+  if (/real estate|realt|broker/.test(t)) return "real-estate";
+  if (/school|college|universit|education/.test(t)) return "education";
+  return undefined;
+}

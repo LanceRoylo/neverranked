@@ -736,6 +736,42 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron] audit-credit-expiry sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Readiness cross-map refresh. Runs on the 25th so the scan is fresh when
+  // the monthly memo is drafted, and late enough that a month's measurement
+  // is essentially complete.
+  //
+  // Every active customer with a cohort, not a hardcoded list: a
+  // hand-maintained roster of who gets a deliverable is how prince_waikiki
+  // went missing from orchestrate's D1_CUSTOMERS map while the registry
+  // already knew the slug.
+  //
+  // Failure here must never abort the monthly memo work below it, so the
+  // whole block is isolated and a per-client failure only skips that client.
+  try {
+    if (new Date().getUTCDate() === 25) {
+      const cohorts = (await env.DB.prepare(
+        `SELECT c.client_slug, c.category_label
+           FROM customers c
+          WHERE EXISTS (SELECT 1 FROM domains d WHERE d.client_slug = c.client_slug AND d.active = 1)`
+      ).all<{ client_slug: string; category_label: string | null }>()).results;
+      if (cohorts.length) {
+        const { scanCohortReadiness } = await import("./lib/agent-readiness-scan");
+        const { verticalForCategory } = await import("./lib/agent-readiness-scan");
+        for (const c of cohorts) {
+          try {
+            const rows = await scanCohortReadiness(env, c.client_slug, verticalForCategory(c.category_label));
+            const verified = rows.filter((r) => r.state !== "unverifiable").length;
+            console.log(`[cron] readiness cross-map ${c.client_slug}: ${verified}/${rows.length} verified`);
+          } catch (e) {
+            console.log(`[cron] readiness scan failed for ${c.client_slug}: ${e instanceof Error ? e.message : String(e)}`);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.log(`[cron] readiness cross-map block failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // NVI monthly report runs.
   // Each subscription has a delivery_day (1-28). When today's day-
   // of-month UTC matches, kick off the runner for that subscription.
