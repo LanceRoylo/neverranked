@@ -898,10 +898,10 @@ async function buildSchedulePanel(domain: Domain, env: Env): Promise<string> {
             </p>
             ${hasDailySnippetCheck ? `
             <p style="margin:0 0 12px">
-              <strong style="color:var(--text)">Daily monitoring.</strong> Because your install snippet is in place, we probe your homepage daily to make sure it's still firing. If it disappears (CMS migration, theme update, webmaster cleanup) we email you immediately.
+              <strong style="color:var(--text)">Structural drift check.</strong> We re-read your homepage on a daily cadence and tell you if the structured data we last measured disappears (CMS migration, theme update, webmaster cleanup) we email you immediately.
             </p>` : `
             <p style="margin:0 0 12px">
-              <strong style="color:var(--text)">Daily monitoring.</strong> We watch for score regressions and surface them as alerts the moment they're detected -- you don't have to wait for the next Monday.
+              <strong style="color:var(--text)">Regression watch.</strong> We watch for score regressions and surface them as alerts the moment they're detected -- you don't have to wait for the next Monday.
             </p>`}
             <p style="margin:0">
               Between Mondays your dashboard may look quiet. That's normal -- the activity feed only logs <em>changes</em>. The status pill above and the next-scan date are how you know we're still watching.

@@ -133,7 +133,7 @@ function dashboardPage(user: FreeUser, latest: ScanRow | null, history: ScanRow[
       <div style="background:var(--bg-lift,#fafafa);padding:24px;border-radius:6px;margin:32px 0;text-align:center">
         <h2 style="font-family:Georgia,serif;font-style:italic;font-size:22px;margin:0 0 8px">Want the forensic version?</h2>
         <p style="font-size:13px;color:var(--text-soft);margin:0 0 16px">
-          What you just saw is a single off-site authority signal, not a citation predictor. The paid research engagement measures what AI answer engines actually cite for your category across all seven surfaces, every day, with the prepped punch list your team executes against. $4,500 kickoff, $1,500 / month ongoing.
+          What you just saw is a single off-site authority signal, not a citation predictor. The paid research engagement measures what AI answer engines actually cite for your category across all seven surfaces, every day, with the prepped punch list your team executes against. $199/mo per category to monitor, or $750/mo per category to audit after a one-time $950 baseline month.
         </p>
         <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
           <a href="mailto:lance@neverranked.com?subject=Forensic%20readout%20inquiry" class="btn" style="font-size:13px;text-decoration:none;display:inline-block;padding:10px 18px">Email Lance &rarr;</a>

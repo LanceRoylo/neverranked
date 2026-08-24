@@ -291,7 +291,7 @@ function chartBlock(title: string, bars: string, caption: string, note?: string)
 function renderDumbbell(engines: ChartEngine[], prior: string, note?: string): string {
   // An engine where NOBODY in the cohort appeared is not a score. Pull it
   // out of the chart entirely and disclose it underneath. July 2026:
-  // Microsoft Copilot returned 794 citations, none to any Honolulu venue,
+  // Bing organic (control) returned 794 citations, none to any Honolulu venue,
   // customer or competitor. Charted as "0%" that reads as a failure the
   // customer caused and can fix, which is false on both counts.
   const scored = engines.filter((e) => !e.noCohortSignal);

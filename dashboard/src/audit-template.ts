@@ -888,7 +888,7 @@ ${competitive ? `
     <div class="section-label"><span class="num">${competitive ? "06" : "05"}</span><span>What we do next</span><span class="rule"></span></div>
     <p>Three paths from here.</p>
     <p><strong>1. Take this and run.</strong> The roadmap above is yours. Hand it to your engineers or your existing agency. We have no stake in whether you hire us, only that you fix what is broken.</p>
-    <p><strong>2. Pulse, $497/mo.</strong> We monitor your citation share weekly across six AI engines, deploy two schemas to your live site each month, and send you a monthly visibility report. Your $750 audit fee is fully credited toward your first month if you upgrade within 30 days.</p>
+    <p><strong>2. Monitor, $199/mo.</strong> We monitor your citation share weekly across six AI tools plus a Bing organic control, engines, deploy two schemas to your live site each month, and send you a monthly visibility report. Your one-time $950 baseline fee is fully credited toward your first month if you upgrade within 30 days.</p>
     <p><strong>3. Signal, $2,000/mo.</strong> Pulse plus weekly tracking on 50+ prompts, Reddit thread monitoring, authority-platform tracking, unlimited schema deployment, and the auto-updating 90-day roadmap that pushes fixes to your live site within an hour.</p>
     <p>Reply to the audit email and we'll start whichever path makes sense.</p>
   </div>

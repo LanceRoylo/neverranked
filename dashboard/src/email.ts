@@ -238,7 +238,7 @@ export async function sendFreeMagicLinkEmail(
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:480px;margin:0 auto;padding:40px 20px">
             <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
             <p style="margin:0 0 16px">You are one click away from a weekly AEO score for <strong>${domain}</strong>.</p>
-            <p style="margin:0 0 24px;color:#555">Every Monday we measure how your domain shows up across the seven AI engines we track and email you the result. If the score drops materially during the week, you also get an alert.</p>
+            <p style="margin:0 0 24px;color:#555">Every Monday we measure how your domain shows up across the six AI tools plus a Bing organic control we track and email you the result. If the score drops materially during the week, you also get an alert.</p>
             <a href="${verifyUrl}" style="display:inline-block;padding:14px 28px;background:#1a1a1a;color:#e8c767;font-family:monospace;font-size:13px;text-decoration:none;letter-spacing:.05em">See my score</a>
             <p style="margin:24px 0 0;font-size:12px;color:#888">This link expires in 15 minutes. If you did not request this, ignore this email.</p>
           </div>
@@ -321,7 +321,7 @@ export async function sendFreeWeeklyDigestEmail(
   // unsubstituted placeholders, banned recipients, suppression-list
   // hits, and brand-voice violations. Red verdicts BLOCK the send.
   const subject = `Your AEO score this week: ${d.score}/100`;
-  const textBody = `${d.domain}\n\nAEO score: ${d.score}/100 (grade ${d.grade})\n${trendBlock}\n\nFull dashboard: ${dashboardUrl}\nThis week's Citation Tape: ${stateOfAeoUrl}\n\nFree shows the score. Paid shows what to fix and the citation tracking across all seven engines. See paid tiers: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`;
+  const textBody = `${d.domain}\n\nAEO score: ${d.score}/100 (grade ${d.grade})\n${trendBlock}\n\nFull dashboard: ${dashboardUrl}\nThis week's Citation Tape: ${stateOfAeoUrl}\n\nFree shows the score. Paid shows what to fix and the citation tracking across all seven surfaces. See paid tiers: ${upgradeUrl}\n\nUnsubscribe: ${unsubUrl}`;
   const htmlBody = `
           <div style="font-family:monospace;font-size:14px;color:#333;max-width:520px;margin:0 auto;padding:40px 20px">
             <p style="margin:0 0 24px;font-family:Georgia,serif;font-style:italic;font-size:20px;color:#1a1a1a">NeverRanked</p>
@@ -340,7 +340,7 @@ export async function sendFreeWeeklyDigestEmail(
             </div>
             <div style="background:#fafafa;padding:24px;border-radius:6px;margin:24px 0">
               <p style="margin:0 0 8px;font-family:Georgia,serif;font-style:italic;font-size:16px">Want to fix the score?</p>
-              <p style="margin:0 0 12px;font-size:13px;color:#555">Free shows the score. Paid shows <em>what to fix</em> and the citation tracking across all seven engines.</p>
+              <p style="margin:0 0 12px;font-size:13px;color:#555">Free shows the score. Paid shows <em>what to fix</em> and the citation tracking across all seven surfaces.</p>
               <a href="${upgradeUrl}" style="font-family:monospace;font-size:12px;color:#bfa04d;text-decoration:underline">See paid tiers &rarr;</a>
             </div>
             <p style="margin:32px 0 0;font-size:11px;color:#888">

@@ -97,7 +97,7 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   for (const h of inp.offsite.hosts) add(h.share_pct);
   // Structural constants the memo may legitimately state, so they verify
   // without leaning on the small-int safety net: the measured question count
-  // and engine count ("18 questions", "7 AI tools").
+  // and engine count ("18 questions", "6 AI tools plus a Bing organic control").
   add(inp.by_question.length);
   add(inp.by_engine.length);
   // The frozen engagement plan is a human-authored, approved artifact, so the

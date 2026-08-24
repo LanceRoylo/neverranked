@@ -27,7 +27,7 @@ import type { Env } from "./types";
 const HAIKU_MODEL = "claude-haiku-4-5";
 const ANTHROPIC_VERSION = "2023-06-01";
 
-const SYSTEM = `You grade the body of a weekly client digest email for a SaaS company called NeverRanked. NeverRanked tracks how often AI engines (ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, Gemma) cite a client's business in their answers.
+const SYSTEM = `You grade the body of a weekly client digest email for a SaaS company called NeverRanked. NeverRanked tracks how often AI engines (ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, Gemma) cite a client's business in their answers.
 
 Two checks. Both must pass for the digest to ship.
 

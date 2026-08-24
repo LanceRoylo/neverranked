@@ -63,7 +63,7 @@ function publicLayout(title: string, body: string, robots: "index" | "noindex"):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="${robots},${robots === "noindex" ? "nofollow" : "follow"}">
 <title>${esc(title)} | NeverRanked</title>
-<meta name="description" content="Public AEO score history measured weekly by NeverRanked across seven AI engines.">
+<meta name="description" content="Public AEO score history measured weekly by NeverRanked across six AI tools plus a Bing organic control.">
 <style>
 :root{--bg:#fdfcf8;--ink:#1a1a1a;--mute:#666;--faint:#999;--gold:#bfa04d;--line:#e5e5e5}
 *,*:before,*:after{box-sizing:border-box}
@@ -159,7 +159,7 @@ export async function handleFreePublicScore(request: Request, env: Env): Promise
   const body = `
     <div class="kicker">NeverRanked &middot; Public AEO score</div>
     <h1>${esc(domain)}</h1>
-    <p style="font-size:13px;color:var(--mute);margin:0">Measured weekly across seven AI engines. Methodology is public, the measurement code is open, and the underlying open-weight engine in the set (Gemma) lets anyone reproduce these numbers.</p>
+    <p style="font-size:13px;color:var(--mute);margin:0">Measured weekly across six AI tools plus a Bing organic control. Methodology is public, the measurement code is open, and the underlying open-weight engine in the set (Gemma) lets anyone reproduce these numbers.</p>
 
     <div class="score">${latest.aeo_score}</div>
     <div class="score-meta">Grade ${esc(latest.grade)} &middot; ${scans.length} ${scans.length === 1 ? "scan" : "weeks"} of history &middot; Last update ${esc(lastScanDate)}</div>
@@ -173,7 +173,7 @@ export async function handleFreePublicScore(request: Request, env: Env): Promise
         <span>Perplexity</span>
         <span>Gemini</span>
         <span>Claude</span>
-        <span>Microsoft Copilot</span>
+        <span>Bing organic (control)</span>
         <span>Google AI Overviews</span>
         <span>Gemma (open-weight)</span>
       </div>
@@ -181,7 +181,7 @@ export async function handleFreePublicScore(request: Request, env: Env): Promise
 
     <div class="section">
       <div class="section-label">How this number is computed</div>
-      <p style="margin:0 0 8px;color:var(--mute)">The AEO score (0-100) reflects how well a domain is structured for AI engines to cite. We measure schema markup, llms.txt presence, agent-readiness signals, and citation surface across the seven engines listed above.</p>
+      <p style="margin:0 0 8px;color:var(--mute)">The AEO score (0-100) reflects how well a domain is structured for AI engines to cite. We measure schema markup, llms.txt presence, agent-readiness signals, and citation surface across the seven surfaces listed above.</p>
       <p style="margin:0;color:var(--mute)">Full methodology: <a href="https://neverranked.com/state-of-aeo/">neverranked.com/state-of-aeo</a></p>
     </div>
 

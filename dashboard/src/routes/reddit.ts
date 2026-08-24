@@ -20,7 +20,7 @@ const ENGINE_LABELS: Record<string, string> = {
   gemini: "Gemini",
   anthropic: "Claude",
   google_ai_overview: "Google AI Overviews",
-  bing: "Microsoft Copilot",
+  bing: "Bing (control)",
 };
 
 export async function handleReddit(clientSlug: string, user: User, env: Env): Promise<Response> {

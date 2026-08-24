@@ -33,7 +33,7 @@ const ENGINES = [
   { id: "perplexity", label: "Perplexity", host: "Perplexity" },
   { id: "anthropic", label: "Claude", host: "Anthropic" },
   { id: "gemini", label: "Gemini", host: "Google" },
-  { id: "bing", label: "Microsoft Copilot", host: "Microsoft" },
+  { id: "bing", label: "Bing (control)", host: "Microsoft" },
   { id: "google_ai_overview", label: "Google AI Overviews", host: "Google" },
   { id: "gemma", label: "Gemma", host: "Together AI (open-weight)" },
 ] as const;
@@ -153,7 +153,7 @@ export async function handleEngineStatus(env: Env): Promise<Response> {
     summary.yellow > 0 ? "yellow" : "green";
 
   const overallNote =
-    overallStatus === "green" ? "All seven engines healthy. Citation data behind every report is current and complete."
+    overallStatus === "green" ? "All seven surfaces healthy. Citation data behind every report is current and complete."
     : overallStatus === "yellow" ? `${summary.yellow} engine${summary.yellow === 1 ? "" : "s"} in watch state. Citation data is being collected but at reduced volume or elevated empty-row rate.`
     : `${summary.red} engine${summary.red === 1 ? "" : "s"} degraded. Recent citation data may be partial. This page is updated every 5 minutes.`;
 
@@ -163,7 +163,7 @@ export async function handleEngineStatus(env: Env): Promise<Response> {
         <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.2em;color:var(--text-faint);margin-bottom:8px">NeverRanked / engine status</div>
         <h1 style="font-family:var(--serif);font-size:42px;font-weight:400;margin:0 0 12px;line-height:1.1">Citation engine health</h1>
         <div style="font-size:14px;color:var(--text-soft);line-height:1.6;max-width:680px">
-          Live status of the seven AI engines we run citation queries through every weekday. Numbers below come from the last 24 hours of production runs. Updated every 5 minutes.
+          Live status of the six AI tools plus a Bing organic control we run citation queries through every weekday. Numbers below come from the last 24 hours of production runs. Updated every 5 minutes.
         </div>
       </div>
 

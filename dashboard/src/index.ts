@@ -3534,7 +3534,7 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     // Per-keyword citation status API. Used by the auto-refresh poller
     // on the admin citations page when a single "Run" button is fired.
     // Returns {done, enginesComplete, totalEngines} where done = at
-    // least 5 of 7 engines have produced rows since `since` (5 of 7
+    // least 5 of 7 measured surfaces have produced rows since `since` (5 of 7
     // covers normal flakiness -- AIO often doesn't render, individual
     // engines can rate-limit, we don't want the poller to spin forever
     // waiting on every engine).

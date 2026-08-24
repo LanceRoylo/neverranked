@@ -74,7 +74,7 @@ export interface ActionDefinition {
 const BING_FOR_BUSINESS: ActionDefinition = {
   type: "bing_for_business",
   title: "Claim your Bing for Business profile",
-  one_liner: "Get named in ChatGPT and Microsoft Copilot answers about businesses like yours.",
+  one_liner: "Get named in ChatGPT answers about businesses like yours.",
   boundary_framing:
     "We can't sign in as you. Microsoft requires the business owner. Everything else is ready. Your business info, description, and category are pre-filled below. Each field has a Copy button.",
   why_this_matters:

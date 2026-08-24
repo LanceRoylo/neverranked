@@ -3,7 +3,7 @@
  *
  * Each action card on /actions/<slug> can show a concrete data line
  * pulled from production state ("you're missing from 11 of 17 tracked
- * Microsoft Copilot answers" beats "claim your Bing profile to lift
+ * Bing organic (control) answers" beats "claim your Bing profile to lift
  * citations"). The metric is computed at render time.
  *
  * Returning null hides the metric line entirely (no card noise when
@@ -70,7 +70,7 @@ async function faqReviewMetric(env: Env, clientSlug: string): Promise<string | n
 // ---------------------------------------------------------------------------
 
 async function bingForBusinessMetric(env: Env, clientSlug: string): Promise<string | null> {
-  // Bing tracks Microsoft Copilot citations directly. ChatGPT (openai)
+  // Bing tracks Bing organic (control) citations directly. ChatGPT (openai)
   // grounds through Bing for most queries. So gaps in either engine
   // are the upside if they claim a Bing profile.
   const since = Math.floor(Date.now() / 1000) - 90 * 86400;
@@ -98,8 +98,8 @@ async function bingForBusinessMetric(env: Env, clientSlug: string): Promise<stri
   const gap = gapRow?.n ?? 0;
   if (total === 0) return null;
   if (gap === 0) {
-    return `Cited in all ${total} tracked Microsoft Copilot and ChatGPT answers. Claim your profile to defend that position.`;
+    return `Cited in all ${total} tracked ChatGPT answers. Claim your profile to defend that position.`;
   }
   const pct = Math.round((gap / total) * 100);
-  return `Currently missing from ${gap} of ${total} tracked Microsoft Copilot and ChatGPT answers (${pct}%)`;
+  return `Currently missing from ${gap} of ${total} tracked ChatGPT answers (${pct}%)`;
 }

@@ -85,7 +85,7 @@ export interface GenerateAndStoreResult {
  */
 // RETRACTED 2026-05-20. Audit delivery emails contain Pulse/Signal
 // pricing ($497/mo, $2,000/mo) for products we no longer sell, and
-// reference the $750 audit credit flow that maps to retired tiers.
+// reference the $750/mo Audit tier credit flow that maps to retired tiers.
 // Audit deliverable structure is built on the retracted schema-causation
 // thesis. Disabled until rewritten against the research-engagement
 // positioning (the kickoff is now the deliverable, $4,500, no credit flow).
@@ -233,7 +233,7 @@ What's inside: an executive summary, an entity-graph audit across the eight iden
 
 The audit lives at the link above for one year. You can revisit it any time, share it with your team, or print it. Reply to this email if you have questions or want to talk through the findings.
 
-If you decide to upgrade to Pulse ($497/mo) or Signal ($2,000/mo) within 30 days, the $750 audit fee is fully credited toward your first month.
+If you decide to upgrade to the Monitor ($199/mo) or Audit ($750/mo) tier within 30 days, the baseline fee is fully credited toward your first month.
 
 Lance Roylo
 NeverRanked

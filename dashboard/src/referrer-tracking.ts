@@ -48,7 +48,7 @@ const ENGINE_LABELS: Record<string, string> = {
   perplexity: "Perplexity",
   gemini: "Gemini",
   claude: "Claude",
-  copilot: "Microsoft Copilot",
+  copilot: "Bing (control)",
   deepseek: "DeepSeek",
   meta_ai: "Meta AI",
   other_ai: "Other AI",

@@ -1,7 +1,7 @@
 /**
- * Bing / Microsoft Copilot citation tracking via DataForSEO.
+ * Bing / Bing organic (control) citation tracking via DataForSEO.
  *
- * Microsoft Copilot's web answers are powered by Bing's index, so
+ * Bing organic (control)'s web answers are powered by Bing's index, so
  * tracking Bing organic SERP gives us the same surface that Copilot
  * draws from. Plus Bing has its own "answer_box" and "featured_snippet"
  * items that act like the AI Overview equivalent. We extract URLs
@@ -51,7 +51,7 @@ interface DfsBingResponse {
   }>;
 }
 
-/** Run one Bing/Copilot query through DataForSEO. */
+/** Run one Bing organic (control) query through DataForSEO. */
 export async function queryBing(keyword: string, env: Env): Promise<BingResult> {
   if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) {
     return { text: "", urls: [], entities: [] };
@@ -131,7 +131,7 @@ export async function queryBing(keyword: string, env: Env): Promise<BingResult> 
         entities.push({ name: entityName, url: item.url || null, context: "bing" });
       }
     }
-    // Top 5 organic results count as the "what Bing/Copilot would
+    // Top 5 organic results count as the "what Bing organic (control) would
     // surface" set. We cap at 5 to mirror what the AI summary would
     // typically pull from.
     else if (t === "organic" && item.rank_absolute && item.rank_absolute <= 5) {

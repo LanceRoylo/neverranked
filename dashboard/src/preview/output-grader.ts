@@ -80,7 +80,7 @@ ABOUT WHAT WE MEASURE
   training data (Claude, Gemma). Bing classic search runs alongside
   them as a CONTROL and is NOT an AI tool.
   (Reclassified 2026-08-22. The Bing channel is keyword search, not an
-  answer engine, and "Microsoft Copilot" was retired as its name. An
+  answer engine, and "Bing (control)" was retired as its name. An
   artifact that says "seven tools", "seven engines", "five
   citation-grade", or that calls Copilot a measured AI tool is making
   a RETIRED claim: FACTUAL violation.)
@@ -126,7 +126,7 @@ ABOUT WHAT WE DELIVER
 
 ABOUT THE FREE ENTRY POINT AND THE PAID PILOT
 - The instant self-serve check at check.neverranked.com. A visitor
-  pastes a URL and sees, in seconds, what the 7 AI tools can read
+  pastes a URL and sees, in seconds, what the 6 AI tools plus a Bing organic control can read
   from that site. Free, no signup, automated. This is the primary
   call-to-action across the site ("See what AI sees", "Run the AI
   search check"). Referencing it, linking it, or describing it as an

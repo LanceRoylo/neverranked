@@ -252,7 +252,7 @@ export async function loadCustomerView(
 const TOOL_SHORT: Record<string, string> = {
   "ChatGPT search": "ChatGPT", "Perplexity": "Perplexity", "Gemini grounded": "Gemini",
   "Google AI Overviews": "Google AIO", "Claude": "Claude", "Gemma": "Gemma",
-  // What snapshots actually key the control as. "Microsoft Copilot" was the
+  // What snapshots actually key the control as. "Bing (control)" was the
   // pre-2026-08-22 name and never matched again after the reclassification,
   // so the control fell through to its full raw label in the per-tool strip.
   "Bing search (control)": "Bing (control)",
@@ -409,7 +409,7 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   // Observable gaps derived from the snapshot (honest, data-grounded).
   const gaps: ObservableGap[] = [];
   // Keyed on 'Bing search (control)', which is what snapshots actually
-  // contain. The old lookup was eb["Microsoft Copilot"] -- a key that has not
+  // contain. The old lookup was eb["Bing (control)"] -- a key that has not
   // existed since the 2026-08-22 reclassification, so this branch was dead
   // code holding a retired claim, armed to go live the moment someone
   // "fixed" the key. Its text asserted that Bing Webmaster Tools is "the
@@ -460,8 +460,8 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
       : ` at ${ownShare}% citation share`) +
     `. ` +
     (zeroNames.length
-      ? `${zeroNames.length} of 7 engines show zero so far${zeroNames.length <= 4 ? ` (${andList(zeroNames)})` : ""}, which is where next month's work points. `
-      : `You appear on all 7 engines. `) +
+      ? `${zeroNames.length} of 7 measured surfaces show zero so far${zeroNames.length <= 4 ? ` (${andList(zeroNames)})` : ""}, which is where next month's work points. `
+      : `You appear on all 7 surfaces. `) +
     `From next month, this section shows what moved against this baseline.`;
 
   // Bipartite citation map. Nodes: you + up to 4 top competitors (validated
@@ -644,7 +644,7 @@ function renderCockpitMap(map: CitationMap | undefined): string {
       <p class="cm2-lead">Every AI tool builds its own answer. This is which of them named you, and who they named instead, across ${esc(map.windowLabel)}.</p>
       <div class="cm2-stage">
         <svg id="cm2-svg" viewBox="0 0 ${W} ${H}" role="img" aria-label="Citation map: AI tools on the left, businesses they named on the right.">
-          <text class="cm2-colcap" x="${EX}" y="28" text-anchor="middle">The seven AI tools</text>
+          <text class="cm2-colcap" x="${EX}" y="28" text-anchor="middle">The seven measured surfaces</text>
           <text class="cm2-colcap" x="${BX}" y="28" text-anchor="middle">Who they name</text>
           <g id="cm2-edges">${edgePaths}</g>
           <g>${engineNodes}${bizNodes}</g>

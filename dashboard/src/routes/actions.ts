@@ -179,7 +179,7 @@ async function renderActionCard(env: Env, slug: string, def: ActionDefinition): 
   //    · 4 from queries with competitor pressure
   //    · 2 from cited Reddit threads"
   // Example for Bing card:
-  //   "Currently missing from 11 of 17 tracked Microsoft Copilot and
+  //   "Currently missing from 11 of 17 tracked Bing organic (control) and
   //    ChatGPT answers (65%)"
   const metric = await getActionMetric(env, slug, def.type);
   const metricLine = metric

@@ -314,6 +314,26 @@ const ALLOW = [
   // The head comment here quotes the false claim in order to record that it
   // was found false and corrected. A correction has to name what it corrects.
   { path: "teardowns/cross-category/index.html", rules: ["false-cohort-named-in-full"] },
+  // The preview output-grader names every retired phrase precisely so it
+  // can refuse drafts containing them. Same principle as /retraction/ and
+  // /terms/: a detector has to name what it detects.
+  { path: "dashboard/src/preview/output-grader.ts", rules: ["retired-seven-tools", "retired-copilot-as-tool", "retired-five-citation-grade", "retired-sku", "retired-engagement-card", "retired-copilot-attribution", "cadence-overclaim", "retracted-htc-score", "retracted-htc-perplexity", "false-never-touched", "retired-free-diagnostic", "retired-product"] },
+  // The generator PROMPT lists retracted claims in order to forbid the
+  // model from writing them. Its own product and pricing statements were
+  // corrected 2026-08-24; what remains are prohibitions.
+  { path: "dashboard/src/preview/generator.ts", rules: ["retracted-htc-score", "retracted-htc-perplexity", "false-never-touched", "retired-free-diagnostic"] },
+  // The checkout catalog lists dead SKUs explicitly prefixed "(RETIRED)"
+  // so an old price id can never be silently re-sold. Naming them is the
+  // point. cron.ts is a Stripe refund description for a real past charge.
+  { path: "dashboard/src/routes/checkout.ts", rules: ["retired-sku", "retired-engagement-card", "retired-product", "retired-seven-tools"] },
+  { path: "dashboard/src/cron.ts", rules: ["retired-sku", "retired-engagement-card"] },
+  // audit-delivery throws on entry ("generateAndStoreAudit disabled") and
+  // has since 2026-05-20. Its dead Pulse/Signal pricing cannot reach
+  // anyone. Rewriting copy inside a disabled generator would only make
+  // it look shippable. Delete this entry when the module is rewritten.
+  { path: "dashboard/src/audit-delivery.ts", rules: ["retired-sku", "retired-engagement-card", "retired-product"] },
+  // Guard message naming the retired SKU as the reason the drip is off.
+  { path: "dashboard/src/nurture-drip.ts", rules: ["retired-sku"] },
   { path: "terms/index.html", rules: ["retired-sku", "retired-product"] },
 ];
 
@@ -332,39 +352,12 @@ const ALLOW = [
 // Prince-critical surfaces are deliberately absent -- they were fixed on
 // 2026-08-24 rather than declared: the cockpit, the Atlas system prompt, and
 // the engine display maps that render raw keys to clients.
-const APP_SWEEP_PENDING = new Set([
-  "dashboard/src/agency-emails.ts",
-  "dashboard/src/audit-delivery.ts",
-  "dashboard/src/audit-qa-agent.ts",
-  "dashboard/src/audit-template.ts",
-  "dashboard/src/auto-provision.ts",
-  "dashboard/src/client-actions/metrics.ts",
-  "dashboard/src/client-actions/registry.ts",
-  "dashboard/src/cron.ts",
-  "dashboard/src/digest-grader.ts",
-  "dashboard/src/email.ts",
-  "dashboard/src/getting-started.ts",
-  "dashboard/src/glossary.ts",
-  "dashboard/src/nurture-drip.ts",
-  "dashboard/src/nvi/template.ts",
-  "dashboard/src/preview/generator.ts",
-  "dashboard/src/preview/output-grader.ts",
-  "dashboard/src/referrer-tracking.ts",
-  "dashboard/src/routes/checkout.ts",
-  "dashboard/src/routes/citations.ts",
-  "dashboard/src/routes/competitors.ts",
-  "dashboard/src/routes/customer-view.ts",
-  "dashboard/src/routes/demo.ts",
-  "dashboard/src/routes/domain.ts",
-  "dashboard/src/routes/engine-status.ts",
-  "dashboard/src/routes/free-dashboard.ts",
-  "dashboard/src/routes/free-public-score.ts",
-  "dashboard/src/routes/home.ts",
-  "dashboard/src/routes/onboard-pulse.ts",
-  "dashboard/src/routes/reddit.ts",
-  "dashboard/src/routes/weekly.ts",
-  "dashboard/src/status.ts",
-]);
+// The client-app claims sweep COMPLETED 2026-08-24. This list held 31 files
+// carrying pre-reclassification claims while they were worked through; it is
+// now empty, so any retired claim reaching dashboard/src fails the build the
+// day it is written. The mechanism stays because the ratchet is the point:
+// debt may be declared, but only ever downward.
+const APP_SWEEP_PENDING = new Set([]);
 
 function appSweepPending(relPath) {
   return APP_SWEEP_PENDING.has(relPath);

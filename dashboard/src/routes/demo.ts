@@ -84,7 +84,7 @@ function demoLayout(title: string, body: string, activePage: string): string {
 
 <div class="demo-banner">
   <span>You are viewing sample data. This is what your dashboard looks like as a client.</span>
-  <a href="https://app.neverranked.com/checkout/audit">Start with the $750 audit</a>
+  <a href="https://app.neverranked.com/checkout/audit">Start with the $750/mo Audit tier</a>
 </div>
 
 <header class="topbar">
@@ -850,7 +850,7 @@ function renderRoadmapPage(): string {
 // handlers return 410 with redirect-to-email until the demo is rebuilt
 // around the research-engagement positioning.
 function demoRetiredResponse(): Response {
-  return new Response("Demo retired. NeverRanked has retracted the prior product and rebuilt around a research engagement at $4,500 kickoff + $1,500/mo per category. Email lance@neverranked.com to scope.", {
+  return new Response("Demo retired. NeverRanked has retracted the prior product and rebuilt around a research engagement at $199/mo per category to monitor, or $750/mo per category to audit after a one-time $950 baseline month. Email lance@neverranked.com to scope.", {
     status: 410,
     headers: { "content-type": "text/plain; charset=utf-8" },
   });
@@ -865,8 +865,8 @@ function _retired_handleDemoPost_legacy_body_below(): Response {
   return demoHtml(demoLayout("Demo Mode", `
     <div style="text-align:center;padding:80px 20px">
       <div style="font-family:var(--serif);font-size:24px;font-style:italic;color:var(--gold);margin-bottom:16px">Editing is disabled in demo mode</div>
-      <div style="font-size:14px;color:var(--text-faint);margin-bottom:32px">This is a read-only preview. Start with the $750 audit to get your own dashboard with live data.</div>
-      <a href="https://app.neverranked.com/checkout/audit" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500;text-decoration:none;border-radius:4px">Start with the $750 audit</a>
+      <div style="font-size:14px;color:var(--text-faint);margin-bottom:32px">This is a read-only preview. Start with the $750/mo Audit tier to get your own dashboard with live data.</div>
+      <a href="https://app.neverranked.com/checkout/audit" style="display:inline-block;padding:14px 32px;background:var(--gold);color:#080808;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:12px;font-weight:500;text-decoration:none;border-radius:4px">Start with the $750/mo Audit tier</a>
     </div>
   `, "domain"), 403);
 }

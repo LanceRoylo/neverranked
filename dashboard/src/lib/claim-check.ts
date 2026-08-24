@@ -168,7 +168,7 @@ export function checkRanking(body: string, facts: ClaimFacts): ClaimIssue[] {
 const ATTRIBUTION = /\b(you|your|absent|missing|dropped off|lost|failed to|did not appear|didn'?t appear|no longer)\b/i;
 
 // Prose calls engines by their short name ("Copilot") while the frozen facts
-// store the full label ("Microsoft Copilot"). Matching only the full string
+// store the full label ("Bing (control)"). Matching only the full string
 // made this check silently match NOTHING -- caught by the regression suite on
 // 2026-08-03, and worth remembering: a guard that cannot find its subject is
 // worse than no guard, because it reports clean.

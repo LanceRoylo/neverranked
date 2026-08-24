@@ -405,7 +405,7 @@ export async function sendSnippetDay21Reframe(
     ``,
     `What you ARE getting:`,
     `  - Weekly AEO scoring and grading`,
-    `  - Citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma`,
+    `  - Citation tracking across ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, and Gemma, read against Bing organic as a classic-search control`,
     `  - Google Search Console data blended into the dashboard (if connected)`,
     `  - Score regression alerts the moment we detect a drop`,
     `  - Auto-completion of any roadmap items the scanner verifies`,
@@ -432,7 +432,7 @@ export async function sendSnippetDay21Reframe(
 <p style="margin:0 0 8px"><strong>What you ARE getting:</strong></p>
 <ul style="margin:0 0 20px;padding-left:20px;color:#333">
   <li style="margin-bottom:4px">Weekly AEO scoring and grading</li>
-  <li style="margin-bottom:4px">Citation tracking across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma</li>
+  <li style="margin-bottom:4px">Citation tracking across ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, and Gemma, read against Bing organic as a classic-search control</li>
   <li style="margin-bottom:4px">Google Search Console data blended into the dashboard (if connected)</li>
   <li style="margin-bottom:4px">Score regression alerts the moment we detect a drop</li>
   <li style="margin-bottom:4px">Auto-completion of any roadmap items the scanner verifies</li>

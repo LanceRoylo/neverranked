@@ -1272,7 +1272,7 @@ function buildWelcomeEmail(planConfig: PlanConfig | undefined, loginUrl: string,
   if (plan === "audit") {
     whatHappensNext = `<p style="margin:0 0 8px">Your full AEO audit is being prepared and will be delivered within 48 hours. In the meantime, your dashboard is live -- log in now to complete onboarding so we can start immediately.</p>`;
   } else if (plan === "pulse") {
-    whatHappensNext = `<p style="margin:0 0 8px">Your seat is reserved. Click below to log in -- you will land on a 2-minute setup screen with 10 prompts we suggest tracking for you. Edit them, save, and we will run your first citation scan across ChatGPT, Perplexity, Claude, Gemini, Microsoft Copilot, Google AI Overviews, and Gemma in the background. Initial results land in your dashboard within hours.</p>`;
+    whatHappensNext = `<p style="margin:0 0 8px">Your seat is reserved. Click below to log in -- you will land on a 2-minute setup screen with 10 prompts we suggest tracking for you. Edit them, save, and we will run your first citation scan across ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, and Gemma, read against Bing organic as a classic-search control in the background. Initial results land in your dashboard within hours.</p>`;
   } else {
     whatHappensNext = `<p style="margin:0 0 8px">Your dashboard is live and ready. Log in now to complete onboarding -- it takes about 2 minutes and helps us tailor everything to your business.</p>`;
   }
