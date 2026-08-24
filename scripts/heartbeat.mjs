@@ -300,6 +300,34 @@ const INVARIANTS = [
     },
   },
   {
+    // EMAIL_GLOBAL_PAUSE suppresses every non-auth send and, by design,
+    // "reports a synthetic success so callers neither retry nor raise
+    // admin alerts". That is the single most dangerous behaviour in the
+    // stack: a deliberate 2026-05-18 pause was still on 2026-08-23, three
+    // months later, and the only reason it surfaced was a human reading a
+    // delivery log by hand. Pauses are legitimate. SILENT pauses are not.
+    //
+    // Detects the pause by its EFFECT (suppressed rows) rather than by
+    // reading the secret, so it cannot be fooled by a stale config, a
+    // second worker, or someone setting the flag somewhere else.
+    name: 'email-pause-active',
+    description: 'No client email may be silently suppressed -- a pause must announce itself daily',
+    run: () => {
+      const row = runD1(`
+        SELECT COUNT(*) AS n,
+               MAX(date(created_at, 'unixepoch')) AS latest
+        FROM email_delivery_log
+        WHERE status = 'suppressed' AND created_at > unixepoch() - 8*86400
+      `)[0];
+      const n = row?.n || 0;
+      if (n === 0) return { pass: true, detail: 'no suppressed sends in 8d' };
+      return {
+        pass: false,
+        detail: `${n} email(s) suppressed in the last 8d (latest ${row.latest}) -- EMAIL_GLOBAL_PAUSE is ON. Clients are receiving nothing and every send is logging as success. Lift with: wrangler secret delete EMAIL_GLOBAL_PAUSE`,
+      };
+    },
+  },
+  {
     // Reads the authoritative cron_runs row written by
     // dispatchWeeklyDeliveries(), NOT an 8-day email_log window. The old
     // window-based check could be masked for a full week by a single
