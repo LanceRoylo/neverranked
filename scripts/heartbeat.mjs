@@ -114,8 +114,15 @@ const CHECKS = [
     // until the digest sends again. It is the one red that should not be
     // silenced: three real Hawaii Theatre recipients have had nothing
     // since 2026-05-11.
+    //
+    // 2026-08-24: window widened 8d -> 13d for the pass-cadence retiming.
+    // Client digests now send when a measurement pass completes (the
+    // 1/11/21 forensic cadence), so the legitimate gap between sends is
+    // 10-11 days, and an 8-day window would produce a guaranteed false
+    // alarm every cycle -- the same failure shape as the GSC check below.
+    // 13d = max legitimate gap + dispatch grace.
     sql: `SELECT MAX(created_at) as latest FROM email_delivery_log WHERE type='digest' AND status='queued'`,
-    maxAgeSec: 8 * 86400,
+    maxAgeSec: 13 * 86400,
     cadence: 'weekly',
   },
   {

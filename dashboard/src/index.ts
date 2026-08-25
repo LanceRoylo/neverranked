@@ -3852,14 +3852,17 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     const cron = event.cron;
     const { withCronLogging } = await import("./lib/cron-log");
 
-    // --- Dedicated delivery-dispatch invocation (06:15, Mondays only) ---
+    // --- Dedicated delivery-dispatch invocation (06:15, DAILY) ---
     // Isolated on purpose: this is the only place revenue-critical email
     // delivery is dispatched, and it never shares a budget with the sweep.
+    // Runs daily since 2026-08-24: measurement clients get their digest
+    // when a pass completes (dispatchWeeklyDeliveries gates per client);
+    // Monday remains the calendar day for everyone else and the free tier.
     if (cron === "15 6 * * *") {
-      if (scheduledAt.getUTCDay() === 1) {
+      {
         ctx.waitUntil(
           withCronLogging(env, "delivery_dispatch", async () => {
-            const r = await dispatchWeeklyDeliveries(env);
+            const r = await dispatchWeeklyDeliveries(env, scheduledAt.getUTCDay() === 1);
             console.log(`[cron 06:15] delivery_dispatch: ${JSON.stringify(r)}`);
             // Surface a hard failure on the wrapper task too, so a zero
             // delivery can never be reported as an overall success.

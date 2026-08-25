@@ -71,27 +71,91 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   // with its own fresh budget). See scheduled() in index.ts.
 }
 
-/** Revenue-critical weekly delivery dispatch. Runs in its OWN Worker
- *  invocation (06:15 cron trigger) so the heavy 06:00 citation sweep
- *  cannot starve it of subrequest budget. Returns counts so the caller
- *  can record an honest cron_runs status -- this path must NEVER log
- *  success while delivering zero. Mondays only; caller gates the day. */
+/** HST month key ('2026-08'). measurement_heartbeats.month is HST, so the
+ *  digest gate must ask in the same calendar or a UTC evening looks like
+ *  next month and the gate goes silently blind at every month boundary. */
+function hstMonthKey(now: Date): string {
+  return new Date(now.getTime() - 10 * 3600 * 1000).toISOString().slice(0, 7);
+}
+
+/** Has a clean measurement pass landed for this client since their last
+ *  digest? Compares the month's max clean_runs_on_disk against the max as
+ *  of the last send: heartbeats fire daily and repeat the same count until
+ *  the next pass, so "the count rose" is the only signal that means a new
+ *  reading exists, and it can fire at most once per pass. Clients with no
+ *  active measurement_registry row return null: they have no pass cadence
+ *  and stay on the Monday calendar. */
+export async function newPassSince(
+  env: Env,
+  clientSlug: string,
+  now: Date,
+): Promise<{ due: boolean; passesDone: number; target: number } | null> {
+  const reg = await env.DB.prepare(
+    "SELECT category, full_target FROM measurement_registry WHERE client_slug = ? AND active = 1",
+  ).bind(clientSlug).first<{ category: string; full_target: number | null }>();
+  if (!reg) return null;
+
+  const cfg = await env.DB.prepare(
+    "SELECT last_digest_sent_at FROM injection_configs WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ last_digest_sent_at: number | null }>();
+  const lastSent = cfg?.last_digest_sent_at ?? 0;
+
+  const month = hstMonthKey(now);
+  const row = await env.DB.prepare(
+    `SELECT
+       MAX(CASE WHEN ok = 1 THEN clean_runs_on_disk END) AS month_max,
+       MAX(CASE WHEN ok = 1 AND unixepoch(fired_at) <= ? THEN clean_runs_on_disk END) AS at_last_send
+     FROM measurement_heartbeats
+     WHERE category = ? AND month = ?`,
+  ).bind(lastSent, reg.category, month).first<{ month_max: number | null; at_last_send: number | null }>();
+
+  const monthMax = row?.month_max ?? 0;
+  const atLastSend = row?.at_last_send ?? 0;
+  return {
+    due: monthMax > atLastSend,
+    passesDone: monthMax,
+    target: Number(reg.full_target ?? 3),
+  };
+}
+
+/** Revenue-critical delivery dispatch. Runs in its OWN Worker invocation
+ *  (06:15 cron trigger, DAILY) so the heavy 06:00 citation sweep cannot
+ *  starve it of subrequest budget. Returns counts so the caller can record
+ *  an honest cron_runs status -- this path must NEVER log success while
+ *  delivering zero.
+ *
+ *  Cadence (retimed 2026-08-24): clients with an active measurement_registry
+ *  row get their digest when a measurement pass completes (three per month,
+ *  the 1/11/21 forensic cadence), not on the calendar. A weekly email backed
+ *  by a three-passes-a-month instrument had nothing to say most weeks, and
+ *  the grader correctly held it; the methodology the client signed calls
+ *  day-to-day movement weather and tells them not to act on it. Everyone
+ *  else (admins, agency users, clients without a registry row) stays on
+ *  Mondays. The free-tier fan-out stays on Mondays. */
 export async function dispatchWeeklyDeliveries(
-  env: Env
+  env: Env,
+  isMonday: boolean,
 ): Promise<{ digestTotal: number; digestDispatched: number; digestErrors: number; freeOk: boolean }> {
   const { logCronRun } = await import("./lib/cron-log");
 
-  // --- Paid digests: one SendDigestWorkflow per opted-in user ---
+  // --- Paid digests: one SendDigestWorkflow per due user ---
   let digestTotal = 0;
   let digestDispatched = 0;
   let digestErrors = 0;
   const started = Date.now();
+  const now = new Date();
   try {
     const users = (await env.DB.prepare(
-      "SELECT id FROM users WHERE email_digest = 1"
-    ).all<{ id: number }>()).results;
-    digestTotal = users.length;
+      "SELECT id, client_slug FROM users WHERE email_digest = 1"
+    ).all<{ id: number; client_slug: string | null }>()).results;
+
+    const due: { id: number }[] = [];
     for (const u of users) {
+      const pass = u.client_slug ? await newPassSince(env, u.client_slug, now) : null;
+      if (pass === null ? isMonday : pass.due) due.push({ id: u.id });
+    }
+    digestTotal = due.length;
+    for (const u of due) {
       try {
         await env.SEND_DIGEST_WORKFLOW.create({ params: { userId: u.id } });
         digestDispatched++;
@@ -127,7 +191,7 @@ export async function dispatchWeeklyDeliveries(
          SUM(CASE WHEN status = 'queued' THEN 1 ELSE 0 END) AS delivered,
          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
        FROM email_delivery_log
-       WHERE type = 'digest' AND created_at > unixepoch() - 8*86400`
+       WHERE type = 'digest' AND created_at > unixepoch() - 12*86400`
     ).first<{ delivered: number | null; failed: number | null }>();
     priorDelivered = prior?.delivered ?? 0;
     priorFailed = prior?.failed ?? 0;
@@ -136,29 +200,40 @@ export async function dispatchWeeklyDeliveries(
   }
 
   const enqueueClean = digestErrors === 0 && digestDispatched === digestTotal;
-  // No delivery in the last 8 days while users are opted in means the
+  // No delivery in the reconcile window while users were due means the
   // pipeline is broken downstream of us, even if every enqueue succeeded.
+  // digestTotal === 0 is a day with nothing due (no pass landed, not a
+  // Monday), which is the normal state most days under pass cadence --
+  // that is a clean skip, never a failure.
   const deliveryDead = digestTotal > 0 && priorDelivered === 0;
   const digestStatus =
-    deliveryDead || digestDispatched === 0
-      ? "failure"
-      : enqueueClean && priorFailed === 0
-        ? "success"
-        : "partial";
+    digestTotal === 0
+      ? "success"
+      : deliveryDead || digestDispatched === 0
+        ? "failure"
+        : enqueueClean && priorFailed === 0
+          ? "success"
+          : "partial";
   await logCronRun(
     env,
     "digest_dispatch",
     digestStatus,
     Date.now() - started,
-    `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last8d delivered=${priorDelivered} failed=${priorFailed}`
+    digestTotal === 0
+      ? "no digests due today (pass cadence)"
+      : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last12d delivered=${priorDelivered} failed=${priorFailed}`
   );
   console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors})`);
 
   // --- Free-tier weekly digest fan-out (small per-user load, inline) ---
+  // Stays on the Monday calendar: free-tier users have no measurement
+  // pass cadence, and this function now runs daily.
   let freeOk = true;
   try {
-    const { runFreeWeeklyDigests } = await import("./free-cron");
-    await runFreeWeeklyDigests(env);
+    if (isMonday) {
+      const { runFreeWeeklyDigests } = await import("./free-cron");
+      await runFreeWeeklyDigests(env);
+    }
   } catch (e) {
     freeOk = false;
     console.log(`[delivery] free weekly digest sweep failed: ${e instanceof Error ? e.message : String(e)}`);
@@ -349,13 +424,26 @@ export async function sendWeeklyDigests(
     const eventIdsToMark: number[] = [];
     const nowEpoch = Math.floor(Date.now() / 1000);
     const cadenceSkipSlugs = new Set<string>();
+    // Pass framing (2026-08-24): clients on the measurement pass cadence
+    // get a "Reading N of M" label in subject and header instead of week
+    // framing. Computed here, threaded through to the renderer.
+    const passInfoByClient = new Map<string, { passesDone: number; target: number }>();
     for (const d of digests) {
-      const cfg = await env.DB.prepare(
-        `SELECT digest_cadence, last_digest_sent_at FROM injection_configs WHERE client_slug = ?`,
-      ).bind(d.clientSlug).first<{ digest_cadence: string | null; last_digest_sent_at: number | null }>();
-      if (cfg?.digest_cadence === "biweekly" && cfg.last_digest_sent_at && nowEpoch - cfg.last_digest_sent_at < 13 * 86400) {
-        cadenceSkipSlugs.add(d.clientSlug);
-        continue;
+      const pass = await newPassSince(env, d.clientSlug, new Date(nowEpoch * 1000));
+      if (pass) {
+        passInfoByClient.set(d.clientSlug, { passesDone: pass.passesDone, target: pass.target });
+        // Pass cadence supersedes the weekly/biweekly calendar knob: the
+        // dispatch gate already decided this client is due (a new clean
+        // pass landed), so the recency skip below must not veto it.
+        // fall through to event gathering
+      } else {
+        const cfg = await env.DB.prepare(
+          `SELECT digest_cadence, last_digest_sent_at FROM injection_configs WHERE client_slug = ?`,
+        ).bind(d.clientSlug).first<{ digest_cadence: string | null; last_digest_sent_at: number | null }>();
+        if (cfg?.digest_cadence === "biweekly" && cfg.last_digest_sent_at && nowEpoch - cfg.last_digest_sent_at < 13 * 86400) {
+          cadenceSkipSlugs.add(d.clientSlug);
+          continue;
+        }
       }
       // SCREEN BEFORE RENDERING. getPendingEvents returns everything
       // undelivered with no time bound, which was fine while delivery
@@ -444,7 +532,7 @@ export async function sendWeeklyDigests(
       continue;
     }
 
-    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient, actionsByClient);
+    const ok = await sendDigestEmail(user.email, user.name, digests, env, citationDataMap, gscDataMap, roadmapDataMap, unsubToken, agency, stateOfAeo, eventsByClient, nviByClient, actionsByClient, "digest", passInfoByClient);
     if (ok) {
       sent++;
       // Mark events delivered (use digest id = 0 since we don't persist
