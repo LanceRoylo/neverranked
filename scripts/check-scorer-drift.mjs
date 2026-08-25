@@ -1,58 +1,60 @@
 /**
- * check-scorer-drift.mjs — the agent-readiness scorer exists in two files.
- * This fails the build when they stop agreeing.
+ * check-scorer-drift.mjs — there must be exactly ONE agent-readiness scorer.
  *
- * Why this exists rather than a refactor: the scorer lives in
- *   mcp-server/src/tools/agent-readiness-check.ts   (published as @neverranked/mcp)
- *   tools/schema-check/src/scoring-ports.ts         (imported by the worker + dashboard)
- * and the npm package compiles only from its own src/, so collapsing them to
- * one module means restructuring the package. That is the right fix, and it
- * is not a thing to do days before a paying client goes live.
+ * Until 2026-08-24 this compared two implementations and failed when they
+ * disagreed. They have since been collapsed: mcp-server/src/tools/* is the
+ * single source, and tools/schema-check/src/scoring-ports.ts re-exports it.
  *
- * The failure this guards is real and already happened elsewhere in this
- * repo: orchestrate.mjs kept a hand-maintained copy of a client-slug map the
- * registry already held, and prince_waikiki was missing from it. Duplicated
- * logic drifts silently, and here drift means two different scores for the
- * same site -- one in a client's cross-map, another from the public tool
- * they could check us with.
+ * So the check changed shape. Comparing copies is no longer the job. Making
+ * sure a second copy never comes back is.
  *
- * Compares the SCORING RULES only (weights, thresholds, boilerplate tests),
- * not prose or formatting, so cosmetic edits do not cry wolf.
+ * Why this keeps mattering: two copies of a scoring rule means the same site
+ * can score differently depending on which path a client hits -- one number
+ * in their cross-map, another from the public tool they would check us with.
+ * For a company selling independent measurement that is the worst available
+ * bug, and the repo has produced this shape three times (a client-slug map
+ * duplicating the registry, a wrapper duplicating a delete, this scorer).
  */
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
-const A = join(ROOT, "mcp-server/src/tools/agent-readiness-check.ts");
-const B = join(ROOT, "tools/schema-check/src/scoring-ports.ts");
+const PORT = join(ROOT, "tools/schema-check/src/scoring-ports.ts");
+const SOURCE = join(ROOT, "mcp-server/src/tools/agent-readiness-check.ts");
 
-// The load-bearing numbers and predicates. If any of these differ, the two
-// implementations can return different scores for identical markup.
-const SIGNATURE = [
-  /search_term_string/g,
-  /coverage \* 60/g,
-  /Math\.min\(10, substantive\.length \* 5\)/g,
-  /20 - Math\.min\(20, totalIssues \* 5\)/g,
-  /reachableCount \/ relevant\.length\) \* 20/g,
-  /if \(!c\.target\) return true;/g,
-];
+const port = readFileSync(PORT, "utf8");
+const source = readFileSync(SOURCE, "utf8");
+const fails = [];
 
-function fingerprint(src) {
-  return SIGNATURE.map((re) => (src.match(re) || []).length).join("|");
+// The port must re-export, never implement.
+if (!/export\s*\{\s*agentReadinessCheck\s*\}\s*from/.test(port)) {
+  fails.push("scoring-ports.ts no longer re-exports agentReadinessCheck from mcp-server.");
+}
+// Scoring rules appearing in the port mean an implementation has grown back.
+for (const [label, re] of [
+  ["vertical weight", /coverage \* 60/],
+  ["off-baseline cap", /Math\.min\(10, substantive\.length \* 5\)/],
+  ["boilerplate predicate", /search_term_string/],
+]) {
+  if (re.test(port)) fails.push(`scoring-ports.ts contains the ${label} inline. It must re-export, not reimplement.`);
+}
+// And the single source must still hold them.
+for (const [label, re] of [
+  ["vertical weight", /coverage \* 60/],
+  ["off-baseline cap", /Math\.min\(10, substantive\.length \* 5\)/],
+  ["boilerplate predicate", /search_term_string/],
+  ["no-target rule", /if \(!c\.target\) return true;/],
+]) {
+  if (!re.test(source)) fails.push(`mcp-server agent-readiness-check.ts is missing the ${label}.`);
 }
 
-const fa = fingerprint(readFileSync(A, "utf8"));
-const fb = fingerprint(readFileSync(B, "utf8"));
-
-if (fa !== fb) {
-  console.error("\n✗ check-scorer-drift: the two agent-readiness scorers disagree.\n");
-  console.error(`  mcp-server/src/tools/agent-readiness-check.ts  ${fa}`);
-  console.error(`  tools/schema-check/src/scoring-ports.ts        ${fb}\n`);
-  console.error("  Each slot is one scoring rule: boilerplate test, vertical weight,");
-  console.error("  off-baseline cap, validation penalty, reachability weight, fragment test.");
-  console.error("  A mismatch means the same site can score differently depending on which");
-  console.error("  path a client happens to hit. Change both, or collapse them.\n");
+if (fails.length) {
+  console.error("\n✗ check-scorer-drift: the agent-readiness scorer is no longer single-source.\n");
+  for (const f of fails) console.error("  - " + f);
+  console.error("\n  mcp-server/src/tools/agent-readiness-check.ts is the ONLY implementation.");
+  console.error("  The published standard at /standards/agent-readiness documents its scoring,");
+  console.error("  and @neverranked/mcp ships it. A second copy makes one of those a lie.\n");
   process.exit(1);
 }
-console.log(`✓ check-scorer-drift: both agent-readiness scorers agree (${fa}).`);
+console.log("✓ check-scorer-drift: agent-readiness scoring is single-source.");
