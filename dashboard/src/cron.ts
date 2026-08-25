@@ -95,8 +95,12 @@ export async function newPassSince(
   ).bind(clientSlug).first<{ category: string; full_target: number | null }>();
   if (!reg) return null;
 
+  // digest_state, NOT injection_configs. A measurement-only client has no
+  // injection row (hosted injection was retired 2026-07-24) and reading send
+  // state from that table made every such client permanently "due". See
+  // migrations/0107_digest_state.sql.
   const cfg = await env.DB.prepare(
-    "SELECT last_digest_sent_at FROM injection_configs WHERE client_slug = ?",
+    "SELECT last_digest_sent_at FROM digest_state WHERE client_slug = ?",
   ).bind(clientSlug).first<{ last_digest_sent_at: number | null }>();
   const lastSent = cfg?.last_digest_sent_at ?? 0;
 
@@ -437,8 +441,15 @@ export async function sendWeeklyDigests(
         // pass landed), so the recency skip below must not veto it.
         // fall through to event gathering
       } else {
+        // Split read: digest_cadence is a client SETTING the inject-admin UI
+        // owns and still lives on injection_configs. last_digest_sent_at is
+        // SEND STATE and moved to digest_state (migration 0107) -- reading it
+        // from injection_configs here would use a frozen value.
         const cfg = await env.DB.prepare(
-          `SELECT digest_cadence, last_digest_sent_at FROM injection_configs WHERE client_slug = ?`,
+          `SELECT ic.digest_cadence AS digest_cadence, ds.last_digest_sent_at AS last_digest_sent_at
+             FROM injection_configs ic
+             LEFT JOIN digest_state ds ON ds.client_slug = ic.client_slug
+            WHERE ic.client_slug = ?`,
         ).bind(d.clientSlug).first<{ digest_cadence: string | null; last_digest_sent_at: number | null }>();
         if (cfg?.digest_cadence === "biweekly" && cfg.last_digest_sent_at && nowEpoch - cfg.last_digest_sent_at < 13 * 86400) {
           cadenceSkipSlugs.add(d.clientSlug);
@@ -568,11 +579,24 @@ export async function sendWeeklyDigests(
         if (cadenceSkipSlugs.has(d.clientSlug)) continue;
         if (user.client_slug !== d.clientSlug) continue;
         try {
-          await env.DB.prepare(
-            `UPDATE injection_configs SET last_digest_sent_at = ?, updated_at = unixepoch() WHERE client_slug = ?`,
-          ).bind(nowEpoch, d.clientSlug).run();
-        } catch {
-          // Non-critical
+          // UPSERT, not UPDATE. The UPDATE it replaces matched zero rows for
+          // any client without an injection_configs row, silently, inside this
+          // same swallowing catch -- so the send was never recorded and the
+          // gate re-fired forever. A first-time client now writes its own row.
+          const res = await env.DB.prepare(
+            `INSERT INTO digest_state (client_slug, last_digest_sent_at, updated_at)
+             VALUES (?, ?, unixepoch())
+             ON CONFLICT (client_slug) DO UPDATE
+               SET last_digest_sent_at = excluded.last_digest_sent_at,
+                   updated_at          = excluded.updated_at`,
+          ).bind(d.clientSlug, nowEpoch).run();
+          // Never let a zero-row write pass as success again. This is the one
+          // statement standing between "sent once per pass" and "sent daily".
+          if (!res.success || (res.meta?.changes ?? 0) === 0) {
+            console.log(`[digest] CRITICAL: send-state not recorded for ${d.clientSlug} -- gate will re-fire`);
+          }
+        } catch (e) {
+          console.log(`[digest] CRITICAL: send-state write threw for ${d.clientSlug}: ${e}`);
         }
       }
       try {
@@ -1243,12 +1267,22 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // suspenders layer in case both miss for any reason. Fires an
   // admin alert (one per affected slug per day max) so any drift is
   // visible in the inbox within 24 hours.
+  //
+  // 2026-08-24: EXCLUDES clients with a measurement_registry row. Hosted
+  // injection was retired 2026-07-24, so a measurement client correctly has
+  // no injection_configs row and never should. Before this exclusion the
+  // check fired nightly on Prince Waikiki and told ops to "heal" him by
+  // creating one -- which would have registered a measurement-only client in
+  // the retired injection system. A drift alert whose remediation is wrong is
+  // worse than no alert.
   try {
     const drift = (await env.DB.prepare(
       `SELECT DISTINCT d.client_slug FROM domains d
          LEFT JOIN injection_configs ic ON ic.client_slug = d.client_slug
+         LEFT JOIN measurement_registry mr ON mr.client_slug = d.client_slug
          WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0
            AND ic.client_slug IS NULL
+           AND mr.client_slug IS NULL
            AND d.client_slug NOT LIKE '%-test-%'
            AND d.client_slug NOT LIKE 'e2e-%'`
     ).all<{ client_slug: string }>()).results;
