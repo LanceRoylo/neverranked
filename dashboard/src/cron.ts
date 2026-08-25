@@ -555,9 +555,18 @@ export async function sendWeeklyDigests(
           console.log(`[digest] markNviReportSent failed for ${nviId}: ${e}`);
         }
       }
-      // Bump last_digest_sent_at per client so biweekly cadence works.
+      // Bump last_digest_sent_at per client so cadence gating works.
+      // ONLY when this send went to that client's own user. Admin and
+      // agency digests contain every client's domains, and before this
+      // guard an admin send bumped every client's timestamp -- observed
+      // live 2026-08-24: all three HTC recipients FAILED at 06:15:29,
+      // then the admin sends bumped HTC's last_digest_sent_at at
+      // 06:15:30 anyway. Under pass cadence that combination marks the
+      // pass as digested while the client got nothing, and cancels the
+      // daily retry that a held/failed send is supposed to get.
       for (const d of digests) {
         if (cadenceSkipSlugs.has(d.clientSlug)) continue;
+        if (user.client_slug !== d.clientSlug) continue;
         try {
           await env.DB.prepare(
             `UPDATE injection_configs SET last_digest_sent_at = ?, updated_at = unixepoch() WHERE client_slug = ?`,
