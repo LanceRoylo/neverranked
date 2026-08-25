@@ -38,11 +38,26 @@ import type { Env } from "../types";
 export interface AtlasContext {
   customer: CustomerIdentity | null;
   measurement_window: MeasurementWindow;
+  // Freshness. Atlas must be able to answer "is my measurement current /
+  // running?" with dates rather than presenting the newest snapshot as
+  // today's news (the measured_at class of bug, again). Populated from the
+  // measurement registry + heartbeats; null fields mean "not on the pass
+  // cadence" and Atlas says it doesn't have that rather than guessing.
+  measurement_status: MeasurementStatus;
   locked_questions: LockedQuestionSet;
   cohort: CohortSummary;
   recent_memos: MemoSummary[];
   brand_brain: BrandBrainSection[];
   generated_at: string;
+}
+
+export interface MeasurementStatus {
+  on_pass_cadence: boolean;
+  passes_done_this_month: number | null;
+  passes_target: number | null;
+  scheduled_run_days: number[] | null; // days of month, e.g. [1, 11, 21]
+  latest_data_at: string | null; // newest citation_run for this customer (ISO date)
+  next_memo_date: string;
 }
 
 export interface CustomerIdentity {
@@ -130,10 +145,11 @@ export async function buildAtlasContext(
 
   // Parallel fan-out: every loader is independent, so D1 sees one batch
   // of round-trips instead of six sequential ones.
-  const [customer, measurement_window, locked_questions, cohort, recent_memos, brand_brain] =
+  const [customer, measurement_window, measurement_status, locked_questions, cohort, recent_memos, brand_brain] =
     await Promise.all([
       loadCustomerIdentity(env, clientSlug),
       loadMeasurementWindow(env, clientSlug, windowDays),
+      loadMeasurementStatus(env, clientSlug),
       loadLockedQuestionSet(env, clientSlug),
       loadCohort(env, clientSlug, windowDays),
       loadRecentMemos(env, clientSlug, memoCount),
@@ -143,6 +159,7 @@ export async function buildAtlasContext(
   return {
     customer,
     measurement_window,
+    measurement_status,
     locked_questions,
     cohort,
     recent_memos,
@@ -169,6 +186,45 @@ export function packContextForPrompt(ctx: AtlasContext): string {
 // ──────────────────────────────────────────────────────────────────
 // Individual loaders
 // ──────────────────────────────────────────────────────────────────
+
+async function loadMeasurementStatus(env: Env, slug: string): Promise<MeasurementStatus> {
+  const { nextMemoDate } = await import("./atlas-system-prompt");
+  const next_memo_date = nextMemoDate(new Date());
+
+  // Newest raw reading for this customer, whatever produced it.
+  const latest = await env.DB.prepare(
+    `SELECT MAX(cr.run_at) AS ts
+       FROM citation_runs cr
+       JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ?`,
+  ).bind(slug).first<{ ts: number | null }>();
+  const latest_data_at = latest?.ts ? new Date(latest.ts * 1000).toISOString().slice(0, 10) : null;
+
+  const reg = await env.DB.prepare(
+    "SELECT category, run_days, full_target FROM measurement_registry WHERE client_slug = ? AND active = 1",
+  ).bind(slug).first<{ category: string; run_days: string | null; full_target: number | null }>();
+  if (!reg) {
+    return { on_pass_cadence: false, passes_done_this_month: null, passes_target: null, scheduled_run_days: null, latest_data_at, next_memo_date };
+  }
+
+  // Heartbeat months are HST; ask in the same calendar (see cron.ts).
+  const month = new Date(Date.now() - 10 * 3600 * 1000).toISOString().slice(0, 7);
+  const hb = await env.DB.prepare(
+    "SELECT MAX(clean_runs_on_disk) AS done FROM measurement_heartbeats WHERE category = ? AND month = ? AND ok = 1",
+  ).bind(reg.category, month).first<{ done: number | null }>();
+
+  let scheduled_run_days: number[] | null = null;
+  try { scheduled_run_days = JSON.parse(String(reg.run_days || "[]")) as number[]; } catch { scheduled_run_days = null; }
+
+  return {
+    on_pass_cadence: true,
+    passes_done_this_month: Number(hb?.done ?? 0),
+    passes_target: Number(reg.full_target ?? 3),
+    scheduled_run_days,
+    latest_data_at,
+    next_memo_date,
+  };
+}
 
 async function loadCustomerIdentity(env: Env, slug: string): Promise<CustomerIdentity | null> {
   const row = await env.DB.prepare(

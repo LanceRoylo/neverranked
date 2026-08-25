@@ -131,14 +131,15 @@ test("citation map join: fail-closed with no runs (no map)", async () => {
   assert.equal(data!.citationMap, undefined);
 });
 
-test("loadCustomerView Hamada data has all 7 AI tools in perTool", async () => {
+test("loadCustomerView Hamada data has all 7 measured surfaces in perTool", async () => {
   const data = await loadCustomerView(envStub, "hamada-financial-group");
-  assert.equal(data!.perTool.length, 7, "expected exactly 7 AI tools");
+  assert.equal(data!.perTool.length, 7, "expected exactly 7 measured surfaces");
   const tools = data!.perTool.map((t) => t.tool);
   assert.ok(tools.includes("Perplexity"));
   assert.ok(tools.includes("ChatGPT search"));
   assert.ok(tools.includes("Gemini grounded"));
-  assert.ok(tools.includes("Microsoft Copilot (Bing)"));
+  // Copilot retired 2026-08-22; the seventh surface is the classic-search control.
+  assert.ok(tools.includes("Bing search (control)"));
   assert.ok(tools.includes("Google AI Overviews"));
   assert.ok(tools.includes("Claude"));
   assert.ok(tools.includes("Gemma"));

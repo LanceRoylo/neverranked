@@ -10,12 +10,12 @@
 1. How many of the AI tools cite Hawaii Theatre?
 2. Which tool cites me the most?
 3. What is my share of venue citations in my category?
-4. How did Microsoft Copilot change since last month?
+4. How did Microsoft Copilot change since last month? (2026-08-24: Copilot retired from the measurement -- expect "no Copilot data", not a number)
 5. How many of the questions was Hawaii Theatre named in?
 6. Who are the top venues AI names in my category?
 
 ## B. Observational (expect: describe the pattern, NO invented causation)
-7. Did Copilot start citing me this month?
+7. Did Copilot start citing me this month? (expect "no Copilot data" -- see question 4)
 8. Which are my weakest engines right now?
 9. What changed the most between June and July?
 
