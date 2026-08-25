@@ -206,12 +206,21 @@ export async function dispatchWeeklyDeliveries(
   const enqueueClean = digestErrors === 0 && digestDispatched === digestTotal;
   // No delivery in the reconcile window while users were due means the
   // pipeline is broken downstream of us, even if every enqueue succeeded.
-  // digestTotal === 0 is a day with nothing due (no pass landed, not a
-  // Monday), which is the normal state most days under pass cadence --
-  // that is a clean skip, never a failure.
   const deliveryDead = digestTotal > 0 && priorDelivered === 0;
+  // digestTotal === 0 means one of two VERY different things, and the first
+  // version of this check conflated them:
+  //   (a) nothing was due -- no pass landed, not a Monday. Normal, and the
+  //       normal state most days under pass cadence.
+  //   (b) the enumeration THREW, so nothing was ever counted. digestTotal is
+  //       still at its initial 0 and the catch only bumped digestErrors.
+  // Reporting (b) as "no digests due today" would be a synthetic success of
+  // exactly the kind that hid the 77-day outage. Caught live 2026-08-25: the
+  // digest_state query shipped before its migration, so every measurement
+  // client would have thrown, and this line would have called it success.
+  // A zero-due day is only clean if nothing errored on the way to zero.
+  const nothingDue = digestTotal === 0 && digestErrors === 0;
   const digestStatus =
-    digestTotal === 0
+    nothingDue
       ? "success"
       : deliveryDead || digestDispatched === 0
         ? "failure"
@@ -223,9 +232,11 @@ export async function dispatchWeeklyDeliveries(
     "digest_dispatch",
     digestStatus,
     Date.now() - started,
-    digestTotal === 0
+    nothingDue
       ? "no digests due today (pass cadence)"
-      : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last12d delivered=${priorDelivered} failed=${priorFailed}`
+      : digestTotal === 0
+        ? `ENUMERATION FAILED: 0 counted with ${digestErrors} error(s) -- not a quiet day`
+        : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last12d delivered=${priorDelivered} failed=${priorFailed}`
   );
   console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors})`);
 
