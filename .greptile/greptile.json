@@ -1,0 +1,26 @@
+{
+  "_comment": [
+    "Greptile review configuration. The value here is whole-repo context, so",
+    "the instructions point it at the failure mode this codebase actually",
+    "produces: one fact maintained in two places, drifting apart silently.",
+    "Every incident of 2026-08 was that shape -- a client-slug map duplicating",
+    "the registry, a wrapper holding its own copy of a delete, a scorer living",
+    "in two files, a published package contradicting a published standard."
+  ],
+  "exclude": [
+    "dist/**",
+    "**/dist/**",
+    ".wrangler/**",
+    ".claude/worktrees/**",
+    "audits/**/raw/**",
+    "**/*.pdf",
+    "**/package-lock.json"
+  ],
+  "instructions": [
+    "Flag any fact maintained in two places that could drift: hardcoded maps duplicating a database table, scoring or validation logic copied between files, a constant restated rather than imported. Name both locations.",
+    "Flag claims in user-facing strings that assert causation the code cannot support, and any pricing, engine count, or product name in a string literal, since these go stale silently.",
+    "Flag code that reports success without verifying the outcome: a send path that returns ok when suppressed, a check that passes when the thing it checks is absent, a catch that swallows an error without recording it.",
+    "Flag a conditional that can never be true, especially a guard whose predicate is defeated by an upstream default.",
+    "Do not flag SQL template literals where the interpolated value is a module-level constant and all user values use placeholders. That pattern is intentional in worker/src/db.ts."
+  ]
+}

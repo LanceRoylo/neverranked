@@ -1,0 +1,27 @@
+# Aikido scan configuration.
+#
+# Narrows what gets scanned so the findings that remain are ones worth
+# reading. An alarm that mostly cries wolf trains you to skim it, which is
+# how the 2026-08 engine outage stayed hidden behind a green heartbeat.
+#
+# Everything excluded here is excluded for a stated reason. If a reason
+# stops being true, delete the line.
+
+exclude:
+  # Build output. Generated from source that IS scanned, so a finding here
+  # is a duplicate of one already reported upstream.
+  - dist/**
+  - "**/dist/**"
+  - .wrangler/**
+
+  # Stale git worktrees. These hold pre-fix copies of the whole repo and
+  # report every defect a second time, dated wrong.
+  - .claude/worktrees/**
+
+  # Captured third-party HTML kept as audit evidence. Competitor pages saved
+  # during a measurement run. Not our code, and scanning it once made
+  # check-claims report a competitor's pricing as our retired SKU.
+  - audits/**/raw/**
+
+  # Delivered client artifacts and signed contracts. Documents, not code.
+  - "**/*.pdf"
