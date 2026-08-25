@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-24T13:04:00.633Z",
+  "updated": "2026-08-25T13:00:24.293Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -46,10 +46,15 @@
       "since": null,
       "lastAlerted": null
     },
+    "email-pause-active": {
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
+    },
     "digest-dispatch-result": {
-      "status": "FAIL",
-      "since": "2026-08-03",
-      "lastAlerted": "2026-08-24"
+      "status": "OK",
+      "since": null,
+      "lastAlerted": null
     },
     "gsc-coverage-per-client": {
       "status": "OK",
