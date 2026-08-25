@@ -625,6 +625,11 @@ export async function sendDigestEmail(
   // as if clients had been failed, and a passing test send would have
   // greened a monitor whose whole job is to prove clients got mail.
   logType: "digest" | "digest_test" = "digest",
+  // Pass framing (2026-08-24): present for clients on the measurement
+  // pass cadence. The digest fires when a pass completes, so subject and
+  // header say "Reading N of M" instead of week language. Absent for
+  // calendar-cadence recipients, whose framing is unchanged.
+  passInfoByClient?: Map<string, { passesDone: number; target: number }>,
 ): Promise<boolean> {
   if (!env.RESEND_API_KEY) {
     console.log(`[DEV] Digest for ${to}: ${digests.map(d => `${d.domain} ${d.latest.aeo_score}`).join(", ")}`);
@@ -642,9 +647,13 @@ export async function sendDigestEmail(
   void stateOfAeo;
   const weeks = toClientWeeks(digests, citationData, gscData, roadmapData, eventsByClient, actionsByClient);
   const reports = weeks.map(weekReport);
-  const subject = digestSubject(reports);
+  const singlePass = digests.length > 0 && passInfoByClient?.get(digests[0].clientSlug);
+  const passLabel = singlePass && digests.every(d => d.clientSlug === digests[0].clientSlug)
+    ? `Reading ${Math.min(singlePass.passesDone, singlePass.target)} of ${singlePass.target}`
+    : null;
+  const subject = digestSubject(reports, passLabel);
 
-  const emailHtml = buildDigestHtmlV2(userName, reports, weeks, actionsByClient, nviByClient, unsubToken, agency);
+  const emailHtml = buildDigestHtmlV2(userName, reports, weeks, actionsByClient, nviByClient, unsubToken, agency, passLabel);
 
   // Quality grader: final gate before send. Checks voice (no AI-tells,
   // HM voice rules) and substance (real signal, not formulaic filler).
@@ -2227,9 +2236,16 @@ export function buildDigestHtmlV2(
   nviByClient?: Map<string, DigestNviReport>,
   unsubToken?: string,
   agency?: Agency | null,
+  passLabel?: string | null,
 ): string {
   const brand = brandFor(agency);
   const scanDate = new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  // Pass cadence header: "Reading 2 of 3 · August 24, 2026" instead of a
+  // bare date, so the email names the cadence it arrived on. Pre-escaped:
+  // the template drops it in raw so the &middot; entity survives.
+  const dateLineHtml = passLabel
+    ? `${escEmail(passLabel)} &middot; ${escEmail(scanDate)}`
+    : escEmail(scanDate);
   const multi = reports.length > 1;
   const first = userName ? userName.split(" ")[0] : null;
 
@@ -2315,7 +2331,7 @@ export function buildDigestHtmlV2(
         <tr><td style="padding:0 0 28px">
           <table width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
             <td style="font-family:Georgia,serif;font-size:16px;font-style:italic;color:${brand.color}">${escEmail(brand.name)}</td>
-            <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${V2_DIM}">Scan &middot; ${escEmail(scanDate)}</td>
+            <td align="right" style="font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:${V2_DIM}">${passLabel ? "" : "Scan &middot; "}${dateLineHtml}</td>
           </tr></table>
         </td></tr>
 

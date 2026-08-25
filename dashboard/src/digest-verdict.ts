@@ -161,13 +161,21 @@ export function weekReport(c: ClientWeek): WeekReport {
 
 /** Subject line: the verdict, compressed. One voice from inbox row to
  * final line. */
-export function digestSubject(reports: WeekReport[]): string {
+export function digestSubject(reports: WeekReport[], passLabel?: string | null): string {
   if (reports.length === 1) {
     const r = reports[0];
     const lead = r.moved[0];
     if (lead) {
       // Strip the trailing period and the domain prefix is already there.
       return `${r.domain}: ${lead.text.replace(/\.$/, "")}`.slice(0, 78);
+    }
+    // Pass cadence: a quiet reading is still a reading that happened.
+    // "Reading 2 of 3 is in" tells the truth (the pass completed, the
+    // numbers held) without week language a three-pass month can't honor.
+    if (passLabel) {
+      return r.needsYou
+        ? `${r.domain}: ${passLabel.toLowerCase()} is in, one thing needs you`
+        : `${r.domain}: ${passLabel.toLowerCase()} is in, steady`;
     }
     return r.needsYou
       ? `${r.domain}: quiet week, one thing needs you`
