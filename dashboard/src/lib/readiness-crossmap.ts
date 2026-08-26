@@ -41,7 +41,7 @@ const STATE_NOTE: Record<string, string> = {
   deployed: "Machine-readable booking or contact actions an agent can call.",
   off_baseline: "Deliberate Action markup, but not the kind this category needs.",
   boilerplate_only: "Only what the content system emits by default. An agent still cannot act.",
-  verified_zero: "Scanned cleanly. No Action markup present.",
+  verified_zero: "Scanned cleanly. No Action markup present. This is what we check; it is not proof no agent could reach the site another way.",
   unverifiable: "The site refused automated inspection. We do not publish a score we could not take.",
 };
 
@@ -73,10 +73,10 @@ export function renderReadinessCrossMap(rows: CrossMapRow[], scannedAt?: number)
   // category ever does deploy, this says so instead.
   let headline: string;
   if (deployed.length === 0) {
-    headline = `Of the ${verified.length} site${verified.length === 1 ? "" : "s"} we could inspect, including yours, none exposes actions an AI agent could use to book or make contact.`;
+    headline = `Of the ${verified.length} site${verified.length === 1 ? "" : "s"} we could inspect, including yours, none publishes Action markup an AI agent could use to book or make contact.`;
   } else {
     const names = deployed.map((d) => esc(d.label || d.domain)).join(", ");
-    headline = `${deployed.length} of the ${verified.length} sites we could inspect expose usable agent actions: ${names}.`;
+    headline = `${deployed.length} of the ${verified.length} sites we could inspect publish usable Action markup: ${names}.`;
   }
 
   const youLine = you
