@@ -21,6 +21,7 @@ import type { Agency, Domain, Env, ScanResult, User } from "../types";
 import { html, esc, redirect } from "../render";
 import { layout } from "../render";
 import { getAgency } from "../agency";
+import { getCitationDigestData, type CitationDigestData } from "../citations";
 import {
   sendMagicLinkEmail,
   sendDigestEmail,
@@ -147,7 +148,18 @@ export async function handleEmailTestGet(user: User | null, env: Env, url: URL):
         <div class="form-group">
           <label for="recipient">Send to</label>
           <input id="recipient" name="recipient" type="email" required value="${esc(user.email)}" placeholder="you@neverranked.com">
-          <p class="muted" style="font-size:12px;margin-top:6px">Defaults to your own email.</p>
+          <p class="muted" style="font-size:12px;margin-top:6px">Defaults to your own email. Client addresses are refused.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="digest_slug">Client slug (digest rehearsal only)</label>
+          <input id="digest_slug" name="digest_slug" type="text" placeholder="hawaii-theatre">
+          <p class="muted" style="font-size:12px;margin-top:6px">
+            Builds the digest from THIS client's real citations, real undelivered
+            events and real pass framing, through the real grader. Blank picks the
+            most recent scan. Events are not marked delivered, so the rehearsal
+            does not consume the client's next digest.
+          </p>
         </div>
 
         <div class="form-group">
@@ -209,9 +221,27 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
   const recipient = (form.get("recipient") as string || "").trim().toLowerCase();
   const agencyIdRaw = (form.get("agency_id") as string || "").trim();
   const agencyId = agencyIdRaw ? Number(agencyIdRaw) : null;
+  const digestSlug = (form.get("digest_slug") as string || "").trim();
 
   if (!recipient || !recipient.includes("@")) {
     return redirect("/admin/email-test?error=" + encodeURIComponent("Recipient email is invalid."));
+  }
+
+  // BLAST-RADIUS GUARD. This tool sends REAL mail through the REAL send
+  // path, and since 2026-08-26 the digest case carries a real client's
+  // citations and undelivered events. A mistyped recipient would put an
+  // unreviewed digest in a client's inbox, out of band and out of cadence.
+  // A rehearsal goes to us, never to a customer contact.
+  {
+    const clientAddr = await env.DB.prepare(
+      `SELECT 1 FROM users WHERE lower(email) = ? AND role = 'client'
+       UNION ALL
+       SELECT 1 FROM customers WHERE lower(COALESCE(primary_contact_email,'')) = ?`
+    ).bind(recipient, recipient).first();
+    if (clientAddr) {
+      return redirect("/admin/email-test?error=" + encodeURIComponent(
+        "Refused: that address belongs to a client. Test sends go to your own inbox."));
+    }
   }
   if (!type || !(type in TYPE_LABELS)) {
     return redirect("/admin/email-test?error=" + encodeURIComponent("Pick an email type."));
@@ -231,30 +261,73 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
       }
 
       case "digest": {
-        // Find a real recent scan to use as sample data.
+        // REHEARSAL, not a smoke test. Until 2026-08-26 this built a digest
+        // from one bare scan row and passed undefined for citations, GSC,
+        // events and pass framing -- so it proved Resend worked and proved
+        // nothing about whether a CLIENT's real digest survives the grader.
+        // That is the question Gate 5 actually asks, and it was unanswered:
+        // the last genuinely delivered client digest was 2026-05-11, 106
+        // days before Prince's first send. This now assembles the SAME
+        // inputs the Monday/pass-cadence cron assembles, so a pass here is
+        // evidence about the real artifact.
         const sample = await env.DB.prepare(
           `SELECT s.*, d.domain, d.client_slug
              FROM scan_results s
              JOIN domains d ON d.id = s.domain_id
             WHERE s.error IS NULL
+              AND (? = '' OR d.client_slug = ?)
             ORDER BY s.scanned_at DESC LIMIT 1`
-        ).first<ScanResult & { domain: string; client_slug: string }>();
+        ).bind(digestSlug, digestSlug).first<ScanResult & { domain: string; client_slug: string }>();
         if (!sample) {
-          outcome = { ok: false, note: "No scan data found to build a digest. Run a scan first." };
+          outcome = { ok: false, note: digestSlug
+            ? `No usable scan for client_slug '${digestSlug}'.`
+            : "No scan data found to build a digest. Run a scan first." };
           break;
         }
+        const slug = sample.client_slug;
         const digests: DigestData[] = [{
           domain: sample.domain,
           domainId: sample.domain_id,
-          clientSlug: sample.client_slug,
+          clientSlug: slug,
           latest: sample,
           previous: null,
         }];
+
+        // Same assembly as cron.ts sendWeeklyDigests.
+        const citationDataMap = new Map<string, CitationDigestData>();
+        const cData = await getCitationDigestData(slug, env);
+        if (cData) citationDataMap.set(slug, cData);
+
+        const eventsByClient = new Map<string, Array<{ kind: string; severity: "info" | "win" | "concern"; title: string; body: string | null; occurred_at: number }>>();
+        try {
+          const { getPendingEvents } = await import("../client-events");
+          const bundle = await getPendingEvents(env, slug);
+          if (bundle.events.length > 0) {
+            // NOT marked delivered: a rehearsal must not consume the real
+            // digest's material. These events must still reach the client.
+            eventsByClient.set(slug, bundle.events.map((e) => ({
+              kind: e.kind, severity: e.severity, title: e.title,
+              body: e.body ?? null, occurred_at: e.occurred_at,
+            })));
+          }
+        } catch { /* events are optional */ }
+
+        // Pass framing, so the rehearsal renders the same header a real
+        // pass-cadence send would.
+        let passInfoByClient: Map<string, { passesDone: number; target: number }> | undefined;
+        try {
+          const { newPassSince } = await import("../cron");
+          const pass = await newPassSince(env, slug, new Date());
+          if (pass) {
+            passInfoByClient = new Map([[slug, { passesDone: pass.passesDone, target: pass.target }]]);
+          }
+        } catch { /* framing is optional */ }
+
         const ok = await sendDigestEmail(
           recipient, user.name, digests, env,
-          undefined, undefined, undefined, undefined, agency,
-          undefined, undefined, undefined, undefined,
-          "digest_test",
+          citationDataMap, undefined, undefined, undefined, agency,
+          undefined, eventsByClient, undefined, undefined,
+          "digest_test", passInfoByClient,
         );
         // A false return here has three very different causes -- the
         // grader held the copy, the grader crashed, or Resend refused --
