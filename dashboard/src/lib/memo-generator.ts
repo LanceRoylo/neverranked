@@ -36,6 +36,8 @@ VOICE AND RULES (hard):
 - Never use marketing inflation: best, amazing, leverage, synergy, leading, world-class, premier, top-tier, industry-leading, unlock, elevate, game-changer, seamless.
 - No hype, no filler, no "in today's world" openers. Human, not AI.
 - Use ONLY the numbers provided in the data. Never invent a statistic, a competitor, a percentage, or a trend. If you want to make a point the data does not support, do not make it.
+- Address the contact ONLY by data.customer.primary_contact_first_name. If it is null, use no name at all. NEVER invent a name.
+- NEVER mention Microsoft Copilot. It is not measured and there is no Copilot data. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted as an engine or an AI tool. The house formulation is "six AI tools plus a Bing organic control, seven measured surfaces". Never write "seven engines".
 
 STRUCTURE (markdown, in this order):
 0. ONLY IF the payload includes plan_markdown (the frozen engagement plan set at kickoff): a "### Where we are in the plan" section directly after the headline. Two to four sentences. Name which month of the plan this is, what the plan said to expect at this point, and grade this month against that expectation plainly (on schedule, ahead, or behind, and on what specifically). Grade against what the PLAN said, not against generic hope: if the plan says an engine moves slowly, a flat reading there is ON schedule. Do not restate the plan. If plan_markdown is absent, omit this section entirely and never invent a plan.
@@ -67,6 +69,7 @@ export interface MemoDraftResult {
   title?: string;
   toneViolations?: string[];
   unverifiedNumbers?: string[];
+  taxonomyViolations?: string[];
   gate?: DeliverableVerdict;
   error?: string;
 }
@@ -275,6 +278,37 @@ export async function generateMemoDraft(env: Env, slug: string, now: Date): Prom
     const tone = checkHumanTone(parsed.body_markdown, "customer-email");
     const toneViolations = tone.violations.filter((v) => v.severity === "block").map((v) => `${v.pattern}: ${v.match}`);
     const unverified = findUnverifiedNumbers(parsed.body_markdown, allowedNumberSet(inputs), planBareNumbers(inputs));
+
+    // Taxonomy + identity gate: deterministic, and it REFUSES THE SAVE.
+    // The 2026-09 HTC draft reached the review queue addressing the contact
+    // as "Mike" (he is Greg) and attributing the Bing control's 1% to
+    // Microsoft Copilot, retired 2026-08-22 with no data. scripts/check-claims
+    // guards the repo; this prose is authored straight into D1 and never
+    // touches the repo, so nothing guarded the WORDS (allowedNumbers guards
+    // only the figures). Refusing the save matters twice over: the INSERT
+    // below is an upsert that overwrites an undelivered draft, so a bad
+    // regeneration would also destroy a previously corrected one.
+    const taxonomy: string[] = [];
+    const bodyText = parsed.body_markdown;
+    if (/\bcopilot\b/i.test(bodyText)) {
+      taxonomy.push("names Copilot: retired 2026-08-22, there is no Copilot data; the Bing channel is the classic-search control");
+    }
+    if (/\b(?:all\s+)?seven\s+(?:ai\s+)?engines\b/i.test(bodyText) || /\b7\s+ai\s+(?:engines|tools)\b/i.test(bodyText)) {
+      taxonomy.push("counts the control as an engine: house form is six AI tools plus a Bing organic control, seven measured surfaces");
+    }
+    {
+      const contact = inputs.customer.primary_contact_first_name;
+      const greet = bodyText.match(/^\s*([A-Z][a-z]+),\s/m);
+      if (greet && contact && greet[1] !== contact) {
+        taxonomy.push(`addresses the contact as "${greet[1]}" but the primary contact is "${contact}"`);
+      }
+      if (greet && !contact) {
+        taxonomy.push(`addresses someone by name ("${greet[1]}") but no primary contact is on file -- the name is invented`);
+      }
+    }
+    if (taxonomy.length > 0) {
+      return { ok: false, error: "taxonomy/identity gate refused the draft", taxonomyViolations: taxonomy };
+    }
 
     // Save as DRAFT (delivered_at NULL). Flag metadata is stored in the
     // title prefix is avoided; instead we return it for the review UI.
