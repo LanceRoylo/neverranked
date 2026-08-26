@@ -113,6 +113,22 @@ export async function handleEmailTestGet(user: User | null, env: Env, url: URL):
     "SELECT id, slug, name, status, contact_email FROM agencies ORDER BY name"
   ).all<{ id: number; slug: string; name: string; status: string; contact_email: string | null }>()).results;
 
+  // Real clients only, and only those with a non-competitor domain that has
+  // actually been scanned -- a slug you cannot build a digest for should not
+  // be offerable. Free text here was a mistake: the field carried
+  // "hawaii-theatre" as a PLACEHOLDER, which in the dark UI reads as a filled
+  // value, so the first rehearsal silently ran with an empty slug.
+  const digestClients = (await env.DB.prepare(
+    `SELECT DISTINCT d.client_slug AS slug
+       FROM domains d
+       JOIN scan_results s ON s.domain_id = d.id AND s.error IS NULL
+      WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0
+      ORDER BY d.client_slug`
+  ).all<{ slug: string }>()).results;
+  const clientSlugOptions = digestClients
+    .map((c) => `<option value="${esc(c.slug)}">${esc(c.slug)}</option>`)
+    .join("");
+
   const flash = url.searchParams.get("flash");
   const flashError = url.searchParams.get("error");
   const flashBlock = flash
@@ -153,7 +169,10 @@ export async function handleEmailTestGet(user: User | null, env: Env, url: URL):
 
         <div class="form-group">
           <label for="digest_slug">Client slug (digest rehearsal only)</label>
-          <input id="digest_slug" name="digest_slug" type="text" placeholder="hawaii-theatre">
+          <select id="digest_slug" name="digest_slug">
+            <option value="">(most recent scan anywhere -- NOT a client rehearsal)</option>
+            ${clientSlugOptions}
+          </select>
           <p class="muted" style="font-size:12px;margin-top:6px">
             Builds the digest from THIS client's real citations, real undelivered
             events and real pass framing, through the real grader. Blank picks the
@@ -271,10 +290,18 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
         // inputs the Monday/pass-cadence cron assembles, so a pass here is
         // evidence about the real artifact.
         const sample = await env.DB.prepare(
+          // is_competitor = 0 is NOT optional. Cohort competitors live in
+          // `domains` tagged with the CLIENT's slug, so without this filter a
+          // rehearsal builds the client's digest around a rival's scan. On
+          // 2026-08-26 the first run mailed a digest built from
+          // ritzcarlton.com -- a Prince competitor -- labelled as a test for
+          // hawaii-theatre. cron.ts has always skipped these (`if
+          // (d.is_competitor) continue`); this path did not.
           `SELECT s.*, d.domain, d.client_slug
              FROM scan_results s
              JOIN domains d ON d.id = s.domain_id
             WHERE s.error IS NULL
+              AND d.is_competitor = 0
               AND (? = '' OR d.client_slug = ?)
             ORDER BY s.scanned_at DESC LIMIT 1`
         ).bind(digestSlug, digestSlug).first<ScanResult & { domain: string; client_slug: string }>();
