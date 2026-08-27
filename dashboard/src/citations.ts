@@ -96,6 +96,52 @@ const GEMMA_MODEL = "google/gemma-4-31B-it";
 // Perplexity queries
 // ---------------------------------------------------------------------------
 
+/** What an engine call returns.
+ *
+ * `failure` is the whole point. Until 2026-08-27 every HTTP error mapped to
+ * {text:"", urls:[], entities:[]} -- an EMPTY SUCCESS -- and the skip-on-empty
+ * guards then dropped it, so a 429 and "the engine had nothing to say" were
+ * the same absence of a row. That guard was itself a fix: in July a dead
+ * OpenAI account wrote 330 empty rows over nine days while the heartbeat
+ * counted rows and called the engine healthy. Skipping empties cured the false
+ * positive and created the mirror failure, an invisible one.
+ *
+ * Measured 2026-08-27, 48h: anthropic 121, bing 121, gemini 121, gemma 120,
+ * google_ai_overview 100, perplexity 97, openai 39. Two calls in three were
+ * failing and the only evidence was a row count, because the reason had been
+ * thrown away at the point it was known.
+ *
+ * Carrying the reason changes "openai wrote fewer rows" into "openai got N
+ * 429s". Same skip behaviour, same clean citation_runs, but the failure is
+ * now sayable. dryrun/engines.mjs got this discipline on 2026-08-22; this
+ * file did not. */
+export interface EngineResult {
+  text: string;
+  urls: string[];
+  entities: CitedEntity[];
+  /** Set ONLY when the call did not complete. Absent on a real empty answer. */
+  failure?: { engine: string; status: number; detail: string };
+}
+
+/** One place that decides whether an engine result is a measurement.
+ *
+ * Both branches skip persistence -- citation_runs must never hold a row that
+ * is not a real reading. The difference is that a FAILURE now says so out
+ * loud, tagged so it can be grepped and counted, while a genuine empty answer
+ * stays quiet. Before this, both were silence. */
+function skipReason(engine: string, keyword: string, r: EngineResult, hasEntities = false): boolean {
+  const nothing = r.text.length === 0 && (hasEntities ? r.entities.length === 0 : r.urls.length === 0);
+  if (r.failure) {
+    console.log(`[engine-skip] ${engine} DID NOT COMPLETE for "${keyword}" (status ${r.failure.status}): ${r.failure.detail}`);
+    return true;
+  }
+  if (nothing) {
+    console.log(`[engine-skip] ${engine} completed but returned nothing for "${keyword}" -- a real empty answer, not a failure`);
+    return true;
+  }
+  return false;
+}
+
 /**
  * Perplexity query via the Agent API, verified live 2026-08-22. The
  * legacy /chat/completions surface retires 2026-09-27 (same failure
@@ -158,7 +204,7 @@ function parsePerplexityAgentOutput(data: PerplexityAgentResponse): { text: stri
 async function queryPerplexity(
   keyword: string,
   apiKey: string
-): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
+): Promise<EngineResult> {
   const resp = await fetch(PERPLEXITY_ENDPOINT, {
     method: "POST",
     headers: {
@@ -178,8 +224,8 @@ async function queryPerplexity(
 
   if (!resp.ok) {
     const err = await resp.text();
-    console.log(`Perplexity error for "${keyword}": ${resp.status} ${err}`);
-    return { text: "", urls: [], entities: [] };
+    console.log(`[engine-failure] perplexity ${resp.status} for "${keyword}": ${err.slice(0, 300)}`);
+    return { text: "", urls: [], entities: [], failure: { engine: "perplexity", status: resp.status, detail: err.slice(0, 300) } };
   }
 
   const data = (await resp.json()) as PerplexityAgentResponse;
@@ -187,8 +233,9 @@ async function queryPerplexity(
   if (data.status === "failed") {
     // Server-side agent failure on an HTTP 200. Empty return; the
     // skip-on-empty guards upstream keep it out of citation_runs.
-    console.log(`Perplexity agent failed for "${keyword}": ${data.error?.message || "no error message"}`);
-    return { text: "", urls: [], entities: [] };
+    const pmsg = data.error?.message || "no error message";
+    console.log(`[engine-failure] perplexity agent-failed (HTTP 200) for "${keyword}": ${pmsg}`);
+    return { text: "", urls: [], entities: [], failure: { engine: "perplexity", status: 200, detail: `agent failed: ${String(pmsg).slice(0, 260)}` } };
   }
 
   const { text, urls } = parsePerplexityAgentOutput(data);
@@ -223,7 +270,7 @@ async function queryPerplexity(
 async function queryOpenAI(
   keyword: string,
   apiKey: string
-): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
+): Promise<EngineResult> {
   const resp = await fetch(OPENAI_ENDPOINT, {
     method: "POST",
     headers: {
@@ -254,8 +301,8 @@ async function queryOpenAI(
 
   if (!resp.ok) {
     const err = await resp.text();
-    console.log(`OpenAI error for "${keyword}": ${resp.status} ${err}`);
-    return { text: "", urls: [], entities: [] };
+    console.log(`[engine-failure] openai ${resp.status} for "${keyword}": ${err.slice(0, 300)}`);
+    return { text: "", urls: [], entities: [], failure: { engine: "openai", status: resp.status, detail: err.slice(0, 300) } };
   }
 
   type OpenAIAnnotation = {
@@ -302,7 +349,7 @@ async function queryGemini(
   keyword: string,
   apiKey: string,
   env?: Env,
-): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
+): Promise<EngineResult> {
   const requestBody = JSON.stringify({
     contents: [
       {
@@ -345,8 +392,8 @@ async function queryGemini(
 
   if (!resp.ok) {
     const err = await resp.text();
-    console.log("Gemini error for \"" + keyword + "\": " + resp.status + " " + err);
-    return { text: "", urls: [], entities: [] };
+    console.log("[engine-failure] gemini " + resp.status + " for \"" + keyword + "\": " + err.slice(0, 300));
+    return { text: "", urls: [], entities: [], failure: { engine: "gemini", status: resp.status, detail: err.slice(0, 300) } };
   }
 
   type GroundingChunk = { web?: { uri?: string; title?: string } };
@@ -361,8 +408,8 @@ async function queryGemini(
   try {
     data = JSON.parse(rawJson);
   } catch {
-    console.log("[gemini-debug] non-JSON response: " + rawJson.slice(0, 800));
-    return { text: "", urls: [], entities: [] };
+    console.log("[engine-failure] gemini non-JSON response: " + rawJson.slice(0, 300));
+    return { text: "", urls: [], entities: [], failure: { engine: "gemini", status: 0, detail: "non-JSON response: " + rawJson.slice(0, 260) } };
   }
 
   const cand = data.candidates?.[0];
@@ -700,7 +747,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
         // Skip-on-empty: an API failure must not become a row. See the
         // runOpenAI comment below for the 2026-07-24 incident.
-        if (r.text.length === 0 && r.urls.length === 0) return;
+        if (skipReason("perplexity", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -732,7 +779,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // 2026-07-24, this runner wrote 330 empty rows over nine days
         // while the heartbeat counted rows and reported the engine
         // active. Same guard runGemini has carried all along.
-        if (r.text.length === 0 && r.urls.length === 0) return;
+        if (skipReason("openai", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -761,7 +808,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Skip persistence when the API returned nothing -- usually a 429
         // quota error or transient 5xx. Empty rows would poison the
         // citation rate denominator with non-runs.
-        if (r.text.length === 0 && r.urls.length === 0) return;
+        if (skipReason("gemini", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -791,7 +838,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // The single-keyword path's runAnthropic has carried this since
         // the 2026-05-11 incident (53/53 empty rows); this path never
         // got it.
-        if (r.text.length === 0 && r.entities.length === 0) return;
+        if (skipReason("anthropic", kw.keyword, r, true)) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -822,7 +869,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const r = await queryGoogleAIO(kw.keyword, env);
         // AIO doesn't render for many queries -- skip the INSERT so we
         // don't poison the citation rate denominator with non-runs.
-        if (r.text.length === 0 && r.urls.length === 0) return;
+        if (skipReason("google_ai_overview", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -849,7 +896,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
         const { queryBing } = await import("./citations-bing");
         const r = await queryBing(kw.keyword, env);
-        if (r.text.length === 0 && r.urls.length === 0) return;
+        if (skipReason("bing", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -882,7 +929,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Skip-on-empty, entities variant. Together drops ~12% of gemma
         // calls on network errors (measured July 2026); a drop is not a
         // measurement.
-        if (r.text.length === 0 && r.entities.length === 0) return;
+        if (skipReason("gemma", kw.keyword, r, true)) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -1274,7 +1321,7 @@ export async function runOneKeywordCitations(
   const runPerplexity = async () => {
     if (!env.PERPLEXITY_API_KEY) return;
     const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
-    if (r.text.length === 0 && r.urls.length === 0) return; // failure, not a measurement
+    if (skipReason("perplexity", kw.keyword, r, false)) return; // failure, not a measurement
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1290,7 +1337,7 @@ export async function runOneKeywordCitations(
     const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
     // This runner produced the 330 empty rows of 2026-07-25..08-02
     // (OpenAI credits exhausted; every failure mapped to empty-but-ok).
-    if (r.text.length === 0 && r.urls.length === 0) return;
+    if (skipReason("openai", kw.keyword, r, false)) return;
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1304,7 +1351,7 @@ export async function runOneKeywordCitations(
   const runGemini = async () => {
     if (!env.GEMINI_API_KEY) return;
     const r = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
-    if (r.text.length === 0 && r.urls.length === 0) return; // 429/empty
+    if (skipReason("gemini", kw.keyword, r, false)) return; // 429/empty
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1324,7 +1371,7 @@ export async function runOneKeywordCitations(
     // empirically 2026-05-11: 53/53 Anthropic rows had cited_entities=[]
     // because most calls returned response_text=""). Matches the
     // skip-on-empty pattern Gemini / AIO / Bing already use.
-    if (r.text.length === 0 && r.entities.length === 0) return;
+    if (skipReason("anthropic", kw.keyword, r, true)) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1339,7 +1386,7 @@ export async function runOneKeywordCitations(
     if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
     const { queryGoogleAIO } = await import("./citations-google-aio");
     const r = await queryGoogleAIO(kw.keyword, env);
-    if (r.text.length === 0 && r.urls.length === 0) return; // AIO didn't render
+    if (skipReason("google_ai_overview", kw.keyword, r, false)) return; // AIO didn't render
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1354,7 +1401,7 @@ export async function runOneKeywordCitations(
     if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
     const { queryBing } = await import("./citations-bing");
     const r = await queryBing(kw.keyword, env);
-    if (r.text.length === 0 && r.urls.length === 0) return;
+    if (skipReason("bing", kw.keyword, r, false)) return;
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1375,7 +1422,7 @@ export async function runOneKeywordCitations(
     const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
     // Skip empty results to keep the snapshot aggregator clean. Same
     // pattern as the other training-mode engines.
-    if (r.text.length === 0 && r.entities.length === 0) return;
+    if (skipReason("gemma", kw.keyword, r, true)) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
