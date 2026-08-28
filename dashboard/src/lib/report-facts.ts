@@ -98,6 +98,73 @@ function monthBounds(monthKey: string): { start: number; end: number; priorStart
   };
 }
 
+
+/** Per-engine collection completeness for a window.
+ *
+ *  WHY THIS EXISTS (2026-08-28): nothing in this file asked whether an engine
+ *  actually ran enough to support a claim about it. An engine that collected
+ *  9% of the month's questions rendered identically to one that collected
+ *  100%. Because every aggregate here is cited-at-all with an OR, a missing
+ *  row can only ever produce a FALSE NEGATIVE -- the report says a question
+ *  lost ChatGPT visibility when the truth is nobody asked ChatGPT. Reporting
+ *  under-collection as lost visibility is the worst failure this product has.
+ *
+ *  The measure is coverage RELATIVE TO WHAT WAS ASKED, not against an
+ *  expected count. Every engine is put the same question set, so the number
+ *  of distinct questions any engine answered is the best available proxy for
+ *  "questions actually run this window". That sidesteps the fact that
+ *  skipReason() deliberately writes no row when an engine returns a genuine
+ *  empty answer: we cannot tell "had nothing to say" from "was never asked",
+ *  and for reporting purposes we do not need to. Either way we hold no data
+ *  for that engine on that question and must not imply otherwise.
+ *
+ *  Threshold is deliberately loose. Google AI Overviews legitimately fails to
+ *  render on a large minority of questions, and excluding it for that would
+ *  be wrong. 50% catches a collapse without punishing an engine that is
+ *  merely quiet.
+ */
+const MIN_ENGINE_COVERAGE = 0.5;
+
+export type EngineCoverage = {
+  engine: string;
+  questionsCovered: number;
+  questionsAsked: number;
+  pct: number;
+  sufficient: boolean;
+};
+
+async function assessEngineCoverage(
+  env: Env,
+  slug: string,
+  startTs: number,
+  endTs: number,
+): Promise<EngineCoverage[]> {
+  const rows = (await env.DB.prepare(
+    `SELECT cr.engine AS engine, COUNT(DISTINCT ck.keyword) AS qs
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?
+      GROUP BY cr.engine`,
+  ).bind(slug, startTs, endTs).all<{ engine: string; qs: number }>()).results;
+
+  // "Asked" = the most questions any single engine covered this window. Not a
+  // sum and not a guess at the roster: the engine that saw the most questions
+  // defines what was actually put to the panel.
+  const asked = rows.reduce((m, r) => Math.max(m, Number(r.qs) || 0), 0);
+  if (!asked) return [];
+
+  return rows.map((r) => {
+    const covered = Number(r.qs) || 0;
+    const pct = covered / asked;
+    return {
+      engine: String(r.engine),
+      questionsCovered: covered,
+      questionsAsked: asked,
+      pct,
+      sufficient: pct >= MIN_ENGINE_COVERAGE,
+    };
+  });
+}
+
 /** Per-question, per-engine cited-at-all flips between the report's month and
  *  the month before it. Windows are anchored to monthKey (NOT Date.now()) so a
  *  late-emitted or backfilled report reflects the month it is labeled. Requires
@@ -112,10 +179,27 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string): 
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
   ).bind(slug, b.priorStart, b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
 
+  // Movement compares two windows, so an engine must have collected
+  // adequately in BOTH. An engine healthy last month and collapsed this
+  // month would otherwise render every one of its questions as
+  // "disappeared" -- lost visibility that never happened. That is the
+  // exact false negative this guard exists to prevent.
+  const curCov = await assessEngineCoverage(env, slug, b.start, b.end);
+  const priCov = await assessEngineCoverage(env, slug, b.priorStart, b.start);
+  const okCur = new Set(curCov.filter((c) => c.sufficient).map((c) => c.engine));
+  const okPri = new Set(priCov.filter((c) => c.sufficient).map((c) => c.engine));
+  const trusted = new Set([...okCur].filter((e) => okPri.has(e)));
+  for (const c of curCov) {
+    if (!trusted.has(c.engine)) {
+      console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from question movement -- covered ${c.questionsCovered}/${c.questionsAsked} questions this window (${Math.round(c.pct * 100)}%). Under-collection must not render as lost visibility.`);
+    }
+  }
+
   // key = question \u0000 engine -> cited-at-all per window
   const cur = new Map<string, boolean>(), pri = new Map<string, boolean>();
   let curCount = 0, priCount = 0;
   for (const r of runs.results) {
+    if (!trusted.has(r.engine)) continue; // under-collected: no claim either way
     const key = `${r.keyword}\u0000${r.engine}`;
     const m = r.run_at >= b.start ? (curCount++, cur) : (priCount++, pri);
     m.set(key, (m.get(key) || false) || r.client_cited === 1);
@@ -161,11 +245,23 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string): Prom
   ).bind(slug, b.start, b.end).all<{ engine: string; client_cited: number; keyword: string }>();
   if (!runs.results.length) return undefined;
 
+  // Same guard as question movement. A grid cell reading 0% for an engine
+  // that only ran 2 of 22 questions is not a measurement, it is an absence
+  // dressed as one.
+  const cov = await assessEngineCoverage(env, slug, b.start, b.end);
+  const gridTrusted = new Set(cov.filter((c) => c.sufficient).map((c) => c.engine));
+  for (const c of cov) {
+    if (!gridTrusted.has(c.engine)) {
+      console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from citation grid -- covered ${c.questionsCovered}/${c.questionsAsked} questions (${Math.round(c.pct * 100)}%).`);
+    }
+  }
+
   // tally[engineKey][keyword] = { cited, total }
   const tally = new Map<string, Map<string, { cited: number; total: number }>>();
   const questionSet = new Set<string>();
   for (const r of runs.results) {
     if (typeof r.engine !== "string" || typeof r.keyword !== "string") continue;
+    if (!gridTrusted.has(r.engine)) continue; // under-collected
     questionSet.add(r.keyword);
     let byQ = tally.get(r.engine);
     if (!byQ) { byQ = new Map(); tally.set(r.engine, byQ); }
