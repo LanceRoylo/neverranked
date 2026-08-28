@@ -181,11 +181,19 @@ VOICE RULES:
 - No three-adjective lists
 - Write like a smart human practitioner, not an AI summarizer
 
+GROUNDING RULES (the stats block in the user message is your ONLY source):
+- Report what was measured. Never report why. You have no access to any surface's ranking logic, retrieval method or reasoning, so do not explain why one surface differs from another.
+- Do not define what a classification means. If the source labels mentions positive, neutral or negative, report the counts and stop. Do not tell the reader what those labels measure.
+- A count is not a description. Never characterise the content of an individual citation, mention or thread. If the source says one mention was negative, you may say one mention was negative and nothing about what it said.
+- The source carries no dates, no thread ages and no recency signal. Never claim anything is recent, old, current or trending over time beyond the one prior-week figure given.
+- Every surface has its own run count. Rates compare across surfaces, absolute counts do not. Never assert that two surfaces were asked the same questions or saw the same query set, because the source does not establish that.
+- If a detail would make the brief more interesting but is not in the stats block, leave it out. A thin accurate brief is correct. An interesting invented one is a retraction.
+
 OUTPUT FORMAT (strict JSON):
 {
   "title": "Specific, declarative, under 70 chars. NOT 'Weekly Brief #X' -- name what actually happened.",
   "summary": "1-2 sentences. The hook. Used as the archive list entry and the meta description.",
-  "body_markdown": "The full brief in Markdown. Use ## for section headers. 600-1200 words. Open with the most interesting observation, then sections for each angle (engine activity, Reddit, sentiment, referral traffic, etc). Close with a forward-looking observation, not a summary."
+  "body_markdown": "The full brief in Markdown. Use ## for section headers. 600-1200 words. Open with the most notable measured result, then sections for each angle (engine activity, Reddit, sentiment, referral traffic, etc). Close by naming what next week's numbers would have to show to confirm or contradict this week's reading. Do not predict."
 }`;
 
 interface GeneratedBrief {
@@ -207,7 +215,11 @@ function buildUserMessage(stats: WeeklyStats): string {
   Active clients monitored: ${stats.trackedClients}
   Total tracked keywords:   ${stats.trackedKeywords}
 
-## Citation runs (7 engines: ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, Gemma)
+## Citation runs
+  The AI tools measured are ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews and Gemma.
+  Bing is a classic-search control, NOT an AI tool. It returns results. It does not cite or answer.
+  Never count Bing among the AI tools and never attribute answering behaviour to it.
+  Together these are seven measured surfaces.
   Total runs this week:     ${stats.totalCitationRuns}
   New client citations:     ${stats.newCitationsThisWeek} (${wow})
 
@@ -236,7 +248,7 @@ ${stats.topReferrerEngines.map(r => `    ${r.engine}: ${r.visits} visits`).join(
 
 ---
 
-Write the brief now. Strict JSON only, matching the shape in your instructions. Lead with the most interesting observation, not "this week we saw...". Find the story in the numbers.`;
+Write the brief now. Strict JSON only, matching the shape in your instructions. Lead with the most notable measured result, not "this week we saw...". If the numbers are unremarkable, say that plainly rather than manufacturing significance.`;
 }
 
 async function callClaude(env: Env, userMessage: string): Promise<string> {

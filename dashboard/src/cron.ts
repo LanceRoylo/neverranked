@@ -651,6 +651,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
           },
         });
         dispatched++;
+        // 2026-08-28: stagger. Creating ~98 instances in a tight loop
+        // starts them all at once; OpenAI (slowest engine, 9-16s per
+        // call) stops writing ~60s into the sweep while the fast
+        // engines finish. Minute-level evidence from the 06:00 UTC
+        // run: anthropic wrote 45 rows in minute 00 and 15 more in
+        // minute 01; openai wrote 23 in minute 00 and ZERO in minute
+        // 01. Spreading dispatch keeps concurrent in-flight calls low.
+        // Root cause is not yet identified -- this is a mitigation, and
+        // the [engine-failure] logging deployed 08-28 will name the
+        // actual error on the next 06:00 UTC sweep.
+        await new Promise((r) => setTimeout(r, 250));
       } catch (e) {
         dispatchErrors++;
         console.log(`[cron daily] failed to dispatch citation-keyword workflow for ${item.clientSlug}/${item.keywordId}: ${e instanceof Error ? e.message : String(e)}`);

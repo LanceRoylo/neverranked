@@ -1483,7 +1483,20 @@ export async function planCitationRun(
         "SELECT id, client_slug, keyword FROM citation_keywords WHERE active = 1 AND client_slug = ? ORDER BY id"
       ).bind(slugFilter).all<{ id: number; client_slug: string; keyword: string }>()).results
     : (await env.DB.prepare(
-        "SELECT id, client_slug, keyword FROM citation_keywords WHERE active = 1 ORDER BY client_slug, id"
+        // 2026-08-28: order MEASURED clients first. Previously plain
+        // "ORDER BY client_slug, id" -- alphabetical, and therefore
+        // arbitrary with respect to who is under contract. OpenAI is the
+        // slowest engine (~9-16s per call) and stops writing roughly 60s
+        // into the sweep, so whoever is dispatched last loses their
+        // ChatGPT reading. Dispatch position must reflect the engagement,
+        // not the alphabet. Registry presence (not active=1) is the test,
+        // so a client provisioned but not yet armed still sorts first.
+        // Per-client coverage figures are in the private docs repo.
+        `SELECT k.id, k.client_slug, k.keyword
+           FROM citation_keywords k
+           LEFT JOIN measurement_registry mr ON mr.client_slug = k.client_slug
+          WHERE k.active = 1
+          ORDER BY (mr.client_slug IS NULL), k.client_slug, k.id`
       ).all<{ id: number; client_slug: string; keyword: string }>()).results;
 
   const items = keywords.map((k) => ({
