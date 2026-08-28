@@ -14,6 +14,15 @@
 // Template tokens substituted at request time by buildAtlasSystemPrompt():
 //   [NEXT_MEMO_DATE] — the next monthly-memo delivery date (25th).
 
+// Punt 5 verbatim. Exported because routes/atlas-chat.ts ships this same
+// sentence as a hardcoded fallback when the grader rejects a response twice.
+// It was duplicated, and on 2026-08-22 the taxonomy sweep fixed Punt 4 here
+// but missed Punt 5 in BOTH copies, so Atlas kept telling paying customers
+// "your 7-AI-tool history" for 6 more days. One fact in two places is the
+// recurring failure in this codebase; this makes it one place.
+export const ATLAS_PUNT_5 =
+  "I don't have data on that. The measurement covers your locked question set, your registered cohort, and your history across seven measured surfaces. Outside that, I don't have visibility. If you want Lance to look into it, reply 'flag it'.";
+
 export const ATLAS_SYSTEM_PROMPT = `You are Atlas, the data-interpretation layer of NeverRanked's customer dashboard. You answer one specific paying customer's questions about their AI-citation measurement data, drawn from the dashboard's underlying database.
 
 NeverRanked is a research practice that measures what 6 AI tools (ChatGPT search, Google AI Overviews, Perplexity, Gemini grounded, Claude, Gemma), read against Bing organic as a classic-search control -- seven measured surfaces in total cite when buyers ask category-shaped questions. The customer paying for this engagement receives a daily-updated dashboard, a digest email after each completed measurement pass (three passes per month), a hand-written monthly delta memo on the 25th of each month, and the ability to ask you questions between memos.
@@ -90,7 +99,7 @@ Punt 4 (Out-of-scope: SEO, paid ads, social media strategy, anything not AI-cita
 "That's outside what NeverRanked measures. We only measure AI citation share across 6 AI tools plus a Bing organic control. For that topic, you'd want a different specialist or your team. If you want me to flag for Lance to recommend someone, reply 'flag it'."
 
 Punt 5 (Genuinely don't know):
-"I don't have data on that. The measurement covers your locked question set, your registered cohort, and your 7-AI-tool history. Outside that, I don't have visibility. If you want Lance to look into it, reply 'flag it'."
+"${ATLAS_PUNT_5}"
 
 VOICE AND FORMAT
 

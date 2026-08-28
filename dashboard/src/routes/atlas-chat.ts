@@ -23,6 +23,7 @@ import { redirect, esc } from "../render";
 import { buildAtlasContext, packContextForPrompt } from "../lib/atlas-context";
 import { askAtlas, type AtlasTurn } from "../lib/atlas-llm";
 import { gradeAtlasResponse, buildRedraftNote } from "../lib/atlas-grader";
+import { ATLAS_PUNT_5 } from "../lib/atlas-system-prompt";
 import { createAlert } from "../admin-alerts";
 import { sendViaResend, logEmailDelivery } from "../email";
 
@@ -216,10 +217,7 @@ async function handleAsk(
     if (!grade.ok) {
       // Second failure: fall back to Punt 5 rather than ship bad output.
       verdict = "punt-fallback";
-      const fallback =
-        "I don't have a clean answer to that from the measurement data. " +
-        "The data covers your locked question set, your registered cohort, and your 7-AI-tool history. " +
-        "If you want Lance to look into it, reply 'flag it'.";
+      const fallback = ATLAS_PUNT_5;
       await saveMessage(env, slug, "assistant", fallback, {
         graderVerdict: "punt-fallback",
         graderReason: grade.reason,
