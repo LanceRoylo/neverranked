@@ -66,7 +66,29 @@ until rebuild.
 
 ## Client provisioning
 
-A client needs a `client_slug` plus a competitor cohort in `domains`, and an
-active row in `measurement_registry`. Until those exist, no readout URL exists
-for them. HTC and Montaic are provisioned. Prince Waikiki is NOT, as of
-2026-07-27.
+**Run `node scripts/preflight-client.mjs <slug>` rather than reasoning about
+this from memory.** It asserts every requirement and exits non-zero when one
+is missing. Updated 2026-08-28.
+
+Provisioning is FIVE things, and four of them fail silently when absent:
+
+1. `client_slug` + own domain + competitor cohort in `domains`
+2. a row in `measurement_registry`, **and `active = 1`** — arms the watchdog,
+   the pass-cadence digest, Atlas context and the customer view
+3. rows in `citation_keywords`, **and `active = 1`** — this is a SEPARATE
+   flag. `planCitationRun` filters `WHERE active = 1`, so arming only the
+   registry gives you a watchdog over an empty pipeline
+4. at least one row in `users`, or `handleReadoutView` bounces the customer
+   to `/login` for an account that does not exist
+5. a row in `customers` with `status IN ('active','pilot')` and
+   `plan_markdown` set — `memo-generator` selects FROM this table, so a
+   client absent from it never gets the contracted monthly memo
+
+None of 2 through 5 raise anything when missing. An inactive or absent client
+is not failing, it is skipped.
+
+Status: HTC and Montaic provisioned. **Prince Waikiki provisioned 2026-08-28**
+(registry, 18 keywords, domains, 2 logins, customers row, plan_markdown) with
+both `active` flags deliberately still 0 — they flip on 2026-09-01, his start
+date. Arming in August fires a false OVERDUE alarm for a month he was not a
+client.
