@@ -285,3 +285,157 @@ test("question-movement chips carry engine LABELS, not raw keys", async () => {
   assert.ok(chips.includes("Bing search (control)"), `expected the canonical label, got ${JSON.stringify(chips)}`);
   assert.ok(!chips.includes("bing"), "raw key must not reach a customer-facing chip");
 });
+
+// ---------------------------------------------------------------------------
+// The engine-coverage guard (2026-08-29).
+//
+// Every aggregate in report-facts is cited-at-all with an OR, so a MISSING row
+// can only ever produce a false negative: the report says a question lost
+// ChatGPT visibility when the truth is that nobody asked ChatGPT. These two
+// tests pin the guard's actual behaviour -- it must suppress the false claim
+// WITHOUT suppressing the true one beside it, and without blanking a section.
+// ---------------------------------------------------------------------------
+
+test("coverage guard: an under-collected engine is EXCLUDED from the citation grid", async () => {
+  const Q = ["q1", "q2", "q3", "q4"];
+  const runs = [
+    // Claude and the Bing control each answered all four questions.
+    ...Q.flatMap((keyword) => [
+      { engine: "anthropic", client_cited: 1, keyword },
+      { engine: "bing", client_cited: 1, keyword },
+    ]),
+    // ChatGPT got through one of four (25%), and that one came back uncited.
+    // A "0%" grid cell here is an absence of collection, not a measured zero.
+    { engine: "openai", client_cited: 0, keyword: "q1" },
+  ];
+  const facts = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, runs), "x", "2026-07");
+  const grid = facts!.grid!;
+  assert.ok(grid, "the grid still renders from the engines that did collect");
+  assert.deepEqual(grid.engines, ["Claude", "Bing search (control)"]);
+  assert.ok(!grid.engines.includes("ChatGPT"), "a 25%-covered engine must not render a row");
+  assert.deepEqual(grid.questions, ["q1", "q2", "q3", "q4"]);
+});
+
+test("coverage guard: a collapsed engine does not render as LOST VISIBILITY", async () => {
+  const prior = Math.floor(Date.UTC(2026, 6, 15) / 1000); // Jul
+  const curr = Math.floor(Date.UTC(2026, 7, 15) / 1000); // Aug
+  const Q = ["q1", "q2", "q3", "q4"];
+  const runs = [
+    // Prior month: both engines answered all four and cited throughout.
+    ...Q.flatMap((keyword) => [
+      { engine: "openai", client_cited: 1, run_at: prior, keyword },
+      { engine: "anthropic", client_cited: 1, run_at: prior, keyword },
+    ]),
+    // Current month: Claude answered all four and GENUINELY lost q2.
+    ...Q.map((keyword) => ({
+      engine: "anthropic", client_cited: keyword === "q2" ? 0 : 1, run_at: curr, keyword,
+    })),
+    // ChatGPT got through one of four this month and it came back uncited.
+    // Pre-guard this rendered as "q1 disappeared from ChatGPT". It did not.
+    { engine: "openai", client_cited: 0, run_at: curr, keyword: "q1" },
+  ];
+  const env: any = {
+    DB: {
+      prepare(sql: string) {
+        return { bind() { return {
+          async first() {
+            if (/citation_snapshots/.test(sql)) return deliverableSnap;
+            if (/FROM customers/.test(sql)) return { name: "X" };
+            return null;
+          },
+          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+        }; } };
+      },
+    },
+  };
+  const facts = await buildReportFacts(env, "x", "2026-08");
+  const disappeared = facts?.questions?.disappeared ?? [];
+  const allChips = [
+    ...disappeared.flatMap((d: any) => d.engines),
+    ...(facts?.questions?.appeared ?? []).flatMap((a: any) => a.engines),
+  ];
+  // The TRUE finding survives.
+  assert.deepEqual(disappeared.map((d: any) => d.q), ["q2"]);
+  assert.deepEqual(disappeared[0].engines, ["Claude"]);
+  // The FALSE finding is gone.
+  assert.ok(!allChips.includes("ChatGPT"),
+    `under-collection must not render as lost visibility, got ${JSON.stringify(allChips)}`);
+});
+
+// ---------------------------------------------------------------------------
+// measurement_start: a prior month that predates the engagement is not a
+// prior month (2026-08-29).
+//
+// A pre-sale teardown, a demo and a provisioning dry run all write to
+// citation_runs under the client's slug. Movement decided "is this a baseline
+// month?" by asking whether prior rows EXIST, so a client whose engagement
+// began partway through their own row history got a first memo comparing
+// their real first month against pre-engagement rows. The coverage guard
+// cannot catch it: those rows can have full question coverage. Wrong window,
+// not a thin one.
+// ---------------------------------------------------------------------------
+
+const septSnap = {
+  engines_breakdown: JSON.stringify({ Claude: { share_pct: 14 } }),
+  top_competitors: "{}",
+  week_start: Math.floor(Date.UTC(2026, 7, 24) / 1000),
+  measured_at: Math.floor(Date.UTC(2026, 7, 31) / 1000), // Aug 31 -> valid for September
+};
+
+/** A demo in August, contracted measurement from September. */
+function preEngagementEnv(measurementStart: number | null) {
+  const demo = Math.floor(Date.UTC(2026, 7, 20) / 1000); // Aug 20, pre-contract
+  const real = Math.floor(Date.UTC(2026, 8, 15) / 1000); // Sep 15, contracted
+  const Q = ["q1", "q2", "q3", "q4"];
+  const runs = [
+    // The demo cited the client everywhere.
+    ...Q.flatMap((keyword) => [
+      { engine: "anthropic", client_cited: 1, run_at: demo, keyword },
+      { engine: "perplexity", client_cited: 1, run_at: demo, keyword },
+    ]),
+    // September: genuinely uncited on q2 and q3.
+    ...Q.flatMap((keyword) => [
+      { engine: "anthropic", client_cited: keyword === "q2" ? 0 : 1, run_at: real, keyword },
+      { engine: "perplexity", client_cited: keyword === "q3" ? 0 : 1, run_at: real, keyword },
+    ]),
+  ];
+  return {
+    DB: {
+      prepare(sql: string) {
+        return { bind() { return {
+          async first() {
+            if (/measurement_registry/.test(sql)) return { measurement_start: measurementStart };
+            if (/citation_snapshots/.test(sql)) return septSnap;
+            if (/FROM customers/.test(sql)) return { name: "X" };
+            return null;
+          },
+          async all() { return { results: /cr\.run_at/.test(sql) ? runs : [] }; },
+        }; } };
+      },
+    },
+  } as any;
+}
+
+test("pre-engagement rows DO produce a false movement section without the gate", async () => {
+  // This is the bug, pinned. If this test ever stops finding movement, the
+  // gate test below has stopped proving anything.
+  const facts = await buildReportFacts(preEngagementEnv(null), "example-client", "2026-09");
+  const chips = (facts?.questions?.disappeared ?? []).flatMap((d: any) => d.engines);
+  assert.ok(chips.length > 0, "without a start date, the sales demo becomes the comparison baseline");
+});
+
+test("measurement_start: a client's FIRST month is a baseline, not a comparison", async () => {
+  const sept1 = Math.floor(Date.UTC(2026, 8, 1) / 1000);
+  const facts = await buildReportFacts(preEngagementEnv(sept1), "example-client", "2026-09");
+  assert.equal(facts?.questions, undefined,
+    "September opens the engagement: there is no contracted prior month to have moved from");
+  // The rest of the report is unaffected -- this gates the comparison, not the memo.
+  assert.ok(facts, "facts still build; only the movement section is withheld");
+});
+
+test("measurement_start: the SECOND month compares normally", async () => {
+  const aug1 = Math.floor(Date.UTC(2026, 7, 1) / 1000);
+  const facts = await buildReportFacts(preEngagementEnv(aug1), "example-client", "2026-09");
+  const chips = (facts?.questions?.disappeared ?? []).flatMap((d: any) => d.engines);
+  assert.ok(chips.length > 0, "once the prior month IS contracted, movement renders as before");
+});

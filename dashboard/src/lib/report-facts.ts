@@ -133,31 +133,39 @@ export type EngineCoverage = {
   sufficient: boolean;
 };
 
-async function assessEngineCoverage(
-  env: Env,
-  slug: string,
-  startTs: number,
-  endTs: number,
-): Promise<EngineCoverage[]> {
-  const rows = (await env.DB.prepare(
-    `SELECT cr.engine AS engine, COUNT(DISTINCT ck.keyword) AS qs
-       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
-      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?
-      GROUP BY cr.engine`,
-  ).bind(slug, startTs, endTs).all<{ engine: string; qs: number }>()).results;
+/** Coverage assessed from the rows the caller ALREADY fetched, not from a
+ *  second query.
+ *
+ *  This is deliberate. A separate GROUP BY over the same JOIN can disagree
+ *  with the rows being filtered -- different window arithmetic, a schema
+ *  change applied to one query and not the other -- and a guard that
+ *  disagrees with the data it guards is worse than no guard: it excludes
+ *  engines the report has real data for. Deriving from the same array makes
+ *  divergence impossible, removes three DB round-trips per readout, and lets
+ *  the guard be tested with the fixtures that already exist. */
+export function assessEngineCoverage(
+  rows: Array<{ engine: string; keyword: string }>,
+): EngineCoverage[] {
+  const byEngine = new Map<string, Set<string>>();
+  for (const r of rows) {
+    if (typeof r.engine !== "string" || typeof r.keyword !== "string") continue;
+    let qs = byEngine.get(r.engine);
+    if (!qs) { qs = new Set(); byEngine.set(r.engine, qs); }
+    qs.add(r.keyword);
+  }
 
   // "Asked" = the most questions any single engine covered this window. Not a
   // sum and not a guess at the roster: the engine that saw the most questions
   // defines what was actually put to the panel.
-  const asked = rows.reduce((m, r) => Math.max(m, Number(r.qs) || 0), 0);
+  let asked = 0;
+  for (const qs of byEngine.values()) asked = Math.max(asked, qs.size);
   if (!asked) return [];
 
-  return rows.map((r) => {
-    const covered = Number(r.qs) || 0;
-    const pct = covered / asked;
+  return [...byEngine.entries()].map(([engine, qs]) => {
+    const pct = qs.size / asked;
     return {
-      engine: String(r.engine),
-      questionsCovered: covered,
+      engine,
+      questionsCovered: qs.size,
       questionsAsked: asked,
       pct,
       sufficient: pct >= MIN_ENGINE_COVERAGE,
@@ -165,31 +173,66 @@ async function assessEngineCoverage(
   });
 }
 
+/** Epoch seconds at which CONTRACTED measurement begins, or null.
+ *
+ *  Pre-engagement rows are real measurements, but they are not the
+ *  engagement. A sales teardown and a dry run both write to citation_runs,
+ *  and nothing downstream could tell them from a contracted month. NULL means
+ *  "no start recorded", which preserves the pre-2026-08-29 behaviour. */
+async function getMeasurementStart(env: Env, slug: string): Promise<number | null> {
+  try {
+    const row = await env.DB.prepare(
+      `SELECT measurement_start FROM measurement_registry WHERE client_slug = ?`,
+    ).bind(slug).first<{ measurement_start: number | null }>();
+    const v = Number(row?.measurement_start);
+    return Number.isFinite(v) && v > 0 ? v : null;
+  } catch {
+    return null; // column absent (pre-migration): behave as before
+  }
+}
+
 /** Per-question, per-engine cited-at-all flips between the report's month and
  *  the month before it. Windows are anchored to monthKey (NOT Date.now()) so a
  *  late-emitted or backfilled report reflects the month it is labeled. Requires
  *  runs in BOTH windows (a baseline month has no prior window, so this returns
  *  undefined and the section never renders). */
-async function buildQuestionMovement(env: Env, slug: string, monthKey: string): Promise<ReportFacts["questions"]> {
+async function buildQuestionMovement(env: Env, slug: string, monthKey: string, measurementStart: number | null): Promise<ReportFacts["questions"]> {
   const b = monthBounds(monthKey);
   if (!b) return undefined;
+  // A prior month that predates the engagement is not a prior month. Returning
+  // undefined here is the CORRECT answer for a client's first month: it is a
+  // baseline, and a baseline has nothing to have moved from.
+  if (measurementStart !== null && b.priorStart < measurementStart) {
+    console.log(`[report-facts] ${slug} ${monthKey}: prior window opens before contracted measurement start; treating as BASELINE (no movement section).`);
+    return undefined;
+  }
   const runs = await env.DB.prepare(
     `SELECT cr.engine, cr.client_cited, cr.run_at, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
-  ).bind(slug, b.priorStart, b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
+  ).bind(slug, Math.max(b.priorStart, measurementStart ?? 0), b.end).all<{ engine: string; client_cited: number; run_at: number; keyword: string }>();
 
   // Movement compares two windows, so an engine must have collected
   // adequately in BOTH. An engine healthy last month and collapsed this
   // month would otherwise render every one of its questions as
   // "disappeared" -- lost visibility that never happened. That is the
   // exact false negative this guard exists to prevent.
-  const curCov = await assessEngineCoverage(env, slug, b.start, b.end);
-  const priCov = await assessEngineCoverage(env, slug, b.priorStart, b.start);
+  const curCov = assessEngineCoverage(runs.results.filter((r) => r.run_at >= b.start));
+  const priCov = assessEngineCoverage(runs.results.filter((r) => r.run_at < b.start));
+  // If coverage cannot be assessed at all, do NOT filter. An empty
+  // assessment would otherwise exclude every engine and silently blank the
+  // section -- a worse failure than the one this guard prevents, and a NEW
+  // one. A guard must never be able to erase a report by malfunctioning.
+  // Degrade to pre-guard behaviour and say so.
+  const coverageUsable = curCov.length > 0 && priCov.length > 0;
+  if (!coverageUsable) {
+    console.log(`[report-facts] ${slug} ${monthKey}: engine coverage unassessable (cur=${curCov.length}, prior=${priCov.length}); question movement NOT filtered.`);
+  }
   const okCur = new Set(curCov.filter((c) => c.sufficient).map((c) => c.engine));
   const okPri = new Set(priCov.filter((c) => c.sufficient).map((c) => c.engine));
   const trusted = new Set([...okCur].filter((e) => okPri.has(e)));
-  for (const c of curCov) {
+  const trust = (engine: string) => !coverageUsable || trusted.has(engine);
+  for (const c of coverageUsable ? curCov : []) {
     if (!trusted.has(c.engine)) {
       console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from question movement -- covered ${c.questionsCovered}/${c.questionsAsked} questions this window (${Math.round(c.pct * 100)}%). Under-collection must not render as lost visibility.`);
     }
@@ -199,7 +242,7 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string): 
   const cur = new Map<string, boolean>(), pri = new Map<string, boolean>();
   let curCount = 0, priCount = 0;
   for (const r of runs.results) {
-    if (!trusted.has(r.engine)) continue; // under-collected: no claim either way
+    if (!trust(r.engine)) continue; // under-collected: no claim either way
     const key = `${r.keyword}\u0000${r.engine}`;
     const m = r.run_at >= b.start ? (curCount++, cur) : (priCount++, pri);
     m.set(key, (m.get(key) || false) || r.client_cited === 1);
@@ -235,22 +278,32 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string): 
  *  competitive claim into an immutable report. Fail-closed: returns undefined
  *  unless there is enough real data to be worth a grid (>=2 tools and >=3
  *  questions that actually ran this month). */
-async function buildCitationGrid(env: Env, slug: string, monthKey: string): Promise<ReportFacts["grid"]> {
+async function buildCitationGrid(env: Env, slug: string, monthKey: string, measurementStart: number | null): Promise<ReportFacts["grid"]> {
   const b = monthBounds(monthKey);
   if (!b) return undefined;
+  // Clamp: pre-engagement rows must never reach a customer-facing grid.
+  const gridStart = Math.max(b.start, measurementStart ?? 0);
+  if (gridStart >= b.end) return undefined; // month entirely predates the engagement
   const runs = await env.DB.prepare(
     `SELECT cr.engine, cr.client_cited, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
-  ).bind(slug, b.start, b.end).all<{ engine: string; client_cited: number; keyword: string }>();
+  ).bind(slug, gridStart, b.end).all<{ engine: string; client_cited: number; keyword: string }>();
   if (!runs.results.length) return undefined;
 
   // Same guard as question movement. A grid cell reading 0% for an engine
   // that only ran 2 of 22 questions is not a measurement, it is an absence
   // dressed as one.
-  const cov = await assessEngineCoverage(env, slug, b.start, b.end);
+  const cov = assessEngineCoverage(runs.results);
+  // Same fallback as question movement: an unassessable coverage result must
+  // not blank the grid.
+  const gridCoverageUsable = cov.length > 0;
+  if (!gridCoverageUsable) {
+    console.log(`[report-facts] ${slug} ${monthKey}: engine coverage unassessable; citation grid NOT filtered.`);
+  }
   const gridTrusted = new Set(cov.filter((c) => c.sufficient).map((c) => c.engine));
-  for (const c of cov) {
+  const gridTrust = (engine: string) => !gridCoverageUsable || gridTrusted.has(engine);
+  for (const c of gridCoverageUsable ? cov : []) {
     if (!gridTrusted.has(c.engine)) {
       console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from citation grid -- covered ${c.questionsCovered}/${c.questionsAsked} questions (${Math.round(c.pct * 100)}%).`);
     }
@@ -261,7 +314,7 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string): Prom
   const questionSet = new Set<string>();
   for (const r of runs.results) {
     if (typeof r.engine !== "string" || typeof r.keyword !== "string") continue;
-    if (!gridTrusted.has(r.engine)) continue; // under-collected
+    if (!gridTrust(r.engine)) continue; // under-collected
     questionSet.add(r.keyword);
     let byQ = tally.get(r.engine);
     if (!byQ) { byQ = new Map(); tally.set(r.engine, byQ); }
@@ -398,13 +451,17 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
     .filter((h) => h && typeof h.host === "string")
     .map((h) => ({ host: String(h.host), pct: n(h.share_pct) }));
 
+  // Fetched once and shared: both builders must apply the SAME boundary, or
+  // the grid renders a month the movement section refuses to compare.
+  const measurementStart = await getMeasurementStart(env, slug);
+
   // Question-level appeared/disappeared (defensive: absent on any failure).
   let questions: ReportFacts["questions"];
-  try { questions = await buildQuestionMovement(env, slug, monthKey); } catch { questions = undefined; }
+  try { questions = await buildQuestionMovement(env, slug, monthKey, measurementStart); } catch { questions = undefined; }
 
   // Per-engine x per-question citation grid (defensive: absent on any failure).
   let grid: ReportFacts["grid"];
-  try { grid = await buildCitationGrid(env, slug, monthKey); } catch { grid = undefined; }
+  try { grid = await buildCitationGrid(env, slug, monthKey, measurementStart); } catch { grid = undefined; }
 
   return {
     period_label: monthLabel(monthKey),

@@ -61,10 +61,14 @@ console.log(`\npreflight: ${slug}\n`);
 
 // ── 1. measurement_registry: arms the WATCHDOG ──────────────────────────────
 const reg = one(
-  `SELECT active, category, full_target, run_days FROM measurement_registry WHERE client_slug='${S}'`,
+  `SELECT active, category, full_target, run_days, measurement_start FROM measurement_registry WHERE client_slug='${S}'`,
 );
 check(reg.category !== undefined, "registry row exists",
   "no measurement_registry row: this client cannot be watched or measured");
+check(reg.measurement_start != null && Number(reg.measurement_start) > 0,
+  "measurement_start set",
+  "measurement_registry.measurement_start is NULL. report-facts decides whether a month is a BASELINE by asking if prior-window rows exist, so any pre-sale teardown, demo or dry run sitting in the prior month becomes the comparison baseline for this client's first memo. See migration 0109");
+
 check(Number(reg.active) === 1, "registry active = 1",
   `active is ${reg.active ?? "MISSING"}. Arms the watchdog, the pass-cadence digest, Atlas context and the customer view. See KICKOFF-RUNBOOK Gate 6`);
 

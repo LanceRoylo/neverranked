@@ -1,0 +1,20 @@
+-- When CONTRACTED measurement begins for a client.
+--
+-- WHY (2026-08-29): report-facts decides a month is a "baseline" (no prior
+-- month to compare against) by asking whether prior-window rows EXIST. That
+-- is not the same question.
+--
+-- A pre-sale teardown, a demo and a provisioning dry run all write to
+-- citation_runs under the client's slug, exactly like a contracted month
+-- does. Nothing downstream could tell them apart. So a client whose
+-- engagement starts partway through their own row history would get a first
+-- memo whose "appeared / disappeared" section compared their real first month
+-- against pre-engagement rows -- some of which captured only a subset of the
+-- surface panel, because they were never meant to be a month of measurement.
+--
+-- The engine-coverage guard does NOT catch this: pre-engagement rows can have
+-- full QUESTION coverage. They are the wrong WINDOW, not a thin one.
+--
+-- NULL preserves the previous behaviour exactly, so no existing client
+-- changes unless a date is set for them deliberately.
+ALTER TABLE measurement_registry ADD COLUMN measurement_start INTEGER;
