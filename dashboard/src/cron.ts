@@ -672,6 +672,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron daily] citations dispatch failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
+  // Instrument probe: which model version did each surface actually serve
+  // today, and did it change? Own try/catch, same isolation reasoning as
+  // everything else in here. See lib/instrument-check.ts for why this is a
+  // probe rather than capture inside the measurement path.
+  try {
+    const { checkInstrumentVersions } = await import("./lib/instrument-check");
+    await checkInstrumentVersions(env);
+  } catch (e) {
+    console.log(`[cron daily] instrument probe failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   // Snapshot rollup + Monday-only GSC/backup -- separate try/catch so
   // a citation-dispatch failure above does not skip the snapshot path.
   // 2026-05-11: the prior architecture nested this under the citation
