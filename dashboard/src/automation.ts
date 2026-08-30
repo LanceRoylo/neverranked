@@ -23,6 +23,7 @@
  */
 
 import type { Env } from "./types";
+import { assessPeerHealth, summarizePeerHealth } from "./lib/engine-peer-health";
 import { sendViaResend } from "./email";
 
 // ---------------------------------------------------------------------------
@@ -224,6 +225,19 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
     "SELECT COUNT(*) AS n FROM admin_alerts WHERE read_at IS NULL"
   ).first<{ n: number }>())?.n ?? 0;
 
+  // --- Surface health --------------------------------------------------
+  // "Scan failures: 0" is true and misleading on its own: a surface that
+  // quietly returns FEWER rows throws nothing. On 2026-08-30 this block read
+  // "Scan failures: 0" directly above two openai row-drop alerts. Same
+  // computation the peer-drop alert fires on, so the digest and the alert can
+  // never disagree.
+  let peerHealthLine = "not assessed";
+  try {
+    peerHealthLine = summarizePeerHealth(await assessPeerHealth(env, since));
+  } catch (e) {
+    peerHealthLine = `not assessed (${e instanceof Error ? e.message : "error"})`;
+  }
+
   // --- Scan failures -------------------------------------------------
   const scanFailures = (await env.DB.prepare(
     `SELECT COUNT(*) AS n FROM scan_results
@@ -302,6 +316,7 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   }
 
   lines.push(`HEALTH`);
+  lines.push(`  Surfaces degraded:           ${peerHealthLine}`);
   lines.push(`  Scan failures:               ${scanFailures}`);
   lines.push(`  Unread admin alerts:         ${unreadAlertCount}`);
   if (unreadAlerts.length > 0) {

@@ -31,6 +31,7 @@
  */
 
 import type { Env } from "../types";
+import { assessPeerHealth, PEER_DEGRADED_RATIO } from "./engine-peer-health";
 
 const SECONDS_PER_DAY = 86400;
 const BASELINE_WINDOW_DAYS = 14;
@@ -80,8 +81,13 @@ const CRON_EXPECTED_CADENCE: Record<string, number> = {
  */
 async function alertAlreadyExists(env: Env, type: string, fingerprint: string): Promise<boolean> {
   const since = Math.floor(Date.now() / 1000) - SECONDS_PER_DAY;
+  // Deduped on AGE ONLY, deliberately. This clause used to also require
+  // `read_at IS NULL`, which made the alert system quieter the more it had to
+  // say: an unread backlog (25 on 2026-08-30) suppressed every new alert
+  // sharing those fingerprints. Whether a human has read yesterday's alert is
+  // not evidence about today's fleet.
   const row = await env.DB.prepare(
-    "SELECT 1 as one FROM admin_alerts WHERE type = ? AND detail LIKE ? AND created_at > ? AND read_at IS NULL LIMIT 1"
+    "SELECT 1 as one FROM admin_alerts WHERE type = ? AND detail LIKE ? AND created_at > ? LIMIT 1"
   ).bind(type, `%${fingerprint}%`, since).first<{ one: number }>();
   return !!row;
 }
@@ -294,6 +300,46 @@ async function detectCronAnomalies(env: Env): Promise<{ alertsCreated: number; d
 // Public API
 // ---------------------------------------------------------------------------
 
+
+/**
+ * Cross-sectional check: is any surface falling behind its siblings?
+ *
+ * Complements (does NOT replace) detectEngineAnomalies. The self-baseline
+ * catches a sudden fleet-wide stop; this catches the slow, chronic case the
+ * self-baseline is blind to by construction, because here the yardstick is
+ * the other engines and they do not drift when one of them breaks.
+ */
+async function detectPeerDrops(env: Env): Promise<{ alertsCreated: number; details: string[] }> {
+  const health = await assessPeerHealth(env, Math.floor(Date.now() / 1000) - SECONDS_PER_DAY);
+  const details: string[] = [];
+  let alertsCreated = 0;
+
+  if (!health.length) {
+    details.push("peer check: fleet too quiet to assess (no opinion)");
+    return { alertsCreated, details };
+  }
+
+  for (const h of health) {
+    if (!h.degraded) continue;
+    const fingerprint = `engine:${h.engine}:peer_drop`;
+    details.push(`${h.engine}: ${h.rows} rows vs peer median ${h.median} (${Math.round(h.pct * 100)}%)`);
+    if (await alertAlreadyExists(env, "anomaly_engine_peer_drop", fingerprint)) continue;
+    await createAlert(
+      env,
+      "anomaly_engine_peer_drop",
+      `${h.engine}: behind the other surfaces`,
+      `${fingerprint} | ${h.engine} produced ${h.rows} rows in 24h against a peer median of ${h.median} ` +
+      `(${Math.round(h.pct * 100)}%, threshold ${Math.round(PEER_DEGRADED_RATIO * 100)}%). Every surface gets the ` +
+      `same questions on the same schedule, so this is a real shortfall on ${h.engine}, not a quiet day. ` +
+      `Unlike the rolling-baseline check this does NOT go quiet if the problem persists. ` +
+      `A client readout covering these days will omit ${h.engine} from the citation grid and question movement ` +
+      `(report-facts drops any engine under 50% coverage) -- check the key, credits, spend limit and rate limit.`,
+    );
+    alertsCreated++;
+  }
+  return { alertsCreated, details };
+}
+
 export interface AnomalyDetectionResult {
   totalAlerts: number;
   engineAlerts: number;
@@ -303,11 +349,12 @@ export interface AnomalyDetectionResult {
 
 export async function runAnomalyDetection(env: Env): Promise<AnomalyDetectionResult> {
   const engineResult = await detectEngineAnomalies(env);
+  const peerResult = await detectPeerDrops(env);
   const cronResult = await detectCronAnomalies(env);
   return {
-    totalAlerts: engineResult.alertsCreated + cronResult.alertsCreated,
-    engineAlerts: engineResult.alertsCreated,
+    totalAlerts: engineResult.alertsCreated + peerResult.alertsCreated + cronResult.alertsCreated,
+    engineAlerts: engineResult.alertsCreated + peerResult.alertsCreated,
     cronAlerts: cronResult.alertsCreated,
-    details: [...engineResult.details, ...cronResult.details],
+    details: [...engineResult.details, ...peerResult.details, ...cronResult.details],
   };
 }

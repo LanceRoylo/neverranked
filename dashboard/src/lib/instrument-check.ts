@@ -35,7 +35,10 @@
 import type { Env } from "../types";
 import { createAlertIfFresh } from "../admin-alerts";
 
-type ProbeResult = { engine: string; version: string } | null;
+/** version === null means the probe RAN and FAILED. That is a signal, not
+ *  an absence: it is how a dead key, a retired model or an exhausted spend
+ *  limit shows up here. It must never be silently discarded. */
+type ProbeResult = { engine: string; version: string | null };
 
 const TIMEOUT_MS = 30_000;
 
@@ -67,21 +70,21 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
     probes.push(post("https://api.openai.com/v1/chat/completions",
       { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
       { model: "gpt-5-search-api", messages: [{ role: "user", content: "hi" }], max_tokens: 16 },
-    ).then((r) => (typeof r?.model === "string" ? { engine: "openai", version: r.model } : null)));
+    ).then((r) => ({ engine: "openai", version: typeof r?.model === "string" ? r.model : null })));
   }
 
   if (env.ANTHROPIC_API_KEY) {
     probes.push(post("https://api.anthropic.com/v1/messages",
       { "x-api-key": env.ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
       { model: "claude-haiku-4-5-20251001", max_tokens: 8, messages: [{ role: "user", content: "hi" }] },
-    ).then((r) => (typeof r?.model === "string" ? { engine: "anthropic", version: r.model } : null)));
+    ).then((r) => ({ engine: "anthropic", version: typeof r?.model === "string" ? r.model : null })));
   }
 
   if (env.PERPLEXITY_API_KEY) {
     probes.push(post("https://api.perplexity.ai/v1/agent",
       { Authorization: `Bearer ${env.PERPLEXITY_API_KEY}` },
       { model: "perplexity/sonar", input: "hi", max_output_tokens: 16 },
-    ).then((r) => (typeof r?.model === "string" ? { engine: "perplexity", version: r.model } : null)));
+    ).then((r) => ({ engine: "perplexity", version: typeof r?.model === "string" ? r.model : null })));
   }
 
   if (env.GEMINI_API_KEY) {
@@ -89,7 +92,7 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${env.GEMINI_API_KEY}`,
       {},
       { contents: [{ parts: [{ text: "hi" }] }], generationConfig: { maxOutputTokens: 8 } },
-    ).then((r) => (typeof r?.modelVersion === "string" ? { engine: "gemini", version: r.modelVersion } : null)));
+    ).then((r) => ({ engine: "gemini", version: typeof r?.modelVersion === "string" ? r.modelVersion : null })));
   }
 
   if (env.TOGETHER_API_KEY) {
@@ -99,7 +102,7 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
       // different model than the runner measures would record the wrong
       // instrument.
       { model: "google/gemma-4-31B-it", max_tokens: 8, messages: [{ role: "user", content: "hi" }] },
-    ).then((r) => (typeof r?.model === "string" ? { engine: "gemma", version: r.model } : null)));
+    ).then((r) => ({ engine: "gemma", version: typeof r?.model === "string" ? r.model : null })));
   }
 
   return Promise.all(probes);
@@ -108,7 +111,28 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
 export async function checkInstrumentVersions(env: Env): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
   const now = Math.floor(Date.now() / 1000);
-  const results = (await probeAll(env)).filter((r): r is NonNullable<ProbeResult> => r !== null);
+  const all = await probeAll(env);
+  const results = all.filter((r): r is { engine: string; version: string } => r.version !== null);
+  const failed = all.filter((r) => r.version === null).map((r) => r.engine);
+
+  // A probe that fails writes no row, so the ABSENCE of a row is the finding.
+  // On 2026-08-30 openai was the only surface missing from instrument_versions
+  // while it was serving a quarter of its normal volume, and nothing said so.
+  if (failed.length) {
+    const detail =
+      `No response from: ${failed.join(", ")}. The probe is one tiny call per engine, so a failure here means the ` +
+      `API refused us -- dead or rotated key, retired model id, exhausted credit balance, or a monthly spend / rate ` +
+      `limit reached. Measurement on ${failed.length === 1 ? "this surface" : "these surfaces"} is very likely ` +
+      `degraded right now, and a client readout covering today will omit it from the grid and question movement.`;
+    console.log(`[instrument-probe] FAILED: ${detail}`);
+    await createAlertIfFresh(env, {
+      clientSlug: "_system",
+      type: "instrument_probe_failed",
+      title: `Instrument probe got no answer from ${failed.join(", ")}`,
+      detail,
+      windowHours: 12,
+    });
+  }
 
   for (const { engine, version } of results) {
     // Last RECORDED version for this engine, from any prior day.
@@ -143,5 +167,5 @@ export async function checkInstrumentVersions(env: Env): Promise<void> {
     }
   }
 
-  console.log(`[instrument-probe] recorded ${results.length} engine version(s) for ${today}`);
+  console.log(`[instrument-probe] recorded ${results.length} engine version(s) for ${today}; ${failed.length} failed.`);
 }
