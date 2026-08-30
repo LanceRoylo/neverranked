@@ -49,15 +49,18 @@ const one = (sql) => q(sql)[0] ?? {};
 const esc = (s) => String(s).replace(/'/g, "''");
 const S = esc(slug);
 
-const fail = [];
-const warn = [];
-const pass = [];
+// Every check lands in ONE array with a stable label, so other tooling
+// (scripts/arm-client.mjs) can reason about WHICH check failed instead of
+// scraping prose. --json emits it.
+const JSON_MODE = process.argv.includes("--json");
+const results = [];
 const check = (ok, label, detail, blocking = true) => {
-  if (ok) pass.push(label);
-  else (blocking ? fail : warn).push(`${label} — ${detail}`);
+  results.push({ label, ok: !!ok, blocking, detail: ok ? null : detail });
 };
+const notes = [];
+const say = (...a) => { if (!JSON_MODE) console.log(...a); };
 
-console.log(`\npreflight: ${slug}\n`);
+say(`\npreflight: ${slug}\n`);
 
 // ── 1. measurement_registry: arms the WATCHDOG ──────────────────────────────
 const reg = one(
@@ -116,15 +119,23 @@ if (Number(reg.active) === 1) {
   check(Number(r.engines) >= 6, "all surfaces writing",
     `only ${r.engines ?? 0} distinct engines wrote. Expect 7 (six AI tools plus the Bing control); AI Overviews legitimately skips on a real empty answer`, false);
 } else {
-  warn.push("run check skipped — client is not armed yet, so an empty pipeline is expected");
+  notes.push("run check skipped — client is not armed yet, so an empty pipeline is expected");
 }
 
 // ── report ──────────────────────────────────────────────────────────────────
-for (const p of pass) console.log(`  ✓ ${p}`);
-for (const w of warn) console.log(`  ! ${w}`);
+const fail = results.filter((r) => !r.ok && r.blocking);
+const warn = results.filter((r) => !r.ok && !r.blocking);
+
+if (JSON_MODE) {
+  console.log(JSON.stringify({ slug, ok: fail.length === 0, results }, null, 2));
+  process.exit(fail.length ? 1 : 0);
+}
+for (const r of results.filter((r) => r.ok)) console.log(`  ✓ ${r.label}`);
+for (const w of warn) console.log(`  ! ${w.label} — ${w.detail}`);
+for (const n of notes) console.log(`  ! ${n}`);
 if (fail.length) {
   console.error(`\n✗ preflight FAILED for ${slug}: ${fail.length} blocking issue(s)\n`);
-  fail.forEach((f) => console.error(`  ✗ ${f}`));
+  fail.forEach((f) => console.error(`  ✗ ${f.label} — ${f.detail}`));
   console.error("\n  Do NOT start or arm this client until these are green.\n");
   process.exit(1);
 }
