@@ -267,17 +267,65 @@ async function queryPerplexity(
  * schema, so we extract entities the same way we do for Perplexity
  * (free-text + URL list).
  */
+/** OpenAI fetch that survives the rate limit instead of losing the measurement.
+ *
+ *  WHY (2026-08-30): gpt-5-search-api is 80,000 TPM on Tier 3. Each query
+ *  sends roughly 16,500 input tokens, so the ceiling is about 4.8 queries a
+ *  minute. The sweep dispatched ~60 of them within 15 seconds, roughly
+ *  990,000 tokens at a 80,000 ceiling: twelve times over. A handful landed and
+ *  the rest came back 429.
+ *
+ *  The defect was never the limit. It was that `if (!resp.ok)` treated a 429
+ *  as a permanent failure and dropped the row. A 429 means "not yet", not
+ *  "impossible", and for six days that turned a pacing problem into missing
+ *  client data: openai wrote 19 rows against a peer median of 59 while $7 sat
+ *  unspent in the account.
+ *
+ *  Backoff is long on purpose. Draining ~52 questions at 4.8/min takes about
+ *  eleven minutes, so the schedule has to span minutes, not seconds. Jitter
+ *  stops the whole fleet retrying in lockstep and rebuilding the same burst.
+ *  Retry-After is honoured when the API sends it, because the server knows
+ *  better than our arithmetic does. */
+const OPENAI_RETRY_ATTEMPTS = 5;
+const OPENAI_BACKOFF_BASE_MS = 30_000;
+const OPENAI_BACKOFF_CAP_MS = 300_000;
+
+async function openAIFetchWithBackoff(
+  body: string,
+  apiKey: string,
+  keyword: string,
+): Promise<Response> {
+  let resp!: Response;
+  for (let attempt = 1; attempt <= OPENAI_RETRY_ATTEMPTS; attempt++) {
+    resp = await fetch(OPENAI_ENDPOINT, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      body,
+    });
+    // 429 = rate limited, 503 = transient overload. Everything else, including
+    // a real auth or billing failure, must surface immediately rather than be
+    // retried into a delay that looks like a hang.
+    if (resp.status !== 429 && resp.status !== 503) return resp;
+    if (attempt === OPENAI_RETRY_ATTEMPTS) {
+      console.log(`[engine-retry] openai gave up after ${attempt} attempts (${resp.status}) for "${keyword}"`);
+      return resp;
+    }
+    const retryAfter = Number(resp.headers.get("retry-after"));
+    const backoff = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, OPENAI_BACKOFF_CAP_MS)
+      : Math.min(OPENAI_BACKOFF_BASE_MS * 2 ** (attempt - 1), OPENAI_BACKOFF_CAP_MS);
+    const wait = Math.round(backoff * (1 + Math.random() * 0.3));
+    console.log(`[engine-retry] openai ${resp.status} for "${keyword}", attempt ${attempt}/${OPENAI_RETRY_ATTEMPTS}, waiting ${Math.round(wait / 1000)}s`);
+    await new Promise((r) => setTimeout(r, wait));
+  }
+  return resp;
+}
+
 async function queryOpenAI(
   keyword: string,
   apiKey: string
 ): Promise<EngineResult> {
-  const resp = await fetch(OPENAI_ENDPOINT, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const body = JSON.stringify({
       // gpt-4o-mini-search-preview was deprecated by OpenAI (404 on every
       // call by 2026-08-21). gpt-5-search-api verified 2026-08-22: same
       // request shape, citations still arrive as message.annotations
@@ -296,8 +344,9 @@ async function queryOpenAI(
         { role: "user", content: keyword },
       ],
       max_tokens: 1024,
-    }),
   });
+
+  const resp = await openAIFetchWithBackoff(body, apiKey, keyword);
 
   if (!resp.ok) {
     const err = await resp.text();

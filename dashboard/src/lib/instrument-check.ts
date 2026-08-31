@@ -69,13 +69,13 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
   if (env.OPENAI_API_KEY) {
     probes.push(post("https://api.openai.com/v1/chat/completions",
       { Authorization: `Bearer ${env.OPENAI_API_KEY}` },
-      // NO token cap, deliberately. `max_tokens` is rejected by the gpt-5
-      // family (it wants `max_completion_tokens`), and shipping it here meant
-      // this probe 400d on every single call: instrument_versions never
-      // recorded openai once, on either day it ran, while the measurement
-      // path kept returning rows. That made a probe bug look like an engine
-      // outage. This mirrors the request shape in citations.ts, which is
-      // proven against this exact model.
+      // No token cap. NOT because the model rejects max_tokens -- the runner
+      // in citations.ts sends max_tokens: 1024 to this same model and gets
+      // rows back. The probe's failures were rate-limiting: it used to run
+      // immediately AFTER the sweep dispatched, inside the 80,000 TPM burst,
+      // so it was 429d like everything else. It now runs BEFORE the sweep.
+      // Dropping the cap just removes one variable from a call whose only
+      // job is to read the `model` field off the envelope.
       { model: "gpt-5-search-api", messages: [{ role: "user", content: "hi" }] },
     ).then((r) => ({ engine: "openai", version: typeof r?.model === "string" ? r.model : null })));
   }

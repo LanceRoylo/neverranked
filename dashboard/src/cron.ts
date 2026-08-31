@@ -637,6 +637,24 @@ export async function runDailyTasks(env: Env): Promise<void> {
   // multi-step approaches inside one workflow exhausted the shared
   // budget after ~2 keywords). Then WeeklyExtrasWorkflow runs the
   // snapshot rollup + Monday-only GSC/backup on top.
+  // Instrument probe: which model version did each surface actually serve
+  // today, and did it change? Own try/catch, same isolation reasoning as
+  // everything else in here. See lib/instrument-check.ts for why this is a
+  // probe rather than capture inside the measurement path.
+  //
+  // RUNS BEFORE THE SWEEP DISPATCHES (moved 2026-08-30). It used to run
+  // after, which put its single tiny call inside the sweep's own 80,000 TPM
+  // burst: it was 429d every time and recorded nothing, on both days it ever
+  // ran. That silence read as an engine outage when it was collateral damage
+  // from our own dispatch shape. Reading the instrument must not be blocked
+  // by the measurement it exists to qualify.
+  try {
+    const { checkInstrumentVersions } = await import("./lib/instrument-check");
+    await checkInstrumentVersions(env);
+  } catch (e) {
+    console.log(`[cron daily] instrument probe failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
   try {
     const { planCitationRun } = await import("./citations");
     const plan = await planCitationRun(env);
@@ -661,7 +679,12 @@ export async function runDailyTasks(env: Env): Promise<void> {
         // Root cause is not yet identified -- this is a mitigation, and
         // the [engine-failure] logging deployed 08-28 will name the
         // actual error on the next 06:00 UTC sweep.
-        await new Promise((r) => setTimeout(r, 250));
+        // 2s, not 250ms. The 250ms was a guess made on 2026-08-29 before the
+        // cause was known; it spread 60 dispatches across 15 seconds, which is
+        // still a burst against an 80,000 TPM ceiling. At 2s the roster spreads
+        // over ~2 minutes and the per-call backoff in citations.ts absorbs the
+        // rest. Kept well under the scheduled handler's wall-clock budget.
+        await new Promise((r) => setTimeout(r, 2000));
       } catch (e) {
         dispatchErrors++;
         console.log(`[cron daily] failed to dispatch citation-keyword workflow for ${item.clientSlug}/${item.keywordId}: ${e instanceof Error ? e.message : String(e)}`);
@@ -672,16 +695,6 @@ export async function runDailyTasks(env: Env): Promise<void> {
     console.log(`[cron daily] citations dispatch failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Instrument probe: which model version did each surface actually serve
-  // today, and did it change? Own try/catch, same isolation reasoning as
-  // everything else in here. See lib/instrument-check.ts for why this is a
-  // probe rather than capture inside the measurement path.
-  try {
-    const { checkInstrumentVersions } = await import("./lib/instrument-check");
-    await checkInstrumentVersions(env);
-  } catch (e) {
-    console.log(`[cron daily] instrument probe failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
 
   // Snapshot rollup + Monday-only GSC/backup -- separate try/catch so
   // a citation-dispatch failure above does not skip the snapshot path.
