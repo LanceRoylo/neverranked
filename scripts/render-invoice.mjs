@@ -34,6 +34,10 @@ if (!slug || !/^\d{4}-\d{2}$/.test(period || "") || !invoiceNo) {
 
 // Oahu GET visible pass-on rate. 4.0% state + 0.5% county surcharge grossed
 // up, which is why it is 4.712% and not 4.5%. Matches NR-PW-001.
+// Bill-to says "Attn: Accounts Payable", NOT the relationship contact's name.
+// NR-PW-001 addressed it to the client's Director of Sales & Marketing "/
+// Accounts Payable", which she is not. The relationship contact appears as
+// c/o so the invoice still routes, without asserting a role they do not hold.
 const GET_RATE = 0.04712;
 const NET_DAYS = 15;
 
@@ -111,8 +115,8 @@ const html = `<meta charset="utf-8"><title>${esc(c.name)} invoice ${esc(invoiceN
 <div class="rule"></div>
 <div class="cols">
   <div><div class="lbl">Bill to</div>
-    <b>${esc(c.name)}</b><br>Attn: ${esc(c.primary_contact_name || "Accounts Payable")} / Accounts Payable<br>
-    ${esc(c.primary_contact_email || "")}</div>
+    <b>${esc(c.name)}</b><br>Attn: Accounts Payable<br>
+    <span style="color:var(--mid)">c/o ${esc(c.primary_contact_name || "")}</span></div>
   <div><div class="lbl">Engagement</div>
     AI Citation Measurement<br>Category: ${esc(c.category_label || "")}<br>Period: ${esc(periodLabel)}</div>
 </div>
