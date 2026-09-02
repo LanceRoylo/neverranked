@@ -2544,14 +2544,75 @@ function escHtml(s: string): string {
 }
 
 // Parse robots.txt for AI crawlers that are fully disallowed (Disallow: /).
+// CITATION crawlers vs TRAINING crawlers. Blocking these is NOT the same thing,
+// and saying it is was a real overstatement in this tool.
+//
+// Found 2026-09-01 scanning a Honolulu surgeon's site: robots.txt blocked
+// GPTBot, Google-Extended, CCBot and ClaudeBot, and this tool reported that
+// the engines "cannot cite the site". Only part of that is true. GPTBot is
+// OpenAI's TRAINING crawler; ChatGPT's live citations come from OAI-SearchBot,
+// which that site did not block. Google-Extended is a training opt-out and does
+// not govern AI Overviews. CCBot feeds Common Crawl. Blocking those affects
+// whether a model LEARNS the site, not whether it can CITE it today.
+//
+// ClaudeBot is different: Anthropic fetches with it, so blocking it does stop
+// Claude reading the page.
+//
+// This distinction matters because the claim goes into cold outreach. A
+// prospect's agency that knows GPTBot from OAI-SearchBot would catch the
+// overstatement instantly, and an overstated claim is the one thing this
+// product cannot afford. Same failure class as the Copilot retraction.
+const CITATION_BOTS = new Set([
+  "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web", "anthropic-ai",
+  "PerplexityBot", "Perplexity-User",
+]);
+
+function aiBotsFlagText(blocked: string[]): string {
+  const all = blocked.includes("all crawlers (User-agent: *)");
+  const cite = blocked.filter((b) => CITATION_BOTS.has(b));
+  const train = blocked.filter((b) => !CITATION_BOTS.has(b) && b !== "all crawlers (User-agent: *)");
+
+  if (all) {
+    return `robots.txt disallows all crawlers (User-agent: *)${train.length || cite.length ? `, and names ${[...cite, ...train].join(", ")} explicitly` : ""}. Nothing can read the site, so nothing can cite it. Fix this before anything else.`;
+  }
+  const parts: string[] = [];
+  if (cite.length) {
+    parts.push(`robots.txt blocks ${cite.join(", ")}, which ${cite.length === 1 ? "is a crawler an AI engine uses to READ pages when answering" : "are crawlers AI engines use to READ pages when answering"}. Those engines cannot see the site, so they cannot cite it.`);
+  }
+  if (train.length) {
+    parts.push(`${cite.length ? "Also blocked: " : "robots.txt blocks "}${train.join(", ")}. Those are mainly TRAINING crawlers, so blocking them affects whether models learn the site over time rather than whether they can cite it today.`);
+  }
+  if (cite.length) parts.push("Allow the citation crawlers in robots.txt before anything else.");
+  else parts.push("Worth confirming this matches what was intended: a site can allow citation while refusing training, and these directives are often a host default rather than a deliberate choice.");
+  return parts.join(" ");
+}
+
 // Heuristic, not a full robots.txt engine: groups consecutive User-agent lines,
-// and if that group disallows "/", flags any AI bot (or "*") it names. Good
-// enough to catch the common "block the AI crawlers" and "Disallow: / for all"
-// cases; deliberate per-bot allow overrides are rare enough to leave to the eye.
+// and if that group disallows "/", flags any AI bot (or "*") it names.
+//
+// BUG FIXED 2026-09-01: this only ended a group on a Disallow, and ignored
+// Allow entirely. Cloudflare's managed robots.txt opens with
+//
+//     User-agent: *
+//     Content-Signal: search=yes,ai-train=no,use=reference
+//     Allow: /
+//
+//     User-agent: GPTBot
+//     Disallow: /
+//
+// so the "*" group ended with an Allow, no Disallow was ever recorded, and the
+// NEXT User-agent was appended to the SAME group -- inheriting that group's
+// "Disallow: /". Every site on Cloudflare's managed AI-bot blocking therefore
+// reported "all crawlers (User-agent: *)" blocked, capped at score 35 / grade F,
+// with the flag text asserting nothing could read the site. The file said
+// Allow: /. That is the opposite.
+//
+// Now: any rule line (Allow or Disallow) closes a group, and a group carrying
+// "Allow: /" without "Disallow: /" is not treated as blocking.
 function blockedAiBots(robotsTxt: string): string[] {
   const AI_BOTS = ["GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "Claude-Web", "anthropic-ai", "PerplexityBot", "Perplexity-User", "Google-Extended", "Applebot-Extended", "CCBot", "cohere-ai", "Bytespider", "Amazonbot", "Meta-ExternalAgent"];
-  const groups: { agents: string[]; disallow: string[] }[] = [];
-  let cur: { agents: string[]; disallow: string[] } | null = null;
+  const groups: { agents: string[]; disallow: string[]; allow: string[] }[] = [];
+  let cur: { agents: string[]; disallow: string[]; allow: string[] } | null = null;
   for (const raw of robotsTxt.split(/\r?\n/)) {
     const line = raw.replace(/#.*/, "").trim();
     const m = line.match(/^([A-Za-z-]+)\s*:\s*(.*)$/);
@@ -2559,16 +2620,20 @@ function blockedAiBots(robotsTxt: string): string[] {
     const field = m[1].toLowerCase();
     const val = m[2].trim();
     if (field === "user-agent") {
-      if (cur && cur.disallow.length > 0) cur = null; // rules already seen -> next UA starts a new group
-      if (!cur) { cur = { agents: [], disallow: [] }; groups.push(cur); }
+      // ANY rule line closes the group, not just Disallow. See the bug note above.
+      if (cur && (cur.disallow.length > 0 || cur.allow.length > 0)) cur = null;
+      if (!cur) { cur = { agents: [], disallow: [], allow: [] }; groups.push(cur); }
       cur.agents.push(val);
     } else if (field === "disallow" && cur) {
       cur.disallow.push(val);
+    } else if (field === "allow" && cur) {
+      cur.allow.push(val);
     }
   }
   const blocked = new Set<string>();
   for (const g of groups) {
     if (!g.disallow.includes("/")) continue;
+    if (g.allow.includes("/")) continue; // explicit site-wide Allow wins
     for (const a of g.agents) {
       if (a === "*") blocked.add("all crawlers (User-agent: *)");
       else if (AI_BOTS.some((b) => b.toLowerCase() === a.toLowerCase())) blocked.add(a);
@@ -3398,7 +3463,7 @@ export default {
           report.grade = report.aeo_score >= 90 ? "A" : report.aeo_score >= 75 ? "B" : report.aeo_score >= 60 ? "C" : report.aeo_score >= 40 ? "D" : "F";
           const lead = noindex
             ? "This page sends noindex to crawlers, which tells AI engines not to index it. It cannot be cited no matter how strong the schema is. Fix this first. Nothing else on this list matters until the page is indexable."
-            : `robots.txt blocks AI crawlers (${aiBotsBlocked.join(", ")}). Those engines are told to stay out, so they cannot cite the site. Allow them in robots.txt before anything else.`;
+            : aiBotsFlagText(aiBotsBlocked);
           report.red_flags.unshift(lead);
           if (nofollow && !noindex) report.red_flags.splice(1, 0, "The page also sends nofollow, so crawlers will not follow its links to the rest of the site.");
         }
