@@ -116,6 +116,66 @@ test("renderCharts: dumbbell for engine movement, bars for venue, stacked bar fo
   assert.match(html, /leg-item own/);
 });
 
+test("citation grid: columns are ORDERED so never-cited questions cluster at the edge", () => {
+  // q1 is never named by anyone, q2 is named by both, q3 by one.
+  // Rendered in roster order the dead question sits first and reads as noise.
+  // Ordered, it must fall to the END of the legend.
+  const facts = JSON.stringify({
+    grid: {
+      engines: ["Perplexity", "Claude"],
+      questions: ["DEAD never cited", "STRONG cited by both", "MIDDLE cited by one"],
+      cells: [
+        [0, 1, 1],
+        [0, 1, 0],
+      ],
+    },
+  });
+  const html = renderCharts(facts);
+  const iStrong = html.indexOf("STRONG cited by both");
+  const iMiddle = html.indexOf("MIDDLE cited by one");
+  const iDead = html.indexOf("DEAD never cited");
+  assert.ok(iStrong > -1 && iMiddle > -1 && iDead > -1, "all three questions render");
+  assert.ok(iStrong < iMiddle, "strongest question comes first");
+  assert.ok(iMiddle < iDead, "the never-cited question is pushed to the end");
+});
+
+test("citation grid: ordering is STABLE for equal-scoring questions", () => {
+  // Two questions with identical scores must keep roster order, so re-rendering
+  // the same frozen facts never redraws the grid differently.
+  const facts = JSON.stringify({
+    grid: {
+      engines: ["Perplexity", "Claude"],
+      questions: ["alpha tie", "beta tie", "gamma tie"],
+      cells: [
+        [1, 1, 1],
+        [1, 1, 1],
+      ],
+    },
+  });
+  const html = renderCharts(facts);
+  assert.ok(html.indexOf("alpha tie") < html.indexOf("beta tie"), "alpha before beta");
+  assert.ok(html.indexOf("beta tie") < html.indexOf("gamma tie"), "beta before gamma");
+});
+
+test("citation grid: reordering keeps each engine's cells aligned to its question", () => {
+  // The per-row count is computed from the reordered row. If questions and
+  // cells were reordered independently the counts would drift, which is the
+  // silent-wrong-answer failure this grid must never have.
+  const facts = JSON.stringify({
+    grid: {
+      engines: ["Perplexity", "Claude"],
+      questions: ["never", "always", "sometimes"],
+      cells: [
+        [0, 1, 1],   // Perplexity answered 3, won 2
+        [0, 1, -1],  // Claude answered 2, won 1
+      ],
+    },
+  });
+  const html = renderCharts(facts);
+  assert.match(html, /2<tspan class="cg-count-den">\/3<\/tspan>/);
+  assert.match(html, /1<tspan class="cg-count-den">\/2<\/tspan>/);
+});
+
 test("renderCharts: citation grid renders cells, per-row count, and question legend", () => {
   const facts = JSON.stringify({
     grid: {

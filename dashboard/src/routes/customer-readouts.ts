@@ -195,9 +195,34 @@ function renderCitationGrid(
   const H = TOP + engines.length * step - GAP;
 
   const clamp01 = (v: number) => (Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : 0);
+
+  // Column ORDER carries meaning. Rendered in roster order, the questions no
+  // tool ever names you on scatter across the grid and read as noise; sorted,
+  // they cluster at the right edge and the dead zone becomes a finding the
+  // reader sees before they read a word. Ordering is per-report presentation
+  // only -- facts_json stays frozen, so already-delivered reports are
+  // byte-identical to what the customer was sent.
+  const colScore = (c: number): number => {
+    let sum = 0;
+    for (let r = 0; r < engines.length; r++) {
+      // Reads the ORIGINAL cells on purpose: this function defines the order,
+      // so it cannot depend on the reordered array it is used to build.
+      const row = Array.isArray(cells[r]) ? cells[r] : [];
+      const v = typeof row[c] === "number" ? row[c] : -1;
+      if (v > 0) sum += clamp01(v);
+    }
+    return sum;
+  };
+  // Stable: equal-scoring questions keep their roster order, so a report
+  // re-rendered from the same frozen facts always draws the same grid.
+  const order = questions
+    .map((_, i) => i)
+    .sort((a, b) => colScore(b) - colScore(a) || a - b);
+  const questionsOrdered = order.map((i) => questions[i]);
+  const cellsOrdered = cells.map((row) => (Array.isArray(row) ? order.map((i) => row[i]) : row));
   // Column numbers along the top.
   let head = "";
-  for (let c = 0; c < questions.length; c++) {
+  for (let c = 0; c < questionsOrdered.length; c++) {
     const x = GUT + c * step + CELL / 2;
     head += `<text x="${x}" y="${TOP - 9}" class="cg-colnum">${c + 1}</text>`;
   }
@@ -206,9 +231,9 @@ function renderCitationGrid(
   engines.forEach((eng, r) => {
     const y = TOP + r * step;
     rows += `<text x="${GUT - 12}" y="${y + CELL / 2 + 4}" class="cg-rowlab">${esc(eng)}</text>`;
-    const row = Array.isArray(cells[r]) ? cells[r] : [];
+    const row = Array.isArray(cellsOrdered[r]) ? cellsOrdered[r] : [];
     let hit = 0, answered = 0;
-    for (let c = 0; c < questions.length; c++) {
+    for (let c = 0; c < questionsOrdered.length; c++) {
       const x = GUT + c * step;
       const v = typeof row[c] === "number" ? row[c] : -1;
       const di = (r * questions.length + c); // stagger index
@@ -230,7 +255,7 @@ function renderCitationGrid(
         + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-heat" style="opacity:${op}"/></g>`;
     }
     // Per-row count on the right rail.
-    const cx = GUT + questions.length * step - GAP + 12;
+    const cx = GUT + questionsOrdered.length * step - GAP + 12;
     rows += `<text x="${cx}" y="${y + CELL / 2 + 4}" class="cg-count">${hit}<tspan class="cg-count-den">/${answered}</tspan></text>`;
   });
 
@@ -238,11 +263,11 @@ function renderCitationGrid(
     + `<g class="cg-heads">${head}</g>${rows}</svg>`;
 
   // Numbered legend maps each column back to its question.
-  const legend = questions
+  const legend = questionsOrdered
     .map((q, i) => `<li class="cg-leg"><span class="cg-leg-n">${i + 1}</span><span class="cg-leg-q">${esc(q)}</span></li>`)
     .join("");
 
-  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. A gold square means that tool named you for that question, and brighter means it named you on more of the month's daily checks. A dark square means it answered but never named you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you won a citation.`;
+  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. A gold square means that tool named you for that question, and brighter means it named you on more of the month's daily checks. A dark square means it answered but never named you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you won a citation. The columns are ordered, strongest on the left, so any run of questions no tool names you on gathers at the right-hand edge rather than being scattered through the grid.`;
 
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`
