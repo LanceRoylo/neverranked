@@ -79,26 +79,69 @@ export function collectSchemaTypes(data: unknown, bucket: string[]): void {
   }
 }
 
+/**
+ * Read one attribute out of a single HTML tag, wherever it sits among the
+ * other attributes and whichever quote style it uses.
+ *
+ * WHY THIS EXISTS. The extractions below used to anchor the attribute to the
+ * front of the tag, e.g. /<meta\s+name=["']description["']/. That matches
+ * `<meta name="description" ...>` and nothing else. React Helmet and Next.js
+ * Head both emit `<meta data-react-helmet="true" name="description" ...>`, so
+ * every site built that way reported a MISSING description, a MISSING
+ * canonical, and no robots directive at all.
+ *
+ * The robots case is the serious one. A missed noindex does not merely cost
+ * points, it inverts the most important flag the scanner has: the page reports
+ * as citable while it is in fact telling crawlers to stay away.
+ *
+ * Found 2026-09-02 on a live prospect, where this extractor and a plain curl
+ * disagreed about whether a description tag existed. It existed.
+ */
+function tagAttr(tag: string, name: string): string | null {
+  const dq = tag.match(new RegExp(`\\b${name}\\s*=\\s*"([^"]*)"`, "i"));
+  if (dq) return dq[1];
+  const sq = tag.match(new RegExp(`\\b${name}\\s*=\\s*'([^']*)'`, "i"));
+  if (sq) return sq[1];
+  return null;
+}
+
+/**
+ * First <meta>/<link> whose keyAttr contains keyValue, returning its valueAttr.
+ * keyAttr is tokenised on whitespace because rel legitimately carries several
+ * values at once, e.g. rel="canonical alternate".
+ */
+function tagValue(
+  html: string,
+  tagName: "meta" | "link",
+  keyAttr: string,
+  keyValue: string,
+  valueAttr: string,
+): string | null {
+  const tags = html.match(new RegExp(`<${tagName}\\b[^>]*>`, "gi"));
+  if (!tags) return null;
+  for (const tag of tags) {
+    const key = tagAttr(tag, keyAttr);
+    if (key === null) continue;
+    if (!key.trim().toLowerCase().split(/\s+/).includes(keyValue)) continue;
+    const value = tagAttr(tag, valueAttr);
+    if (value !== null) return value;
+  }
+  return null;
+}
+
 export function extractMeta(html: string, targetUrl: string): Signals {
   // Title
   const titleMatch = html.match(/<title[^>]*>([\s\S]*?)<\/title>/i);
   const title = titleMatch ? titleMatch[1].trim() : null;
 
-  // Meta description
-  let metaDesc: string | null = null;
-  let m = html.match(/<meta\s+name=["']description["']\s+content="([^"]*)"/i);
-  if (!m) m = html.match(/<meta\s+name=["']description["']\s+content='([^']*)'/i);
-  if (!m) m = html.match(/<meta\s+content="([^"]*)"\s+name=["']description["']/i);
-  if (!m) m = html.match(/<meta\s+content='([^']*)'\s+name=["']description["']/i);
-  if (m) metaDesc = m[1].trim();
+  // Meta description, canonical and robots. All three read attributes out of
+  // the tag rather than assuming attribute order -- see tagAttr above.
+  const descRaw = tagValue(html, "meta", "name", "description", "content");
+  const metaDesc: string | null = descRaw === null ? null : descRaw.trim();
 
-  // Canonical
-  const canonMatch = html.match(/<link\s+rel=["']canonical["']\s+href=["'](.*?)["']/i);
-  const canonical = canonMatch ? canonMatch[1] : null;
+  const canonical = tagValue(html, "link", "rel", "canonical", "href");
 
-  // Robots meta
-  const robotsMatch = html.match(/<meta\s+name=["']robots["']\s+content=["'](.*?)["']/i);
-  const robotsMeta = robotsMatch ? robotsMatch[1] : null;
+  const robotsMeta = tagValue(html, "meta", "name", "robots", "content");
 
   // OG tags
   const ogTitle = /property=["']og:title["']/i.test(html);
@@ -172,10 +215,8 @@ export function extractMeta(html: string, targetUrl: string): Signals {
   }
 
   // Author meta (Phase 4A): <meta name="author" content="...">
-  let authorMeta: string | null = null;
-  const am = html.match(/<meta\s+name=["']author["']\s+content=["']([^"']+)["']/i)
-          || html.match(/<meta\s+content=["']([^"']+)["']\s+name=["']author["']/i);
-  if (am) authorMeta = am[1].trim().slice(0, 200) || null;
+  const authorRaw = tagValue(html, "meta", "name", "author", "content");
+  const authorMeta: string | null = authorRaw === null ? null : (authorRaw.trim().slice(0, 200) || null);
 
   // Person schema (Phase 4A): named-author signal in JSON-LD.
   const hasPersonSchema = schemaTypes.some(t => t.toLowerCase() === "person");
