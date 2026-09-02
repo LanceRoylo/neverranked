@@ -129,10 +129,37 @@ export interface EngineResult {
  * is not a real reading. The difference is that a FAILURE now says so out
  * loud, tagged so it can be grepped and counted, while a genuine empty answer
  * stays quiet. Before this, both were silence. */
-function skipReason(engine: string, keyword: string, r: EngineResult, hasEntities = false): boolean {
+async function skipReason(
+  env: Env,
+  engine: string,
+  keyword: string,
+  r: EngineResult,
+  hasEntities = false,
+): Promise<boolean> {
   const nothing = r.text.length === 0 && (hasEntities ? r.entities.length === 0 : r.urls.length === 0);
   if (r.failure) {
     console.log(`[engine-skip] ${engine} DID NOT COMPLETE for "${keyword}" (status ${r.failure.status}): ${r.failure.detail}`);
+    // Persist it. The console line above is not queryable and does not
+    // survive, which is how openai's failure rate stayed invisible for a
+    // month: engine-health-check reads empty rate among PERSISTED rows, and
+    // failures are (correctly) never persisted to citation_runs. This gives
+    // the failure a home WITHOUT letting a non-reading into the measurement
+    // table. Wrapped so telemetry can never take down a sweep.
+    try {
+      await env.DB.prepare(
+        "INSERT INTO engine_failures (engine, status, keyword, detail, failed_at) VALUES (?, ?, ?, ?, ?)",
+      )
+        .bind(
+          engine,
+          Number.isFinite(r.failure.status) ? r.failure.status : null,
+          keyword.slice(0, 300),
+          (r.failure.detail ?? "").slice(0, 500),
+          Math.floor(Date.now() / 1000),
+        )
+        .run();
+    } catch (e) {
+      console.log(`[engine-skip] could not record ${engine} failure: ${e instanceof Error ? e.message : e}`);
+    }
     return true;
   }
   if (nothing) {
@@ -796,7 +823,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
         // Skip-on-empty: an API failure must not become a row. See the
         // runOpenAI comment below for the 2026-07-24 incident.
-        if (skipReason("perplexity", kw.keyword, r, false)) return;
+        if (await skipReason(env, "perplexity", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -828,7 +855,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // 2026-07-24, this runner wrote 330 empty rows over nine days
         // while the heartbeat counted rows and reported the engine
         // active. Same guard runGemini has carried all along.
-        if (skipReason("openai", kw.keyword, r, false)) return;
+        if (await skipReason(env, "openai", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -857,7 +884,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Skip persistence when the API returned nothing -- usually a 429
         // quota error or transient 5xx. Empty rows would poison the
         // citation rate denominator with non-runs.
-        if (skipReason("gemini", kw.keyword, r, false)) return;
+        if (await skipReason(env, "gemini", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -887,7 +914,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // The single-keyword path's runAnthropic has carried this since
         // the 2026-05-11 incident (53/53 empty rows); this path never
         // got it.
-        if (skipReason("anthropic", kw.keyword, r, true)) return;
+        if (await skipReason(env, "anthropic", kw.keyword, r, true)) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -918,7 +945,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         const r = await queryGoogleAIO(kw.keyword, env);
         // AIO doesn't render for many queries -- skip the INSERT so we
         // don't poison the citation rate denominator with non-runs.
-        if (skipReason("google_ai_overview", kw.keyword, r, false)) return;
+        if (await skipReason(env, "google_ai_overview", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -945,7 +972,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
         const { queryBing } = await import("./citations-bing");
         const r = await queryBing(kw.keyword, env);
-        if (skipReason("bing", kw.keyword, r, false)) return;
+        if (await skipReason(env, "bing", kw.keyword, r, false)) return;
         const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -978,7 +1005,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         // Skip-on-empty, entities variant. Together drops ~12% of gemma
         // calls on network errors (measured July 2026); a drop is not a
         // measurement.
-        if (skipReason("gemma", kw.keyword, r, true)) return;
+        if (await skipReason(env, "gemma", kw.keyword, r, true)) return;
         const prom = computeProminence(r.entities, [], clientDomain, businessName);
         const cited = prom !== null;
         if (cited) {
@@ -1370,7 +1397,7 @@ export async function runOneKeywordCitations(
   const runPerplexity = async () => {
     if (!env.PERPLEXITY_API_KEY) return;
     const r = await queryPerplexity(kw.keyword, env.PERPLEXITY_API_KEY);
-    if (skipReason("perplexity", kw.keyword, r, false)) return; // failure, not a measurement
+    if (await skipReason(env, "perplexity", kw.keyword, r, false)) return; // failure, not a measurement
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1386,7 +1413,7 @@ export async function runOneKeywordCitations(
     const r = await queryOpenAI(kw.keyword, env.OPENAI_API_KEY);
     // This runner produced the 330 empty rows of 2026-07-25..08-02
     // (OpenAI credits exhausted; every failure mapped to empty-but-ok).
-    if (skipReason("openai", kw.keyword, r, false)) return;
+    if (await skipReason(env, "openai", kw.keyword, r, false)) return;
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1400,7 +1427,7 @@ export async function runOneKeywordCitations(
   const runGemini = async () => {
     if (!env.GEMINI_API_KEY) return;
     const r = await queryGemini(kw.keyword, env.GEMINI_API_KEY, env);
-    if (skipReason("gemini", kw.keyword, r, false)) return; // 429/empty
+    if (await skipReason(env, "gemini", kw.keyword, r, false)) return; // 429/empty
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1420,7 +1447,7 @@ export async function runOneKeywordCitations(
     // empirically 2026-05-11: 53/53 Anthropic rows had cited_entities=[]
     // because most calls returned response_text=""). Matches the
     // skip-on-empty pattern Gemini / AIO / Bing already use.
-    if (skipReason("anthropic", kw.keyword, r, true)) return;
+    if (await skipReason(env, "anthropic", kw.keyword, r, true)) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1435,7 +1462,7 @@ export async function runOneKeywordCitations(
     if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
     const { queryGoogleAIO } = await import("./citations-google-aio");
     const r = await queryGoogleAIO(kw.keyword, env);
-    if (skipReason("google_ai_overview", kw.keyword, r, false)) return; // AIO didn't render
+    if (await skipReason(env, "google_ai_overview", kw.keyword, r, false)) return; // AIO didn't render
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1450,7 +1477,7 @@ export async function runOneKeywordCitations(
     if (!env.DATAFORSEO_LOGIN || !env.DATAFORSEO_PASSWORD) return;
     const { queryBing } = await import("./citations-bing");
     const r = await queryBing(kw.keyword, env);
-    if (skipReason("bing", kw.keyword, r, false)) return;
+    if (await skipReason(env, "bing", kw.keyword, r, false)) return;
     const prom = computeProminence(r.entities, r.urls, clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
@@ -1471,7 +1498,7 @@ export async function runOneKeywordCitations(
     const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
     // Skip empty results to keep the snapshot aggregator clean. Same
     // pattern as the other training-mode engines.
-    if (skipReason("gemma", kw.keyword, r, true)) return;
+    if (await skipReason(env, "gemma", kw.keyword, r, true)) return;
     const prom = computeProminence(r.entities, [], clientDomain, businessName);
     const cited = prom !== null;
     await env.DB.prepare(
