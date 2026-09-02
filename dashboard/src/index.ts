@@ -78,7 +78,7 @@ import { handleSettings, handleUpdateEmailPrefs } from "./routes/settings";
 import { handleLeads, handleLeadsJson } from "./routes/leads";
 import { handleCheckout, handleCheckoutSuccess, handleStripeWebhook, handleBillingPortal, handlePulseWaitlist } from "./routes/checkout";
 import { cleanupAuth } from "./auth";
-import { runWeeklyScans, runDailyTasks, dispatchWeeklyDeliveries } from "./cron";
+import { runWeeklyScans, runCitationDispatch, runDailyMaintenance, dispatchWeeklyDeliveries } from "./cron";
 import { sendViaResend } from "./email";
 import { runWeeklyBackup } from "./backup";
 import { logEvent, hashIP } from "./analytics";
@@ -3975,8 +3975,19 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     ctx.waitUntil(withCronLogging(env, "auth_cleanup", () => cleanupAuth(env)).catch((e) => {
       console.log(`[cron] auth_cleanup failed: ${e instanceof Error ? e.message : e}`);
     }));
-    ctx.waitUntil(withCronLogging(env, "daily_tasks", () => runDailyTasks(env)).catch((e) => {
+    // Two halves of the old runDailyTasks, dispatched separately ON PURPOSE.
+    // runCitationDispatch staggers 2s per keyword, so its wall clock grows with
+    // every client added. Running the maintenance tail behind it meant the 24th
+    // memo drafts -- the customer deliverable -- waited out the whole sweep on a
+    // shared invocation budget. Separate waitUntil calls run them concurrently,
+    // so neither half's completion depends on the other finishing.
+    // "daily_tasks" stays the sweep's task_name: the overdue alarm, /admin/health
+    // and the hub heartbeat all key on it, and the sweep is what they mean by it.
+    ctx.waitUntil(withCronLogging(env, "daily_tasks", () => runCitationDispatch(env)).catch((e) => {
       console.log(`[cron] daily_tasks failed: ${e instanceof Error ? e.message : e}`);
+    }));
+    ctx.waitUntil(withCronLogging(env, "daily_maintenance", () => runDailyMaintenance(env)).catch((e) => {
+      console.log(`[cron] daily_maintenance failed: ${e instanceof Error ? e.message : e}`);
     }));
 
     // Phase 2: auto-build hot/warm Previews + digest to Lance.

@@ -628,8 +628,25 @@ export async function sendWeeklyDigests(
   console.log(`Digest emails: ${sent} sent, ${failed} failed, ${users.length} eligible`);
 }
 
-/** Daily tasks: onboarding drip + nurture drip emails + stale roadmap check + snippet sweep + auto-provision missing roadmaps + automation digest */
-export async function runDailyTasks(env: Env): Promise<void> {
+/**
+ * Citation sweep dispatch: one CitationKeywordWorkflow per (client, keyword),
+ * plus the Monday-only WeeklyExtras rollup.
+ *
+ * SPLIT OUT OF runDailyTasks 2026-09-01. This half staggers dispatch at 2s per
+ * keyword, so its wall clock grows linearly with the roster (~4 min at 125
+ * keywords, and every new client adds to it). It used to sit at the TOP of one
+ * 780-line runDailyTasks, which put every maintenance task -- including the
+ * 24th monthly memo drafts, the customer deliverable -- behind that sleep on a
+ * shared invocation budget. Evidence: 2026-08-31, the night the roster grew by
+ * 30 keywords, measurement completed (596 rows, all 7 engines) but the
+ * daily_tasks completion row was never written, i.e. the invocation ended
+ * before the tail. The two halves are independent, so they now run
+ * concurrently under separate waitUntil calls in index.ts.
+ *
+ * Keeps the task_name 'daily_tasks' so the existing overdue alarm,
+ * /admin/health, and the hub heartbeat keep reading the same signal.
+ */
+export async function runCitationDispatch(env: Env): Promise<void> {
   // --- Citations daily dispatch ---
   // One CitationKeywordWorkflow per (client, keyword). Each instance
   // gets its own 1000-subrequest budget, which is the only path that
@@ -724,7 +741,17 @@ export async function runDailyTasks(env: Env): Promise<void> {
   } catch (e) {
     console.log(`[cron daily] failed to dispatch weekly-extras workflow: ${e instanceof Error ? e.message : String(e)}`);
   }
+}
 
+/**
+ * Daily maintenance: drip emails, sweeps, watchdogs, monthly memo drafts.
+ *
+ * Everything that used to follow the citation dispatch inside runDailyTasks.
+ * Runs concurrently with it now -- see runCitationDispatch above for why.
+ * Ordering within this function is unchanged, and each step keeps its own
+ * try/catch so one failure cannot silence the monitors after it.
+ */
+export async function runDailyMaintenance(env: Env): Promise<void> {
   // Each of these does its own D1 work and some have an unguarded top-level
   // query (e.g. sendOnboardingDripEmails' initial SELECT). An unwrapped throw
   // here used to abort the rest of runDailyTasks — including the monthly-refresh
