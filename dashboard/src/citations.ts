@@ -313,9 +313,57 @@ async function queryPerplexity(
  *  stops the whole fleet retrying in lockstep and rebuilding the same burst.
  *  Retry-After is honoured when the API sends it, because the server knows
  *  better than our arithmetic does. */
-const OPENAI_RETRY_ATTEMPTS = 5;
-const OPENAI_BACKOFF_BASE_MS = 30_000;
-const OPENAI_BACKOFF_CAP_MS = 300_000;
+// Retry shape, corrected 2026-09-02 against MEASURED failures rather than a guess.
+//
+// The first version used a 30s base doubling to a 300s cap over 5 attempts:
+// 450 seconds of sleeping per keyword. It was written on 2026-08-30 before
+// anyone had read an actual OpenAI 429 body. Once engine_failures started
+// recording them, all 111 of one night's failures said the same thing:
+//
+//   "Rate limit reached for gpt-5-search-api ... on tokens per min (TPM):
+//    Limit 80000, Used 80000, Requested 102. Please try again in 76ms."
+//
+// SEVENTY-SIX MILLISECONDS. The old base was ~400x that. Calls did not fail
+// and recover, they slept through the entire sweep and gave up, which is why
+// openai sat at roughly 40% of a healthy engine for ten days.
+//
+// Now: sub-second base, many cheap attempts, a cap that reflects a per-minute
+// window rather than a per-hour outage. Worst case is ~32s total instead of 450s.
+const OPENAI_RETRY_ATTEMPTS = 8;
+const OPENAI_BACKOFF_BASE_MS = 250;
+const OPENAI_BACKOFF_CAP_MS = 20_000;
+const OPENAI_BACKOFF_FLOOR_MS = 100;
+
+/**
+ * How long to wait before the next OpenAI attempt.
+ *
+ * Pure and exported so the retry SHAPE is testable without a live 429. The
+ * previous version could only have been checked against production, which is
+ * how a 400x error survived a week.
+ *
+ * Header precedence, and the order matters:
+ *  1. `retry-after-ms` — OpenAI's own, already in milliseconds.
+ *  2. `retry-after`    — the HTTP standard header, in SECONDS. Multiplying
+ *                        this by 1000 is correct; doing the same to
+ *                        retry-after-ms would wait 1000x too long.
+ *  3. Neither present  — exponential from the base.
+ * Jitter is applied by the caller so this stays deterministic under test.
+ */
+export function openAIBackoffMs(attempt: number, headers?: Headers | null): number {
+  const readNum = (name: string): number | null => {
+    const raw = headers?.get(name);
+    if (raw == null) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  };
+  const ms = readNum("retry-after-ms");
+  const secs = ms === null ? readNum("retry-after") : null;
+  const hinted = ms !== null ? ms : secs !== null ? secs * 1000 : null;
+  const raw = hinted !== null
+    ? hinted
+    : OPENAI_BACKOFF_BASE_MS * 2 ** Math.max(0, attempt - 1);
+  return Math.min(Math.max(raw, OPENAI_BACKOFF_FLOOR_MS), OPENAI_BACKOFF_CAP_MS);
+}
 
 async function openAIFetchWithBackoff(
   body: string,
@@ -337,12 +385,9 @@ async function openAIFetchWithBackoff(
       console.log(`[engine-retry] openai gave up after ${attempt} attempts (${resp.status}) for "${keyword}"`);
       return resp;
     }
-    const retryAfter = Number(resp.headers.get("retry-after"));
-    const backoff = Number.isFinite(retryAfter) && retryAfter > 0
-      ? Math.min(retryAfter * 1000, OPENAI_BACKOFF_CAP_MS)
-      : Math.min(OPENAI_BACKOFF_BASE_MS * 2 ** (attempt - 1), OPENAI_BACKOFF_CAP_MS);
+    const backoff = openAIBackoffMs(attempt, resp.headers);
     const wait = Math.round(backoff * (1 + Math.random() * 0.3));
-    console.log(`[engine-retry] openai ${resp.status} for "${keyword}", attempt ${attempt}/${OPENAI_RETRY_ATTEMPTS}, waiting ${Math.round(wait / 1000)}s`);
+    console.log(`[engine-retry] openai ${resp.status} for "${keyword}", attempt ${attempt}/${OPENAI_RETRY_ATTEMPTS}, waiting ${wait}ms`);
     await new Promise((r) => setTimeout(r, wait));
   }
   return resp;
