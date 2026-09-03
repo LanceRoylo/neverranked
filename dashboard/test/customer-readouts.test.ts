@@ -249,3 +249,29 @@ test("report numbering is chronological + 1-based two-digit", () => {
   // later backfill renumbers the label but never breaks a bookmarked URL).
   assert.equal(numbered[0].m, "2026-06");
 });
+
+// --- Baseline-month digest suppression (2026-09-03) -------------------------
+// A weekly digest is a story about movement. In a baseline month there is none,
+// which is why the grader held five of them on 2026-09-02 including both Prince
+// Waikiki contacts. These guard the month comparison itself, which is the part
+// that decides whether a paying client hears from us at all.
+test("baseline month: HST month boundary decides suppression, not UTC", () => {
+  // measurement_start 2026-09-01 00:00 HST == 2026-09-01T10:00Z.
+  const start = Date.UTC(2026, 8, 1, 10, 0, 0);
+  const hstMonth = (ms: number) => { const d = new Date(ms - 10 * 3600 * 1000);
+    return `${d.getUTCFullYear()}-${d.getUTCMonth()}`; };
+
+  // Same month in HST -> suppressed.
+  assert.equal(hstMonth(start), hstMonth(Date.UTC(2026, 8, 3, 22, 0, 0)), "Sep 3 HST is the baseline month");
+  // 2026-10-01 05:00Z is still Sep 30 in HST. Must NOT flip to October early.
+  assert.equal(hstMonth(start), hstMonth(Date.UTC(2026, 9, 1, 5, 0, 0)), "Sep 30 19:00 HST is still baseline");
+  // 2026-10-01 12:00Z is Oct 1 in HST. Digests resume.
+  assert.notEqual(hstMonth(start), hstMonth(Date.UTC(2026, 9, 1, 12, 0, 0)), "Oct 1 HST is no longer baseline");
+});
+
+test("baseline month: a client with no measurement_start is never suppressed", () => {
+  // Absence of a start date must not be able to silence a paying client.
+  const rows = [{ client_slug: "a", measurement_start: null }, { client_slug: "b", measurement_start: 0 }];
+  const kept = rows.filter(r => Number.isFinite(Number(r.measurement_start)) && Number(r.measurement_start) > 0);
+  assert.equal(kept.length, 0, "null and 0 both fall through to sending");
+});

@@ -136,6 +136,51 @@ export async function newPassSince(
  *  day-to-day movement weather and tells them not to act on it. Everyone
  *  else (admins, agency users, clients without a registry row) stays on
  *  Mondays. The free-tier fan-out stays on Mondays. */
+/**
+ * Client slugs currently inside their BASELINE month, i.e. the calendar month
+ * (HST) that measurement_start falls in.
+ *
+ * WHY THIS EXISTS. A weekly digest is a story about movement. In a baseline
+ * month there is no movement to report, because there is nothing yet to move
+ * from. On 2026-09-02 five digests were held by the grader for exactly that
+ * reason, both Prince Waikiki contacts among them, with the same verdict each
+ * time: "Empty 'Needs you' section ... no highlights or narrative, just raw
+ * metrics." The grader was right. Measurement had run fine, 264 rows across
+ * all seven surfaces. There was simply nothing to say on day two.
+ *
+ * So the fix is not to loosen the grader, it is to stop asking it to pass an
+ * email that should never have been built. Suppressing here is cheaper and
+ * more honest than generating, grading and discarding.
+ *
+ * Months are computed in HST because that is the boundary every other date in
+ * this system uses. A client whose measurement_start is unknown is NOT
+ * suppressed: absence of a start date must never silence a paying client.
+ */
+async function baselineMonthSlugs(env: Env, now: Date): Promise<Set<string>> {
+  const out = new Set<string>();
+  try {
+    const rows = (await env.DB.prepare(
+      `SELECT client_slug, measurement_start FROM measurement_registry
+        WHERE client_slug IS NOT NULL AND measurement_start IS NOT NULL`,
+    ).all<{ client_slug: string; measurement_start: number }>()).results;
+    const hstMonth = (ms: number) => {
+      const d = new Date(ms - 10 * 3600 * 1000);
+      return `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
+    };
+    const cur = hstMonth(now.getTime());
+    for (const r of rows) {
+      const v = Number(r.measurement_start);
+      if (!Number.isFinite(v) || v <= 0) continue;
+      if (hstMonth(v * 1000) === cur) out.add(r.client_slug);
+    }
+  } catch (e) {
+    // Fail OPEN. If this lookup breaks, send the digests. A suppression bug
+    // must never become the reason a client hears nothing.
+    console.log(`[delivery] baseline-month lookup failed, suppressing nobody: ${e instanceof Error ? e.message : String(e)}`);
+  }
+  return out;
+}
+
 export async function dispatchWeeklyDeliveries(
   env: Env,
   isMonday: boolean,
@@ -146,6 +191,7 @@ export async function dispatchWeeklyDeliveries(
   let digestTotal = 0;
   let digestDispatched = 0;
   let digestErrors = 0;
+  let digestSuppressed = 0;
   const started = Date.now();
   const now = new Date();
   try {
@@ -153,8 +199,13 @@ export async function dispatchWeeklyDeliveries(
       "SELECT id, client_slug FROM users WHERE email_digest = 1"
     ).all<{ id: number; client_slug: string | null }>()).results;
 
+    const baseline = await baselineMonthSlugs(env, now);
     const due: { id: number }[] = [];
     for (const u of users) {
+      // Baseline month: nothing has moved yet, so there is no digest to write.
+      // Counted and logged, never silent -- a suppressed send and a broken
+      // send must not look the same from the outside.
+      if (u.client_slug && baseline.has(u.client_slug)) { digestSuppressed++; continue; }
       const pass = u.client_slug ? await newPassSince(env, u.client_slug, now) : null;
       if (pass === null ? isMonday : pass.due) due.push({ id: u.id });
     }
@@ -232,13 +283,21 @@ export async function dispatchWeeklyDeliveries(
     "digest_dispatch",
     digestStatus,
     Date.now() - started,
+    // Suppression is a THIRD state and must not read as the first. "No digests
+    // due (pass cadence)" and "everyone due was suppressed for being in a
+    // baseline month" are different facts, and collapsing them would repeat
+    // exactly the conflation the block above exists to prevent.
     nothingDue
-      ? "no digests due today (pass cadence)"
+      ? (digestSuppressed > 0
+          ? `no digests sent: ${digestSuppressed} suppressed (baseline month), 0 otherwise due`
+          : "no digests due today (pass cadence)")
       : digestTotal === 0
         ? `ENUMERATION FAILED: 0 counted with ${digestErrors} error(s) -- not a quiet day`
-        : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors} | last12d delivered=${priorDelivered} failed=${priorFailed}`
+        : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors}`
+          + (digestSuppressed > 0 ? ` suppressed=${digestSuppressed}` : "")
+          + ` | last12d delivered=${priorDelivered} failed=${priorFailed}`
   );
-  console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors})`);
+  console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors}, suppressed=${digestSuppressed})`);
 
   // --- Free-tier weekly digest fan-out (small per-user load, inline) ---
   // Stays on the Monday calendar: free-tier users have no measurement
