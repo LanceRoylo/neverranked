@@ -22,6 +22,56 @@ import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
  * (citation_runs) still accumulates; only the snapshot clobber is prevented.
  * See lib/snapshot-shape.ts + the dashboard_snapshot_shape_split_brain note.
  */
+/**
+ * Days a readout-shape snapshot may age before we stop treating it as
+ * evidence that a bridge is still maintaining this client.
+ *
+ * Bridged clients run on run_days [1,11,21], so up to ~10 days can pass
+ * between snapshots, plus grace. 21 days clears that comfortably. For
+ * reference on 2026-09-03: hawaii-theatre, genuinely bridge-managed, was
+ * 1.9 days old. prince-waikiki, not bridged at all, was 69.
+ */
+const FORENSIC_SNAPSHOT_MAX_AGE_DAYS = 21;
+
+/**
+ * Is a bridge STILL maintaining this client's snapshots?
+ *
+ * Distinct from isForensicManaged, and deliberately so. That function answers
+ * "is this client on the cockpit product", and three callers depend on that
+ * meaning: two in index.ts gate onboarding and route the client to
+ * /c/<slug>/. Adding recency there would redirect a client with a stale
+ * snapshot AWAY from their own dashboard, which is the opposite of the fix.
+ *
+ * This one answers the narrower question the snapshot writers actually need:
+ * "would writing a snapshot clobber something a bridge is keeping current?"
+ *
+ * WHY IT EXISTS. isForensicManaged infers management from the SHAPE of
+ * whatever snapshot happens to exist. prince-waikiki had exactly one, from a
+ * free diagnostic on 2026-06-26, bridged in before they were a client. It was
+ * readout-shaped, so every Cloudflare sweep skipped the snapshot write,
+ * waiting for a bridge that does not run for them: they are measured in the
+ * worker and write citation_runs directly. One leftover row from a free scan
+ * silently disabled the rollup for a paying client, and report-facts reads
+ * that table for engines_breakdown and top_competitors. Found 2026-09-03,
+ * three weeks before their first paid readout.
+ *
+ * Stale and readout-shaped now means "nothing is maintaining this", so the
+ * sweep writes. There is nothing live to clobber.
+ */
+export async function forensicSnapshotIsCurrent(env: Env, clientSlug: string): Promise<boolean> {
+  const snap = await env.DB.prepare(
+    `SELECT engines_breakdown, top_competitors, measured_at FROM citation_snapshots
+       WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`
+  ).bind(clientSlug).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null }>();
+  if (!snap) return false;
+  if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) return false;
+  const measuredAt = Number(snap.measured_at);
+  // No measured_at at all cannot be shown to be current, so it is not.
+  if (!Number.isFinite(measuredAt) || measuredAt <= 0) return false;
+  const ageDays = (Date.now() / 1000 - measuredAt) / 86400;
+  return ageDays <= FORENSIC_SNAPSHOT_MAX_AGE_DAYS;
+}
+
 export async function isForensicManaged(env: Env, clientSlug: string): Promise<boolean> {
   const snap = await env.DB.prepare(
     `SELECT engines_breakdown, top_competitors FROM citation_snapshots
@@ -1246,7 +1296,10 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
 
     // Forensic-managed customers own a readout-shape snapshot refreshed by the
     // dryrun->D1 bridge. Skip the legacy snapshot write so it can't clobber it.
-    const forensicManaged = await isForensicManaged(env, clientSlug);
+    // Skip ONLY when a bridge is demonstrably still maintaining this slug.
+    // A stale readout-shape snapshot is not evidence of that -- see
+    // forensicSnapshotIsCurrent.
+    const forensicManaged = await forensicSnapshotIsCurrent(env, clientSlug);
     if (!forensicManaged) await env.DB.prepare(
       // measured_at: this writer aggregates the runs it just inserted, so the
       // measurement date is `now`. week_start is the Monday of the RUN week
@@ -1641,8 +1694,8 @@ export async function buildClientSnapshot(
   clientSlug: string,
   lookbackDays: number = 7
 ): Promise<void> {
-  if (await isForensicManaged(env, clientSlug)) {
-    console.log(`buildClientSnapshot: skipping "${clientSlug}" -- forensic-managed (readout-shape snapshot present); not clobbering.`);
+  if (await forensicSnapshotIsCurrent(env, clientSlug)) {
+    console.log(`buildClientSnapshot: skipping "${clientSlug}" -- a bridge is currently maintaining its readout-shape snapshot; not clobbering.`);
     return;
   }
   const now = Math.floor(Date.now() / 1000);
