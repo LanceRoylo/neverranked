@@ -152,9 +152,20 @@ export async function newPassSince(
  * email that should never have been built. Suppressing here is cheaper and
  * more honest than generating, grading and discarding.
  *
- * Months are computed in HST because that is the boundary every other date in
- * this system uses. A client whose measurement_start is unknown is NOT
- * suppressed: absence of a start date must never silence a paying client.
+ * Months are compared in UTC, deliberately. measurement_start marks a CALENDAR
+ * MONTH, not an instant: prince-waikiki is stored as 1788220800, which is
+ * 2026-09-01 00:00:00 UTC. An earlier version of this shifted by -10h to "get
+ * HST", which moved that value to 2026-08-31 14:00 and computed the baseline
+ * month as AUGUST. It matched nothing, suppressed nobody, and five empty
+ * digests went out on 2026-09-03 while this function reported success.
+ *
+ * The unit test shipped with that bug asserted Date.UTC(2026,8,1,10,0,0),
+ * i.e. midnight HAWAII, and passed. It tested the assumption rather than the
+ * value actually in the table. The tests below now use the real stored
+ * integer.
+ *
+ * A client whose measurement_start is unknown is NOT suppressed: absence of a
+ * start date must never silence a paying client.
  */
 async function baselineMonthSlugs(env: Env, now: Date): Promise<Set<string>> {
   const out = new Set<string>();
@@ -163,15 +174,15 @@ async function baselineMonthSlugs(env: Env, now: Date): Promise<Set<string>> {
       `SELECT client_slug, measurement_start FROM measurement_registry
         WHERE client_slug IS NOT NULL AND measurement_start IS NOT NULL`,
     ).all<{ client_slug: string; measurement_start: number }>()).results;
-    const hstMonth = (ms: number) => {
-      const d = new Date(ms - 10 * 3600 * 1000);
+    const monthKey = (ms: number) => {
+      const d = new Date(ms);
       return `${d.getUTCFullYear()}-${d.getUTCMonth()}`;
     };
-    const cur = hstMonth(now.getTime());
+    const cur = monthKey(now.getTime());
     for (const r of rows) {
       const v = Number(r.measurement_start);
       if (!Number.isFinite(v) || v <= 0) continue;
-      if (hstMonth(v * 1000) === cur) out.add(r.client_slug);
+      if (monthKey(v * 1000) === cur) out.add(r.client_slug);
     }
   } catch (e) {
     // Fail OPEN. If this lookup breaks, send the digests. A suppression bug

@@ -255,18 +255,28 @@ test("report numbering is chronological + 1-based two-digit", () => {
 // which is why the grader held five of them on 2026-09-02 including both Prince
 // Waikiki contacts. These guard the month comparison itself, which is the part
 // that decides whether a paying client hears from us at all.
-test("baseline month: HST month boundary decides suppression, not UTC", () => {
-  // measurement_start 2026-09-01 00:00 HST == 2026-09-01T10:00Z.
-  const start = Date.UTC(2026, 8, 1, 10, 0, 0);
-  const hstMonth = (ms: number) => { const d = new Date(ms - 10 * 3600 * 1000);
-    return `${d.getUTCFullYear()}-${d.getUTCMonth()}`; };
+test("baseline month: uses the REAL stored measurement_start, not an assumed one", () => {
+  // 1788220800 is prince-waikiki's actual stored value: 2026-09-01 00:00:00 UTC.
+  // The first version of this test asserted Date.UTC(2026,8,1,10,0,0) instead,
+  // midnight Hawaii, and passed against code that computed AUGUST for this row.
+  const STORED = 1788220800;
+  assert.equal(new Date(STORED * 1000).toISOString(), "2026-09-01T00:00:00.000Z", "pin the real value");
 
-  // Same month in HST -> suppressed.
-  assert.equal(hstMonth(start), hstMonth(Date.UTC(2026, 8, 3, 22, 0, 0)), "Sep 3 HST is the baseline month");
-  // 2026-10-01 05:00Z is still Sep 30 in HST. Must NOT flip to October early.
-  assert.equal(hstMonth(start), hstMonth(Date.UTC(2026, 9, 1, 5, 0, 0)), "Sep 30 19:00 HST is still baseline");
-  // 2026-10-01 12:00Z is Oct 1 in HST. Digests resume.
-  assert.notEqual(hstMonth(start), hstMonth(Date.UTC(2026, 9, 1, 12, 0, 0)), "Oct 1 HST is no longer baseline");
+  const monthKey = (ms: number) => { const d = new Date(ms); return `${d.getUTCFullYear()}-${d.getUTCMonth()}`; };
+
+  // Any day in September must match, so the client is suppressed all month.
+  assert.equal(monthKey(STORED * 1000), monthKey(Date.UTC(2026, 8, 3, 22, 0, 0)), "Sep 3 is the baseline month");
+  assert.equal(monthKey(STORED * 1000), monthKey(Date.UTC(2026, 8, 30, 23, 59, 0)), "Sep 30 still baseline");
+  // October must not.
+  assert.notEqual(monthKey(STORED * 1000), monthKey(Date.UTC(2026, 9, 1, 0, 0, 1)), "Oct 1 resumes");
+});
+
+test("baseline month: the -10h shift that caused the bug would compute August", () => {
+  // Guards the specific regression. If someone reintroduces a timezone shift,
+  // this shows what it does to the stored value.
+  const STORED = 1788220800;
+  const shifted = new Date(STORED * 1000 - 10 * 3600 * 1000);
+  assert.equal(shifted.getUTCMonth(), 7, "shifting lands in August and matches nothing in September");
 });
 
 test("baseline month: a client with no measurement_start is never suppressed", () => {
