@@ -10,6 +10,8 @@ import type { Env, CitationKeyword, CitedEntity, Domain, InjectionConfig } from 
 import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
+import { classifySource, hostOf } from "./lib/classify-source";
+import { attributeVenueUrl, matchCohortMember, pathOf, regionOf, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
 
 /**
  * A forensic-managed customer's authoritative snapshot is the rich "readout
@@ -140,7 +142,38 @@ const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
 // 27B and 9B variants moved to dedicated-endpoint-only pricing. See
 // content/strategy/gemma-utilization-prep.md for the strategic context.
 const TOGETHER_ENDPOINT = "https://api.together.xyz/v1/chat/completions";
+// DeepInfra hosts the same open-weight Gemma build behind an OpenAI-compatible
+// surface, so the request body below is byte-identical across both.
+const DEEPINFRA_ENDPOINT = "https://api.deepinfra.com/v1/openai/chat/completions";
 const GEMMA_MODEL = "google/gemma-4-31B-it";
+
+/**
+ * Which host serves Gemma. Together AI is deprecating the serverless Gemma
+ * endpoint (2026-09-15), and Gemma is not a spare part: after the 2026-09-07
+ * business-name fix it is a contracted client's strongest measured surface,
+ * ahead of every citation-grade engine. Losing it mid-month would blank their
+ * best number in the first paid readout.
+ *
+ * Provider is chosen by WHICH KEY EXISTS rather than a hardcoded switch, so
+ * the cutover is `wrangler secret put DEEPINFRA_API_KEY` and nothing else. No
+ * second deploy, no code edit on the day, and Together stays as an automatic
+ * fallback until its key is removed. Rolling back is deleting one secret.
+ *
+ * Both hosts serve the SAME model id, which is what keeps the series
+ * continuous: this is a hosting change, not a measurement change, and the
+ * readout's engine label does not move.
+ */
+export function resolveGemmaProvider(
+  env: Env,
+): { host: string; endpoint: string; apiKey: string } | null {
+  if (env.DEEPINFRA_API_KEY) {
+    return { host: "deepinfra", endpoint: DEEPINFRA_ENDPOINT, apiKey: env.DEEPINFRA_API_KEY };
+  }
+  if (env.TOGETHER_API_KEY) {
+    return { host: "together", endpoint: TOGETHER_ENDPOINT, apiKey: env.TOGETHER_API_KEY };
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Perplexity queries
@@ -690,16 +723,16 @@ async function queryClaude(
  *
  * Together AI's API is OpenAI-compatible so the client code mirrors
  * queryOpenAI(), just with a different endpoint and model name.
- * Auth is a single Bearer token (TOGETHER_API_KEY).
+ * Auth is a single Bearer token from resolveGemmaProvider().
  */
 async function queryGemma(
   keyword: string,
-  apiKey: string
-): Promise<{ text: string; entities: CitedEntity[] }> {
-  const resp = await fetch(TOGETHER_ENDPOINT, {
+  provider: { host: string; endpoint: string; apiKey: string }
+): Promise<{ text: string; entities: CitedEntity[]; failure?: EngineResult["failure"] }> {
+  const resp = await fetch(provider.endpoint, {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      Authorization: `Bearer ${provider.apiKey}`,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
@@ -722,8 +755,21 @@ async function queryGemma(
 
   if (!resp.ok) {
     const err = await resp.text();
-    console.log(`Gemma error for "${keyword}": ${resp.status} ${err.slice(0, 200)}`);
-    return { text: "", entities: [] };
+    // MUST report `failure`, not just log. skipReason() only persists to
+    // engine_failures when this field is set, so without it a Gemma outage
+    // writes no citation_runs row, no engine_failures row, and a console line
+    // nobody reads -- completely invisible. Found 2026-09-07 during the
+    // DeepInfra cutover: the engine had silently stopped and the only symptom
+    // was a missing row. Every other engine already reports this way.
+    return {
+      text: "",
+      entities: [],
+      failure: {
+        engine: `gemma:${provider.host}`,
+        status: resp.status,
+        detail: err.slice(0, 400),
+      },
+    };
   }
 
   const data = (await resp.json()) as {
@@ -806,6 +852,53 @@ function wasClientCited(
  *  the response. We cap at 10 so a result like "ranked 17th of 30"
  *  doesn't drag the score off a cliff -- past rank 10 you're effectively
  *  invisible regardless. */
+/**
+ * The brand name every name-match in this file depends on.
+ *
+ * FOUND 2026-09-06, three weeks before prince-waikiki's first paid readout.
+ * This used to read `config?.business_name || null` off injection_configs.
+ * prince-waikiki has NO injection_configs row -- reasonably, since schema
+ * injection was deactivated when the product became measurement-only -- so
+ * businessName was null, so computeProminence's name branch could never fire.
+ *
+ * For the model-knowledge engines that is not a degradation, it is a
+ * guaranteed zero: they are called with an EMPTY url list, so the name branch
+ * is the ONLY branch. Every Claude and Gemma row for that client scored
+ * client_cited = 0 regardless of what the model said. Gemma named the business
+ * in a substantial share of that month's responses and every one of them was
+ * recorded as absent.
+ *
+ * Rendered in a readout that is "Gemma 0%", which a customer reads as being
+ * invisible in model knowledge. A false finding of the same class as the
+ * 45-to-95 retraction, and it would have shipped on the 25th.
+ *
+ * customers.name already holds the right value ("Prince Waikiki"). The name
+ * was registered; the matcher was looking in the wrong table.
+ */
+export async function resolveBusinessName(
+  env: Env,
+  clientSlug: string,
+  config: InjectionConfig | null,
+): Promise<string | null> {
+  if (config?.business_name) return config.business_name;
+  const cust = await env.DB.prepare(
+    "SELECT name FROM customers WHERE client_slug = ?"
+  ).bind(clientSlug).first<{ name: string }>();
+  return cust?.name || null;
+}
+
+/** Shared by computeProminence and buildReadoutSnapshot so "cited" in a run
+ *  row and "mentioned" in a snapshot can never mean different things. The
+ *  bidirectional includes is deliberate (it catches "Prince Waikiki Hotel" and
+ *  "Hawaii Prince"), with a length floor so a stray short entity name cannot
+ *  match everything. */
+export function nameMatches(entityName: string, businessName: string): boolean {
+  const e = entityName.trim().toLowerCase();
+  const b = businessName.trim().toLowerCase();
+  if (e.length < 4 || b.length < 4) return false;
+  return e.includes(b) || b.includes(e);
+}
+
 function computeProminence(
   entities: CitedEntity[],
   urls: string[],
@@ -826,12 +919,11 @@ function computeProminence(
     }
   }
 
-  // Then entity name match.
+  // Then entity name match. For the model-knowledge engines this is the ONLY
+  // branch, because they are called with an empty url list by design.
   if (businessName) {
-    const nameNorm = businessName.toLowerCase();
     for (let i = 0; i < entities.length; i++) {
-      const eName = entities[i].name.toLowerCase();
-      if (eName.includes(nameNorm) || nameNorm.includes(eName)) {
+      if (nameMatches(entities[i].name, businessName)) {
         return Math.min(i + 1, 10);
       }
     }
@@ -892,7 +984,7 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       .first<InjectionConfig>();
 
     const clientDomain = domain?.domain || "";
-    const businessName = config?.business_name || null;
+    const businessName = await resolveBusinessName(env, clientSlug, config);
 
     let totalQueries = 0;
     let clientCitations = 0;
@@ -1095,8 +1187,9 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
       // by design -- public weights mean anyone can re-run the same
       // prompts and verify our numbers.
       const runGemma = async () => {
-        if (!env.TOGETHER_API_KEY) return;
-        const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+        const gemmaProvider = resolveGemmaProvider(env);
+        if (!gemmaProvider) return;
+        const r = await queryGemma(kw.keyword, gemmaProvider);
         // Skip-on-empty, entities variant. Together drops ~12% of gemma
         // calls on network errors (measured July 2026); a drop is not a
         // measurement.
@@ -1238,10 +1331,10 @@ export async function runWeeklyCitations(env: Env, slugFilter?: string): Promise
         citations: cRuns?.cited || 0,
       };
     }
-    // Gemma -- the 7th engine, open-weight, gated on TOGETHER_API_KEY.
+    // Gemma -- the 7th engine, open-weight. Gated on whichever host key is set.
     // Same shape as Anthropic in the aggregator (no URLs since Gemma
     // doesn't have web grounding -- responses are training-data only).
-    if (env.TOGETHER_API_KEY) {
+    if (resolveGemmaProvider(env)) {
       const gmRuns = await env.DB.prepare(
         `SELECT COUNT(*) as total, SUM(client_cited) as cited FROM citation_runs
          WHERE keyword_id IN (SELECT id FROM citation_keywords WHERE client_slug = ?)
@@ -1478,7 +1571,7 @@ export async function runOneKeywordCitations(
   ).bind(clientSlug).first<InjectionConfig>();
 
   const clientDomain = domain?.domain || "";
-  const businessName = config?.business_name || null;
+  const businessName = await resolveBusinessName(env, clientSlug, config);
 
   const engines: Record<string, number> = {};
   let rowsInserted = 0;
@@ -1592,8 +1685,9 @@ export async function runOneKeywordCitations(
   // grounding_mode='training' since Gemma has no native web grounding
   // (matches Anthropic's classification).
   const runGemma = async () => {
-    if (!env.TOGETHER_API_KEY) return;
-    const r = await queryGemma(kw.keyword, env.TOGETHER_API_KEY);
+    const gemmaProvider = resolveGemmaProvider(env);
+    if (!gemmaProvider) return;
+    const r = await queryGemma(kw.keyword, gemmaProvider);
     // Skip empty results to keep the snapshot aggregator clean. Same
     // pattern as the other training-mode engines.
     if (await skipReason(env, "gemma", kw.keyword, r, true)) return;
@@ -1710,7 +1804,7 @@ export async function buildClientSnapshot(
   ).bind(clientSlug).first<InjectionConfig>();
 
   const clientDomain = domain?.domain || "";
-  const businessName = config?.business_name || null;
+  const businessName = await resolveBusinessName(env, clientSlug, config);
 
   // Pull all rows written for this client during this run window.
   const rows = (await env.DB.prepare(
@@ -2019,6 +2113,446 @@ export interface CitationDigestData {
   totalKeywords: number;
 }
 
+// ---------------------------------------------------------------------------
+// Readout-shape snapshot writer (Cloudflare-measured clients)
+// ---------------------------------------------------------------------------
+//
+// WHY THIS EXISTS. buildClientSnapshot writes LEGACY shape, which
+// buildReportFacts refuses, so a Cloudflare-measured client's readout falls
+// back to narrative-only with no charts. Until prince-waikiki there had never
+// been a paying client measured this way -- hawaii-theatre's readout-shape
+// rows come from the research pipeline's bridge -- so nothing had needed it.
+//
+// THE TWO LAYERS ARE MEASURED DIFFERENTLY, AND THAT IS DELIBERATE.
+// The published methodology page (methodology/index.html) defines them apart:
+//
+//   Layer 1, citation-grade (Perplexity, ChatGPT search, Gemini grounded,
+//   Google AI Overviews) plus the Bing organic control:
+//     "A brand is 'cited' on a query if its DOMAIN APPEARS IN THE URL LIST
+//      for that query's answer."
+//
+//   Layer 2, model-knowledge (Claude, Gemma):
+//     "the response is captured and scanned for mentions of the brand name.
+//      A brand is 'mentioned in model knowledge' on a query if its NAME
+//      APPEARS IN THE RESPONSE."
+//
+// So Layer 1's denominator is CITATIONS (URLs) and Layer 2's is RESPONSES
+// (queries). Collapsing them into one number is the error this writer exists
+// to avoid. The forensic bridge does collapse them -- it runs Claude and
+// Gemma through the same URL-counting path, which is why hawaii-theatre's
+// delivered readout scores Claude on 741 "citations" for an engine the page
+// says does not retrieve. Audited 2026-09-06; see
+// neverranked-docs/CLAIMS-VS-CODE-AUDIT-2026-09-06.md. This writer follows
+// the PAGE, not the bridge.
+//
+// The sweep's stored data is already conformant: for anthropic and gemma,
+// runCitations passes an EMPTY url list to computeProminence, so client_cited
+// on those rows already means "the brand name appeared", exactly as published.
+//
+// source_types and offsite_hosts are built from LAYER 1 URLS ONLY. "Where AI
+// pulls its answers from" is not a question a non-retrieving model can answer,
+// and folding model-recalled URLs into that mix would put invented sources in
+// a chart the customer reads as provenance.
+
+/** citation_runs.engine -> the display label the readout renders and the
+ *  prior-month join keys on. MUST match dryrun/forensic/bridge-to-d1.mjs
+ *  ENGINE_LABEL exactly: report-facts matches a prior report's engines BY
+ *  NAME, so a label that differs by one word silently drops the dumbbell's
+ *  "from" dots instead of failing loudly. */
+const READOUT_ENGINE_LABEL: Record<string, string> = {
+  perplexity: "Perplexity",
+  openai: "ChatGPT search",
+  gemini: "Gemini grounded",
+  google_ai_overview: "Google AI Overviews",
+  bing: "Bing search (control)",
+  anthropic: "Claude",
+  gemma: "Gemma",
+};
+
+/** Engines that retrieve and cite. Everything else in the map is Layer 2. */
+const LAYER1_ENGINES = new Set(["perplexity", "openai", "gemini", "google_ai_overview", "bing"]);
+
+/** Same derivation as the bridge's deriveLabel, so a cohort domain gets the
+ *  same display name in both pipelines. */
+function deriveCompetitorLabel(domain: string): string {
+  return (
+    domain
+      .replace(/\.(com|org|net|io|co|us|biz|info)$/i, "")
+      .split(/[.\-_]/)
+      .filter(Boolean)
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ") || domain
+  );
+}
+
+interface ReadoutEngineStat {
+  citations: number;
+  total: number;
+  share_pct: number;
+  cohort_citations: number;
+  /** Which measurement definition produced the three numbers above.
+   *  "citation" = share of cited URLs. "model_knowledge" = share of responses
+   *  mentioning the brand. The readout MUST render these differently; they are
+   *  not interchangeable columns. */
+  layer: "citation" | "model_knowledge";
+}
+
+/**
+ * Build a readout-shape snapshot from citation_runs for one client over an
+ * explicit window. Window is caller-supplied because the cadence and the
+ * window are different knobs: this runs WEEKLY (so the row stays fresh and
+ * keeps forensicSnapshotIsCurrent true, which is what stops the legacy writer
+ * clobbering it) but aggregates MONTH-TO-DATE, because the readout describes
+ * a month.
+ */
+export async function buildReadoutSnapshot(
+  env: Env,
+  clientSlug: string,
+  windowStart: number,
+  windowEnd: number,
+): Promise<boolean> {
+  const owned = await env.DB.prepare(
+    "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
+  ).bind(clientSlug).first<{ domain: string }>();
+  if (!owned?.domain) {
+    console.log(`[readout-snapshot] ${clientSlug}: no owned domain registered; skipping`);
+    return false;
+  }
+  const ownedHost = owned.domain.replace(/^www\./, "").toLowerCase();
+
+  // Layer 2 is measured by NAME, so a missing name is a silent guaranteed
+  // zero rather than a degraded number. See resolveBusinessName.
+  const injCfg = await env.DB.prepare(
+    "SELECT * FROM injection_configs WHERE client_slug = ?"
+  ).bind(clientSlug).first<InjectionConfig>();
+  const businessName = await resolveBusinessName(env, clientSlug, injCfg);
+  if (!businessName) {
+    console.log(`[readout-snapshot] ${clientSlug}: NO business name resolvable; model-knowledge surfaces would all read 0%. Refusing to write a snapshot that asserts absence it cannot measure.`);
+    return false;
+  }
+
+  const compRows = (await env.DB.prepare(
+    "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1"
+  ).bind(clientSlug).all<{ domain: string }>()).results;
+  const competitorHosts = compRows.map((r) => r.domain.replace(/^www\./, "").toLowerCase());
+  const cohort = new Set<string>([ownedHost, ...competitorHosts]);
+
+  const rows = (await env.DB.prepare(
+    `SELECT cr.engine, cr.client_cited, cr.cited_urls, cr.cited_entities, ck.keyword
+       FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
+      WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`
+  ).bind(clientSlug, windowStart, windowEnd).all<{
+    engine: string;
+    client_cited: number;
+    cited_urls: string;
+    cited_entities: string;
+    keyword: string;
+  }>()).results;
+
+  if (rows.length === 0) {
+    console.log(`[readout-snapshot] ${clientSlug}: no runs in window; skipping`);
+    return false;
+  }
+
+  const ctx = { owned: [ownedHost], competitors: competitorHosts };
+
+  // Which region the customer competes in, read from their own domain and
+  // business name. Used ONLY to drop chain properties on other islands.
+  //
+  // FAILS OPEN BY DESIGN. When the region cannot be determined the filter is
+  // disabled entirely and every competitor citation is kept, which is exactly
+  // the behaviour before this existed. A geography guess that silently
+  // discards a competitor's citations is far worse than not guessing: it would
+  // inflate the customer's own share by shrinking the denominator, in their
+  // favour, invisibly.
+  const ownedRegion = regionOf(`${ownedHost} ${businessName}`);
+  if (!ownedRegion) {
+    console.log(`[readout-snapshot] ${clientSlug}: region undetermined; off-island filtering DISABLED (all competitor citations kept)`);
+  }
+  let offIslandDropped = 0;
+
+  // Layer 1 accumulators (URL-based).
+  const engUrlTotal: Record<string, number> = {};
+  const engUrlOwned: Record<string, number> = {};
+  const engUrlCohort: Record<string, number> = {};
+  const compCitations: Record<string, number> = {};
+  /** venue key -> display label. Keys are a cohort domain when the property
+   *  maps to one, else `slug:<property>` for a chain property with no cohort
+   *  entry, else the bare competitor host. */
+  const venueLabels: Record<string, string> = {};
+  const srcCounts: Record<string, number> = {};
+  const offsiteHosts: Record<string, number> = {};
+
+  // Layer 2 accumulators (response-based).
+  const engRuns: Record<string, number> = {};
+  const engMentions: Record<string, number> = {};
+  const engCohortRuns: Record<string, number> = {};
+
+  // Shared: which surfaces showed each venue at all, and question coverage.
+  const venueEngines: Record<string, Set<string>> = {};
+  const allQuestions = new Set<string>();
+  const questionsWithOwned = new Set<string>();
+
+  for (const r of rows) {
+    const label = READOUT_ENGINE_LABEL[r.engine];
+    if (!label) continue; // unregistered engine: no chart can match it anyway
+    allQuestions.add(r.keyword);
+
+    if (LAYER1_ENGINES.has(r.engine)) {
+      let urls: string[] = [];
+      try { urls = JSON.parse(r.cited_urls || "[]") as string[]; } catch { /* malformed */ }
+      engUrlTotal[label] = (engUrlTotal[label] || 0) + urls.length;
+      let ownedHere = 0;
+      let cohortHere = 0;
+      for (const u of urls) {
+        const h = hostOf(u);
+        if (!h) continue;
+        const inOwned = h === ownedHost || h.endsWith("." + ownedHost);
+        const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+        if (inOwned) ownedHere++;
+
+        // Resolve the SPECIFIC property behind a chain URL. A cohort of
+        // domains cannot see that marriott.com hosts Sheraton Waikiki, the
+        // Royal Hawaiian and the Moana Surfrider, so host-only matching
+        // credited all three to "Marriott" and rendered them at 0% each --
+        // reading as "AI never mentions this hotel" when it is mentioned
+        // constantly. It also counted off-island chain properties as local
+        // competitors, which they are not.
+        let venueKey: string | null = null;
+        let venueLabel: string | null = null;
+        if (compHit) {
+          const attr = attributeVenueUrl(pathOf(u));
+          // Off-island properties are not competing for a Waikiki booking.
+          // "unknown" is kept rather than dropped: a brand landing page or a
+          // category listicle carries no property, and discarding those would
+          // silently shrink the cohort's measured presence.
+          if (ownedRegion && attr.region !== "unknown" && attr.region !== ownedRegion) {
+            offIslandDropped++;
+            continue;
+          }
+          const matched = attr.slug ? matchCohortMember(attr.slug, competitorHosts, UMBRELLA_DOMAINS) : null;
+          venueKey = matched ?? (attr.slug ? `slug:${attr.slug}` : compHit);
+          // The chain's own property name beats anything derived from a
+          // domain. "hiltonhawaiianvillage.com" title-cases to
+          // "Hiltonhawaiianvillage", which is not a hotel name and has no
+          // place in a paid deliverable; the slug carries "Hilton Hawaiian
+          // Village Waikiki Beach Resort".
+          // A chain URL that names NO property is a brand landing page or a
+          // category listicle. It is a real citation and stays counted, but
+          // rendering it as bare "Marriott" beside "Waikiki Beach Marriott
+          // Resort and Spa" reads as two entries for one hotel. Say what it is.
+          venueLabel =
+            attr.label ||
+            (UMBRELLA_DOMAINS.includes(compHit)
+              ? `${deriveCompetitorLabel(compHit)} (brand pages)`
+              : deriveCompetitorLabel((matched ?? compHit).replace(/^slug:/, "")));
+          // Never downgrade a label already set from a richer source.
+          if (!venueLabels[venueKey] || venueLabels[venueKey].length < venueLabel.length) {
+            venueLabels[venueKey] = venueLabel;
+          }
+        }
+
+        if (inOwned || venueKey) {
+          cohortHere++;
+          (venueEngines[inOwned ? ownedHost : venueKey!] ??= new Set()).add(label);
+        }
+        if (venueKey) compCitations[venueKey] = (compCitations[venueKey] || 0) + 1;
+        const st = classifySource(u, ctx);
+        srcCounts[st] = (srcCounts[st] || 0) + 1;
+        if (st === "independent_web" || st === "review_directory") {
+          offsiteHosts[h] = (offsiteHosts[h] || 0) + 1;
+        }
+      }
+      engUrlOwned[label] = (engUrlOwned[label] || 0) + ownedHere;
+      engUrlCohort[label] = (engUrlCohort[label] || 0) + cohortHere;
+      if (ownedHere > 0) questionsWithOwned.add(r.keyword);
+    } else {
+      // Layer 2: the unit is the RESPONSE, not the URL. client_cited already
+      // encodes "the brand name appeared" for these engines (computeProminence
+      // is called with an empty url list), which is the published definition.
+      engRuns[label] = (engRuns[label] || 0) + 1;
+      // DELIBERATELY NOT reading client_cited here. That flag was written by
+      // computeProminence at run time, and for any client without an
+      // injection_configs row it was computed against a NULL business name,
+      // which forces it to 0 on every model-knowledge row. prince-waikiki's
+      // whole September is stored that way: Gemma named the hotel in 40 of
+      // 228 responses and every one is flagged 0.
+      //
+      // Recomputing from the entities the extractor already resolved makes
+      // the snapshot self-healing rather than inheriting a bad flag, and it
+      // is the published definition either way: "mentioned in model
+      // knowledge on a query if its NAME appears in the response".
+      let mentioned = false;
+      let sawCohort = false;
+      try {
+        const ents = JSON.parse(r.cited_entities || "[]") as Array<{ name?: string; url?: string }>;
+        for (const e of ents) {
+          if (e.name && nameMatches(e.name, businessName)) mentioned = true;
+          const h = hostOf(e.url || "");
+          if (!h) continue;
+          const compHit = competitorHosts.find((c) => h === c || h.endsWith("." + c));
+          if (compHit) {
+            sawCohort = true;
+            (venueEngines[compHit] ??= new Set()).add(label);
+          } else if (h === ownedHost || h.endsWith("." + ownedHost)) {
+            mentioned = true;
+          }
+        }
+      } catch { /* malformed entities */ }
+      if (mentioned) {
+        sawCohort = true;
+        engMentions[label] = (engMentions[label] || 0) + 1;
+        questionsWithOwned.add(r.keyword);
+        (venueEngines[ownedHost] ??= new Set()).add(label);
+      }
+      if (sawCohort) engCohortRuns[label] = (engCohortRuns[label] || 0) + 1;
+    }
+  }
+
+  // ── engines_breakdown ────────────────────────────────────────────────────
+  const enginesBreakdown: Record<string, ReadoutEngineStat> = {};
+  for (const [key, label] of Object.entries(READOUT_ENGINE_LABEL)) {
+    if (LAYER1_ENGINES.has(key)) {
+      const t = engUrlTotal[label] || 0;
+      const o = engUrlOwned[label] || 0;
+      if (t === 0 && !(label in engUrlTotal)) continue; // engine never ran
+      enginesBreakdown[label] = {
+        citations: o,
+        total: t,
+        share_pct: t ? Math.round((100 * o) / t) : 0,
+        cohort_citations: engUrlCohort[label] || 0,
+        layer: "citation",
+      };
+    } else {
+      const t = engRuns[label] || 0;
+      if (t === 0) continue; // engine never ran
+      const m = engMentions[label] || 0;
+      enginesBreakdown[label] = {
+        citations: m,
+        total: t,
+        share_pct: Math.round((100 * m) / t),
+        cohort_citations: engCohortRuns[label] || 0,
+        layer: "model_knowledge",
+      };
+    }
+  }
+
+  if (Object.keys(enginesBreakdown).length === 0) {
+    console.log(`[readout-snapshot] ${clientSlug}: no recognized engines in window; skipping`);
+    return false;
+  }
+
+  // ── venue shares (LAYER 1 CITATIONS ONLY) ────────────────────────────────
+  // Deliberately not pooled with Layer 2 mentions: a share whose numerator is
+  // citations and whose denominator mixes in responses is not a quantity.
+  const ownedAll = Object.values(engUrlOwned).reduce((a, b) => a + b, 0);
+  const compAll = Object.values(compCitations).reduce((a, b) => a + b, 0);
+  const venueTotal = ownedAll + compAll;
+  // Built from what was actually attributed, not from the raw domain list.
+  // A cohort domain that received nothing still appears (a real zero the
+  // customer should see); a chain property with no cohort entry appears under
+  // its own name instead of vanishing into the brand's bar.
+  const venueKeys = new Set<string>([...Object.keys(compCitations), ...competitorHosts]);
+  const competitors = [...venueKeys]
+    .map((key) => ({
+      domain: key.startsWith("slug:") ? key.slice(5) : key,
+      label: venueLabels[key] || deriveCompetitorLabel(key.replace(/^slug:/, "")),
+      citations: compCitations[key] || 0,
+      venue_share_pct: venueTotal ? Math.round((100 * (compCitations[key] || 0)) / venueTotal) : 0,
+      engines_count: venueEngines[key] ? venueEngines[key].size : 0,
+      /** True when this property is cited but is not a registered cohort
+       *  member. These are the cohort-coverage gaps: real competitors the
+       *  scoping conversation missed. Surfaced rather than silently folded in. */
+      ...(key.startsWith("slug:") ? { unregistered: true } : {}),
+    }))
+    .filter((c) => c.citations > 0 || c.engines_count > 0)
+    .sort((a, b) => b.citations - a.citations);
+
+  const srcTotal = Object.values(srcCounts).reduce((a, b) => a + b, 0) || 1;
+  const sourceTypes: Record<string, { citations: number; share_pct: number }> = {};
+  for (const [type, n] of Object.entries(srcCounts)) {
+    sourceTypes[type] = { citations: n, share_pct: Math.round((100 * n) / srcTotal) };
+  }
+
+  const offsite = Object.entries(offsiteHosts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([host, citations]) => ({
+      host,
+      citations,
+      share_pct: srcTotal ? Math.round((100 * citations) / srcTotal) : 0,
+    }));
+
+  const topCompetitors = {
+    htc_venue_share_pct: venueTotal ? Math.round((100 * ownedAll) / venueTotal) : 0,
+    htc_engines_count: venueEngines[ownedHost] ? venueEngines[ownedHost].size : 0,
+    competitors,
+    source_types: sourceTypes,
+    offsite_hosts: offsite,
+    /** Provenance marker so a later reader can tell which definition produced
+     *  the venue numbers without re-deriving it from the code. */
+    venue_basis: "layer1_citations",
+  };
+
+  const keywordBreakdown = {
+    questions_with_owned: questionsWithOwned.size,
+    total_questions: allQuestions.size,
+  };
+
+  // Scalar columns follow the bridge so prince-waikiki and hawaii-theatre rows
+  // mean the same thing: total_queries/client_citations are QUESTION counts,
+  // citation_share is the Layer 1 share of citations. Note these are different
+  // quantities -- client_citations / total_queries is NOT citation_share, and
+  // any reader dividing one by the other is deriving a number neither writer
+  // computed. Logged as a gap rather than papered over here.
+  const totalUrlAll = Object.values(engUrlTotal).reduce((a, b) => a + b, 0);
+  const citationShare = totalUrlAll ? ownedAll / totalUrlAll : 0;
+
+  const now = Math.floor(Date.now() / 1000);
+  const monday = new Date();
+  monday.setUTCHours(0, 0, 0, 0);
+  const dow = monday.getUTCDay();
+  monday.setUTCDate(monday.getUTCDate() - (dow === 0 ? 6 : dow - 1));
+  const weekStart = Math.floor(monday.getTime() / 1000);
+
+  await env.DB.prepare(
+    `INSERT INTO citation_snapshots
+       (client_slug, week_start, total_queries, client_citations, citation_share,
+        top_competitors, keyword_breakdown, engines_breakdown, created_at, measured_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(client_slug, week_start) DO UPDATE SET
+       total_queries = excluded.total_queries,
+       client_citations = excluded.client_citations,
+       citation_share = excluded.citation_share,
+       top_competitors = excluded.top_competitors,
+       keyword_breakdown = excluded.keyword_breakdown,
+       engines_breakdown = excluded.engines_breakdown,
+       created_at = excluded.created_at,
+       measured_at = excluded.measured_at`
+  ).bind(
+    clientSlug,
+    weekStart,
+    allQuestions.size,
+    questionsWithOwned.size,
+    citationShare,
+    JSON.stringify(topCompetitors),
+    JSON.stringify(keywordBreakdown),
+    JSON.stringify(enginesBreakdown),
+    now,
+    now,
+  ).run();
+
+  const l1 = Object.entries(enginesBreakdown).filter(([, v]) => v.layer === "citation").length;
+  const l2 = Object.entries(enginesBreakdown).length - l1;
+  console.log(
+    `[readout-snapshot] ${clientSlug}: ${l1} citation-grade + ${l2} model-knowledge surfaces, ` +
+    `venue share ${topCompetitors.htc_venue_share_pct}%, ${competitors.length} venues` +
+    `${offIslandDropped ? `, ${offIslandDropped} off-island citations dropped` : ""}, ` +
+    `${allQuestions.size} questions`
+  );
+  return true;
+}
+
 // citation_snapshots stores TWO shapes in these JSON columns, and the digest
 // reader below assumed one of them.
 //
@@ -2066,6 +2600,41 @@ export function normalizeTopCompetitors(raw: unknown): { name: string; count: nu
       return { name, count: Number.isFinite(count) ? count : 0 };
     })
     .filter((c) => c.name !== "");
+}
+
+/**
+ * engines_breakdown carries the same two-shape problem as top_competitors:
+ *
+ *   legacy weekly writer : { "google_ai_overview": {queries, citations} }   keyed by engine ID
+ *   readout writer       : { "ChatGPT search": {citations, total, share_pct} }  keyed by display label
+ *
+ * Every unguarded reader assumed one of them, and each failed differently:
+ * routes/citations.ts buildEngineRows read `data.queries` and printed the
+ * literal string "undefined" into a customer-visible table for any
+ * readout-shape client; routes/competitors.ts typed the column as an ARRAY,
+ * which NEITHER writer has ever produced, so its engine block has been dead
+ * for every client since it was written.
+ *
+ * Returns one canonical array. `total` is the denominator the writer used
+ * (`total` on readout rows, `queries` on legacy ones); callers that want a
+ * percentage compute it from cited/total rather than trusting a stored
+ * share_pct that only one shape carries.
+ */
+export function normalizeEnginesBreakdown(raw: unknown): { engine: string; cited: number; total: number }[] {
+  const parsed = parseJsonSafe(raw);
+  if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return [];
+  return Object.entries(parsed as Record<string, unknown>)
+    .map(([engine, v]) => {
+      const o = (v ?? {}) as Record<string, unknown>;
+      const total = Number(o.total ?? o.queries ?? 0);
+      const cited = Number(o.citations ?? o.client_cited ?? 0);
+      return {
+        engine,
+        cited: Number.isFinite(cited) ? cited : 0,
+        total: Number.isFinite(total) ? total : 0,
+      };
+    })
+    .filter((e) => e.engine !== "");
 }
 
 export function normalizeKeywordCounts(raw: unknown): { won: number; lost: number; total: number } {

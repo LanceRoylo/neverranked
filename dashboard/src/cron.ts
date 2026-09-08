@@ -251,16 +251,19 @@ export async function dispatchWeeklyDeliveries(
   // failure no matter how cleanly it enqueued.
   let priorDelivered = 0;
   let priorFailed = 0;
+  let priorHeld = 0;
   try {
     const prior = await env.DB.prepare(
       `SELECT
          SUM(CASE WHEN status = 'queued' THEN 1 ELSE 0 END) AS delivered,
-         SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed
+         SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed,
+         SUM(CASE WHEN status = 'held'   THEN 1 ELSE 0 END) AS held
        FROM email_delivery_log
        WHERE type = 'digest' AND created_at > unixepoch() - 12*86400`
-    ).first<{ delivered: number | null; failed: number | null }>();
+    ).first<{ delivered: number | null; failed: number | null; held: number | null }>();
     priorDelivered = prior?.delivered ?? 0;
     priorFailed = prior?.failed ?? 0;
+    priorHeld = prior?.held ?? 0;
   } catch (e) {
     console.log(`[delivery] prior-cycle reconcile failed: ${e instanceof Error ? e.message : String(e)}`);
   }
@@ -268,7 +271,10 @@ export async function dispatchWeeklyDeliveries(
   const enqueueClean = digestErrors === 0 && digestDispatched === digestTotal;
   // No delivery in the reconcile window while users were due means the
   // pipeline is broken downstream of us, even if every enqueue succeeded.
-  const deliveryDead = digestTotal > 0 && priorDelivered === 0;
+  // A held digest is the quality gate working, not a broken pipeline, so it
+  // must not read as "failure". Nothing delivered AND nothing held means the
+  // send path itself is down, which is the case this flag exists to catch.
+  const deliveryDead = digestTotal > 0 && priorDelivered === 0 && priorHeld === 0;
   // digestTotal === 0 means one of two VERY different things, and the first
   // version of this check conflated them:
   //   (a) nothing was due -- no pass landed, not a Monday. Normal, and the
@@ -286,7 +292,7 @@ export async function dispatchWeeklyDeliveries(
       ? "success"
       : deliveryDead || digestDispatched === 0
         ? "failure"
-        : enqueueClean && priorFailed === 0
+        : enqueueClean && priorFailed === 0 && priorHeld === 0
           ? "success"
           : "partial";
   await logCronRun(
@@ -306,7 +312,7 @@ export async function dispatchWeeklyDeliveries(
         ? `ENUMERATION FAILED: 0 counted with ${digestErrors} error(s) -- not a quiet day`
         : `enqueued=${digestDispatched}/${digestTotal} errors=${digestErrors}`
           + (digestSuppressed > 0 ? ` suppressed=${digestSuppressed}` : "")
-          + ` | last12d delivered=${priorDelivered} failed=${priorFailed}`
+          + ` | last12d delivered=${priorDelivered} held=${priorHeld} failed=${priorFailed}`
   );
   console.log(`[delivery] digest_dispatch ${digestStatus}: ${digestDispatched}/${digestTotal} (errors=${digestErrors}, suppressed=${digestSuppressed})`);
 
@@ -753,6 +759,9 @@ export async function runCitationDispatch(env: Env): Promise<void> {
           params: {
             clientSlug: item.clientSlug,
             keywordId: item.keywordId,
+            // Scheduled sweep only. The manual "Run now" button omits this so
+            // a human clicking it still gets an answer in seconds.
+            spread: true,
           },
         });
         dispatched++;
@@ -771,7 +780,14 @@ export async function runCitationDispatch(env: Env): Promise<void> {
         // still a burst against an 80,000 TPM ceiling. At 2s the roster spreads
         // over ~2 minutes and the per-call backoff in citations.ts absorbs the
         // rest. Kept well under the scheduled handler's wall-clock budget.
-        await new Promise((r) => setTimeout(r, 2000));
+        // 250ms, down from 2s. The 2s existed to spread the roster against
+        // the OpenAI TPM ceiling, but it burned ~3 minutes of the scheduled
+        // handler's wall clock to buy a 3-minute spread that was still too
+        // narrow. Pacing now happens inside each workflow (SPREAD_SECONDS in
+        // workflows/citation-keyword.ts), which is both wider and free, so
+        // this delay goes back to being only what it should be: politeness
+        // toward the workflow-creation API.
+        await new Promise((r) => setTimeout(r, 250));
       } catch (e) {
         dispatchErrors++;
         console.log(`[cron daily] failed to dispatch citation-keyword workflow for ${item.clientSlug}/${item.keywordId}: ${e instanceof Error ? e.message : String(e)}`);
@@ -841,6 +857,20 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     } catch (e) {
       console.log(`[cron daily] step ${name} failed (continuing): ${e instanceof Error ? e.message : String(e)}`);
     }
+  }
+
+  // Question-set hash + change log. Append-only and idempotent: writes only
+  // when a client's active set actually changes, so this is a no-op on almost
+  // every run. It exists because the published methodology page states that a
+  // question-set change makes runs non-comparable across it, and until
+  // 2026-09-06 nothing recorded, hashed, or detected such a change on the
+  // customer side. A stated consequence with no detection behind it is the
+  // exact gap the 2026-09-06 claims audit was about.
+  try {
+    const { sweepQuerySets } = await import("./lib/query-set");
+    await sweepQuerySets(env);
+  } catch (e) {
+    console.log(`[cron] query-set sweep failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   // One-shot internal validation report for the Gemini grounding-redirect
@@ -1072,24 +1102,44 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
   // blank-page work, the approval click is the judgment. One alert fires
   // summarizing the batch so Lance knows the queue is ready.
   try {
-    if (new Date().getUTCDate() === 24) {
+    // TWO passes: a PREVIEW on the 15th and the real draft on the 24th.
+    //
+    // The 24th alone meant the first paid deliverable's prose was written one
+    // day before it shipped, with no window to read it. On 2026-09-07 a probe
+    // of gatherMemoInputs found the draft would have named a paying client the
+    // leader of their category when they were not, alongside per-engine
+    // movement figures derived from a pre-engagement free scan. Every other defect in
+    // that audit was found by looking early; the memo was the one artifact
+    // with no early look built in.
+    //
+    // A preview is free of risk: drafts land with delivered_at NULL, invisible
+    // to the customer and to Atlas, and the generator upserts on
+    // (client_slug, month_key), so the 24th simply overwrites the preview with
+    // fuller data. Cost is one LLM call per active customer per month.
+    const dayOfMonth = new Date().getUTCDate();
+    const isPreview = dayOfMonth === 15;
+    if (isPreview || dayOfMonth === 24) {
       const { generateAllMemoDrafts } = await import("./lib/memo-generator");
       const results = await generateAllMemoDrafts(env, new Date());
       const ok = results.filter((r) => r.ok);
       const failed = results.filter((r) => !r.ok);
       const flagged = ok.filter((r) => r.unverifiedNumbers || r.toneViolations);
-      console.log(`[cron] memo-drafts: ${ok.length} drafted, ${failed.length} failed, ${flagged.length} flagged`);
+      console.log(`[cron] memo-drafts${isPreview ? " (PREVIEW)" : ""}: ${ok.length} drafted, ${failed.length} failed, ${flagged.length} flagged`);
       if (results.length > 0) {
         const { createAlert } = await import("./admin-alerts");
         const lines = [
-          `${ok.length} memo draft(s) ready for review at /admin/memos.`,
+          isPreview
+            ? `PREVIEW: ${ok.length} memo draft(s) at /admin/memos, generated 9 days early so the prose can be read while there is still time to fix it. These are regenerated on the 24th with the full month, so edit the DATA or the code, not the draft text.`
+            : `${ok.length} memo draft(s) ready for review at /admin/memos.`,
           flagged.length ? `${flagged.length} have figures or tone to double-check.` : ``,
           failed.length ? `${failed.length} could not be drafted: ${failed.map((f) => `${f.slug} (${f.error})`).join(", ")}` : ``,
         ].filter(Boolean);
         await createAlert(env, {
           clientSlug: "_all",
           type: "memo_drafts_ready",
-          title: `${ok.length} monthly memo draft(s) ready for review`,
+          title: isPreview
+            ? `PREVIEW: ${ok.length} monthly memo draft(s) ready to read early`
+            : `${ok.length} monthly memo draft(s) ready for review`,
           detail: lines.join("\n"),
         });
       }
@@ -1119,6 +1169,21 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       "SELECT client_slug, created_at FROM customers WHERE status IN ('active','pilot')",
     ).all<{ client_slug: string; created_at: number | null }>()).results;
     const ONBOARDING_GRACE_SECS = 4 * 24 * 3600; // don't alarm a customer mid-onboarding
+    // Remediation depends on WHO maintains the snapshot. This watchdog used to
+    // tell every client's alert to "re-run the bridge" and blame "the
+    // scheduled GitHub run", which is simply false for a sweep-measured
+    // client: there is no bridge and no GitHub run, and the fix is the weekly
+    // Worker cron. Wrong remediation on a paying customer's alert is its own
+    // failure. See migration 0111.
+    const sweepOwned = new Set(
+      (await env.DB.prepare(
+        `SELECT client_slug FROM measurement_registry WHERE snapshot_source = 'sweep'`
+      ).all<{ client_slug: string }>()).results.map((r) => r.client_slug)
+    );
+    const remedy = (slug: string) =>
+      sweepOwned.has(slug)
+        ? `This client is measured by the Cloudflare sweep, not a bridge. Check that the weekly-extras workflow ran (it writes the readout snapshot Monday 06:00 UTC) and that citation_runs has rows for the window. Do NOT run the dryrun bridge for them: it deletes citation_runs before inserting.`
+        : `Re-run the measurement + bridge for ${slug}, then confirm the cockpit shows the new date.`;
     for (const { client_slug, created_at } of customers) {
       const snap = await env.DB.prepare(
         `SELECT engines_breakdown, top_competitors, created_at, week_start
@@ -1135,7 +1200,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
             clientSlug: client_slug,
             type: "monthly_refresh_overdue",
             title: `No measurement snapshot for ${client_slug}`,
-            detail: `A signed customer (${client_slug}) has ZERO citation_snapshots rows — their cockpit / memo / Atlas cannot render. Either the baseline bridge never ran, or a bridge run cleared the rows without re-inserting (the DELETE-before-INSERT hazard). Re-run the bridge for ${client_slug} and confirm the cockpit renders before this clears.`,
+            detail: `A signed customer (${client_slug}) has ZERO citation_snapshots rows — their cockpit / memo / Atlas cannot render. ${remedy(client_slug)}`,
             windowHours: 24 * 25,
           });
         }
@@ -1152,7 +1217,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
           clientSlug: client_slug,
           type: "monthly_refresh_overdue",
           title: `Monthly measurement overdue for ${client_slug}`,
-          detail: `This month's refresh has not landed (latest snapshot ${last}). The scheduled GitHub run likely skipped — they are best-effort. Re-run the measurement + bridge for ${client_slug}, then confirm the cockpit shows the new date.`,
+          detail: `This month's refresh has not landed (latest snapshot ${last}). ${remedy(client_slug)}`,
           windowHours: 24 * 25, // at most ~once per customer per month
         });
       }
@@ -1319,6 +1384,25 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     console.log(`[cron] alert_dedupe: scanned ${r.scanned}, acked ${r.acked} dups across ${r.groups} groups`);
   } catch (e) {
     console.log(`[cron] alert_dedupe failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Alert auto-close. Runs AFTER dedupe so it only ever considers the
+  // canonical row in a group. An alert describes a moment, but the reader
+  // treats the needs-you lane as a list of live problems, and nothing ever
+  // reconciled the two. Observed 2026-09-08: a daily_tasks overdue alert
+  // 143h old sat above real ones while the task had run clean every day
+  // since. Fail-closed by design, so most alert types are untouched and
+  // stay a human decision.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { autoCloseAlerts } = await import("./lib/alert-autoclose");
+    const started = Date.now();
+    const r = await autoCloseAlerts(env, Math.floor(Date.now() / 1000));
+    await logCronRun(env, "alert_autoclose", "success", Date.now() - started,
+      `closed=${r.closed} kept=${r.kept}${r.notes.length ? ` | ${r.notes.join(", ")}` : ""}`);
+    console.log(`[cron] alert_autoclose: closed ${r.closed}, kept ${r.kept}`);
+  } catch (e) {
+    console.log(`[cron] alert_autoclose failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
   // Phase 1.5 Session 2 LLM-graded audits. Three sweeps:

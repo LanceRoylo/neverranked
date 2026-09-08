@@ -46,7 +46,21 @@ export interface ReportFacts {
   // is an engine-level absence, not a visibility failure, and must never
   // render as a plain 0% the customer might try to fix. Absent on
   // snapshots written before 2026-08-03, which render as before.
-  engines: Array<{ name: string; pct: number; prev?: number; noCohortSignal?: boolean }>;
+  /** `layer` says WHICH MEASUREMENT produced `pct`, and the renderer must not
+   *  put the two in one chart. Per the published methodology, a citation-grade
+   *  tool's pct is the share of its CITED URLS pointing to the customer, while
+   *  a model-knowledge tool's is the share of its ANSWERS that name them. The
+   *  bar caption "the share of that AI tool's citations that point to your own
+   *  site" is simply false for Claude and Gemma.
+   *  Absent on snapshots written by the forensic bridge, which does not record
+   *  it. Those render as "citation", preserving hawaii-theatre exactly. */
+  engines: Array<{
+    name: string;
+    pct: number;
+    prev?: number;
+    noCohortSignal?: boolean;
+    layer?: "citation" | "model_knowledge";
+  }>;
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
@@ -426,7 +440,11 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   }
 
   const engines = Object.entries(eb).map(([name, v]) => {
-    const row: { name: string; pct: number; prev?: number; noCohortSignal?: boolean } = { name, pct: n(v?.share_pct) };
+    const row: ReportFacts["engines"][number] = { name, pct: n(v?.share_pct) };
+    // Only "model_knowledge" is carried; anything else (including absent, as
+    // on every bridge-written snapshot) stays a citation-grade reading so
+    // existing clients render exactly as before.
+    if ((v as { layer?: string } | undefined)?.layer === "model_knowledge") row.layer = "model_knowledge";
     if (priorEngines.has(name)) row.prev = priorEngines.get(name);
     // Only assert this when the bridge actually measured it. An older
     // snapshot without cohort_citations stays silent rather than guessing.

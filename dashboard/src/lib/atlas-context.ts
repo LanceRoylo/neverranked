@@ -30,6 +30,7 @@
 // D1 East replica.
 
 import type { Env } from "../types";
+import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 // ──────────────────────────────────────────────────────────────────
 // Public API
@@ -77,7 +78,13 @@ export interface MeasurementWindow {
   end: string;
   total_runs: number;
   citations_of_customer: number;
-  citation_share_pct: number;
+  /** Owned citations as a share of citations to ANY cohort venue. Matches the
+   *  dashboard headline and the readout venue chart. */
+  venue_share_pct: number;
+  /** Owned citations as a share of EVERY cited source. Larger denominator, so
+   *  a much smaller number. Not interchangeable with venue_share_pct. */
+  share_of_all_cited_sources_pct: number;
+  _units: { venue_share_pct: string; share_of_all_cited_sources_pct: string };
   by_engine: Array<{
     engine: string;
     total_runs: number;
@@ -86,7 +93,8 @@ export interface MeasurementWindow {
   }>;
   weekly_snapshots: Array<{
     week_start: string;
-    citation_share: number;
+    /** Same unit as share_of_all_cited_sources_pct above, NOT venue share. */
+    share_of_all_cited_sources_pct: number;
     client_citations: number;
     total_queries: number;
   }>;
@@ -311,7 +319,17 @@ async function loadMeasurementWindow(
     .sort((a, b) => b.share_pct - a.share_pct);
   let sharePctOut = totalRuns > 0 ? +(100 * totalCited / totalRuns).toFixed(1) : 0;
   const headSnap = snaps.results[0];
-  if (headSnap?.engines_breakdown) {
+  // Shape guard added 2026-09-06. Without it a LEGACY-shape snapshot (which
+  // has `queries`/`citations`, not `total`/`share_pct`) passed the try block
+  // intact: `arr.length` was non-zero, so the correct runs-based byEngineOut
+  // computed just above was overwritten with a row of `undefined` values --
+  // and those went straight into the customer-facing Atlas context. Failing
+  // back to the runs-based numbers is strictly better than answering a
+  // customer from undefined.
+  const headIsReadout = headSnap
+    ? isReadoutShapeSnapshot(headSnap.engines_breakdown, headSnap.top_competitors)
+    : false;
+  if (headIsReadout && headSnap?.engines_breakdown) {
     try {
       const eb = JSON.parse(headSnap.engines_breakdown) as Record<string, { citations: number; total: number; share_pct: number }>;
       const arr = Object.entries(eb).map(([engine, v]) => ({ engine, total_runs: v.total, citations: v.citations, share_pct: v.share_pct }));
@@ -324,9 +342,19 @@ async function loadMeasurementWindow(
   // third-party hosts to target. Written into the snapshot's top_competitors
   // by the dryrun->D1 bridge, so Atlas can answer "where does AI cite for me".
   let offsiteOut: MeasurementWindow["offsite"] = { source_types: [], hosts: [] };
-  if (headSnap?.top_competitors) {
+  // THE number the customer sees everywhere else. The dashboard headline and
+  // the readout's venue chart both render htc_venue_share_pct (owned citations
+  // divided by citations to ANY venue in the cohort). Atlas used to answer
+  // "what is my citation share" with citation_share instead, which is owned
+  // divided by EVERY cited URL -- a strictly larger denominator. On
+  // 2026-09-07, from one snapshot row, that was 12% on the dashboard and 1.64%
+  // in the chat: the same words, a 7.3x gap, and no way for the customer to
+  // tell which was wrong. Found by the delivery audit the same day.
+  let venueSharePct: number | null = null;
+  if (headIsReadout && headSnap?.top_competitors) {
     try {
-      const tc = JSON.parse(headSnap.top_competitors) as { source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }> };
+      const tc = JSON.parse(headSnap.top_competitors) as { htc_venue_share_pct?: number; source_types?: Record<string, { share_pct?: number }>; offsite_hosts?: Array<{ host?: string; share_pct?: number }> };
+      if (typeof tc.htc_venue_share_pct === "number") venueSharePct = tc.htc_venue_share_pct;
       offsiteOut = {
         source_types: Object.entries(tc.source_types ?? {}).map(([type, v]) => ({ type, share_pct: v.share_pct ?? 0 })).filter((s) => s.share_pct > 0).sort((a, b) => b.share_pct - a.share_pct),
         hosts: (tc.offsite_hosts ?? []).map((h) => ({ host: h.host ?? "", share_pct: h.share_pct ?? 0 })).filter((h) => h.host),
@@ -340,12 +368,22 @@ async function loadMeasurementWindow(
     end: new Date(now * 1000).toISOString(),
     total_runs: totalRuns,
     citations_of_customer: totalCited,
-    citation_share_pct: sharePctOut,
+    // Two DIFFERENT shares, named so they cannot be conflated. The field
+    // formerly called citation_share_pct carried the second one while the
+    // system prompt and every other surface meant the first.
+    venue_share_pct: venueSharePct ?? sharePctOut,
+    share_of_all_cited_sources_pct: sharePctOut,
+    _units: {
+      venue_share_pct:
+        "THE headline figure. Of every citation that named a business in this customer's competitive category, the share that named THEM. This is the number on their dashboard and in their monthly readout. Use this when asked about citation share, visibility, or how they are doing.",
+      share_of_all_cited_sources_pct:
+        "A different and much smaller figure: of EVERY source cited across all questions, including news, guides, directories and unrelated sites, the share that was this customer. A larger denominator, so a smaller number. Never present it as their citation share and never compare it against venue_share_pct.",
+    },
     by_engine: byEngineOut,
     weekly_snapshots: dedupeByWeek(snaps.results)
       .map((s) => ({
         week_start: new Date(s.week_start * 1000).toISOString().slice(0, 10),
-        citation_share: +(s.citation_share * 100).toFixed(1),
+        share_of_all_cited_sources_pct: +(s.citation_share * 100).toFixed(1),
         client_citations: s.client_citations,
         total_queries: s.total_queries,
       }))

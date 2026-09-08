@@ -67,7 +67,7 @@
   <main>
     <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Measurement methodology</div>
     <h1>How we measure what AI engines cite.</h1>
-    <p class="sub">Every number we publish traces to a hash-locked run against named engines, on named dates, with named queries, graded by a fail-closed factual checker before it ships. This page is the full spec.</p>
+    <p class="sub">Every number we publish traces to a dated run against named engines, with named queries, graded by a fail-closed factual checker before it ships. Public category measurements are hash-locked. Standing customer measurements are not yet. This page is the full spec, including that gap.</p>
 
     <h2>What this page is, in plain English</h2>
     <p>This is the &ldquo;show your work&rdquo; page. Everything below explains exactly how we run the measurement, where the numbers come from, and what they mean. It is written for the person on your team (or your compliance reviewer, or your agency&rsquo;s data lead) who needs to verify what we&rsquo;re doing before signing on.</p>
@@ -133,16 +133,20 @@
     <p><strong>Why both layers matter.</strong> A brand invisible in citation is invisible when AI fact-checks itself before answering. A brand invisible in model knowledge is invisible at the baseline, before any search happens. These are different failure modes. Measuring only one half of the picture misses what the other half could tell you.</p>
 
     <h2 id="query-set">Query-set discipline</h2>
-    <p>Each engagement opens with a query-set design conversation. The goal: a frozen 18-question set that represents how the customer's buyers actually search in their category. Three rules govern the list:</p>
+    <p>Each engagement opens with a query-set design conversation. The goal is a question set that represents how the customer's buyers actually search in their category. Published category measurements use 18 questions. Customer engagements have run from 18 to 30, sized at scoping. Three rules govern the list:</p>
     <ul>
-      <li><strong>Hash-locked.</strong> The query list is hashed on first run. Every subsequent run prints the same hash. If the hash changes, the runs are no longer comparable and the discipline has been broken. Hash printing is in <code>dryrun/run-dental-honolulu.mjs</code> and similar runners.</li>
+      <li><strong>Hash-locked, on the published side.</strong> For a category measurement the query list is hashed on first run, and every subsequent run prints the same hash. If the hash changes, the runs are no longer comparable and the discipline has been broken. Hash printing is in <code>dryrun/run-dental-honolulu.mjs</code> and similar runners. The standing daily customer measurement does not hash its set today. The correction below says what that has meant in practice.</li>
       <li><strong>Intent-shaped.</strong> Queries cover head-intent ("best X in Y"), neighborhood scoping ("X in [specific area]"), service-combined ("X that also does Y"), trust-signal ("X for first-time customers"), value-conscious ("affordable X that takes [insurance]"). The shape mirrors how a real buyer searches, not how an SEO keyword tool ranks.</li>
       <li><strong>No naming the customer.</strong> Queries do not contain the customer's brand name. Branded queries are a different measurement (does the AI know who you are when asked directly), which we also report but separate from demand queries (does the AI surface you when a buyer searches for the category).</li>
     </ul>
     <p>Every measured category gets its own runner with its own 18-question set, locked by hash. We have published pattern-ready measurements across the categories we have measured, including Hawaii consumer banking, Hawaii wealth management, Honolulu dental, Hawaii law firms, Hawaii CPAs, and Austin TX CPAs (our first cross-geo measurement). The full ledger of published measurements, each with its dated run and locked question set, is at <a href="/claims/">/claims/</a>. Each runner&rsquo;s hash is printed at the start of every run. Any change to the question set produces a new hash and the runs are no longer comparable across the change.</p>
 
+    <p style="margin-top:26px"><strong>Correction, 2026-09-06.</strong> We audited this page against the code that actually produces customer numbers, line by line. It found two places where the page described a discipline the production pipeline does not implement, and we would rather you read it here than find it yourself.</p>
+    <p><strong>Hash-locking is real on the published side and absent on the customer side.</strong> The research runners that produce the teardowns and the <a href="/claims/">/claims/</a> ledger hash their question sets exactly as described above. The standing daily measurement that produces customer dashboards and monthly readouts has no query-set hash at all. It never did. This page implied one mechanism where there are two.</p>
+    <p><strong>Because nothing enforced the lock, customer question sets have been edited mid-engagement.</strong> One set grew from 18 questions to 30 the day after measurement started. Another lost 16 of its 34 questions between two monthly windows. We measured what that second change did to the reported aggregate: it moved the number about half a percentage point, which is inside the noise at the whole-percent resolution we publish. Small. Still not what this page said.</p>
+    <p>A query-set hash and a change log for the customer side are being built now. Until they ship, this page describes published measurements as hash-locked and customer measurements as not, because that is what is true. If your auditor wants the change history for your own set before then, ask and we will reconstruct it from the run data.</p>
     <h3 style="margin-top:32px">An example 18-question set</h3>
-    <p>The actual locked set we used for Hawaii wealth management (one of the categories we have published). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific, locked by hash, never edited after the first measurement run.</p>
+    <p>The actual locked set we used for Hawaii wealth management (one of the categories we have published). Eight head queries plus ten long-tail queries. This is what a scoping call produces: a list this specific. This published set was locked by hash and never edited after the first measurement run.</p>
     <p style="font-family: var(--mono); font-size: 12px; color: var(--dim); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 22px; margin-bottom: 12px;">Head queries (8) &middot; broad buyer intent</p>
     <ol style="font-size: 14px; line-height: 1.7; color: var(--soft); padding-left: 22px;">
       <li>best wealth manager in Hawaii</li>
@@ -179,7 +183,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 
     <h2 id="noise">Noise control</h2>
     <p>AI engines produce different answers to the same query on different runs, so we treat repetition as the signal test. In a measurement run, where a query is sampled three times per engine, a citation in one of three reps is a single-shot, two of three is a moderate signal, and all three is the strongest signal we report. The standing daily measurement applies the same logic across days. Aggregate frequencies over the baseline month are what the punch list is built against.</p>
-    <p>The mechanism: the measurement runs the full question set in repeated complete passes through the month, and that cadence continues past the baseline month. Across the baseline month, that is 18 × 3 × 5 × 3 = 810 citation captures per engagement on the live-web surfaces, plus the model-knowledge captures.</p>
+    <p>The mechanism: the measurement runs the full question set in repeated complete passes through the month, and that cadence continues past the baseline month. Across the baseline month that is the question count × 3 reps × 5 live-web surfaces × 3 passes. For an 18-question set that is 810 citation captures on the live-web surfaces, plus the model-knowledge captures. A 30-question engagement is proportionally larger.</p>
 
     <h2 id="classifier">Source-type classifier</h2>
     <p>For each cited URL captured, the source is classified into one of nine buckets. The classifier logic is documented here as part of the method. The buckets:</p>
@@ -262,6 +266,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
         <tr><td>Bing search (control) alone</td><td>0%</td></tr>
       </tbody>
     </table>
+    <p style="font-size:14px;color:#8a8a90;font-style:italic;margin-top:14px">Note, 2026-09-06. The two model-knowledge rows in this table were computed on an earlier basis that counted the URLs those models emit from memory, scoring them the same way as the citation-grade engines. Claude and Gemma do not retrieve, so a URL either one produces is a recollection rather than a citation. The two-layer model above is the correct reading, and the customer-facing product now follows it: model-knowledge surfaces are scored on whether the business is named in the answer. These two figures are being restated on that basis.</p>
     </div>
 
 <div class="pv-bars" aria-hidden="true">
@@ -489,7 +494,7 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
 
     <h2 id="public-artifacts">How public artifacts cite this methodology</h2>
     <p>Some of what we measure becomes a public artifact: a per-business "AI-visibility receipt" linked from outreach to a named subject. Every public receipt links back to this page for substantiation, and every quantitative claim it carries is anchored in a hash-locked measurement run on the methodology above.</p>
-    <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a NeverRanked artifact is derived from a hash-locked, pre-registered measurement against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
+    <p><strong>The substantiation chain in one sentence:</strong> every quantitative claim in a public NeverRanked artifact is derived from a hash-locked, pre-registered measurement against named engines on named dates with named queries, and graded by a fail-closed factual checker before it ships.</p>
     <p><strong>Phrasing discipline.</strong> Receipts speak observationally only. "On N of M observed queries between [dates], engine X cited business Y" is the canonical form. We do not say an engine "recommends," "prefers," "endorses," or "ranks" a business. Engines cite, full stop. We do not assert that being cited causes a business outcome, or that not being cited causes its absence. The grader rejects artifacts that drift into normative or causal language.</p>
     <p><strong>Anonymization commitment.</strong> Non-customer businesses are anonymized on every publicly-indexed page. The named subject of a receipt is named (they have notice through the outreach we sent them). Other businesses in the same cohort appear as "Competitor A", "Competitor B", and so on. A named subject who is also a paying customer can consent to additional naming in their own deliverable. Otherwise the public version stays anonymized.</p>
     <p><strong>Measurement window staleness.</strong> AI engine behavior changes weekly. Every public artifact carries the measurement window dates so a reader can see exactly when the underlying capture happened. If a finding is stale, we will re-run on request, at no charge, against the same hash-locked methodology so the new run is directly comparable.</p>

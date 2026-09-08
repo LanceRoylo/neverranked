@@ -11,6 +11,7 @@
 // they do not depend on the sparse weekly snapshot table.
 
 import type { Env } from "../types";
+import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 const DAY = 86400;
 
@@ -184,13 +185,20 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // this replaces came from computing a run-coverage rate here instead).
   // by_question stays run-based: per-question appearance has no snapshot form.
   const snaps = await env.DB.prepare(
-    `SELECT engines_breakdown, top_competitors
+    `SELECT engines_breakdown, top_competitors, measured_at
        FROM citation_snapshots WHERE client_slug = ?
       ORDER BY week_start DESC LIMIT 2`
-  ).bind(slug).all<{ engines_breakdown: string; top_competitors: string }>();
+  ).bind(slug).all<{ engines_breakdown: string; top_competitors: string; measured_at: number | null }>();
 
   const parseSnap = (row?: { engines_breakdown: string; top_competitors: string }) => {
     if (!row) return null;
+    // Every field read below is readout-shape only (`total`, `share_pct`,
+    // `competitors`, `source_types`). A legacy-shape row parses without
+    // throwing and yields `undefined` for all of them, which then reaches the
+    // monthly memo as prose. Refuse the row instead: the memo falls back to
+    // its run-based inputs rather than describing the customer's month from
+    // undefined. Guard added 2026-09-06.
+    if (!isReadoutShapeSnapshot(row.engines_breakdown, row.top_competitors)) return null;
     let eb: Record<string, { citations: number; total: number; share_pct: number; cohort_citations?: number }> = {};
     let tc: { htc_venue_share_pct?: number; competitors?: Array<{ label?: string; domain?: string; citations?: number }>; source_types?: Record<string, { citations?: number; share_pct?: number }>; offsite_hosts?: Array<{ host?: string; citations?: number; share_pct?: number }> } = {};
     try { eb = JSON.parse(row.engines_breakdown) ?? {}; } catch { /* keep empty */ }
@@ -198,10 +206,47 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     return { eb, tc };
   };
   const curSnap = parseSnap(snaps.results[0]);
-  const priSnap = parseSnap(snaps.results[1]);
+  // A snapshot measured BEFORE the engagement began is not a prior month.
+  //
+  // prince-waikiki's oldest row is a free diagnostic run on 2026-06-26,
+  // months before they signed. Without this guard it became "last month":
+  // their FIRST memo reported a prior share and positive movement off a window
+  // containing ZERO runs, plus per-engine deltas no measurement produced. The client's own frozen plan says of month
+  // one: "There is no movement to report because there is no prior reading."
+  //
+  // report-facts.ts:205 has had this guard since the movement section was
+  // built. This path never got it -- the same concept enforced on one route
+  // and absent on its neighbour. Found 2026-09-07, 18 days before the first
+  // paid memo would have shipped with invented deltas in it.
+  let priSnap = parseSnap(snaps.results[1]);
+  if (priSnap) {
+    const mStart = (await env.DB.prepare(
+      `SELECT measurement_start FROM measurement_registry WHERE client_slug = ?`
+    ).bind(slug).first<{ measurement_start: number | null }>())?.measurement_start ?? null;
+    const priMeasured = snaps.results[1]?.measured_at ?? null;
+    // No measured_at cannot prove it post-dates the engagement, so it is not
+    // trusted as a prior. Fail closed: a missing comparison is recoverable, a
+    // fabricated one lands in a delivered document.
+    if (mStart !== null && (typeof priMeasured !== "number" || priMeasured < mStart)) {
+      const seen = typeof priMeasured === "number" ? new Date(priMeasured * 1000).toISOString().slice(0, 10) : "unknown";
+      console.log(`[memo-inputs] ${slug}: prior snapshot measured ${seen} predates measurement_start; treating as BASELINE (no deltas)`);
+      priSnap = null;
+    }
+  }
 
   if (curSnap) {
-    const ownedCitations = Object.values(curSnap.eb).reduce((a, e) => a + (e.citations ?? 0), 0);
+    // Citation-grade engines ONLY. Competitor counts in top_competitors are
+    // venue CITATIONS (cited URLs), so the customer's total has to be the same
+    // unit. Summing every engine added the model-knowledge surfaces, whose
+    // "citations" are RESPONSES THAT NAMED THE BRAND -- a different quantity.
+    // The inflated total happened to tie a leading competitor's count and,
+    // through the indexOf below, reported the customer as the category leader
+    // when they were not.
+    // Bridge-written snapshots carry no `layer` key and are URL-based
+    // throughout, so they are unaffected.
+    const ownedCitations = Object.values(curSnap.eb)
+      .filter((e) => (e as { layer?: string }).layer !== "model_knowledge")
+      .reduce((a, e) => a + (e.citations ?? 0), 0);
     const comps = (curSnap.tc.competitors ?? [])
       .map((c) => ({ domain: c.domain ?? "", label: c.label ?? null, mentions: c.citations ?? 0 }))
       .sort((a, b) => b.mentions - a.mentions);
@@ -231,9 +276,11 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       share_delta_pp: priVenue === null ? 0 : +(venueShare - priVenue).toFixed(1),
     };
 
-    const allCounts = [...comps.map((c) => c.mentions), ownedCitations].sort((a, b) => b - a);
+    // Count who is strictly ahead. indexOf() on a sorted array returns the
+    // FIRST match, so any tie silently promoted the customer to the top of the
+    // tied group off a coincidental equal count.
     cohort = {
-      rank: comps.length ? allCounts.indexOf(ownedCitations) + 1 : null,
+      rank: comps.length ? comps.filter((c) => c.mentions > ownedCitations).length + 1 : null,
       members: comps.map((c) => ({ ...c, share_pct: venueTotal > 0 ? +(100 * c.mentions / venueTotal).toFixed(1) : 0 })),
       customer_mentions: ownedCitations,
     };

@@ -30,7 +30,9 @@ const DEGRADE_WINDOW_DAYS = 7;
 const RECOVER_WINDOW_HOURS = 24;
 const DEGRADE_EMPTY_THRESHOLD = 0.40;  // >40% empty over 7d => degrade
 const RECOVER_EMPTY_THRESHOLD = 0.20;  // <20% empty over 24h => recover
-const MIN_RUNS_FOR_DECISION = 20;       // need at least 20 runs in the window to make a call
+const MIN_RUNS_FOR_DECISION = 20;       // need at least 20 ATTEMPTS in the window to make a call
+const DEGRADE_FAILURE_THRESHOLD = 0.40; // >40% of attempts rejected over 7d => degrade
+const RECOVER_FAILURE_THRESHOLD = 0.20; // <20% rejected over 24h => recover
 
 const TRACKED_ENGINES = [
   "perplexity", "openai", "gemini", "anthropic",
@@ -48,6 +50,10 @@ interface EngineMetrics {
   engine: string;
   runs_7d: number;
   empty_7d: number;
+  /** Calls REJECTED by the upstream API. Never present in citation_runs, so
+   *  invisible to every metric derived from it. */
+  failures_7d: number;
+  failures_24h: number;
   runs_24h: number;
   empty_24h: number;
 }
@@ -83,6 +89,25 @@ async function getEngineMetrics(env: Env): Promise<Map<string, EngineMetrics>> {
      FROM citation_runs WHERE run_at > ? GROUP BY engine`
   ).bind(dayAgo).all<{ engine: string; runs: number; empty: number }>()).results;
 
+  // REJECTED CALLS. citation_runs holds only readings that COMPLETED --
+  // skipReason() deliberately withholds the row when an engine fails, and
+  // records it in engine_failures instead. So every metric above is computed
+  // over the survivors, and the worse an engine fails the cleaner it looks.
+  //
+  // Observed 2026-09-07: openai had 377 recorded failures since 2026-09-01,
+  // zero empty rows out of 225 persisted ones, and engine_status still read
+  // "active" unchanged since 2026-08-03. Roughly 77% of ChatGPT calls for a
+  // paying customer were failing and the health check reported healthy.
+  // Nothing anywhere read engine_failures; the table had no consumer at all.
+  const failRows = (await env.DB.prepare(
+    `SELECT engine, COUNT(*) as failures FROM engine_failures WHERE failed_at > ? GROUP BY engine`
+  ).bind(weekAgo).all<{ engine: string; failures: number }>()).results;
+  const failDayRows = (await env.DB.prepare(
+    `SELECT engine, COUNT(*) as failures FROM engine_failures WHERE failed_at > ? GROUP BY engine`
+  ).bind(dayAgo).all<{ engine: string; failures: number }>()).results;
+  const fail7 = new Map(failRows.map(r => [r.engine, r.failures]));
+  const fail24 = new Map(failDayRows.map(r => [r.engine, r.failures]));
+
   const dayMap = new Map(dayRows.map(r => [r.engine, r]));
   const out = new Map<string, EngineMetrics>();
   for (const r of sevenDayRows) {
@@ -93,13 +118,21 @@ async function getEngineMetrics(env: Env): Promise<Map<string, EngineMetrics>> {
       empty_7d: r.empty,
       runs_24h: day?.runs ?? 0,
       empty_24h: day?.empty ?? 0,
+      failures_7d: fail7.get(r.engine) ?? 0,
+      failures_24h: fail24.get(r.engine) ?? 0,
     });
   }
   // Engines with no rows at all in 7d still need a record (so we can
-  // detect them as broken if no runs is also a broken state).
+  // detect them as broken if no runs is also a broken state). They may still
+  // have failure rows -- indeed an engine failing 100% of the time has ONLY
+  // failure rows, which is exactly the case the old code could not see.
   for (const engine of TRACKED_ENGINES) {
     if (!out.has(engine)) {
-      out.set(engine, { engine, runs_7d: 0, empty_7d: 0, runs_24h: 0, empty_24h: 0 });
+      out.set(engine, {
+        engine, runs_7d: 0, empty_7d: 0, runs_24h: 0, empty_24h: 0,
+        failures_7d: fail7.get(engine) ?? 0,
+        failures_24h: fail24.get(engine) ?? 0,
+      });
     }
   }
   return out;
@@ -186,10 +219,35 @@ export async function runEngineHealthCheck(env: Env): Promise<EngineHealthCheckR
 
     // ---------------- DEGRADE PATH ----------------
     if (current.status === "active") {
-      if (m.runs_7d < MIN_RUNS_FOR_DECISION) {
-        detail.push(`${engine}: active, only ${m.runs_7d} runs in 7d (need ${MIN_RUNS_FOR_DECISION}), no decision`);
+      // ATTEMPTS, not persisted rows. An engine rejecting every call has
+      // runs_7d = 0, which used to fall under this minimum and escape
+      // assessment entirely -- failing harder made it more invisible.
+      const attempts7d = m.runs_7d + m.failures_7d;
+      if (attempts7d < MIN_RUNS_FOR_DECISION) {
+        detail.push(`${engine}: active, only ${attempts7d} attempts in 7d (${m.runs_7d} completed, ${m.failures_7d} rejected; need ${MIN_RUNS_FOR_DECISION}), no decision`);
         continue;
       }
+
+      // Rejection is a STRONGER signal than an empty answer: the call never
+      // reached the model. Checked first so the reason names the real cause.
+      const failRate7d = m.failures_7d / attempts7d;
+      if (failRate7d > DEGRADE_FAILURE_THRESHOLD) {
+        const reason = `engine:${engine} rejected ${(failRate7d * 100).toFixed(0)}% of attempts over last 7d (${m.failures_7d} rejected / ${attempts7d} attempted); exceeds ${(DEGRADE_FAILURE_THRESHOLD * 100).toFixed(0)}% degrade threshold`;
+        await transitionStatus(env, engine, "degraded", reason);
+        degradedCount++;
+        detail.push(`DEGRADE: ${reason}`);
+        if (!(await alertAlreadyFiredRecently(env, "engine_degraded", engine))) {
+          await fireAlert(
+            env,
+            "engine_degraded",
+            `${engine}: engine rejecting calls`,
+            `${reason}. These calls never completed, so they leave NO row in citation_runs and the deliverable is built from whatever fraction survived. Read the upstream error with: SELECT status, detail FROM engine_failures WHERE engine='${engine}' ORDER BY failed_at DESC LIMIT 5. Common causes: rate limit, rotated key, retired model id, exhausted balance.`,
+          );
+          alerts++;
+        }
+        continue;
+      }
+
       const empty7dRate = m.empty_7d / m.runs_7d;
       if (empty7dRate > DEGRADE_EMPTY_THRESHOLD) {
         const reason = `engine:${engine} empty rate ${(empty7dRate * 100).toFixed(0)}% over last 7d (${m.empty_7d}/${m.runs_7d}); exceeds ${(DEGRADE_EMPTY_THRESHOLD * 100).toFixed(0)}% degrade threshold`;
@@ -207,7 +265,7 @@ export async function runEngineHealthCheck(env: Env): Promise<EngineHealthCheckR
         }
         continue;
       }
-      detail.push(`${engine}: active and healthy (${(empty7dRate * 100).toFixed(0)}% empty 7d)`);
+      detail.push(`${engine}: active and healthy (${(empty7dRate * 100).toFixed(0)}% empty, ${(failRate7d * 100).toFixed(0)}% rejected, over ${attempts7d} attempts in 7d)`);
       continue;
     }
 
@@ -215,6 +273,15 @@ export async function runEngineHealthCheck(env: Env): Promise<EngineHealthCheckR
     if (current.status === "degraded") {
       if (m.runs_24h < 3) {
         detail.push(`${engine}: degraded, only ${m.runs_24h} runs in 24h, can't assess recovery yet`);
+        continue;
+      }
+      // Recovery requires BOTH: answers are non-empty AND calls are landing.
+      // Without the second test an engine that stopped being called at all
+      // would auto-recover on a handful of clean rows.
+      const attempts24h = m.runs_24h + m.failures_24h;
+      const failRate24h = attempts24h ? m.failures_24h / attempts24h : 0;
+      if (failRate24h >= RECOVER_FAILURE_THRESHOLD) {
+        detail.push(`${engine}: degraded, still rejecting ${(failRate24h * 100).toFixed(0)}% of attempts in 24h, not recovered`);
         continue;
       }
       const empty24hRate = m.empty_24h / m.runs_24h;

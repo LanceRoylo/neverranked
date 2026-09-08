@@ -10,6 +10,7 @@ import { layout, html, redirect, esc } from "../render";
 import { scanDomain } from "../scanner";
 import { canAccessClient } from "../agency";
 import { validateCompetitorSuggestion } from "../competitor-sanity";
+import { normalizeTopCompetitors, normalizeEnginesBreakdown } from "../citations";
 import { logAutomation } from "../automation";
 import { buildGlossary } from "../glossary";
 import { renderImpactStrip } from "../impact-strip";
@@ -578,7 +579,10 @@ async function buildCitationComparison(
 
   if (!snapshot) return "";
 
-  const topCompetitors: { name: string; count: number }[] = JSON.parse(snapshot.top_competitors || "[]");
+  // Readout-shape snapshots store an OBJECT here. The old JSON.parse handed
+  // that straight through, `.length` read undefined so this guard passed, and
+  // the `.slice(0, 8)` below threw for every readout-shape client.
+  const topCompetitors = normalizeTopCompetitors(snapshot.top_competitors);
   if (topCompetitors.length === 0 && snapshot.client_citations === 0) return "";
 
   // Build the comparison data: client + top cited competitors
@@ -624,16 +628,19 @@ async function buildCitationComparison(
   let engineBreakdown = "";
   if (snapshot.engines_breakdown) {
     try {
-      const engines: { engine: string; total: number; client_cited: number }[] = JSON.parse(snapshot.engines_breakdown);
+      // This was typed as an array, which NEITHER writer has ever produced --
+      // both store an object -- so `engines.length` was undefined and this
+      // whole block rendered nothing for every client since it was written.
+      const engines = normalizeEnginesBreakdown(snapshot.engines_breakdown);
       if (engines.length > 0) {
         const engineRows = engines.map(e => {
-          const pct = e.total > 0 ? Math.round((e.client_cited / e.total) * 100) : 0;
+          const pct = e.total > 0 ? Math.round((e.cited / e.total) * 100) : 0;
           const engineLabel = e.engine === "perplexity" ? "Perplexity" : e.engine === "chatgpt" || e.engine === "openai" ? "ChatGPT" : e.engine === "gemini" ? "Gemini" : e.engine === "anthropic" ? "Claude" : e.engine === "google_ai_overview" ? "Google AI Overviews" : e.engine === "bing" ? "Bing (control)" : e.engine;
           return '<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(251,248,239,.06)">' +
             '<div style="font-size:13px;color:var(--text-soft)">' + esc(engineLabel) + '</div>' +
             '<div style="display:flex;align-items:center;gap:12px">' +
             '<div style="width:80px;height:6px;background:rgba(251,248,239,.06);border-radius:3px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:var(--gold);border-radius:3px"></div></div>' +
-            '<div style="font-size:12px;color:var(--text-faint);min-width:60px;text-align:right">' + e.client_cited + '/' + e.total + ' (' + pct + '%)</div>' +
+            '<div style="font-size:12px;color:var(--text-faint);min-width:60px;text-align:right">' + e.cited + '/' + e.total + ' (' + pct + '%)</div>' +
             '</div></div>';
         }).join("");
 
@@ -939,7 +946,7 @@ async function buildCompetitorDiscovery(
 
   if (!snapshot) return "";
 
-  const topCompetitors: { name: string; count: number }[] = JSON.parse(snapshot.top_competitors || "[]");
+  const topCompetitors = normalizeTopCompetitors(snapshot.top_competitors);
   if (topCompetitors.length === 0) return "";
 
   // Get already-tracked competitor domains

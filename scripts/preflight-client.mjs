@@ -100,10 +100,23 @@ check(Number(d.comp) > 0, "competitor cohort registered", "no competitor rows: t
 
 // ── 5. contract + memo grading ──────────────────────────────────────────────
 const c = one(
-  `SELECT status, CASE WHEN plan_markdown IS NULL THEN 0 ELSE 1 END AS has_plan
+  `SELECT status, CASE WHEN plan_markdown IS NULL THEN 0 ELSE 1 END AS has_plan,
+          COALESCE(TRIM(name),'') AS name
      FROM customers WHERE client_slug='${S}'`,
 );
 check(c.status !== undefined, "customers row exists", "no customers row");
+
+// A resolvable brand NAME is load-bearing, not cosmetic. The two
+// model-knowledge surfaces (Claude, Gemma) are measured ONLY by whether the
+// name appears in the answer -- they are called with an empty URL list by
+// design -- so with no name every one of their rows scores 0 regardless of
+// what the model said. prince-waikiki ran that way for the whole of their
+// first month: Gemma named the business in a substantial share of that
+// month's responses and every one stored as absent, which would have shipped
+// as "Gemma 0%" in the first paid readout. resolveBusinessName() falls back here from injection_configs,
+// so this row is the last line of defence.
+check(String(c.name || "").length >= 2, "customers.name set (Claude/Gemma matching)",
+  "customers.name is empty. Model-knowledge surfaces match on the brand NAME, so they will silently score 0% for this client on every question");
 check(Number(c.has_plan) === 1, "plan_markdown set",
   "customers.plan_markdown is NULL. The monthly memo generator grades each memo against it, so this client has nothing to be graded against", false);
 

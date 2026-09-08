@@ -33,6 +33,7 @@
  * will manifest as probe failures instead, which also alarm.
  */
 import type { Env } from "../types";
+import { resolveGemmaProvider } from "../citations";
 import { createAlertIfFresh } from "../admin-alerts";
 
 /** version === null means the probe RAN and FAILED. That is a signal, not
@@ -102,9 +103,15 @@ async function probeAll(env: Env): Promise<ProbeResult[]> {
     ).then((r) => ({ engine: "gemini", version: typeof r?.modelVersion === "string" ? r.modelVersion : null })));
   }
 
-  if (env.TOGETHER_API_KEY) {
-    probes.push(post("https://api.together.xyz/v1/chat/completions",
-      { Authorization: `Bearer ${env.TOGETHER_API_KEY}` },
+  // Host comes from the SAME resolver the runner uses. This block used to
+  // hardcode the Together endpoint, so the moment DEEPINFRA_API_KEY takes over
+  // (Together deprecation, 2026-09-15) the probe would have kept calling a dead
+  // host and reported gemma as down while measurement ran fine. The comment
+  // below already warned about model drift; host drift is the same failure.
+  const gemmaProvider = resolveGemmaProvider(env);
+  if (gemmaProvider) {
+    probes.push(post(gemmaProvider.endpoint,
+      { Authorization: `Bearer ${gemmaProvider.apiKey}` },
       // Keep in lockstep with GEMMA_MODEL in citations.ts — probing a
       // different model than the runner measures would record the wrong
       // instrument.

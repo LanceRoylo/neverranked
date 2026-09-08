@@ -40,6 +40,10 @@ export interface Env {
    *  as the other engine keys. Cost is negligible (~$3-5/mo at 5
    *  clients, ~$60-90/mo at 100 clients). */
   TOGETHER_API_KEY?: string;
+  /** DeepInfra hosts Gemma. When set it WINS over TOGETHER_API_KEY, which
+   *  makes adding this secret the entire Together-deprecation cutover
+   *  (2026-09-15). See resolveGemmaProvider() in citations.ts. */
+  DEEPINFRA_API_KEY?: string;
   GOOGLE_CLIENT_ID?: string;
   GOOGLE_CLIENT_SECRET?: string;
   /** Service-account JSON for GSC API auth. When set, the GSC

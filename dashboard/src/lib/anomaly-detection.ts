@@ -63,8 +63,19 @@ interface CronTaskMetrics {
   expected_cadence_seconds: number;
 }
 
-const CRON_EXPECTED_CADENCE: Record<string, number> = {
+/** Exported so the auto-close pass answers "is this task still overdue?"
+ *  with the SAME cadence table that raised the alert. Two copies of this
+ *  map would drift, and an alert that closes on a cadence the detector
+ *  does not share is worse than one that never closes. */
+export const CRON_EXPECTED_CADENCE: Record<string, number> = {
   daily_tasks: SECONDS_PER_DAY,
+  // Added 2026-09-07. runDailyTasks was split into runCitationDispatch and
+  // runDailyMaintenance on 2026-09-03 so the two halves get independent CPU
+  // budgets. Only the original task name stayed monitored, so the entire
+  // maintenance half -- drip emails, sweeps, watchdogs, memo drafts, and now
+  // the query-set hash -- could have stopped dead without raising anything.
+  // A monitor that watches half a split task reports health it cannot see.
+  daily_maintenance: SECONDS_PER_DAY,
   auth_cleanup: SECONDS_PER_DAY,
   inbox_morning_summary: SECONDS_PER_DAY,
   weekly_scans: 7 * SECONDS_PER_DAY,

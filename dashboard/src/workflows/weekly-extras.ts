@@ -30,6 +30,7 @@ import type { Env } from "../types";
 import {
   planCitationRun,
   buildClientSnapshot,
+  buildReadoutSnapshot,
 } from "../citations";
 import { pullGscData } from "../gsc";
 import { runWeeklyBackup } from "../backup";
@@ -87,7 +88,41 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
         // Roster-wide cron path: wait for per-keyword to settle.
         await step.sleep("wait-for-citations", "5 minutes");
       }
+      // Which writer owns each client is a stored fact, not something to
+      // re-derive from the shape of last week's row. See migration 0111:
+      // inferring it from forensicSnapshotIsCurrent is self-fulfilling (the
+      // sweep's own row makes it look bridge-managed and it stops updating)
+      // and would let the sweep overwrite hawaii-theatre's bridge numbers
+      // mid-engagement.
+      const sweepOwned = new Set(
+        (await this.env.DB.prepare(
+          `SELECT client_slug FROM measurement_registry WHERE active = 1 AND snapshot_source = 'sweep'`
+        ).all<{ client_slug: string }>()).results.map((r) => r.client_slug)
+      );
+
       for (const slug of plan.clientSlugs) {
+        if (sweepOwned.has(slug)) {
+          // Cadence and window are different knobs. This runs WEEKLY so the
+          // row stays fresh (which is what keeps the legacy writer from
+          // clobbering it), but aggregates MONTH-TO-DATE, because the readout
+          // describes a month. Running it monthly instead would let the row
+          // age past FORENSIC_SNAPSHOT_MAX_AGE_DAYS mid-month, at which point
+          // buildClientSnapshot wakes up, writes a legacy row with a NEWER
+          // week_start, and report-facts picks that one -- the readout would
+          // work in week 1 and silently break in week 4, landing broken on
+          // the 25th.
+          await step.do(`readout-snapshot-${slug}`, async () => {
+            const now = new Date();
+            const monthStart = Math.floor(
+              Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000
+            );
+            const monthEnd = Math.floor(
+              Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000
+            );
+            await buildReadoutSnapshot(this.env, slug, monthStart, monthEnd);
+          });
+          continue;
+        }
         await step.do(`snapshot-${slug}-lb${snapshotLookbackDays}`, async () => {
           await buildClientSnapshot(this.env, slug, snapshotLookbackDays);
         });

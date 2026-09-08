@@ -217,10 +217,32 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const automationTotal = counts.reduce((s, c) => s + c.n, 0);
 
   // --- Admin alerts (unread) -----------------------------------------
-  const unreadAlerts = (await env.DB.prepare(
+  // Alerts are chosen by TRIAGE LANE, not recency.
+  //
+  // This used to be `ORDER BY created_at DESC LIMIT 5`. auto_completed fires
+  // nightly for every client, so those five slots were permanently occupied by
+  // routine good-news rows and a real concern could never appear once it was a
+  // day old. Observed 2026-09-07: the briefing showed one anomaly plus four
+  // auto_completed while the oldest unread alert was 336 hours (14 days) old
+  // and invisible. The triage lanes existed and only the web page used them.
+  //
+  // Pull a wider window, classify, and show what needs a human first.
+  const alertPool = (await env.DB.prepare(
     `SELECT id, client_slug, type, title, created_at FROM admin_alerts
-       WHERE read_at IS NULL ORDER BY created_at DESC LIMIT 5`
+       WHERE read_at IS NULL ORDER BY created_at DESC LIMIT 200`
   ).all<{ id: number; client_slug: string; type: string; title: string; created_at: number }>()).results;
+  const { classifyAlert, severityRank } = await import("./lib/alert-triage");
+  const triagedPool = alertPool.map((a) => ({ a, t: classifyAlert(a.type) }));
+  const needsYou = triagedPool.filter((x) => x.t.lane === "needs_you");
+  // Severity first, then OLDEST first: a concern that has been ignored for two
+  // weeks is more urgent than one raised an hour ago, and recency ordering is
+  // exactly what buried it.
+  needsYou.sort((x, y) =>
+    severityRank(x.t.severity) - severityRank(y.t.severity) || x.a.created_at - y.a.created_at
+  );
+  const unreadAlerts = needsYou.slice(0, 5).map((x) => x.a);
+  const needsYouCount = needsYou.length;
+  const routineCount = triagedPool.length - needsYou.length;
   const unreadAlertCount = (await env.DB.prepare(
     "SELECT COUNT(*) AS n FROM admin_alerts WHERE read_at IS NULL"
   ).first<{ n: number }>())?.n ?? 0;
@@ -318,12 +340,17 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   lines.push(`HEALTH`);
   lines.push(`  Surfaces degraded:           ${peerHealthLine}`);
   lines.push(`  Scan failures:               ${scanFailures}`);
-  lines.push(`  Unread admin alerts:         ${unreadAlertCount}`);
+  // Two honest numbers instead of one misleading one. "30 unread" reads as a
+  // chore; "3 need you, 27 routine" is actionable.
+  lines.push(`  Alerts needing you:          ${needsYouCount}${routineCount ? ` (+${routineCount} routine)` : ""}`);
   if (unreadAlerts.length > 0) {
     for (const a of unreadAlerts) {
       const ago = Math.floor((now - a.created_at) / 3600);
-      lines.push(`    [${ago}h] ${a.type.padEnd(14)} ${a.client_slug}: ${a.title}`);
+      const age = ago >= 72 ? `${Math.floor(ago / 24)}d` : `${ago}h`;
+      lines.push(`    [${age}] ${a.type.padEnd(20)} ${a.client_slug}: ${a.title}`);
     }
+  } else if (unreadAlertCount > 0) {
+    lines.push(`    nothing needs you; ${unreadAlertCount} routine`);
   }
   lines.push(``);
 
@@ -351,7 +378,7 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
     : "";
 
   const alertsHtml = unreadAlerts.length > 0
-    ? `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Unread alerts (${unreadAlertCount} total)</h3>
+    ? `<h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Needs you (${needsYouCount}${routineCount ? `, ${routineCount} routine hidden` : ""})</h3>
        <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.6">
          ${unreadAlerts.map((a) => {
            const ago = Math.floor((now - a.created_at) / 3600);
@@ -386,7 +413,7 @@ ${recentHtml}
 <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Health</h3>
 <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
   <div>Scan failures (24h): <strong>${scanFailures}</strong></div>
-  <div>Unread admin alerts: <strong>${unreadAlertCount}</strong></div>
+  <div>Alerts needing you: <strong>${needsYouCount}</strong>${routineCount ? ` <span style="color:#999">(+${routineCount} routine)</span>` : ""}</div>
 </div>
 
 ${alertsHtml}

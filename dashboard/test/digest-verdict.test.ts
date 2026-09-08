@@ -31,7 +31,7 @@ const quiet: ClientWeek = {
 test("a genuinely quiet week says quiet, with the held numbers, in one line", () => {
   const r = weekReport(quiet);
   assert.equal(r.moved.length, 0, "sub-threshold wiggle must not count as movement");
-  assert.match(r.verdict, /Quiet week/i);
+  assert.match(r.verdict, /Quiet reading/i);
   assert.match(r.verdict, /8%/, "the held share appears with its value");
   assert.match(r.verdict, /[Nn]othing needs you/);
 });
@@ -56,7 +56,11 @@ test("quiet numbers with pending actions says so instead of pretending movement"
   const r = weekReport({ ...quiet, actionsPending: 2 });
   assert.equal(r.moved.length, 0);
   assert.equal(r.needsYou, true);
-  assert.match(r.verdict, /2 items below need you/);
+  // "below need you" claimed the standing action list was this reading's
+  // finding. The body says the opposite, and the lead must not contradict
+  // it. The count and the pointer downward are what the line owes.
+  assert.match(r.verdict, /2 items still open below/);
+  assert.doesNotMatch(r.verdict, /need[s]? you/);
 });
 
 test("small click wiggles stay out, real click moves get in", () => {

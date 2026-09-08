@@ -10,6 +10,7 @@ import type { Env, User, Domain, ScanResult, CitationSnapshot, GscSnapshot, Road
 import { layout, html, esc, redirect } from "../render";
 import { canAccessClient } from "../agency";
 import { isCustomerVisibleAlert } from "../admin-alerts";
+import { normalizeTopCompetitors } from "../citations";
 
 export async function handleSummary(
   slug: string,
@@ -233,7 +234,9 @@ export async function handleSummary(
   let topCompetitorsHtml = "";
   if (latestCitation) {
     try {
-      const comps: { name: string; count: number }[] = JSON.parse(latestCitation.top_competitors);
+      // Readout-shape snapshots store an object here; the old JSON.parse left
+      // `.length` undefined and this whole card silently rendered nothing.
+      const comps = normalizeTopCompetitors(latestCitation.top_competitors);
       if (comps.length > 0) {
         const maxCount = Math.max(...comps.slice(0, 5).map(c => c.count), 1);
         const rows = comps.slice(0, 5).map(c => {

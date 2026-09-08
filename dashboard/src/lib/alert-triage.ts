@@ -60,6 +60,7 @@ const CONCERN: Record<string, { severity: AlertSeverity; fix: string }> = {
   comp_expires_7d: { severity: "medium", fix: "A complimentary subscription expires in 7 days. Reach out for the conversion conversation." },
   needs_review: { severity: "medium", fix: "A roadmap item needs manual review (auto-verify could not handle it). Verify completion and mark it done or update the title." },
   slot_drift_detected: { severity: "medium", fix: "Signal/Amplify slot counts diverged between D1 and Stripe. The reconcile auto-retries; if it persists, compare Stripe subscription_items to agency_subscription_slots." },
+  query_set_changed: { severity: "high", fix: "A customer's measured question set changed mid-engagement. Aggregates before and after are computed over different question sets, so any month-over-month comparison spanning this point is not like-for-like. Check query_set_versions for the dated diff, and say so in the readout if the change lands inside a reported window. The published methodology states that a set change breaks comparability." },
 };
 
 // Dynamic-type prefixes (the stored type has an interpolated id/grade suffix).

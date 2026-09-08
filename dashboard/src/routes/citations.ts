@@ -11,7 +11,7 @@
 
 import type { Env, User, CitationKeyword, CitationSnapshot, Domain, ScanResult } from "../types";
 import { html, layout, esc, redirect } from "../render";
-import { generateKeywordSuggestions, runWeeklyCitations } from "../citations";
+import { generateKeywordSuggestions, runWeeklyCitations, normalizeTopCompetitors, normalizeEnginesBreakdown } from "../citations";
 import { generateCitationNarrative, type AeoContext } from "../citation-narrative";
 import { canAccessClient } from "../agency";
 import { buildGlossary } from "../glossary";
@@ -591,19 +591,19 @@ export async function handleCitations(
   }
 
   // Parse top competitors
-  let topCompetitors: { name: string; count: number }[] = [];
-  if (latest) {
-    try {
-      topCompetitors = JSON.parse(latest.top_competitors);
-    } catch { /* ignore */ }
-  }
+  // Both columns carry two shapes (legacy weekly writer vs readout writer).
+  // Normalizing here keeps every downstream consumer -- buildEngineRows and
+  // generateCitationNarrative -- on the single shape they were written for.
+  const topCompetitors: { name: string; count: number }[] = latest
+    ? normalizeTopCompetitors(latest.top_competitors)
+    : [];
 
   // Parse engine breakdown
-  let enginesBreakdown: Record<string, { queries: number; citations: number }> = {};
+  const enginesBreakdown: Record<string, { queries: number; citations: number }> = {};
   if (latest) {
-    try {
-      enginesBreakdown = JSON.parse(latest.engines_breakdown);
-    } catch { /* ignore */ }
+    for (const e of normalizeEnginesBreakdown(latest.engines_breakdown)) {
+      enginesBreakdown[e.engine] = { queries: e.total, citations: e.cited };
+    }
   }
 
   // Fetch AEO score data for cross-reference

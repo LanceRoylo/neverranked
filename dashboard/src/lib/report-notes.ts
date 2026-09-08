@@ -71,6 +71,70 @@ export function noteNumbersOk(note: string, allowed: Set<number>): boolean {
   return tokens.every((t) => allowed.has(Math.abs(Number(t))));
 }
 
+
+/**
+ * MECHANICAL guard on the engines note. The prompt tells the writer that the
+ * two measurement layers are different quantities; this enforces it.
+ *
+ * allowedNumbers() exists because instructing a model not to invent figures was
+ * not enough. The same reasoning applies here: on 2026-09-07 the largest number
+ * in a paying client's payload was a model-knowledge share (share of ANSWERS
+ * naming them), the prompt asked for "the move that matters most", and nothing
+ * stopped the sentence "Gemma cites you at 18 percent, far ahead of Perplexity
+ * at 2". Both digits are real, so the number guard passes it. The claim is
+ * still false twice over: Gemma cites nothing, and the two figures have
+ * different denominators.
+ *
+ * Rejecting a note is SAFE. The chart then renders mechanics-only, which is
+ * exactly how it behaved before analyst notes existed.
+ */
+export function engineNoteClaimsOk(note: string, facts: ReportFacts): boolean {
+  const engines = facts.engines || [];
+  const lower = note.toLowerCase();
+  const named = (e: { name: string }) => lower.includes(e.name.toLowerCase());
+
+  const memoryEngines = engines.filter((e) => e.layer === "model_knowledge");
+  const citeEngines = engines.filter((e) => e.layer !== "model_knowledge");
+
+  // 1. A model-knowledge tool must never be described as CITING.
+  //
+  // Attribution, not proximity. A wide window rejected the correct sentence
+  // "Gemma names you in 18 percent of its answers, which is a different
+  // measurement from the tools that cite sources" -- the note that actually
+  // draws the distinction we want drawn. What matters is whether the
+  // model-knowledge tool is the SUBJECT of the citing verb, so only a short
+  // span after the name is considered.
+  const CITE_WORDS = /\b(cite[sd]?|citation[s]?|citing|sourced?|links? to)\b/;
+  for (const e of memoryEngines) {
+    if (!named(e)) continue;
+    const i = lower.indexOf(e.name.toLowerCase());
+    const after = lower.slice(i + e.name.length, i + e.name.length + 40);
+    if (CITE_WORDS.test(after)) return false;
+  }
+
+  // 2. No comparison ACROSS the layers. Different denominators, so any
+  //    ranking between them is meaningless however true each number is.
+  const COMPARE = /\b(ahead of|behind|beats?|outperform\w*|more than|less than|higher than|lower than|compared (?:to|with)|versus|vs\.?|best|worst|strongest|weakest|top|leading|trails?)\b/;
+  if (memoryEngines.some(named) && citeEngines.some(named) && COMPARE.test(lower)) return false;
+
+  // 3. The Bing control is classic search. It returns; it does not answer.
+  const control = engines.find((e) => /bing/i.test(e.name));
+  if (control && named(control)) {
+    const i = lower.indexOf(control.name.toLowerCase());
+    const window = lower.slice(Math.max(0, i - 120), i + control.name.length + 120);
+    if (/\b(ai (?:tool|engine|answer)|answers?|recommend\w*|cites?|citing)\b/.test(window)) return false;
+  }
+
+  // 4. Baseline month: nothing has a prior value, so nothing moved. Movement
+  //    language here is fabrication that carries no digits for the number
+  //    guard to catch.
+  const hasPrior = engines.some((e) => typeof e.prev === "number");
+  const MOVEMENT = /\b(rose|risen|fell|fallen|dropped|climbed|improved|declined|slipped|gained|grew|increased|decreased|up from|down from|held steady|stayed flat|unchanged|month[- ]over[- ]month|since last month)\b/;
+  if (!hasPrior && MOVEMENT.test(lower)) return false;
+
+  return true;
+}
+
 function cleanNote(v: unknown, allowed: Set<number>): string | undefined {
   if (typeof v !== "string") return undefined;
   const t = v.trim();
@@ -90,7 +154,14 @@ Voice rules, all hard:
 
 You receive the frozen chart data as JSON. Reply with STRICT JSON only, no markdown fences, exactly this shape:
 {"engines":"...","venue":"...","sources":"...","topSources":"...","questions":"..."}
-- engines: the per-AI-tool citation share (and the month-over-month move when prior values exist). Name the move that matters most and any dip worth watching. CRITICAL: an engine carrying "noCohortSignal": true returned sources this month but cited NO venue in the category at all, neither the customer nor any competitor. It is excluded from the chart. Never describe it as the customer being absent, losing ground, or scoring zero, and never attribute it to anything the customer did or failed to do. Either ignore it or state plainly that no venue in the category appeared on that tool this month.
+- engines: how the customer performs per AI tool (and the month-over-month move when prior values exist). Name the move that matters most and any dip worth watching.
+  CRITICAL, TWO DIFFERENT MEASUREMENTS. Each engine carries a "layer" field and the two layers are NOT the same quantity and are NOT comparable:
+    layer "citation" (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews, and the Bing control): pct is the share of that tool's CITED SOURCES that point to the customer's own site.
+    layer "model_knowledge" (Claude, Gemma): these tools search nothing and cite nothing. pct is the share of that tool's ANSWERS that MENTION the customer by name.
+  Never call a model_knowledge figure a citation share, and never say those tools "cite" the customer. Say they name or mention. Never rank, compare, or place the two layers on one scale: "Gemma at 18 beats Perplexity at 2" is a false comparison even though both numbers are real, because they have different denominators. If you discuss both, say plainly that they measure different things. Prefer naming the biggest move WITHIN a layer.
+  CRITICAL, THE CONTROL. "Bing search (control)" is classic keyword search, not an AI tool. It returns results, it does not answer or cite or recommend. Never describe it as an AI engine and never attribute AI behaviour to it.
+  CRITICAL, BASELINE MONTHS. When engines carry no "prev" value there is NO prior reading and therefore NO movement. Do not write that anything rose, fell, improved, held, slipped, gained, or stayed flat. There is nothing to compare against. Describe the starting position and what next month will make visible. This applies to wording with no digits in it just as much as to numbers.
+  CRITICAL: an engine carrying "noCohortSignal": true returned sources this month but cited NO venue in the category at all, neither the customer nor any competitor. It is excluded from the chart. Never describe it as the customer being absent, losing ground, or scoring zero, and never attribute it to anything the customer did or failed to do. Either ignore it or state plainly that no venue in the category appeared on that tool this month.
 - venue: where the customer ranks among named competitors in their category.
 - sources: what the source-type composition (independent web vs their own site etc.) means for where to invest effort.
 - topSources: what the specific named domains imply about where to be present and accurate.
@@ -143,7 +214,11 @@ export async function writeAnalystNotes(
 
     const allowed = allowedNumbers(facts);
     const notes: AnalystNotes = {};
-    const engines = cleanNote(raw.engines, allowed);
+    let engines = cleanNote(raw.engines, allowed);
+    if (engines && !engineNoteClaimsOk(engines, facts)) {
+      console.log(`[report-notes] engines note REJECTED: crosses the citation / model-knowledge boundary, misdescribes the control, or claims movement in a baseline month. Chart renders mechanics-only.`);
+      engines = undefined;
+    }
     const venue = cleanNote(raw.venue, allowed);
     const sources = cleanNote(raw.sources, allowed);
     const topSources = cleanNote(raw.topSources, allowed);

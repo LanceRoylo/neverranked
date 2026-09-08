@@ -27,11 +27,45 @@ import { runOneKeywordCitations } from "../citations";
 export type CitationKeywordParams = {
   clientSlug: string;
   keywordId: number;
+  /** Set by the scheduled sweep, omitted by the manual "Run now" button.
+   *  When true the instance waits a deterministic slice of SPREAD_SECONDS
+   *  before doing any work, so the roster's OpenAI calls arrive paced instead
+   *  of in one burst. A human clicking Run expects an answer in seconds, so
+   *  that path never sleeps. */
+  spread?: boolean;
 };
+
+/** How wide to fan the roster's execution.
+ *
+ * gpt-5-search-api is capped at 80,000 tokens per MINUTE, which is a rate, not
+ * a daily allowance. The whole roster used to execute inside ~3 minutes and
+ * saturate that bucket: on 2026-09-07 every OpenAI call in three days landed
+ * between 06:00 and 06:04 UTC, 65 succeeded and 199 were rejected 429 with
+ * "Used 80000". Widening to 15 minutes multiplies the available budget in the
+ * window by five without changing the daily volume by a single call.
+ *
+ * Dispatch-side delay cannot do this job. It runs inside the scheduled
+ * handler's wall clock, so spacing 93 dispatches far enough apart would risk
+ * the cron itself. Sleeping inside the workflow is free: long sleeps are what
+ * Workflows are for, and the instance is not billed while it waits. */
+const SPREAD_SECONDS = 900;
 
 export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKeywordParams> {
   async run(event: WorkflowEvent<CitationKeywordParams>, step: WorkflowStep): Promise<void> {
-    const { clientSlug, keywordId } = event.payload;
+    const { clientSlug, keywordId, spread } = event.payload;
+
+    // Deterministic, NOT random. A workflow step can be replayed, and a
+    // Math.random() delay computed outside a step would change on replay.
+    // Multiplying by a prime before the modulo matters: keyword ids are
+    // handed out sequentially per client, so `id % SPREAD_SECONDS` would drop
+    // one client's whole set into a narrow band and rebuild the burst it is
+    // meant to break up. The prime scatters consecutive ids across the range.
+    if (spread) {
+      const offsetSeconds = (keywordId * 97) % SPREAD_SECONDS;
+      if (offsetSeconds > 0) {
+        await step.sleep(`spread-${keywordId}`, offsetSeconds * 1000);
+      }
+    }
 
     // Single step. The whole thing is a small unit of work that fits
     // comfortably in one step's budget. No fan-out, no shared budget

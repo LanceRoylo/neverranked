@@ -5,6 +5,8 @@
  */
 
 import { weekReport, digestSubject, type ClientWeek, type WeekReport } from "./digest-verdict";
+import { readNumbers } from "./lib/digest-read";
+import { holdInboxUpsert } from "./lib/digest-hold-alert";
 import type { Agency, Env, ScanResult, GscSnapshot } from "./types";
 import { generateNarrative } from "./narrative";
 import type { CitationDigestData } from "./citations";
@@ -95,7 +97,10 @@ export async function logEmailDelivery(
   opts: {
     email: string;
     type: string;
-    status: "queued" | "failed" | "suppressed";
+    // "held" is a QUALITY decision by the grader. "failed" means the send
+    // itself broke (grader crash, Resend rejection). Collapsing the two is
+    // what made a working quality gate read as a delivery outage.
+    status: "queued" | "failed" | "suppressed" | "held";
     statusCode?: number | null;
     errorMessage?: string | null;
     agencyId?: number | null;
@@ -673,23 +678,36 @@ export async function sendDigestEmail(
     const grade = await gradeDigest(env, htmlToPlaintext(emailHtml));
     if (grade.verdict !== "pass") {
       console.log(`[digest] held by grader for ${to}: ${grade.issues.join("; ")}`);
+      const heldSlug = digests[0]?.clientSlug || to;
+      // A paying client hearing nothing outranks an unpaid beta hearing
+      // nothing, and the briefing sorts the needs-you lane on urgency.
+      let paying = false;
       try {
-        await env.DB.prepare(
-          `INSERT INTO admin_inbox
-             (kind, title, body, action_url, target_type, target_id, target_slug, urgency, status, created_at)
-           VALUES ('digest_held_by_grader', ?, ?, ?, 'digest', 0, ?, 'high', 'pending', unixepoch())`,
-        )
-          .bind(
-            `Digest held by grader: ${to}`,
-            `Voice pass: ${grade.voice_pass}. Substance pass: ${grade.substance_pass}. Issues: ${grade.issues.join("; ").slice(0, 800)}`,
-            `/admin/email-test`,
-            digests[0]?.clientSlug || to,
-          )
-          .run();
-      } catch {
-        // Inbox is non-critical
+        const cust = await env.DB.prepare(
+          "SELECT status FROM customers WHERE client_slug = ?",
+        ).bind(heldSlug).first<{ status: string }>();
+        paying = cust ? ["active", "pilot"].includes(cust.status) : false;
+      } catch (e) {
+        // Unknown means treat it as the cheaper alert, never as no alert.
+        console.log(`[digest] paying-status lookup failed for ${heldSlug}: ${e}`);
       }
-      await logEmailDelivery(env, { email: to, type: logType, status: "failed", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
+      try {
+        const up = holdInboxUpsert({
+          clientSlug: heldSlug, recipient: to, paying,
+          voicePass: grade.voice_pass, substancePass: grade.substance_pass,
+          issues: grade.issues, now: Math.floor(Date.now() / 1000),
+        });
+        await env.DB.prepare(up.sql).bind(...up.binds).run();
+      } catch (e) {
+        // NOT silent. The empty catch that stood here swallowed a UNIQUE
+        // violation every day from 2026-05-18 onward, which is why no hold
+        // ever reached a human. If this path breaks again it says so.
+        console.log(`[digest] CRITICAL: hold alert not recorded for ${heldSlug}: ${e}`);
+      }
+      // 'held', not 'failed'. A quality hold and a bounced send are
+      // different events and counting them together is what made the cron
+      // line read "failed=21" like an outage while the gate did its job.
+      await logEmailDelivery(env, { email: to, type: logType, status: "held", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
       return false;
     }
   } catch (e) {
@@ -2282,11 +2300,22 @@ export function buildDigestHtmlV2(
          </div>`
       : "";
 
+    // Caption is "Still open", not "Needs you". The old heading claimed
+    // these were this reading's findings while the line directly beneath it
+    // said they were not, and the grader held six sends calling that exactly
+    // what it is: backlog presented as actionable content. status_label was
+    // being carried all the way here and thrown away, which is why the body
+    // "added no signal" -- each item now shows the state it is actually in.
     const needsHtml = acts && acts.total_pending > 0
       ? `<div style="margin:0 0 28px">
-           ${v2Caption("Needs you")}
-           <div style="font-family:Georgia,serif;font-size:13px;color:${V2_SOFT};line-height:1.5;margin:0 0 8px">${acts.total_pending} open item${acts.total_pending === 1 ? "" : "s"} from your action list, carried forward until they are done. Not findings from this week's scan.</div>
-           ${acts.items.slice(0, 3).map((a) => `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_TEXT};line-height:1.6;margin:0 0 6px">${escEmail((a as { title?: string; label?: string }).title || (a as { label?: string }).label || "Pending item")}</div>`).join("")}
+           ${v2Caption("Still open")}
+           <div style="font-family:Georgia,serif;font-size:13px;color:${V2_SOFT};line-height:1.5;margin:0 0 8px">${acts.total_pending} open item${acts.total_pending === 1 ? "" : "s"} from your action list. ${acts.total_pending === 1 ? "It carries forward from earlier readings until it is done, and it is not a finding from this one." : "They carry forward from earlier readings until they are done, and they are not findings from this one."}</div>
+           ${acts.items.slice(0, 3).map((a) => {
+             const it = a as { title?: string; label?: string; status_label?: string };
+             const title = escEmail(it.title || it.label || "Pending item");
+             const state = it.status_label ? `<span style="color:${V2_DIM}"> &middot; ${escEmail(it.status_label)}</span>` : "";
+             return `<div style="font-family:Georgia,serif;font-size:14px;color:${V2_TEXT};line-height:1.6;margin:0 0 6px">${title}${state}</div>`;
+           }).join("")}
            <a href="https://app.neverranked.com/actions/${encodeURIComponent(r.clientSlug)}" style="display:inline-block;margin-top:8px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:1px;color:${V2_GOLD};text-decoration:underline;text-underline-offset:3px">OPEN THE LIST</a>
          </div>`
       : "";
@@ -2311,13 +2340,23 @@ export function buildDigestHtmlV2(
       </div>`;
   }).join("");
 
-  // THE NUMBERS. Each figure once, denominators labeled, one line of
-  // definition so share and coverage can never read as one metric.
+  // THE READ. A definition told the reader what share and coverage were.
+  // It never told them whether the figure was good, whether it moved, or
+  // what it gated, which is what the grader held six sends over. Multi-
+  // domain sends keep the definition instead: one read per domain would
+  // bury the panel, and the roll-up verdict already carries the story.
+  const readHtml = !multi && weeks.length === 1
+    ? readNumbers(weeks[0]).lines
+        .map((t) => `<div style="font-family:Georgia,serif;font-size:12px;color:${V2_SOFT};margin-top:12px;line-height:1.6">${escEmail(t)}</div>`)
+        .join("")
+    : `<div style="font-family:Georgia,serif;font-size:11px;color:${V2_DIM};margin-top:16px;line-height:1.5">Share weighs every citation across all tracked queries. Coverage counts a query once if the site appears at all. Both can be true at once.</div>`;
+
+  // THE NUMBERS. Each figure once, denominators labeled, the read below.
   const numbers = `
     <div style="margin:8px 0 0;padding:24px;background:${V2_PANEL};border-radius:4px">
       ${v2Caption("The numbers")}
       ${weeks.map((c) => `<div style="margin:0 0 ${multi ? "18px" : "0"}">${v2NumbersRow(c, multi)}</div>`).join("")}
-      <div style="font-family:Georgia,serif;font-size:11px;color:${V2_DIM};margin-top:16px;line-height:1.5">Share weighs every citation across all tracked queries. Coverage counts a query once if the site appears at all. Both can be true at once.</div>
+      ${readHtml}
     </div>`;
 
   return `
@@ -2346,7 +2385,7 @@ export function buildDigestHtmlV2(
 
         <tr><td style="padding:28px 0 0">
           <div style="font-family:Georgia,serif;font-size:12px;color:${V2_DIM};line-height:1.7">
-            Next scan lands Monday. Method: <a href="https://neverranked.com/methodology" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">neverranked.com/methodology</a> &middot; <a href="https://app.neverranked.com" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">Dashboard</a><br>
+            ${passLabel ? "Your next reading lands on the measurement cadence, three per month." : "Next scan lands Monday."} Method: <a href="https://neverranked.com/methodology" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">neverranked.com/methodology</a> &middot; <a href="https://app.neverranked.com" style="color:${V2_DIM};text-decoration:underline;text-underline-offset:3px">Dashboard</a><br>
             ${agency ? `Powered by Never Ranked` : `Never Ranked &middot; Honolulu`}${unsubToken ? ` &middot; <a href="https://app.neverranked.com/digest/unsubscribe?token=${unsubToken}" style="color:${V2_DIM};text-decoration:underline">Unsubscribe</a>` : ""}
           </div>
         </td></tr>

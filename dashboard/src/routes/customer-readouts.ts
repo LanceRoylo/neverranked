@@ -373,7 +373,17 @@ export function renderCharts(factsJson: string | null): string {
 
   // 1. Per-engine citation share. A dumbbell (foregrounds the movement) when a
   // prior month exists; bars for a baseline report (nothing to move from yet).
-  const engines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
+  const allEngines = Array.isArray(f.engines) ? f.engines.filter((e) => e && typeof e.name === "string") : [];
+  // The two layers are measured differently and CANNOT share a chart. A
+  // citation-grade tool's pct is the share of its cited sources pointing at
+  // the customer; a model-knowledge tool's is the share of its answers that
+  // name them. Both caption below is false for the other, and the dumbbell's
+  // own caption ("that tool cites you more than it did") is Layer 1 language.
+  // Engines with no layer recorded (every bridge-written snapshot) are
+  // citation-grade, so hawaii-theatre renders exactly as it does today.
+  const engines = allEngines.filter((e) => e.layer !== "model_knowledge");
+  const namedFromMemory = allEngines.filter((e) => e.layer === "model_knowledge");
+
   if (engines.length) {
     if (engines.some((e) => typeof e.prev === "number")) {
       blocks.push(renderDumbbell(engines, prior, notes.engines));
@@ -386,12 +396,49 @@ export function renderCharts(factsJson: string | null): string {
     }
   }
 
+  // 1b. Model-knowledge tools, measured on a different question entirely.
+  if (namedFromMemory.length) {
+    const sorted = [...namedFromMemory].sort((a, b) => num(b.pct) - num(a.pct));
+    const max = Math.max(...sorted.map((e) => num(e.pct)), 1);
+    const bars = sorted
+      .map((e, i) =>
+        barRow(e.name, num(e.pct), max, i, {
+          title: `${e.name}: named you in ${num(e.pct)}% of its answers`,
+        }),
+      )
+      .join("");
+    const cap = `These tools answer from what they already know instead of searching the web, so they have no sources to cite. What counts here is whether they name your business at all. Each bar is the share of that tool's answers that mentioned you by name.`;
+    blocks.push(chartBlock("Where AI names you from memory", bars, cap));
+  }
+
   // 2. Venue-share ranking (you highlighted).
-  const vrows = f.venue && Array.isArray(f.venue.rows) ? f.venue.rows.filter((r) => r && typeof r.label === "string") : [];
-  if (vrows.length) {
-    const max = Math.max(...vrows.map((r) => num(r.pct)), 1);
-    const bars = vrows.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of citations in your category` })).join("");
-    const cap = `Of every mention the AI tools made of a business in your category, this is who got named. Your bar is highlighted.`;
+  const vrowsAll = f.venue && Array.isArray(f.venue.rows) ? f.venue.rows.filter((r) => r && typeof r.label === "string") : [];
+  if (vrowsAll.length) {
+    // SORTED BY SHARE, not customer-first. report-facts emits the customer at
+    // index 0 followed by ranked competitors, so the customer's bar led the
+    // chart regardless of where they actually place. In a ranked bar chart
+    // that reads as "you are top of this category". It is the same false
+    // impression as the rank-1 defect fixed 2026-09-07, drawn instead of
+    // computed. Their own bar stays highlighted, so it is still findable.
+    const sorted = [...vrowsAll].sort((a, b) => num(b.pct) - num(a.pct));
+    // Cap the chart. Property-level attribution (2026-09-07) grew one cohort
+    // from 11 bars to 32, and everything past the first dozen is a single
+    // citation. A wall of 1% bars buries the comparison the chart exists to
+    // make. The tail is disclosed underneath rather than dropped, and the
+    // customer is never cut even if they fall outside the top slice.
+    const CAP = 12;
+    const head = sorted.slice(0, CAP);
+    const you = sorted.find((r) => r.you);
+    const shown = you && !head.includes(you) ? [...head, you] : head;
+    const hidden = sorted.filter((r) => !shown.includes(r));
+    const hiddenPct = hidden.reduce((a, r) => a + num(r.pct), 0);
+
+    const max = Math.max(...shown.map((r) => num(r.pct)), 1);
+    const bars = shown.map((r, i) => barRow(r.label, num(r.pct), max, i, { hl: !!r.you, title: `${r.label}: ${num(r.pct)}% of citations in your category` })).join("");
+    const tail = hidden.length
+      ? ` ${hidden.length} more ${hidden.length === 1 ? "venue was" : "venues were"} named at least once and together account for ${hiddenPct}% of the category's citations. They are left off the chart to keep it readable, not because they scored zero.`
+      : "";
+    const cap = `Of every mention the AI tools made of a business in your category, this is who got named. Your bar is highlighted.${tail}`;
     blocks.push(chartBlock("Who AI names in your category", bars, cap, notes.venue));
   }
 

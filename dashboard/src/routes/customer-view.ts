@@ -40,6 +40,12 @@ interface ToolCount {
   tool: string;        // "Perplexity" | "Google AIO" | etc.
   shortName: string;   // for mobile + bars
   count: number;
+  /** Which measurement produced `count`. A citation-grade tool's number is the
+   *  share of its cited sources pointing here; a model-knowledge tool's is the
+   *  share of its answers that name the business. They are rendered in
+   *  separate grids because a shared bar scale asserts they are comparable.
+   *  Absent on bridge-written snapshots, which render as citation-grade. */
+  layer?: "citation" | "model_knowledge";
 }
 
 interface CohortRow {
@@ -94,6 +100,8 @@ interface CustomerViewData {
   observableGaps: ObservableGap[];
   // Cohort
   cohortTop10: CohortRow[];
+  /** Cohort members named at least once but held back from the table. */
+  cohortHiddenCount?: number;
   // Trend (last 8 weeks)
   trend: TrendPoint[];
   // Bipartite citation map: which AI tools name which businesses. Nodes come
@@ -377,15 +385,48 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   try { tc = JSON.parse(snap.top_competitors || "{}") || {}; } catch { /* keep empty */ }
 
   const perTool: ToolCount[] = Object.entries(eb)
-    .map(([tool, v]) => ({ tool, shortName: TOOL_SHORT[tool] || tool, count: Number(v?.share_pct) || 0 }))
+    .map(([tool, v]) => ({
+      tool,
+      shortName: TOOL_SHORT[tool] || tool,
+      count: Number(v?.share_pct) || 0,
+      ...((v as { layer?: string } | undefined)?.layer === "model_knowledge"
+        ? { layer: "model_knowledge" as const }
+        : {}),
+    }))
     .sort((a, b) => b.count - a.count);
 
   const competitors = tc.competitors || [];
   const ownShare = tc.htc_venue_share_pct ?? 0;
-  const cohortTop10: CohortRow[] = [
+  // Display name for a cohort row. Property-level attribution (2026-09-07)
+  // means `domain` is no longer always a hostname: a chain property with no
+  // registered domain of its own carries its path slug there, and
+  // "hnlrw-hyatt-regency-waikiki-beach-resort-and-spa (Hyatt Regency Waikiki
+  // Beach Resort and Spa)" is an internal identifier in a customer's dashboard.
+  // Show the readable name, and append the domain only when it IS a domain.
+  const cohortHost = (c: { domain?: string; label?: string | null }) => {
+    const label = (c.label || "").trim();
+    const dom = (c.domain || "").trim();
+    const domIsReal = dom.includes(".") && !dom.includes(" ");
+    if (label && domIsReal) return `${dom} (${label})`;
+    return label || dom;
+  };
+
+  // FULL list, used for rank and leader share. Slicing before this would
+  // report a rank out of however many rows happened to be displayed.
+  const cohortAll: CohortRow[] = [
     { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: `${tc.htc_engines_count ?? 0}/7`, isYou: true },
-    ...competitors.map((c) => ({ host: `${c.domain} (${c.label})`, mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/7`, isYou: false })),
+    ...competitors.map((c) => ({ host: cohortHost(c), mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/7`, isYou: false })),
   ].sort((a, b) => b.mentions - a.mentions);
+
+  // Display slice. Attribution grew one cohort from 11 rows to 32 and the tail
+  // is single citations, which buries the comparison the table exists to make.
+  // The customer is never cut, even if they place outside the top ten.
+  const cohortHead = cohortAll.slice(0, 10);
+  const meRow = cohortAll.find((r) => r.isYou);
+  const cohortTop10: CohortRow[] = meRow && !cohortHead.includes(meRow)
+    ? [...cohortHead, meRow]
+    : cohortHead;
+  const cohortHiddenCount = cohortAll.length - cohortTop10.length;
   const cohortAvg = competitors.length
     ? Math.round(competitors.reduce((s, c) => s + c.venue_share_pct, 0) / competitors.length)
     : 0;
@@ -438,17 +479,19 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   if (gaps.length === 0) {
     const citedCount = perTool.filter((t) => t.count > 0).length;
     const strongest = perTool[0];
-    gaps.push({ text: `You are cited on ${citedCount} of 7 measured surfaces (six AI tools plus a Bing organic control)${strongest ? `, strongest on ${strongest.shortName}` : ""}. Nothing sits at zero, so your opening here is share, not presence, and your monthly readout ranks which questions to push first.` });
+    // "appear on", not "cited on": two of the seven surfaces do not cite
+    // anything, they name you from memory. One verb has to cover both.
+    gaps.push({ text: `You appear on ${citedCount} of 7 measured surfaces (six AI tools plus a Bing organic control)${strongest ? `, strongest on ${strongest.shortName}` : ""}. Nothing sits at zero, so your opening here is share, not presence, and your monthly readout ranks which questions to push first.` });
   }
 
   // Derived "so-what" facts for the at-a-glance narrative. These assemble one
   // true analyst sentence the cockpit shows in place of a templated status line.
   const yourMentions = Number(snap.client_citations) || 0;
   const totalQuestions = Number(snap.total_queries) || 0;
-  const myRank = cohortTop10.findIndex((r) => r.isYou) + 1;
+  const myRank = cohortAll.findIndex((r) => r.isYou) + 1;
   const cohortN = competitors.length + 1;
-  const leaderShare = cohortTop10[0]?.mentions ?? ownShare;
-  const iAmLeader = cohortTop10[0]?.isYou ?? false;
+  const leaderShare = cohortAll[0]?.mentions ?? ownShare;
+  const iAmLeader = cohortAll[0]?.isYou ?? false;
   const zeroNames = perTool.filter((t) => t.count === 0).map((t) => t.shortName);
   const andList = (xs: string[]): string =>
     xs.length <= 1 ? (xs[0] ?? "") : xs.length === 2 ? `${xs[0]} and ${xs[1]}` : `${xs.slice(0, -1).join(", ")}, and ${xs[xs.length - 1]}`;
@@ -515,6 +558,7 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
     ],
     observableGaps: gaps,
     cohortTop10,
+    cohortHiddenCount,
     trend: [{ weekIso: "baseline", yourMentions: ownShare, cohortAvg }],
     metricUnit: "%",
     cohortMetricLabel: "Share of category citations",
@@ -776,7 +820,28 @@ export function renderCustomerView(d: CustomerViewData): string {
   const baselineDelta = { className: "flat", text: "baseline · first measurement" };
   const mentionsDelta = d.isBaseline ? baselineDelta : deltaText(d.mentionsDelta7d, d.deltaSuffix);
   const rankDelta = d.isBaseline ? baselineDelta : deltaText(d.rankDelta7d, d.deltaSuffix);
-  const maxToolCount = Math.max(1, ...d.perTool.map((t) => t.count));
+  // Scales are computed PER LAYER. A single shared scale would put a share of
+  // cited sources and a share of answers on one axis, which asserts they are
+  // the same quantity. Tools with no layer recorded (every bridge-written
+  // snapshot) stay in the citation group, so existing clients are unchanged.
+  const citeTools = d.perTool.filter((t) => t.layer !== "model_knowledge");
+  const memoryTools = d.perTool.filter((t) => t.layer === "model_knowledge");
+  const maxToolCount = Math.max(1, ...citeTools.map((t) => t.count));
+  const maxMemoryCount = Math.max(1, ...memoryTools.map((t) => t.count));
+  // BOTH grids share a column count so their cells are the same width. Sizing
+  // the second grid to its own 2 tools made each cell half the panel wide, so
+  // the model-knowledge bars rendered as slabs several times the size of the
+  // citation-grade ones. That is backwards: the split exists to stop those two
+  // reading as the headline, not to make them it.
+  const gridCols = memoryTools.length ? Math.min(Math.max(citeTools.length, memoryTools.length), 7) : 0;
+  const toolCells = (tools: ToolCount[], scale: number) =>
+    tools.map((t) => `
+        <div class="tool-cell">
+          <div class="tool-name">${esc(t.shortName)}</div>
+          <div class="tool-bar"><div class="tool-fill${t.count === 0 ? ' zero' : ''}"${t.count === 0 ? '' : ` style="height:${Math.round((t.count / scale) * 70 + 10)}%"`}></div></div>
+          <div class="tool-count">${t.count}${esc(d.metricUnit ?? "")}</div>
+        </div>
+        `).join('');
 
   // Trend SVG geometry. A new customer renders on ONE baseline point; the
   // multi-point path assumes >=2, so branch explicitly (a single point must
@@ -929,6 +994,14 @@ export function renderCustomerView(d: CustomerViewData): string {
     margin-top: 22px;
   }
   .tool-cell { text-align: center; }
+  .cohort-tail {
+    font-size: 12px; line-height: 1.5; color: var(--dim);
+    margin: 14px 0 0; max-width: 68ch;
+  }
+  .tool-split-note {
+    font-size: 12px; line-height: 1.5; color: var(--dim);
+    margin: 20px 0 0; max-width: 62ch;
+  }
   .tool-name {
     font-family: var(--mono); font-size: 10px; letter-spacing: 0.06em;
     color: var(--dim); margin-bottom: 8px; line-height: 1.3; min-height: 26px;
@@ -1126,15 +1199,14 @@ export function renderCustomerView(d: CustomerViewData): string {
         </div>
       </div>
 
-      <div class="tool-grid">
-        ${d.perTool.map((t) => `
-        <div class="tool-cell">
-          <div class="tool-name">${esc(t.shortName)}</div>
-          <div class="tool-bar"><div class="tool-fill${t.count === 0 ? ' zero' : ''}"${t.count === 0 ? '' : ` style="height:${Math.round((t.count / maxToolCount) * 70 + 10)}%"`}></div></div>
-          <div class="tool-count">${t.count}${esc(d.metricUnit ?? "")}</div>
-        </div>
-        `).join('')}
+      <div class="tool-grid"${gridCols ? ` style="grid-template-columns:repeat(${gridCols},1fr)"` : ""}>
+        ${toolCells(citeTools, maxToolCount)}
       </div>
+      ${memoryTools.length ? `
+      <p class="tool-split-note">The tools below answer from what they already know instead of searching the web, so they have no sources to cite. Their number is the share of answers that named you, which is a different measurement from the bars above and is not comparable to them.</p>
+      <div class="tool-grid" style="grid-template-columns:repeat(${gridCols},1fr)">
+        ${toolCells(memoryTools, maxMemoryCount)}
+      </div>` : ""}
     </div>
 
     <!-- Section 2: What changed in 7 days -->
@@ -1200,6 +1272,7 @@ export function renderCustomerView(d: CustomerViewData): string {
         </tbody>
       </table>
       </div>
+      ${d.cohortHiddenCount ? `<p class="cohort-tail">${d.cohortHiddenCount} more ${d.cohortHiddenCount === 1 ? "venue was" : "venues were"} named at least once this month. They sit below the top ten and are held back to keep this table readable, not because they scored zero.</p>` : ""}
     </div>
 
     <!-- Section 5: Trend -->

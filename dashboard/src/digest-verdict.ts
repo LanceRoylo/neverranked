@@ -148,12 +148,16 @@ export function weekReport(c: ClientWeek): WeekReport {
         ? `${c.domain}: ${lead.text}`
         : `${c.domain}: ${lead.text} ${moved.length - 1} more change${moved.length - 1 === 1 ? "" : "s"} below.`;
   } else if (needsYou) {
-    verdict = `Quiet week for ${c.domain} on the numbers. ${c.actionsPending} item${c.actionsPending === 1 ? "" : "s"} below need${c.actionsPending === 1 ? "s" : ""} you.`;
+    // "needs you" claimed these were this reading's findings. They are the
+    // standing action list, carried forward. The digest body says so
+    // directly now, and a lead sentence that contradicts it two inches
+    // above is the same filler the grader held six sends over.
+    verdict = `Quiet reading for ${c.domain} on the numbers. ${c.actionsPending} item${c.actionsPending === 1 ? "" : "s"} still open below.`;
   } else {
     const bits: string[] = [];
     if (c.share !== null) bits.push(`share held at ${pct(c.share)}%`);
     bits.push(`score ${c.score}/100`);
-    verdict = `Quiet week for ${c.domain}: ${bits.join(", ")}. Nothing needs you.`;
+    verdict = `Quiet reading for ${c.domain}: ${bits.join(", ")}. Nothing needs you.`;
   }
 
   return { domain: c.domain, clientSlug: c.clientSlug, verdict, moved, needsYou };
