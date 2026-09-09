@@ -1,0 +1,29 @@
+-- 0115: stop measuring and-scene.
+--
+-- and-scene (andscenehawaii.com) is one of Lance's own companies, corporate
+-- training, and it was consuming 26% of all citation runs in September: 1,482
+-- of 5,655, across 26 questions on seven surfaces every day, for an account
+-- with no revenue and no row in `customers`.
+--
+-- It is being stopped for a business reason, not a technical one: that company
+-- acquires through in-person relationships, referral and word of mouth, so
+-- AI-citation measurement buys it nothing. Paying to measure it was the single
+-- largest line item that served no one.
+--
+-- Context for the next reader: only 30% of measurement spend was serving the
+-- one paying customer. This recovers roughly a quarter of the API bill without
+-- touching the paying client's sampling, which stays at full daily cadence
+-- because it is about 3% of that client's revenue and is the best-measured
+-- asset in the product.
+--
+-- SCOPE. Only the keyword flags. planCitationRun filters WHERE active = 1, so
+-- this stops the sweep and nothing else:
+--   * no measurement_registry row exists, so no watchdog will report an
+--     OVERDUE month against a client we deliberately stopped measuring
+--   * no users rows exist, so no digest recipient is affected
+--   * domains.active is left at 1 on purpose, so the dashboard and the
+--     scan_results history stay viewable
+--
+-- Reversible: UPDATE citation_keywords SET active = 1 WHERE client_slug =
+-- 'and-scene'. History in citation_runs and citation_snapshots is untouched.
+UPDATE citation_keywords SET active = 0 WHERE client_slug = 'and-scene';

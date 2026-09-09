@@ -44,11 +44,27 @@ export type CitationKeywordParams = {
  * "Used 80000". Widening to 15 minutes multiplies the available budget in the
  * window by five without changing the daily volume by a single call.
  *
+ * WIDENED 900 -> 2400 on 2026-09-09, from the failure rows rather than a
+ * guess. All 416 openai rejections in the last 7 days are one error:
+ * "Rate limit reached for gpt-5-search-api ... on tokens per min (TPM):
+ * Limit 80000, Used 80000". Not spend -- the org is at $21 of a $300 cap
+ * with auto-reload on. A search model bills the retrieved page content, so
+ * a call runs about 34k tokens and 80k TPM is roughly 2.3 calls a minute.
+ *
+ * 900 seconds spaced ~88 daily attempts about 17s apart, which is ~3.5
+ * calls a minute and still over the ceiling: openai recovered to 78% of
+ * peer median but kept refusing about a fifth of its calls. 2400 gives
+ * ~46s spacing, near 44k TPM, with headroom for a slow call.
+ *
+ * Daily VOLUME is unchanged. This moves the same calls further apart, so
+ * the effect on spend is that calls which were rejected free now succeed
+ * and bill.
+ *
  * Dispatch-side delay cannot do this job. It runs inside the scheduled
  * handler's wall clock, so spacing 93 dispatches far enough apart would risk
  * the cron itself. Sleeping inside the workflow is free: long sleeps are what
  * Workflows are for, and the instance is not billed while it waits. */
-const SPREAD_SECONDS = 900;
+const SPREAD_SECONDS = 2400;
 
 export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKeywordParams> {
   async run(event: WorkflowEvent<CitationKeywordParams>, step: WorkflowStep): Promise<void> {
