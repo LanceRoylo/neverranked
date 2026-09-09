@@ -126,3 +126,28 @@ test("the readout grid carries the check count behind every share", () => {
   const view = read("src/routes/customer-readouts.ts");
   assert.match(view, /\$\{checks\} this month for question/, "the tooltip must name the sample size");
 });
+
+test("the memo's prior is a previous MONTH, not last week's draft of this one", () => {
+  const src = read("src/lib/memo-inputs.ts");
+  // Snapshots accumulate one row per Monday within a month, so "the two newest
+  // rows" are two readings of the same month while the prompt presents the
+  // second as last month.
+  assert.doesNotMatch(
+    src,
+    /FROM citation_snapshots[\s\S]{0,120}ORDER BY week_start DESC LIMIT 2/,
+    "current and prior must be month-scoped, not the two newest rows",
+  );
+  assert.match(src, /const mStartTs = Math\.floor\(Date\.UTC/);
+  // The month bound alone is not enough: with no snapshot yet this month, the
+  // current row is an earlier month's and an unbounded prior returns the SAME
+  // row, which reads as a confident zero movement.
+  assert.match(src, /const priorBound = Math\.min\(mStartTs, curRow\?\.week_start/);
+});
+
+test("the memo's snapshot slots stay positional", () => {
+  const src = read("src/lib/memo-inputs.ts");
+  // Compacting would slide a prior row into the current slot whenever this
+  // month has no snapshot, and last month's numbers would ship as this month's.
+  assert.doesNotMatch(src, /\[curRow, priRow\]\.filter\(Boolean\)/);
+  assert.match(src, /\[curRow \?\? undefined, priRow \?\? undefined\]/);
+});

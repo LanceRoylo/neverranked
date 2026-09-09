@@ -187,11 +187,48 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // the same place is what keeps every surface on one metric (the divergence
   // this replaces came from computing a run-coverage rate here instead).
   // by_question stays run-based: per-question appearance has no snapshot form.
-  const snaps = await env.DB.prepare(
-    `SELECT engines_breakdown, top_competitors, measured_at
-       FROM citation_snapshots WHERE client_slug = ?
-      ORDER BY week_start DESC LIMIT 2`
-  ).bind(slug).all<{ engines_breakdown: string; top_competitors: string; measured_at: number | null }>();
+  // CURRENT AND PRIOR ARE MONTH-SCOPED, not "the two newest rows".
+  //
+  // Every writer keys a snapshot by the Monday it RAN while buildReadoutSnapshot
+  // aggregates MONTH TO DATE, so a month accumulates one row per Monday. Taking
+  // the two newest rows therefore returns two readings of the SAME month, one a
+  // week less complete than the other -- and the memo prompt presents the second
+  // as last month ("lead with what changed since last month").
+  //
+  // September survives on the baseline guard below, because prince-waikiki's
+  // only older row predates their engagement. October is the first draft where
+  // this bites: on the 24th it would compare October-through-21 against
+  // October-through-14 and call the difference month-over-month movement.
+  //
+  // Same defect as buildReportFacts had, fixed the same way: ask for the row
+  // that belongs to the window instead of filtering after the fact.
+  const mStartTs = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1) / 1000);
+  const mEndTs = Math.floor(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000);
+  const snapCols = "engines_breakdown, top_competitors, measured_at, week_start";
+  const curRow = await env.DB.prepare(
+    `SELECT ${snapCols} FROM citation_snapshots
+      WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1`
+  ).bind(slug, mEndTs).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number }>();
+  // Strictly older than the current row AND before this month began.
+  //
+  // The month bound alone is not enough. When this month has no snapshot yet,
+  // the current row is itself an earlier month's, and a prior query bounded
+  // only by the month start returns THAT SAME ROW -- so current and prior would
+  // be identical and the memo would report a confident zero movement. Caught by
+  // running both queries against live data before shipping.
+  const priorBound = Math.min(mStartTs, curRow?.week_start ?? mStartTs);
+  const priRow = curRow
+    ? await env.DB.prepare(
+        `SELECT ${snapCols} FROM citation_snapshots
+          WHERE client_slug = ? AND week_start < ? ORDER BY week_start DESC LIMIT 1`
+      ).bind(slug, priorBound).first<{ engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number }>()
+    : null;
+  // Positional, NOT filtered. Compacting the array would slide a prior row into
+  // the current slot whenever this month has no snapshot yet, and the memo
+  // would present last month's numbers as this month's. parseSnap already
+  // returns null for a missing row.
+  type SnapRow = { engines_breakdown: string; top_competitors: string; measured_at: number | null; week_start: number };
+  const snaps = { results: [curRow ?? undefined, priRow ?? undefined] as Array<SnapRow | undefined> };
 
   const parseSnap = (row?: { engines_breakdown: string; top_competitors: string }) => {
     if (!row) return null;
