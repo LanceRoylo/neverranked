@@ -50,6 +50,15 @@ interface EngineMetrics {
   runs_24h: number;
   empty_24h: number;
   runs_baseline: number;
+  /** Yesterday, whole UTC day. */
+  runs_prev_day: number;
+  /** Mean over prior whole days that produced rows. */
+  prev_days_avg: number;
+  /** How many prior whole days actually produced rows. Carried on the metric
+   *  rather than looked up at the rule: the map lives in fetchEngineMetrics
+   *  and reaching for it from detectEngineAnomalies is a ReferenceError that
+   *  transpiles cleanly and dies at runtime. */
+  prior_days: number;
   empty_baseline: number;
   // Auto-tune extension: per-day samples over the baseline window
   // (excluding last 24h). When >= STDDEV_DAYS_REQUIRED days have data,
@@ -125,7 +134,41 @@ async function fetchEngineMetrics(env: Env): Promise<EngineMetrics[]> {
   const dayAgo = now - SECONDS_PER_DAY;
   const baselineStart = now - BASELINE_WINDOW_DAYS * SECONDS_PER_DAY;
 
+  // WHOLE UTC DAYS FOR THE ROW COUNT.
+  //
+  // The sweep fires once a day at 06:00 and takes minutes to drain, so a
+  // rolling 24h window that ends mid-sweep cuts the burst in half and counts a
+  // fraction of it. On 2026-09-08 this check ran at 06:03, three minutes into
+  // a sixteen-minute sweep with 16% of the day's rows on disk, and raised a
+  // row-drop alert for ALL FIVE engines inside one second: 31/77, 30/78,
+  // 33/78, 22/55, 35/75. Five surfaces do not fail simultaneously and
+  // identically. It was the window, not the engines.
+  //
+  // Widening the keyword spread to 2400s the next day would have made this
+  // fire every morning on every engine, because the check would see about 7%
+  // of the sweep instead of 16%.
+  //
+  // A complete UTC day contains exactly one sweep, so it is the honest unit
+  // and it does not depend on when this check happens to run.
+  const startOfToday = Math.floor(new Date(now * 1000).setUTCHours(0, 0, 0, 0) / 1000);
+  const startOfYesterday = startOfToday - SECONDS_PER_DAY;
+
   // Last 24h
+  // Yesterday, whole, and the mean of the whole days before it.
+  const prevDayRows = (await env.DB.prepare(
+    `SELECT engine, COUNT(*) AS runs FROM citation_runs
+      WHERE run_at >= ? AND run_at < ? GROUP BY engine`
+  ).bind(startOfYesterday, startOfToday).all<{ engine: string; runs: number }>()).results;
+  const prevDayMap = new Map(prevDayRows.map((r) => [r.engine, r.runs]));
+
+  const priorDaysRows = (await env.DB.prepare(
+    `SELECT engine, COUNT(*) AS runs,
+            COUNT(DISTINCT CAST(run_at / 86400 AS INTEGER)) AS days
+       FROM citation_runs WHERE run_at >= ? AND run_at < ? GROUP BY engine`
+  ).bind(startOfYesterday - BASELINE_WINDOW_DAYS * SECONDS_PER_DAY, startOfYesterday)
+   .all<{ engine: string; runs: number; days: number }>()).results;
+  const priorDaysMap = new Map(priorDaysRows.map((r) => [r.engine, r]));
+
   const recentRows = (await env.DB.prepare(
     `SELECT engine, COUNT(*) as runs, SUM(CASE WHEN length(response_text) = 0 THEN 1 ELSE 0 END) as empty
      FROM citation_runs WHERE run_at > ? GROUP BY engine`
@@ -166,6 +209,16 @@ async function fetchEngineMetrics(env: Env): Promise<EngineMetrics[]> {
       runs_24h: r.runs,
       empty_24h: r.empty,
       runs_baseline: baseline?.runs ?? 0,
+      runs_prev_day: prevDayMap.get(r.engine) ?? 0,
+      // Averaged over days that ACTUALLY produced rows, not over a fixed 14.
+      // Dividing by a constant while the client roster or the measurement
+      // start date means fewer real days understates the baseline and hides a
+      // genuine drop.
+      prev_days_avg: (() => {
+        const p = priorDaysMap.get(r.engine);
+        return p && p.days > 0 ? p.runs / p.days : 0;
+      })(),
+      prior_days: priorDaysMap.get(r.engine)?.days ?? 0,
       empty_baseline: baseline?.empty ?? 0,
       daily_empty_rates: dailyByEngine.get(r.engine) ?? [],
     };
@@ -242,19 +295,22 @@ async function detectEngineAnomalies(env: Env): Promise<{ alertsCreated: number;
       details.push(`${m.engine}: auto-tune OK (rate ${(recentRate * 100).toFixed(1)}%, threshold ${((baselineStats.mean + STDDEV_SIGMA_THRESHOLD * baselineStats.stddev) * 100).toFixed(1)}%, ${m.daily_empty_rates.length} day baseline)`);
     }
 
-    // Row-count drop: today produced <50% of baseline daily average
-    const baselineDailyAvg = m.runs_baseline / BASELINE_WINDOW_DAYS;
-    if (m.runs_24h < baselineDailyAvg * 0.5) {
+    // Row-count drop, measured on WHOLE days. See the window comment above:
+    // the rolling version bisected the daily sweep and alerted every engine at
+    // once. Needs at least 3 prior days with rows before it will judge.
+    const baselineDailyAvg = m.prev_days_avg;
+    const priorDays = m.prior_days;
+    if (priorDays >= 3 && baselineDailyAvg > 0 && m.runs_prev_day < baselineDailyAvg * 0.5) {
       const fingerprint = `engine:${m.engine}:row_drop`;
       if (!(await alertAlreadyExists(env, "anomaly_engine_row_drop", fingerprint))) {
         await createAlert(
           env,
           "anomaly_engine_row_drop",
           `${m.engine}: row count dropped`,
-          `${fingerprint} | ${m.engine} produced ${m.runs_24h} rows in last 24h vs ${baselineDailyAvg.toFixed(0)} baseline daily average. <50% of expected. Likely cause: cron didn't dispatch, rate limit, or upstream API down.`,
+          `${fingerprint} | ${m.engine} produced ${m.runs_prev_day} rows yesterday vs ${baselineDailyAvg.toFixed(0)} daily average over the ${priorDays} prior days. <50% of expected. Likely cause: cron didn't dispatch, rate limit, or upstream API down.`,
         );
         alertsCreated++;
-        details.push(`ALERT: ${m.engine} only ${m.runs_24h} rows vs ${baselineDailyAvg.toFixed(0)} avg`);
+        details.push(`ALERT: ${m.engine} only ${m.runs_prev_day} rows yesterday vs ${baselineDailyAvg.toFixed(0)} avg`);
       }
     }
   }
