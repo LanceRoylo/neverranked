@@ -89,6 +89,17 @@ export function noteNumbersOk(note: string, allowed: Set<number>): boolean {
  * Rejecting a note is SAFE. The chart then renders mechanics-only, which is
  * exactly how it behaved before analyst notes existed.
  */
+/** Third-person references to the reader, in the reader's own report.
+ *
+ *  The prompt necessarily describes "the customer" because it is an
+ *  instruction. The output is not an instruction, and a note that calls the
+ *  reader "the customer" reads like an internal memo that escaped. Dropping it
+ *  costs a paragraph and keeps the numbers, which is the same trade every
+ *  other guard here makes. */
+export function notePersonOk(note: string): boolean {
+  return !/\b(the|this)\s+(customer|client)(?:'|\u2019)?s?\b/i.test(note);
+}
+
 export function engineNoteClaimsOk(note: string, facts: ReportFacts): boolean {
   const engines = facts.engines || [];
   const lower = note.toLowerCase();
@@ -152,6 +163,7 @@ Voice rules, all hard:
 - Honest: no fluff, no inflating a small move, no doom on a dip. One month of movement is never called a trend. Never claim our work caused a move; at most note that a move is consistent with work done.
 - Always end forward-looking: what to watch or what it sets up next month.
 - Use ONLY numbers that appear in the data you are given. Do not compute new statistics. Do not use em dashes, semicolons, or emojis.
+- WRITE TO THEM, NOT ABOUT THEM. This paragraph sits in their own report and they read it. Address them as "you" and "your site", or by their business name. Never write "the customer", "the client", "this business", or "the brand". Observed 2026-09-09: a sources note read "dwarfing the customer's own site at just 2 percent" in prose a paying customer was about to open. These instructions describe them in the third person because they are instructions. Your output is not.
 
 You receive the frozen chart data as JSON. Reply with STRICT JSON only, no markdown fences, exactly this shape:
 {"engines":"...","venue":"...","sources":"...","topSources":"...","questions":"..."}
@@ -226,12 +238,20 @@ export async function writeAnalystNotes(
         console.log(`[report-notes] ${which} note attributes a forbidden verb to an engine; dropped`);
         return undefined;
       }
+      if (t && !notePersonOk(t)) {
+        console.log(`[report-notes] ${which} note refers to the reader in the third person; dropped`);
+        return undefined;
+      }
       return t;
     };
 
     let engines = cleanNote(raw.engines, allowed);
     if (engines && !engineVerbClaimsOk(engines, engineLabels)) {
       console.log("[report-notes] engines note attributes a forbidden verb to an engine; dropped");
+      engines = undefined;
+    }
+    if (engines && !notePersonOk(engines)) {
+      console.log("[report-notes] engines note refers to the reader in the third person; dropped");
       engines = undefined;
     }
     if (engines && !engineNoteClaimsOk(engines, facts)) {
