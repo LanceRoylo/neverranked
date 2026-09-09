@@ -194,7 +194,7 @@ export async function sweepQuerySets(env: Env): Promise<void> {
       const prevCount = res.count - res.added.length + res.removed.length;
       const detail =
         `Question set changed from ${prevCount} to ${res.count} questions ` +
-        `(+${res.added.length} added, -${res.removed.length} removed). New hash ${res.set_hash.slice(0, 12)}. ` +
+        `(+${res.added.length} added, -${res.removed.length} removed). New hash ${res.hash.slice(0, 12)}. ` +
         `Aggregates before and after this point are computed over different question sets, so ` +
         `month-over-month comparisons that span it are not like-for-like. ` +
         (res.added.length ? `Added: ${res.added.slice(0, 5).join(" | ")}${res.added.length > 5 ? " ..." : ""}. ` : "") +

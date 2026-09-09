@@ -646,7 +646,12 @@ async function queryGemini(
 async function queryClaude(
   keyword: string,
   apiKey: string
-): Promise<{ text: string; entities: CitedEntity[] }> {
+  // urls is always empty and is returned anyway: EngineResult requires it, and
+  // skipReason only skips reading it because hasEntities short-circuits the
+  // check. That is one flag-flip away from reading undefined.length. An empty
+  // list is also the true statement about a model-knowledge engine, which
+  // retrieves nothing and therefore cites nothing.
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[] }> {
   const resp = await fetch(ANTHROPIC_ENDPOINT, {
     method: "POST",
     headers: {
@@ -667,7 +672,7 @@ async function queryClaude(
   if (!resp.ok) {
     const err = await resp.text();
     console.log("Claude error for \"" + keyword + "\": " + resp.status + " " + err);
-    return { text: "", entities: [] };
+    return { text: "", urls: [], entities: [] };
   }
 
   const data = (await resp.json()) as {
@@ -701,7 +706,7 @@ async function queryClaude(
     console.log("Claude JSON parse failed for \"" + keyword + "\"");
   }
 
-  return { text: rawContent, entities };
+  return { text: rawContent, urls: [], entities };
 }
 
 // ---------------------------------------------------------------------------
@@ -730,7 +735,10 @@ async function queryClaude(
 async function queryGemma(
   keyword: string,
   provider: { host: string; endpoint: string; apiKey: string }
-): Promise<{ text: string; entities: CitedEntity[]; failure?: EngineResult["failure"] }> {
+  // urls is always empty and returned anyway, same reason as queryClaude: a
+  // model-knowledge engine retrieves nothing, and skipReason only avoids
+  // reading this field by short-circuit.
+): Promise<{ text: string; urls: string[]; entities: CitedEntity[]; failure?: EngineResult["failure"] }> {
   const resp = await fetch(provider.endpoint, {
     method: "POST",
     headers: {
@@ -765,6 +773,7 @@ async function queryGemma(
     // was a missing row. Every other engine already reports this way.
     return {
       text: "",
+      urls: [],
       entities: [],
       failure: {
         engine: `gemma:${provider.host}`,
@@ -801,7 +810,7 @@ async function queryGemma(
     console.log(`Gemma JSON parse failed for "${keyword}"`);
   }
 
-  return { text: rawContent, entities };
+  return { text: rawContent, urls: [], entities };
 }
 
 // ---------------------------------------------------------------------------

@@ -2498,7 +2498,27 @@ export async function runMissingRoadmapSweep(env: Env): Promise<void> {
       reason: `Client ${client_slug} had scan data but zero roadmap items. Auto-provisioned the initial roadmap.`,
       pausedAlertTitle: `Automation paused: skipped roadmap provision for ${client_slug}`,
       action: async () => {
-        await autoGenerateRoadmap(client_slug, env);
+        // autoGenerateRoadmap takes (clientSlug, scan, env). This passed
+        // (client_slug, env), so env landed in the scan slot and the real env
+        // was undefined: the automation threw instead of provisioning, every
+        // time, silently inside runAutomation. Nothing typechecked this
+        // project until 2026-09-09, so the arity mismatch was invisible.
+        //
+        // Inert today (no client currently matches the candidate query), but
+        // it would have failed the first time one did.
+        const scan = await env.DB.prepare(
+          `SELECT s.* FROM scan_results s
+             JOIN domains d ON d.id = s.domain_id
+            WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1
+              AND s.error IS NULL
+            ORDER BY s.scanned_at DESC LIMIT 1`,
+        ).bind(client_slug).first<ScanResult>();
+        if (!scan) {
+          // The candidate query requires a clean scan to exist, so this means
+          // it vanished between the two queries. Refuse rather than invent.
+          throw new Error(`no clean scan for ${client_slug}; refusing to provision a roadmap without one`);
+        }
+        await autoGenerateRoadmap(client_slug, scan, env);
         return { client_slug };
       },
     });

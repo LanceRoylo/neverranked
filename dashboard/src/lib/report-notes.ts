@@ -215,6 +215,20 @@ export async function writeAnalystNotes(
 
     const allowed = allowedNumbers(facts);
     const notes: AnalystNotes = {};
+    // Declared before first use. An earlier version of this block put the
+    // engines check above these two lines, which is a temporal dead zone: it
+    // transpiles clean, throws ReferenceError on every readout, and no test
+    // caught it because nothing typechecked the project. Found 2026-09-09 by
+    // installing typescript for the first time.
+    const engineLabels = (facts.engines || []).map((e) => e.name);
+    const verbOk = (t: string | undefined, which: string): string | undefined => {
+      if (t && !engineVerbClaimsOk(t, engineLabels)) {
+        console.log(`[report-notes] ${which} note attributes a forbidden verb to an engine; dropped`);
+        return undefined;
+      }
+      return t;
+    };
+
     let engines = cleanNote(raw.engines, allowed);
     if (engines && !engineVerbClaimsOk(engines, engineLabels)) {
       console.log("[report-notes] engines note attributes a forbidden verb to an engine; dropped");
@@ -224,17 +238,8 @@ export async function writeAnalystNotes(
       console.log(`[report-notes] engines note REJECTED: crosses the citation / model-knowledge boundary, misdescribes the control, or claims movement in a baseline month. Chart renders mechanics-only.`);
       engines = undefined;
     }
-    // Applied to EVERY note, not just the engines one. The methodology's
-    // absolute is about the whole deliverable, and a forbidden attribution is
-    // as false in the venue paragraph as in the engine paragraph.
-    const engineLabels = (facts.engines || []).map((e) => e.name);
-    const verbOk = (t: string | undefined, which: string): string | undefined => {
-      if (t && !engineVerbClaimsOk(t, engineLabels)) {
-        console.log(`[report-notes] ${which} note attributes a forbidden verb to an engine; dropped`);
-        return undefined;
-      }
-      return t;
-    };
+    // verbOk above is applied to EVERY note, not just the engines one: the
+    // methodology's absolute is about the whole deliverable.
     const venue = verbOk(cleanNote(raw.venue, allowed), "venue");
     const sources = verbOk(cleanNote(raw.sources, allowed), "sources");
     const topSources = verbOk(cleanNote(raw.topSources, allowed), "topSources");
