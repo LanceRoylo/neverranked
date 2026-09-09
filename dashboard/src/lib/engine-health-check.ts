@@ -15,9 +15,22 @@
  * Auto-degrade is loud (admin_alert fired). Auto-recover is quiet (info
  * alert only).
  *
- * NEVER auto-disables. Disabling is a Lance decision -- an admin button
- * triggers it manually. The disabled state means "stop calling this
- * engine entirely" which the cron dispatcher respects.
+ * THIS STATE IS ADVISORY. Nothing gates collection on it. engine_status is
+ * written here and read only here, so a transition changes exactly one thing:
+ * the alert that fires alongside it. A degraded engine keeps being called,
+ * which is deliberate -- a surface answering badly still answers, and dropping
+ * it would silently shrink a paying customer's panel.
+ *
+ * The 'disabled' value in the CHECK constraint is vestigial. There is no admin
+ * control that writes it and no dispatcher gate that reads it; transitionStatus
+ * only ever writes 'degraded' or 'active'. This comment used to claim "the
+ * disabled state means stop calling this engine entirely, which the cron
+ * dispatcher respects", which was never true and would have been believed by
+ * anyone reaching for a kill switch in an incident.
+ *
+ * If a kill switch is wanted it needs BOTH halves: a control that writes the
+ * state and a gate in the runner that reads it, plus an alert when a skip
+ * happens, or it becomes another silent way for a surface to vanish.
  *
  * Idempotent: re-running this on the same data does nothing once the
  * correct state has been recorded.

@@ -173,10 +173,14 @@ function renderQuestionMovement(qs: NonNullable<ReportFacts["questions"]>, note?
 // Per-engine x per-question citation grid — the finest-grain instrument in the
 // readout. Rows are the AI tools (canonical 5+2 order), columns are the tracked
 // questions (numbered, with a legend beneath). A cell's gold intensity is the
-// share of the month's runs where that tool cited you on that question; a dark
-// cell is "answered, never named you"; an absent cell is "that tool did not
-// answer that question this month" (no run, no claim). Built only from
-// citation_runs.client_cited, so there is nothing here to get factually wrong.
+// share of the month's runs where that tool CITED you (Layer 1) or NAMED you
+// (Layer 2) on that question; a dark cell is "answered, without you"; an
+// absent cell is "that tool did not answer that question this month" (no run,
+// no claim). The two layers are different measurements and the copy below
+// says so per row: the tools that cite nothing must not be described as
+// citing. This comment used to end "so there is nothing here to get factually
+// wrong", which stopped being true the moment a Layer 2 row was drawn from a
+// URL-derived flag.
 // Static SVG (the report is a frozen, printable artifact): the data-alive feel
 // comes from the staggered reveal + emphasized endpoints, degrading to a clean
 // still frame in print and reduced-motion.
@@ -249,7 +253,11 @@ function renderCitationGrid(
       // so any citation is visibly gold. Cited (>=50% of runs) gets a ring.
       const op = (0.12 + s * 0.88).toFixed(3);
       const strong = s >= 0.5 ? " cg-strong" : "";
-      const title = `${esc(eng)} — cited you on ${Math.round(s * 100)}% of this month's runs for question ${c + 1}`;
+      // Verb follows the row's layer. A model-knowledge tool cites nothing, so
+      // "cited you" would be false about it no matter what the number says.
+      // Em dash replaced with a colon: house style, and this is customer copy.
+      const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : "cited you on";
+      const title = `${esc(eng)}: ${verb} ${Math.round(s * 100)}% of this month's runs for question ${c + 1}`;
       rows += `<g class="cg-cell${strong}" style="--d:${di}"><title>${title}</title>`
         + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-base"/>`
         + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-heat" style="opacity:${op}"/></g>`;
@@ -259,7 +267,7 @@ function renderCitationGrid(
     rows += `<text x="${cx}" y="${y + CELL / 2 + 4}" class="cg-count">${hit}<tspan class="cg-count-den">/${answered}</tspan></text>`;
   });
 
-  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Citation grid: each AI tool by each tracked question, gold where the tool cited you this month.">`
+  const svg = `<svg viewBox="0 0 ${W} ${H}" class="cg-svg" role="img" preserveAspectRatio="xMinYMin meet" aria-label="Coverage grid: each AI tool by each tracked question, gold where the tool cited you (search tools) or named you (model-knowledge tools) this month.">`
     + `<g class="cg-heads">${head}</g>${rows}</svg>`;
 
   // Numbered legend maps each column back to its question.
@@ -267,7 +275,10 @@ function renderCitationGrid(
     .map((q, i) => `<li class="cg-leg"><span class="cg-leg-n">${i + 1}</span><span class="cg-leg-q">${esc(q)}</span></li>`)
     .join("");
 
-  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. A gold square means that tool named you for that question, and brighter means it named you on more of the month's daily checks. A dark square means it answered but never named you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you won a citation. The columns are ordered, strongest on the left, so any run of questions no tool names you on gathers at the right-hand edge rather than being scattered through the grid.`;
+  // The old caption used "named" and "won a citation" for the same square, in
+  // one sentence, across rows that measure two different things. Each row now
+  // states its own basis.
+  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools can cite sources, so a gold square there means that tool pointed at your site. The model-knowledge tools cite nothing at all, so a gold square there means it said your name. Brighter means it happened on more of the month's daily checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
 
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`

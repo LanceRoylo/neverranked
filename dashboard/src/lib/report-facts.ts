@@ -13,6 +13,21 @@
 
 import type { Env } from "../types";
 import { snapshotUsableForMonth } from "./snapshot-selection";
+import { engineLayer, type EngineLayer } from "./engine-layer";
+import { resolveBusinessName, nameMatches } from "../citations";
+import type { InjectionConfig } from "../types";
+
+/** Did a model-knowledge run NAME the business? Reads the entities the model
+ *  emitted rather than client_cited, which is URL-derived and was 0 on every
+ *  model-knowledge row until resolveBusinessName landed. */
+function namedIn(citedEntities: string, businessName: string): boolean {
+  try {
+    const ents = JSON.parse(citedEntities || "[]") as Array<{ name?: string }>;
+    return ents.some((e) => typeof e?.name === "string" && nameMatches(e.name, businessName));
+  } catch {
+    return false;
+  }
+}
 // .ts extension so the node test runner (strip-types) resolves it too; esbuild is fine with it.
 import { writeAnalystNotes, type AnalystNotes } from "./report-notes.ts";
 import { isReadoutShapeSnapshot } from "./snapshot-shape.ts";
@@ -72,18 +87,34 @@ export interface ReportFacts {
     appeared: Array<{ q: string; engines: string[] }>;
     disappeared: Array<{ q: string; engines: string[] }>;
   };
-  /** Per-engine x per-question citation grid for the report month. The finest
-   *  grain we hold: for each tracked question and each AI tool, the share of the
-   *  month's runs in which the customer was cited. Built ONLY from
-   *  citation_runs.client_cited (the same trusted source as `questions`), so no
-   *  competitor-name matching and nothing to get factually wrong. Absent when
-   *  the month has too little data to be worth showing. */
+  /** Per-engine x per-question grid for the report month. The finest grain we
+   *  hold: for each tracked question and each AI tool, the share of the month's
+   *  runs in which the customer appeared.
+   *
+   *  "APPEARED" MEANS DIFFERENT THINGS PER ROW, which the old version of this
+   *  comment denied ("built ONLY from client_cited ... nothing to get factually
+   *  wrong"). Layer 1 rows are CITED: a URL of theirs was among the sources.
+   *  Layer 2 rows are NAMED: the model said the business name and cited
+   *  nothing, because those tools cite nothing at all. Rendering both as
+   *  "cited" is the same cross-layer claim the prose guard and the Atlas
+   *  context exist to prevent.
+   *
+   *  Layer 2 cells are computed from cited_entities and the business name, not
+   *  from client_cited. That flag depends on a resolvable business name, and
+   *  before resolveBusinessName landed it was 0 on every model-knowledge row
+   *  no matter what the model said: 40 September runs named this customer and
+   *  every one was flagged uncited. Reading the entities is correct for rows
+   *  already written as well as rows still to come. */
   grid?: {
     engines: string[];          // row labels, canonical 5+2 order, only tools that ran
+    /** Per row, aligned with `engines`. "citation" rows were CITED,
+     *  "model_knowledge" rows were NAMED. The renderer must not call both
+     *  the same thing. */
+    layers: EngineLayer[];
     questions: string[];        // column labels (tracked keywords), stable order
     /** cells[engineIdx][questionIdx]: fraction 0..1 of that tool's runs on that
-     *  question where the customer was cited, or -1 if the tool never answered
-     *  that question this month (no run = no claim). */
+     *  question where the customer appeared on that row's terms, or -1 if the
+     *  tool never answered that question this month (no run = no claim). */
     cells: number[][];
   };
   /** Per-chart "The read this month" analyst commentary (frozen with the numbers). */
@@ -300,10 +331,10 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
   const gridStart = Math.max(b.start, measurementStart ?? 0);
   if (gridStart >= b.end) return undefined; // month entirely predates the engagement
   const runs = await env.DB.prepare(
-    `SELECT cr.engine, cr.client_cited, ck.keyword
+    `SELECT cr.engine, cr.client_cited, cr.cited_entities, ck.keyword
        FROM citation_runs cr JOIN citation_keywords ck ON ck.id = cr.keyword_id
       WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
-  ).bind(slug, gridStart, b.end).all<{ engine: string; client_cited: number; keyword: string }>();
+  ).bind(slug, gridStart, b.end).all<{ engine: string; client_cited: number; cited_entities: string; keyword: string }>();
   if (!runs.results.length) return undefined;
 
   // Same guard as question movement. A grid cell reading 0% for an engine
@@ -324,6 +355,19 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
     }
   }
 
+  // Layer 2 rows need the business name. A null name is not a licence to
+  // report zeros: with no name we cannot tell whether a model-knowledge tool
+  // named the customer, and buildReadoutSnapshot refuses to write in exactly
+  // that case rather than assert an absence it never measured.
+  const injCfg = await env.DB.prepare(
+    "SELECT * FROM injection_configs WHERE client_slug = ?",
+  ).bind(slug).first<InjectionConfig>();
+  const businessName = await resolveBusinessName(env, slug, injCfg);
+  if (!businessName) {
+    console.log(`[report-facts] ${slug} ${monthKey}: no business name; model-knowledge grid rows would read a false zero. Grid omitted.`);
+    return undefined;
+  }
+
   // tally[engineKey][keyword] = { cited, total }
   const tally = new Map<string, Map<string, { cited: number; total: number }>>();
   const questionSet = new Set<string>();
@@ -335,7 +379,13 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
     if (!byQ) { byQ = new Map(); tally.set(r.engine, byQ); }
     const cell = byQ.get(r.keyword) ?? { cited: 0, total: 0 };
     cell.total++;
-    if (r.client_cited === 1) cell.cited++;
+    // Layer 2 tools cite nothing, so client_cited cannot describe them. Read
+    // the entities the model actually named instead. Layer 1 keeps the flag:
+    // it is URL-derived there and is the trusted source.
+    const present = engineLayer(r.engine) === "model_knowledge"
+      ? (businessName ? namedIn(r.cited_entities, businessName) : false)
+      : r.client_cited === 1;
+    if (present) cell.cited++;
     byQ.set(r.keyword, cell);
   }
 
@@ -354,7 +404,12 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
     });
   });
 
-  return { engines: engineRows.map((e) => e.label), questions, cells };
+  return {
+    engines: engineRows.map((e) => e.label),
+    layers: engineRows.map((e) => engineLayer(e.key)),
+    questions,
+    cells,
+  };
 }
 
 /** Derive the report's chart facts from the customer's latest snapshot + the

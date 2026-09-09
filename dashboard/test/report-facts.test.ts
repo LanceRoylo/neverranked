@@ -93,45 +93,69 @@ const okSnap = {
   measured_at: Math.floor(Date.UTC(2026, 6, 15) / 1000), // Jul 15, 2026
 };
 
-test("buildCitationGrid: aggregates client_cited per engine x question, canonical order", async () => {
+test("buildCitationGrid: Layer 1 rows read client_cited, Layer 2 rows read entities", async () => {
+  // The old version of this test asserted client_cited for BOTH rows, which
+  // encoded the defect: client_cited is URL-derived, and a Layer 2 tool cites
+  // no URLs. Before resolveBusinessName landed it was 0 on every
+  // model-knowledge row regardless of what the model said -- 40 September runs
+  // named a live customer and every one was flagged uncited.
+  const named = JSON.stringify([{ name: "Acme Theatre" }]);
+  const other = JSON.stringify([{ name: "Rival Hall" }]);
   const runs = [
-    // perplexity: q1 cited 2/2, q2 0/2, q3 never answered
-    { engine: "perplexity", client_cited: 1, keyword: "q1" },
-    { engine: "perplexity", client_cited: 1, keyword: "q1" },
-    { engine: "perplexity", client_cited: 0, keyword: "q2" },
-    { engine: "perplexity", client_cited: 0, keyword: "q2" },
-    // anthropic (Claude): q1 1/2, q2 0/1, q3 2/2
-    { engine: "anthropic", client_cited: 1, keyword: "q1" },
-    { engine: "anthropic", client_cited: 0, keyword: "q1" },
-    { engine: "anthropic", client_cited: 0, keyword: "q2" },
-    { engine: "anthropic", client_cited: 1, keyword: "q3" },
-    { engine: "anthropic", client_cited: 1, keyword: "q3" },
+    // perplexity (Layer 1, CITED): q1 2/2, q2 0/2, q3 never answered
+    { engine: "perplexity", client_cited: 1, keyword: "q1", cited_entities: other },
+    { engine: "perplexity", client_cited: 1, keyword: "q1", cited_entities: other },
+    { engine: "perplexity", client_cited: 0, keyword: "q2", cited_entities: named },
+    { engine: "perplexity", client_cited: 0, keyword: "q2", cited_entities: named },
+    // anthropic (Layer 2, NAMED): the flag and the entities DISAGREE on every
+    // row, so this pins which one each layer trusts.
+    { engine: "anthropic", client_cited: 0, keyword: "q1", cited_entities: named },
+    { engine: "anthropic", client_cited: 1, keyword: "q1", cited_entities: other },
+    { engine: "anthropic", client_cited: 1, keyword: "q2", cited_entities: other },
+    { engine: "anthropic", client_cited: 0, keyword: "q3", cited_entities: named },
+    { engine: "anthropic", client_cited: 0, keyword: "q3", cited_entities: named },
   ];
-  const facts = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, runs), "x", "2026-07");
+  const facts = await buildReportFacts(fakeEnv(okSnap, { name: "Acme Theatre" }, null, runs), "x", "2026-07");
   const grid = facts!.grid!;
   assert.ok(grid, "grid present");
-  // Canonical 5+2 order: perplexity before anthropic.
   assert.deepEqual(grid.engines, ["Perplexity", "Claude"]);
-  assert.deepEqual(grid.questions, ["q1", "q2", "q3"]); // sorted, stable
-  // perplexity row: q1=1, q2=0, q3=-1 (never answered -> no claim)
+  assert.deepEqual(grid.questions, ["q1", "q2", "q3"]);
+  // Layer 1 follows the flag and IGNORES the entities: q2 names the customer
+  // but no URL of theirs was cited, which is not a citation.
   assert.deepEqual(grid.cells[0], [1, 0, -1]);
-  // claude row: q1=0.5, q2=0, q3=1
+  // Layer 2 follows the entities and IGNORES the flag: q1 named on 1 of 2,
+  // q2 never named, q3 named on both.
   assert.deepEqual(grid.cells[1], [0.5, 0, 1]);
+  // And the renderer is told which is which, so it cannot call both "cited".
+  assert.deepEqual(grid.layers, ["citation", "model_knowledge"]);
+});
+
+test("buildCitationGrid: no business name means NO grid, not a grid of zeros", async () => {
+  // Without a name we cannot tell whether a model-knowledge tool named the
+  // customer. Rendering dark cells would assert an absence never measured,
+  // which is the same refusal buildReadoutSnapshot makes.
+  const runs = [
+    { engine: "perplexity", client_cited: 1, keyword: "q1", cited_entities: "[]" },
+    { engine: "anthropic", client_cited: 0, keyword: "q2", cited_entities: "[]" },
+    { engine: "anthropic", client_cited: 0, keyword: "q3", cited_entities: "[]" },
+  ];
+  const facts = await buildReportFacts(fakeEnv(okSnap, { name: null }, null, runs), "x", "2026-07");
+  assert.equal(facts!.grid, undefined);
 });
 
 test("buildCitationGrid: fail-closed below 2 engines or 3 questions", async () => {
   // Only one engine -> no grid.
   const oneEngine = [
-    { engine: "perplexity", client_cited: 1, keyword: "q1" },
-    { engine: "perplexity", client_cited: 1, keyword: "q2" },
-    { engine: "perplexity", client_cited: 1, keyword: "q3" },
+    { engine: "perplexity", client_cited: 1, keyword: "q1", cited_entities: "[]" },
+    { engine: "perplexity", client_cited: 1, keyword: "q2", cited_entities: "[]" },
+    { engine: "perplexity", client_cited: 1, keyword: "q3", cited_entities: "[]" },
   ];
   const f1 = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, oneEngine), "x", "2026-07");
   assert.equal(f1!.grid, undefined);
   // Two engines but only two questions -> no grid.
   const twoQ = [
-    { engine: "perplexity", client_cited: 1, keyword: "q1" },
-    { engine: "anthropic", client_cited: 1, keyword: "q2" },
+    { engine: "perplexity", client_cited: 1, keyword: "q1", cited_entities: "[]" },
+    { engine: "anthropic", client_cited: 1, keyword: "q2", cited_entities: "[]" },
   ];
   const f2 = await buildReportFacts(fakeEnv(okSnap, { name: "X" }, null, twoQ), "x", "2026-07");
   assert.equal(f2!.grid, undefined);
