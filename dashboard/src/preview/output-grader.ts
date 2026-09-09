@@ -631,7 +631,19 @@ function verifyIssues(issues, artifactText) {
   return { kept, rejected };
 }
 
-async function gradeProspectOutput(
+// EXPORTED. It was not, and preview/generator.ts destructures it from a
+// dynamic import: `const { gradeProspectOutput } = await import(...)` gives
+// undefined, and calling undefined throws. The `export` keyword on line 561
+// bound to chunkArtifact instead, because a doc comment sits between them.
+//
+// Latent rather than live: the last preview was generated 2026-05-16 and
+// outreach is paused, so the call site is never reached and phase2_autopreview
+// reports success daily with nothing to do. It would have thrown on the first
+// preview after outreach resumed.
+//
+// Fail-closed either way, by accident: the throw is not caught here, so
+// generation dies rather than publishing ungraded copy to a prospect.
+export async function gradeProspectOutput(
   env: Env,
   artifactText: string,
   surfaceLabel: string,

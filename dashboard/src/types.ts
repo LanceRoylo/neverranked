@@ -366,7 +366,12 @@ export interface RoadmapItem {
   title: string;
   description: string | null;
   category: string;
-  status: "pending" | "in_progress" | "complete";
+  // Matches what the table actually holds and what the UI writes: "done", not
+  // "complete", plus "blocked" from the Block button on an in-progress item.
+  // The old union said "complete" and omitted "blocked", so twelve real
+  // comparisons in routes/roadmap.ts read as always-false to a compiler.
+  // Verified 2026-09-09 against D1: done 602, pending 254, in_progress 5.
+  status: "pending" | "in_progress" | "done" | "blocked";
   sort_order: number;
   due_date: number | null;
   completed_at: number | null;
