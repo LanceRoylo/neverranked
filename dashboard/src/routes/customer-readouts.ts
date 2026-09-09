@@ -133,7 +133,12 @@ async function loadDeliveredReports(env: Env, slug: string): Promise<ReportRow[]
 // the interpretation layer is the point. Fully defensive: bad/absent facts_json
 // renders nothing (the report stays narrative-only).
 
-interface ChartEngine { name: string; pct: number; prev?: number | null; noCohortSignal?: boolean; }
+// NOTE: this file keeps a LOCAL copy of the ReportFacts shape, and it has
+// drifted from the real one in lib/report-facts.ts more than once. The fields
+// below are read by the renderer, so anything added there and used here must
+// be added here too. Nothing typechecks this project (no typescript
+// dependency, despite a tsconfig), so the compiler will not tell you.
+interface ChartEngine { name: string; pct: number; prev?: number | null; noCohortSignal?: boolean; layer?: string; }
 interface ChartRow { label: string; pct: number; you?: boolean; own?: boolean; }
 interface ReportFacts {
   period_label?: string;
@@ -144,7 +149,18 @@ interface ReportFacts {
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
   questions?: { appeared?: Array<{ q: string; engines: string[] }>; disappeared?: Array<{ q: string; engines: string[] }> };
   // Per-engine x per-question citation grid (see report-facts.ts buildCitationGrid).
-  grid?: { engines?: string[]; questions?: string[]; cells?: number[][] };
+  grid?: {
+    engines?: string[];
+    questions?: string[];
+    cells?: number[][];
+    /** Per row, aligned with engines. "citation" rows were CITED,
+     *  "model_knowledge" rows were NAMED. Drives the verb in the tooltip. */
+    layers?: string[];
+    /** Per cell, how many checks the share rests on. Drives the inset that
+     *  marks a thinly-sampled cell. Optional because a report frozen before
+     *  2026-09-09 has no counts, and those must still render. */
+    counts?: number[][];
+  };
   // Frozen per-chart analyst commentary ("The read this month"), written at
   // report generation from the same frozen numbers. Absent = mechanics-only.
   notes?: { engines?: string; venue?: string; sources?: string; topSources?: string; questions?: string; grid?: string };
