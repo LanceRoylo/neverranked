@@ -18,6 +18,7 @@ function makeEnv(opts: {
   cronLastRan?: number | null;
   engine?: { rows_24h: number; fails_24h: number };
   peer?: { engine: string; degraded: boolean }[];
+  snapshot?: { engines_breakdown: string; top_competitors: string; created_at: number | null; week_start: number } | null;
   throwOnCheck?: boolean;
 }) {
   const updates: { id: number; detail: string; readAt: number }[] = [];
@@ -32,6 +33,7 @@ function makeEnv(opts: {
             if (opts.throwOnCheck) throw new Error("d1 exploded");
             if (sql.includes("cron_runs")) return { last_ran: opts.cronLastRan ?? null };
             if (sql.includes("citation_runs")) return opts.engine ?? { rows_24h: 0, fails_24h: 0 };
+            if (sql.includes("citation_snapshots")) return opts.snapshot ?? null;
             return null;
           },
           async run() {
@@ -130,4 +132,72 @@ test("FAIL CLOSED: types with no closer are never selected at all", async () => 
     assert.doesNotMatch(asked, new RegExp(t), `${t} must never be auto-closable`);
   }
   assert.match(asked, /read_at IS NULL/);
+});
+
+
+/** The refresh watchdog raises this type with TWO different sentences: one for
+ *  a customer with zero snapshots, one for a customer whose snapshot went
+ *  stale. A parser tuned to either would silently never close the other, so
+ *  the subject comes from the client_slug column. */
+const refreshAlert = (id: number, detail: string) => ({
+  id, type: "monthly_refresh_overdue", created_at: 1787000000,
+  client_slug: "a-client", detail,
+});
+
+const READOUT = {
+  engines_breakdown: '{"Perplexity":{"share_pct":2,"total":10}}',
+  top_competitors: '{"htc_venue_share_pct":12,"competitors":[]}',
+};
+
+test("REGRESSION: a refresh alert closes once a current-month snapshot lands", () => {
+  // Raised 2026-09-04 when the newest snapshot was 2026-08-23. A September row
+  // landed on the 7th and the alert sat in the needs-you lane regardless.
+  const sept = Math.floor(Date.UTC(2026, 8, 7) / 1000);
+  const now = Math.floor(Date.UTC(2026, 8, 9) / 1000);
+  const { env, updates } = makeEnv({
+    open: [refreshAlert(1, "This month's refresh has not landed (latest snapshot 2026-08-23).")],
+    snapshot: { ...READOUT, created_at: sept, week_start: sept },
+  });
+  return autoCloseAlerts(env, now).then((r) => {
+    assert.equal(r.closed, 1);
+    assert.match(updates[0].detail, /a-client has a current-month readout snapshot again/);
+  });
+});
+
+test("BOTH sentences of that alert close, because the slug comes from the column", () => {
+  const sept = Math.floor(Date.UTC(2026, 8, 7) / 1000);
+  const now = Math.floor(Date.UTC(2026, 8, 9) / 1000);
+  const other = makeEnv({
+    open: [refreshAlert(2, "A signed customer (a-client) has ZERO citation_snapshots rows.")],
+    snapshot: { ...READOUT, created_at: sept, week_start: sept },
+  });
+  return autoCloseAlerts(other.env, now).then((r) => assert.equal(r.closed, 1));
+});
+
+test("a still-stale snapshot keeps the refresh alert open", async () => {
+  const aug = Math.floor(Date.UTC(2026, 7, 23) / 1000);
+  const now = Math.floor(Date.UTC(2026, 8, 9) / 1000);
+  const { env } = makeEnv({
+    open: [refreshAlert(1, "This month's refresh has not landed (latest snapshot 2026-08-23).")],
+    snapshot: { ...READOUT, created_at: aug, week_start: aug },
+  });
+  assert.equal((await autoCloseAlerts(env, now)).closed, 0);
+});
+
+test("no snapshot at all is the HARDER version of the alert, never a reason to close", async () => {
+  const now = Math.floor(Date.UTC(2026, 8, 9) / 1000);
+  const { env } = makeEnv({ open: [refreshAlert(1, "has ZERO citation_snapshots rows.")], snapshot: null });
+  assert.equal((await autoCloseAlerts(env, now)).closed, 0);
+});
+
+test("a LEGACY-shape snapshot does not count as a landed refresh", async () => {
+  // The detector skips legacy rows, so treating one as evidence would let the
+  // closer and the detector disagree about the same customer.
+  const sept = Math.floor(Date.UTC(2026, 8, 7) / 1000);
+  const now = Math.floor(Date.UTC(2026, 8, 9) / 1000);
+  const { env } = makeEnv({
+    open: [refreshAlert(1, "This month's refresh has not landed.")],
+    snapshot: { engines_breakdown: '{"gemini":{"queries":10,"citations":2}}', top_competitors: "[]", created_at: sept, week_start: sept },
+  });
+  assert.equal((await autoCloseAlerts(env, now)).closed, 0);
 });

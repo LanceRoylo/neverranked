@@ -30,6 +30,8 @@
 import type { Env } from "../types";
 import { CRON_EXPECTED_CADENCE } from "./anomaly-detection";
 import { assessPeerHealth } from "./engine-peer-health";
+import { monthlyRefreshOverdue } from "./monthly-refresh";
+import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 const SECONDS_PER_DAY = 86400;
 
@@ -38,6 +40,12 @@ export interface OpenAlert {
   type: string;
   detail: string | null;
   created_at: number;
+  /** admin_alerts carries this. A slug-scoped closer must read the COLUMN
+   *  rather than regex it out of prose: the same alert type is raised with two
+   *  different sentences (a customer with zero snapshots, and one whose
+   *  snapshot went stale), and a parser tuned to one would silently never
+   *  close the other. */
+  client_slug: string | null;
 }
 
 export interface AutoCloseResult {
@@ -48,8 +56,9 @@ export interface AutoCloseResult {
 }
 
 interface Closer {
-  /** Pull the subject (task name, engine) out of the alert detail. */
-  parse(detail: string): string | null;
+  /** Pull the subject out of the alert. Most read the detail; slug-scoped
+   *  ones read the client_slug column. */
+  parse(detail: string, alert: OpenAlert): string | null;
   /** True when the condition the alert named is STILL happening. */
   stillTrue(env: Env, subject: string, now: number): Promise<boolean>;
   /** Evidence recorded on the alert when it closes. */
@@ -97,6 +106,26 @@ const CLOSERS: Record<string, Closer> = {
     describe: (engine) => `${engine} answered in the last 24h with no recorded refusals`,
   },
 
+  // Raised per customer, in two different sentences, so the subject comes from
+  // the client_slug COLUMN rather than the prose.
+  monthly_refresh_overdue: {
+    parse: (_d, a) => a.client_slug && a.client_slug !== "_system" ? a.client_slug : null,
+    async stillTrue(env, slug, now) {
+      const snap = await env.DB.prepare(
+        `SELECT engines_breakdown, top_competitors, created_at, week_start
+           FROM citation_snapshots WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
+      ).bind(slug).first<{ engines_breakdown: string; top_competitors: string; created_at: number | null; week_start: number }>();
+      // No snapshot at all is the harder version of the same alert.
+      if (!snap) return true;
+      // The detector skips legacy-shape rows, so a legacy row is not evidence
+      // the refresh landed. Mirroring that keeps the two from disagreeing.
+      if (!isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) return true;
+      // The detector's own function, not a second copy of the date arithmetic.
+      return monthlyRefreshOverdue(new Date(now * 1000), snap.created_at || snap.week_start);
+    },
+    describe: (slug) => `${slug} has a current-month readout snapshot again`,
+  },
+
   // "engine:openai:peer_drop | openai produced 19 rows in 24h against ..."
   anomaly_engine_peer_drop: {
     parse: (d) => d.match(/engine:([A-Za-z0-9_]+):peer_drop/)?.[1] ?? null,
@@ -124,7 +153,7 @@ export async function autoCloseAlerts(env: Env, now: number): Promise<AutoCloseR
   const types = Object.keys(CLOSERS);
   const placeholders = types.map(() => "?").join(",");
   const open = (await env.DB.prepare(
-    `SELECT id, type, detail, created_at FROM admin_alerts
+    `SELECT id, type, detail, created_at, client_slug FROM admin_alerts
       WHERE read_at IS NULL AND type IN (${placeholders})
       ORDER BY created_at`,
   ).bind(...types).all<OpenAlert>()).results;
@@ -135,7 +164,7 @@ export async function autoCloseAlerts(env: Env, now: number): Promise<AutoCloseR
 
   for (const a of open) {
     const closer = CLOSERS[a.type];
-    const subject = a.detail ? closer.parse(a.detail) : null;
+    const subject = closer.parse(a.detail ?? "", a);
     if (!subject) { kept++; continue; }
     let still: boolean;
     try {
