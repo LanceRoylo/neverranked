@@ -128,6 +128,10 @@ test("buildCitationGrid: Layer 1 rows read client_cited, Layer 2 rows read entit
   assert.deepEqual(grid.cells[1], [0.5, 0, 1]);
   // And the renderer is told which is which, so it cannot call both "cited".
   assert.deepEqual(grid.layers, ["citation", "model_knowledge"]);
+  // Every share ships with the number of checks it rests on. Without this a
+  // cell from one run and a cell from thirteen render identically.
+  assert.deepEqual(grid.counts[0], [2, 2, 0]);
+  assert.deepEqual(grid.counts[1], [2, 1, 2]);
 });
 
 test("buildCitationGrid: no business name means NO grid, not a grid of zeros", async () => {

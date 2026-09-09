@@ -224,6 +224,33 @@ function renderCitationGrid(
     .sort((a, b) => colScore(b) - colScore(a) || a - b);
   const questionsOrdered = order.map((i) => questions[i]);
   const cellsOrdered = cells.map((row) => (Array.isArray(row) ? order.map((i) => row[i]) : row));
+  const countsOrdered = (grid.counts ?? []).map((row) => (Array.isArray(row) ? order.map((i) => row[i]) : row));
+
+  // EVIDENCE IS A SIZE, SHARE IS AN INTENSITY.
+  //
+  // Gold intensity already encodes share, so confidence needs its own channel
+  // or the two become indistinguishable. Cell size is that channel: a cell
+  // resting on one or two checks is drawn smaller, so it reads as less
+  // evidence with no second colour and no legend, and it survives print. This
+  // report is a frozen artifact, so a tooltip is not an answer here.
+  //
+  // The threshold is RELATIVE and it can decline to fire. If the whole grid is
+  // thin -- a low-cadence month where every cell rests on two or three checks
+  // -- then no cell misleads beside its neighbours, and marking them all would
+  // invent a problem. The harm is only ever a thin cell sitting next to a
+  // thick one, so that is the only thing marked.
+  const depths: number[] = [];
+  for (let r = 0; r < cellsOrdered.length; r++) {
+    const row = Array.isArray(cellsOrdered[r]) ? cellsOrdered[r] : [];
+    for (let c = 0; c < row.length; c++) {
+      if (typeof row[c] === "number" && (row[c] as number) >= 0) depths.push(countsOrdered[r]?.[c] ?? 0);
+    }
+  }
+  const sortedDepths = [...depths].sort((a, b) => a - b);
+  const typicalDepth = sortedDepths.length ? sortedDepths[Math.floor(sortedDepths.length / 2)] : 0;
+  const THIN_CHECKS = 3;
+  const markThin = typicalDepth > THIN_CHECKS;
+  let thinCells = 0;
   // Column numbers along the top.
   let head = "";
   for (let c = 0; c < questionsOrdered.length; c++) {
@@ -257,10 +284,19 @@ function renderCitationGrid(
       // "cited you" would be false about it no matter what the number says.
       // Em dash replaced with a colon: house style, and this is customer copy.
       const verb = grid.layers?.[r] === "model_knowledge" ? "named you in" : "cited you on";
-      const title = `${esc(eng)}: ${verb} ${Math.round(s * 100)}% of this month's runs for question ${c + 1}`;
-      rows += `<g class="cg-cell${strong}" style="--d:${di}"><title>${title}</title>`
-        + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-base"/>`
-        + `<rect x="${x}" y="${y}" width="${CELL}" height="${CELL}" rx="4" class="cg-heat" style="opacity:${op}"/></g>`;
+      const n = countsOrdered[r]?.[c] ?? 0;
+      const thin = markThin && n > 0 && n < THIN_CHECKS;
+      if (thin) thinCells++;
+      // Inset, not faded: opacity is spoken for by share.
+      const inset = thin ? Math.round(CELL * 0.28) : 0;
+      const cx0 = x + inset / 2;
+      const cy0 = y + inset / 2;
+      const sz = CELL - inset;
+      const checks = n === 1 ? "1 check" : `${n} checks`;
+      const title = `${esc(eng)}: ${verb} ${Math.round(s * 100)}% of ${checks} this month for question ${c + 1}`;
+      rows += `<g class="cg-cell${strong}${thin ? " cg-thin" : ""}" style="--d:${di}"><title>${title}</title>`
+        + `<rect x="${cx0}" y="${cy0}" width="${sz}" height="${sz}" rx="4" class="cg-base"/>`
+        + `<rect x="${cx0}" y="${cy0}" width="${sz}" height="${sz}" rx="4" class="cg-heat" style="opacity:${op}"/></g>`;
     }
     // Per-row count on the right rail.
     const cx = GUT + questionsOrdered.length * step - GAP + 12;
@@ -278,7 +314,7 @@ function renderCitationGrid(
   // The old caption used "named" and "won a citation" for the same square, in
   // one sentence, across rows that measure two different things. Each row now
   // states its own basis.
-  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools can cite sources, so a gold square there means that tool pointed at your site. The model-knowledge tools cite nothing at all, so a gold square there means it said your name. Brighter means it happened on more of the month's daily checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
+  const cap = `Each row is one AI tool, each numbered column is one question we ask it every day. The search tools can cite sources, so a gold square there means that tool pointed at your site. The model-knowledge tools cite nothing at all, so a gold square there means it said your name. Brighter means it happened on a larger share of that month's checks. A dark square means the tool answered without you. A faint outline means that tool did not answer that question this month. A smaller square means we only got one or two checks in on that question, so read it as a hint rather than a pattern. The number on the right is how many of the questions it answered where you appeared. The columns are ordered, strongest on the left, so any run of questions nobody picks you up on gathers at the right-hand edge rather than being scattered through the grid.`;
 
   return `<section class="nr-chart"><h3 class="nr-ctitle">Where the six AI tools and the search control put you, question by question</h3>`
     + `<div class="cg-scroll">${svg}</div>`

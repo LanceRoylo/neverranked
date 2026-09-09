@@ -106,3 +106,23 @@ test("cohort rank has ONE implementation", () => {
     assert.doesNotMatch(src, /\.indexOf\(customerMentionCount\)/, `${f} still ranks by indexOf`);
   }
 });
+
+test("the grid encodes evidence as size, leaving intensity to mean share", () => {
+  const src = read("src/routes/customer-readouts.ts");
+  // Share already owns opacity. If confidence borrowed it too, neither would
+  // be readable.
+  assert.match(src, /const thin = markThin && n > 0 && n < THIN_CHECKS/);
+  assert.match(src, /const inset = thin \? Math\.round\(CELL \* 0\.28\) : 0/);
+  assert.doesNotMatch(src, /thin \? .*opacity/i, "confidence must not reuse the share channel");
+  // And the threshold must be able to decline: a uniformly thin grid is not
+  // misleading, so nothing is marked.
+  assert.match(src, /const markThin = typicalDepth > THIN_CHECKS/);
+});
+
+test("the readout grid carries the check count behind every share", () => {
+  const facts = read("src/lib/report-facts.ts");
+  assert.match(facts, /counts: number\[\]\[\]/, "grid must expose per-cell depth");
+  assert.match(facts, /const counts = engineRows\.map/, "and populate it");
+  const view = read("src/routes/customer-readouts.ts");
+  assert.match(view, /\$\{checks\} this month for question/, "the tooltip must name the sample size");
+});

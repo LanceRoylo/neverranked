@@ -116,6 +116,14 @@ export interface ReportFacts {
      *  question where the customer appeared on that row's terms, or -1 if the
      *  tool never answered that question this month (no run = no claim). */
     cells: number[][];
+    /** counts[engineIdx][questionIdx]: how many runs that fraction rests on.
+     *
+     *  A share carries no evidence of its own weight. In September one tool
+     *  answered 5 questions exactly ONCE while its neighbours answered every
+     *  question 8 to 13 times, and both rendered identically: a flat 0% or a
+     *  flat 100% either way. Same picture, a 13x difference in what stands
+     *  behind it. The renderer uses this to draw thin cells smaller. */
+    counts: number[][];
   };
   /** Per-chart "The read this month" analyst commentary (frozen with the numbers). */
   notes?: AnalystNotes;
@@ -403,12 +411,17 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
       return cell.cited / cell.total;
     });
   });
+  const counts = engineRows.map((e) => {
+    const byQ = tally.get(e.key)!;
+    return questions.map((q) => byQ.get(q)?.total ?? 0);
+  });
 
   return {
     engines: engineRows.map((e) => e.label),
     layers: engineRows.map((e) => engineLayer(e.key)),
     questions,
     cells,
+    counts,
   };
 }
 
