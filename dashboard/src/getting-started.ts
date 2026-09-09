@@ -41,13 +41,15 @@ export async function getClientChecklist(user: User, env: Env): Promise<Checklis
     env.DB.prepare(
       `SELECT COALESCE(snippet_last_detected_at, 0) AS detected
          FROM domains
-         WHERE client_slug = ? AND is_competitor = 0
+         WHERE client_slug = ? AND is_competitor = 0 AND active = 1
+         -- ORDER BY id returns the OLDEST row, so without active = 1 a client
+         -- who changed domains is checked against the one we retired.
          ORDER BY id LIMIT 1`,
     ).bind(slug).first<{ detected: number }>(),
     env.DB.prepare(
       `SELECT COUNT(*) AS cnt
          FROM scan_results
-         WHERE domain_id IN (SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0)
+         WHERE domain_id IN (SELECT id FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1)
            AND error IS NULL`,
     ).bind(slug).first<{ cnt: number }>(),
     env.DB.prepare(

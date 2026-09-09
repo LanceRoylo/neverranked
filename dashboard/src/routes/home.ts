@@ -56,11 +56,11 @@ async function buildChangeBanner(user: User, env: Env): Promise<string> {
 
   // Score changes since last login
   const latestScan = await env.DB.prepare(
-    "SELECT sr.aeo_score, sr.grade, d.domain FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at > ? ORDER BY sr.scanned_at DESC LIMIT 1"
+    "SELECT sr.aeo_score, sr.grade, d.domain FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at > ? ORDER BY sr.scanned_at DESC LIMIT 1"
   ).bind(user.client_slug, since).first<{ aeo_score: number; grade: string; domain: string }>();
 
   const prevScan = await env.DB.prepare(
-    "SELECT sr.aeo_score FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at <= ? ORDER BY sr.scanned_at DESC LIMIT 1"
+    "SELECT sr.aeo_score FROM scan_results sr JOIN domains d ON sr.domain_id = d.id WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at <= ? ORDER BY sr.scanned_at DESC LIMIT 1"
   ).bind(user.client_slug, since).first<{ aeo_score: number }>();
 
   if (latestScan && prevScan) {

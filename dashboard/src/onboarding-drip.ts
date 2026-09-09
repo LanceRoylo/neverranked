@@ -117,7 +117,7 @@ async function getLatestScan(user: DripUser, env: Env): Promise<ScanResult | nul
   const result = await env.DB.prepare(
     `SELECT sr.* FROM scan_results sr
      JOIN domains d ON sr.domain_id = d.id
-     WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.error IS NULL
+     WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.error IS NULL
      ORDER BY sr.scanned_at DESC LIMIT 1`
   ).bind(user.client_slug).first<ScanResult>();
   return result || null;

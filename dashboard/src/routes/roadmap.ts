@@ -172,7 +172,7 @@ export async function checkPhaseCompletion(clientSlug: string, env: Env): Promis
     ).bind(clientSlug, alertType).first<{ id: number }>();
     if (!already) {
       const domain = await env.DB.prepare(
-        "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 LIMIT 1"
+        "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
       ).bind(clientSlug).first<Domain>();
       if (domain) {
         // Was: per-event phase-complete email blast. Now: log to

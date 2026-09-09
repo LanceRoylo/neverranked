@@ -64,11 +64,11 @@ export async function getActivityFeed(user: User, env: Env, limit = 10): Promise
     const scanQ = scopeBySlug
       ? `SELECT sr.scanned_at, sr.aeo_score, d.domain, d.client_slug
          FROM scan_results sr JOIN domains d ON sr.domain_id = d.id
-         WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at >= ? AND sr.error IS NULL
+         WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at >= ? AND sr.error IS NULL
          ORDER BY sr.scanned_at DESC LIMIT 6`
       : `SELECT sr.scanned_at, sr.aeo_score, d.domain, d.client_slug
          FROM scan_results sr JOIN domains d ON sr.domain_id = d.id
-         WHERE d.is_competitor = 0 AND sr.scanned_at >= ? AND sr.error IS NULL
+         WHERE d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at >= ? AND sr.error IS NULL
          ORDER BY sr.scanned_at DESC LIMIT 6`;
     const stmt = scopeBySlug
       ? env.DB.prepare(scanQ).bind(slug, sinceCutoff)

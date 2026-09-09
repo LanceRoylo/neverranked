@@ -69,10 +69,45 @@ export class CitationKeywordWorkflow extends WorkflowEntrypoint<Env, CitationKey
 
     // Single step. The whole thing is a small unit of work that fits
     // comfortably in one step's budget. No fan-out, no shared budget
-    // contention. step.do gives us automatic retry on transient
-    // WorkflowInternalError without us having to manage it.
-    await step.do(`citation-${clientSlug}-${keywordId}`, async () => {
-      await runOneKeywordCitations(this.env, clientSlug, keywordId);
-    });
+    // contention.
+    // Retry policy set EXPLICITLY, because this step can now throw and the
+    // inherited default is wrong for it. Cloudflare's default is 5 attempts
+    // at a 10 second initial delay. The failures this step actually sees are
+    // refusals and rate limits, so a retry 10 seconds later re-enters the
+    // same 429 window and rebuilds precisely the burst SPREAD_SECONDS above
+    // exists to break up.
+    //
+    // 3 attempts at 60 seconds exponential: enough to ride out a transient
+    // (a D1 blip, one malformed response), short of hammering seven engines
+    // that are all refusing. A total outage stays loud either way, because
+    // the instance fails once the attempts are spent.
+    await step.do(
+      `citation-${clientSlug}-${keywordId}`,
+      {
+        retries: { limit: 3, delay: "60 seconds", backoff: "exponential" },
+        timeout: "5 minutes",
+      },
+      async () => {
+        const r = await runOneKeywordCitations(this.env, clientSlug, keywordId);
+        // The return value used to be discarded, and ok was hard-coded
+        // true, so this step reported success no matter what happened inside
+        // it. runOneKeywordCitations catches every engine rejection
+        // internally and never throws, which meant step.do's automatic retry
+        // could not fire: a keyword that wrote zero rows completed cleanly
+        // and was never attempted again.
+        //
+        // Throw only on TOTAL failure. Partial coverage is a normal reading
+        // and retrying it would re-call engines that already answered. Zero
+        // rows across every engine is systemic (keys, D1, the keyword row
+        // itself) and is the case a retry can actually fix. It is also safe
+        // to retry precisely because nothing was written, so there is
+        // nothing to duplicate.
+        if (!r.ok) {
+          throw new Error(
+            `citation run wrote no rows for ${clientSlug}/keyword ${keywordId}: ${r.error ?? "unknown"}`,
+          );
+        }
+      },
+    );
   }
 }

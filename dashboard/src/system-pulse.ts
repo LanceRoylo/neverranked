@@ -111,7 +111,7 @@ export async function computePulse(user: User, env: Env): Promise<PulseState | n
   const lastScan = await env.DB.prepare(
     `SELECT sr.scanned_at FROM scan_results sr
      JOIN domains d ON sr.domain_id = d.id
-     WHERE d.client_slug = ? AND d.is_competitor = 0
+     WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1
      ORDER BY sr.scanned_at DESC LIMIT 1`
   ).bind(slug).first<{ scanned_at: number }>();
 

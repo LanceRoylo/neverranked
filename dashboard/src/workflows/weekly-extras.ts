@@ -35,6 +35,7 @@ import {
 import { pullGscData } from "../gsc";
 import { runWeeklyBackup } from "../backup";
 import { sendPendingDigests } from "../lib/citation-alerts";
+import { snapshotMissingAlert } from "../lib/readout-snapshot-alert";
 
 export type WeeklyExtrasParams = {
   // When present, runs the snapshot/alerts work for just that client_slug.
@@ -119,7 +120,38 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
             const monthEnd = Math.floor(
               Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1) / 1000
             );
-            await buildReadoutSnapshot(this.env, slug, monthStart, monthEnd);
+            const res = await buildReadoutSnapshot(this.env, slug, monthStart, monthEnd);
+            // The result used to be discarded. All four of the guards inside
+            // refuse to write rather than write something wrong, and every
+            // refusal looked exactly like a clean run from out here.
+            //
+            // Deliberately NOT a throw. None of the four conditions is
+            // transient, so step.do retries would spend attempts on
+            // something only a human can fix. Raise it where a human reads.
+            if (!res.ok) {
+              let paying = false;
+              try {
+                const c = await this.env.DB.prepare(
+                  "SELECT status FROM customers WHERE client_slug = ?",
+                ).bind(slug).first<{ status: string }>();
+                paying = c ? ["active", "pilot"].includes(c.status) : false;
+              } catch (e) {
+                console.log(`[readout-snapshot] paying lookup failed for ${slug}: ${e}`);
+              }
+              try {
+                const up = snapshotMissingAlert({
+                  clientSlug: slug,
+                  reason: res.reason ?? "unknown",
+                  paying,
+                  now: Math.floor(Date.now() / 1000),
+                });
+                await this.env.DB.prepare(up.sql).bind(...up.binds).run();
+              } catch (e) {
+                // Loud. A silent catch here would recreate the exact bug
+                // this block exists to close.
+                console.log(`[readout-snapshot] CRITICAL: alert not recorded for ${slug}: ${e}`);
+              }
+            }
           });
           continue;
         }

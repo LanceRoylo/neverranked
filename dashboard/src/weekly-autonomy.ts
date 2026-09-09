@@ -45,9 +45,9 @@ export async function getAutonomyStats(user: User, env: Env): Promise<AutonomySt
   try {
     const q = slug
       ? `SELECT COUNT(*) AS n FROM scan_results sr JOIN domains d ON sr.domain_id = d.id
-         WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.scanned_at >= ? AND sr.error IS NULL`
+         WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at >= ? AND sr.error IS NULL`
       : `SELECT COUNT(*) AS n FROM scan_results sr JOIN domains d ON sr.domain_id = d.id
-         WHERE d.is_competitor = 0 AND sr.scanned_at >= ? AND sr.error IS NULL`;
+         WHERE d.is_competitor = 0 AND d.active = 1 AND sr.scanned_at >= ? AND sr.error IS NULL`;
     const r = slug
       ? await env.DB.prepare(q).bind(slug, sevenDaysAgo).first<{ n: number }>()
       : await env.DB.prepare(q).bind(sevenDaysAgo).first<{ n: number }>();

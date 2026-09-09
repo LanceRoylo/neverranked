@@ -122,7 +122,7 @@ export async function handleEmailTestGet(user: User | null, env: Env, url: URL):
     `SELECT DISTINCT d.client_slug AS slug
        FROM domains d
        JOIN scan_results s ON s.domain_id = d.id AND s.error IS NULL
-      WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0
+      WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0 AND d.active = 1
       ORDER BY d.client_slug`
   ).all<{ slug: string }>()).results;
   const clientSlugOptions = digestClients
@@ -302,6 +302,7 @@ export async function handleEmailTestPost(request: Request, user: User | null, e
              JOIN domains d ON d.id = s.domain_id
             WHERE s.error IS NULL
               AND d.is_competitor = 0
+              AND d.active = 1
               AND (? = '' OR d.client_slug = ?)
             ORDER BY s.scanned_at DESC LIMIT 1`
         ).bind(digestSlug, digestSlug).first<ScanResult & { domain: string; client_slug: string }>();

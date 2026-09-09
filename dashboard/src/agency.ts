@@ -38,7 +38,10 @@ export async function getAgencyBySlug(env: Env, slug: string): Promise<Agency | 
 /** Fetch the primary domain row for a client_slug (not counting competitors). */
 export async function getDomainBySlug(env: Env, clientSlug: string): Promise<Domain | null> {
   const row = await env.DB.prepare(
-    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 LIMIT 1"
+    // active = 1 matters on a LIMIT 1 with no ORDER BY: after a domain change
+    // a client has a retired row and a live one, and without this the query
+    // can return the site we stopped measuring.
+    "SELECT * FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
   ).bind(clientSlug).first<Domain>();
   return row || null;
 }
@@ -182,6 +185,9 @@ export async function resolveAgencyForEmail(
  * Used for the /agency dashboard.
  */
 export async function listAgencyClients(env: Env, agencyId: number): Promise<Domain[]> {
+  // NO active = 1 here, deliberately. This lists everything the agency has
+  // ever had and sorts live rows first, which is what ORDER BY active DESC is
+  // for. Filtering would make a deactivated client vanish from their console.
   const rows = await env.DB.prepare(
     `SELECT * FROM domains
        WHERE agency_id = ? AND is_competitor = 0

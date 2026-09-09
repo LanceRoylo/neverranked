@@ -353,6 +353,8 @@ export async function handleInviteClient(request: Request, user: User | null, en
   }
 
   // Verify client_slug actually belongs to this agency.
+  // NO active = 1, deliberately. This answers "does this agency own this
+  // slug", which stays true after deactivation.
   const owns = await env.DB.prepare(
     "SELECT 1 FROM domains WHERE client_slug = ? AND agency_id = ? AND is_competitor = 0 LIMIT 1"
   ).bind(clientSlug, agency.id).first();

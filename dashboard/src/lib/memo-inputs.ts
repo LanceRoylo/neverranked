@@ -11,6 +11,7 @@
 // they do not depend on the sparse weekly snapshot table.
 
 import type { Env } from "../types";
+import { cohortRank } from "./cohort-rank";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 const DAY = 86400;
@@ -167,8 +168,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       return { domain: key, label, mentions, share_pct: legacyVenueTotal > 0 ? +(100 * mentions / legacyVenueTotal).toFixed(1) : 0 };
     })
     .sort((a, b) => b.mentions - a.mentions);
-  const allCountsLegacy = [...cohortMembersLegacy.map((m) => m.mentions), curCited].sort((a, b) => b - a);
-  const rankLegacy = cohortMembersLegacy.length > 0 ? allCountsLegacy.indexOf(curCited) + 1 : null;
+  // Shared helper. This line carried the same indexOf tie bug the snapshot
+  // path below was fixed for: a tie promoted the customer to the top of the
+  // tied group. Fixing one of the two left the other free to disagree.
+  const rankLegacy = cohortRank(curCited, cohortMembersLegacy.map((m) => m.mentions));
 
   let overall = {
     current: { runs: curRuns, cited: curCited, share_pct: pct(curCited, curRuns) },
@@ -280,7 +283,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     // FIRST match, so any tie silently promoted the customer to the top of the
     // tied group off a coincidental equal count.
     cohort = {
-      rank: comps.length ? comps.filter((c) => c.mentions > ownedCitations).length + 1 : null,
+      rank: cohortRank(ownedCitations, comps.map((c) => c.mentions)),
       members: comps.map((c) => ({ ...c, share_pct: venueTotal > 0 ? +(100 * c.mentions / venueTotal).toFixed(1) : 0 })),
       customer_mentions: ownedCitations,
     };

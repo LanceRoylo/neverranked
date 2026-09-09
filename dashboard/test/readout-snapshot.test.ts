@@ -113,8 +113,8 @@ function mockEnv(
 
 async function build() {
   const { env, written } = mockEnv();
-  const ok = await buildReadoutSnapshot(env, "prince-waikiki", 0, 9_999_999_999);
-  assert.equal(ok, true, "writer should report success");
+  const res = await buildReadoutSnapshot(env, "prince-waikiki", 0, 9_999_999_999);
+  assert.equal(res.ok, true, "writer should report success");
   return {
     eb: JSON.parse(String(written.engines_breakdown)) as Record<string, Record<string, number | string>>,
     tc: JSON.parse(String(written.top_competitors)) as Record<string, never>,
@@ -216,8 +216,12 @@ test("no resolvable business name REFUSES to write rather than asserting 0%", as
   // reads 0%, which is an assertion of absence the writer cannot support.
   // Failing closed is the only honest option.
   const { env, written } = mockEnv({ injectionConfig: null, customerName: null });
-  const ok = await buildReadoutSnapshot(env, "prince-waikiki", 0, 9_999_999_999);
-  assert.equal(ok, false);
+  const res = await buildReadoutSnapshot(env, "prince-waikiki", 0, 9_999_999_999);
+  assert.equal(res.ok, false);
+  // The reason is the point: the caller now raises an alert naming WHICH
+  // guard refused, and "no business name" is the one that would otherwise
+  // publish a readout asserting an absence it never measured.
+  assert.equal(res.reason, "no_business_name");
   assert.equal(written.engines_breakdown, undefined, "must not write a row at all");
 });
 

@@ -1,0 +1,25 @@
+-- 0114: retire hosted injection in DATA, not only in policy.
+--
+-- Hosted schema injection was retired 2026-07-24. NeverRanked measures and
+-- does not touch a client's site, which is the published positioning.
+--
+-- The retirement was true in practice and never true in the database. Three
+-- injection_configs rows still carried enabled = 1 on 2026-09-08: montaic and
+-- neverranked (own properties) and and-scene, whose domain belongs to someone
+-- who is not a customer. /inject/<slug>.js was still routed, and the handler
+-- would lazily CREATE a config row for any slug requested.
+--
+-- Nothing was being served. The daily snippet check ran 2026-09-07 against
+-- every active domain and detected no installation, and referrer_hits was
+-- empty for 30 days. The risk was not what it was doing, it was that the
+-- mechanism stayed armed: a script tag reappearing on any of those sites
+-- would have restarted it with nothing to say so.
+--
+-- The code gate in routes/inject.ts is the real fix. This makes the table
+-- agree with it, so a future reader is not told two different things by the
+-- data and the code.
+--
+-- Reversible: UPDATE injection_configs SET enabled = 1 WHERE client_slug IN
+-- ('montaic','neverranked','and-scene'). Reversing this alone will not
+-- re-enable serving, which is the point.
+UPDATE injection_configs SET enabled = 0, updated_at = unixepoch() WHERE enabled = 1;

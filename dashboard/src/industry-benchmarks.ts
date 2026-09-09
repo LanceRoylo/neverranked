@@ -91,7 +91,7 @@ async function collectClientStats(env: Env): Promise<ClientStat[]> {
     const scan = await env.DB.prepare(
       `SELECT sr.aeo_score, sr.schema_coverage FROM scan_results sr
          JOIN domains d ON d.id = sr.domain_id
-         WHERE d.client_slug = ? AND d.is_competitor = 0 AND sr.error IS NULL
+         WHERE d.client_slug = ? AND d.is_competitor = 0 AND d.active = 1 AND sr.error IS NULL
          ORDER BY sr.scanned_at DESC LIMIT 1`
     ).bind(s.client_slug).first<{ aeo_score: number; schema_coverage: string }>();
 

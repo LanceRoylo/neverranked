@@ -15,12 +15,46 @@ import type { Env, SchemaInjection, InjectionConfig, MetaDescription } from "../
 import { logBotHit, refererPath } from "../bot-analytics";
 import { referrerTrackingSnippet } from "../referrer-tracking";
 
+/**
+ * HOSTED INJECTION IS RETIRED (2026-07-24).
+ *
+ * NeverRanked measures. It does not deploy to, or touch, a client's site.
+ * That is the published positioning and the constraint in CLAUDE.md.
+ *
+ * The retirement was real in policy and in practice but never in code: this
+ * route stayed live, three injection_configs rows still carried enabled = 1
+ * (one of them for a domain belonging to someone who is not a customer), and
+ * the handler below would lazily CREATE a config row for any slug requested.
+ * Nothing was actually being served -- the daily snippet check found no
+ * installation anywhere and referrer_hits was empty for 30 days -- but the
+ * mechanism was armed, and a script tag reappearing on any of those sites
+ * would have restarted it silently.
+ *
+ * So the gate is a code constant, not a per-row flag. Turning hosted
+ * injection back on is now a deliberate edit with a diff and a reviewer,
+ * rather than one UPDATE against a table nobody watches.
+ *
+ * Both handlers return exactly what a disabled config already returned, so
+ * this is a well-trodden path rather than a new one.
+ */
+const HOSTED_INJECTION_RETIRED = true;
+
 export async function handleInjectScript(
   slug: string,
   env: Env,
   request?: Request,
   ctx?: ExecutionContext,
 ): Promise<Response> {
+  if (HOSTED_INJECTION_RETIRED) {
+    return new Response("/* NeverRanked: not configured */", {
+      headers: {
+        "Content-Type": "application/javascript; charset=utf-8",
+        "Cache-Control": "public, max-age=300, s-maxage=300",
+        "Access-Control-Allow-Origin": "*",
+      },
+    });
+  }
+
   // Bot-analytics logging is opportunistic: we only have the request
   // when the route was called from the main fetch handler. The legacy
   // call signature (slug + env only) is still supported.
@@ -277,6 +311,10 @@ export async function handleInjectJson(
   slug: string,
   env: Env,
 ): Promise<Response> {
+  if (HOSTED_INJECTION_RETIRED) {
+    return jsonResponse({ client_slug: slug, schemas: [], meta_descriptions: [], note: "not configured or disabled" });
+  }
+
   const config = await env.DB.prepare(
     "SELECT enabled FROM injection_configs WHERE client_slug = ?"
   ).bind(slug).first<{ enabled: number }>();

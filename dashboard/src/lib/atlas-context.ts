@@ -30,6 +30,8 @@
 // D1 East replica.
 
 import type { Env } from "../types";
+import { engineLayer, byLayerThenShare, LAYER_UNITS_NOTE, type EngineLayer } from "./engine-layer";
+import { cohortRank, COHORT_BASIS_NOTE, type CohortRankBasis } from "./cohort-rank";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
 // ──────────────────────────────────────────────────────────────────
@@ -90,7 +92,12 @@ export interface MeasurementWindow {
     total_runs: number;
     citations: number;
     share_pct: number;
+    /** "citation" and "model_knowledge" are different measurements. Dropping
+     *  this field let a share of ANSWERS sort above a share of CITED SOURCES
+     *  in one ranked list, in the customer-facing chat. */
+    layer: EngineLayer;
   }>;
+  _layers: string;
   weekly_snapshots: Array<{
     week_start: string;
     /** Same unit as share_of_all_cited_sources_pct above, NOT venue share. */
@@ -119,10 +126,23 @@ export interface CohortSummary {
   members: Array<{
     domain: string;
     label: string | null;
+    /** Count on whichever basis `rank_basis` names. For venue_citations this
+     *  is attributed Layer 1 citations; for the 90d fallback it is how often
+     *  the venue was NAMED in a response. */
     mentions_last_window: number;
-    engines_citing: string[];
+    /** Runs-based fallback only. Absent on the snapshot basis, which stores a
+     *  COUNT of engines and no list. An empty array here would read as "no
+     *  engine cites them", which is a false claim rather than a missing one. */
+    engines_citing?: string[];
+    /** Snapshot basis only: how many surfaces cited this venue. */
+    engines_count?: number;
   }>;
-  customer_rank: number | null; // 1-indexed position by mention count
+  customer_rank: number | null;
+  /** Which computation produced customer_rank. The readout and the memo use
+   *  venue_citations; anything else must not be quoted as the published rank. */
+  rank_basis: CohortRankBasis;
+  /** Read by the chat model. Spells out what this rank is and is not. */
+  _rank_basis_note: string;
 }
 
 export interface MemoSummary {
@@ -315,8 +335,16 @@ async function loadMeasurementWindow(
   // never disagree. The citation_runs computation above is the fallback for any
   // customer that has no snapshot yet (Atlas degrades honestly, not wrongly).
   let byEngineOut = Array.from(byEngine.entries())
-    .map(([engine, e]) => ({ engine, total_runs: e.total, citations: e.cited, share_pct: e.total > 0 ? +(100 * e.cited / e.total).toFixed(1) : 0 }))
-    .sort((a, b) => b.share_pct - a.share_pct);
+    .map(([engine, e]) => ({
+      engine,
+      total_runs: e.total,
+      citations: e.cited,
+      share_pct: e.total > 0 ? +(100 * e.cited / e.total).toFixed(1) : 0,
+      // This path keys by RAW engine ("openai"); the snapshot path below keys
+      // by DISPLAY LABEL ("ChatGPT search"). engineLayer resolves both.
+      layer: engineLayer(engine),
+    }))
+    .sort(byLayerThenShare);
   let sharePctOut = totalRuns > 0 ? +(100 * totalCited / totalRuns).toFixed(1) : 0;
   const headSnap = snaps.results[0];
   // Shape guard added 2026-09-06. Without it a LEGACY-shape snapshot (which
@@ -331,9 +359,19 @@ async function loadMeasurementWindow(
     : false;
   if (headIsReadout && headSnap?.engines_breakdown) {
     try {
-      const eb = JSON.parse(headSnap.engines_breakdown) as Record<string, { citations: number; total: number; share_pct: number }>;
-      const arr = Object.entries(eb).map(([engine, v]) => ({ engine, total_runs: v.total, citations: v.citations, share_pct: v.share_pct }));
-      if (arr.length) byEngineOut = arr.sort((a, b) => b.share_pct - a.share_pct);
+      // `layer` is written by buildReadoutSnapshot and was being discarded
+      // here, along with the only thing that made the seven figures legible.
+      const eb = JSON.parse(headSnap.engines_breakdown) as Record<string, { citations: number; total: number; share_pct: number; layer?: string }>;
+      const arr = Object.entries(eb).map(([engine, v]) => ({
+        engine,
+        total_runs: v.total,
+        citations: v.citations,
+        share_pct: v.share_pct,
+        // Trust the stored layer when present, fall back to the shared
+        // resolver, never guess.
+        layer: (v.layer === "citation" || v.layer === "model_knowledge") ? v.layer : engineLayer(engine),
+      }));
+      if (arr.length) byEngineOut = arr.sort(byLayerThenShare);
       if (typeof headSnap.citation_share === "number") sharePctOut = +(headSnap.citation_share * 100).toFixed(1);
     } catch { /* malformed snapshot: keep the runs-based fallback */ }
   }
@@ -380,6 +418,7 @@ async function loadMeasurementWindow(
         "A different and much smaller figure: of EVERY source cited across all questions, including news, guides, directories and unrelated sites, the share that was this customer. A larger denominator, so a smaller number. Never present it as their citation share and never compare it against venue_share_pct.",
     },
     by_engine: byEngineOut,
+    _layers: LAYER_UNITS_NOTE,
     weekly_snapshots: dedupeByWeek(snaps.results)
       .map((s) => ({
         week_start: new Date(s.week_start * 1000).toISOString().slice(0, 10),
@@ -492,18 +531,66 @@ async function loadCohort(env: Env, slug: string, windowDays: number): Promise<C
     })
     .sort((a, b) => b.mentions_last_window - a.mentions_last_window);
 
-  // Rank: customer's position when sorted descending by mention count
-  // against the cohort. 1 = top.
-  const allCounts = [
-    ...cohortMembers.map((m) => m.mentions_last_window),
-    customerMentionCount,
-  ].sort((a, b) => b - a);
-  const customerRank = allCounts.indexOf(customerMentionCount) + 1;
+  // PREFER THE SNAPSHOT. Atlas used to rank from the computation above:
+  // entity mentions, 90-day rolling window, hostname matching. The readout and
+  // the monthly memo rank from attributed Layer 1 citations, month to date,
+  // via the venue matcher. Different numerator, different window, different
+  // attribution, and both were shown to the same customer as "your rank".
+  //
+  // This is the same failure the citation-share comment above records: the
+  // same words over a different denominator, with no way for the customer to
+  // tell which was wrong. Share was unified then. Rank was not.
+  let members = cohortMembers.map((m) => ({
+    domain: m.domain,
+    label: m.label,
+    mentions_last_window: m.mentions_last_window,
+    engines_citing: m.engines_citing,
+  })) as CohortSummary["members"];
+  let ownedCount = customerMentionCount;
+  let competitorCounts = cohortMembers.map((m) => m.mentions_last_window);
+  let basis: CohortRankBasis = "entity_mentions_90d";
+
+  try {
+    const snap = await env.DB.prepare(
+      `SELECT engines_breakdown, top_competitors FROM citation_snapshots
+        WHERE client_slug = ? ORDER BY week_start DESC LIMIT 1`,
+    ).bind(slug).first<{ engines_breakdown: string; top_competitors: string }>();
+    if (snap && isReadoutShapeSnapshot(snap.engines_breakdown, snap.top_competitors)) {
+      const tc = JSON.parse(snap.top_competitors) as {
+        competitors?: Array<{ domain?: string; label?: string; citations?: number; engines_count?: number }>;
+      };
+      const eb = JSON.parse(snap.engines_breakdown) as Record<string, { citations?: number; layer?: string }>;
+      // Owned side derived exactly as memo-inputs does: Layer 1 citations
+      // only. Pooling in Layer 2 mentions would put a share of ANSWERS in a
+      // numerator whose denominator counts cited URLs.
+      const owned = Object.entries(eb)
+        .filter(([k, v]) => (v.layer ?? (engineLayer(k) === "citation" ? "citation" : "model_knowledge")) === "citation")
+        .reduce((a, [, v]) => a + (v.citations ?? 0), 0);
+      const comps = (tc.competitors ?? []).filter((c) => c.domain);
+      if (comps.length) {
+        members = comps.map((c) => ({
+          domain: String(c.domain),
+          label: c.label ?? null,
+          mentions_last_window: c.citations ?? 0,
+          engines_count: c.engines_count,
+        }));
+        ownedCount = owned;
+        competitorCounts = comps.map((c) => c.citations ?? 0);
+        basis = "venue_citations";
+      }
+    }
+  } catch (e) {
+    // Fall back to the runs-based cohort. Reporting the wrong basis is worse
+    // than reporting a provisional one, and the note below says which it is.
+    console.log(`[atlas] cohort snapshot override failed for ${slug}: ${e}`);
+  }
 
   return {
-    registered_count: cohortMembers.length,
-    members: cohortMembers,
-    customer_rank: cohortMembers.length > 0 ? customerRank : null,
+    registered_count: members.length,
+    members,
+    customer_rank: cohortRank(ownedCount, competitorCounts),
+    rank_basis: basis,
+    _rank_basis_note: COHORT_BASIS_NOTE[basis],
   };
 }
 

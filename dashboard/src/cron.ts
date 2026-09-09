@@ -1507,7 +1507,7 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
       `SELECT DISTINCT d.client_slug FROM domains d
          LEFT JOIN injection_configs ic ON ic.client_slug = d.client_slug
          LEFT JOIN measurement_registry mr ON mr.client_slug = d.client_slug
-         WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0
+         WHERE d.client_slug IS NOT NULL AND d.is_competitor = 0 AND d.active = 1
            AND ic.client_slug IS NULL
            AND mr.client_slug IS NULL
            AND d.client_slug NOT LIKE '%-test-%'
@@ -2092,7 +2092,8 @@ export async function runBenchmarkCalc(env: Env): Promise<void> {
        JOIN domains d ON d.id = s.domain_id
       WHERE s.error IS NULL
         AND s.scanned_at > ?
-        AND d.is_competitor = 0`
+        AND d.is_competitor = 0
+        AND d.active = 1`
   ).bind(ninetyDaysAgo).all<{ aeo_score: number; grade: string }>()).results;
 
   if (scans.length < 10) {

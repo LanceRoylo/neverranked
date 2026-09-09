@@ -11,6 +11,8 @@ import { resolveGroundingUrls } from "./gemini-resolver";
 import { detectAndRecordAlerts } from "./lib/citation-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { classifySource, hostOf } from "./lib/classify-source";
+import { keywordRunVerdict } from "./lib/keyword-run-verdict";
+import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
 import { attributeVenueUrl, matchCohortMember, pathOf, regionOf, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
 
 /**
@@ -1553,13 +1555,13 @@ export async function runOneKeywordCitations(
   env: Env,
   clientSlug: string,
   keywordId: number
-): Promise<{ ok: boolean; rowsInserted: number; engines: Record<string, number>; error?: string }> {
+): Promise<{ ok: boolean; rowsInserted: number; engines: Record<string, number>; rejected: string[]; error?: string }> {
   const kw = await env.DB.prepare(
     "SELECT * FROM citation_keywords WHERE id = ? AND client_slug = ? AND active = 1"
   ).bind(keywordId, clientSlug).first<CitationKeyword>();
 
   if (!kw) {
-    return { ok: false, rowsInserted: 0, engines: {}, error: "keyword not found or inactive" };
+    return { ok: false, rowsInserted: 0, engines: {}, rejected: [], error: "keyword not found or inactive" };
   }
 
   const domain = await env.DB.prepare(
@@ -1574,6 +1576,7 @@ export async function runOneKeywordCitations(
   const businessName = await resolveBusinessName(env, clientSlug, config);
 
   const engines: Record<string, number> = {};
+  const rejected: string[] = [];
   let rowsInserted = 0;
 
   // Per-engine handlers. Each is an async closure that does the API
@@ -1715,13 +1718,28 @@ export async function runOneKeywordCitations(
     ]);
     results.forEach((res, i) => {
       if (res.status === "rejected") {
+        // Collected, not just logged. Worker console output is ephemeral,
+        // and "which engines refused" is the whole content of the failure.
+        if (!rejected.includes(engineLabels[i])) rejected.push(engineLabels[i]);
         console.log(`[per-keyword] ${engineLabels[i]} failed (${kw.keyword}): ${res.reason}`);
       }
     });
   }
 
   console.log(`[per-keyword] ${clientSlug}/"${kw.keyword}": ${rowsInserted} rows across ${Object.keys(engines).length} engines`);
-  return { ok: true, rowsInserted, engines };
+
+  // ok reports whether measurement actually happened. It was hard-coded true,
+  // which meant a keyword whose seven engines ALL failed reported success and
+  // was indistinguishable from one that measured cleanly. Promise.allSettled
+  // catches every rejection, so this function never throws either, and the
+  // step.do wrapping the call could not retry anything.
+  //
+  // Zero rows is the only condition that counts as failure here. Partial
+  // coverage is ordinary: one engine out of credit while six answer is a
+  // normal reading, and treating it as a failure would retry calls that
+  // cannot succeed.
+  const verdict = keywordRunVerdict(rowsInserted, rejected, engineLabels.length);
+  return { ok: verdict.ok, rowsInserted, engines, rejected, error: verdict.error };
 }
 
 // ---------------------------------------------------------------------------
@@ -2169,8 +2187,10 @@ const READOUT_ENGINE_LABEL: Record<string, string> = {
   gemma: "Gemma",
 };
 
-/** Engines that retrieve and cite. Everything else in the map is Layer 2. */
-const LAYER1_ENGINES = new Set(["perplexity", "openai", "gemini", "google_ai_overview", "bing"]);
+/** Engines that retrieve and cite. Everything else in the map is Layer 2.
+ *  Imported rather than declared: Atlas needs the same answer, and a second
+ *  copy of this set drifting from this one is the bug it exists to prevent. */
+const LAYER1_ENGINES = LAYER1_ENGINE_KEYS;
 
 /** Same derivation as the bridge's deriveLabel, so a cohort domain gets the
  *  same display name in both pipelines. */
@@ -2205,18 +2225,36 @@ interface ReadoutEngineStat {
  * clobbering it) but aggregates MONTH-TO-DATE, because the readout describes
  * a month.
  */
+/** Why a readout snapshot was not written. Each maps to one guard, so the
+ *  alert can name the fix instead of saying only that something failed. */
+export type ReadoutSnapshotSkip =
+  | "no_owned_domain"
+  | "no_business_name"
+  | "no_runs_in_window"
+  | "no_recognized_engines";
+
+export interface ReadoutSnapshotResult {
+  ok: boolean;
+  reason?: ReadoutSnapshotSkip;
+}
+
 export async function buildReadoutSnapshot(
   env: Env,
   clientSlug: string,
   windowStart: number,
   windowEnd: number,
-): Promise<boolean> {
+  // Four guards below refuse to write a snapshot rather than write a wrong
+  // one, and each was invisible to the caller: the return value was a bare
+  // boolean that weekly-extras discarded. A guard with no notification path
+  // is indistinguishable from the thing never happening, and the cost lands
+  // on the 25th, when the readout renders from whatever row survived.
+): Promise<ReadoutSnapshotResult> {
   const owned = await env.DB.prepare(
     "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 0 AND active = 1 LIMIT 1"
   ).bind(clientSlug).first<{ domain: string }>();
   if (!owned?.domain) {
     console.log(`[readout-snapshot] ${clientSlug}: no owned domain registered; skipping`);
-    return false;
+    return { ok: false, reason: "no_owned_domain" };
   }
   const ownedHost = owned.domain.replace(/^www\./, "").toLowerCase();
 
@@ -2228,7 +2266,7 @@ export async function buildReadoutSnapshot(
   const businessName = await resolveBusinessName(env, clientSlug, injCfg);
   if (!businessName) {
     console.log(`[readout-snapshot] ${clientSlug}: NO business name resolvable; model-knowledge surfaces would all read 0%. Refusing to write a snapshot that asserts absence it cannot measure.`);
-    return false;
+    return { ok: false, reason: "no_business_name" };
   }
 
   const compRows = (await env.DB.prepare(
@@ -2251,7 +2289,7 @@ export async function buildReadoutSnapshot(
 
   if (rows.length === 0) {
     console.log(`[readout-snapshot] ${clientSlug}: no runs in window; skipping`);
-    return false;
+    return { ok: false, reason: "no_runs_in_window" };
   }
 
   const ctx = { owned: [ownedHost], competitors: competitorHosts };
@@ -2439,7 +2477,7 @@ export async function buildReadoutSnapshot(
 
   if (Object.keys(enginesBreakdown).length === 0) {
     console.log(`[readout-snapshot] ${clientSlug}: no recognized engines in window; skipping`);
-    return false;
+    return { ok: false, reason: "no_recognized_engines" };
   }
 
   // ── venue shares (LAYER 1 CITATIONS ONLY) ────────────────────────────────
@@ -2550,7 +2588,7 @@ export async function buildReadoutSnapshot(
     `${offIslandDropped ? `, ${offIslandDropped} off-island citations dropped` : ""}, ` +
     `${allQuestions.size} questions`
   );
-  return true;
+  return { ok: true };
 }
 
 // citation_snapshots stores TWO shapes in these JSON columns, and the digest

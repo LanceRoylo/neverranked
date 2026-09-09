@@ -38,6 +38,9 @@ async function loadAgencyAndDomain(
   const agency = await getAgency(env, user.agency_id);
   if (!agency) return new Response("Agency not found", { status: 404 });
 
+  // NO active = 1, deliberately. This is an ownership check, not a "which
+  // domain do we measure" lookup. An agency may open a client it deactivated,
+  // and filtering here would 403 them out of their own record.
   const domain = await env.DB.prepare(
     "SELECT * FROM domains WHERE id = ? AND agency_id = ? AND is_competitor = 0"
   ).bind(domainId, user.agency_id).first<Domain>();

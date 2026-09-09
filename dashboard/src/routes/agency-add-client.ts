@@ -324,6 +324,10 @@ export async function handleAgencyAddClientPost(request: Request, user: User | n
   // Helpful dedupe error: if this domain already exists ANYWHERE on this
   // agency, name the existing slug. The DB unique constraint would also
   // fire but the silent admin-flow behavior was bad UX.
+  // NO active = 1 on either dedupe check, deliberately. A DEACTIVATED row
+  // still occupies the domain and the slug, and the DB unique constraint still
+  // fires on it. Filtering here would accept the input, then fail on insert
+  // with the silent behavior these two checks were added to replace.
   const existingByDomain = await env.DB.prepare(
     "SELECT client_slug FROM domains WHERE domain = ? AND agency_id = ? AND is_competitor = 0 LIMIT 1"
   ).bind(domain, agency.id).first<{ client_slug: string }>();
