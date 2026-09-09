@@ -1,3 +1,5 @@
+import { engineVerbClaims } from "./engine-verb-claims";
+import { ENGINE_ORDER } from "./engine-order";
 // Claim checking: verify that the PROSE describes the FROZEN DATA truthfully.
 //
 // WHY THIS EXISTS, and why it is not the same as the hallucination guard.
@@ -237,7 +239,20 @@ export function checkClaims(body: string, factsJson: string | null | undefined):
     ...checkDirection(body, facts),
     ...checkRanking(body, facts),
     ...checkZeroAttribution(body, facts),
+    ...checkEngineVerbs(body),
   ];
+}
+
+/** The published methodology's absolute: an engine does not recommend, prefer,
+ *  endorse or rank. It returns sources. Saying otherwise asserts intent the
+ *  instrument cannot see, and it is the first thing a customer's auditor would
+ *  catch. Proximity-scoped, because the memo's own punch list IS ranked. */
+function checkEngineVerbs(body: string): ClaimIssue[] {
+  return engineVerbClaims(body, ENGINE_ORDER.map((e) => e.label)).map((h) => ({
+    kind: "attribution" as const,
+    quote: h.quote,
+    detail: `The methodology states we never say an engine "recommends", "prefers", "endorses" or "ranks" a business. This attributes "${h.verb}" to ${h.engine}`,
+  }));
 }
 
 /** One-line summaries for the delivery-blocked page. */

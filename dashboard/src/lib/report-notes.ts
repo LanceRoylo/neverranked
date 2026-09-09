@@ -17,6 +17,7 @@
 // number in a customer deliverable is not.
 
 import type { Env } from "../types";
+import { engineVerbClaimsOk } from "./engine-verb-claims";
 import type { ReportFacts } from "./report-facts";
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
@@ -215,13 +216,28 @@ export async function writeAnalystNotes(
     const allowed = allowedNumbers(facts);
     const notes: AnalystNotes = {};
     let engines = cleanNote(raw.engines, allowed);
+    if (engines && !engineVerbClaimsOk(engines, engineLabels)) {
+      console.log("[report-notes] engines note attributes a forbidden verb to an engine; dropped");
+      engines = undefined;
+    }
     if (engines && !engineNoteClaimsOk(engines, facts)) {
       console.log(`[report-notes] engines note REJECTED: crosses the citation / model-knowledge boundary, misdescribes the control, or claims movement in a baseline month. Chart renders mechanics-only.`);
       engines = undefined;
     }
-    const venue = cleanNote(raw.venue, allowed);
-    const sources = cleanNote(raw.sources, allowed);
-    const topSources = cleanNote(raw.topSources, allowed);
+    // Applied to EVERY note, not just the engines one. The methodology's
+    // absolute is about the whole deliverable, and a forbidden attribution is
+    // as false in the venue paragraph as in the engine paragraph.
+    const engineLabels = (facts.engines || []).map((e) => e.name);
+    const verbOk = (t: string | undefined, which: string): string | undefined => {
+      if (t && !engineVerbClaimsOk(t, engineLabels)) {
+        console.log(`[report-notes] ${which} note attributes a forbidden verb to an engine; dropped`);
+        return undefined;
+      }
+      return t;
+    };
+    const venue = verbOk(cleanNote(raw.venue, allowed), "venue");
+    const sources = verbOk(cleanNote(raw.sources, allowed), "sources");
+    const topSources = verbOk(cleanNote(raw.topSources, allowed), "topSources");
     const questions = facts.questions ? cleanNote(raw.questions, allowed) : undefined;
     if (engines) notes.engines = engines;
     if (venue) notes.venue = venue;
