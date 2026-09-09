@@ -170,8 +170,19 @@ export async function querySetAt(
  * The first observation per client is a baseline and never alerts.
  */
 export async function sweepQuerySets(env: Env): Promise<void> {
+  // GATE ON WHAT IS ACTUALLY MEASURED, not on the registry.
+  //
+  // planCitationRun dispatches from citation_keywords WHERE active = 1. This
+  // swept measurement_registry WHERE active = 1 instead, which is a different
+  // question, so a client with live keywords and no armed registry row was
+  // measured every day and hashed never. Found 2026-09-09 while checking a
+  // methodology sentence: one slug was in exactly that state.
+  //
+  // Two definitions of "is this client being measured" is the same drift that
+  // put a private Layer 1 set in one file and none in its neighbour. There is
+  // one definition now, and it is the one the dispatcher uses.
   const clients = (await env.DB.prepare(
-    "SELECT client_slug FROM measurement_registry WHERE active = 1"
+    "SELECT DISTINCT client_slug FROM citation_keywords WHERE active = 1 AND client_slug IS NOT NULL"
   ).all<{ client_slug: string }>()).results;
 
   for (const { client_slug } of clients) {
