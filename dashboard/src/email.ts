@@ -683,10 +683,15 @@ export async function sendDigestEmail(
       // nothing, and the briefing sorts the needs-you lane on urgency.
       let paying = false;
       try {
+        // PAYING means revenue, not provisioning. status IN ('active','pilot')
+        // is the test for "is this a real customer" and it treats a $0 pilot as
+        // paying, which collapsed the exact distinction this severity split
+        // exists to make: the first alert it ever raised read "PAYING CLIENT
+        // heard nothing" about an unpaid beta.
         const cust = await env.DB.prepare(
-          "SELECT status FROM customers WHERE client_slug = ?",
-        ).bind(heldSlug).first<{ status: string }>();
-        paying = cust ? ["active", "pilot"].includes(cust.status) : false;
+          "SELECT status, mrr_cents FROM customers WHERE client_slug = ?",
+        ).bind(heldSlug).first<{ status: string; mrr_cents: number }>();
+        paying = cust ? Number(cust.mrr_cents) > 0 && cust.status !== "churned" : false;
       } catch (e) {
         // Unknown means treat it as the cheaper alert, never as no alert.
         console.log(`[digest] paying-status lookup failed for ${heldSlug}: ${e}`);

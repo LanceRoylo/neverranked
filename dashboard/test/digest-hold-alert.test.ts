@@ -80,3 +80,25 @@ test("bind count matches the placeholders in the statement", () => {
   const { sql, binds } = input();
   assert.equal((sql.match(/\?/g) || []).length, binds.length);
 });
+
+
+/** The first alert this ever raised, on 2026-09-09, read
+ *  "PAYING CLIENT heard nothing" about a pilot at $0 MRR. The caller decided
+ *  `paying` from status IN ('active','pilot'), which is the provisioning test
+ *  for "is this a real customer", not a revenue test. That collapsed the exact
+ *  distinction this severity split exists to make. The helper below documents
+ *  the rule the callers now use. */
+const paysUs = (mrrCents: number, status: string) => mrrCents > 0 && status !== "churned";
+
+test("REGRESSION: a $0 pilot is a real customer and is NOT a paying one", () => {
+  assert.equal(paysUs(0, "pilot"), false);
+  assert.equal(paysUs(0, "active"), false);
+  assert.equal(paysUs(75000, "active"), true);
+  assert.equal(paysUs(75000, "pilot"), true, "a paying pilot still pays");
+  assert.equal(paysUs(75000, "churned"), false, "revenue that has stopped is not revenue");
+});
+
+test("the title follows the revenue answer, not the status", () => {
+  assert.match(String(input({ paying: paysUs(75000, "active") }).binds[0]), /PAYING CLIENT heard nothing/);
+  assert.doesNotMatch(String(input({ paying: paysUs(0, "pilot") }).binds[0]), /PAYING CLIENT/);
+});

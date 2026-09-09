@@ -131,10 +131,12 @@ export class WeeklyExtrasWorkflow extends WorkflowEntrypoint<Env, WeeklyExtrasPa
             if (!res.ok) {
               let paying = false;
               try {
+                // Revenue, not provisioning status. See the note in email.ts:
+                // a $0 pilot is a real customer and is not a paying one.
                 const c = await this.env.DB.prepare(
-                  "SELECT status FROM customers WHERE client_slug = ?",
-                ).bind(slug).first<{ status: string }>();
-                paying = c ? ["active", "pilot"].includes(c.status) : false;
+                  "SELECT status, mrr_cents FROM customers WHERE client_slug = ?",
+                ).bind(slug).first<{ status: string; mrr_cents: number }>();
+                paying = c ? Number(c.mrr_cents) > 0 && c.status !== "churned" : false;
               } catch (e) {
                 console.log(`[readout-snapshot] paying lookup failed for ${slug}: ${e}`);
               }
