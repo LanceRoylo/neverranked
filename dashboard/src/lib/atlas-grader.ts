@@ -22,6 +22,9 @@
 //     directive phrasing, not every incidental token.
 
 import { checkHumanTone } from "../human-tone-guard";
+// Shared with report-notes.ts. Atlas is not the only surface that must never
+// claim causation; the monthly readout is the one a customer opens.
+import { CAUSAL_PATTERNS as CAUSAL } from "./causal-claims";
 
 export interface AtlasGraderResult {
   ok: boolean;
@@ -33,21 +36,6 @@ export interface AtlasGraderResult {
   detail: string;
 }
 
-// Causal language. Atlas may state correlation but never causation.
-const CAUSAL = [
-  /\bcaused\b/i,
-  /\bcause[ds]?\s+(?:your|the|a|an|it)\b/i,
-  /\bdrove\b/i,
-  /\bdriving\b/i,
-  /\bled to\b/i,
-  /\bleading to\b/i,
-  /\bresulted in\b/i,
-  /\bresulting in\b/i,
-  /\bbecause of\b/i,
-  /\bdue to\b/i,
-  /\bas a result of\b/i,
-  /\bthanks to\b/i,
-];
 
 // Prescriptive / directive language. Atlas never tells the customer what
 // to do. These are scoped to second-person directives to avoid tripping

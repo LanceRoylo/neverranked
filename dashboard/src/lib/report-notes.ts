@@ -18,6 +18,8 @@
 
 import type { Env } from "../types";
 import { engineVerbClaimsOk } from "./engine-verb-claims";
+import { firstCausalClaim } from "./causal-claims";
+import { checkHumanTone } from "../human-tone-guard";
 import type { ReportFacts } from "./report-facts";
 
 const ANTHROPIC_ENDPOINT = "https://api.anthropic.com/v1/messages";
@@ -233,37 +235,60 @@ export async function writeAnalystNotes(
     // caught it because nothing typechecked the project. Found 2026-09-09 by
     // installing typescript for the first time.
     const engineLabels = (facts.engines || []).map((e) => e.name);
-    const verbOk = (t: string | undefined, which: string): string | undefined => {
-      if (t && !engineVerbClaimsOk(t, engineLabels)) {
+
+    // ONE chain, and every note goes through it.
+    //
+    // This used to be a `verbOk` helper plus a hand-written sequence of ifs
+    // for the engines note, and the comment claimed the helper ran on EVERY
+    // note. It did not: `questions` was assigned straight from cleanNote and
+    // skipped the whole chain. That is the note most likely to trip the verb
+    // guard, because its prompt asks it to quote a question and name the tool
+    // it moved on. A guard that four of five notes receive is how this
+    // codebase keeps failing, so there is now no path to a note that dodges
+    // one. Adding a guard here covers every note by construction.
+    //
+    // Every rejection is SAFE. A dropped note renders the chart
+    // mechanics-only, exactly as it behaved before analyst notes existed.
+    const guardNote = (t: string | undefined, which: string): string | undefined => {
+      if (!t) return undefined;
+      if (!engineVerbClaimsOk(t, engineLabels)) {
         console.log(`[report-notes] ${which} note attributes a forbidden verb to an engine; dropped`);
         return undefined;
       }
-      if (t && !notePersonOk(t)) {
+      if (!notePersonOk(t)) {
         console.log(`[report-notes] ${which} note refers to the reader in the third person; dropped`);
+        return undefined;
+      }
+      // Causation. The published Atlas boundary refuses causal claims "of any
+      // kind" and atlas-grader enforced it mechanically; the readout, which
+      // is the deliverable, had prompt text only.
+      const causal = firstCausalClaim(t);
+      if (causal) {
+        console.log(`[report-notes] ${which} note claims causation ("${causal}"); dropped`);
+        return undefined;
+      }
+      // Tone. atlas-grader, multi-pass and memo-generator all run this. The
+      // readout did not, despite its prompt asking for the same things.
+      const tone = checkHumanTone(t, "customer-publication");
+      if (!tone.ok) {
+        console.log(`[report-notes] ${which} note failed tone (${tone.violations.map((v) => v.pattern).join(", ")}); dropped`);
         return undefined;
       }
       return t;
     };
 
-    let engines = cleanNote(raw.engines, allowed);
-    if (engines && !engineVerbClaimsOk(engines, engineLabels)) {
-      console.log("[report-notes] engines note attributes a forbidden verb to an engine; dropped");
-      engines = undefined;
-    }
-    if (engines && !notePersonOk(engines)) {
-      console.log("[report-notes] engines note refers to the reader in the third person; dropped");
-      engines = undefined;
-    }
+    let engines = guardNote(cleanNote(raw.engines, allowed), "engines");
     if (engines && !engineNoteClaimsOk(engines, facts)) {
       console.log(`[report-notes] engines note REJECTED: crosses the citation / model-knowledge boundary, misdescribes the control, or claims movement in a baseline month. Chart renders mechanics-only.`);
       engines = undefined;
     }
-    // verbOk above is applied to EVERY note, not just the engines one: the
-    // methodology's absolute is about the whole deliverable.
-    const venue = verbOk(cleanNote(raw.venue, allowed), "venue");
-    const sources = verbOk(cleanNote(raw.sources, allowed), "sources");
-    const topSources = verbOk(cleanNote(raw.topSources, allowed), "topSources");
-    const questions = facts.questions ? cleanNote(raw.questions, allowed) : undefined;
+    const venue = guardNote(cleanNote(raw.venue, allowed), "venue");
+    const sources = guardNote(cleanNote(raw.sources, allowed), "sources");
+    const topSources = guardNote(cleanNote(raw.topSources, allowed), "topSources");
+    const questions = guardNote(
+      facts.questions ? cleanNote(raw.questions, allowed) : undefined,
+      "questions",
+    );
     if (engines) notes.engines = engines;
     if (venue) notes.venue = venue;
     if (sources) notes.sources = sources;
