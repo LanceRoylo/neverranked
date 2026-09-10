@@ -169,6 +169,60 @@ export function attributeVenueUrl(path: string): VenueAttribution {
 }
 
 /**
+ * Curated display names for a registered competitor cohort, keyed by host.
+ *
+ * `domains.competitor_label` is where a human wrote what this client's
+ * competitors are actually called. Snapshot labels were being derived from the
+ * domain instead, which shipped "Kahalaresort" and "Alamoanahotelhonolulu"
+ * into a paid readout where "The Kahala" and "Ala Moana Hotel" had stood a
+ * month earlier. The curated name wins for a registered competitor.
+ *
+ * Umbrella brands are excluded on purpose. A curated "Marriott (Waikiki
+ * properties)" was written before per-property attribution existed; today a
+ * marriott.com URL naming no property is a brand page and the attributor
+ * labels it as one, which is the more accurate statement.
+ */
+export function cohortLabelMap(
+  rows: Array<{ domain: string; competitor_label: string | null }>,
+  umbrellaDomains: string[] = UMBRELLA_DOMAINS,
+): Record<string, string> {
+  const umbrella = new Set(umbrellaDomains.map((d) => d.toLowerCase()));
+  const out: Record<string, string> = {};
+  for (const r of rows) {
+    const host = (r.domain || "").replace(/^www\./, "").toLowerCase();
+    const label = (r.competitor_label || "").trim();
+    if (!host || !label || umbrella.has(host)) continue;
+    out[host] = label;
+  }
+  return out;
+}
+
+/**
+ * Curated names for the UMBRELLA rows, which sit at the bottom of the
+ * precedence order rather than the top.
+ *
+ * An umbrella row that received brand-page citations is labelled by the
+ * attributor ("Marriott (brand pages)"), and that beats a curated name written
+ * before per-property attribution existed. But an umbrella row with no hits at
+ * all falls through to the domain, which renders "Ritzcarlton" and "Hyatt" in
+ * the grid. The curated name is the better last resort.
+ */
+export function umbrellaLabelMap(
+  rows: Array<{ domain: string; competitor_label: string | null }>,
+  umbrellaDomains: string[] = UMBRELLA_DOMAINS,
+): Record<string, string> {
+  const umbrella = new Set(umbrellaDomains.map((d) => d.toLowerCase()));
+  const out: Record<string, string> = {};
+  for (const r of rows) {
+    const host = (r.domain || "").replace(/^www\./, "").toLowerCase();
+    const label = (r.competitor_label || "").trim();
+    if (!host || !label || !umbrella.has(host)) continue;
+    out[host] = label;
+  }
+  return out;
+}
+
+/**
  * Does an attributed property correspond to a cohort domain? Cohort domains
  * are property-specific hosts like sheraton-waikiki.com; the slug carried by a
  * chain URL for the same hotel is "hnlws-sheraton-waikiki-beach-resort". Match

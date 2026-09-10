@@ -32,6 +32,29 @@ export const LAYER1_ENGINE_KEYS: ReadonlySet<string> = new Set([
   "bing",
 ]);
 
+/**
+ * The control channel. Bing organic is measured alongside the AI surfaces so
+ * a move in citation share can be told apart from a move in classic search.
+ * It is NOT an AI surface and its results must never be pooled into anything
+ * described to a customer as where AI answers come from.
+ *
+ * That pooling is exactly what shipped. Asked a superlative question, Bing
+ * keyword-matched the word "best" and returned a big-box retailer's store
+ * locator, and matched ordinary English words to a dictionary site. Both
+ * landed in the customer-facing source list. No AI engine cited either host
+ * even once. Figures are in the private docs repo.
+ *
+ * Kept as its own set rather than removed from LAYER1_ENGINE_KEYS: the
+ * control still produces cited URLs, still belongs in engines_breakdown as
+ * the control row, and still needs its own denominator.
+ */
+export const CONTROL_ENGINE_KEYS: ReadonlySet<string> = new Set(["bing"]);
+
+/** True when this surface is the classic-search control, by key or by label. */
+export function isControlEngine(engine: string): boolean {
+  return CONTROL_ENGINE_KEYS.has(engine) || engine === "Bing search (control)";
+}
+
 /** Display labels, as written into citation_snapshots.engines_breakdown. */
 export const LAYER1_ENGINE_LABELS: ReadonlySet<string> = new Set([
   "Perplexity",

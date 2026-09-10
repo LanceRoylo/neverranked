@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { engineLayer, byLayerThenShare, LAYER_UNITS_NOTE, LAYER1_ENGINE_KEYS } from "../src/lib/engine-layer.ts";
+import { engineLayer, byLayerThenShare, LAYER_UNITS_NOTE, LAYER1_ENGINE_KEYS, CONTROL_ENGINE_KEYS, isControlEngine } from "../src/lib/engine-layer.ts";
 
 /**
  * atlas-context.ts parsed engines_breakdown into { citations, total,
@@ -79,4 +79,33 @@ test("the shared Layer 1 set is exactly the five citation-grade surfaces", () =>
   assert.ok(LAYER1_ENGINE_KEYS.has("bing"), "the control is measured on the citation layer");
   assert.ok(!LAYER1_ENGINE_KEYS.has("gemma"));
   assert.ok(!LAYER1_ENGINE_KEYS.has("anthropic"));
+});
+
+/**
+ * The control channel was pooled into the customer-facing source list. Asked
+ * a superlative question, Bing keyword-matched on "best" and returned a
+ * retailer's store locator, and matched ordinary words to a dictionary site.
+ * Both rendered under "Where AI's answers come from" in a paid readout. No AI
+ * engine cited either host once.
+ */
+test("the control is identified by raw key and by display label", () => {
+  assert.equal(isControlEngine("bing"), true);
+  assert.equal(isControlEngine("Bing search (control)"), true);
+});
+
+test("no AI surface is ever treated as the control", () => {
+  for (const e of ["perplexity", "openai", "gemini", "google_ai_overview", "anthropic", "gemma"]) {
+    assert.equal(isControlEngine(e), false, `${e} must not be the control`);
+  }
+});
+
+test("the control stays inside layer 1 so it keeps its own denominator", () => {
+  // Removing it from LAYER1_ENGINE_KEYS would drop the control row from
+  // engines_breakdown entirely, which is the opposite of the point: the
+  // control has to be measured to be a control. It is excluded from POOLED
+  // figures, not from measurement.
+  for (const key of CONTROL_ENGINE_KEYS) {
+    assert.equal(LAYER1_ENGINE_KEYS.has(key), true);
+    assert.equal(engineLayer(key), "citation");
+  }
 });

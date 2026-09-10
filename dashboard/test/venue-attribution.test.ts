@@ -2,9 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import {
   attributeVenueUrl,
+  cohortLabelMap,
   matchCohortMember,
   pathOf,
   regionOf,
+  umbrellaLabelMap,
   UMBRELLA_DOMAINS,
 } from "../src/lib/venue-attribution.ts";
 
@@ -100,4 +102,78 @@ test("pathOf is total and never throws", () => {
   assert.equal(pathOf("https://www.marriott.com/en-us/hotels/x/"), "/en-us/hotels/x/");
   assert.equal(pathOf("not a url"), "/");
   assert.equal(pathOf(""), "/");
+});
+
+/**
+ * Regression guard. The September snapshot shipped competitor names derived
+ * from domains -- "Kahalaresort", "Alamoanahotelhonolulu", "Ritzcarlton" --
+ * where August had carried the curated "The Kahala" and "Ala Moana Hotel".
+ * The curated names were in domains.competitor_label the whole time; the
+ * snapshot builder simply never read the column.
+ */
+test("curated cohort labels beat anything derived from a domain", () => {
+  const m = cohortLabelMap([
+    { domain: "kahalaresort.com", competitor_label: "The Kahala" },
+    { domain: "alamoanahotelhonolulu.com", competitor_label: "Ala Moana Hotel" },
+    { domain: "www.halekulani.com", competitor_label: "Halekulani" },
+  ]);
+  assert.equal(m["kahalaresort.com"], "The Kahala");
+  assert.equal(m["alamoanahotelhonolulu.com"], "Ala Moana Hotel");
+  // www. is stripped so the key matches the cohort host used for attribution.
+  assert.equal(m["halekulani.com"], "Halekulani");
+});
+
+test("umbrella brands keep their attributed label, not a curated one", () => {
+  // "Marriott (Waikiki properties)" predates per-property attribution. A
+  // marriott.com URL naming no property is a brand page, and saying so is
+  // more accurate than implying the citation covers the Waikiki portfolio.
+  const m = cohortLabelMap([
+    { domain: "marriott.com", competitor_label: "Marriott (Waikiki properties)" },
+    { domain: "hilton.com", competitor_label: "Hilton (Waikiki properties)" },
+    { domain: "ritzcarlton.com", competitor_label: "Ritz-Carlton Residences Waikiki" },
+  ]);
+  assert.deepEqual(m, {});
+});
+
+test("missing, blank and whitespace labels never enter the map", () => {
+  // An empty string must not shadow the derived label with a blank cell in
+  // the readout grid.
+  const m = cohortLabelMap([
+    { domain: "sheraton-waikiki.com", competitor_label: null },
+    { domain: "moana-surfrider.com", competitor_label: "   " },
+    { domain: "alohilaniresort.com", competitor_label: "" },
+  ]);
+  assert.deepEqual(m, {});
+});
+
+test("every umbrella domain is excluded, not just the hotel ones", () => {
+  const rows = UMBRELLA_DOMAINS.map((d) => ({ domain: d, competitor_label: "X" }));
+  assert.deepEqual(cohortLabelMap(rows), {});
+});
+
+test("umbrella curated names are a last resort, never a primary", () => {
+  const rows = [
+    { domain: "ritzcarlton.com", competitor_label: "Ritz-Carlton Residences Waikiki" },
+    { domain: "kahalaresort.com", competitor_label: "The Kahala" },
+  ];
+  // The two maps must not overlap: a host belongs to exactly one precedence
+  // tier, so no host can be both a primary and a fallback.
+  const primary = cohortLabelMap(rows);
+  const fallback = umbrellaLabelMap(rows);
+  assert.deepEqual(Object.keys(primary), ["kahalaresort.com"]);
+  assert.deepEqual(Object.keys(fallback), ["ritzcarlton.com"]);
+  assert.equal(
+    Object.keys(primary).some((k) => k in fallback),
+    false,
+  );
+});
+
+test("a zero-citation umbrella row still reads as a hotel name", () => {
+  // ritzcarlton.com drew no citations in September, so no attributed label
+  // exists and the chain would fall through to the domain. "Ritzcarlton" is
+  // not a hotel name and does not belong in a paid readout.
+  const fallback = umbrellaLabelMap([
+    { domain: "ritzcarlton.com", competitor_label: "Ritz-Carlton Residences Waikiki" },
+  ]);
+  assert.equal(fallback["ritzcarlton.com"], "Ritz-Carlton Residences Waikiki");
 });

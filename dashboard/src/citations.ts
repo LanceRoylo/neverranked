@@ -13,7 +13,8 @@ import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { classifySource, hostOf } from "./lib/classify-source";
 import { keywordRunVerdict } from "./lib/keyword-run-verdict";
 import { LAYER1_ENGINE_KEYS } from "./lib/engine-layer";
-import { attributeVenueUrl, matchCohortMember, pathOf, regionOf, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
+import { attributeVenueUrl, cohortLabelMap, matchCohortMember, pathOf, regionOf, umbrellaLabelMap, UMBRELLA_DOMAINS } from "./lib/venue-attribution";
+import { isControlEngine } from "./lib/engine-layer";
 
 /**
  * A forensic-managed customer's authoritative snapshot is the rich "readout
@@ -2279,9 +2280,15 @@ export async function buildReadoutSnapshot(
   }
 
   const compRows = (await env.DB.prepare(
-    "SELECT domain FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1"
-  ).bind(clientSlug).all<{ domain: string }>()).results;
+    "SELECT domain, competitor_label FROM domains WHERE client_slug = ? AND is_competitor = 1 AND active = 1"
+  ).bind(clientSlug).all<{ domain: string; competitor_label: string | null }>()).results;
   const competitorHosts = compRows.map((r) => r.domain.replace(/^www\./, "").toLowerCase());
+  // Curated names from the cohort table outrank anything derived from a URL
+  // for a registered competitor. Umbrella brands invert this: their attributed
+  // label is the more accurate one, so their curated name is only a fallback
+  // for a row that drew no citations at all. See both map builders for why.
+  const cohortLabels = cohortLabelMap(compRows);
+  const umbrellaLabels = umbrellaLabelMap(compRows);
   const cohort = new Set<string>([ownedHost, ...competitorHosts]);
 
   const rows = (await env.DB.prepare(
@@ -2351,6 +2358,13 @@ export async function buildReadoutSnapshot(
       engUrlTotal[label] = (engUrlTotal[label] || 0) + urls.length;
       let ownedHere = 0;
       let cohortHere = 0;
+      // The control channel keeps its own engines_breakdown row (its totals
+      // and its owned count are the whole point of having a control) but is
+      // barred from every POOLED figure below. Bing organic is not an AI
+      // answer, so its hosts are not "where AI's answers come from", its
+      // results are not cohort citations, and a competitor it happens to
+      // return has not been shown on an AI surface.
+      const isControl = isControlEngine(r.engine);
       for (const u of urls) {
         const h = hostOf(u);
         if (!h) continue;
@@ -2401,9 +2415,14 @@ export async function buildReadoutSnapshot(
 
         if (inOwned || venueKey) {
           cohortHere++;
-          (venueEngines[inOwned ? ownedHost : venueKey!] ??= new Set()).add(label);
+          // engines_count answers "how many surfaces showed this venue". The
+          // control is not one of them.
+          if (!isControl) {
+            (venueEngines[inOwned ? ownedHost : venueKey!] ??= new Set()).add(label);
+          }
         }
-        if (venueKey) compCitations[venueKey] = (compCitations[venueKey] || 0) + 1;
+        if (venueKey && !isControl) compCitations[venueKey] = (compCitations[venueKey] || 0) + 1;
+        if (isControl) continue;
         const st = classifySource(u, ctx);
         srcCounts[st] = (srcCounts[st] || 0) + 1;
         if (st === "independent_web" || st === "review_directory") {
@@ -2412,7 +2431,8 @@ export async function buildReadoutSnapshot(
       }
       engUrlOwned[label] = (engUrlOwned[label] || 0) + ownedHere;
       engUrlCohort[label] = (engUrlCohort[label] || 0) + cohortHere;
-      if (ownedHere > 0) questionsWithOwned.add(r.keyword);
+      // "Questions where AI named you" must not be padded by a Bing result.
+      if (ownedHere > 0 && !isControl) questionsWithOwned.add(r.keyword);
     } else {
       // Layer 2: the unit is the RESPONSE, not the URL. client_cited already
       // encodes "the brand name appeared" for these engines (computeProminence
@@ -2492,7 +2512,13 @@ export async function buildReadoutSnapshot(
   // ── venue shares (LAYER 1 CITATIONS ONLY) ────────────────────────────────
   // Deliberately not pooled with Layer 2 mentions: a share whose numerator is
   // citations and whose denominator mixes in responses is not a quantity.
-  const ownedAll = Object.values(engUrlOwned).reduce((a, b) => a + b, 0);
+  // Control excluded from both sides. citation_share answers "of the URLs AI
+  // cited, how many were yours", and a Bing organic result is not one of them.
+  // Leaving it in padded the denominator with roughly a seventh more URLs than
+  // AI actually cited, which understated every customer's share.
+  const sumNonControl = (m: Record<string, number>) =>
+    Object.entries(m).filter(([k]) => !isControlEngine(k)).reduce((a, [, n]) => a + n, 0);
+  const ownedAll = sumNonControl(engUrlOwned);
   const compAll = Object.values(compCitations).reduce((a, b) => a + b, 0);
   const venueTotal = ownedAll + compAll;
   // Built from what was actually attributed, not from the raw domain list.
@@ -2503,7 +2529,7 @@ export async function buildReadoutSnapshot(
   const competitors = [...venueKeys]
     .map((key) => ({
       domain: key.startsWith("slug:") ? key.slice(5) : key,
-      label: venueLabels[key] || deriveCompetitorLabel(key.replace(/^slug:/, "")),
+      label: cohortLabels[key] || venueLabels[key] || umbrellaLabels[key] || deriveCompetitorLabel(key.replace(/^slug:/, "")),
       citations: compCitations[key] || 0,
       venue_share_pct: venueTotal ? Math.round((100 * (compCitations[key] || 0)) / venueTotal) : 0,
       engines_count: venueEngines[key] ? venueEngines[key].size : 0,
@@ -2552,7 +2578,7 @@ export async function buildReadoutSnapshot(
   // quantities -- client_citations / total_queries is NOT citation_share, and
   // any reader dividing one by the other is deriving a number neither writer
   // computed. Logged as a gap rather than papered over here.
-  const totalUrlAll = Object.values(engUrlTotal).reduce((a, b) => a + b, 0);
+  const totalUrlAll = sumNonControl(engUrlTotal);
   const citationShare = totalUrlAll ? ownedAll / totalUrlAll : 0;
 
   const now = Math.floor(Date.now() / 1000);
