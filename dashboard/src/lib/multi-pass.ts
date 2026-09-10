@@ -91,6 +91,44 @@ export interface MultiPassResult {
   inboxId?: number;
 }
 
+/**
+ * Pull only the genuinely unsupported claims out of a judge response.
+ *
+ * WHY THIS EXISTS. The judge used to be asked for {"unsupported": [string]},
+ * a bare list with nowhere to record a verdict. The model compensated by
+ * writing its adjudication into the string, including claims it resolved as
+ * fine: "the source states 32% which is technically one-third, but this is a
+ * reasonable rounding/paraphrase" was returned as an UNSUPPORTED claim whose
+ * own text says it is supported. Every entry counted as a failure, so
+ * weekly-brief-generator burned all three regeneration attempts on claims the
+ * judge had already accepted, three days running.
+ *
+ * Reads the verdict field. Still accepts the old bare-string shape, because a
+ * model that ignores the schema must not silently pass everything: an entry
+ * with no verdict is treated as unsupported, which fails closed.
+ */
+export function extractUnsupported(parsed: { findings?: unknown; unsupported?: unknown }): string[] {
+  const out: string[] = [];
+  if (Array.isArray(parsed.findings)) {
+    for (const f of parsed.findings) {
+      if (typeof f === "string") { if (f.trim()) out.push(f.trim()); continue; }
+      if (!f || typeof f !== "object") continue;
+      const r = f as { claim?: unknown; verdict?: unknown; why?: unknown };
+      const verdict = typeof r.verdict === "string" ? r.verdict.trim().toLowerCase() : "";
+      if (verdict === "supported") continue;
+      const claim = typeof r.claim === "string" ? r.claim.trim() : "";
+      if (!claim) continue;
+      out.push(typeof r.why === "string" && r.why.trim() ? `${claim} -- ${r.why.trim()}` : claim);
+    }
+    return out;
+  }
+  // Legacy shape.
+  if (Array.isArray(parsed.unsupported)) {
+    for (const u of parsed.unsupported) if (typeof u === "string" && u.trim()) out.push(u.trim());
+  }
+  return out;
+}
+
 export async function multiPassValidate(
   env: Env,
   req: MultiPassRequest,
@@ -207,7 +245,22 @@ async function runFactualCheck(
     ? generated.slice(0, 4000) + "\n[...truncated]"
     : generated;
 
-  const system = "You are a factual grounding judge. Given a SOURCE document and a CANDIDATE text purportedly derived from it, list every CLAIM in the candidate that is NOT directly supported by the source. Be strict: only count claims that introduce facts, numbers, or assertions absent from the source. Paraphrasing supported facts is fine. Reasonable inference (e.g. a year stated as '2026' implying it is the current era) is fine. Marketing puffery (e.g. 'we are great') in the candidate is also fine to flag if not in the source. Output ONLY valid JSON: {\"unsupported\":[\"claim 1\",\"claim 2\",...]}. Empty array means everything checks out.";
+  const system = [
+    "You are a factual grounding judge. Given a SOURCE document and a CANDIDATE text purportedly derived from it, examine every claim in the candidate that introduces a fact, a number, or an assertion.",
+    "",
+    "For each such claim, return a finding with an EXPLICIT verdict:",
+    '  {"claim": "<the claim, quoted from the candidate>", "verdict": "supported" | "unsupported", "why": "<one short sentence>"}',
+    "",
+    'Output ONLY valid JSON: {"findings":[ ... ]}. An empty array means nothing needed checking.',
+    "",
+    "RULES",
+    "- Put the verdict in the verdict field. Do not write your reasoning into the claim field and do not resolve a claim as acceptable while still labelling it unsupported.",
+    "- Paraphrase of a supported fact is SUPPORTED. \"nearly one third\" for 32 percent is supported.",
+    "- Rounding a supported number is SUPPORTED. Say so in why.",
+    "- Reasonable inference from the source is SUPPORTED.",
+    "- UNSUPPORTED means the source does not contain the fact, number or assertion at all, or contradicts it.",
+    "- The absence of a breakdown in the source does not make a claim unsupported unless the candidate asserts that breakdown.",
+  ].join("\n");
 
   const user = `SOURCE:
 """
@@ -241,10 +294,8 @@ Return JSON only.`;
     const text = data.content?.find(b => b.type === "text")?.text || "";
     const m = text.match(/\{[\s\S]*\}/);
     if (!m) return { ok: true, unsupportedClaims: [] };
-    const parsed = JSON.parse(m[0]) as { unsupported?: unknown };
-    const unsupported = Array.isArray(parsed.unsupported)
-      ? parsed.unsupported.filter((s): s is string => typeof s === "string" && s.trim().length > 0)
-      : [];
+    const parsed = JSON.parse(m[0]) as { findings?: unknown; unsupported?: unknown };
+    const unsupported = extractUnsupported(parsed);
     return { ok: unsupported.length === 0, unsupportedClaims: unsupported };
   } catch (e) {
     console.log(`[multi-pass] factual check threw: ${e instanceof Error ? e.message : String(e)}`);
