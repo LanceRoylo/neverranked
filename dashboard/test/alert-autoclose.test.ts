@@ -19,6 +19,8 @@ function makeEnv(opts: {
   engine?: { rows_24h: number; fails_24h: number };
   peer?: { engine: string; degraded: boolean }[];
   snapshot?: { engines_breakdown: string; top_competitors: string; created_at: number | null; week_start: number } | null;
+  yesterday?: { runs: number };
+  priorDays?: { runs: number; days: number };
   throwOnCheck?: boolean;
 }) {
   const updates: { id: number; detail: string; readAt: number }[] = [];
@@ -32,6 +34,8 @@ function makeEnv(opts: {
           async first() {
             if (opts.throwOnCheck) throw new Error("d1 exploded");
             if (sql.includes("cron_runs")) return { last_ran: opts.cronLastRan ?? null };
+            if (sql.includes("COUNT(DISTINCT CAST(run_at")) return opts.priorDays ?? { runs: 0, days: 0 };
+            if (sql.includes("COUNT(*) AS runs FROM citation_runs")) return opts.yesterday ?? { runs: 0 };
             if (sql.includes("citation_runs")) return opts.engine ?? { rows_24h: 0, fails_24h: 0 };
             if (sql.includes("citation_snapshots")) return opts.snapshot ?? null;
             return null;
@@ -200,4 +204,44 @@ test("a LEGACY-shape snapshot does not count as a landed refresh", async () => {
     snapshot: { engines_breakdown: '{"gemini":{"queries":10,"citations":2}}', top_competitors: "[]", created_at: sept, week_start: sept },
   });
   assert.equal((await autoCloseAlerts(env, now)).closed, 0);
+});
+
+
+/** Three of these sat unread from 2026-09-08 and every one was false: the rule
+ *  measured a rolling window that cut through the daily sweep and reported all
+ *  five engines as halved within one second. */
+const rowDrop = (id: number, engine = "gemini") => ({
+  id, type: "anomaly_engine_row_drop", created_at: 1787000000, client_slug: "_system",
+  detail: `engine:${engine}:row_drop | ${engine} produced 33 rows yesterday vs 78 daily average.`,
+});
+
+test("REGRESSION: a row-drop alert closes once the engine is back to normal volume", async () => {
+  const { env, updates } = makeEnv({
+    open: [rowDrop(1)],
+    yesterday: { runs: 93 },              // healthy
+    priorDays: { runs: 1160, days: 14 },  // avg ~83, floor ~41
+  });
+  const r = await autoCloseAlerts(env, 1788912000);
+  assert.equal(r.closed, 1);
+  assert.match(updates[0].detail, /gemini is producing its normal daily row count again/);
+});
+
+test("an engine STILL below half its average keeps the alert", async () => {
+  const { env } = makeEnv({
+    open: [rowDrop(1)],
+    yesterday: { runs: 20 },
+    priorDays: { runs: 1160, days: 14 },
+  });
+  assert.equal((await autoCloseAlerts(env, 1788912000)).closed, 0);
+});
+
+test("too little history to judge is not evidence of recovery", async () => {
+  // Fewer than 3 prior days with rows means the detector would not fire, and
+  // it equally cannot say the drop is over.
+  const { env } = makeEnv({
+    open: [rowDrop(1)],
+    yesterday: { runs: 93 },
+    priorDays: { runs: 100, days: 2 },
+  });
+  assert.equal((await autoCloseAlerts(env, 1788912000)).closed, 0);
 });

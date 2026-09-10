@@ -30,6 +30,7 @@
 import type { Env } from "../types";
 import { CRON_EXPECTED_CADENCE } from "./anomaly-detection";
 import { assessPeerHealth } from "./engine-peer-health";
+import { engineRowDropStillTrue } from "./anomaly-detection";
 import { monthlyRefreshOverdue } from "./monthly-refresh";
 import { isReadoutShapeSnapshot } from "./snapshot-shape";
 
@@ -124,6 +125,19 @@ const CLOSERS: Record<string, Closer> = {
       return monthlyRefreshOverdue(new Date(now * 1000), snap.created_at || snap.week_start);
     },
     describe: (slug) => `${slug} has a current-month readout snapshot again`,
+  },
+
+  // "engine:gemini:row_drop | gemini produced 33 rows yesterday vs 78 ..."
+  //
+  // Three of these have sat unread since 2026-09-08, and every one was false:
+  // the rule measured a rolling window that cut through the daily sweep, so it
+  // reported all five engines as halved within one second. The rule now
+  // measures whole days, which makes the condition cleanly re-checkable, which
+  // is what lets them close.
+  anomaly_engine_row_drop: {
+    parse: (d) => d.match(/engine:([A-Za-z0-9_]+):row_drop/)?.[1] ?? null,
+    stillTrue: (env, engine, now) => engineRowDropStillTrue(env, engine, now),
+    describe: (engine) => `${engine} is producing its normal daily row count again`,
   },
 
   // "engine:openai:peer_drop | openai produced 19 rows in 24h against ..."

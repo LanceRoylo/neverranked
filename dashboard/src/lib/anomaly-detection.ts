@@ -229,6 +229,32 @@ async function fetchEngineMetrics(env: Env): Promise<EngineMetrics[]> {
  * Compute mean and stddev of a numeric array. Returns null if the array
  * is too small for a stable stddev estimate.
  */
+/**
+ * Is an engine's row count STILL dropped?
+ *
+ * Exported so alert-autoclose asks this question instead of reimplementing it.
+ * The measurement is whole UTC days for the reason recorded above: a rolling
+ * window ending mid-sweep counts a fraction of the burst and reported every
+ * engine as halved at once.
+ */
+export async function engineRowDropStillTrue(env: Env, engine: string, nowSecs: number): Promise<boolean> {
+  const startOfToday = Math.floor(new Date(nowSecs * 1000).setUTCHours(0, 0, 0, 0) / 1000);
+  const startOfYesterday = startOfToday - SECONDS_PER_DAY;
+  const y = await env.DB.prepare(
+    "SELECT COUNT(*) AS runs FROM citation_runs WHERE engine = ? AND run_at >= ? AND run_at < ?",
+  ).bind(engine, startOfYesterday, startOfToday).first<{ runs: number }>();
+  const p = await env.DB.prepare(
+    `SELECT COUNT(*) AS runs, COUNT(DISTINCT CAST(run_at / 86400 AS INTEGER)) AS days
+       FROM citation_runs WHERE engine = ? AND run_at >= ? AND run_at < ?`,
+  ).bind(engine, startOfYesterday - BASELINE_WINDOW_DAYS * SECONDS_PER_DAY, startOfYesterday)
+   .first<{ runs: number; days: number }>();
+  const days = p?.days ?? 0;
+  const avg = days > 0 ? (p?.runs ?? 0) / days : 0;
+  // Too little history to judge means we cannot say it recovered either.
+  if (days < 3 || avg <= 0) return true;
+  return (y?.runs ?? 0) < avg * 0.5;
+}
+
 function stats(samples: number[]): { mean: number; stddev: number } | null {
   if (samples.length < STDDEV_DAYS_REQUIRED) return null;
   const mean = samples.reduce((a, b) => a + b, 0) / samples.length;
