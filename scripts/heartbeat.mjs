@@ -372,8 +372,33 @@ const INVARIANTS = [
       if (row.age_days > 8) {
         return { pass: false, detail: `last digest_dispatch ${row.age_days}d ago (status=${row.status}) -- weekly job missed` };
       }
+      // A GRADER HOLD IS NOT A BROKEN PIPELINE.
+      //
+      // dispatchWeeklyDeliveries reports 'partial' whenever anything short of
+      // a clean full delivery happened, and since 2026-09-08 that includes
+      // digests the content grader deliberately refused to send. This check
+      // treated any non-success as red, so it went FAIL on 2026-09-03 and
+      // re-raised every 7 days while the detail line beside it read
+      // "held=27 failed=0": zero delivery failures, a quality gate doing
+      // exactly its job.
+      //
+      // Read the counts rather than the label. Real delivery failures and an
+      // enumeration failure stay red. Holds are reported, because a client
+      // hearing nothing still matters, but they are not this check's alarm:
+      // the per-client digest_held_by_grader inbox item is.
       if (row.status !== 'success') {
-        return { pass: false, detail: `last digest_dispatch status=${row.status} (${row.detail || 'no detail'})` };
+        const d = row.detail || '';
+        const held = Number((d.match(/held=(\d+)/) || [])[1] ?? 0);
+        const failed = Number((d.match(/failed=(\d+)/) || [])[1] ?? 0);
+        const enumFailed = /ENUMERATION FAILED/.test(d);
+        const dispatchErrors = !/errors=0/.test(d);
+        if (!enumFailed && !dispatchErrors && failed === 0 && held > 0) {
+          return {
+            pass: true,
+            detail: `last run ${row.age_days}d ago, status=partial but zero delivery failures: ${held} digest(s) HELD by the content grader. The pipeline is healthy and the gate is working. Per-client holds surface in the admin inbox as digest_held_by_grader.`,
+          };
+        }
+        return { pass: false, detail: `last digest_dispatch status=${row.status} (${d || 'no detail'})` };
       }
       return { pass: true, detail: `last run ${row.age_days}d ago, success (${row.detail || ''})` };
     },
