@@ -1,5 +1,5 @@
 {
-  "updated": "2026-09-09T16:26:15.288Z",
+  "updated": "2026-09-10T16:15:42.531Z",
   "checks": {
     "citation_runs": {
       "status": "OK",
@@ -54,7 +54,7 @@
     "digest-dispatch-result": {
       "status": "FAIL",
       "since": "2026-09-03",
-      "lastAlerted": "2026-09-03"
+      "lastAlerted": "2026-09-10"
     },
     "gsc-coverage-per-client": {
       "status": "OK",
