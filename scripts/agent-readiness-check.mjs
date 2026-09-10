@@ -118,10 +118,59 @@ async function checkTargetReachable(action) {
 }
 
 console.error(`Fetching ${baseUrl}...`);
-const html = await fetch(baseUrl).then(r => r.text()).catch(e => {
+
+// A FAILED FETCH IS NOT A MEASUREMENT.
+//
+// This used to call .text() without ever looking at the status, so a 403 bot
+// wall, a 503, or a challenge page produced a body with no JSON-LD, scored 0,
+// and reported "not agent-ready at all". Verified 2026-09-10 against
+// opentable.com: zero bytes retrieved, graded F. The MCP build of this same
+// tool already returns fetch_status and fetch_blocked; this one had drifted.
+//
+// A blocked site and an unready site are different facts, and this tool feeds
+// published research, so it now refuses to grade what it could not read.
+let html = '';
+let fetchStatus = 0;
+let fetchBlocked = false;
+try {
+  const res = await fetch(baseUrl, {
+    // Without this a site that accepts the connection and never answers hangs
+    // the scanner forever. Observed 2026-09-10 on opentable.com.
+    signal: AbortSignal.timeout(20000),
+    redirect: 'follow',
+    headers: {
+      'user-agent': 'Mozilla/5.0 (compatible; NeverRankedAgentReadiness/2.0; +https://neverranked.com)',
+      'accept': 'text/html,application/xhtml+xml',
+    },
+  });
+  fetchStatus = res.status;
+  html = await res.text();
+  fetchBlocked = res.status === 403 || res.status === 429;
+} catch (e) {
   console.error(`Fetch failed: ${e}`);
-  exit(1);
-});
+  fetchStatus = 0;
+}
+
+// Trivially small bodies are challenge pages or stubs, not a site.
+const unreadable = fetchStatus === 0 || fetchStatus >= 400 || html.length < 2000;
+if (unreadable) {
+  const out = {
+    url: baseUrl,
+    vertical: args.vertical || null,
+    score: null,
+    grade: 'UNKNOWN',
+    fetch_status: fetchStatus,
+    fetch_blocked: fetchBlocked,
+    bytes: html.length,
+    findings: [{
+      ok: false,
+      msg: `Could not read the page (HTTP ${fetchStatus}, ${html.length} bytes). NOT scored: a site we cannot fetch is unmeasured, not unready.`,
+    }],
+  };
+  if (args.json) console.log(JSON.stringify(out, null, 2));
+  else console.error(out.findings[0].msg);
+  exit(2);
+}
 
 const blocks = extractJsonLd(html);
 const actions = extractActions(blocks);
