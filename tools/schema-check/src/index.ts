@@ -144,7 +144,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "Why does this matter?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "More people are asking ChatGPT, Google’s AI, and Perplexity for recommendations instead of scrolling search results. If those AI tools can’t read your site clearly, they recommend someone else."
+            "text": "More people are asking ChatGPT, Google’s AI, and Perplexity for recommendations instead of scrolling search results. If those AI tools can’t read your site clearly, they name someone else."
           }
         },
         {
@@ -1490,7 +1490,7 @@ body.channel-mode #channel-cta-card{display:block}
         <p style="margin:14px 0 0;font-family:var(--mono);font-size:11px;color:var(--text-faint);line-height:1.6">15 minutes, one client category, and I'll show you the resell math. Or <a href="https://neverranked.com/for-agencies/" style="color:var(--gold);border-bottom:1px solid var(--gold-dim);text-decoration:none">see the channel and margin math &rarr;</a> first. The first step is one client category on Monitor at $199 a month, and those payments credit in full toward the audit baseline inside 90 days. Your cost is the list rate below. What you charge your client is yours.</p>
       </div>
       <h3 id="cta-headline">This check looks at your site.<br>The full engagement looks at <em>what AI says about you.</em></h3>
-      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool recommends who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
+      <p id="cta-subtext">The check above measures what's on your website. A NeverRanked engagement measures what AI tools actually say when someone asks about your category: which competitors get named, which AI tool names who, and a prioritized punch list you or your agency execute. The check is a starting point. The engagement tells you what's actually happening.</p>
 
       <div class="social-proof">
         <span><span class="sp-num">6</span> AI tools</span>
@@ -1610,13 +1610,13 @@ body.channel-mode #channel-cta-card{display:block}
     // Grade-specific insight (computed now, stored on data for revealGatedDetails)
     var insightText = '';
     if(score >= 80){
-      insightText = 'Your site is in strong shape for AI search. The foundation is there. The real question is whether AI tools are actually <strong>recommending you</strong> when someone asks, and whether you’re <em>keeping that lead</em> as competitors catch up.';
+      insightText = 'Your site is in strong shape for AI search. The foundation is there. The real question is whether AI tools are actually <strong>naming you</strong> when someone asks, and whether you’re <em>keeping that lead</em> as competitors catch up.';
     } else if(score >= 65){
-      insightText = 'You’re close to the line. A few targeted fixes would make your site read as cleanly to AI as the strongest sites in your space. Whether AI is recommending those cleaner sites over you right now is <em>what a full measurement shows</em>.';
+      insightText = 'You’re close to the line. A few targeted fixes would make your site read as cleanly to AI as the strongest sites in your space. Whether AI is naming those cleaner sites and not you right now is <em>what a full measurement shows</em>.';
     } else if(score >= 45){
-      insightText = 'Your site has gaps that make it harder for AI tools to read and cite than cleaner sites in your space. Those gaps are fixable. The question that matters next: when someone asks ChatGPT or Google’s AI for a business like yours, who gets recommended instead? <em>That takes measurement, not a page scan.</em>';
+      insightText = 'Your site has gaps that make it harder for AI tools to read and cite than cleaner sites in your space. Those gaps are fixable. The question that matters next: when someone asks ChatGPT or Google’s AI for a business like yours, who gets named instead? <em>That takes measurement, not a page scan.</em>';
     } else {
-      insightText = 'AI tools can’t reliably read your site, and a page that can’t be read can’t be cited. Cleaner sites in your space have a real edge right now. Fixing the readability is step one. <em>Measuring who AI actually recommends is step two.</em>';
+      insightText = 'AI tools can’t reliably read your site, and a page that can’t be read can’t be cited. Cleaner sites in your space have a real edge right now. Fixing the readability is step one. <em>Measuring who AI actually names is step two.</em>';
     }
     // Build the full grade markup once; how it's rendered depends on
     // gateLevel below.
@@ -3022,7 +3022,7 @@ function buildDripDay7Email(scan: { domain: string; score: number; grade: string
       </tr>
       <tr>
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9888; Alerts when something changes</td>
-        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Who AI recommends instead</td>
+        <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9646;&#9646; Who AI names instead</td>
       </tr>
       <tr>
         <td style="padding:6px 0;font-family:'Courier New',monospace;font-size:11px;color:#b0b0a8">&#9993; Monthly email summary</td>

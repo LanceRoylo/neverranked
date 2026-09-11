@@ -42,7 +42,7 @@ Return STRICT JSON, no prose:
 }
 
 Rules:
-- "positive" = the AI recommends, praises, or describes the business with clear advantages
+- "positive" = the answer praises the business or describes it with clear advantages. Judge the TEXT, not the engine's intent: an engine does not recommend, it produces text that reads favourably
 - "negative" = the AI warns against, complains, lists drawbacks, or describes with clear disadvantages
 - "neutral" = listed factually without judgment, or judgment is mixed/balanced
 - A bare mention (just naming the business) without any descriptive context is "neutral"

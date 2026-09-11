@@ -210,7 +210,13 @@ const RULES = [
     // correctly and a gate that blocks the correct page teaches everyone to
     // bypass the gate. The published HTML surfaces are already clean as of
     // 2026-09-10, which is what this rule was written to find.
-    severity: "warn",
+    // PROMOTED to block 2026-09-11, sweep complete. 31 hits down to 0.
+    // Everything client-facing was corrected, including generated copy that
+    // told a customer "More AI engines are recommending the brand" whenever
+    // their share rose, and the free check's engine verbs. The rest state the
+    // rule, instruct the reader, or are historical record, and are
+    // allowlisted per file with the reason.
+    severity: "block",
     re: /\b(ai|chatgpt|perplexity|gemini|claude|gemma|copilot|google|bing|engines?|tools?)\b[^.\n]{0,40}\b(recommend(s|ed|ing)?|prefer(s|red|ring)?|endorse(s|d|ing)?|favou?r(s|ed|ing)?|pick(s|ed|ing)?|select(s|ed|ing)?|choos(e[sn]?|ing)|rank(s|ed|ing)?\\s+(first|top|highest)|rate(s|d)?\\s+(best|highest))\b/i,
     why: 'says an engine recommends, prefers, endorses, favours, picks, selects, chooses or ranks a business. Engines CITE. The observational form is the canonical one: "on N of M queries between [dates], engine X cited business Y"',
   },
@@ -394,6 +400,51 @@ const ALLOW = [
   //   bot-analytics.ts labels the Claude-Web CRAWLER, which does fetch. A
   //                    different sense of the word entirely.
   { path: "dashboard/src/lib/report-notes.ts", rules: ["model-knowledge-cite-verb"] },
+  // The normative sweep, 2026-09-11. Everything client-facing was corrected;
+  // these state the rule, instruct the USER, or are historical record.
+  //
+  //   claim-check / output-grader / report-notes / conversation-depth /
+  //   sentiment-scorer   quote the forbidden verbs in order to forbid them.
+  //   client-actions/registry, dashboard index  instruct the USER to pick or
+  //                      select something in Bing or Search Console. The
+  //                      subject is the reader, not an engine.
+  //   alert-autoclose    SQL with a column named `engine` beside `select`.
+  //   audits/*           delivered client audits and unfilled templates.
+  //                      Never copied into dist/, robots-disallowed. Their
+  //                      hits are Google "recommending" a schema practice and
+  //                      the user's "preferred" canonical URL, neither of
+  //                      which is an engine recommending a business.
+  //   social/posts/*     published May assets. Rewriting a shipped post is
+  //                      falsifying the record; a correction post is the
+  //                      remedy if one is wanted.
+  //   state-of-aeo       "Claude is the preferred AI assistant inside
+  //                      enterprises" is about buyers preferring Claude.
+  { path: "dashboard/src/lib/claim-check.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/preview/output-grader.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/lib/report-notes.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/conversation-depth.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/sentiment-scorer.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/client-actions/registry.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/index.ts", rules: ["normative-engine-language"] },
+  { path: "dashboard/src/lib/alert-autoclose.ts", rules: ["normative-engine-language"] },
+  { path: "audits/asb-hawaii-2026-05/audit.html", rules: ["normative-engine-language"] },
+  { path: "audits/bank-of-hawaii/audit.html", rules: ["normative-engine-language"] },
+  { path: "audits/central-pacific-bank/audit.html", rules: ["normative-engine-language"] },
+  { path: "audits/emanate-wireless-inc/audit.html", rules: ["normative-engine-language"] },
+  { path: "audits/mvnp-agency/audit.html", rules: ["normative-engine-language"] },
+  { path: "social/posts/2026-05-06-paid-for-rankings/hero-instagram-source.html", rules: ["normative-engine-language"] },
+  { path: "social/posts/2026-05-12-stories-aeo-check/source-2.html", rules: ["normative-engine-language"] },
+  { path: "social/posts/2026-05-15-seo-vs-aeo-disappearing-list/source-1.html", rules: ["normative-engine-language"] },
+  { path: "social/posts/2026-05-15-seo-vs-aeo-disappearing-list/source-5.html", rules: ["normative-engine-language"] },
+  { path: "reports/state-of-aeo-hawaii-2026/state-of-aeo-hawaii-2026.html", rules: ["normative-engine-language"] },
+  // The free check's hook, kept deliberately: "when someone asks ChatGPT or
+  // Google's AI to RECOMMEND a business like yours". A buyer really does ask
+  // for a recommendation. That is their query, not an assertion about what
+  // the engine does, and it is the sentence that converts. The seven places
+  // in the same file that DID assert engine behaviour were corrected on
+  // 2026-09-11: "they recommend someone else", "which AI tool recommends
+  // who", "who gets recommended instead", and four more, all now "names".
+  { path: "tools/schema-check/src/index.ts", rules: ["normative-engine-language"] },
   { path: "dashboard/src/citations.ts", rules: ["model-knowledge-cite-verb"] },
   { path: "dashboard/src/bot-analytics.ts", rules: ["model-knowledge-cite-verb"] },
   { path: "dashboard/src/lib/engine-layer.ts", rules: ["model-knowledge-cite-verb"] },

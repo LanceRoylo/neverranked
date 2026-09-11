@@ -190,7 +190,7 @@ async function buildContentRecommendations(
     if (kw.includes("best") || kw.includes("top") || kw.includes("recommend")) {
       rec = "Create a comprehensive guide or comparison piece that directly answers this query. AI engines cite sources that provide structured, authoritative comparisons.";
     } else if (kw.includes("how") || kw.includes("what is") || kw.includes("guide")) {
-      rec = "Write an in-depth explainer article with clear structure, FAQ schema, and step-by-step breakdowns. AI models favor sources with detailed, well-organized answers.";
+      rec = "Write an in-depth explainer article with clear structure, FAQ schema, and step-by-step breakdowns. Pages with that structure appear more often among cited sources.";
     } else if (kw.includes("vs") || kw.includes("compare") || kw.includes("difference")) {
       rec = "Publish a detailed comparison page with structured data. Side-by-side comparisons with clear criteria get cited more often by AI engines.";
     } else if (kw.includes("cost") || kw.includes("price") || kw.includes("pricing")) {

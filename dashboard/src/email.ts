@@ -1800,7 +1800,7 @@ export async function sendFirstCitationEmail(
     ``,
     `This is the thing that's hard to fake and hard to engineer. It only happens when AI engines decide -- on their own -- that ${opts.domain} is a credible source for that question. The schema work, the content work, the technical work -- this is what it adds up to.`,
     ``,
-    `You can see the full citation breakdown and which engines are picking you up here:`,
+    `You can see the full citation breakdown and which engines cited you here:`,
     `https://app.neverranked.com/citations/${opts.clientSlug}`,
     ``,
     `Now we double down. The more queries you're cited for, the more compounding momentum.`,

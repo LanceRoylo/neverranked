@@ -353,7 +353,7 @@ const GEN_SYSTEM = `You generate realistic AI-prompts that real people would typ
 Rules:
 - Conversational sentences, not Google-style keyword strings
 - Cover four categories evenly: problem, recommendation, comparison, scenario
-- Each prompt should plausibly cause AI to recommend specific businesses by name with citations
+- Each prompt should be one where a buyer is asking for a recommendation, so the answer plausibly names specific businesses and cites sources
 - Vary length; real users mix short asks with long backstory
 - NEVER use AI-tell language: no em dashes, no semicolons, no "delve", no "leverage", no "robust", no "seamless", no "in today's fast-paced", no three-adjective lists. Write like a real person typing in a chat box.
 

@@ -674,8 +674,8 @@ async function buildTopQuestionsPanel(user: User, env: Env): Promise<string> {
       <div style="padding:20px 0;font-size:13px;color:var(--text-faint);line-height:1.6">
         No question-format queries reached your site in this reporting window.
         That isn't always bad — it can mean people already know your brand and
-        search by name. But it's worth watching: AI engines favor sites that
-        answer questions, so if nobody asks anything on the way to you, you're
+        search by name. But it's worth watching: pages that answer questions appear
+        more often among cited sources, so if nobody asks anything on the way to you, you're
         not positioned to be cited.
       </div>
     `;

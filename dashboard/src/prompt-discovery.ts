@@ -130,7 +130,7 @@ Rules:
   - "recommendation" : "Can you recommend a good <type of business> in <area> that <quality>?"
   - "comparison"     : "What should I look for when choosing a <type> in <area>? Who do you recommend?"
   - "scenario"       : "I'm <specific situation>. My current <provider> isn't working. Who else should I talk to?"
-- Each prompt should plausibly cause AI to recommend specific businesses by name (with citations).
+- Each prompt should be one where a buyer is asking for a recommendation, so the answer plausibly names specific businesses and cites sources. The buyer asks for a recommendation. The engine cites.
 - Vary length: some long with backstory, some short and direct. Real users do both.
 - NEVER use AI-tell language: no "feel free to", "delve into", "in today's fast-paced", em dashes, semicolons, "elevate", "robust", "comprehensive", "seamless", "in conclusion", "leverage", or three-adjective lists. Write like a real person typing in a chat box at 11pm.
 

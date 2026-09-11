@@ -2073,7 +2073,7 @@ IMPORTANT RULES:
 - Write them as natural, conversational sentences. Real people explain their situation to AI.
 - Never write short keyword-style queries like "best dentist Austin TX". Those are Google searches, not AI conversations.
 - Include the person's context, frustration, or specific situation when possible.
-- The queries should be ones where AI would recommend specific businesses by name.
+- The queries should be ones where a buyer asks for a recommendation, so the answer plausibly names specific businesses.
 
 Include a mix of:
 - Problem-based (5): "I have [specific problem] and I need [type of help] in ${location}. What are my options?"

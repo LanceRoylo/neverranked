@@ -429,7 +429,7 @@ function renderDomainPage(): string {
             <span style="font-size:14px;color:var(--text)">Add AggregateRating schema with Google review data</span>
             <span style="margin-left:auto;font-family:var(--label);font-size:9px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);padding:2px 8px;border-radius:2px;flex-shrink:0">HIGH IMPACT</span>
           </div>
-          <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">AI engines weight review signals heavily when deciding who to cite for "best" and "recommended" queries. This is the single biggest lever for the next score jump.</div>
+          <div style="font-size:12px;color:var(--text-faint);line-height:1.6;padding-left:28px">Review-directory pages appear often among the cited sources for "best" and "recommended" queries. We report the association and do not claim it causes a citation.</div>
         </div>
         <div style="padding:16px 20px;background:var(--bg-lift);border:1px solid var(--line);border-radius:4px">
           <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">

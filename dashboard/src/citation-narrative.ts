@@ -141,11 +141,11 @@ function buildSummary(
       `This is the first citation scan for ${slug}. AI engines like ChatGPT and Perplexity were queried ${totalQueries} times across ${totalKeywords} keywords. None of the responses cited ${slug} directly.`
     );
     parts.push(
-      "This is normal for newer sites or businesses that have not yet built enough external authority and structured data for AI models to recommend by name."
+      "This is common for newer sites and for businesses with little third-party coverage. We report what was cited and do not claim what would change it."
     );
   } else if (share === 0) {
     parts.push(
-      `${slug} was not cited in any of the ${totalQueries} queries this week. AI engines are answering these questions but recommending other sources.`
+      `${slug} was not cited in any of the ${totalQueries} queries this week. The engines answered these questions and cited other sources.`
     );
   } else if (cited.length > 0) {
     parts.push(
@@ -178,7 +178,7 @@ function buildSummary(
       );
     } else if (aeo.aeoScore < 50 && share > 0) {
       parts.push(
-        "Notably, your site is earning some citations despite a low AEO readiness score of " + aeo.aeoScore + "/100. This suggests your brand has external authority that AI models are picking up on. Improving the technical foundation would amplify that signal significantly."
+        "Notably, your site is earning some citations despite a low AEO readiness score of " + aeo.aeoScore + "/100. Your brand appears in third-party sources that these tools cite. Improving the technical foundation would amplify that signal significantly."
       );
     } else if (aeo.aeoScore >= 50 && aeo.aeoScore < 70 && share === 0) {
       parts.push(
@@ -344,7 +344,7 @@ function buildCompetitorInsight(competitors: CompetitorEntry[], share: number): 
 
   if (share === 0) {
     parts.push(
-      `AI engines are currently recommending ${competitors.length} other sources instead. The top cited are ${topThree.map(c => c.name).join(", ")}.`
+      `${competitors.length} other sources were cited instead. The most cited are ${topThree.map(c => c.name).join(", ")}.`
     );
     parts.push(
       "These are the businesses and publishers that have already established the authority signals AI models look for: consistent entity data, comprehensive structured markup, and content that directly answers the queries being tracked."
@@ -518,7 +518,7 @@ function buildNextSteps(
     } else if (oaiShare > pplxShare + 0.1) {
       steps.push({
         action: "Improve web presence and external links for better Perplexity citations",
-        reason: "Perplexity uses real-time web search, so it favors sites with strong external link profiles and frequently updated content."
+        reason: "Perplexity searches the live web, and the pages it cites tend to carry strong external link profiles and recent updates. Association, not cause."
       });
     }
   }
@@ -584,8 +584,11 @@ const POSITION_LABEL: Record<CompetitivePosition, string> = {
 };
 
 const PROMINENCE_LABEL: Record<ProminenceClass, string> = {
-  recommended: "actively recommended",
-  listed: "listed without endorsement",
+  // Renamed with the class on 2026-09-11. The label a customer reads must
+  // not assert endorsement either: the engine named them as the answer, it
+  // did not recommend them.
+  sole_answer: "named as the answer",
+  listed: "named among other options",
   footnote: "mentioned in passing",
 };
 
@@ -635,10 +638,10 @@ export function generateDepthFindings(rollup: DepthRollup, clientName: string): 
     : `Most common position: ${POSITION_LABEL[topPos[0] as CompetitivePosition] || topPos[0]} (${Math.round((topPos[1] / scored) * 100)}% of mentions). No lead-position citations yet.`;
 
   // --- Prominence summary ---
-  const recommended = rollup.by_prominence.recommended || 0;
+  const soleAnswer = rollup.by_prominence.sole_answer || 0;
   const listed = rollup.by_prominence.listed || 0;
   const footnote = rollup.by_prominence.footnote || 0;
-  const prominenceHeadline = `Recommended outright in ${recommended}, listed in ${listed}, mentioned in passing in ${footnote}.`;
+  const prominenceHeadline = `Named as the answer in ${soleAnswer}, named among other options in ${listed}, mentioned in passing in ${footnote}.`;
 
   // --- Competitor context ---
   const top3 = rollup.top_competitors.slice(0, 3);

@@ -223,7 +223,7 @@ function buildDay3Email(user: DripUser, scan: ScanResult | null, env: Env): stri
 
     <div style="background:#111;border:1px solid #222;border-radius:6px;padding:20px;margin-bottom:32px">
       <div style="font-size:13px;color:#ccc;line-height:1.7">
-        <p style="margin:0 0 8px"><strong style="color:#fff">What this means:</strong> Your AEO score measures how well AI assistants can understand, trust, and recommend your business. The higher the score, the more likely you show up when potential customers ask AI for recommendations.</p>
+        <p style="margin:0 0 8px"><strong style="color:#fff">What this means:</strong> Your AEO score measures how readable your site is to the AI tools: whether they can parse, attribute and quote it. The higher the score, the more likely the tools can read and quote you when potential customers ask AI for recommendations.</p>
         <p style="margin:0">Most businesses score between 30-50. Even small improvements can meaningfully change how often AI mentions you.</p>
       </div>
     </div>
@@ -325,7 +325,7 @@ function buildDay7Email(user: DripUser, env: Env): string {
 
     <div style="background:#111;border:1px solid #222;border-radius:6px;padding:24px;margin-bottom:24px">
       <div style="font-size:13px;color:#ccc;line-height:1.7">
-        <p style="margin:0 0 12px">Your first week of scans are complete. We are building your prioritized AEO roadmap based on what the data shows -- the specific changes that will have the biggest impact on how AI recommends your business.</p>
+        <p style="margin:0 0 12px">Your first week of scans are complete. We are building your prioritized AEO roadmap based on what the data shows -- the specific gaps we observed in what the tools can read from your site.</p>
         <p style="margin:0">Log into your dashboard to see your roadmap, track your score over time, and see how you compare to competitors.</p>
       </div>
     </div>

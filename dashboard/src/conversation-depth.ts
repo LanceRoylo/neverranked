@@ -40,7 +40,14 @@ export type CompetitivePosition =
   | "tertiary"
   | "listed";
 
-export type ProminenceClass = "recommended" | "listed" | "footnote";
+// "recommended" was renamed to "sole_answer" on 2026-09-11. An engine does
+// not recommend, and a stored class literally named "recommended" would have
+// made that assertion structural: every downstream reader inherits it, and
+// the containment rule exists precisely because "an engine RECOMMENDS" is a
+// Lanham and FTC claim while "an engine CITED" is an observation. Safe to
+// rename: prominence_class is NULL on all 32,991 citation_runs rows, so
+// nothing stored uses the old value.
+export type ProminenceClass = "sole_answer" | "listed" | "footnote";
 
 export interface DepthResult {
   framing: Framing;
@@ -60,7 +67,7 @@ Read the text and return STRICT JSON, no prose:
   "framing_phrase": "the exact phrase from the text that describes the client, or empty string if none",
   "competitive_position": "sole" | "primary" | "secondary" | "tertiary" | "listed",
   "competitors_mentioned": ["names", "of", "other", "businesses", "in", "the", "text"],
-  "prominence_class": "recommended" | "listed" | "footnote",
+  "prominence_class": "sole_answer" | "listed" | "footnote",
   "reason": "one sentence, specific, names the actual signal in the text"
 }
 
@@ -69,7 +76,7 @@ Definitions:
 - framing_phrase: lift the actual words from the text. Quote it. Empty string if the text only names the client without descriptive context.
 - competitive_position: "sole" = only business named; "primary" = first/main recommendation among several; "secondary" = mentioned alongside others without leading; "tertiary" = appears in a list of three or more without distinction; "listed" = appears in a long list with no individual treatment.
 - competitors_mentioned: JSON array of any other business names in the text. Brand names only, not generic categories. Empty array if none.
-- prominence_class: "recommended" = AI is actively recommending the client; "listed" = AI is naming the client among other options without endorsement; "footnote" = client is mentioned in passing, as a caveat, or as a contrast example.
+- prominence_class: describes POSITION in the answer, never endorsement. "sole_answer" = the client is the only business named, or is named ahead of the others as the direct answer; "listed" = the client is named among other options; "footnote" = the client is mentioned in passing, as a caveat, or as a contrast example. Do not infer that the engine prefers, favours or recommends anyone. Report where the name sat.
 - reason: one sentence, references the actual text, no fluff. Tells Lance why you classified it that way.`;
 
 async function callHaiku(env: Env, businessName: string, responseText: string): Promise<string> {
@@ -107,7 +114,7 @@ const FRAMING_VALUES: Framing[] = [
 const POSITION_VALUES: CompetitivePosition[] = [
   "sole", "primary", "secondary", "tertiary", "listed",
 ];
-const PROMINENCE_VALUES: ProminenceClass[] = ["recommended", "listed", "footnote"];
+const PROMINENCE_VALUES: ProminenceClass[] = ["sole_answer", "listed", "footnote"];
 
 function parseDepth(raw: string): DepthResult | null {
   const fence = raw.match(/```(?:json)?\s*([\s\S]*?)```/);

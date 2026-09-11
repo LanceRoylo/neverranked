@@ -26,7 +26,7 @@ const GLOSSARY: GlossaryItem[] = [
   {
     term: "AEO Readiness Score",
     definition:
-      "A 0-100 score measuring how well your site's structure, schema, content, and technical signals match what AI engines look for when picking a source to cite. Updated every weekly scan. 90+ is an A, 75-89 is B, 60-74 is C, 40-59 is D, below 40 is F.",
+      "A 0-100 score measuring how well your site's structure, schema, content, and technical signals match the patterns most often present on pages these tools cite. Updated every weekly scan. 90+ is an A, 75-89 is B, 60-74 is C, 40-59 is D, below 40 is F.",
   },
   {
     term: "Citation share",

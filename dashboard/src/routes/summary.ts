@@ -381,7 +381,7 @@ function buildSummaryNarrative(
       const prevPct = Math.round(prevCitation.citation_share * 100);
       const diff = pct - prevPct;
       if (diff > 0) {
-        parts.push("AI citation share grew to " + pct + "%, up " + diff + " points. More AI engines are recommending the brand.");
+        parts.push("AI citation share grew to " + pct + "%, up " + diff + " points. More of the cited sources point to the brand.");
       } else if (diff < 0) {
         parts.push("AI citation share is " + pct + "%, down " + Math.abs(diff) + " points. Citation share fluctuates as AI models update their responses.");
       } else {

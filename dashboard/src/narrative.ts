@@ -381,7 +381,7 @@ function signalAction(sig: TechnicalSignal): { action: string; reason: string } 
   if (label.includes("ssl") || label.includes("https")) {
     return {
       action: "Enable HTTPS across the entire site",
-      reason: "AI engines and search engines strongly prefer secure sites. This affects both trust signals and ranking."
+      reason: "Insecure pages are cited less often and can be skipped by crawlers entirely. We report the association and do not claim it causes a citation."
     };
   }
   if (label.includes("canonical")) {
