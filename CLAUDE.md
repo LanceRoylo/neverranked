@@ -43,6 +43,19 @@ NeverRanked MEASURES. It does not deploy to, or touch, client sites. Hosted
 schema injection was retired 2026-07-24. Nothing in this repo should reintroduce
 a write path to a client's site.
 
+## Marketing copy routes through Hello Momentum
+
+Any homepage, social, email, or teardown-announcement copy is governed by
+`/Users/lanceroylo/Projects/hello-momentum-agency/brand-guidelines/NEVERRANKED_BRAND.md`
+(what may be claimed; every number must be a Fact Bank row) and
+`NEVERRANKED_MARKETING_PLAYBOOK.md` (where and how it ships; five shapes, eight
+checks). Read both before writing a word. Run finished copy through
+`dashboard/src/human-tone-guard.ts` (customer-publication) and
+`dashboard/src/lib/causal-claims.ts`; the same guards that gate the paid
+readout gate the marketing. The root `index.html` is the homepage source;
+`scripts/build.sh` copies it into `dist/`, so an edit to `dist/` alone is
+silently overwritten on the next deploy.
+
 ## Figure scopes and engine taxonomy (2026-08-22 reclassification)
 
 The measurement is 7 surfaces: 4 citation-grade AI engines (Perplexity,
