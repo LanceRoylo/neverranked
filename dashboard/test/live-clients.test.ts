@@ -41,6 +41,21 @@ describe("who an operator alert can be about", () => {
     assert.equal(live.has("neverranked"), false);
   });
 
+  test("a failed read returns null, not an empty set", async () => {
+    // The distinction is the whole point. An empty set silences every alert
+    // and looks identical to a clean run with nothing to report, which is a
+    // synthetic success. Null forces the caller to say it could not tell.
+    const boom = { DB: { prepare() { throw new Error("D1 unavailable"); } } } as never;
+    assert.equal(await liveClientSlugs(boom), null);
+  });
+
+  test("it never throws, because the sweeps sit in a bare await chain", async () => {
+    // A throw here skips every later step of runDailyMaintenance for that
+    // run. A partial run that looks finished is worse than a skipped sweep.
+    const boom = { DB: { prepare() { throw new Error("D1 unavailable"); } } } as never;
+    await assert.doesNotReject(() => liveClientSlugs(boom));
+  });
+
   test("no customers means alert on nobody, not on everybody", async () => {
     // Fail in the quiet direction. A missed nudge costs less than an alert
     // lane the operator has learned to ignore.

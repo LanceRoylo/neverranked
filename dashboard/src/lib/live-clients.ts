@@ -29,12 +29,36 @@
  */
 import type { Env } from "../types";
 
-/** Slugs with a non-churned customers row. Empty set means alert on nobody,
- *  which is the safe direction: a missed nudge costs less than an alert lane
- *  nobody reads. */
-export async function liveClientSlugs(env: Env): Promise<Set<string>> {
-  const rows = (await env.DB.prepare(
-    "SELECT client_slug FROM customers WHERE status != 'churned'",
-  ).all<{ client_slug: string }>()).results;
-  return new Set(rows.map((r) => r.client_slug));
+/**
+ * Slugs with a non-churned customers row, or NULL when that could not be
+ * determined.
+ *
+ * THE NULL IS THE POINT. Returning an empty set on a failed query would
+ * silence every alert and look exactly like a clean run with nothing to
+ * report. That is a synthetic success, and this codebase's governing rule is
+ * that a synthetic success is not a delivery. A caller that cannot tell who
+ * is live must say so rather than quietly alerting on nobody.
+ *
+ * It also does not throw. These sweeps sit in a bare sequential await chain
+ * inside runDailyMaintenance, so a throw here would skip every step after it
+ * (stale agency apps, low queue, trial dormancy) for that run. The daily job
+ * has an outer .catch, so the worker survives, but a partial run that looks
+ * finished is worse than a skipped sweep that logged why.
+ *
+ * An EMPTY set is different from null and is meaningful: it means the query
+ * ran and there are genuinely no live customers. Alert on nobody then, which
+ * is correct.
+ */
+export async function liveClientSlugs(env: Env): Promise<Set<string> | null> {
+  try {
+    const rows = (await env.DB.prepare(
+      "SELECT client_slug FROM customers WHERE status != 'churned'",
+    ).all<{ client_slug: string }>()).results;
+    return new Set(rows.map((r) => r.client_slug));
+  } catch (e) {
+    console.log(
+      `[live-clients] could not read customers, SKIPPING client alerts this run: ${e instanceof Error ? e.message : String(e)}`,
+    );
+    return null;
+  }
 }

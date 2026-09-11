@@ -2865,6 +2865,10 @@ async function checkStaleRoadmapItems(env: Env): Promise<void> {
   // Only alert about a slug there is a customer to nudge. Same definition the
   // roadmap-stall sweep uses; see lib/live-clients.ts for what was firing.
   const live = await liveClientSlugs(env);
+  if (live === null) {
+    console.log("[stale-item] customer list unreadable; no alerts raised this run");
+    return;
+  }
 
   let flagged = 0;
   let agencyNudged = 0;

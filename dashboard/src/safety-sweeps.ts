@@ -88,6 +88,10 @@ export async function runRoadmapStallCheck(env: Env): Promise<void> {
   // lib/live-clients.ts: this sweep was firing for a paused sister brand and
   // for NeverRanked's own roadmap, neither of which has anyone to nudge.
   const live = await liveClientSlugs(env);
+  if (live === null) {
+    console.log("[roadmap-stall] customer list unreadable; no alerts raised this run");
+    return;
+  }
 
   for (const r of rows) {
     if (!live.has(r.client_slug)) continue;
