@@ -1,0 +1,221 @@
+<!doctype html>
+<!--
+  AEO-vendor teardown 13. Published 2026-09-10.
+  The subject of this one is NeverRanked.
+
+  15 hash-locked buyer questions, the questions a prospect actually asks an
+  AI before hiring anyone in this category. 2,862 runs across seven measured
+  surfaces between 2026-08-12 and 2026-09-10. 18,267 classified citations on
+  the six AI tools, 2,296 on the Bing organic control.
+
+  THE RESULT IS ZERO. neverranked.com appears in none of the 18,267 cited
+  URLs, and the string "NeverRanked" appears in none of the 2,862 answers.
+  Verified at URL level and at response-text level rather than from the
+  client_cited flag, which reads 0 spuriously for any client without an
+  injection_configs row.
+
+  WHY PUBLISH IT. Every other teardown measures somebody else. Publishing a
+  category where we are the subject, and where our own line reads zero, is
+  the only version of this page that is consistent with the position. A
+  scorekeeper who publishes eleven scoreboards and never his own is picking
+  which results to show.
+
+  ANONYMISATION. NeverRanked is named because NeverRanked is the subject.
+  Every other vendor returned by the engines is anonymised, same rule as
+  every other teardown. Public infrastructure (Google, YouTube, LinkedIn,
+  Reddit, Wikipedia, dictionary sites, Microsoft account pages) is named,
+  same rule as every other teardown.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Teardown 13: we ran our own questions, and we are not in the answer</title>
+<meta name="description" content="15 hash-locked buyer questions, seven measured surfaces, 18,267 citations. NeverRanked appears in none of them. Neither does anyone else, in any quantity: it takes 91 hosts to reach half the citations in this category.">
+<link rel="canonical" href="https://neverranked.com/teardowns/aeo-vendors/">
+<meta property="og:title" content="Teardown 13: we ran our own questions, and we are not in the answer">
+<meta property="og:description" content="15 buyer questions, six AI tools plus a Bing organic control, 18,267 citations. Our own line reads zero. The category leader holds 1.8%.">
+<style>
+  :root { color-scheme: dark; }
+  html, body { margin: 0; padding: 0; background: #0b0b0c; }
+  body { min-height: 100vh; display: flex; align-items: flex-start; justify-content: center; font-family: Georgia, "Times New Roman", serif; color: #e8e8ea; padding: 60px 0 120px; }
+  main { max-width: 780px; padding: 0 32px; line-height: 1.7; }
+  .meta-top { color: #6a6a70; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  h1 { font-size: 38px; font-weight: 400; margin: 0 0 8px; letter-spacing: -0.005em; line-height: 1.15; }
+  .sub { font-size: 17px; color: #b9b9bd; margin: 0 0 30px; font-style: italic; }
+  .notice { background: #131316; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 18px 22px; margin: 28px 0; font-size: 14px; color: #b9b9bd; }
+  .notice strong { color: #d4c596; }
+  h2 { font-size: 22px; font-weight: 400; color: #d4c596; margin: 48px 0 14px; letter-spacing: 0.005em; }
+  h3 { font-size: 17px; font-weight: 400; color: #e8e8ea; margin: 26px 0 10px; }
+  p { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; }
+  ul, ol { font-size: 16px; color: #b9b9bd; margin: 0 0 16px; padding-left: 22px; }
+  li { margin-bottom: 8px; }
+  strong { color: #e8e8ea; font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; margin: 22px 0; font-size: 14px; color: #b9b9bd; }
+  th { color: #d4c596; text-align: left; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; font-size: 11px; padding: 12px 14px 12px 0; border-bottom: 1px solid #4a4740; vertical-align: top; }
+  td { padding: 10px 14px 10px 0; border-bottom: 1px solid #211e18; vertical-align: top; font-variant-numeric: tabular-nums; }
+  td.num { text-align: right; padding-right: 24px; }
+  td.us { color: #e8e8ea; }
+  .callout { background: #0e0e10; border: 1px solid #4a3d18; padding: 22px 26px; margin: 28px 0; border-radius: 4px; }
+  .callout h3 { color: #e8c767; margin-top: 0; font-size: 18px; }
+  .rule { width: 60px; height: 1px; background: #4a4740; margin: 48px 0; }
+  a { color: #d4c596; text-decoration: underline; text-underline-offset: 3px; }
+  .footer { color: #6a6a70; font-size: 12px; margin-top: 56px; letter-spacing: 0.04em; text-align: center; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: #d4c596; background: #131316; padding: 1px 5px; border-radius: 3px; }
+  .disclosure-block { background: #0e0e10; border: 1px solid #2a2a2e; border-left: 2px solid #d4c596; padding: 16px 22px; margin: 36px 0 16px; font-size: 13px; color: #b9b9bd; }
+  .disclosure-block strong { color: #d4c596; }
+  .disclosure-block p { margin: 0 0 8px; font-size: 13px; }
+  .disclosure-block p:last-child { margin-bottom: 0; }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; margin: 28px 0 12px; }
+  .cta-row a { display: inline-block; padding: 12px 22px; border: 1px solid #4a3d18; color: #d4c596; text-decoration: none; font-size: 14px; letter-spacing: 0.02em; border-radius: 2px; }
+  .cta-row a.primary { background: #d4c596; color: #0b0b0c; border-color: #d4c596; }
+  html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+  .toc { background: #0e0e10; border: 1px solid #2a2a2e; border-radius: 4px; padding: 18px 22px; margin: 28px 0; }
+  .toc-label { color: #6a6a70; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px; }
+  .toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 32px; font-size: 14px; line-height: 1.6; }
+  .toc li { margin-bottom: 5px; }
+  .toc a { text-decoration: none; }
+  .toc a:hover { text-decoration: underline; }
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 22px 0; }
+  .table-wrap table { margin: 0; }
+  @media (max-width: 640px) {
+    body { display: block; padding: 40px 0 96px; }
+    main { padding: 0 18px; max-width: 100%; min-width: 0; }
+    h1 { font-size: 29px; }
+    h2 { font-size: 20px; margin: 40px 0 12px; }
+    .toc ol { columns: 1; }
+    table { white-space: nowrap; font-size: 13px; }
+    td.num, th.num { padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+  <main>
+    <div class="meta-top"><a href="/" style="color:inherit;text-decoration:none">NeverRanked</a> &middot; Teardown 13 &middot; AEO vendor selection</div>
+    <h1>We ran our own questions. We are not in the answer.</h1>
+    <p class="sub">15 hash-locked buyer questions, 2,862 runs across seven measured surfaces between 12 August and 10 September 2026, 18,267 classified citations on the six AI tools. NeverRanked appears in none of them. Other vendors anonymised. Counts and distributions named.</p>
+
+    <div class="notice">
+      <strong>Why this page exists.</strong> Every other teardown measures somebody else. A scorekeeper who publishes twelve scoreboards and never his own is choosing which results to show. This is the thirteenth, the subject is us, and our line reads zero.
+    </div>
+
+    <div class="toc">
+      <div class="toc-label">Contents</div>
+      <ol>
+        <li><a href="#questions">The questions</a></li>
+        <li><a href="#method">Methodology summary</a></li>
+        <li><a href="#zero">The zero, and how it was checked</a></li>
+        <li><a href="#tools">Per-AI-tool breakdown</a></li>
+        <li><a href="#unowned">Nobody owns this category</a></li>
+        <li><a href="#control">What keyword search returns instead</a></li>
+        <li><a href="#twelve">What this tests about Teardown 12</a></li>
+        <li><a href="#proves">What this does and does not prove</a></li>
+      </ol>
+    </div>
+
+    <h2 id="questions">The questions</h2>
+    <p>These are not brand queries. Nobody typing them knows NeverRanked exists. They are the questions a business owner asks an answer engine in the weeks before hiring anyone in this category, and they were hash-locked before the first run:</p>
+    <ul>
+      <li>&ldquo;Who are the best agencies for helping businesses show up in AI search results?&rdquo;</li>
+      <li>&ldquo;What companies help businesses get mentioned by AI assistants like ChatGPT and Perplexity?&rdquo;</li>
+      <li>&ldquo;My competitors show up in ChatGPT answers but my business doesn&rsquo;t. Who can help me fix that?&rdquo;</li>
+      <li>&ldquo;I heard about AEO. Which agencies actually do this well and have results to show?&rdquo;</li>
+      <li>&ldquo;Compare the top AEO agencies. Who has the best approach for small businesses?&rdquo;</li>
+    </ul>
+    <p>Fifteen in total. If there is a commercially useful position in this category, it is in the answers to these.</p>
+
+    <h2 id="method">Methodology summary</h2>
+    <ul>
+      <li><strong>Window.</strong> 12 August to 10 September 2026, 30 days.</li>
+      <li><strong>Surfaces.</strong> Seven measured surfaces: six AI tools plus a Bing organic control. Four citation-grade engines that search the live web and return URLs (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews), two model-knowledge engines that search nothing and answer from training data (Claude, Gemma), and Bing organic top-5 as a classic-search control. The control is not an AI tool. It returns results. It does not answer or cite.</li>
+      <li><strong>Volume.</strong> 2,862 runs. 18,267 classified citations across the four citation-grade engines, 2,296 on the control.</li>
+      <li><strong>Two layers, never pooled.</strong> A citation-grade figure is a share of cited URLs. A model-knowledge figure is a share of answers that name a business. Different numerators, different denominators, not comparable in either direction.</li>
+    </ul>
+
+    <h2 id="zero">The zero, and how it was checked</h2>
+    <p>The convenient way to measure this would have been to read the <code>client_cited</code> flag, which is written at run time. That flag reads 0 for every model-knowledge row belonging to any client without an injection record, so it would have produced this same zero whether or not the zero was real. It was not used.</p>
+    <p>Both layers were checked directly:</p>
+    <ul>
+      <li><strong>Citation layer.</strong> Every cited URL in the window was parsed to a host. <strong>0 of 18,267</strong> resolve to neverranked.com.</li>
+      <li><strong>Model-knowledge layer.</strong> The raw response text of all 2,862 runs was searched for &ldquo;NeverRanked&rdquo; and &ldquo;Never Ranked&rdquo;. <strong>0 answers</strong> contain either, including 465 Claude runs and 462 Gemma runs.</li>
+    </ul>
+    <p>The engines are not silent on these questions. They returned 18,267 citations across 2,332 distinct hosts. They are answering at length. None of it is us.</p>
+
+    <h2 id="tools">Per-AI-tool breakdown</h2>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Surface</th><th class="num">Our share</th><th class="num">Citations</th><th>Layer</th></tr>
+      <tr><td class="us">ChatGPT search</td><td class="num">0%</td><td class="num">1,591</td><td>cited URLs</td></tr>
+      <tr><td class="us">Gemini grounded</td><td class="num">0%</td><td class="num">6,281</td><td>cited URLs</td></tr>
+      <tr><td class="us">Perplexity</td><td class="num">0%</td><td class="num">6,198</td><td>cited URLs</td></tr>
+      <tr><td class="us">Google AI Overviews</td><td class="num">0%</td><td class="num">4,197</td><td>cited URLs</td></tr>
+      <tr><td class="us">Claude (training data)</td><td class="num">0%</td><td class="num">465 answers</td><td>answers that name</td></tr>
+      <tr><td class="us">Gemma (training data)</td><td class="num">0%</td><td class="num">462 answers</td><td>answers that name</td></tr>
+      <tr><td>Bing organic (control)</td><td class="num">0%</td><td class="num">2,296</td><td>returned results</td></tr>
+    </table>
+    </div>
+    <p>Seven surfaces, seven zeroes, on both layers and on the control.</p>
+
+    <h2 id="unowned">Nobody owns this category</h2>
+    <p>A zero means one thing when the leader holds 40% and something entirely different when the leader holds 1.8%. In this category it is the second.</p>
+    <p>The most-cited host on the AI tools is <strong>google.com at 3.4%</strong>, tied with <strong>youtube.com at 3.4%</strong>, followed by linkedin.com at 2.8% and reddit.com at 2.7%. Those are platforms, not vendors. <strong>The most-cited actual vendor website holds 1.8%</strong>, and the next six cluster between 0.9% and 1.3%.</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Concentration</th><th class="num">AI tools</th><th class="num">Control</th></tr>
+      <tr><td>Most-cited single host</td><td class="num">3.4%</td><td class="num">11.2%</td></tr>
+      <tr><td>Top 10 hosts, combined</td><td class="num">20.9%</td><td class="num">52.3%</td></tr>
+      <tr><td>Top 25 hosts, combined</td><td class="num">30.4%</td><td class="num">71.9%</td></tr>
+      <tr><td>Hosts needed to reach half the citations</td><td class="num">91</td><td class="num">9</td></tr>
+      <tr><td>Distinct hosts cited</td><td class="num">2,332</td><td class="num">257</td></tr>
+    </table>
+    </div>
+    <div class="callout">
+      <h3>It takes 91 hosts to reach half the citations</h3>
+      <p>That is the finding, and it is more useful than our zero. This category has not been won by anybody. The citations are spread across 2,332 hosts, the top of the field is platforms rather than vendor websites, and no vendor exceeds 1.8%. Whatever is happening in these answers, it is not a market with an incumbent.</p>
+    </div>
+
+    <h2 id="control">What keyword search returns instead</h2>
+    <p>The control is the reason the AI figures mean anything: it separates a move in AI citation from a move in classic search. On these questions it also produced the clearest demonstration of why answer engines exist at all.</p>
+    <p>Asked who can help a business appear in AI answers, Bing organic returned:</p>
+    <div class="table-wrap">
+    <table>
+      <tr><th>Host</th><th class="num">Share of control results</th></tr>
+      <tr><td>merriam-webster.com</td><td class="num">11.2%</td></tr>
+      <tr><td>dictionary.cambridge.org</td><td class="num">10.6%</td></tr>
+      <tr><td>myaccount.microsoft.com</td><td class="num">5.1%</td></tr>
+      <tr><td>myapplications.microsoft.com</td><td class="num">5.0%</td></tr>
+      <tr><td>bestbuy.com</td><td class="num">4.4%</td></tr>
+      <tr><td>dictionary.com</td><td class="num">4.3%</td></tr>
+      <tr><td>thefreedictionary.com</td><td class="num">3.5%</td></tr>
+      <tr><td>coolmathgames.com</td><td class="num">2.6%</td></tr>
+    </table>
+    </div>
+    <p><strong>Dictionary sites take 31.1% of what the control returns. Microsoft account and application login pages take a further 12.8%. Together that is 43.9%.</strong> The matcher is reading &ldquo;my business&rdquo;, &ldquo;recommend&rdquo; and &ldquo;compare&rdquo; as vocabulary and returning definitions of them, plus the Microsoft sign-in page for the word &ldquo;my&rdquo;.</p>
+    <p>This is not a criticism of Bing. It is what keyword matching does with a question, and it is the gap answer engines were built to close. We report it because the control is measured on the same questions in the same runs, which is the only way to know the AI figures are about AI.</p>
+
+    <h2 id="twelve">What this tests about Teardown 12</h2>
+    <p>Teardown 12 measured 23 national marketing and SEO agencies on a cohort we selected, and found that agency websites took 12% of citations in their own category and that <strong>the single most-cited agency website held 1% of 8,833 citations</strong>.</p>
+    <p>This teardown did not select a cohort. It asked 15 buyer questions and recorded whoever the engines returned. The most-cited vendor website came in at 1.8%, and the field was spread across 2,332 hosts.</p>
+    <p>Same shape, different method, and the second one could not have been tuned to the first because the second has no cohort to tune. That is an out-of-sample check on a published claim, and it is the reason this page is worth more to us than the marketing embarrassment costs.</p>
+
+    <h2 id="proves">What this does and does not prove</h2>
+    <p><strong>It proves</strong> that across 15 hash-locked buyer questions, 2,862 runs and seven measured surfaces in a 30-day window, no AI tool cited neverranked.com or named NeverRanked. It proves the same measurement found no vendor above 1.8% and a field spread across 2,332 hosts.</p>
+    <p><strong>It does not prove</strong> that the category is unwinnable, that citation is achievable by any particular action, or that our zero will still be a zero next month. We do not claim that anything causes a citation. We measure what the engines cite and we report it, including when the answer is about us.</p>
+    <p><strong>It does not prove our work does not work</strong>, and it does not claim the reverse either. NeverRanked measures. It does not execute, it does not touch a client site, and it has never promised a citation to anyone. The only promise is the measurement, and this page is that promise applied to ourselves.</p>
+
+    <div class="rule"></div>
+
+    <div class="disclosure-block">
+      <p><strong>Anonymisation.</strong> NeverRanked is named because NeverRanked is the subject. Every other vendor the engines returned is anonymised, which is the same rule applied to every cohort in every other teardown. Public infrastructure is named.</p>
+      <p><strong>Re-running this.</strong> The question set is hash-locked and the window is dated. Anyone measuring the same questions over the same period against the same surfaces should land in the same place. If they do not, we want to know.</p>
+    </div>
+
+    <div class="cta-row">
+      <a class="primary" href="https://check.neverranked.com/">Run the free check on your own site</a>
+      <a href="/teardowns/">All thirteen teardowns</a>
+    </div>
+
+    <div class="footer">NeverRanked &middot; Teardown 13 &middot; Published 10 September 2026 &middot; Honolulu</div>
+  </main>
+</body>
+</html>
