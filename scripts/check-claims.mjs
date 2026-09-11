@@ -234,16 +234,25 @@ const RULES = [
     // "cite or name" is permitted: a list spanning all six tools legitimately
     // needs both verbs.
     id: "model-knowledge-cite-verb",
-    // WARN until the dashboard sweep lands, same call and same reason as
-    // normative-engine-language above. Every live marketing and teardown page
-    // is clean as of 2026-09-10: 57 instances across 19 pages were corrected.
-    // What remains is eight dashboard/src files, and most of those state the
-    // rule rather than break it (engine-layer.ts and report-notes.ts both
-    // carry "Claude and Gemma ... cite nothing" in prose explaining why the
-    // verb is wrong). Separating those from real violations is a per-file
-    // pass; blocking now would fail the deploy on comments that are correct.
-    severity: "warn",
-    re: /\b(?:claude|gemma)\b[^.\n]{0,45}\bcit(?:e|es|ed|ing|ations?)\b(?!\s+or\s+name)/i,
+    // PROMOTED to block 2026-09-11, sweep complete. 57 site instances were
+    // corrected on 09-10; the remaining eight dashboard/src files were swept
+    // today. Four were real and client-facing: the Citation Share glossary
+    // entry, which DEFINED the metric as counting the two model-knowledge
+    // engines; a roadmap item saying Claude "cites less" when it cites
+    // nothing; the weekly page byline; and the digest grader's own system
+    // prompt, which taught it the wrong model of the product it grades. Five
+    // state the rule rather than break it and are allowlisted with reasons.
+    //
+    // Blocking now means the next one fails the build the day it is written,
+    // which is the whole point of the ratchet.
+    severity: "block",
+    // The lookahead carries the legitimate forms. "cite or name" was there
+    // from the start, for a list spanning both layers. Three more were added
+    // 2026-09-11 after the sweep, because the first pattern flagged its own
+    // corrections: "Claude and Gemma ... cite nothing" is the rule STATED and
+    // is the exact sentence the fix introduced. A guard that fails on correct
+    // copy is a guard people learn to bypass.
+    re: /\b(?:claude|gemma)\b[^.\n]{0,45}\bcit(?:e|es|ed|ing|ations?)\b(?!\s+(?:or\s+nam|nothing|no\s+(?:urls|sources)))/i,
     why: 'says a model-knowledge engine cites. Claude and Gemma search nothing and return no URLs: their figure is the share of ANSWERS THAT NAME a business, so the verb is "names" or "mentions"',
   },
   // ── Bing channel reclassification, 2026-08-22 ────────────────────────
@@ -367,6 +376,28 @@ const ALLOW = [
   // purpose of pre-registering it, so the page carries a dated wording note
   // beside the original instead. Annotate history, never rewrite it.
   { path: "claims/index.html", rules: ["model-knowledge-cite-verb"] },
+  // The cite-verb sweep, 2026-09-11. Four client-facing strings were real and
+  // were corrected: the Citation Share glossary entry, which DEFINED the
+  // metric as counting the two model-knowledge engines; a roadmap item saying
+  // Claude "cites less" when it cites nothing; the weekly page byline; and the
+  // digest grader's own system prompt, which taught it the wrong model of the
+  // product it grades.
+  //
+  // These five are the rule being STATED, not broken. Rewriting them would
+  // delete the explanation of why the verb matters.
+  //   report-notes.ts  quotes "Gemma cites you at 18 percent" as the example
+  //                    of what the layer guard exists to stop, and says
+  //                    "Gemma cites nothing" as the correction.
+  //   citations.ts     one comment documents the defect where a readout
+  //                    scored Claude on 741 "citations"; one is the token
+  //                    `cited` sitting beside the string "gemma" in a call.
+  //   bot-analytics.ts labels the Claude-Web CRAWLER, which does fetch. A
+  //                    different sense of the word entirely.
+  { path: "dashboard/src/lib/report-notes.ts", rules: ["model-knowledge-cite-verb"] },
+  { path: "dashboard/src/citations.ts", rules: ["model-knowledge-cite-verb"] },
+  { path: "dashboard/src/bot-analytics.ts", rules: ["model-knowledge-cite-verb"] },
+  { path: "dashboard/src/lib/engine-layer.ts", rules: ["model-knowledge-cite-verb"] },
+  { path: "linkedin/post-03-scorecard-source.html", rules: ["model-knowledge-cite-verb"] },
   // audits/ holds delivered 1:1 client audits from May 2026 and seven
   // unfilled templates. They are never copied into dist/ and robots.txt
   // disallows the path, so none of this is published. Rewriting a delivered

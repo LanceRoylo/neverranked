@@ -27,7 +27,7 @@ import type { Env } from "./types";
 const HAIKU_MODEL = "claude-haiku-4-5";
 const ANTHROPIC_VERSION = "2023-06-01";
 
-const SYSTEM = `You grade the body of a weekly client digest email for a SaaS company called NeverRanked. NeverRanked tracks how often AI engines (ChatGPT, Perplexity, Claude, Gemini, Google AI Overviews, Gemma) cite a client's business in their answers.
+const SYSTEM = `You grade the body of a weekly client digest email for a SaaS company called NeverRanked. NeverRanked tracks what the six AI tools return for a client's category. Four search the live web and CITE sources (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews). Two answer from training data and cite nothing, so they are scored on whether they NAME the business (Claude, Gemma). The two measurements have different denominators and are never combined.
 
 Two checks. Both must pass for the digest to ship.
 

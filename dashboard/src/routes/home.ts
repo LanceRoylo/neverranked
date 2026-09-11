@@ -220,7 +220,7 @@ async function buildWeeklySummary(user: User, env: Env): Promise<string> {
   // measures and why the delta arrow means what it means.
   const cardTooltips: Record<string, string> = {
     "AEO Score": "AEO Readiness on a 0-100 scale. Updated every weekly scan. Delta compares this week to last week. Green is up, red is down.",
-    "Citation Share": "Percentage of AI engine answers (ChatGPT, Perplexity, Claude, Gemini, Google AIO, Gemma) that cite your site when asked about your industry. Measured weekly.",
+    "Citation Share": "Share of the sources CITED by the four engines that search the live web (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) that point to your own site. Claude and Gemma answer from training data and cite nothing, so they are reported separately as the share of their ANSWERS that NAME you. The two are different quantities and are never added together.",
     "Search Clicks": "Clicks from Google Search Console in the latest weekly reporting window. Delta compares to the previous week. Data is delayed ~3 days.",
     "Roadmap": "Percentage of roadmap items marked done across all phases. The fraction shows completed out of total items.",
   };
