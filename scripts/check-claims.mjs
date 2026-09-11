@@ -173,6 +173,47 @@ const RULES = [
     why: 'sells "daily" as the product. Capture IS daily and may be described technically, but the deliverable is the monthly memo — one reading is weather, the month is climate',
   },
 
+  {
+    // NORMATIVE ENGINE LANGUAGE. Absent from this checker entirely until
+    // 2026-09-10, which meant the largest and most indexed surface the
+    // company owns had no mechanical guard on the one claim shape that
+    // carries legal weight. /methodology/ states the law on its own page:
+    // 'We do not say an engine "recommends," "prefers," "endorses," or
+    // "ranks" a business. Engines cite, full stop.' Four other published
+    // pages broke it, including the hotels teardown, whose sentence "AI is
+    // recommending a platform, not a property" had also propagated into the
+    // marketing repo's fact registry and was one step from a post.
+    //
+    // An engine that RECOMMENDS is a Lanham and FTC claim. An engine that
+    // CITED is an observation. The sibling copies in
+    // neverranked-marketing/canon/claims-patterns.js and
+    // neverranked-outreach/worker/src/output-grader.ts carry this rule; this
+    // is the third copy catching up, the same way the Copilot rules had to.
+    //
+    // Progressive forms included on purpose: the outreach copy carried only
+    // -s and -ed, so "AI is recommending" passed clean there for months.
+    id: "normative-engine-language",
+    // WARN, not block, and deliberately so. Turning this on as a block
+    // surfaces 31 hits, almost all in dashboard/src, where the word often
+    // appears legitimately (a grader naming what it forbids, a prompt
+    // instructing a model never to say it). Separating those from real
+    // violations is a per-file sweep, and the note above APP_SWEEP_PENDING
+    // says exactly what happens when 35 files are fixed in one pass: you
+    // introduce a worse bug than the one you set out to fix.
+    //
+    // Declaring them as app debt was the other option and it is worse. That
+    // list closed on 2026-08-24 and its rule is that it may only ever
+    // shrink. Refilling it to make a new rule pass would spend the ratchet.
+    //
+    // So: warn now, sweep the 31, then promote to block. Same shape as
+    // control-counted-as-engine below, which warns because one page words it
+    // correctly and a gate that blocks the correct page teaches everyone to
+    // bypass the gate. The published HTML surfaces are already clean as of
+    // 2026-09-10, which is what this rule was written to find.
+    severity: "warn",
+    re: /\b(ai|chatgpt|perplexity|gemini|claude|gemma|copilot|google|bing|engines?|tools?)\b[^.\n]{0,40}\b(recommend(s|ed|ing)?|prefer(s|red|ring)?|endorse(s|d|ing)?|favou?r(s|ed|ing)?|pick(s|ed|ing)?|select(s|ed|ing)?|choos(e[sn]?|ing)|rank(s|ed|ing)?\\s+(first|top|highest)|rate(s|d)?\\s+(best|highest))\b/i,
+    why: 'says an engine recommends, prefers, endorses, favours, picks, selects, chooses or ranks a business. Engines CITE. The observational form is the canonical one: "on N of M queries between [dates], engine X cited business Y"',
+  },
   // ── Bing channel reclassification, 2026-08-22 ────────────────────────
   //
   // The channel labeled "Microsoft Copilot" is Bing organic top-5 via
@@ -281,6 +322,17 @@ const RULES = [
 // effect"). A disclaimer has to name what it disclaims.
 const ALLOW = [
   { path: "retraction/index.html", rules: ["retracted-htc-score", "retracted-htc-perplexity"] },
+  // The four verified false positives of normative-engine-language, checked
+  // by hand 2026-09-10. Each names a normative verb whose SUBJECT is not an
+  // engine, or quotes the forbidden words in order to forbid them.
+  //   methodology       states the rule and must name what it bans
+  //   cross-category    "not who WE picked" -- the subject is NeverRanked
+  //   vs                "YOU should pick" -- the subject is the reader
+  //   first-look        "a traveler choosing" -- the subject is the traveler
+  { path: "methodology/index.html", rules: ["normative-engine-language"] },
+  { path: "teardowns/cross-category/index.html", rules: ["normative-engine-language"] },
+  { path: "vs/index.html", rules: ["normative-engine-language"] },
+  { path: "first-look/prince-waikiki/index.html", rules: ["normative-engine-language"] },
   // "first-mover" in its ordinary commercial sense, unrelated to the retired
   // Copilot claim: vertical-exclusivity terms offered to the first agency to
   // sign, and a market-window observation about agent readiness. Declared

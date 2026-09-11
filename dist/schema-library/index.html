@@ -179,7 +179,7 @@
         <tr><td><code>@id</code></td><td>Stable identifier AI engines use to link this LocalBusiness to other schema (Service, Person) on the same page. Use the firm's domain + <code>#localbusiness</code>.</td></tr>
         <tr><td><code>name</code></td><td>Must match the firm's primary brand name exactly. AI engines cross-reference this with web mentions.</td></tr>
         <tr><td><code>address</code></td><td>Full <code>PostalAddress</code> object. AI engines extract location signal here for geographic queries. Address must also appear in visible body text.</td></tr>
-        <tr><td><code>geo</code></td><td>Lat/lng coordinates. Some AI engines (particularly Google AI Overviews) prefer geo over address for distance-based ranking.</td></tr>
+        <tr><td><code>geo</code></td><td>Lat/lng coordinates. Google AI Overviews cites pages carrying geo more often than address alone on distance-based queries. We report the association and do not claim it causes the citation.</td></tr>
         <tr><td><code>openingHoursSpecification</code></td><td>Array of day-range objects. AI engines surface "open now" and "open late" facts directly from this. Get it right.</td></tr>
         <tr><td><code>sameAs</code></td><td>Array of authoritative profile URLs (LinkedIn, Facebook, industry directory). AI engines use these to confirm entity identity.</td></tr>
         <tr><td><code>priceRange</code></td><td>Optional. <code>$</code>, <code>$$</code>, <code>$$$</code>, or <code>$$$$</code>. AI engines use this for budget-shaped queries.</td></tr>
@@ -188,9 +188,9 @@
 
     <div class="engine-notes">
       <strong>Per-engine notes</strong><br>
-      <strong>ChatGPT search / Gemini grounded:</strong> read all properties. <code>name</code>, <code>address</code>, and <code>sameAs</code> drive the highest weight.<br>
+      <strong>ChatGPT search / Gemini grounded:</strong> read all properties. <code>name</code>, <code>address</code>, and <code>sameAs</code> appear most often on cited pages. We report the association and do not claim it causes the citation.<br>
       <strong>Perplexity:</strong> heavily uses <code>address</code> and <code>openingHoursSpecification</code> for local intent queries.<br>
-      <strong>Google AI Overviews:</strong> prefers <code>geo</code> + <code>address</code> together, and cross-references with Google Business Profile.<br>
+      <strong>Google AI Overviews:</strong> cites pages carrying <code>geo</code> and <code>address</code> together more often than either alone, and cross-references with Google Business Profile. Association, not cause.<br>
       <strong>Bing organic (control surface, listed for completeness):</strong> currently weak at extracting LocalBusiness schema. Bing Business Profile is the more direct path.<br>
       <strong>Claude / Gemma (training data):</strong> don't read live schema. LocalBusiness presence here matters only for future training data refreshes (months to years).
     </div>
