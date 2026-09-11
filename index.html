@@ -209,10 +209,59 @@
       radial-gradient(900px 520px at 18% 8%, color-mix(in oklab, var(--gold) 7%, transparent), transparent 68%),
       radial-gradient(720px 480px at 88% 30%, color-mix(in oklab, var(--terra) 4%, transparent), transparent 70%);
   }
-  .hero .inner { max-width: 860px; position: relative; }
+  .hero .inner { max-width: 1180px; position: relative; }
+  /* Two columns from 2026-09-11. The page argued well and showed nothing.
+     An external audit put it plainly: the service was abstract above the
+     fold. The right column is a published artifact, not a mocked dashboard,
+     because the strongest proof this practice owns is a measurement it ran
+     on itself and published with its own line reading zero. */
+  .hero-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.85fr);
+    gap: clamp(36px, 4.4vw, 68px); align-items: start; }
+  .hero-copy { min-width: 0; }
+
+  .finding { min-width: 0; border: 1px solid var(--line); border-radius: 3px;
+    background: linear-gradient(180deg, var(--panel) 0%, var(--bg-deep) 100%);
+    padding: 26px 28px 24px; position: relative; }
+  .finding .f-top { display: flex; justify-content: space-between; align-items: baseline;
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--dim); padding-bottom: 13px; border-bottom: 1px solid var(--line); }
+  .finding .f-top .f-no { color: var(--gold); font-weight: 600; }
+  .finding .f-eyebrow { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--gold); margin: 20px 0 9px; }
+  .finding h3 { font-family: var(--serif); font-weight: 400; font-size: clamp(23px, 2.3vw, 29px);
+    line-height: 1.2; letter-spacing: -0.014em; color: var(--text); margin: 0 0 20px; text-wrap: balance; }
+  .finding .f-label { font-family: var(--mono); font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--dim); margin: 17px 0 6px; }
+  .finding .f-body { font-size: 14.5px; line-height: 1.62; color: var(--soft); margin: 0; }
+  .finding .f-body strong { color: var(--text); font-weight: 600; }
+  .finding .f-limit { margin-top: 17px; padding: 12px 14px; border-left: 2px solid var(--gold-deep, #8f7c46);
+    background: rgba(255,255,255,0.018); }
+  .finding .f-limit .f-body { font-size: 13.5px; color: var(--dim); }
+  .finding .f-foot { margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--line);
+    font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.08em; color: var(--dim); line-height: 1.75; }
+  .finding .f-foot a { color: var(--gold); text-decoration: underline; text-underline-offset: 3px; }
+
+  @media (max-width: 980px) {
+    .hero .inner { max-width: 860px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 44px; }
+    .finding { padding: 22px 22px 20px; }
+  }
   .kicker { display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 11.5px; font-weight: 440; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin: 0 0 30px; }
   .kicker::before { content: ""; width: 26px; height: 1px; background: var(--gold-deep); }
   .hero h1 { font-family: var(--serif); font-size: clamp(40px, 6.2vw, 66px); font-weight: 400; line-height: 1.08; letter-spacing: -0.024em; margin: 0 0 30px; color: var(--text); text-wrap: balance; }
+  /* In the two-column hero the headline lives in roughly half the width, so
+     the single-column size ran to five lines and pushed the form below the
+     fold. That is the audit's actual complaint, and making it worse while
+     adding the panel would have been a net loss. */
+  .hero-grid .hero-copy h1 { font-size: clamp(34px, 3.4vw, 47px); line-height: 1.1; margin: 0 0 20px; }
+  /* The single-column hero could afford 138px of air above it. The two-column
+     one cannot: at the 1280x720 viewport the audit inspected, that padding
+     put the form 61px below the fold. Reclaimed here rather than by cutting
+     the subhead, which is the sentence that stops a reader concluding the
+     control failure was an AI failure. */
+  .hero:has(.hero-grid) { padding-top: clamp(52px, 5vw, 76px); }
+  .hero-grid .kicker { margin-bottom: 18px; }
+  .hero-grid .hero-copy .turn { font-size: clamp(17px, 1.42vw, 19.5px); margin: 0 0 26px; max-width: 34em; }
   .hero .turn { font-family: var(--serif); font-style: italic; font-weight: 420; font-size: clamp(19px, 2vw, 23px); color: var(--gold); line-height: 1.52; letter-spacing: -0.004em; margin: 0 0 38px; max-width: 46em; }
 
   /* CTA — the scorekeeper's one loud element */
@@ -762,6 +811,7 @@
   <!-- Hero -->
   <section class="hero">
     <div class="inner">
+      <div class="hero-grid">
       <div class="hero-copy">
       <div class="kicker reveal">The independent measurement layer for AI search</div>
       <h1 class="wpu" id="hero-h1"><span class="wpu-word" style="--wpu-delay:0ms">Asked for the best hotel in Hawaii, keyword search returned a store locator in Elmira, New York.</span></h1>
@@ -779,6 +829,30 @@
       <div class="reveal" style="transition-delay:.46s; font-family:var(--mono); font-size:12px; letter-spacing:0.04em; color:var(--dim); line-height:1.65; margin-top:26px;">
         Eleven measurements on the public record, across ten categories in two states. Every number dated. Every question set hash-locked before we looked.
       </div>
+      </div>
+
+      <aside class="finding reveal" style="transition-delay:.34s" aria-label="A published finding">
+        <div class="f-top"><span>NeverRanked &middot; Published measurement</span><span class="f-no">No. 13</span></div>
+        <div class="f-eyebrow">The question we asked about ourselves</div>
+        <h3>We ran our own questions. We are not in the answer.</h3>
+
+        <div class="f-label">Question under review</div>
+        <p class="f-body">&ldquo;Who are the best agencies for helping businesses show up in AI search results?&rdquo; One of 15, hash-locked before the first run.</p>
+
+        <div class="f-label">What the measurement found</div>
+        <p class="f-body">Across <strong>18,267 citations</strong> on the six AI tools, neverranked.com was cited <strong>0 times</strong>. Nor was almost anyone else: the most-cited vendor website in the category holds <strong>1.8%</strong>, and it takes <strong>91 hosts</strong> to reach half the citations.</p>
+
+        <div class="f-limit">
+          <div class="f-label" style="margin-top:0">What this does not establish</div>
+          <p class="f-body">That the category is unwinnable, that any particular action earns a citation, or that our own zero will still be zero next month.</p>
+        </div>
+
+        <div class="f-foot">
+          15 questions &middot; 2,862 runs &middot; 2026-08-12 to 2026-09-10<br>
+          <a href="/teardowns/aeo-vendors/">Read the full teardown &rarr;</a>
+        </div>
+      </aside>
+
       </div>
 
     </div>
