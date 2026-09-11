@@ -12,6 +12,8 @@
  */
 import { writeAnalystNotes, allowedNumbers, noteNumbersOk, engineNoteClaimsOk } from "../src/lib/report-notes.ts";
 import { engineVerbClaimsOk } from "../src/lib/engine-verb-claims.ts";
+import { firstAdviceClaim } from "../src/lib/note-advice.ts";
+import { firstCausalClaim } from "../src/lib/causal-claims.ts";
 import { readFileSync } from "node:fs";
 
 const key = process.env.ANTHROPIC_API_KEY;
@@ -77,9 +79,13 @@ async function main(): Promise<void> {
     const checks = [
       ["numbers", noteNumbersOk(t, allowed)],
       ["engine verbs", engineVerbClaimsOk(t, labels)],
+      ["advice", firstAdviceClaim(t) === null],
+      ["causal", firstCausalClaim(t) === null],
       ...(k === "engines" ? [["layer claims", engineNoteClaimsOk(t, facts)] as [string, boolean]] : []),
     ] as [string, boolean][];
     console.log("  guards: " + checks.map(([nm, ok]) => `${nm}=${ok ? "ok" : "FAIL"}`).join("  "));
+    const adv = firstAdviceClaim(t);
+    if (adv) console.log(`  ^ would be DROPPED in production: ranks impact or advises -- "${adv}"`);
   }
 }
 main().catch((e) => { console.error(e); process.exit(1); });

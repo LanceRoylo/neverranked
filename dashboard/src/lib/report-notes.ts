@@ -19,6 +19,7 @@
 import type { Env } from "../types";
 import { engineVerbClaimsOk } from "./engine-verb-claims";
 import { firstCausalClaim } from "./causal-claims";
+import { firstAdviceClaim } from "./note-advice";
 import { checkHumanTone } from "../human-tone-guard";
 import type { ReportFacts } from "./report-facts";
 
@@ -163,7 +164,8 @@ Voice rules, all hard:
 - 2 to 4 sentences per note. Succinct. Every sentence earns its place.
 - Plain language a non-technical owner reads once and understands.
 - Honest: no fluff, no inflating a small move, no doom on a dip. One month of movement is never called a trend. Never claim our work caused a move; at most note that a move is consistent with work done.
-- Always end forward-looking: what to watch or what it sets up next month.
+- Always end forward-looking: what the NEXT READING will reveal, or what this month sets up as a comparison. Describe what will become visible, never what the reader should do about it.
+- DESCRIBE, DO NOT ADVISE, AND NEVER RANK IMPACT. You are writing the chart annotation, not the recommendation. Prioritisation lives in the memo and is written by the principal, which is a promise made on the public site, so a ranked instruction from you breaks it. Forbidden in any phrasing: that one action matters more than another, that something is the biggest lever or the first checkpoint or the top priority, that the reader should focus on or make sure of anything, or that "the opportunity is" somewhere. Observed 2026-09-11 in a preview of a paying customer\'s readout: "Keeping your listings accurate matters more right now than any other single lever" and "should be the first checkpoint next month". Both assert relative impact the measurement cannot establish. Say what the sources ARE. The reader decides what to do.
 - Use ONLY numbers that appear in the data you are given. Do not compute new statistics. Do not use em dashes, semicolons, or emojis.
 - WRITE TO THEM, NOT ABOUT THEM. This paragraph sits in their own report and they read it. Address them as "you" and "your site", or by their business name. Never write "the customer", "the client", "this business", or "the brand". Observed 2026-09-09: a sources note read "dwarfing the customer's own site at just 2 percent" in prose a paying customer was about to open. These instructions describe them in the third person because they are instructions. Your output is not.
 
@@ -265,6 +267,14 @@ export async function writeAnalystNotes(
       const causal = firstCausalClaim(t);
       if (causal) {
         console.log(`[report-notes] ${which} note claims causation ("${causal}"); dropped`);
+        return undefined;
+      }
+      // Ranked impact and strategic advice. The published boundary allows
+      // the MEMO to prioritise, but promises it is written by the principal.
+      // These notes are written by a model. See lib/note-advice.ts.
+      const advice = firstAdviceClaim(t);
+      if (advice) {
+        console.log(`[report-notes] ${which} note ranks impact or gives advice ("${advice}"); dropped`);
         return undefined;
       }
       // Tone. atlas-grader, multi-pass and memo-generator all run this. The
