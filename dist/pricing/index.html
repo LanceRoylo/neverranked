@@ -348,7 +348,7 @@
         <div class="roi-out" id="roi-out">
           <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
           <div class="roi-value" id="roi-amount">$15,000</div>
-          <p class="roi-months" id="roi-breakeven">It takes <b>2 new cases</b> to cover a full year of NeverRanked. Every case after that is found money you would not have had.</p>
+          <p class="roi-months" id="roi-breakeven">It takes <b>a single new case</b> to cover a full year of NeverRanked, and then some. Every case after that is found money you would not have had.</p>
           <div class="roi-bars">
             <div class="roi-bar you">
               <span class="nm">One customer is worth</span>
@@ -358,7 +358,7 @@
             <div class="roi-bar cost">
               <span class="nm">A year of NeverRanked</span>
               <span class="track"><span class="fill" id="roi-fill-cost" style="width:100%"></span></span>
-              <span class="amt">$9,950</span>
+              <span class="amt">$9,200</span>
             </div>
           </div>
           <p class="roi-basis" id="roi-basis">Based on avg settlement of $40,000 to $55,000 with a 33% contingency fee.</p>
@@ -446,7 +446,10 @@
   // values by vertical; compares against $750/mo. Honest framing: shows
   // the value of one customer, not a promised return.
   (function () {
-    var COST_YEAR = 9950; // $950 baseline + $750 x 12 = first-year all-in (Audit)
+    // Confirmed with Lance 2026-09-10: the $950 baseline IS month one, then
+    // eleven months at $750. Was 9950, which assumed the baseline sat on top
+    // of twelve full months and overstated our own price by $750.
+    var COST_YEAR = 9200; // $950 baseline month + $750 x 11 = first-year all-in (Audit)
     var DATA = {
       'pi-law':     { value: 15000, unit: 'case',    basis: 'Average settlement of $40,000 to $55,000 at a 33% contingency fee.' },
       financial:    { value: 40000, unit: 'client',  basis: 'Average client lifetime value over a roughly 10-year relationship at 1% AUM on a $400K portfolio.' },
