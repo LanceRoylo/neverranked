@@ -1,0 +1,26 @@
+-- 0117: retire the client-facing weekly digest.
+--
+-- IT WAS NEVER SOLD. The pricing page does not mention a digest or anything
+-- weekly. The homepage sells a "Monthly delta memo". And /methodology/ lists
+-- this under exclusions in so many words: "Automated daily drift alerts.
+-- Daily measurement ships now, and drift detection surfaces in the monthly
+-- delta memo". The published method says drift belongs in the monthly memo,
+-- and a subsystem has been trying to send it weekly against that.
+--
+-- IT NEVER DELIVERED. 43 grader holds in the 30 days to 2026-09-11 and zero
+-- client deliveries. The only digests that ever reached an inbox went to
+-- hello@neverranked.com and lanceroylo@gmail.com.
+--
+-- THE GRADER WAS RIGHT 43 TIMES. It was not rejecting bad writing. It was
+-- rejecting a weekly claim drawn from a measurement that moves three times a
+-- month, which mostly has nothing defensible to say. The same verdict on day
+-- 9 as on day 1: "No actual highlights or signal".
+--
+-- WHAT STAYS ON. The four internal recipients keep theirs. Those are
+-- diagnostic, they deliver, and they are Lance's own visibility rather than
+-- a product surface. Turning them off is a separate decision.
+--
+-- REVERSIBLE. This flips a flag, it drops nothing. email_digest = 1 restores
+-- any recipient. The hold watermark from 0116 stays in place and remains
+-- correct if the digest is ever revived.
+UPDATE users SET email_digest = 0 WHERE client_slug IS NOT NULL AND email_digest = 1;
