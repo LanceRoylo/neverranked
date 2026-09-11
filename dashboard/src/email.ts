@@ -4,6 +4,7 @@
  * Magic link auth emails + weekly AEO digest emails.
  */
 
+import { hstMonthKey } from "./lib/hst-month";
 import { weekReport, digestSubject, type ClientWeek, type WeekReport } from "./digest-verdict";
 import { readNumbers } from "./lib/digest-read";
 import { holdInboxUpsert } from "./lib/digest-hold-alert";
@@ -713,6 +714,45 @@ export async function sendDigestEmail(
       // different events and counting them together is what made the cron
       // line read "failed=21" like an outage while the gate did its job.
       await logEmailDelivery(env, { email: to, type: logType, status: "held", errorMessage: `held by grader: ${grade.issues.join("; ")}`, agencyId: agency?.id });
+
+      // Stamp the hold watermark so this exact set of passes is not rebuilt
+      // and re-graded tomorrow. See migration 0116. The verdict is about the
+      // content, the content is a function of the passes, so the same passes
+      // yield the same verdict. A new pass clears the watermark and the
+      // digest becomes due again with genuinely new input.
+      //
+      // NOT last_digest_sent_at: nothing was sent, and writing there would
+      // claim a delivery that did not happen. That distinction is the whole
+      // reason the held/failed split exists.
+      try {
+        const hp = await env.DB.prepare(
+          `SELECT MAX(CASE WHEN ok = 1 THEN clean_runs_on_disk END) AS n
+             FROM measurement_heartbeats mh
+             JOIN measurement_registry mr ON mr.category = mh.category
+            WHERE mr.client_slug = ? AND mh.month = ?`,
+        ).bind(heldSlug, hstMonthKey(new Date())).first<{ n: number | null }>();
+        const passes = hp?.n ?? 0;
+        if (passes > 0) {
+          const res = await env.DB.prepare(
+            `INSERT INTO digest_state (client_slug, last_digest_sent_at, held_at_passes, held_at, updated_at)
+             VALUES (?, 0, ?, unixepoch(), unixepoch())
+             ON CONFLICT (client_slug) DO UPDATE
+               SET held_at_passes = excluded.held_at_passes,
+                   held_at        = excluded.held_at,
+                   updated_at     = excluded.updated_at`,
+          ).bind(heldSlug, passes).run();
+          if (!res.success || (res.meta?.changes ?? 0) === 0) {
+            console.log(`[digest] hold watermark not recorded for ${heldSlug} -- it will re-grade tomorrow`);
+          }
+        } else {
+          // No pass count means we cannot say what this hold was about, so we
+          // do not suppress the retry. Fail toward retrying, not toward
+          // silence.
+          console.log(`[digest] no pass count for ${heldSlug}; leaving the retry in place`);
+        }
+      } catch (e) {
+        console.log(`[digest] hold watermark write failed for ${heldSlug}: ${e}`);
+      }
       return false;
     }
   } catch (e) {

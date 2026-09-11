@@ -10,6 +10,7 @@ import type { Env, Domain, User, ScanResult, GscSnapshot } from "./types";
 import { runContentPipeline, runContentOutcomeScan } from "./content-pipeline";
 import { runScanStreakCheck, runRoadmapStallCheck } from "./safety-sweeps";
 import { runRoadmapRefresh, isRefreshDue } from "./roadmap-refresh";
+import { hstMonthKey } from "./lib/hst-month";
 import { sendDigestEmail, sendRegressionAlert, REGRESSION_THRESHOLD, type DigestData, type GscDigestData, type RoadmapDigestData } from "./email";
 import { sendOnboardingDripEmails } from "./onboarding-drip";
 import { sendNurtureDripEmails } from "./nurture-drip";
@@ -72,12 +73,6 @@ export async function runWeeklyScans(env: Env): Promise<void> {
   // with its own fresh budget). See scheduled() in index.ts.
 }
 
-/** HST month key ('2026-08'). measurement_heartbeats.month is HST, so the
- *  digest gate must ask in the same calendar or a UTC evening looks like
- *  next month and the gate goes silently blind at every month boundary. */
-function hstMonthKey(now: Date): string {
-  return new Date(now.getTime() - 10 * 3600 * 1000).toISOString().slice(0, 7);
-}
 
 /** Has a clean measurement pass landed for this client since their last
  *  digest? Compares the month's max clean_runs_on_disk against the max as
@@ -101,9 +96,15 @@ export async function newPassSince(
   // state from that table made every such client permanently "due". See
   // migrations/0107_digest_state.sql.
   const cfg = await env.DB.prepare(
-    "SELECT last_digest_sent_at FROM digest_state WHERE client_slug = ?",
-  ).bind(clientSlug).first<{ last_digest_sent_at: number | null }>();
+    "SELECT last_digest_sent_at, held_at_passes FROM digest_state WHERE client_slug = ?",
+  ).bind(clientSlug).first<{ last_digest_sent_at: number | null; held_at_passes: number | null }>();
   const lastSent = cfg?.last_digest_sent_at ?? 0;
+  // A grader hold is not a failure and must not retry like one. See
+  // migration 0116. The daily retry above is deliberate and correct for a
+  // transient send failure; for a hold it rebuilds the identical document
+  // from the identical passes and is held again for the identical reason.
+  // 43 holds in 30 days, 0 client deliveries, same verdict on day 9 as day 1.
+  const heldAtPasses = cfg?.held_at_passes ?? 0;
 
   const month = hstMonthKey(now);
   const row = await env.DB.prepare(
@@ -116,8 +117,11 @@ export async function newPassSince(
 
   const monthMax = row?.month_max ?? 0;
   const atLastSend = row?.at_last_send ?? 0;
+  // Due when a pass has landed that we have neither digested NOR already
+  // been held on. A failed send writes no watermark, so its retry survives.
+  const watermark = Math.max(atLastSend, heldAtPasses);
   return {
-    due: monthMax > atLastSend,
+    due: monthMax > watermark,
     passesDone: monthMax,
     target: Number(reg.full_target ?? 3),
   };

@@ -1,0 +1,25 @@
+-- 0116: a grader hold must not retry until the INPUT changes.
+--
+-- The digest is due when a new measurement pass has landed since the last
+-- send: due = monthMax > atLastSend, in cron.ts newPassSince(). A held send
+-- never advances last_digest_sent_at, which is deliberate -- the comment
+-- above that write says the daily retry exists so "a held/failed send" gets
+-- another chance.
+--
+-- That is right for a FAILURE. A bounced send or a dead SMTP host is
+-- transient and tomorrow may work. It is wrong for a HOLD. A hold is the
+-- grader's verdict on content built from a specific set of passes, and
+-- rebuilding from the identical passes produces the identical document,
+-- which is held again for the identical reason. Observed: 43 holds in 30
+-- days, 0 client deliveries, and one client held 9 days running with the
+-- same verdict on day 9 as on day 1.
+--
+-- held_at_passes records the pass count the hold was issued against. The due
+-- check now compares against the later of a send and a hold, so:
+--   new pass lands  -> monthMax rises above the watermark -> retry, with
+--                      genuinely new input
+--   same passes     -> no retry, because the answer cannot change
+--   send failed     -> no watermark written, so the daily retry survives
+--                      exactly as designed
+ALTER TABLE digest_state ADD COLUMN held_at_passes INTEGER;
+ALTER TABLE digest_state ADD COLUMN held_at        INTEGER;
