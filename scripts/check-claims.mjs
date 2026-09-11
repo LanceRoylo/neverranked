@@ -214,6 +214,38 @@ const RULES = [
     re: /\b(ai|chatgpt|perplexity|gemini|claude|gemma|copilot|google|bing|engines?|tools?)\b[^.\n]{0,40}\b(recommend(s|ed|ing)?|prefer(s|red|ring)?|endorse(s|d|ing)?|favou?r(s|ed|ing)?|pick(s|ed|ing)?|select(s|ed|ing)?|choos(e[sn]?|ing)|rank(s|ed|ing)?\\s+(first|top|highest)|rate(s|d)?\\s+(best|highest))\b/i,
     why: 'says an engine recommends, prefers, endorses, favours, picks, selects, chooses or ranks a business. Engines CITE. The observational form is the canonical one: "on N of M queries between [dates], engine X cited business Y"',
   },
+  {
+    // THE MODEL-KNOWLEDGE LAYER DOES NOT CITE.
+    //
+    // /methodology/ carries a 2026-09-06 correction stating the two-layer
+    // model and that model-knowledge figures are restated on a named-in-
+    // answer basis. The site did not follow. On 2026-09-10 an external audit
+    // flagged the symptom on the homepage; checking the whole repo found 57
+    // instances across 19 live pages, including the homepage prediction
+    // "Claude would cite Honolulu AC companies under 5%".
+    //
+    // The FIGURES were right. Claude at 2% for HVAC matches the corrected
+    // teardown table exactly. The verb was wrong, and the verb carries the
+    // claim: Claude and Gemma search nothing and return no URLs, so their
+    // number is a share of ANSWERS THAT NAME, not of cited URLs. Saying
+    // "cites" both describes retrieval that did not happen and invites a
+    // reader to compare that share against a citation-grade one.
+    //
+    // "cite or name" is permitted: a list spanning all six tools legitimately
+    // needs both verbs.
+    id: "model-knowledge-cite-verb",
+    // WARN until the dashboard sweep lands, same call and same reason as
+    // normative-engine-language above. Every live marketing and teardown page
+    // is clean as of 2026-09-10: 57 instances across 19 pages were corrected.
+    // What remains is eight dashboard/src files, and most of those state the
+    // rule rather than break it (engine-layer.ts and report-notes.ts both
+    // carry "Claude and Gemma ... cite nothing" in prose explaining why the
+    // verb is wrong). Separating those from real violations is a per-file
+    // pass; blocking now would fail the deploy on comments that are correct.
+    severity: "warn",
+    re: /\b(?:claude|gemma)\b[^.\n]{0,45}\bcit(?:e|es|ed|ing|ations?)\b(?!\s+or\s+name)/i,
+    why: 'says a model-knowledge engine cites. Claude and Gemma search nothing and return no URLs: their figure is the share of ANSWERS THAT NAME a business, so the verb is "names" or "mentions"',
+  },
   // ── Bing channel reclassification, 2026-08-22 ────────────────────────
   //
   // The channel labeled "Microsoft Copilot" is Bing organic top-5 via
@@ -330,6 +362,26 @@ const ALLOW = [
   //   vs                "YOU should pick" -- the subject is the reader
   //   first-look        "a traveler choosing" -- the subject is the traveler
   { path: "methodology/index.html", rules: ["normative-engine-language"] },
+  // The pre-registration record reproduces the 2026-06-09 commitment exactly.
+  // Editing a pre-registered claim after the result is known would defeat the
+  // purpose of pre-registering it, so the page carries a dated wording note
+  // beside the original instead. Annotate history, never rewrite it.
+  { path: "claims/index.html", rules: ["model-knowledge-cite-verb"] },
+  // audits/ holds delivered 1:1 client audits from May 2026 and seven
+  // unfilled templates. They are never copied into dist/ and robots.txt
+  // disallows the path, so none of this is published. Rewriting a delivered
+  // record to match today's vocabulary would be falsifying it, so the rule
+  // is allowlisted here rather than applied to history. If any of these is
+  // ever republished, remove its line and correct the page first.
+  { path: "audits/asb-hawaii-2026-05/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/bank-of-hawaii/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/central-pacific-bank/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/drake-real-estate-partners/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/emanate-wireless-inc/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/first-hawaiian-bank/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/mvnp-agency/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "audits/ward-village/audit.html", rules: ["model-knowledge-cite-verb"] },
+  { path: "pitch/hawaii-theatre-center/index.html", rules: ["model-knowledge-cite-verb"] },
   { path: "teardowns/cross-category/index.html", rules: ["normative-engine-language"] },
   { path: "vs/index.html", rules: ["normative-engine-language"] },
   { path: "first-look/prince-waikiki/index.html", rules: ["normative-engine-language"] },
