@@ -348,7 +348,7 @@
         <div class="roi-out" id="roi-out">
           <p class="roi-lead">One new <span id="roi-unit">case</span> is worth, on average</p>
           <div class="roi-value" id="roi-amount">$15,000</div>
-          <p class="roi-months" id="roi-breakeven">It takes <b>a single new case</b> to cover a full year of NeverRanked, and then some. Every case after that is found money you would not have had.</p>
+          <p class="roi-months" id="roi-breakeven">It takes <b>a single new case</b> to cover a full year of NeverRanked, and then some. Every case after that is on top of a year already paid for.</p>
           <div class="roi-bars">
             <div class="roi-bar you">
               <span class="nm">One customer is worth</span>
@@ -482,9 +482,9 @@
     function breakevenSentence(n, unit) {
       var plural = unit + 's';
       if (n <= 1) {
-        return 'It takes <b>a single new ' + unit + '</b> to cover a full year of NeverRanked, and then some. Every ' + unit + ' after that is found money you would not have had.';
+        return 'It takes <b>a single new ' + unit + '</b> to cover a full year of NeverRanked, and then some. Every ' + unit + ' after that is on top of a year already paid for.';
       }
-      return 'It takes <b>' + n + ' new ' + plural + '</b> to cover a full year of NeverRanked. Every ' + unit + ' after that is found money you would not have had.';
+      return 'It takes <b>' + n + ' new ' + plural + '</b> to cover a full year of NeverRanked. Every ' + unit + ' after that is on top of a year already paid for.';
     }
 
     function render() {
