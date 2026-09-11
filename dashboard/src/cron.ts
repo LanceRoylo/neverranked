@@ -21,6 +21,7 @@ import { getAgency, resolveAgencyForEmail } from "./agency";
 import { createAlertIfFresh } from "./admin-alerts";
 import { isReadoutShapeSnapshot } from "./lib/snapshot-shape";
 import { monthlyRefreshOverdue } from "./lib/monthly-refresh";
+import { liveClientSlugs } from "./lib/live-clients";
 import { autoGenerateRoadmap } from "./auto-provision";
 import { runAutomation, maybeSendAutomationDigest } from "./automation";
 
@@ -2861,9 +2862,14 @@ async function checkStaleRoadmapItems(env: Env): Promise<void> {
   ).bind(fourteenDaysAgo).all<{ client_slug: string }>()).results;
   const flaggedSlugs = new Set(recentlyFlagged.map(r => r.client_slug));
 
+  // Only alert about a slug there is a customer to nudge. Same definition the
+  // roadmap-stall sweep uses; see lib/live-clients.ts for what was firing.
+  const live = await liveClientSlugs(env);
+
   let flagged = 0;
   let agencyNudged = 0;
   for (const [slug, items] of byClient) {
+    if (!live.has(slug)) continue;
     if (flaggedSlugs.has(slug)) continue; // Already alerted recently
 
     const titles = items.map(i => i.title).slice(0, 5).join(", ");

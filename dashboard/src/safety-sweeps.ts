@@ -16,6 +16,7 @@
  */
 
 import type { Env } from "./types";
+import { liveClientSlugs } from "./lib/live-clients";
 import { createAlertIfFresh } from "./admin-alerts";
 
 const DAY = 86400;
@@ -83,7 +84,13 @@ export async function runRoadmapStallCheck(env: Env): Promise<void> {
        HAVING cnt >= 1`,
   ).bind(staleCutoff).all<{ client_slug: string; cnt: number }>()).results;
 
+  // Only alert about a slug there is a customer to nudge. See
+  // lib/live-clients.ts: this sweep was firing for a paused sister brand and
+  // for NeverRanked's own roadmap, neither of which has anyone to nudge.
+  const live = await liveClientSlugs(env);
+
   for (const r of rows) {
+    if (!live.has(r.client_slug)) continue;
     await createAlertIfFresh(env, {
       clientSlug: r.client_slug,
       type: "roadmap_stall",

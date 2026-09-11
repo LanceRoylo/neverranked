@@ -282,22 +282,39 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
     /* LEADS unavailable -- skip gracefully */
   }
 
-  // --- Agency revenue snapshot ---------------------------------------
-  const activeAgencies = (await env.DB.prepare(
-    "SELECT COUNT(*) AS n FROM agencies WHERE status = 'active'"
-  ).first<{ n: number }>())?.n ?? 0;
-
-  const slotTotals = await env.DB.prepare(
+  // --- Revenue snapshot -----------------------------------------------
+  //
+  // REWRITTEN 2026-09-10. Every number in this block was wrong, and the
+  // shape of the wrongness is why it went unnoticed for five weeks.
+  //
+  // MRR was computed as signalSlots * $800 + amplifySlots * $1,800. Signal
+  // and Amplify were archived 2026-08-03 when the two-tier ladder replaced
+  // all eight old SKUs, so the products priced here do not exist. The line
+  // reported "$0" every morning while the company had a paying client, and
+  // a metric that always reads zero cannot tell you that revenue just went
+  // to zero. That is the same failure as an engine health check judging a
+  // rate over rows that only exist when the call already succeeded.
+  //
+  // The slot count was wrong twice over: two domains DO carry
+  // plan='amplify', but the query also required agency_id IS NOT NULL and
+  // theirs are null, so even the retired number was under-reported.
+  //
+  // "Active agency subs" counted agencies.status='active', which is two
+  // rows named "Pilot Test" and "E2E Test Agency". Test fixtures reported
+  // as customers.
+  //
+  // Now: one source, customers.mrr_cents, which is what email.ts and
+  // weekly-extras.ts already use to decide whether a client is paying.
+  const rev = await env.DB.prepare(
     `SELECT
-       SUM(CASE WHEN plan = 'signal' AND active = 1 THEN 1 ELSE 0 END) AS sig,
-       SUM(CASE WHEN plan = 'amplify' AND active = 1 THEN 1 ELSE 0 END) AS amp
-       FROM domains WHERE agency_id IS NOT NULL AND is_competitor = 0`
-  ).first<{ sig: number | null; amp: number | null }>();
-  const signalSlots = slotTotals?.sig || 0;
-  const amplifySlots = slotTotals?.amp || 0;
-  // MRR at Scenario B 1-9 tier rates (accurate enough for a daily snapshot).
-  // Exact MRR would require per-agency tier lookup; this is the floor estimate.
-  const estimatedMrrCents = signalSlots * 80000 + amplifySlots * 180000;
+       COALESCE(SUM(CASE WHEN status != 'churned' THEN mrr_cents ELSE 0 END), 0) AS mrr,
+       SUM(CASE WHEN status != 'churned' AND mrr_cents > 0 THEN 1 ELSE 0 END) AS paying,
+       SUM(CASE WHEN status != 'churned' AND mrr_cents = 0 THEN 1 ELSE 0 END) AS unpaid
+       FROM customers`
+  ).first<{ mrr: number | null; paying: number | null; unpaid: number | null }>();
+  const mrrCents = rev?.mrr || 0;
+  const payingClients = rev?.paying || 0;
+  const unpaidClients = rev?.unpaid || 0;
 
   // --- Short-circuit if truly nothing to say -------------------------
   if (automationTotal === 0 && unreadAlertCount === 0 && scanFailures === 0) {
@@ -312,9 +329,8 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
   const lines: string[] = [`NeverRanked morning briefing (last 24h).`, ``];
 
   lines.push(`BUSINESS`);
-  lines.push(`  Active agency subscriptions: ${activeAgencies}`);
-  lines.push(`  Slots active:                ${signalSlots} Signal, ${amplifySlots} Amplify`);
-  lines.push(`  Estimated MRR (floor):       $${(estimatedMrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}`);
+  lines.push(`  MRR:             $${(mrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}/mo`);
+  lines.push(`  Paying clients:  ${payingClients}${unpaidClients > 0 ? `  (plus ${unpaidClients} unpaid pilot${unpaidClients === 1 ? "" : "s"})` : ""}`);
   lines.push(``);
 
   lines.push(`TRAFFIC`);
@@ -394,9 +410,8 @@ export async function maybeSendAutomationDigest(env: Env): Promise<void> {
 
 <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Business</h3>
 <div style="font-family:'SF Mono',Menlo,monospace;font-size:12px;line-height:1.8">
-  <div>Active agency subs: <strong>${activeAgencies}</strong></div>
-  <div>Slots: <strong>${signalSlots}</strong> Signal, <strong>${amplifySlots}</strong> Amplify</div>
-  <div>MRR floor: <strong>$${(estimatedMrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}</strong></div>
+  <div>MRR: <strong>$${(mrrCents / 100).toLocaleString("en-US", { maximumFractionDigits: 0 })}</strong>/mo</div>
+  <div>Paying clients: <strong>${payingClients}</strong>${unpaidClients > 0 ? ` &middot; unpaid pilots: <strong>${unpaidClients}</strong>` : ""}</div>
 </div>
 
 <h3 style="font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#555;margin:24px 0 8px">Traffic (KV)</h3>
