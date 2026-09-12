@@ -160,7 +160,7 @@ const HTML_PAGE = `<!doctype html>
           "name": "What’s the difference between this check and a full engagement?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across 6 AI tools: five that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Microsoft Copilot/Bing, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
+            "text": "This check looks at your website. A full engagement measures what AI tools actually say about your category. We ask the same 18 real customer questions across six AI tools: four that cite live sources (Perplexity, ChatGPT search, Gemini grounded, Google AI Overviews) plus two that answer from model knowledge (Claude, Gemma). We also run Bing organic as a classic-search control, which makes seven measured surfaces. We track who gets recommended instead of you, and hand your team a clear list of what to fix. Monitoring is $199 a month per category. A full audit with a pre-registered method and a written readout is $750 a month per category after a $950 baseline month."
           }
         }
       ]
@@ -1465,7 +1465,7 @@ body.channel-mode #channel-cta-card{display:block}
     <div class="dash-preview">
       <div class="dash-preview-label">What a NeverRanked engagement produces <span class="rule"></span></div>
       <div class="dash-preview-frame" style="padding:24px 28px">
-        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and four others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
+        <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 14px">This check looks at your website. The full engagement asks the AI tools your customers actually use (ChatGPT, Google's AI answers, Perplexity, and three others) what they say about your category. Who gets recommended. Who gets mentioned instead of you. And the specific moves the data points at.</p>
         <p style="font-size:14px;color:#b9b9bd;line-height:1.7;margin:0 0 18px">See the published look at AI answers for Hawaii consumer banking for the shape of what an engagement produces: <a href="https://neverranked.com/teardowns/bank-honolulu/" style="color:var(--gold);text-decoration:underline;text-underline-offset:3px">/teardowns/bank-honolulu/</a></p>
         <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
           <a href="https://neverranked.com/pricing" id="cta-preview" class="btn-ghost-link" style="padding:12px 28px;border-radius:4px;text-decoration:none;font-family:var(--label);text-transform:uppercase;letter-spacing:.18em;font-size:11px;font-weight:600">Monitor this monthly</a>
