@@ -39,7 +39,7 @@ import { createAlertIfFresh } from "../admin-alerts";
 /** version === null means the probe RAN and FAILED. That is a signal, not
  *  an absence: it is how a dead key, a retired model or an exhausted spend
  *  limit shows up here. It must never be silently discarded. */
-type ProbeResult = { engine: string; version: string | null };
+export type ProbeResult = { engine: string; version: string | null };
 
 const TIMEOUT_MS = 30_000;
 
@@ -63,8 +63,19 @@ async function post(url: string, headers: Record<string, string>, body: unknown)
 }
 
 /** Minimal probes. Prompts are one word and outputs capped tiny: the point
- *  is the `model` field in the response envelope, not the answer. */
-async function probeAll(env: Env): Promise<ProbeResult[]> {
+ *  is the `model` field in the response envelope, not the answer.
+ *
+ *  EXPORTED for the on-demand route (/admin/health/run-live-probe). This
+ *  function makes the calls and NOTHING ELSE: no rows, no alerts, no version
+ *  diffing. That separation is the reason it is safe to run by hand at any
+ *  time -- checkInstrumentVersions() owns every side effect.
+ *
+ *  It exists as a route because on 2026-09-12 the OpenAI balance hit zero and
+ *  there was no way to confirm the fix short of waiting ~23h for the next
+ *  06:00 UTC sweep. The engine health check reads D1 only, so it can report a
+ *  stale verdict with total confidence. A live call is the only thing that
+ *  answers "is this surface actually reachable right now". */
+export async function probeAll(env: Env): Promise<ProbeResult[]> {
   const probes: Promise<ProbeResult>[] = [];
 
   if (env.OPENAI_API_KEY) {

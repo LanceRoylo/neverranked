@@ -246,6 +246,30 @@ async function skipReason(
     } catch (e) {
       console.log(`[engine-skip] could not record ${engine} failure: ${e instanceof Error ? e.message : e}`);
     }
+    // An exhausted balance is not a degradation, it is a stop, and it is the
+    // one failure here that a human must act on before the next sweep. Every
+    // other path waits for the morning anomaly pass, which is correct for a
+    // rate limit and eight hours too late for this. Fires on the FIRST refused
+    // keyword; createAlertIfFresh dedupes so the remaining 66 stay quiet.
+    if (isTerminalQuota(r.failure.detail ?? "")) {
+      try {
+        const { createAlertIfFresh } = await import("./admin-alerts");
+        await createAlertIfFresh(env, {
+          clientSlug: "_system",
+          type: "engine_quota_exhausted",
+          title: `${engine}: out of credit, measurement stopped`,
+          detail:
+            `${engine} refused a measurement call with an exhausted balance or spend limit: ` +
+            `"${(r.failure.detail ?? "").slice(0, 200)}". This does not clear on its own and no retry will fix it. ` +
+            `Every remaining question on this surface today will be refused, so any readout covering today holds ` +
+            `no ${engine} data at all. Add credit at the provider, then confirm with the live engine probe at ` +
+            `/admin/health rather than waiting for tomorrow's 06:00 UTC sweep.`,
+          windowHours: 6,
+        });
+      } catch (e) {
+        console.log(`[engine-skip] could not raise quota alert for ${engine}: ${e instanceof Error ? e.message : e}`);
+      }
+    }
     return true;
   }
   if (nothing) {
@@ -451,6 +475,27 @@ export function openAIBackoffMs(attempt: number, headers?: Headers | null): numb
   return Math.min(Math.max(raw, OPENAI_BACKOFF_FLOOR_MS), OPENAI_BACKOFF_CAP_MS);
 }
 
+/** A 429 that will NEVER clear on its own.
+ *
+ *  OpenAI returns billing exhaustion with the same status code as rate
+ *  limiting, and the two are opposites: a TPM limit clears in milliseconds
+ *  ("Please try again in 76ms"), an empty balance clears only when a human
+ *  pays. The retry loop below was written to treat 429 as "not yet", which is
+ *  right for the first and catastrophic for the second.
+ *
+ *  Measured 2026-09-12: the balance hit -$0.17 and every one of the sweep's
+ *  67 keywords spent 8 attempts against "You have no credits remaining"
+ *  before giving up. 536 doomed calls, ~30s of sleeping per keyword, and the
+ *  outage then surfaced as a routine overnight alert eight hours later
+ *  instead of on the first refusal.
+ *
+ *  The status code cannot tell these apart, so the body is the only
+ *  discriminator the API gives us. The loop's own comment always said a
+ *  billing failure "must surface immediately" -- this is what makes that true. */
+export function isTerminalQuota(bodyText: string): boolean {
+  return /insufficient_quota|no credits remaining|billing_hard_limit_reached|exceeded your current quota/i.test(bodyText);
+}
+
 async function openAIFetchWithBackoff(
   body: string,
   apiKey: string,
@@ -467,6 +512,16 @@ async function openAIFetchWithBackoff(
     // a real auth or billing failure, must surface immediately rather than be
     // retried into a delay that looks like a hang.
     if (resp.status !== 429 && resp.status !== 503) return resp;
+    // ...except that OpenAI also spends 429 on an exhausted balance, which no
+    // amount of waiting fixes. Read a CLONE so the caller still gets an
+    // unconsumed body to report.
+    if (resp.status === 429) {
+      const peek = await resp.clone().text().catch(() => "");
+      if (isTerminalQuota(peek)) {
+        console.log(`[engine-terminal] openai quota/billing exhausted for "${keyword}": refusing to retry`);
+        return resp;
+      }
+    }
     if (attempt === OPENAI_RETRY_ATTEMPTS) {
       console.log(`[engine-retry] openai gave up after ${attempt} attempts (${resp.status}) for "${keyword}"`);
       return resp;

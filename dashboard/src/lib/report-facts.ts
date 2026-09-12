@@ -179,11 +179,53 @@ function monthBounds(monthKey: string): { start: number; end: number; priorStart
  */
 const MIN_ENGINE_COVERAGE = 0.5;
 
+/** A surface can answer every question once and still be missing most of its
+ *  observations, and the distinct-question measure above cannot see it.
+ *
+ *  MEASURED on a real client month. The slug and the month are deliberately
+ *  not named here: this repo is public. Per-client figures live in the
+ *  private docs repo. The SHAPE is the point:
+ *
+ *      engine               distinct Qs   observations   density
+ *      perplexity                 30/30            384      100%
+ *      gemini                     30/30            384      100%
+ *      google_ai_overview         27/30            162       42%
+ *      openai                     30/30            158       41%
+ *
+ *  OpenAI answered all 30 questions at some point in the month (two healthy
+ *  days were enough), so it scored 100% coverage and passed this guard
+ *  cleanly -- while holding 41% of the chances to show a citation that its
+ *  peers had. An engine with fewer draws shows fewer citations, and the
+ *  report would have read that as the client losing ChatGPT visibility. That
+ *  is precisely the false negative this file calls the worst failure this
+ *  product has, produced by the guard written to prevent it.
+ *
+ *  Density alone cannot be the test: AIO sits at 42% too and is perfectly
+ *  healthy, because it legitimately declines to render. The discriminator is
+ *  engine_failures, which we already record: in that same window openai
+ *  logged 493 refusals and AIO logged ZERO. Same number, opposite meaning.
+ *  An absence explained by logged refusals is under-collection; an absence
+ *  with no refusals behind it is an engine that had nothing to say. */
+const MIN_ENGINE_DENSITY = 0.5;
+
+/** Refusals needed before they can explain a shortfall. One transient 429 must
+ *  not condemn a surface sitting just under the density line. */
+const MIN_FAILURES_TO_BLAME = 10;
+
 export type EngineCoverage = {
   engine: string;
   questionsCovered: number;
   questionsAsked: number;
   pct: number;
+  /** Rows this engine actually produced in the window. */
+  observations: number;
+  /** Rows the busiest engine produced, i.e. what a healthy surface collected. */
+  observationsExpected: number;
+  /** observations / observationsExpected. How OFTEN it answered, as opposed to
+   *  whether it ever did. */
+  density: number;
+  /** Density is short AND recorded API refusals explain it. */
+  underCollected: boolean;
   sufficient: boolean;
 };
 
@@ -199,13 +241,21 @@ export type EngineCoverage = {
  *  the guard be tested with the fixtures that already exist. */
 export function assessEngineCoverage(
   rows: Array<{ engine: string; keyword: string }>,
+  /** Recorded API refusals per engine over the SAME window, from
+   *  engine_failures. Optional on purpose: when it is absent the
+   *  under-collection test cannot be evaluated and is skipped rather than
+   *  guessed, which preserves this file's rule that a guard must never be able
+   *  to erase a report by malfunctioning. */
+  failuresByEngine?: Map<string, number>,
 ): EngineCoverage[] {
   const byEngine = new Map<string, Set<string>>();
+  const obsByEngine = new Map<string, number>();
   for (const r of rows) {
     if (typeof r.engine !== "string" || typeof r.keyword !== "string") continue;
     let qs = byEngine.get(r.engine);
     if (!qs) { qs = new Set(); byEngine.set(r.engine, qs); }
     qs.add(r.keyword);
+    obsByEngine.set(r.engine, (obsByEngine.get(r.engine) ?? 0) + 1);
   }
 
   // "Asked" = the most questions any single engine covered this window. Not a
@@ -215,16 +265,59 @@ export function assessEngineCoverage(
   for (const qs of byEngine.values()) asked = Math.max(asked, qs.size);
   if (!asked) return [];
 
+  // Same logic one level down: the busiest engine defines how often the panel
+  // was actually put to work.
+  let expected = 0;
+  for (const n of obsByEngine.values()) expected = Math.max(expected, n);
+
   return [...byEngine.entries()].map(([engine, qs]) => {
     const pct = qs.size / asked;
+    const observations = obsByEngine.get(engine) ?? 0;
+    const density = expected > 0 ? observations / expected : 0;
+    const failures = failuresByEngine?.get(engine) ?? 0;
+    const underCollected =
+      failuresByEngine !== undefined &&
+      density < MIN_ENGINE_DENSITY &&
+      failures >= MIN_FAILURES_TO_BLAME;
     return {
       engine,
       questionsCovered: qs.size,
       questionsAsked: asked,
       pct,
-      sufficient: pct >= MIN_ENGINE_COVERAGE,
+      observations,
+      observationsExpected: expected,
+      density,
+      underCollected,
+      sufficient: pct >= MIN_ENGINE_COVERAGE && !underCollected,
     };
   });
+}
+
+/** Refusals per engine in a window, for the under-collection test above.
+ *
+ *  Fetched by the caller and passed IN rather than queried inside the
+ *  assessor, so the assessor stays a pure function of the rows it guards.
+ *  Never throws: a telemetry table being unavailable must degrade the guard to
+ *  its previous behaviour, not take down a readout. */
+export async function fetchEngineFailureCounts(
+  env: Env,
+  startTs: number,
+  endTs: number,
+): Promise<Map<string, number> | undefined> {
+  try {
+    const r = await env.DB.prepare(
+      `SELECT engine, COUNT(*) AS n FROM engine_failures
+        WHERE failed_at >= ? AND failed_at < ? GROUP BY engine`,
+    ).bind(startTs, endTs).all<{ engine: string; n: number }>();
+    const m = new Map<string, number>();
+    for (const row of r.results) {
+      if (typeof row.engine === "string") m.set(row.engine, Number(row.n) || 0);
+    }
+    return m;
+  } catch (e) {
+    console.log(`[report-facts] engine_failures unavailable; under-collection test skipped: ${e instanceof Error ? e.message : e}`);
+    return undefined;
+  }
 }
 
 /** Epoch seconds at which CONTRACTED measurement begins, or null.
@@ -271,8 +364,13 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string, m
   // month would otherwise render every one of its questions as
   // "disappeared" -- lost visibility that never happened. That is the
   // exact false negative this guard exists to prevent.
-  const curCov = assessEngineCoverage(runs.results.filter((r) => r.run_at >= b.start));
-  const priCov = assessEngineCoverage(runs.results.filter((r) => r.run_at < b.start));
+  // Refusals are fetched per window, matching each coverage assessment, so a
+  // surface that was refused this month but healthy last month is judged
+  // against the right evidence in each.
+  const curFails = await fetchEngineFailureCounts(env, b.start, b.end);
+  const priFails = await fetchEngineFailureCounts(env, b.priorStart, b.start);
+  const curCov = assessEngineCoverage(runs.results.filter((r) => r.run_at >= b.start), curFails);
+  const priCov = assessEngineCoverage(runs.results.filter((r) => r.run_at < b.start), priFails);
   // If coverage cannot be assessed at all, do NOT filter. An empty
   // assessment would otherwise exclude every engine and silently blank the
   // section -- a worse failure than the one this guard prevents, and a NEW
@@ -288,7 +386,14 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string, m
   const trust = (engine: string) => !coverageUsable || trusted.has(engine);
   for (const c of coverageUsable ? curCov : []) {
     if (!trusted.has(c.engine)) {
-      console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from question movement -- covered ${c.questionsCovered}/${c.questionsAsked} questions this window (${Math.round(c.pct * 100)}%). Under-collection must not render as lost visibility.`);
+      console.log(
+        `[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from question movement -- ` +
+        (c.underCollected
+          ? `answered ${c.questionsCovered}/${c.questionsAsked} questions but only ${c.observations}/${c.observationsExpected} times ` +
+            `(${Math.round(c.density * 100)}% density) with recorded API refusals behind the gap. It was refused, not quiet.`
+          : `covered ${c.questionsCovered}/${c.questionsAsked} questions this window (${Math.round(c.pct * 100)}%).`) +
+        ` Under-collection must not render as lost visibility.`,
+      );
     }
   }
 
@@ -348,7 +453,7 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
   // Same guard as question movement. A grid cell reading 0% for an engine
   // that only ran 2 of 22 questions is not a measurement, it is an absence
   // dressed as one.
-  const cov = assessEngineCoverage(runs.results);
+  const cov = assessEngineCoverage(runs.results, await fetchEngineFailureCounts(env, gridStart, b.end));
   // Same fallback as question movement: an unassessable coverage result must
   // not blank the grid.
   const gridCoverageUsable = cov.length > 0;
@@ -359,7 +464,13 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
   const gridTrust = (engine: string) => !gridCoverageUsable || gridTrusted.has(engine);
   for (const c of gridCoverageUsable ? cov : []) {
     if (!gridTrusted.has(c.engine)) {
-      console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from citation grid -- covered ${c.questionsCovered}/${c.questionsAsked} questions (${Math.round(c.pct * 100)}%).`);
+      console.log(
+        `[report-facts] ${slug} ${monthKey}: EXCLUDING ${c.engine} from citation grid -- ` +
+        (c.underCollected
+          ? `answered ${c.questionsCovered}/${c.questionsAsked} questions but only ${c.observations}/${c.observationsExpected} times ` +
+            `(${Math.round(c.density * 100)}% density) with recorded API refusals behind the gap. It was refused, not quiet.`
+          : `covered ${c.questionsCovered}/${c.questionsAsked} questions (${Math.round(c.pct * 100)}%).`),
+      );
     }
   }
 

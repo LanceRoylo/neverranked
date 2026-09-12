@@ -1460,6 +1460,60 @@ export default {
       }
     }
 
+    // Manual trigger: LIVE engine probe.
+    //
+    // The only check on this page that touches the engines instead of D1.
+    // run-engine-health-check reads citation_runs and engine_failures, so
+    // after a fix it keeps reporting the outage it already recorded -- it is
+    // a memory, not a measurement. This makes one real call per engine and
+    // reports what came back, which is the only way to answer "is the key
+    // live right now" without waiting for the 06:00 UTC sweep.
+    //
+    // Writes nothing. No rows, no alerts, no version diffing: probeAll() is
+    // side-effect free by construction and checkInstrumentVersions() owns the
+    // daily persistence. Running this by hand can therefore never corrupt the
+    // instrument record or mask a real change.
+    if (path === "/admin/health/run-live-probe" && method === "POST" && user.role === "admin") {
+      try {
+        const { probeAll } = await import("./lib/instrument-check");
+        const started = Date.now();
+        const results = await probeAll(env);
+        const elapsed = Date.now() - started;
+        const live = results.filter((r) => r.version !== null);
+        const dead = results.filter((r) => r.version === null);
+        const esc = (x: string) => x.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
+        const row = (r: { engine: string; version: string | null }) =>
+          `<tr><td style="padding:8px 14px;border-bottom:1px solid #2a2a2a">${esc(r.engine)}</td>` +
+          `<td style="padding:8px 14px;border-bottom:1px solid #2a2a2a;color:${r.version ? "#7ec699" : "#e06c75"};font-weight:500">` +
+          `${r.version ? "LIVE" : "NO ANSWER"}</td>` +
+          `<td style="padding:8px 14px;border-bottom:1px solid #2a2a2a;color:#888;font-family:ui-monospace,monospace;font-size:12px">` +
+          `${r.version ? esc(r.version) : "&mdash;"}</td></tr>`;
+        const html =
+          `<!doctype html><meta charset="utf-8"><title>Live engine probe</title>` +
+          `<body style="background:#121212;color:#e8e8e8;font-family:system-ui,-apple-system,sans-serif;padding:40px;line-height:1.5">` +
+          `<h1 style="font-size:20px;font-weight:500;margin:0 0 6px">Live engine probe</h1>` +
+          `<div style="color:#888;font-size:13px;margin-bottom:24px">One real API call per engine, ${elapsed}ms. ` +
+          `Bing organic and Google AI Overviews are DataForSEO SERP captures with no model identity and are not probed here.</div>` +
+          `<div style="font-size:15px;margin-bottom:20px">` +
+          `<b style="color:${dead.length ? "#e06c75" : "#7ec699"}">${live.length} live, ${dead.length} not answering</b></div>` +
+          `<table style="border-collapse:collapse;font-size:14px;min-width:520px">` +
+          `<tr style="text-align:left;color:#888;font-size:12px;text-transform:uppercase;letter-spacing:.06em">` +
+          `<th style="padding:8px 14px">Engine</th><th style="padding:8px 14px">Reachable</th>` +
+          `<th style="padding:8px 14px">Model version reported</th></tr>` +
+          results.map(row).join("") + `</table>` +
+          (dead.length
+            ? `<div style="margin-top:24px;padding:14px 18px;border:1px solid #e06c75;border-radius:6px;color:#e8b0b5;font-size:13px;max-width:640px">` +
+              `A surface that does not answer is refused, not slow: dead or rotated key, retired model id, exhausted ` +
+              `credit balance, or a spend / rate limit reached. Read the upstream error with ` +
+              `<code style="color:#e8c767">SELECT status, detail FROM engine_failures WHERE engine='${esc(dead[0].engine)}' ORDER BY failed_at DESC LIMIT 5</code>.</div>`
+            : `<div style="margin-top:24px;color:#7ec699;font-size:13px">Every probed surface answered. Measurement can run.</div>`) +
+          `<div style="margin-top:32px"><a href="/admin/health" style="color:#e8c767;font-size:13px">&larr; Back to health</a></div>`;
+        return new Response(html, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      } catch (e) {
+        return new Response(`Live probe failed: ${e instanceof Error ? e.message : String(e)}`, { status: 500 });
+      }
+    }
+
     // Manual trigger: alert dedupe.
     if (path === "/admin/health/run-alert-dedupe" && method === "POST" && user.role === "admin") {
       try {

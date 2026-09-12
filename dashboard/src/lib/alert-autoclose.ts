@@ -86,6 +86,24 @@ const CLOSERS: Record<string, Closer> = {
     describe: (task) => `${task} has run clean within its expected cadence`,
   },
 
+  // "openai refused a measurement call with an exhausted balance ..."
+  // Same clearing test as the probe failure below, deliberately: an engine is
+  // only back when it is answering AND not being refused. A topped-up balance
+  // that still rejects (spend cap, rotated key) must not read as recovered.
+  engine_quota_exhausted: {
+    parse: (d) => d.match(/^([A-Za-z0-9_]+) refused a measurement call/)?.[1] ?? null,
+    async stillTrue(env, engine, now) {
+      const since = now - SECONDS_PER_DAY;
+      const row = await env.DB.prepare(
+        `SELECT
+           (SELECT COUNT(*) FROM citation_runs   WHERE engine = ?1 AND run_at    > ?2) AS rows_24h,
+           (SELECT COUNT(*) FROM engine_failures WHERE engine = ?1 AND failed_at > ?2) AS fails_24h`,
+      ).bind(engine, since).first<{ rows_24h: number; fails_24h: number }>();
+      return !((row?.rows_24h ?? 0) > 0 && (row?.fails_24h ?? 0) === 0);
+    },
+    describe: (engine) => `${engine} answered in the last 24h with no recorded refusals`,
+  },
+
   // "No response from: openai. The probe is one tiny call per engine, ..."
   instrument_probe_failed: {
     parse: (d) => d.match(/No response from:\s*([A-Za-z0-9_]+)/)?.[1] ?? null,

@@ -292,10 +292,11 @@ export async function handleAdminHealth(user: User, env: Env, url?: URL): Promis
       <div style="display:flex;flex-direction:column;gap:12px">
         <div>
           <div style="font-size:13px;color:var(--text);font-weight:500;margin-bottom:4px">On-demand verification</div>
-          <div style="font-size:11px;color:var(--text-faint);line-height:1.5">All six checks below auto-run every morning at 6am UTC. These buttons are <b style="color:var(--text)">optional</b>, for verification or forcing a refresh after a fix. You never have to click them.</div>
+          <div style="font-size:11px;color:var(--text-faint);line-height:1.5">All seven checks below auto-run every morning at 6am UTC. These buttons are <b style="color:var(--text)">optional</b>, for verification or forcing a refresh after a fix. You never have to click them. The live engine probe is the only one that calls the engines rather than reading what they wrote earlier, so it is the one to click after fixing a key or a balance.</div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap">
           ${[
+            { action: "run-live-probe", label: "Live engine probe", title: "The only check here that calls the engines instead of reading D1. One real API call each; reports which surfaces are reachable RIGHT NOW. Writes nothing." },
             { action: "run-anomaly-detection", label: "Anomaly detection", title: "Compares last-24h metrics vs 14-day baseline using auto-tuned thresholds (mean + 2σ). Fires admin_alerts on empty-rate spikes." },
             { action: "run-engine-health-check", label: "Engine self-healing", title: "Auto-degrades engines whose 7d empty rate > 40%. Auto-recovers when 24h drops < 20%." },
             { action: "run-alert-dedupe", label: "Alert dedupe", title: "Collapse related alerts that flag the same engine within a 24h window." },
