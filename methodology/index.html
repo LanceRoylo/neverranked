@@ -97,6 +97,7 @@
         <li><a href="#example">A working example from real data</a></li>
         <li><a href="#not-measured">What this engagement does NOT measure</a></li>
         <li><a href="#reproducibility">Reproducibility</a></li>
+        <li><a href="#changes">Changes to this methodology</a></li>
         <li><a href="#public-artifacts">How public artifacts cite this methodology</a></li>
       </ol>
     </nav>
@@ -491,6 +492,16 @@ query_set_hash: ae13579a6420bea4bb6a6157d0ec4152182490bf29159cbc802a24ade3903f52
     <h2 id="reproducibility">Reproducibility</h2>
     <p>The method is documented here in full, the question sets are locked by hash, and every published claim ties back to a dated run on the <a href="/claims/">/claims/</a> ledger. Gemma (one of the six AI tools) is open-weight, so the Gemma model itself is independently inspectable. The raw measurement data captured for each engagement lives in the customer's data store and is exportable any time. If anything in a deliverable does not survive your auditor's review, we want to know.</p>
     <p>To be precise about what an outsider can check without engaging us: the question-set hashes and dated runs on <a href="/claims/">/claims/</a> are public, the Gemma engine is open-weight and independently runnable, and the teardowns are frozen dated snapshots anyone can scrutinize. What an outsider cannot reproduce is a private cohort run, because that data lives in the customer's store. We name that boundary so reproducibility is not oversold.</p>
+
+    <h2 id="changes">Changes to this methodology</h2>
+    <p>A method that changes without a dated record is not a method. Every substantive change to what we measure or what we call it is listed here, with what it invalidated.</p>
+
+    <h3>2026-08-22: one channel reclassified from AI assistant to classic-search control</h3>
+    <p><strong>What changed.</strong> Until this date our published count treated one channel as an AI tool rather than as a control, which made the tool count one higher than it should have been. That channel was reached through a search-data provider and we had labelled it an AI assistant. An audit of what that channel actually returns found it was Bing organic top-5: classic keyword search, not an answer engine. It returns a pop song for &ldquo;where to stay in Waikiki.&rdquo; We had been counting a control as one of the tools.</p>
+    <p><strong>What this invalidated, and what it did not.</strong> The measurements were real and remain in the record. The capture was working exactly as built. What was wrong was the label, and every inference drawn under that label, because an answer engine and a keyword index are different instruments and a share computed across both is not one number. The channel was not dropped. It is now run and reported as the classic-search control described above, which is a more useful thing than a seventh tool: it is what shows that AI answers and keyword search are different surfaces.</p>
+    <p><strong>The corrected count.</strong> Six AI tools, four citation-grade and two model-knowledge, plus one classic-search control. Seven measured surfaces. That is the count used everywhere on this site, in every deliverable, and in the gates that check our own copy before it ships.</p>
+    <p><strong>What we got wrong in public.</strong> Three posts we had already published were wrong as a result: 2026-08-18, 2026-08-20, and 2026-08-26. The last of those went out four days after the reclassification. The claim was retired from this site, the fuel registry, the copy gates and the queued posts on 2026-09-10. A separate tool of ours, on its own domain, kept serving the retired wording until 2026-09-11. That gap was ours and it is stated here rather than left for a reader to discover.</p>
+    <p>The pre-registered self-indexing test carried a prediction about the channel under its old label. That prediction is void rather than failed, because the engine it named was never the engine being measured. Void is not a pass. It is recorded as void.</p>
 
     <h2 id="public-artifacts">How public artifacts cite this methodology</h2>
     <p>Some of what we measure becomes a public artifact: a per-business "AI-visibility receipt" linked from outreach to a named subject. Every public receipt links back to this page for substantiation, and every quantitative claim it carries is anchored in a hash-locked measurement run on the methodology above.</p>
