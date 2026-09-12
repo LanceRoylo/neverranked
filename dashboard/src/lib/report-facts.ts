@@ -12,6 +12,7 @@
 // leaves the report narrative-only, never blocks delivery.
 
 import type { Env } from "../types";
+import { resolveEngineKey } from "./engine-order";
 import { snapshotUsableForMonth } from "./snapshot-selection";
 import { engineLayer, type EngineLayer } from "./engine-layer";
 import { resolveBusinessName, nameMatches } from "../citations";
@@ -77,6 +78,11 @@ export interface ReportFacts {
     noCohortSignal?: boolean;
     layer?: "citation" | "model_knowledge";
   }>;
+  /** Surfaces held out of this report, with the reason, so the customer sees
+   *  WHY a tool is missing instead of inferring it was never measured. A
+   *  silent omission from a measurement report is its own failure: the reader
+   *  cannot tell a measured zero from an engine we could not collect. */
+  excludedEngines?: Array<{ name: string; reason: string }>;
   venue: { rows: Array<{ label: string; pct: number; you?: boolean }> };
   sources: Array<{ label: string; pct: number; own?: boolean }>;
   topSources: Array<{ host: string; pct: number }>;
@@ -437,7 +443,7 @@ async function buildQuestionMovement(env: Env, slug: string, monthKey: string, m
  *  competitive claim into an immutable report. Fail-closed: returns undefined
  *  unless there is enough real data to be worth a grid (>=2 tools and >=3
  *  questions that actually ran this month). */
-async function buildCitationGrid(env: Env, slug: string, monthKey: string, measurementStart: number | null): Promise<ReportFacts["grid"]> {
+async function buildCitationGrid(env: Env, slug: string, monthKey: string, measurementStart: number | null, precomputedCov?: EngineCoverage[]): Promise<ReportFacts["grid"]> {
   const b = monthBounds(monthKey);
   if (!b) return undefined;
   // Clamp: pre-engagement rows must never reach a customer-facing grid.
@@ -453,7 +459,10 @@ async function buildCitationGrid(env: Env, slug: string, monthKey: string, measu
   // Same guard as question movement. A grid cell reading 0% for an engine
   // that only ran 2 of 22 questions is not a measurement, it is an absence
   // dressed as one.
-  const cov = assessEngineCoverage(runs.results, await fetchEngineFailureCounts(env, gridStart, b.end));
+  // Coverage is computed ONCE per report and shared. Assessing it here and
+  // again for the headline bars is how the two end up disagreeing inside one
+  // document, which is worse than either verdict alone.
+  const cov = precomputedCov ?? assessEngineCoverage(runs.results, await fetchEngineFailureCounts(env, gridStart, b.end));
   // Same fallback as question movement: an unassessable coverage result must
   // not blank the grid.
   const gridCoverageUsable = cov.length > 0;
@@ -637,18 +646,79 @@ export async function buildReportFacts(env: Env, slug: string, monthKey: string)
   // the grid renders a month the movement section refuses to compare.
   const measurementStart = await getMeasurementStart(env, slug);
 
+  // Coverage for the report month, computed ONCE and shared with the grid.
+  //
+  // WHY THE BARS NEED THIS. `engines` above comes straight out of
+  // citation_snapshots.engines_breakdown and, until 2026-09-12, was filtered by
+  // nothing at all, while the grid and the movement section WERE filtered. A
+  // surface could therefore appear in the headline bars at a number computed
+  // from a fraction of the observations its peers collected, and be absent
+  // from the grid two sections down. One document, two verdicts.
+  let monthCov: EngineCoverage[] | undefined;
+  try {
+    const mb2 = monthBounds(monthKey);
+    if (mb2) {
+      const covStart = Math.max(mb2.start, measurementStart ?? 0);
+      if (covStart < mb2.end) {
+        const covRows = await env.DB.prepare(
+          `SELECT cr.engine, ck.keyword FROM citation_runs cr
+             JOIN citation_keywords ck ON ck.id = cr.keyword_id
+            WHERE ck.client_slug = ? AND cr.run_at >= ? AND cr.run_at < ?`,
+        ).bind(slug, covStart, mb2.end).all<{ engine: string; keyword: string }>();
+        monthCov = assessEngineCoverage(covRows.results, await fetchEngineFailureCounts(env, covStart, mb2.end));
+      }
+    }
+  } catch (e) {
+    // Unassessable coverage must never blank a report. Degrade to the
+    // pre-2026-09-12 behaviour, which showed every bar, and say so.
+    console.log(`[report-facts] ${slug} ${monthKey}: month coverage unassessable, bars NOT filtered: ${e instanceof Error ? e.message : e}`);
+    monthCov = undefined;
+  }
+
   // Question-level appeared/disappeared (defensive: absent on any failure).
   let questions: ReportFacts["questions"];
   try { questions = await buildQuestionMovement(env, slug, monthKey, measurementStart); } catch { questions = undefined; }
 
   // Per-engine x per-question citation grid (defensive: absent on any failure).
   let grid: ReportFacts["grid"];
-  try { grid = await buildCitationGrid(env, slug, monthKey, measurementStart); } catch { grid = undefined; }
+  try { grid = await buildCitationGrid(env, slug, monthKey, measurementStart, monthCov); } catch { grid = undefined; }
+
+  // Filter the headline bars by the SAME coverage verdict the grid uses, and
+  // say what was held out.
+  //
+  // The join is resolveEngineKey(), not string equality. Bars are keyed by
+  // whichever convention wrote the snapshot ("openai" from the dashboard,
+  // "ChatGPT search" from the forensic bridge) while coverage is keyed by the
+  // raw run key. Comparing those directly matches nothing, silently, and
+  // silently matching nothing is exactly how a delivered report already went
+  // out one engine short.
+  const excludedEngines: Array<{ name: string; reason: string }> = [];
+  let shownEngines = engines;
+  if (monthCov && monthCov.length) {
+    const verdict = new Map(monthCov.map((c) => [c.engine, c]));
+    const keep: typeof engines = [];
+    for (const row of engines) {
+      const key = resolveEngineKey(row.name);
+      const c = key ? verdict.get(key) : undefined;
+      // Unresolved or unassessed means NO OPINION, so the bar stays. A guard
+      // that removes what it cannot classify deletes real data.
+      if (!c || c.sufficient) { keep.push(row); continue; }
+      excludedEngines.push({
+        name: row.name,
+        reason: c.underCollected
+          ? `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, but only ${c.observations} times against ${c.observationsExpected} for the surfaces that collected normally, and its missing runs are accounted for by recorded API refusals. We hold too little of this month to report a share we would stand behind.`
+          : `Held out of this month's report. This surface answered ${c.questionsCovered} of ${c.questionsAsked} questions, below the coverage we require before publishing a share.`,
+      });
+      console.log(`[report-facts] ${slug} ${monthKey}: EXCLUDING ${row.name} from headline engines -- ${Math.round(c.density * 100)}% density, underCollected=${c.underCollected}.`);
+    }
+    shownEngines = keep;
+  }
 
   return {
     period_label: monthLabel(monthKey),
     prior_label: priorLabel,
-    engines,
+    engines: shownEngines,
+    ...(excludedEngines.length ? { excludedEngines } : {}),
     venue: { rows: venueRows },
     sources,
     topSources,

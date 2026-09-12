@@ -144,6 +144,12 @@ interface ReportFacts {
   period_label?: string;
   prior_label?: string;
   engines?: ChartEngine[];
+  /** Surfaces held out of this month, with the reason. Must be RENDERED, not
+   *  just carried: filtering a surface out of the charts without telling the
+   *  reader leaves them unable to tell a measured zero from an engine we could
+   *  not collect, which is the same ambiguity that shipped a delivered report
+   *  one engine short in August 2026. */
+  excludedEngines?: Array<{ name?: string; reason?: string }>;
   venue?: { rows?: ChartRow[] };
   sources?: ChartRow[];
   topSources?: { host: string; pct: number }[]; // specific third-party domains AI cited
@@ -457,6 +463,25 @@ export function renderCharts(factsJson: string | null): string {
       const cap = `Each bar is the share of that AI tool's citations that point to your own site. Higher is better. This is your baseline; next month shows the movement.`;
       blocks.push(chartBlock("Where each AI tool cites you", bars, cap, notes.engines));
     }
+  }
+
+  // 1a. What we did not report this month, and why. Rendered directly under
+  // the charts it affects, because a reader who scans the bars and moves on
+  // must still see that a surface is missing on purpose.
+  const excluded = (Array.isArray(f.excludedEngines) ? f.excludedEngines : [])
+    .filter((e) => e && typeof e.name === "string" && typeof e.reason === "string");
+  if (excluded.length) {
+    const items = excluded
+      .map((e) => `<li style="margin:0 0 8px"><b>${esc(String(e.name))}</b>. ${esc(String(e.reason))}</li>`)
+      .join("");
+    blocks.push(
+      `<div class="chart-block" style="border:1px solid var(--line);border-radius:8px;padding:16px 18px;margin:18px 0">` +
+      `<div style="font-size:13px;font-weight:600;margin-bottom:8px">Not reported this month</div>` +
+      `<ul style="margin:0;padding-left:18px;font-size:13px;line-height:1.6">${items}</ul>` +
+      `<div style="font-size:12px;color:var(--text-faint);margin-top:10px">` +
+      `We would rather show you a gap than a number we cannot stand behind. These surfaces were measured. ` +
+      `We did not collect enough of them this month to publish a share.</div></div>`,
+    );
   }
 
   // 1b. Model-knowledge tools, measured on a different question entirely.
