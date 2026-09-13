@@ -37,6 +37,7 @@ VOICE AND RULES (hard):
 - No hype, no filler, no "in today's world" openers. Human, not AI.
 - Use ONLY the numbers provided in the data. Never invent a statistic, a competitor, a percentage, or a trend. If you want to make a point the data does not support, do not make it.
 - Address the contact ONLY by data.customer.primary_contact_first_name. If it is null, use no name at all. NEVER invent a name.
+- MOVEMENT IS ONLY EVER REPORTED LIKE FOR LIKE. A question with first_reading:true was NOT measured last window. Its prior_pct is null. It did not "rise from 0%" and it did not gain anything: report it as a first reading, in those words, and never as movement or as a win. When data.like_for_like is present, EVERY overall month-over-month claim uses like_for_like.share_delta_pp and its share figures, not data.overall, and the memo states the basis plainly in the same breath, for example "across the N questions measured in both months". If like_for_like.questions_added_since_prior is above zero, say so in the "what moved" section: the set grew, and a reader comparing this month to last deserves to know the basis changed. Never present a set change as a result.
 - NEVER mention Copilot (the Microsoft assistant) in any form. It is not measured and no data for it exists. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted among the engines or the AI tools. The ONLY correct formulation for the surface count is: "six AI tools plus a Bing organic control, seven measured surfaces". Never place the word "seven" (or the digit 7) directly before "engines" or "AI tools".
 
 STRUCTURE (markdown, in this order):
@@ -95,7 +96,22 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
   add(inp.cohort.members.length + 1); // cohort + customer
   for (const m of inp.cohort.members) { add(m.mentions); add(m.share_pct); }
   for (const e of inp.by_engine) { add(e.current_share_pct); add(e.prior_share_pct); add(Math.abs(e.delta_pp)); add(e.current_runs); }
-  for (const qn of inp.by_question) { add(qn.current_pct); add(qn.prior_pct); add(Math.abs(qn.delta_pp)); add(qn.current_runs); }
+  // prior_pct and delta_pp are null on a first reading (the question was not
+  // asked in the prior window). Null must not become an allowed 0, or the
+  // author can write "rose from 0%" and have it verify.
+  for (const qn of inp.by_question) {
+    add(qn.current_pct);
+    if (qn.prior_pct !== null) add(qn.prior_pct);
+    if (qn.delta_pp !== null) add(Math.abs(qn.delta_pp));
+    add(qn.current_runs);
+  }
+  if (inp.like_for_like) {
+    add(inp.like_for_like.questions);
+    add(inp.like_for_like.current_share_pct);
+    add(inp.like_for_like.prior_share_pct);
+    add(Math.abs(inp.like_for_like.share_delta_pp));
+    add(inp.like_for_like.questions_added_since_prior);
+  }
   for (const st of inp.offsite.source_types) add(st.share_pct);
   for (const h of inp.offsite.hosts) add(h.share_pct);
   // Structural constants the memo may legitimately state, so they verify

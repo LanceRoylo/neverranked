@@ -41,12 +41,27 @@ export interface MemoInputs {
     // 2026-08-03, which behave exactly as they did before this existed.
     no_cohort_signal?: boolean;
   }>;
+  /** Questions measured in BOTH windows, and the count. A month-over-month
+   *  number computed across a changed question set is not a measurement of
+   *  movement, it is a measurement of the change in the set. */
+  like_for_like?: {
+    questions: number;
+    current_share_pct: number;
+    prior_share_pct: number;
+    share_delta_pp: number;
+    questions_added_since_prior: number;
+  };
   by_question: Array<{
     keyword: string;
     category: string;
     current_pct: number;
-    prior_pct: number;
-    delta_pp: number;
+    prior_pct: number | null;
+    delta_pp: number | null;
+    /** True when the question was not measured in the prior window at all.
+     *  Its prior_pct is null, NOT zero: it did not rise from nothing, it was
+     *  not asked. Reporting the second as the first is how a September memo
+     *  came to lead with an eleven-point gain on a client who was down four. */
+    first_reading?: boolean;
     current_runs: number;
   }>;
   cohort: {
@@ -190,10 +205,34 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     keyword: v.keyword,
     category: v.category,
     current_pct: pct(v.cc, v.cr),
-    prior_pct: pct(v.pc, v.pr),
-    delta_pp: +(pct(v.cc, v.cr) - pct(v.pc, v.pr)).toFixed(1),
+    // No runs in the prior window means the question was not asked, so there
+    // is nothing to compare against and null says so. Computing pct(0, 0) as
+    // 0 and subtracting produced "rose from 0% to 60%" for six questions that
+    // had simply been added that month.
+    prior_pct: v.pr > 0 ? pct(v.pc, v.pr) : null,
+    delta_pp: v.pr > 0 ? +(pct(v.cc, v.cr) - pct(v.pc, v.pr)).toFixed(1) : null,
+    ...(v.pr > 0 ? {} : { first_reading: true }),
     current_runs: v.cr,
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
+
+  // The like-for-like aggregate: the same discipline the methodology already
+  // applies to an engine changing its model version. A set change is not
+  // forbidden, it is recorded and disclosed, and any comparison spanning it is
+  // computed on what both windows actually share.
+  const bothWindows = Array.from(q.values()).filter((v) => v.pr > 0 && v.cr > 0);
+  const lflCurRuns = bothWindows.reduce((n, v) => n + v.cr, 0);
+  const lflCurCited = bothWindows.reduce((n, v) => n + v.cc, 0);
+  const lflPriRuns = bothWindows.reduce((n, v) => n + v.pr, 0);
+  const lflPriCited = bothWindows.reduce((n, v) => n + v.pc, 0);
+  const like_for_like = (lflCurRuns > 0 && lflPriRuns > 0)
+    ? {
+        questions: bothWindows.length,
+        current_share_pct: pct(lflCurCited, lflCurRuns),
+        prior_share_pct: pct(lflPriCited, lflPriRuns),
+        share_delta_pp: +(pct(lflCurCited, lflCurRuns) - pct(lflPriCited, lflPriRuns)).toFixed(1),
+        questions_added_since_prior: Array.from(q.values()).filter((v) => v.pr === 0 && v.cr > 0).length,
+      }
+    : undefined;
 
   // ── Cohort rank (legacy run-based; overridden by snapshot below) ──
   const legacyVenueTotal = Array.from(cohortMentions.values()).reduce((a, n) => a + n, 0) + curCited;
@@ -404,6 +443,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     overall,
     by_engine,
     by_question,
+    ...(like_for_like ? { like_for_like } : {}),
     cohort,
     offsite,
     prior_memo: priorMemo ?? null,
