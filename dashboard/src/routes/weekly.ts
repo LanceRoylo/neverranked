@@ -245,7 +245,12 @@ export async function handleAdminBriefView(briefId: number, user: User, env: Env
 }
 
 export async function handleAdminBriefApprove(briefId: number, user: User, env: Env): Promise<Response> {
-  await publishBrief(env, briefId, user.id);
+  const result = await publishBrief(env, briefId, user.id);
+  // A silent redirect after a refusal reads as success and the operator clicks
+  // again. Surface the reason instead.
+  if (result.blocked) {
+    return new Response(result.blocked, { status: 409, headers: { "content-type": "text/plain; charset=utf-8" } });
+  }
   return redirect(`/admin/weekly-brief/${briefId}`);
 }
 

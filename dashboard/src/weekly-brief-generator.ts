@@ -437,13 +437,44 @@ Click below to review the full body, approve to publish, or reject/regenerate.`,
 
 // ---------- Approval / publish ----------
 
-export async function publishBrief(env: Env, briefId: number, userId: number | null): Promise<boolean> {
+/** Publish a draft brief, unless it carries a retired or retracted claim.
+ *
+ *  FAIL CLOSED. This used to be a bare UPDATE. On 2026-09-12 a draft had been
+ *  sitting approvable for 71 days whose summary said "seven AI engines" and
+ *  whose body named Copilot, and nothing between the button and a public URL
+ *  would have stopped it. Approval is a human act and humans approve stale
+ *  drafts, so the check belongs here rather than in the UI.
+ *
+ *  Returns a reason rather than a bare false, because a refusal the operator
+ *  cannot act on just gets clicked again. */
+export async function publishBrief(
+  env: Env,
+  briefId: number,
+  userId: number | null,
+): Promise<{ published: boolean; blocked?: string }> {
+  const { firstRetiredClaimIn } = await import("./lib/retired-claims");
+  const row = await env.DB.prepare(
+    `SELECT title, summary, body_markdown FROM weekly_briefs WHERE id = ? AND status = 'draft'`,
+  ).bind(briefId).first<{ title: string; summary: string; body_markdown: string }>();
+  if (!row) return { published: false };
+
+  const hit = firstRetiredClaimIn({
+    title: row.title,
+    summary: row.summary,
+    body_markdown: row.body_markdown,
+  });
+  if (hit) {
+    const blocked = `Refused: ${hit.field} contains "${hit.match}" (${hit.id}). ${hit.why}`;
+    console.log(`[weekly-brief] publish BLOCKED for brief ${briefId}: ${blocked}`);
+    return { published: false, blocked };
+  }
+
   const now = Math.floor(Date.now() / 1000);
   const r = await env.DB.prepare(
     `UPDATE weekly_briefs SET status = 'published', approved_by = ?, approved_at = ?, published_at = ?
        WHERE id = ? AND status = 'draft'`,
   ).bind(userId, now, now, briefId).run();
-  return (r.meta?.changes ?? 0) > 0;
+  return { published: (r.meta?.changes ?? 0) > 0 };
 }
 
 export async function rejectBrief(env: Env, briefId: number, userId: number | null): Promise<boolean> {
