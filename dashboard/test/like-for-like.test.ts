@@ -63,3 +63,24 @@ test("the real numbers from the incident: a decline is what verifies, not a gain
   assert.ok(!allowed.has("63"), "the artifact figure must not verify");
   assert.ok(!allowed.has("52"), "the artifact figure must not verify");
 });
+
+/* The Prince incident: a stated absence that was not an absence. */
+test("group facts verify, and the invented ones do not", () => {
+  const inp: any = {
+    ...base,
+    by_question: [],
+    // The real figures: category 'client' is exactly the twelve Hawaii-wide
+    // questions, 923 runs, 6 citations.
+    by_category: [
+      { category: "client", questions: 12, runs: 923, cited: 6, share_pct: 0.7 },
+      { category: "head", questions: 9, runs: 1072, cited: 85, share_pct: 7.9 },
+    ],
+  };
+  const allowed = allowedNumberSet(inp);
+  for (const n of ["12", "923", "6", "0.7", "85"]) {
+    assert.ok(allowed.has(n), `real group figure ${n} must verify`);
+  }
+  // The draft said "ten Hawaii-wide questions ... zero times across 781 runs".
+  // 781 is the one the author invented outright and it must not verify.
+  assert.ok(!allowed.has("781"), "the invented denominator must not verify");
+});

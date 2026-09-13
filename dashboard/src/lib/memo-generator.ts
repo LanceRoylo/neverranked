@@ -37,6 +37,7 @@ VOICE AND RULES (hard):
 - No hype, no filler, no "in today's world" openers. Human, not AI.
 - Use ONLY the numbers provided in the data. Never invent a statistic, a competitor, a percentage, or a trend. If you want to make a point the data does not support, do not make it.
 - Address the contact ONLY by data.customer.primary_contact_first_name. If it is null, use no name at all. NEVER invent a name.
+- ANY claim about a GROUP of questions ("the N questions about X", "cited zero times across N runs") MUST take its count, its run total and its citation count from data.by_category. Never count a rendered list and never estimate a denominator. If you are about to write that a group was cited zero times, check by_category.cited for that group first: a stated absence that is not an absence is the worst error this memo can contain, and it has happened.
 - MOVEMENT IS ONLY EVER REPORTED LIKE FOR LIKE. A question with first_reading:true was NOT measured last window. Its prior_pct is null. It did not "rise from 0%" and it did not gain anything: report it as a first reading, in those words, and never as movement or as a win. When data.like_for_like is present, EVERY overall month-over-month claim uses like_for_like.share_delta_pp and its share figures, not data.overall, and the memo states the basis plainly in the same breath, for example "across the N questions measured in both months". If like_for_like.questions_added_since_prior is above zero, say so in the "what moved" section: the set grew, and a reader comparing this month to last deserves to know the basis changed. Never present a set change as a result.
 - NEVER mention Copilot (the Microsoft assistant) in any form. It is not measured and no data for it exists. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted among the engines or the AI tools. The ONLY correct formulation for the surface count is: "six AI tools plus a Bing organic control, seven measured surfaces". Never place the word "seven" (or the digit 7) directly before "engines" or "AI tools".
 
@@ -105,6 +106,7 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
     if (qn.delta_pp !== null) add(Math.abs(qn.delta_pp));
     add(qn.current_runs);
   }
+  for (const c of inp.by_category ?? []) { add(c.questions); add(c.runs); add(c.cited); add(c.share_pct); }
   if (inp.like_for_like) {
     add(inp.like_for_like.questions);
     add(inp.like_for_like.current_share_pct);

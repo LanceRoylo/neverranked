@@ -41,6 +41,9 @@ export interface MemoInputs {
     // 2026-08-03, which behave exactly as they did before this existed.
     no_cohort_signal?: boolean;
   }>;
+  /** Group totals by question category, computed rather than counted by the
+   *  author. A claim about "the N questions in group X" must come from here. */
+  by_category: Array<{ category: string; questions: number; runs: number; cited: number; share_pct: number }>;
   /** Questions measured in BOTH windows, and the count. A month-over-month
    *  number computed across a changed question set is not a measurement of
    *  movement, it is a measurement of the change in the set. */
@@ -214,6 +217,40 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     ...(v.pr > 0 ? {} : { first_reading: true }),
     current_runs: v.cr,
   })).sort((a, b) => a.current_pct - b.current_pct); // weakest first
+
+  // Per-category group facts, so the author never has to count.
+  //
+  // WHY THIS EXISTS. Prince's September draft said "the gap is largest on the
+  // ten Hawaii-wide questions, where Prince was cited zero times across 781
+  // runs". All three numbers were invented. There are TWELVE such questions,
+  // they ran 923 times, and Prince was cited SIX times, on "best meeting
+  // spaces" and "best views". The group is not a judgement call either: it is
+  // exactly citation_keywords.category = 'client'.
+  //
+  // The author had no group totals in its payload, so it counted a rendered
+  // list and guessed a denominator. findUnverifiedNumbers flagged 781, but
+  // "ten" and "zero" both sit inside the 0-12 safe band and passed silently,
+  // which is how the WORST claim in the memo drew no warning at all while a
+  // lesser one did. A false absence is the failure this product exists to
+  // prevent, and it was pointed at the paying client.
+  //
+  // Numbers that are handed over do not have to be invented.
+  const catAgg = new Map<string, { questions: number; runs: number; cited: number }>();
+  for (const v of q.values()) {
+    const key = v.category || "uncategorised";
+    const e = catAgg.get(key) ?? { questions: 0, runs: 0, cited: 0 };
+    e.questions += 1; e.runs += v.cr; e.cited += v.cc;
+    catAgg.set(key, e);
+  }
+  const by_category = [...catAgg.entries()]
+    .map(([category, e]) => ({
+      category,
+      questions: e.questions,
+      runs: e.runs,
+      cited: e.cited,
+      share_pct: pct(e.cited, e.runs),
+    }))
+    .sort((a, b) => a.share_pct - b.share_pct); // weakest first, same as by_question
 
   // The like-for-like aggregate: the same discipline the methodology already
   // applies to an engine changing its model version. A set change is not
@@ -443,6 +480,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
     overall,
     by_engine,
     by_question,
+    by_category,
     ...(like_for_like ? { like_for_like } : {}),
     cohort,
     offsite,
