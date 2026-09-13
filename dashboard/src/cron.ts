@@ -842,6 +842,114 @@ export async function runCitationDispatch(env: Env): Promise<void> {
  * Ordering within this function is unchanged, and each step keeps its own
  * try/catch so one failure cannot silence the monitors after it.
  */
+/** The evaluation layer: what ran, what it means, and what is no longer true.
+ *
+ *  SPLIT OUT OF runDailyMaintenance 2026-09-13, because it was judging data
+ *  that did not exist yet.
+ *
+ *  The citation sweep is asynchronous. runCitationDispatch() creates one
+ *  Cloudflare Workflow per keyword and returns immediately, and those
+ *  workflows write their rows over the following ~20 minutes. These four
+ *  checks were running in the same 06:00 invocation, about two minutes after
+ *  dispatch, so every night they scored the PREVIOUS day and presented it as
+ *  today.
+ *
+ *  Measured 2026-09-13: anomaly_detection ran 06:02:19 and the sweep's rows
+ *  landed 06:21 to 06:23. OpenAI had recovered fully that night, 29 runs
+ *  level with every peer, and the morning briefing still carried "openai:
+ *  row count dropped" and "openai: behind the other surfaces". The same lag
+ *  kept an instrument_probe_failed alert open at 24h, because autoCloseAlerts
+ *  asks whether the engine has rows in the last 24h and could not yet see the
+ *  ones that arrived nineteen minutes later.
+ *
+ *  An alerting layer that cries wolf every morning gets discounted, and then
+ *  the real one is missed. So this now runs on the 06:30 trigger, after the
+ *  sweep has finished writing.
+ *
+ *  ORDER IS load-BEARING and is preserved exactly: detection and health check
+ *  produce alerts, dedupe collapses them to one canonical row per engine, and
+ *  auto-close only ever considers that canonical row. */
+export async function runPostSweepEvaluation(env: Env): Promise<void> {
+  // Anomaly detection. Compares last-24h metrics vs 14-day baseline,
+  // creates admin_alerts for engine empty-rate spikes, row-count drops,
+  // and cron tasks that missed cadence. Idempotent: skips duplicate
+  // alerts that already exist unread. The layer that would have caught
+  // tonight's three engine bugs automatically the morning after each
+  // one happened.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { runAnomalyDetection } = await import("./lib/anomaly-detection");
+    const started = Date.now();
+    const r = await runAnomalyDetection(env);
+    await logCronRun(env, "anomaly_detection", r.totalAlerts > 0 ? "partial" : "success", Date.now() - started,
+      `engineAlerts=${r.engineAlerts} cronAlerts=${r.cronAlerts}`);
+    console.log(`[cron] anomaly_detection: ${r.totalAlerts} alerts (${r.engineAlerts} engine, ${r.cronAlerts} cron)`);
+  } catch (e) {
+    console.log(`[cron] anomaly_detection failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "anomaly_detection", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+
+  // Engine self-healing health check (Phase 4). Catches engines stuck
+  // in a persistently-broken state that anomaly detection misses (the
+  // gap that hid Anthropic's dead model name for weeks before tonight).
+  // Auto-degrades engines whose 7d empty rate exceeds 40%. Auto-recovers
+  // when 24h empty rate drops below 20%. Never auto-disables -- that's
+  // a Lance decision.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { runEngineHealthCheck } = await import("./lib/engine-health-check");
+    const started = Date.now();
+    const r = await runEngineHealthCheck(env);
+    await logCronRun(env, "engine_health_check", r.transitions > 0 ? "partial" : "success", Date.now() - started,
+      `degraded=${r.degradedCount} recovered=${r.recoveredCount} alerts=${r.alerts}`);
+    console.log(`[cron] engine_health_check: ${r.transitions} transitions (${r.degradedCount} degraded, ${r.recoveredCount} recovered)`);
+  } catch (e) {
+    console.log(`[cron] engine_health_check failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "engine_health_check", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+
+  // Alert dedupe. Both anomaly detection and engine health check can
+  // flag the same engine for related root causes. Without this cleanup,
+  // Lance reads multiple alerts about one issue. Keeps the oldest
+  // unread per (engine, 24h window) as canonical, auto-acks the rest.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { dedupeRelatedAlerts } = await import("./lib/alert-dedupe");
+    const started = Date.now();
+    const r = await dedupeRelatedAlerts(env);
+    await logCronRun(env, "alert_dedupe", "success", Date.now() - started,
+      `scanned=${r.scanned} acked=${r.acked} groups=${r.groups}`);
+    console.log(`[cron] alert_dedupe: scanned ${r.scanned}, acked ${r.acked} dups across ${r.groups} groups`);
+  } catch (e) {
+    console.log(`[cron] alert_dedupe failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+
+  // Alert auto-close. Runs AFTER dedupe so it only ever considers the
+  // canonical row in a group. An alert describes a moment, but the reader
+  // treats the needs-you lane as a list of live problems, and nothing ever
+  // reconciled the two. Observed 2026-09-08: a daily_tasks overdue alert
+  // 143h old sat above real ones while the task had run clean every day
+  // since. Fail-closed by design, so most alert types are untouched and
+  // stay a human decision.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { autoCloseAlerts } = await import("./lib/alert-autoclose");
+    const started = Date.now();
+    const r = await autoCloseAlerts(env, Math.floor(Date.now() / 1000));
+    await logCronRun(env, "alert_autoclose", "success", Date.now() - started,
+      `closed=${r.closed} kept=${r.kept}${r.notes.length ? ` | ${r.notes.join(", ")}` : ""}`);
+    console.log(`[cron] alert_autoclose: closed ${r.closed}, kept ${r.kept}`);
+  } catch (e) {
+    console.log(`[cron] alert_autoclose failed: ${e instanceof Error ? e.message : String(e)}`);
+  }
+}
+
 export async function runDailyMaintenance(env: Env): Promise<void> {
   // Each of these does its own D1 work and some have an unguarded top-level
   // query (e.g. sendOnboardingDripEmails' initial SELECT). An unwrapped throw
@@ -1331,84 +1439,6 @@ export async function runDailyMaintenance(env: Env): Promise<void> {
     console.log(`[cron] qa cross-system audit failed: ${e instanceof Error ? e.message : String(e)}`);
   }
 
-  // Anomaly detection. Compares last-24h metrics vs 14-day baseline,
-  // creates admin_alerts for engine empty-rate spikes, row-count drops,
-  // and cron tasks that missed cadence. Idempotent: skips duplicate
-  // alerts that already exist unread. The layer that would have caught
-  // tonight's three engine bugs automatically the morning after each
-  // one happened.
-  try {
-    const { logCronRun } = await import("./lib/cron-log");
-    const { runAnomalyDetection } = await import("./lib/anomaly-detection");
-    const started = Date.now();
-    const r = await runAnomalyDetection(env);
-    await logCronRun(env, "anomaly_detection", r.totalAlerts > 0 ? "partial" : "success", Date.now() - started,
-      `engineAlerts=${r.engineAlerts} cronAlerts=${r.cronAlerts}`);
-    console.log(`[cron] anomaly_detection: ${r.totalAlerts} alerts (${r.engineAlerts} engine, ${r.cronAlerts} cron)`);
-  } catch (e) {
-    console.log(`[cron] anomaly_detection failed: ${e instanceof Error ? e.message : String(e)}`);
-    try {
-      const { logCronRun } = await import("./lib/cron-log");
-      await logCronRun(env, "anomaly_detection", "failure", undefined, e instanceof Error ? e.message : String(e));
-    } catch { /* logging is best-effort */ }
-  }
-
-  // Engine self-healing health check (Phase 4). Catches engines stuck
-  // in a persistently-broken state that anomaly detection misses (the
-  // gap that hid Anthropic's dead model name for weeks before tonight).
-  // Auto-degrades engines whose 7d empty rate exceeds 40%. Auto-recovers
-  // when 24h empty rate drops below 20%. Never auto-disables -- that's
-  // a Lance decision.
-  try {
-    const { logCronRun } = await import("./lib/cron-log");
-    const { runEngineHealthCheck } = await import("./lib/engine-health-check");
-    const started = Date.now();
-    const r = await runEngineHealthCheck(env);
-    await logCronRun(env, "engine_health_check", r.transitions > 0 ? "partial" : "success", Date.now() - started,
-      `degraded=${r.degradedCount} recovered=${r.recoveredCount} alerts=${r.alerts}`);
-    console.log(`[cron] engine_health_check: ${r.transitions} transitions (${r.degradedCount} degraded, ${r.recoveredCount} recovered)`);
-  } catch (e) {
-    console.log(`[cron] engine_health_check failed: ${e instanceof Error ? e.message : String(e)}`);
-    try {
-      const { logCronRun } = await import("./lib/cron-log");
-      await logCronRun(env, "engine_health_check", "failure", undefined, e instanceof Error ? e.message : String(e));
-    } catch { /* logging is best-effort */ }
-  }
-
-  // Alert dedupe. Both anomaly detection and engine health check can
-  // flag the same engine for related root causes. Without this cleanup,
-  // Lance reads multiple alerts about one issue. Keeps the oldest
-  // unread per (engine, 24h window) as canonical, auto-acks the rest.
-  try {
-    const { logCronRun } = await import("./lib/cron-log");
-    const { dedupeRelatedAlerts } = await import("./lib/alert-dedupe");
-    const started = Date.now();
-    const r = await dedupeRelatedAlerts(env);
-    await logCronRun(env, "alert_dedupe", "success", Date.now() - started,
-      `scanned=${r.scanned} acked=${r.acked} groups=${r.groups}`);
-    console.log(`[cron] alert_dedupe: scanned ${r.scanned}, acked ${r.acked} dups across ${r.groups} groups`);
-  } catch (e) {
-    console.log(`[cron] alert_dedupe failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
-
-  // Alert auto-close. Runs AFTER dedupe so it only ever considers the
-  // canonical row in a group. An alert describes a moment, but the reader
-  // treats the needs-you lane as a list of live problems, and nothing ever
-  // reconciled the two. Observed 2026-09-08: a daily_tasks overdue alert
-  // 143h old sat above real ones while the task had run clean every day
-  // since. Fail-closed by design, so most alert types are untouched and
-  // stay a human decision.
-  try {
-    const { logCronRun } = await import("./lib/cron-log");
-    const { autoCloseAlerts } = await import("./lib/alert-autoclose");
-    const started = Date.now();
-    const r = await autoCloseAlerts(env, Math.floor(Date.now() / 1000));
-    await logCronRun(env, "alert_autoclose", "success", Date.now() - started,
-      `closed=${r.closed} kept=${r.kept}${r.notes.length ? ` | ${r.notes.join(", ")}` : ""}`);
-    console.log(`[cron] alert_autoclose: closed ${r.closed}, kept ${r.kept}`);
-  } catch (e) {
-    console.log(`[cron] alert_autoclose failed: ${e instanceof Error ? e.message : String(e)}`);
-  }
 
   // Phase 1.5 Session 2 LLM-graded audits. Three sweeps:
   //   - content_voice: grade unaudited content_drafts (rules + GPT-4o-mini)

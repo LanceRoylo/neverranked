@@ -3941,6 +3941,25 @@ Once verified working, the user-OAuth path becomes vestigial. The legacy code st
     // summary's ~12 gather queries got their turn. Its own cron trigger
     // gives it its own fresh subrequest budget.
     if (cron === "30 6 * * *") {
+      // The evaluation layer runs HERE, not at 06:00, because the citation
+      // sweep is asynchronous. runCitationDispatch() creates one workflow per
+      // keyword and returns, and those workflows write their rows over the
+      // following ~20 minutes. Running anomaly detection two minutes after
+      // dispatch scored the PREVIOUS day and presented it as today: on
+      // 2026-09-13 OpenAI recovered to 29 runs level with every peer and the
+      // morning briefing still said "openai: row count dropped". By 06:30 the
+      // rows have landed, so these four now judge the night they are named
+      // for. Their internal order is load-bearing and is preserved inside
+      // runPostSweepEvaluation.
+      ctx.waitUntil(
+        withCronLogging(env, "post_sweep_evaluation", async () => {
+          const { runPostSweepEvaluation } = await import("./cron");
+          await runPostSweepEvaluation(env);
+        }).catch((e) => {
+          console.log(`[cron 06:30] post_sweep_evaluation failed: ${e instanceof Error ? e.message : e}`);
+        }),
+      );
+
       // HTC event-schema refresh runs HERE (daily), NOT in the heavy 06:00
       // batch. It was failing every day in that batch with "Too many
       // subrequests by single Worker invocation" because the batch exhausted
