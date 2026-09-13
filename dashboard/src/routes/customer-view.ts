@@ -52,7 +52,7 @@ interface CohortRow {
   host: string;        // "fhb.com (First Hawaiian Advisors)"
   mentions: number;
   position: string;    // "early (64%)" | "lead (83%)" | "scattered (47%)"
-  toolsCount: string;  // "6/7"
+  toolsCount: string;  // "5/6" -- AI tools only, the control is not one
   isYou: boolean;
 }
 
@@ -183,16 +183,16 @@ const HAMADA_DATA: CustomerViewData = {
     { text: "SmartAsset profile not detected in any cited URL. 11 cohort competitors are cited via their SmartAsset profile at least once in the measurement window." },
   ],
   cohortTop10: [
-    { host: "fhb.com (First Hawaiian Advisors)", mentions: 79, position: "early (64%)", toolsCount: "6/7", isYou: false },
-    { host: "morganstanley.com (Morgan Stanley Hawaii)", mentions: 63, position: "early (50%)", toolsCount: "5/7", isYou: false },
-    { host: "masudalehrman.com (Masuda Lehrman Wealth)", mentions: 59, position: "lead (83%)", toolsCount: "4/7", isYou: false },
-    { host: "advisor.morganstanley.com", mentions: 53, position: "early (55%)", toolsCount: "3/7", isYou: false },
-    { host: "fphawaii.com (Financial Pacific Hawaii)", mentions: 43, position: "lead (65%)", toolsCount: "3/7", isYou: false },
-    { host: "boh.com (Bank of Hawaii Wealth)", mentions: 35, position: "lead (66%)", toolsCount: "4/7", isYou: false },
-    { host: "creativeplanning.com (Creative Planning HI)", mentions: 30, position: "scattered (47%)", toolsCount: "3/7", isYou: false },
-    { host: "3dwealthadvisors.com (Hawaii Partners 3D)", mentions: 27, position: "early (59%)", toolsCount: "4/7", isYou: false },
-    { host: "raymondjames.com (Raymond James HI)", mentions: 14, position: "scattered (43%)", toolsCount: "3/7", isYou: false },
-    { host: "hamadafinancialgroup.com (your firm)", mentions: 8, position: "(only the named query)", toolsCount: "3/7", isYou: true },
+    { host: "fhb.com (First Hawaiian Advisors)", mentions: 79, position: "early (64%)", toolsCount: "6/6", isYou: false },
+    { host: "morganstanley.com (Morgan Stanley Hawaii)", mentions: 63, position: "early (50%)", toolsCount: "5/6", isYou: false },
+    { host: "masudalehrman.com (Masuda Lehrman Wealth)", mentions: 59, position: "lead (83%)", toolsCount: "4/6", isYou: false },
+    { host: "advisor.morganstanley.com", mentions: 53, position: "early (55%)", toolsCount: "3/6", isYou: false },
+    { host: "fphawaii.com (Financial Pacific Hawaii)", mentions: 43, position: "lead (65%)", toolsCount: "3/6", isYou: false },
+    { host: "boh.com (Bank of Hawaii Wealth)", mentions: 35, position: "lead (66%)", toolsCount: "4/6", isYou: false },
+    { host: "creativeplanning.com (Creative Planning HI)", mentions: 30, position: "scattered (47%)", toolsCount: "3/6", isYou: false },
+    { host: "3dwealthadvisors.com (Hawaii Partners 3D)", mentions: 27, position: "early (59%)", toolsCount: "4/6", isYou: false },
+    { host: "raymondjames.com (Raymond James HI)", mentions: 14, position: "scattered (43%)", toolsCount: "3/6", isYou: false },
+    { host: "hamadafinancialgroup.com (your firm)", mentions: 8, position: "(only the named query)", toolsCount: "3/6", isYou: true },
   ],
   trend: [
     { weekIso: "8wk ago", yourMentions: 1, cohortAvg: 5 },
@@ -414,8 +414,16 @@ async function buildFromD1(env: Env, slug: string): Promise<CustomerViewData | n
   // FULL list, used for rank and leader share. Slicing before this would
   // report a rank out of however many rows happened to be displayed.
   const cohortAll: CohortRow[] = [
-    { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: `${tc.htc_engines_count ?? 0}/7`, isYou: true },
-    ...competitors.map((c) => ({ host: cohortHost(c), mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/7`, isYou: false })),
+    // Denominator is SIX, not seven. The column header says "AI tools" and
+    // engines_count deliberately excludes the classic-search control (see
+    // citations.ts: "engines_count answers how many surfaces showed this
+    // venue. The control is not one of them."). With /7 a venue present on
+    // every AI tool rendered as "6/7", understating it by construction and
+    // asserting a seventh AI tool that does not exist. Seven is correct for
+    // MEASURED SURFACES, which is what the gap copy below says, and wrong for
+    // tools.
+    { host: `${cust.name} (you)`, mentions: ownShare, position: "", toolsCount: `${tc.htc_engines_count ?? 0}/6`, isYou: true },
+    ...competitors.map((c) => ({ host: cohortHost(c), mentions: c.venue_share_pct, position: "", toolsCount: `${c.engines_count ?? 0}/6`, isYou: false })),
   ].sort((a, b) => b.mentions - a.mentions);
 
   // Display slice. Attribution grew one cohort from 11 rows to 32 and the tail
