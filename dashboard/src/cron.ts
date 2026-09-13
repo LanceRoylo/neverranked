@@ -870,6 +870,37 @@ export async function runCitationDispatch(env: Env): Promise<void> {
  *  produce alerts, dedupe collapses them to one canonical row per engine, and
  *  auto-close only ever considers that canonical row. */
 export async function runPostSweepEvaluation(env: Env): Promise<void> {
+  // Question-set drift, FIRST, because it invalidates every comparison the
+  // checks below make.
+  //
+  // WIRED 2026-09-13. src/lib/query-set.ts was written complete: hashing,
+  // versioning, diffing, and an alert type registered in triage whose own text
+  // says "any month-over-month comparison spanning this point is not
+  // like-for-like". Nothing ever called it. The table held one row per client,
+  // every one with prev_hash NULL, so there was never a prior to diff against
+  // and query_set_changed had fired zero times in its life.
+  //
+  // What that cost, found the same day: a client's set grew from 18 questions
+  // to 22 while its engagement plan promised "locked 18-question set, frozen
+  // and hashed per run". The September memo then reported six newly-added
+  // questions as rises "from 0%" and led with an eleven-point gain. On the
+  // original 18 the same client was DOWN four points. A detector that is built
+  // and not called is indistinguishable from one that was never written.
+  try {
+    const { logCronRun } = await import("./lib/cron-log");
+    const { sweepQuerySets } = await import("./lib/query-set");
+    const started = Date.now();
+    await sweepQuerySets(env);
+    await logCronRun(env, "query_set_sweep", "success", Date.now() - started);
+    console.log(`[cron] query_set_sweep: done`);
+  } catch (e) {
+    console.log(`[cron] query_set_sweep failed: ${e instanceof Error ? e.message : String(e)}`);
+    try {
+      const { logCronRun } = await import("./lib/cron-log");
+      await logCronRun(env, "query_set_sweep", "failure", undefined, e instanceof Error ? e.message : String(e));
+    } catch { /* logging is best-effort */ }
+  }
+
   // Anomaly detection. Compares last-24h metrics vs 14-day baseline,
   // creates admin_alerts for engine empty-rate spikes, row-count drops,
   // and cron tasks that missed cadence. Idempotent: skips duplicate
