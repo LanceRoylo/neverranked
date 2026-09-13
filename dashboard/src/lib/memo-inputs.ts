@@ -76,6 +76,41 @@ function hostFromEntity(ent: { name?: string; url?: string }): string | null {
   return null;
 }
 
+
+/** An engagement plan frozen BEFORE a claim was retired still contains that
+ *  claim, and the memo author is forbidden to write it.
+ *
+ *  HTC's plan was set 2026-07-03 and names Microsoft Copilot four times,
+ *  including as the strategic centrepiece: "the fast lane is Copilot and
+ *  ChatGPT search, the two Bing-fed tools". That channel was reclassified
+ *  2026-08-22 and there is no Copilot data. The author prompt says NEVER
+ *  mention Copilot, the same prompt says grade this month against the plan,
+ *  and the plan says Copilot. Asked to obey both, the model wrote the retired
+ *  name and the taxonomy gate refused the save, twice, leaving the client with
+ *  no September memo at all.
+ *
+ *  So the fix is deterministic rather than a stronger instruction: the author
+ *  is handed a plan whose bytes do not contain the forbidden term. It cannot
+ *  echo what it cannot see.
+ *
+ *  THE STORED PLAN IS NOT TOUCHED. customers.plan_markdown is a frozen record
+ *  the customer reads at /c/<slug>/plan and grades us against, and it carries
+ *  a dated amendment explaining the reclassification. Quietly rewriting it
+ *  would be the thing that amendment exists to refuse. This substitution
+ *  applies ONLY to the authoring payload, and it is marked in-line so the
+ *  author can see a correction happened rather than believing the plan always
+ *  read this way. */
+function sanitizePlanForAuthoring(plan: string | null): string | null {
+  if (!plan) return plan;
+  let out = plan;
+  // Order matters: the longer, more specific forms first.
+  out = out.replace(/\bMicrosoft Copilot\b/gi, "the Bing organic control [this plan said Microsoft Copilot, reclassified 2026-08-22]");
+  out = out.replace(/\bCopilot\b/gi, "the Bing organic control [reclassified 2026-08-22]");
+  out = out.replace(/\bsix of the seven AI tools\b/gi, "most of the six AI tools");
+  out = out.replace(/\b(?:seven|7)\s+AI\s+(?:tools?|engines?)\b/gi, "six AI tools plus a Bing organic control, seven measured surfaces");
+  return out;
+}
+
 export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promise<MemoInputs> {
   const nowTs = Math.floor(now.getTime() / 1000);
   const curStart = nowTs - 30 * DAY;
@@ -360,7 +395,7 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
           primary_contact_first_name: (customer.primary_contact_name || "").trim().split(/\s+/)[0] || null,
         }
       : { client_slug: slug, name: slug, category_label: null, primary_contact_first_name: null },
-    plan_markdown: customer?.plan_markdown ?? null,
+    plan_markdown: sanitizePlanForAuthoring(customer?.plan_markdown ?? null),
     window: {
       current_start: new Date(curStart * 1000).toISOString().slice(0, 10),
       current_end: new Date(nowTs * 1000).toISOString().slice(0, 10),
