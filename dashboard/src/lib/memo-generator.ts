@@ -37,6 +37,7 @@ VOICE AND RULES (hard):
 - No hype, no filler, no "in today's world" openers. Human, not AI.
 - Use ONLY the numbers provided in the data. Never invent a statistic, a competitor, a percentage, or a trend. If you want to make a point the data does not support, do not make it.
 - Address the contact ONLY by data.customer.primary_contact_first_name. If it is null, use no name at all. NEVER invent a name.
+- DO NOT CALCULATE. Every figure in the memo must be READ from the payload, never derived. Do not subtract one total from another, do not sum a list, do not convert a count into a percentage. On a real draft the author computed a subgroup total and wrote 768 where the payload's own per-question numbers summed to 764, then attached the group's six citations to the ten questions it had just said were cited zero times. Numbers that are read are right. Numbers that are worked out are a coin flip. If the figure you want is not in the payload, write the sentence without it.
 - ANY claim about a GROUP of questions ("the N questions about X", "cited zero times across N runs") MUST take its count, its run total and its citation count from data.by_category. Never count a rendered list and never estimate a denominator. If you are about to write that a group was cited zero times, check by_category.cited for that group first: a stated absence that is not an absence is the worst error this memo can contain, and it has happened.
 - MOVEMENT IS ONLY EVER REPORTED LIKE FOR LIKE. A question with first_reading:true was NOT measured last window. Its prior_pct is null. It did not "rise from 0%" and it did not gain anything: report it as a first reading, in those words, and never as movement or as a win. When data.like_for_like is present, EVERY overall month-over-month claim uses like_for_like.share_delta_pp and its share figures, not data.overall, and the memo states the basis plainly in the same breath, for example "across the N questions measured in both months". If like_for_like.questions_added_since_prior is above zero, say so in the "what moved" section: the set grew, and a reader comparing this month to last deserves to know the basis changed. Never present a set change as a result.
 - NEVER mention Copilot (the Microsoft assistant) in any form. It is not measured and no data for it exists. The Bing channel is a classic-search CONTROL: it "returns" results, it does not cite or answer, and it is never counted among the engines or the AI tools. The ONLY correct formulation for the surface count is: "six AI tools plus a Bing organic control, seven measured surfaces". Never place the word "seven" (or the digit 7) directly before "engines" or "AI tools".
@@ -106,7 +107,7 @@ export function allowedNumberSet(inp: MemoInputs): Set<string> {
     if (qn.delta_pp !== null) add(Math.abs(qn.delta_pp));
     add(qn.current_runs);
   }
-  for (const c of inp.by_category ?? []) { add(c.questions); add(c.runs); add(c.cited); add(c.share_pct); }
+  for (const c of inp.by_category ?? []) { add(c.questions); add(c.runs); add(c.cited); add(c.share_pct); add(c.questions_never_cited); add(c.runs_on_never_cited); }
   if (inp.like_for_like) {
     add(inp.like_for_like.questions);
     add(inp.like_for_like.current_share_pct);
@@ -174,7 +175,20 @@ export function findUnverifiedNumbers(body: string, allowed: Set<string>, planBa
   // Strip thousands separators so "2,346" reads as one number, not "2"
   // and "346". Without this, every comma-formatted figure trips a false
   // positive on its tail segment.
-  const normalized = body.replace(/(\d),(\d{3})\b/g, "$1$2");
+  // URLs are addresses, not claims. A TripAdvisor link carries g60982 and
+  // d84382 and neither is a measurement, but both were reported as unverified
+  // figures on a real draft, which buries the one number that WAS wrong (768
+  // where the truth was 764) among three that never mattered. A checker whose
+  // output is mostly noise gets skimmed, and skimming it is how the real one
+  // ships.
+  const withoutUrls = body
+    .replace(/\]\([^)]*\)/g, "]()")            // markdown link targets
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\b[\w.-]+\.(?:com|org|net|io|ai|gov|edu)\/\S*/gi, " ");
+  // Strip thousands separators so "2,346" reads as one number, not "2"
+  // and "346". Without this, every comma-formatted figure trips a false
+  // positive on its tail segment.
+  const normalized = withoutUrls.replace(/(\d),(\d{3})\b/g, "$1$2");
   const re = /\d+(?:\.\d+)?/g;
   const bad = new Set<string>();
   let m: RegExpExecArray | null;
@@ -207,7 +221,11 @@ async function callClaude(env: Env, userPayload: string): Promise<string> {
       model: MODEL,
       system: [{ type: "text", text: MEMO_AUTHOR_SYSTEM, cache_control: { type: "ephemeral" } }],
       messages: [{ role: "user", content: userPayload }],
-      max_tokens: 2500,
+      // 2500 truncated HTC's September draft mid-sentence at "What I am wat".
+      // These memos run seven to nine thousand characters and the judge
+      // correctly refused the fragment, so the ceiling was spending a full
+      // generation to produce something unusable.
+      max_tokens: 4000,
       temperature: 0.4,
     }),
     signal: AbortSignal.timeout(90_000),

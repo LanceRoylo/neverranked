@@ -72,8 +72,11 @@ test("group facts verify, and the invented ones do not", () => {
     // The real figures: category 'client' is exactly the twelve Hawaii-wide
     // questions, 923 runs, 6 citations.
     by_category: [
-      { category: "client", questions: 12, runs: 923, cited: 6, share_pct: 0.7 },
-      { category: "head", questions: 9, runs: 1072, cited: 85, share_pct: 7.9 },
+      // Ten of the twelve were never cited, and those ten drew 764 runs. Both
+      // are carried so neither has to be worked out: the author wrote 768
+      // against its own list's 764 when it had to subtract.
+      { category: "client", questions: 12, runs: 923, cited: 6, share_pct: 0.7, questions_never_cited: 10, runs_on_never_cited: 764 },
+      { category: "head", questions: 9, runs: 1072, cited: 85, share_pct: 7.9, questions_never_cited: 3, runs_on_never_cited: 220 },
     ],
   };
   const allowed = allowedNumberSet(inp);
@@ -83,4 +86,8 @@ test("group facts verify, and the invented ones do not", () => {
   // The draft said "ten Hawaii-wide questions ... zero times across 781 runs".
   // 781 is the one the author invented outright and it must not verify.
   assert.ok(!allowed.has("781"), "the invented denominator must not verify");
+  // The zero split is handed over, so the sentence the memo wants needs no
+  // arithmetic: ten of twelve, across 764 runs.
+  assert.ok(allowed.has("10") && allowed.has("764"), "the zero split must verify");
+  assert.ok(!allowed.has("768"), "the computed-and-wrong total must not verify");
 });

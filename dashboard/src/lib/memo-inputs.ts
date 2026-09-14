@@ -43,7 +43,7 @@ export interface MemoInputs {
   }>;
   /** Group totals by question category, computed rather than counted by the
    *  author. A claim about "the N questions in group X" must come from here. */
-  by_category: Array<{ category: string; questions: number; runs: number; cited: number; share_pct: number }>;
+  by_category: Array<{ category: string; questions: number; runs: number; cited: number; share_pct: number; questions_never_cited: number; runs_on_never_cited: number }>;
   /** Questions measured in BOTH windows, and the count. A month-over-month
    *  number computed across a changed question set is not a measurement of
    *  movement, it is a measurement of the change in the set. */
@@ -235,11 +235,18 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
   // prevent, and it was pointed at the paying client.
   //
   // Numbers that are handed over do not have to be invented.
-  const catAgg = new Map<string, { questions: number; runs: number; cited: number }>();
+  // The zero split is carried too, because "ten of the twelve were never cited,
+  // across 764 runs" is the sentence the memo actually wants and every part of
+  // it was being worked out by hand. The author wrote 768 against its own
+  // list's 764, and attached the group's six citations to the very questions
+  // it had just called zero. Both numbers exist here now, so neither has to be
+  // derived.
+  const catAgg = new Map<string, { questions: number; runs: number; cited: number; zeroQs: number; zeroRuns: number }>();
   for (const v of q.values()) {
     const key = v.category || "uncategorised";
-    const e = catAgg.get(key) ?? { questions: 0, runs: 0, cited: 0 };
+    const e = catAgg.get(key) ?? { questions: 0, runs: 0, cited: 0, zeroQs: 0, zeroRuns: 0 };
     e.questions += 1; e.runs += v.cr; e.cited += v.cc;
+    if (v.cc === 0) { e.zeroQs += 1; e.zeroRuns += v.cr; }
     catAgg.set(key, e);
   }
   const by_category = [...catAgg.entries()]
@@ -249,6 +256,10 @@ export async function gatherMemoInputs(env: Env, slug: string, now: Date): Promi
       runs: e.runs,
       cited: e.cited,
       share_pct: pct(e.cited, e.runs),
+      /** Questions in this category the customer was never cited on. */
+      questions_never_cited: e.zeroQs,
+      /** Runs those never-cited questions drew. NOT the category's run total. */
+      runs_on_never_cited: e.zeroRuns,
     }))
     .sort((a, b) => a.share_pct - b.share_pct); // weakest first, same as by_question
 
